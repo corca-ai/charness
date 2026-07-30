@@ -130,6 +130,29 @@ def find_charness_toml_block(text: str, command: str, marker: str = CHARNESS_MAR
     return None
 
 
+def toml_block_matcher(block_text: str) -> str | None:
+    """The `matcher = "..."` value declared inside one charness TOML block, or None.
+
+    The block writer emits this line (`codex_toml_block`), so it CAN be read back;
+    the presence scan just never did. None means the block declares no matcher --
+    either it predates matchers or the hook is unrestricted -- which callers read
+    the same way as an absent JSON matcher key.
+    """
+    for line in block_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("matcher"):
+            continue
+        head, _, value = stripped.partition("=")
+        if head.strip() != "matcher":
+            continue
+        try:
+            parsed = json.loads(value.strip())
+        except json.JSONDecodeError:
+            return None
+        return parsed if isinstance(parsed, str) else None
+    return None
+
+
 def _replace_span(existing: str, start: int, end: int, block: str) -> str:
     before = existing[:start].rstrip("\n")
     after = existing[end:].lstrip("\n").rstrip("\n")

@@ -105,6 +105,9 @@ def skill_anchor_guard_status(repo_root: Path, *, adapter: dict[str, Any] | None
             "state_key": _state_key("claude"),
             "script_relative": GUARD_SCRIPT_RELATIVE,
             "event": GUARD_EVENT,
+            # The matcher is part of this hook's identity: an entry under a
+            # different matcher never sees an edit, so it is not "present".
+            "matcher": GUARD_MATCHER,
         }
     }
     return install_lib._hook_sync_status(

@@ -181,7 +181,17 @@ def _advise_staged_reversion(repo_root: Path) -> None:
     # == HEAD) at closeout, before the human commit. Reads git directly; the
     # blocking teeth live in the pre-commit gate (check_staged_reversion.py).
     lib = import_repo_module(__file__, "scripts.check_staged_reversion")
-    findings = lib.find_staged_reversions(str(repo_root))
+    try:
+        findings = lib.find_staged_reversions(str(repo_root))
+    except RuntimeError as exc:
+        # git could not read the index, so this advisory established nothing.
+        # Say so rather than let silence read as "no staged reversion".
+        print(
+            "WARN: staged-reversion advisory unavailable — git could not read the "
+            f"index at {repo_root} ({exc}); the pre-commit gate still applies.",
+            file=sys.stderr,
+        )
+        return
     if findings:
         print(
             "WARN: staged reversion of already-committed file(s) — index != HEAD "

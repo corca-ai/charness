@@ -56,12 +56,12 @@ deliberate, with the reason recorded.
 | A2 | FIXED | A non-empty drift list (and a version mismatch) is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
 | A3 | PARTIAL | A deletion-only or rename-only staged commit schedules zero commit-boundary gates — scheduling fixed; what the scheduled gates then *inspect* is the residual (see below) | `scripts/staged_commit_gate_plan_helpers.py` (`collect_staged_scope_paths`), `scripts/staged_commit_gate_plan.py` (`staged_commit_gate_plan`, `run_predict_commit`) |
 | A4 | FIXED | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
-| A5 | OPEN | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
-| A6 | OPEN | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
+| A5 | FIXED (2026-07-30) | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
+| A6 | FIXED (2026-07-30) | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
 | A7 | FIXED | Zero-file scans report a pass (`export-safe imports`, `bootstrap-shim consistency`) | `scripts/check_export_safe_imports.py:209`, `scripts/check_bootstrap_shim_consistency.py:94` |
-| A8 | OPEN | Anchor-guard install/status keyed on a command basename; the matcher is never read back | `scripts/host_hook_install_lib.py:192,449` |
-| A9 | PARTIAL | `own-root-unknown` is a silent pass (OPEN); the anchors scan omitted `support/` and `shared/` siblings (fixed with A1/A2 in `_tracked_files` / `counterpart_path`) | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`, `_tracked_files`) |
-| A10 | OPEN | `post_edit_skill_anchor_guard` fail-opens when the rule library is missing entirely | `scripts/post_edit_skill_anchor_guard.py:72` |
+| A8 | PARTIAL (2026-07-30) | Anchor-guard install/status keyed on a command basename; the matcher is never read back | `scripts/host_hook_install_lib.py:192,449` |
+| A9 | FIXED (2026-07-30) | `own-root-unknown` was a silent pass — now `own-root-unestablished`, refused for source-tree targets, `consuming-repo` otherwise; the anchors scan omitted `support/` and `shared/` siblings (fixed earlier with A1/A2 in `_tracked_files` / `counterpart_path`) | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`, `_tracked_files`) |
+| A10 | FIXED (2026-07-30) | `post_edit_skill_anchor_guard` fail-opens when the rule library is missing entirely | `scripts/post_edit_skill_anchor_guard.py:72` |
 
 **A1 is NOT the 2026-07-27 incident's mechanism — it is a second, live escape in
 the same guard.** That incident's cause was the guard being *absent* from the
@@ -131,6 +131,52 @@ row stays `PARTIAL` because of them:
 `No packaging manifests found.` and exits 0. Since `check_staged_mirror_drift` inspects
 only that returncode, an index with the packaging manifest staged for deletion
 gets a green `staged plugin mirror matches staged sources` verdict. Class (a).
+
+**A5, A6, A8, A9, A10 — closed 2026-07-30.** Each was reproduced in a fixture with
+a discriminating control before any fix, adversarially verified, and then read again
+by three round-2 bounded reviewers over the REPAIRED surfaces (the two-round rule:
+every one of these is verdict logic on a proof surface).
+
+- **A5** now raises from `_staged_paths` and reports `state: unestablished` / exit 1.
+  Round 2 additionally found the same class at PATH granularity: `_worktree_blob`
+  mapped an unhashable-but-present file (dangling symlink, unreadable mode) to
+  `None`, which MEANS "absent on disk" in the fingerprint, so a real phantom was
+  dropped and the gate printed clean. It raises now. `_index_entry` also read
+  record[0] of an UNMERGED path — stage 1, the merge base — as the index blob;
+  conflicted paths are skipped explicitly.
+- **A6** dropped `--diff-filter` entirely rather than widening `ACM` to `ACMRD`:
+  a status-letter allowlist is the wrong shape for an intersection question, and
+  the one-letter repair still hid `T` (typechange) and `U` (unmerged). The env
+  bypass takes only explicit truthy spellings, git failure reports UNESTABLISHED
+  with the `safe.directory` remedy instead of a bare traceback, and the bypass is
+  announced rather than silent.
+- **A8 stays PARTIAL.** The matcher half is fixed: matcher COVERAGE (not string
+  equality, and not a literal `|`-split — `*`, `.*`, `Edit.*` are patterns) is part
+  of the hook's identity for install and for status, on the JSON paths and on the
+  codex TOML path, where the block's own `matcher = "..."` line is now read back.
+  An entry sharing its matcher with a foreign command is REFUSED rather than
+  rewritten, and `--mode reconcile|install|uninstall` now exits 1 when any host
+  errored — without that the refusal was unreachable, since `charness init`
+  reported success over a hook that was never installed. The BASENAME half is
+  deliberately unchanged: `.py`-basename identity is documented, tested,
+  cross-checkout dedup behavior (#245), and dropping it is a separate decision.
+- **A9**'s `own-root-unknown` became the refusing `own-root-unestablished`, scoped
+  to charness SOURCE-tree targets; a consuming repo owns no competing copy, so it
+  stays `consuming-repo` and is allowed. Round 2 found the override that disarms it
+  had A6's own defect — `CHARNESS_ALLOW_FOREIGN_HELPER=0` turned the guard OFF —
+  and it now takes explicit truthy spellings only.
+- **A10** degrades loudly instead of hard-refusing, because a PostToolUse hook that
+  blocks every edit in a repo with no rule library is a false refusal: exit 1 is the
+  host's non-blocking error channel, distinct from 0 (clean) and 2 (blocked).
+
+Residuals recorded, not fixed: the `publish_release` / `issue_tool` entrypoints
+still `return` when no `skill_runtime_bootstrap.py` is found above them, so the new
+refusal cannot reach the two irreversible boundaries for exactly the markerless copy
+it describes (this is sweep rows S36/S86, tracked there);
+`CHARNESS_ALLOW_STAGED_REVERSION` disables the reversion gate for the whole commit
+rather than one path; and
+`tests/quality_gates/test_helper_provenance_guard.py::test_a_contained_mirror_without_a_counterpart_is_told_to_resync`
+calls `format_refusal` on a verdict (`consuming-repo`) that never reaches it.
 
 **A5** — `python3 scripts/check_staged_reversion.py --repo-root /tmp/not-a-repo`
 → `{"state": "clean", "findings": []}` exit 0. Its two siblings at the same

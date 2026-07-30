@@ -25,8 +25,14 @@ try:
         find_charness_toml_block,
         install_codex_toml_block,
         read_text_or_empty,
-        script_basename,
+        toml_block_matcher,
         uninstall_codex_toml_block,
+    )
+    from host_hook_entry_identity import (
+        entries_match_command,
+        entry_carries_foreign_command,
+        event_entry,
+        matcher_covers,
     )
 except ImportError:  # pragma: no cover - used when invoked as a module from elsewhere
     import sys
@@ -37,8 +43,14 @@ except ImportError:  # pragma: no cover - used when invoked as a module from els
         find_charness_toml_block,
         install_codex_toml_block,
         read_text_or_empty,
-        script_basename,
+        toml_block_matcher,
         uninstall_codex_toml_block,
+    )
+    from host_hook_entry_identity import (  # type: ignore[no-redef]
+        entries_match_command,
+        entry_carries_foreign_command,
+        event_entry,
+        matcher_covers,
     )
 
 __all__ = ["CHARNESS_MARKER"]
@@ -177,46 +189,6 @@ def _ensure_event_array(settings: dict[str, Any], event: str) -> list[Any]:
     return entries
 
 
-def _event_entry(command: str, matcher: str = "") -> dict[str, Any]:
-    return {
-        "matcher": matcher,
-        "hooks": [
-            {
-                "type": "command",
-                "command": command,
-            }
-        ],
-    }
-
-
-def _entries_match_command(entry: Any, command: str) -> bool:
-    """True when `entry` already carries this charness hook.
-
-    Matches on logical identity (the `.py` script basename) as well as the exact
-    command string, so the same hook installed from a second checkout — a
-    different absolute path, same basename — is recognized as already present and
-    not double-installed (corca-ai/charness#245). A foreign hook (no charness
-    `.py` basename) only ever exact-matches, so it is never touched.
-    """
-    if not isinstance(entry, dict):
-        return False
-    inner = entry.get("hooks")
-    if not isinstance(inner, list):
-        return False
-    target_identity = script_basename(command)
-    for item in inner:
-        if not (isinstance(item, dict) and item.get("type") == "command"):
-            continue
-        existing = item.get("command")
-        if not isinstance(existing, str):
-            continue
-        if existing == command:
-            return True
-        if target_identity is not None and script_basename(existing) == target_identity:
-            return True
-    return False
-
-
 def _install_json_event(
     settings_path: Path,
     *,
@@ -226,13 +198,37 @@ def _install_json_event(
 ) -> dict[str, Any]:
     settings = _read_json_settings(settings_path)
     entries = _ensure_event_array(settings, event)
-    already = any(_entries_match_command(entry, command) for entry in entries)
-    if not already:
-        entries.append(_event_entry(command, matcher))
+    matched = [entry for entry in entries if entries_match_command(entry, command)]
+    # The matcher decides which host events reach the hook, so an entry carrying
+    # our command under a matcher that cannot fire for them is installed-but-inert
+    # (a PostToolUse guard under matcher "Bash" never sees an edit). Reporting a
+    # clean noop over one is the same class this gate family exists to stop.
+    inert = [entry for entry in matched if not matcher_covers(entry.get("matcher"), matcher)]
+    repaired_matcher = False
+    if not matched:
+        entries.append(event_entry(command, matcher))
         _write_json_atomic(settings_path, settings)
+    elif inert:
+        shared = [entry for entry in inert if entry_carries_foreign_command(entry, command)]
+        if shared:
+            # Repairing would move a foreign command's firing conditions too, and
+            # this installer's contract is that a foreign hook is never touched.
+            # Refuse and name the entry rather than fix it destructively.
+            raise HostHookError(
+                f"{settings_path}: hooks.{event} carries this charness hook under matcher "
+                f"{shared[0].get('matcher')!r}, which cannot fire for {matcher!r}, but the same "
+                "entry also carries a non-charness command; repairing the matcher would change "
+                "when that command fires. Split the charness command into its own entry, or set "
+                f"the entry matcher to cover {matcher!r}, then re-run."
+            )
+        for entry in inert:
+            entry["matcher"] = matcher
+        _write_json_atomic(settings_path, settings)
+        repaired_matcher = True
     return {
         "settings_path": str(settings_path),
-        "action": "noop" if already else "installed",
+        "action": "noop" if matched and not repaired_matcher else "installed",
+        "repaired_matcher": repaired_matcher,
         "entry_count": len(entries),
     }
 
@@ -252,7 +248,7 @@ def _uninstall_json_event(
     entries = hooks.get(event)
     if not isinstance(entries, list):
         return {"settings_path": str(settings_path), "action": "absent"}
-    remaining = [entry for entry in entries if not _entries_match_command(entry, command)]
+    remaining = [entry for entry in entries if not entries_match_command(entry, command)]
     if len(remaining) == len(entries):
         return {"settings_path": str(settings_path), "action": "not_installed"}
     if remaining:
@@ -394,7 +390,16 @@ def detect_host_hook_actual(
     script_relative: Path = HOOK_SCRIPT_RELATIVE,
     toml_marker: str = CHARNESS_MARKER,
     event: str = SESSION_START_EVENT,
+    matcher: str | None = None,
 ) -> dict[str, Any]:
+    """Report the installed-hook actual for `host`.
+
+    `matcher`, when given, is part of the hook's identity: an entry carrying the
+    expected command under a matcher that cannot fire for the events this hook
+    exists to catch is not reported as present. Coverage, not equality — a widened
+    or reordered matcher still fires, so it stays present (`_matcher_covers`).
+    `None` keeps the command-only identity used by callers with no matcher.
+    """
     state = read_state(repo_root)
     key = state_key or host
     state_entry = state.get(key) if isinstance(state.get(key), dict) else None
@@ -411,25 +416,44 @@ def detect_host_hook_actual(
     if not isinstance(expected_command, str) or not expected_command:
         expected_command = build_command(repo_root, host=host, script_relative=script_relative)
     present = False
+    # An unparseable settings file establishes nothing about presence. `False` is
+    # the GREEN answer for a `disabled` intent, so without this flag a mid-edit
+    # settings.json reads as "hook correctly absent" over a file nobody could read.
+    settings_readable = True
     if kind in {"claude-json", "codex-json"} and settings_path.is_file():
         try:
             data = json.loads(settings_path.read_text(encoding="utf-8"))
         except (OSError, json.JSONDecodeError):
             data = None
+            settings_readable = False
         if isinstance(data, dict):
             hooks = data.get("hooks")
             if isinstance(hooks, dict):
                 entries = hooks.get(event)
                 if isinstance(entries, list):
-                    present = any(_entries_match_command(entry, expected_command) for entry in entries)
-    elif kind == "codex-toml" and settings_path.is_file():
-        text = read_text_or_empty(settings_path)
-        present = find_charness_toml_block(text, expected_command, toml_marker) is not None
+                    present = any(
+                        entries_match_command(entry, expected_command)
+                        and (matcher is None or matcher_covers(entry.get("matcher"), matcher))
+                        for entry in entries
+                    )
+    elif kind == "codex-toml":
+        if settings_path.is_file():
+            text = read_text_or_empty(settings_path)
+            span = find_charness_toml_block(text, expected_command, toml_marker)
+            present = span is not None
+            if present and matcher is not None:
+                # The block writer emits `matcher = "..."`, so coverage IS
+                # establishable here; the first cut refused the verdict because the
+                # scan never read the line back, which made the honest refusal the
+                # only option. Reading it back is the better fix.
+                start, end = span
+                present = matcher_covers(toml_block_matcher(text[start:end]), matcher)
     return {
         "settings_path": str(settings_path),
         "kind": kind,
         "command": expected_command,
         "present": present,
+        "settings_readable": settings_readable,
         "tracked_in_state": isinstance(state_entry, dict),
     }
 
@@ -451,7 +475,16 @@ def _hook_sync_status(
     for host, intent in intents.items():
         actual = detect_host_hook_actual(repo_root, host, home=home, **(detect_kwargs or {}).get(host, {}))
         in_sync = (intent == "enabled" and actual["present"]) or (intent == "disabled" and not actual["present"])
-        if not in_sync:
+        if not actual.get("settings_readable", True):
+            # Reported for BOTH intent directions: `present: False` over an
+            # unreadable file happens to agree with a `disabled` intent, and
+            # calling that in-sync is a verdict over a scope never read.
+            in_sync = False
+            drift.append(
+                f"{host}: {drift_prefix}settings file unreadable at {actual['settings_path']}; "
+                f"{noun} presence not established"
+            )
+        elif not in_sync:
             detail = f"no {noun} found" if intent == "enabled" else f"{noun} still present"
             drift.append(f"{host}: {drift_prefix}intent={intent} but {detail} at {actual['settings_path']}")
         per_host[host] = {"intent": intent, "actual": actual, "in_sync": in_sync}

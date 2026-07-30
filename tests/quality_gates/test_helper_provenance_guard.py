@@ -134,6 +134,42 @@ def test_override_env_warns_and_allows(tmp_path: Path, monkeypatch: pytest.Monke
     assert guard.OVERRIDE_ENV in capsys.readouterr().err
 
 
+@pytest.mark.parametrize("value", ["0", "false", "no", "off", "", "  ", "FALSE"])
+def test_falsy_override_spellings_do_not_disable_the_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    """`CHARNESS_ALLOW_FOREIGN_HELPER=0` is how an operator says "keep the guard on".
+
+    Bare truthiness read every non-empty spelling as "on", so the escape hatch fired
+    for the exact values that ask for the opposite — the same bypass inversion this
+    slice repaired in `check_staged_worktree_consistency`, in the file holding the
+    hardest refusal the slice added.
+    """
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    monkeypatch.setenv(guard.OVERRIDE_ENV, value)
+
+    with pytest.raises(guard.ForeignHelperError):
+        guard.require_repo_local_helper(
+            _helper(installed), source, loaded_modules=[], exit_on_drift=False
+        )
+
+
+@pytest.mark.parametrize("value", ["1", "true", "YES", " on "])
+def test_truthy_override_spellings_do_disable_the_refusal(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, value: str
+) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    installed = _installed_tree(tmp_path, version="2.11.0")
+    monkeypatch.setenv(guard.OVERRIDE_ENV, value)
+
+    verdict = guard.require_repo_local_helper(
+        _helper(installed), source, loaded_modules=[], exit_on_drift=False
+    )
+
+    assert verdict["status"] == "override-allowed"
+
+
 def test_cli_default_exits_two_with_the_message_on_stderr(tmp_path: Path, capsys) -> None:
     source = _source_tree(tmp_path, version="2.11.1")
     installed = _installed_tree(tmp_path, version="2.11.0")
@@ -187,11 +223,45 @@ def test_entry_script_outside_the_running_tree_is_ignored(
     assert verdict["invoked"] == str(_helper(installed))
 
 
-def test_unknown_own_root_does_not_block(tmp_path: Path) -> None:
+def test_unknown_own_root_refuses_a_write_into_a_source_tree(tmp_path: Path) -> None:
+    """An unlocatable copy establishes nothing, so it must not be handed a pass.
+
+    The stalest possible copy reaches this branch -- a hand-copied or vendored script
+    package with no tree marker above it -- and it used to write straight into the
+    charness source tree.
+    """
+
     source = _source_tree(tmp_path, version="2.11.1")
+    orphan = _write(tmp_path / "orphan" / "helper.py", "# ancient helper\n")
+    verdict = guard.inspect_helper_provenance(orphan, source, loaded_modules=[])
+    assert verdict["status"] == "own-root-unestablished"
+    assert verdict["status"] in guard._REFUSED_STATUSES
+    with pytest.raises(guard.ForeignHelperError) as excinfo:
+        guard.require_repo_local_helper(orphan, source, loaded_modules=[], exit_on_drift=False)
+    message = str(excinfo.value)
+    assert "no locatable charness tree" in message
+    # The refusal must not claim a comparison it never ran.
+    assert "the two copies have drifted" not in message
+    assert guard.OVERRIDE_ENV in message
+
+
+def test_unknown_own_root_against_a_consuming_repo_still_writes(tmp_path: Path) -> None:
+    """The normal installed-plugin case: no competing copy exists in the target."""
+
+    consumer = tmp_path / "consumer"
+    _write(consumer / "README.md", "# app\n")
     orphan = _write(tmp_path / "orphan" / "helper.py", "# helper\n")
+    verdict = guard.require_repo_local_helper(orphan, consumer, loaded_modules=[], exit_on_drift=False)
+    assert verdict["status"] == "consuming-repo"
+
+
+def test_unknown_own_root_refusal_is_overridable(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys) -> None:
+    source = _source_tree(tmp_path, version="2.11.1")
+    orphan = _write(tmp_path / "orphan" / "helper.py", "# ancient helper\n")
+    monkeypatch.setenv(guard.OVERRIDE_ENV, "1")
     verdict = guard.require_repo_local_helper(orphan, source, loaded_modules=[], exit_on_drift=False)
-    assert verdict["status"] == "own-root-unknown"
+    assert verdict["status"] == "override-allowed"
+    assert guard.OVERRIDE_ENV in capsys.readouterr().err
 
 
 def test_guard_is_reachable_from_both_bootstrap_surfaces() -> None:
@@ -344,11 +414,26 @@ def test_refusal_remediation_keeps_the_other_arguments(monkeypatch, tmp_path: Pa
     assert remediation.count("--repo-root") == 1, "the caller's --repo-root must not be re-added"
 
 
-def test_entrypoint_repo_root_parsing_matches_argparse(monkeypatch, tmp_path: Path) -> None:
+@pytest.mark.parametrize(
+    "form",
+    ["--repo-root {}", "--repo {}", "--repo-roo={}", "--repo-root {ignored} --repo-root {}"],
+    ids=["exact", "prefix", "prefix-equals", "last-wins"],
+)
+def test_entrypoint_repo_root_parsing_matches_argparse(
+    monkeypatch, tmp_path: Path, capsys, form: str
+) -> None:
     """argparse accepts any unambiguous prefix and lets the LAST flag win.
 
     Matching only the exact `--repo-root` spelling let `--repo <target>` bypass
     the guard entirely while the CLI still mutated that target.
+
+    Asserted on the RESOLVED TARGET, not on the exit code. The first cut asserted
+    `code == 2`, which the unparsed fallback (`repo_root = Path.cwd()`, i.e. the
+    charness repo itself, a source tree that drifts from the 2.11.1 fixture)
+    produces on its own — so three of the four forms would have stayed green
+    against a parser that recognized nothing at all. That is a verdict keyed on a
+    field that is constant where it must discriminate, inside the test guarding
+    exactly that class.
     """
     import runpy
 
@@ -356,17 +441,17 @@ def test_entrypoint_repo_root_parsing_matches_argparse(monkeypatch, tmp_path: Pa
     refuse = runtime["refuse_foreign_entrypoint"]
     source = _source_tree(tmp_path, version="2.11.2")
     installed = _installed_tree(tmp_path, version="2.11.1")
-    forms = (
-        ["--repo-root", str(source)],
-        ["--repo", str(source)],
-        [f"--repo-roo={source}"],
-        ["--repo-root", str(tmp_path / "ignored"), "--repo-root", str(source)],
-    )
-    for argv in forms:
-        monkeypatch.setattr("sys.argv", ["prog", *argv])
-        with pytest.raises(SystemExit) as excinfo:
-            refuse(_helper(installed))
-        assert excinfo.value.code == 2, argv
+    ignored = tmp_path / "ignored"
+    argv = form.format(source, ignored=ignored).split()
+
+    monkeypatch.setattr("sys.argv", ["prog", *argv])
+    with pytest.raises(SystemExit) as excinfo:
+        refuse(_helper(installed))
+
+    assert excinfo.value.code == 2, argv
+    message = capsys.readouterr().err
+    assert str(source) in message, argv
+    assert str(Path.cwd()) not in message, "fell back to cwd instead of parsing the flag"
 
 
 def test_entrypoint_guard_skips_help(monkeypatch, tmp_path: Path) -> None:

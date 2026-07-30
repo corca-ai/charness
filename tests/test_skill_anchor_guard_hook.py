@@ -18,6 +18,7 @@ import host_hook_install_lib as lib
 import host_hook_skill_anchor_guard as guard
 import pytest
 
+import scripts.skill_issue_anchor_scan as anchor_scan
 from scripts.post_edit_skill_anchor_guard import main as guard_main
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -129,6 +130,212 @@ def test_status_reports_drift_when_enabled_but_absent(fake_repo: Path, fake_home
     assert status["in_sync"] is True
 
 
+def _write_guard_entry_with_matcher(fake_repo: Path, fake_home: Path, matcher: str) -> Path:
+    """Seed a PostToolUse entry carrying the expected guard command but a
+    drifted matcher, i.e. a hook that can never see an Edit/Write."""
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    command = guard._command(fake_repo, "claude")
+    settings_path.write_text(
+        json.dumps({"hooks": {guard.GUARD_EVENT: [{"matcher": matcher, "hooks": [{"type": "command", "command": command}]}]}}),
+        encoding="utf-8",
+    )
+    return settings_path
+
+
+def test_status_reports_drift_when_matcher_cannot_fire(fake_repo: Path, fake_home: Path) -> None:
+    """A guard entry under a non-edit matcher is inert; status must not call it healthy."""
+    _write_guard_entry_with_matcher(fake_repo, fake_home, "Bash")
+    adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
+
+    status = guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)
+
+    assert status["hosts"]["claude"]["actual"]["present"] is False
+    assert status["in_sync"] is False
+
+
+def test_reconcile_repairs_drifted_matcher_in_place(fake_repo: Path, fake_home: Path) -> None:
+    settings_path = _write_guard_entry_with_matcher(fake_repo, fake_home, "Bash")
+    adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
+
+    result = guard.reconcile_skill_anchor_guard_hooks(fake_repo, adapter=adapter, home=fake_home)["claude"]["result"]
+
+    assert result["action"] == "installed"
+    assert result["repaired_matcher"] is True
+    entries = json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT]
+    assert len(entries) == 1
+    assert entries[0]["matcher"] == guard.GUARD_MATCHER
+    assert guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)["in_sync"] is True
+
+
+def test_install_is_noop_when_matcher_already_correct(fake_repo: Path, fake_home: Path) -> None:
+    _write_guard_entry_with_matcher(fake_repo, fake_home, guard.GUARD_MATCHER)
+
+    result = guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
+
+    assert result["action"] == "noop"
+    assert result["repaired_matcher"] is False
+
+
+@pytest.mark.parametrize(
+    "matcher",
+    ["Edit|Write|MultiEdit|NotebookEdit", "Write|Edit|MultiEdit", "", None, "*", ".*", "Edit.*|Write|MultiEdit"],
+    ids=["widened", "reordered", "empty-matches-all", "absent-matches-all", "star", "regex-any", "regex-prefix"],
+)
+def test_a_matcher_that_still_fires_is_present_and_is_never_rewritten(
+    fake_repo: Path, fake_home: Path, matcher: str | None
+) -> None:
+    """Matcher identity is COVERAGE, not string equality.
+
+    The first cut of the matcher fix used `entry["matcher"] != expected`, which
+    reported an operator-widened matcher absent (it fires for every guard event)
+    and then "repaired" it back to the charness string — deleting the operator's
+    extra NotebookEdit coverage. A verdict that calls a live hook missing, and a
+    repair that silently narrows real coverage, are both worse than the drift.
+
+    The second cut read the matcher as a literal `|`-separated set, which put every
+    REGEX spelling (`*`, `.*`, `Edit.*|...`) back in the same trap: a live catch-all
+    classified inert and rewritten. A matcher we cannot bound is left alone.
+    """
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    command = guard._command(fake_repo, "claude")
+    entry: dict[str, object] = {"hooks": [{"type": "command", "command": command}]}
+    if matcher is not None:
+        entry["matcher"] = matcher
+    settings_path.write_text(json.dumps({"hooks": {guard.GUARD_EVENT: [entry]}}), encoding="utf-8")
+    adapter = {"skill_anchor_edit_guard": {"claude": "enabled"}}
+
+    status = guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)
+    assert status["hosts"]["claude"]["actual"]["present"] is True
+    assert status["in_sync"] is True
+
+    result = guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
+    assert result["action"] == "noop"
+    assert result["repaired_matcher"] is False
+    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [entry]
+
+
+def test_install_refuses_to_rewrite_a_matcher_shared_with_a_foreign_command(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    """A settings entry groups several commands under ONE matcher — that is the shape
+    the host's own hooks UI produces — so the matcher is shared state. Repairing it
+    would change when the operator's unrelated hook fires, which this installer's
+    own contract forbids. Refuse and name the entry instead.
+    """
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    command = guard._command(fake_repo, "claude")
+    shared = {
+        "matcher": "Bash",
+        "hooks": [
+            {"type": "command", "command": "/home/op/my-own-hook.sh"},
+            {"type": "command", "command": command},
+        ],
+    }
+    settings_path.write_text(json.dumps({"hooks": {guard.GUARD_EVENT: [shared]}}), encoding="utf-8")
+
+    with pytest.raises(lib.HostHookError) as excinfo:
+        guard.install_skill_anchor_guard_claude_hook(fake_repo, home=fake_home)
+
+    assert "non-charness command" in str(excinfo.value)
+    # ...and the operator's file is untouched by the refusal.
+    assert json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][guard.GUARD_EVENT] == [shared]
+
+
+def test_session_routing_status_and_install_agree_on_matcher_identity(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    """Status and install must key on the same identity. Install repairs an entry whose
+    matcher cannot fire; a status that still reports it present would leave the two
+    disagreeing about whether the hook is installed.
+    """
+    import host_hook_session_routing as routing
+
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    command = routing._command(fake_repo, "claude")
+    settings_path.write_text(
+        json.dumps(
+            {"hooks": {lib.SESSION_START_EVENT: [{"matcher": "compact", "hooks": [{"type": "command", "command": command}]}]}}
+        ),
+        encoding="utf-8",
+    )
+    adapter = {"session_routing": {"claude": "enabled"}}
+
+    status = routing.session_routing_status(fake_repo, adapter=adapter, home=fake_home)
+    assert status["hosts"]["claude"]["actual"]["present"] is False
+
+    result = routing.install_session_routing_claude_hook(fake_repo, home=fake_home)
+    # Repaired in place, not appended alongside the inert one: `present: True`
+    # alone would also hold if install had left the dead entry and added a second.
+    assert result["repaired_matcher"] is True
+    entries = json.loads(settings_path.read_text(encoding="utf-8"))["hooks"][lib.SESSION_START_EVENT]
+    assert len(entries) == 1
+    after = routing.session_routing_status(fake_repo, adapter=adapter, home=fake_home)
+    assert after["hosts"]["claude"]["actual"]["present"] is True
+
+
+def test_an_unreadable_settings_file_is_drift_for_a_disabled_intent(
+    fake_repo: Path, fake_home: Path
+) -> None:
+    """`present: False` over a file nobody could parse agrees with a disabled intent
+    by accident. That agreement is a verdict rendered over an unread scope, and it is
+    the direction no other assertion covers: for an ENABLED intent the same False
+    already fails closed.
+    """
+    settings_path = lib.default_claude_settings_path(fake_home)
+    settings_path.parent.mkdir(parents=True, exist_ok=True)
+    settings_path.write_text('{"hooks": {"PostToolUse": [},}', encoding="utf-8")  # trailing comma
+    adapter = {"skill_anchor_edit_guard": {"claude": "disabled"}}
+
+    status = guard.skill_anchor_guard_status(fake_repo, adapter=adapter, home=fake_home)
+
+    assert status["hosts"]["claude"]["actual"]["settings_readable"] is False
+    assert status["in_sync"] is False
+    assert any("unreadable" in line for line in status["drift"])
+
+
+@pytest.mark.parametrize(
+    "block_matcher, expected_present",
+    [("startup|resume|clear", True), ("startup|resume|clear|compact", True), ("compact", False), (None, True)],
+    ids=["exact", "widened", "cannot-fire", "no-matcher-line"],
+)
+def test_codex_toml_presence_reads_the_block_matcher_back(
+    fake_repo: Path, fake_home: Path, block_matcher: str | None, expected_present: bool
+) -> None:
+    """Matcher coverage IS establishable on the TOML path.
+
+    The first cut refused a matcher-keyed verdict here on the premise that the block
+    scan could not read matchers back. It can: `codex_toml_block` writes
+    `matcher = "..."`, so the honest fix is to read it, not to refuse. A block under
+    a matcher that cannot fire must read absent, exactly as on the JSON path.
+    """
+    import host_hook_codex_toml_lib as toml_lib
+    import host_hook_session_routing as routing
+
+    config = lib.default_codex_config_toml_path(fake_home)
+    config.parent.mkdir(parents=True, exist_ok=True)
+    command = routing._command(fake_repo, "codex")
+    config.write_text(
+        toml_lib.codex_toml_block(command, routing.SESSION_ROUTING_MARKER, matcher=block_matcher),
+        encoding="utf-8",
+    )
+
+    actual = lib.detect_host_hook_actual(
+        fake_repo,
+        "codex",
+        home=fake_home,
+        state_key=routing._state_key("codex"),
+        script_relative=routing.SESSION_ROUTING_SCRIPT_RELATIVE,
+        toml_marker=routing.SESSION_ROUTING_MARKER,
+        matcher=routing.SESSION_ROUTING_MATCHER,
+    )
+
+    assert actual["present"] is expected_present
+
+
 def _payload(file_path: str) -> io.StringIO:
     return io.StringIO(json.dumps({"tool_name": "Edit", "tool_input": {"file_path": file_path}}))
 
@@ -172,6 +379,35 @@ def test_guard_fail_open_paths(tmp_path: Path) -> None:
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO("[]")) == 0
     assert guard_main(["--repo-root", str(repo)], stdin=io.StringIO(json.dumps({"tool_input": {}}))) == 0
+
+
+def test_guard_reports_unestablished_when_rule_library_is_missing(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture
+) -> None:
+    # A bundle whose skill_text_quality_lib rule library is absent cannot render
+    # any anchor verdict. The guard must not exit 0 like a clean scan: it stays
+    # non-blocking (exit 1, not 2) but names the unestablished scope on stderr.
+    repo = _seed_skill_repo(tmp_path)
+    monkeypatch.setattr(anchor_scan, "LIB_ROOT", tmp_path / "bundle-without-rule-library")
+
+    dirty = repo / "skills" / "public" / "demo" / "SKILL.md"
+    clean = repo / "skills" / "public" / "demo" / "CLEAN.md"
+    assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(dirty))) == 1
+    assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(clean))) == 1
+
+    err = capsys.readouterr().err
+    assert "unestablished" in err
+    assert "skill_text_quality_lib" in err
+
+
+def test_guard_still_scans_when_rule_library_is_present(tmp_path: Path) -> None:
+    # Discriminating control for the test above: same files, real rule library.
+    repo = _seed_skill_repo(tmp_path)
+    dirty = repo / "skills" / "public" / "demo" / "SKILL.md"
+    clean = repo / "skills" / "public" / "demo" / "CLEAN.md"
+
+    assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(dirty))) == 2
+    assert guard_main(["--repo-root", str(repo)], stdin=_payload(str(clean))) == 0
 
 
 def test_guard_process_contract_exit_codes(tmp_path: Path) -> None:

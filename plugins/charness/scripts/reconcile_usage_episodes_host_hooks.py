@@ -53,6 +53,30 @@ def _import_registry():
     return host_hook_registry
 
 
+def _error_hosts(actions: Any, prefix: str = "") -> list[str]:
+    """Dotted keys of every result that carries an `error`, at any nesting depth.
+
+    A `HostHookError` is caught per host and recorded as a string so one broken
+    host does not abort the others. Reporting exit 0 anyway makes the refusal
+    unreachable: the caller sees a successful run over a hook that was never
+    installed. This module's docstring has always promised exit 1 here; only
+    `--mode status` delivered it. Recursive because sibling-hook intents nest
+    one level deeper than the canonical `{host: {...}}` shape.
+    """
+    failed: list[str] = []
+    if not isinstance(actions, dict):
+        return failed
+    for key, value in actions.items():
+        if not isinstance(value, dict):
+            continue
+        label = f"{prefix}{key}"
+        if "error" in value:
+            failed.append(label)
+            continue
+        failed.extend(_error_hosts(value, prefix=f"{label}."))
+    return sorted(set(failed))
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Charness source repo (contains the usage-episodes adapter).")
@@ -75,7 +99,8 @@ def main(argv: list[str] | None = None) -> int:
             "adapter_present": (repo_root / ADAPTER_RELATIVE).is_file(),
             "actions": actions,
         }
-        exit_code = 0
+        payload["failed_hosts"] = _error_hosts(actions)
+        exit_code = 1 if payload["failed_hosts"] else 0
     elif args.mode == "status":
         registry = _import_registry()
         status = lib.session_capture_status(repo_root, adapter=adapter, home=home)
@@ -108,7 +133,8 @@ def main(argv: list[str] | None = None) -> int:
             except lib.HostHookError as exc:
                 results[host] = {"error": str(exc)}
         payload = {"mode": "install", "hosts": hosts, "results": results}
-        exit_code = 0
+        payload["failed_hosts"] = _error_hosts(results)
+        exit_code = 1 if payload["failed_hosts"] else 0
     elif args.mode == "uninstall":
         hosts = [args.host] if args.host else ["claude", "codex"]
         results = {}
@@ -119,7 +145,8 @@ def main(argv: list[str] | None = None) -> int:
             except lib.HostHookError as exc:
                 results[host] = {"error": str(exc)}
         payload = {"mode": "uninstall", "hosts": hosts, "results": results}
-        exit_code = 0
+        payload["failed_hosts"] = _error_hosts(results)
+        exit_code = 1 if payload["failed_hosts"] else 0
     else:  # pragma: no cover - argparse rejects other values
         return 1
 

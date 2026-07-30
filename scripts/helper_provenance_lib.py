@@ -34,6 +34,11 @@ from types import ModuleType
 from typing import Iterable
 
 OVERRIDE_ENV = "CHARNESS_ALLOW_FOREIGN_HELPER"
+# Only these spellings disable the refusal. Bare truthiness would make
+# `CHARNESS_ALLOW_FOREIGN_HELPER=0` -- the spelling an operator uses to keep the
+# guard ON -- turn it OFF, which is the A6 bypass-inversion defect one file over
+# in scripts/check_staged_worktree_consistency.py.
+OVERRIDE_TRUE_VALUES = {"1", "true", "yes", "on"}
 SOURCE_TREE_MARKER = Path("packaging") / "charness.json"
 _OWN_ROOT_MARKER = Path("scripts") / "runtime_bootstrap.py"
 _VERSION_SOURCES = (
@@ -183,7 +188,8 @@ def _tracked_files(own_root: Path, anchors: Iterable[Path], loaded_modules: Iter
 
 
 _REFUSAL_DRIFT_LIMIT = 8
-_REFUSED_STATUSES = ("drifted", "scope-unestablished")
+_OWN_ROOT_UNESTABLISHED = "own-root-unestablished"
+_REFUSED_STATUSES = ("drifted", "scope-unestablished", _OWN_ROOT_UNESTABLISHED)
 _EXPORT_PARENT = "plugins"
 _RESYNC_CURE = "  python3 scripts/sync_root_plugin_manifests.py --repo-root ."
 
@@ -249,8 +255,9 @@ def inspect_helper_provenance(
 ) -> dict:
     """Classify a helper invocation without acting on it.
 
-    ``status`` is one of ``own-root-unknown``, ``same-tree``, ``consuming-repo``,
-    ``in-sync``, or ``drifted``. Only ``drifted`` is a refusal.
+    ``status`` is one of ``own-root-unestablished``, ``same-tree``,
+    ``consuming-repo``, ``in-sync``, ``scope-unestablished``, or ``drifted``.
+    ``drifted``, ``scope-unestablished`` and ``own-root-unestablished`` are refusals.
 
     ``scan`` selects which files are compared: ``anchors`` (the default, for
     write-site guards) walks the anchors plus already-imported modules;
@@ -267,7 +274,20 @@ def inspect_helper_provenance(
         "own_root": str(own_root) if own_root is not None else None,
     }
     if own_root is None:
-        return {**verdict, "status": "own-root-unknown"}
+        # A copy that sits in no locatable charness tree cannot be compared against
+        # anything, so "own root unknown" is the absence of evidence, never a pass:
+        # the stalest possible copy reaches this branch (a vendored or hand-copied
+        # script package with no tree marker above it) and used to be waved straight
+        # through into the source tree. Scope the refusal the way the located path is
+        # scoped: only a charness SOURCE target owns a competing copy, so a run against
+        # an ordinary consuming repo stays the untouched installed-plugin case.
+        if not is_charness_source_tree(target_root):
+            return {**verdict, "status": "consuming-repo"}
+        return {
+            **verdict,
+            "target_version": charness_version(target_root),
+            "status": _OWN_ROOT_UNESTABLISHED,
+        }
     if own_root == target_root:
         return {**verdict, "status": "same-tree"}
     # A copy merely CONTAINED in the target root is not the same tree. The checked-in
@@ -416,6 +436,23 @@ def _remediation_argv(target_root: str) -> str:
 
 
 def format_refusal(verdict: dict) -> str:
+    if verdict.get("status") == _OWN_ROOT_UNESTABLISHED:
+        # Nothing was compared and nothing could be: there is no own tree to compare
+        # FROM. Saying "the two copies have drifted" would claim a finding this branch
+        # never reached, and naming a resync would cure a drift nobody established.
+        return "\n".join(
+            [
+                "charness helper provenance refusal: this script sits in no locatable charness tree",
+                f"(no {_OWN_ROOT_MARKER} above it), so its provenance against the target was not established.",
+                f"  running: {verdict.get('invoked') or verdict['script']}",
+                f"  target:  {verdict['target_root']} (charness {verdict.get('target_version') or 'unknown'})",
+                "Writing through an unlocatable copy can emit an artifact schema the target repo's own",
+                "gates reject, and nothing here proves this copy matches the target. Stop and decide:",
+                "  - run the target repo's own copy of this helper from inside the target tree; or",
+                "  - re-run from a complete charness tree, so this guard can compare the two copies.",
+                f"Set {OVERRIDE_ENV}=1 only when the copies are known to be compatible.",
+            ]
+        )
     target_helper = verdict.get("target_helper")
     reason = (
         "and nothing in this copy could be compared against it."
@@ -521,7 +558,7 @@ def require_repo_local_helper(
     # nothing" are different facts, and only the first is a pass.
     if verdict["status"] not in _REFUSED_STATUSES:
         return verdict
-    if os.environ.get(OVERRIDE_ENV):
+    if os.environ.get(OVERRIDE_ENV, "").strip().lower() in OVERRIDE_TRUE_VALUES:
         print(
             f"warning: {OVERRIDE_ENV} is set; writing through an unverified helper copy "
             f"({verdict['status']}) "

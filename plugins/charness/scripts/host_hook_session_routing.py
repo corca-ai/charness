@@ -248,6 +248,14 @@ def session_routing_status(repo_root: Path, *, adapter: dict[str, Any] | None, h
         host: {"state_key": _state_key(host), "script_relative": SESSION_ROUTING_SCRIPT_RELATIVE, "toml_marker": SESSION_ROUTING_MARKER}
         for host in ("claude", "codex")
     }
+    # Status and install must agree on what this hook's identity is. Install
+    # repairs (claude/codex-json) or rewrites (codex-toml) an entry whose matcher
+    # cannot fire; without this, status would keep reporting that same entry
+    # present. Both hosts: the codex kind is resolved at RUNTIME, so scoping this
+    # to claude left codex-json — a JSON path with the same matcher semantics —
+    # matcher-blind while its installer was matcher-keyed.
+    for host_kwargs in detect_kwargs.values():
+        host_kwargs["matcher"] = SESSION_ROUTING_MATCHER
     status = install_lib._hook_sync_status(repo_root, intents=intents, home=home, noun="SessionStart hook", drift_prefix="session_routing ", detect_kwargs=detect_kwargs)
     config_path = install_lib.default_codex_config_toml_path(home)
     text = install_lib.read_text_or_empty(config_path)

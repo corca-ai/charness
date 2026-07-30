@@ -247,7 +247,12 @@ installs a `PostToolUse(Edit|Write|MultiEdit)` hook (via `charness init` /
 [scripts/post_edit_skill_anchor_guard.py](../../scripts/post_edit_skill_anchor_guard.py)
 on the file just edited. The guard is
 fail-open and scoped to `skills/public|support` files in this repo — a repo or
-machine without the adapter intent inherits nothing. The firing stays
+machine without the adapter intent inherits nothing. Fail-open is not
+fail-silent: the guard's exit contract is 0 = scanned and clean, 2 = scanned and
+blocked, 1 = **unestablished**, i.e. the target was a live skill-package file the
+guard could not scan (missing rule library). Exit 1 is the host's non-blocking
+error channel, so the edit still proceeds and the commit sweep still backstops
+it, but the guard no longer reports a clean verdict over a file it never read. The firing stays
 host-specific and adapter-declared; the scan stays the single repo-owned rule
 source, and the commit sweep stays the backstop.
 

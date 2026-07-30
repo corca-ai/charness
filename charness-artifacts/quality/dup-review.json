@@ -569,6 +569,13 @@
     },
     {
       "class": "intentional",
+      "id": "694d266aac675acb",
+      "note": "the runtime_bootstrap import idiom itself: `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`, and one or more `import_repo_module(__file__, \"scripts.<mod>\")` binds, across five unrelated scripts. Verified by reading all five: they bind DIFFERENT modules for different reasons and share no logic. The shared helper already exists and is exactly `runtime_bootstrap`; the only way to remove this span is to stop importing. Grouped now because a fifth member joined when check_artifact_surface_preflight.py gained a bind.",
+      "reviewed_at": "2026-07-29",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6c87ad0efd0b6633",
       "note": "two-line guarded rate calculation retained under feedback reconciliation and product-evidence ownership; extracting the one-line arithmetic would not reduce meaningful maintenance risk",
       "reviewed_at": "2026-07-10",
@@ -898,6 +905,13 @@
     },
     {
       "class": "intentional",
+      "id": "b4c5b67aa226c2fc",
+      "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap — the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b56c1479ef7c3d0e",
       "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
       "reviewed_at": "2026-06-27",
@@ -943,6 +957,13 @@
       "id": "c178ae00e001f90a",
       "note": "the gate `run()` convention already accepted as 119fa9bcafbd3048: load the strict quality adapter, return a typed adapter-invalid report, read this gate's config block, dispatch. check_dup_ratchet and migrate_dup_fingerprints dispatch to different modes with different report shapes; a shared runner would take those as data and each script would still spell them out through an indirection",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c30381f2b0da17b7",
+      "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent — the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
+      "reviewed_at": "2026-07-30",
       "surface": "code"
     },
     {
@@ -1122,6 +1143,13 @@
     },
     {
       "class": "intentional",
+      "id": "dd9ce9abe53447dc",
+      "note": "the standard try/except ImportError sibling-module bootstrap block, shared by scripts/host_hook_entry_identity.py and scripts/host_hook_skill_anchor_guard.py. This is the repo's portability idiom for a script that must import a sibling both as a package member and when invoked as a bare file from an installed copy; it cannot be centralized, because the helper that centralized it would need the very import it is bootstrapping. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "df723a69adac4b8f",
       "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
       "reviewed_at": "2026-06-27",
@@ -1181,6 +1209,13 @@
       "id": "e7cd6cac93eb10b9",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e8742da4a5390480",
+      "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
+      "reviewed_at": "2026-07-29",
       "surface": "code"
     },
     {
@@ -1293,20 +1328,6 @@
       "id": "ff84c95bf1ddf43e",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e8742da4a5390480",
-      "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
-      "reviewed_at": "2026-07-29",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "694d266aac675acb",
-      "note": "the runtime_bootstrap import idiom itself: `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`, and one or more `import_repo_module(__file__, \"scripts.<mod>\")` binds, across five unrelated scripts. Verified by reading all five: they bind DIFFERENT modules for different reasons and share no logic. The shared helper already exists and is exactly `runtime_bootstrap`; the only way to remove this span is to stop importing. Grouped now because a fifth member joined when check_artifact_surface_preflight.py gained a bind.",
-      "reviewed_at": "2026-07-29",
       "surface": "code"
     }
   ],

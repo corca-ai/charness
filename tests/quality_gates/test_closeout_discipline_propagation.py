@@ -112,6 +112,83 @@ def _rule_block(text: str, surface: str) -> str:
     return matches[0]
 
 
+def _section_block(text: str, heading: str, surface: str) -> str:
+    """The body of one `## <heading>` section, joined into a single string.
+
+    Section-shaped rather than bullet-shaped because the vendored reference states the
+    rule as prose paragraphs, not as a `- ` bullet. Fenced regions are dropped for the
+    same reason `_bullet_blocks` drops them: a quoted example must not read as a second
+    declaration of the rule.
+    """
+    body: list[str] | None = None
+    fenced = False
+    for line in text.splitlines():
+        if line.lstrip().startswith("```"):
+            fenced = not fenced
+            continue
+        if fenced:
+            continue
+        if line.startswith("## "):
+            if body is not None:
+                break
+            if line[3:].strip() == heading:
+                body = []
+            continue
+        if body is not None:
+            body.append(line)
+    assert body is not None, f"{surface} has no `## {heading}` section"
+    joined = " ".join(part.strip() for part in body if part.strip())
+    assert joined, f"{surface} has an empty `## {heading}` section"
+    return joined
+
+
+def test_two_round_rule_is_pinned_on_the_vendored_reference() -> None:
+    """The vendored copy of the two-round rule carries the same actionable clauses as the
+    authoring-repo copies, and stays portable while doing so.
+
+    The two authoring-repo surfaces are pinned below, and the vendored reference was not:
+    the critique that introduced the rule recorded that a fourth copy drifted to the
+    touched-the-file trigger, the "scoped to the repairs" phrasing, and an unconditional
+    two-round count precisely because no test could see it. This is the missing pin.
+
+    The portability half is a separate assertion on purpose. This reference ships to
+    consuming repos, so its copy must NOT name the authoring repo's contract as the
+    reader's owning surface — it must say the consuming repo owns its own trigger
+    definition. Pinning the clauses without pinning that would lock in a rule that reads
+    as an instruction to obey a document the consuming repo does not have.
+    """
+    surface = "skills/shared/references/fresh-eye-subagent-review.md"
+    text = (ROOT / "skills" / "shared" / "references" / "fresh-eye-subagent-review.md").read_text(
+        encoding="utf-8"
+    )
+    section = _section_block(text, "Two Rounds For Verdict-Rendering Code", surface)
+    lowered = section.lower()
+
+    # The obligation, and the clauses without which it is unaffordable or vacuous —
+    # the same clause set the authoring-repo copies are held to.
+    assert "second bounded round" in lowered or "second bounded review" in lowered, (
+        f"{surface} states no second-round obligation"
+    )
+    assert "proof surface" in lowered, f"{surface} does not scope the trigger to proof surfaces"
+    assert "repaired surface" in lowered, f"{surface} does not say round 2 reads the repaired surface"
+    assert "not that its file" in lowered or "not the file" in lowered, (
+        f"{surface} does not exclude a touched-the-file trigger"
+    )
+    assert "discharge" in lowered, f"{surface} does not state the zero-repair discharge"
+    assert "cap is two" in lowered, f"{surface} does not state the two-round cap"
+    negated = _NEGATED_OBLIGATION.search(lowered)
+    assert not negated, f"{surface} states the obligation negatively: {negated.group(0)!r}"
+
+    # The portability call: the vendored copy hands trigger ownership to the adopting
+    # repo instead of pointing at an authoring-repo path the consumer cannot open.
+    assert "consuming repo" in lowered and "own trigger definition" in lowered, (
+        f"{surface} does not hand trigger ownership to the consuming repo"
+    )
+    assert "authoring-repo-internal" in lowered, (
+        f"{surface} cites the authoring repo's contract without marking it as internal"
+    )
+
+
 def test_proof_surface_second_review_round_rule_is_pinned_on_both_surfaces() -> None:
     """The two-round rule for proof-surface slices must live on the owning contract AND
     on the always-loaded instruction surface, each copy carrying the clauses that make it

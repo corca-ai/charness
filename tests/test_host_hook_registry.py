@@ -380,3 +380,76 @@ def test_status_mode_reports_dangling_hook_and_exits_one(tmp_path: Path) -> None
     assert payload["in_sync"] is False
     assert payload["hook_liveness"]["dangling"]
     assert any(str(deleted_checkout_script) in line for line in payload["drift"])
+
+
+def test_reconcile_mode_exits_nonzero_when_a_host_hook_errors(tmp_path: Path) -> None:
+    """A refusal that nothing reads is not a refusal.
+
+    `_install_json_event` raises `HostHookError` rather than rewrite a matcher
+    shared with a foreign command. That error is caught per host and recorded as a
+    string so one broken host does not abort the others — and then `--mode
+    reconcile` returned 0 regardless, so `charness init` reported success over a
+    hook that was never installed. The module's own docstring has always promised
+    exit 1 here; only `--mode status` delivered it.
+    """
+    repo = _fake_repo(tmp_path)
+    home = _fake_home(tmp_path)
+    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
+        "version: 1\nenabled: true\nskill_anchor_edit_guard:\n  claude: enabled\n",
+        encoding="utf-8",
+    )
+    guard_command = f"python3 {repo / 'scripts' / 'post_edit_skill_anchor_guard.py'} --host claude"
+    settings = home / ".claude" / "settings.json"
+    settings.parent.mkdir(parents=True)
+    settings.write_text(
+        json.dumps(
+            {
+                "hooks": {
+                    "PostToolUse": [
+                        {
+                            "matcher": "Bash",
+                            "hooks": [
+                                {"type": "command", "command": "/home/op/my-own-hook.sh"},
+                                {"type": "command", "command": guard_command},
+                            ],
+                        }
+                    ]
+                }
+            }
+        ),
+        encoding="utf-8",
+    )
+    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
+
+    result = subprocess.run(
+        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "reconcile"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 1, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["failed_hosts"] == ["skill_anchor_edit_guard.claude"]
+    # ...and the operator's file is untouched by the refusal.
+    entry = json.loads(settings.read_text(encoding="utf-8"))["hooks"]["PostToolUse"][0]
+    assert entry["matcher"] == "Bash"
+
+
+def test_reconcile_mode_still_exits_zero_when_every_host_succeeds(tmp_path: Path) -> None:
+    """The control: the new exit code must key on the error, not on the mode."""
+    repo = _fake_repo(tmp_path)
+    home = _fake_home(tmp_path)
+    (repo / ".agents" / "usage-episodes-adapter.yaml").write_text(
+        "version: 1\nenabled: true\nskill_anchor_edit_guard:\n  claude: enabled\n",
+        encoding="utf-8",
+    )
+    runner = REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
+
+    result = subprocess.run(
+        [sys.executable, str(runner), "--repo-root", str(repo), "--home", str(home), "--mode", "reconcile"],
+        capture_output=True,
+        text=True,
+    )
+
+    assert result.returncode == 0, result.stdout
+    assert json.loads(result.stdout)["failed_hosts"] == []

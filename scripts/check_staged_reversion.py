@@ -45,6 +45,10 @@ gate family): pass ``--allow-staged-reversion`` or set the environment variable
 prints an explicit ``allowed`` line so an intentional staged reversion is
 acknowledged, never hidden behind a silent pass.
 
+If git cannot enumerate the index at all (not a repository, dubious ownership,
+missing git), the gate reports ``unestablished`` and exits non-zero: it
+never prints a clean verdict over a scope it could not read.
+
 Portable: pure git plumbing, no host-specific assumption. Gitlinks (submodules)
 are ignored defensively; this repo has none.
 """
@@ -74,10 +78,27 @@ def _git(repo_root: str, *args: str) -> "subprocess.CompletedProcess[str]":
 
 
 def _staged_paths(repo_root: str) -> list[str]:
-    """Repo-relative paths with staged changes (index vs HEAD), deletions included."""
-    proc = _git(repo_root, "diff", "--cached", "--name-only", "-z")
+    """Repo-relative paths with staged changes (index vs HEAD), deletions included.
+
+    Raises ``RuntimeError`` if git cannot enumerate the index (not a repository,
+    dubious ownership, missing git, ...; the exit code is git's and varies by
+    subcommand and version, so nothing keys on a specific one). This call establishes the
+    gate's entire scope: an empty list from a failed git is indistinguishable
+    from "nothing staged", so returning it would render a clean verdict over a
+    scope that was never read (mirrors the sibling gate
+    ``check_staged_worktree_consistency.py``).
+    """
+    try:
+        proc = _git(repo_root, "diff", "--cached", "--name-only", "-z")
+    except OSError as exc:  # git absent, repo_root unusable as cwd, ...
+        raise RuntimeError(f"git diff --cached failed: {exc}") from exc
     if proc.returncode != 0:
-        return []
+        # First stderr line only: git appends a full usage dump for some
+        # failures, which would bury the gate's own message.
+        reason = next((ln for ln in proc.stderr.splitlines() if ln.strip()), "")
+        raise RuntimeError(
+            reason.strip() or f"git diff --cached --name-only exited {proc.returncode}"
+        )
     return [p for p in proc.stdout.split("\0") if p]
 
 
@@ -94,26 +115,47 @@ def _head_entry(repo_root: str, path: str) -> tuple[str | None, str | None]:
     return parts[0], parts[2]
 
 
-def _index_entry(repo_root: str, path: str) -> tuple[str | None, str | None]:
-    """(mode, blob) staged at :<path>, or (None, None) if staged for deletion."""
+def _index_entry(repo_root: str, path: str) -> tuple[str | None, str | None, bool]:
+    """(mode, blob, unmerged) for :<path>; (None, None, False) when staged for deletion.
+
+    Record [0] of an UNMERGED path is stage 1 -- the merge base, not an index blob.
+    Reading it as the staged content made a mid-merge `git checkout --ours` look
+    like a modified-reversion phantom (base != HEAD, worktree == HEAD), and reading
+    "no stage 0" as a staged deletion turns it into a deletion phantom instead.
+    Neither is true, `git commit` refuses a conflicted path anyway, so the caller
+    skips it on the third element rather than guessing from the first two.
+    """
     proc = _git(repo_root, "ls-files", "--stage", "-z", "--", path)
     if proc.returncode != 0 or not proc.stdout:
-        return None, None
-    record = proc.stdout.split("\0")[0]  # "<mode> <sha> <stage>\t<path>"
-    meta = record.partition("\t")[0]
-    parts = meta.split()
-    if len(parts) < 2:
-        return None, None
-    return parts[0], parts[1]
+        return None, None, False
+    records = [record for record in proc.stdout.split("\0") if record]
+    for record in records:  # "<mode> <sha> <stage>\t<path>"
+        meta = record.partition("\t")[0]
+        parts = meta.split()
+        if len(parts) < 3 or parts[2] != "0":
+            continue
+        return parts[0], parts[1], False
+    return None, None, bool(records)
 
 
 def _worktree_blob(repo_root: str, path: str) -> str | None:
-    """git hash-object of the worktree file, or None if it is absent on disk."""
+    """git hash-object of the worktree file, or None if it is absent on disk.
+
+    `None` is load-bearing in the line-198 fingerprint -- it MEANS "not on disk",
+    which is what distinguishes the deletion phantom from the modified one. A file
+    that is present but unhashable (unreadable mode, dangling symlink) is not that
+    fact, and mapping it to `None` silently dropped a real phantom: `None ==
+    head_blob` is False, so the finding vanished and the gate printed clean. That
+    is the gate's own class at path granularity, so it raises instead.
+    """
     if not os.path.lexists(os.path.join(repo_root, path)):
         return None
     proc = _git(repo_root, "hash-object", "--", path)
     if proc.returncode != 0 or not proc.stdout.strip():
-        return None
+        raise RuntimeError(
+            f"could not hash the worktree copy of {path}: "
+            + (proc.stderr.strip().splitlines() or ["git hash-object failed"])[0]
+        )
     return proc.stdout.strip()
 
 
@@ -166,7 +208,9 @@ def find_staged_reversions(repo_root: str) -> list[Finding]:
     findings: list[Finding] = []
     for path in _staged_paths(repo_root):
         head_mode, head_blob = _head_entry(repo_root, path)
-        index_mode, index_blob = _index_entry(repo_root, path)
+        index_mode, index_blob, unmerged = _index_entry(repo_root, path)
+        if unmerged:
+            continue  # conflicted: no stage-0 entry, and git refuses to commit it
         if _GITLINK_MODE in (head_mode, index_mode):
             continue  # skip submodule gitlinks defensively
         worktree_blob = _worktree_blob(repo_root, path)
@@ -230,7 +274,28 @@ def main(argv: list[str] | None = None) -> int:
             )
         return 0
 
-    findings = find_staged_reversions(repo_root)
+    try:
+        findings = find_staged_reversions(repo_root)
+    except RuntimeError as exc:
+        # The index could not be read, so nothing was established. Report the
+        # unestablished state instead of printing a clean verdict over a scope
+        # this gate never saw.
+        if args.json:
+            print(
+                json.dumps(
+                    {"state": "unestablished", "findings": [], "error": str(exc)}
+                )
+            )
+        else:
+            print(
+                "check-staged-reversion: UNESTABLISHED — git could not read the "
+                f"index at {repo_root!r}, so no staged path was inspected.\n"
+                f"  git: {exc}\n"
+                "Fix the repository access (e.g. run from inside the repo, or "
+                "`git config --global --add safe.directory <path>` for a "
+                "dubious-ownership checkout) and re-run."
+            )
+        return 1
 
     if args.json:
         print(

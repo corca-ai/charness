@@ -8,8 +8,12 @@ stage, a mode-only stage, a new-file add, or a genuine deletion.
 from __future__ import annotations
 
 import importlib
+import json
+import os
 import subprocess
 from pathlib import Path
+
+import pytest
 
 from .support import run_script
 
@@ -54,6 +58,11 @@ def test_phantom_modified_reversion_is_flagged(tmp_path: Path) -> None:
     assert [f.case for f in findings] == ["modified-reversion-phantom"]
     assert findings[0].path == "f.py"
     assert "git add" in findings[0].recovery
+    # ...and the two cases must not collapse to one message: `git add` appears in
+    # BOTH, so asserting only that would stay green if `_recovery` were flattened.
+    # The deletion branch exists to name the `git rm --cached` reading instead of
+    # telling the operator to undo the untrack they meant to make.
+    assert "--cached" not in findings[0].recovery
 
 
 def test_legit_full_stage_passes(tmp_path: Path) -> None:
@@ -130,3 +139,130 @@ def test_clean_tree_cli_exit_zero(tmp_path: Path, capsys) -> None:
     _commit(repo, "f.py", "v1\n")
     assert csr.main(["--repo-root", str(repo)]) == 0
     assert "clean" in capsys.readouterr().out
+
+
+# --- git could not establish the scope (A5) ------------------------------------
+# The index enumeration IS this gate's scope: if git cannot read it, an empty
+# path list is indistinguishable from "nothing staged". The gate must refuse
+# rather than print a clean verdict over a scope it never read.
+
+
+def test_non_repo_root_raises_instead_of_returning_empty(tmp_path: Path) -> None:
+    not_a_repo = tmp_path / "not-a-repo"
+    not_a_repo.mkdir()
+    with pytest.raises(RuntimeError):
+        csr.find_staged_reversions(str(not_a_repo))
+
+
+def test_non_repo_root_cli_is_unestablished_not_clean(tmp_path: Path, capsys) -> None:
+    not_a_repo = tmp_path / "not-a-repo"
+    not_a_repo.mkdir()
+    assert csr.main(["--repo-root", str(not_a_repo)]) == 1
+    out = capsys.readouterr().out
+    assert "UNESTABLISHED" in out
+    assert "clean" not in out
+
+
+def test_non_repo_root_cli_json_is_unestablished(tmp_path: Path, capsys) -> None:
+    not_a_repo = tmp_path / "not-a-repo"
+    not_a_repo.mkdir()
+    assert csr.main(["--repo-root", str(not_a_repo), "--json"]) == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["state"] == "unestablished"
+    assert payload["error"]
+
+
+def test_dubious_ownership_does_not_report_clean_over_a_real_phantom(
+    tmp_path: Path,
+) -> None:
+    """git exits 128 on a dubious-ownership repo (a common container/CI state).
+
+    Pre-fix this printed {"state": "clean"} / exit 0 while a real staged
+    reversion sat in the index -- the exact silent re-commit #258 exists to stop.
+    """
+    repo = _repo(tmp_path)
+    _stage_phantom(repo)
+    # Sanity: the phantom is genuinely there when git can read the repo.
+    assert [f.case for f in csr.find_staged_reversions(str(repo))] == [
+        "modified-reversion-phantom"
+    ]
+
+    env = {**os.environ, "GIT_TEST_ASSUME_DIFFERENT_OWNER": "1"}
+    if _git_probe(repo, env).returncode == 0:
+        pytest.skip("this git build does not honor GIT_TEST_ASSUME_DIFFERENT_OWNER")
+
+    result = run_script(
+        "scripts/check_staged_reversion.py", "--repo-root", str(repo), "--json", env=env
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert json.loads(result.stdout)["state"] == "unestablished"
+
+
+def _git_probe(repo: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        ["git", "-C", str(repo), "status", "--short"],
+        check=False,
+        capture_output=True,
+        text=True,
+        env=env,
+    )
+
+
+def test_a_deletion_phantom_recovery_names_the_untrack_reading(tmp_path: Path) -> None:
+    """The discriminating half of the per-case recovery split."""
+    repo = _repo(tmp_path)
+    _commit(repo, "f.py", "v1\n")
+    _git(repo, "rm", "--cached", "-q", "f.py")
+
+    recovery = csr.find_staged_reversions(str(repo))[0].recovery
+
+    assert "--cached" in recovery
+    assert csr._ENV_BYPASS in recovery
+
+
+def test_an_unhashable_worktree_file_is_unestablished_not_dropped(tmp_path: Path) -> None:
+    """A present-but-unhashable worktree copy is not the same fact as "absent".
+
+    `None` from `_worktree_blob` MEANS "not on disk" -- it is what tells a deletion
+    phantom from a modified one. Mapping a failed `hash-object` to `None` made a
+    real phantom silently vanish (`None == head_blob` is False), so the gate printed
+    clean over the exact corruption it exists to catch.
+    """
+    repo = _repo(tmp_path)
+    _stage_phantom(repo)  # a genuine phantom is present first...
+    assert len(csr.find_staged_reversions(str(repo))) == 1
+
+    # ...then make the worktree copy a dangling symlink: lexists is True, so the
+    # absent-on-disk early return is skipped, and hash-object fails.
+    (repo / "f.py").unlink()
+    (repo / "f.py").symlink_to(repo / "does-not-exist")
+
+    with pytest.raises(RuntimeError):
+        csr.find_staged_reversions(str(repo))
+
+
+def test_an_unmerged_path_is_skipped_rather_than_read_as_a_phantom(tmp_path: Path) -> None:
+    """Record [0] of a conflicted path is stage 1 (the merge base), not the index.
+
+    Reading it as the staged blob reported `modified-reversion-phantom` over a
+    normal mid-merge state. There is no stage 0 for a conflicted path and `git
+    commit` refuses one anyway, so the honest answer is to skip it.
+    """
+    repo = _repo(tmp_path)
+    _commit(repo, "f.py", "base\n")
+    _git(repo, "checkout", "-q", "-b", "side")
+    _commit(repo, "f.py", "side\n")
+    _git(repo, "checkout", "-q", "-")
+    _commit(repo, "f.py", "main\n")
+    conflict = subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "merge", "side"],
+        cwd=repo,
+        capture_output=True,
+        text=True,
+    )
+    assert conflict.returncode != 0, "fixture must produce a real conflict"
+    # Resolve toward HEAD in the worktree WITHOUT staging: worktree == HEAD, and
+    # stage 1 (the base) differs from HEAD -- the shape that used to be flagged.
+    (repo / "f.py").write_text("main\n", encoding="utf-8")
+
+    assert csr.find_staged_reversions(str(repo)) == []

@@ -6,10 +6,14 @@ Fired by the adapter-declared Claude PostToolUse(Edit|Write) hook installed via
 `host_hook_skill_anchor_guard` — the host-specific firing lives in the adapter
 and the host settings; this script and the scan it drives stay repo-owned and
 portable. Fail-open by design: anything unexpected (no payload, non-skill
-file, scan error) exits 0 so the hook never interferes with ordinary editing;
-a real finding exits 2 so the host surfaces the scan verdict at edit time,
-before the commit-time validate_skill_ergonomics sweep (which stays the
-backstop).
+file, already-deleted file) exits 0 so the hook never interferes with ordinary
+editing; a real finding exits 2 so the host surfaces the scan verdict at edit
+time, before the commit-time validate_skill_ergonomics sweep (which stays the
+backstop). Fail-open is not the same as fail-silent: when the file IS a live
+skill-package file but the scan cannot render a verdict over it (missing
+`skill_text_quality_lib` rule library, broken bundle), the guard exits 1 with
+the reason on stderr — the host's non-blocking hook-error channel — rather than
+reporting a clean verdict it never established.
 """
 from __future__ import annotations
 
@@ -68,11 +72,23 @@ def main(argv: list[str] | None = None, stdin: Any = None) -> int:
     rel = skill_package_relpath(repo_root, raw_path)
     if rel is None:
         return 0
+    if not (repo_root / rel).is_file():
+        # Edited file already gone (rename/delete after the edit): nothing to
+        # scan, and nothing was claimed about it.
+        return 0
     scan = import_repo_module(__file__, "scripts.skill_issue_anchor_scan")
     try:
         report = scan.scan_issue_anchors(repo_root, [rel])
-    except scan.IssueAnchorScanError:
-        return 0
+    except scan.IssueAnchorScanError as exc:
+        # The target is a live skill-package file, so the scan was supposed to
+        # render a verdict over it and could not. Stay non-blocking (this is an
+        # additive edit-time guard; the commit sweep is the backstop) but say so
+        # loudly instead of exiting 0 like a clean scan.
+        print(
+            f"skill-issue-anchor-scan: unestablished — could not scan {rel}: {exc}",
+            file=sys.stderr,
+        )
+        return 1
     if report["status"] != "blocked":
         return 0
     print(scan.format_human(report), file=sys.stderr)
