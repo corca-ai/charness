@@ -22,9 +22,11 @@ Refresh kept: the two burn-down records, the pre-push lane's closed state with
 its non-claims, the raised bar, and the items awaiting an operator call.
 
 Refresh non-claims: the D40 lane state, the #464/R8 lines, and the
-publish-refusal gap list are gone — closed, or now D42/D43, with the goal
+publish-refusal gap list are gone — closed, or answered as D42/D43, with the goal
 artifact owning the detail. No claim that any consumer repo gained push-time
-teeth, nor that a live `origin` push exercised the refusal.
+teeth. The live-push non-claim IS now discharged: the closeout push ran the hook
+with `--refuse-unestablished` armed and `check-changed-line-mutation-coverage`
+returned PASS over a real range.
 
 ## Current State
 
@@ -36,6 +38,9 @@ teeth, nor that a live `origin` push exercised the refusal.
 - **`run-quality-read-only` was raised 58500 -> 305000.** It is the bar that
   stops a push and its basis predated the armed lane; it was already reporting
   `latest-spike`. The 4cpu bars are still pre-lane and say so in the adapter.
+- **D42 and D43 were answered by the owner, not left standing:** keep exit 0 with
+  the loud hedge, keep the global slack constant. Both entries stay open against
+  their own reopen triggers.
 
 ## Next Session
 
@@ -52,12 +57,9 @@ teeth, nor that a live `origin` push exercised the refusal.
    PARTIAL, containment F9/F10, D28 remainder, sibling-scan Tier 2 finding D.
 6. **[D39](./deferred-decisions.md) / [D41](./deferred-decisions.md)**: the armed lane's
    gaps. Still deferred; neither reopen trigger fired during the goal that read them.
-7. **Awaiting an operator call**, all with the evidence already written:
-   - [D42](./deferred-decisions.md): should `check_mutation_run_proof` exit 3
-     rather than 0 when the range contents are unestablished?
-   - [D43](./deferred-decisions.md): should the loose-bar advisory be per-label?
-   - File the changed-line gate's subprocess-only-coverage diagnosis as an issue,
-     or leave it in the retro? Four identical BLOCKs in one session argue for it.
+7. **#465** — make the changed-line gate say when a blocked line's only coverage
+   is a subprocess test. Four identical BLOCKs in one session; it changes a
+   blocking gate's payload, so it owes two bounded review rounds of its own.
 
 ## Discuss
 

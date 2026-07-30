@@ -322,24 +322,21 @@ non-claim that survives it.
 
 ## Operator Decision Queue
 
-- Decision: file the changed-line-gate capability improvement as a tracked issue,
-  or leave it in the retro only
-- Owner: operator
-- Why deferred: creating a public issue on `corca-ai/charness` is outward-facing
-  and was not authorized for this run; the goal closed on local evidence instead
-- Unblock action: say whether to file it; the evidence is in the retro's
-  `## Next Improvements` and `## Sibling Search`
-- Revisit trigger: the next slice that hits a changed-line BLOCK on a branch
-  whose only coverage is a subprocess test
+RESOLVED at closeout 2026-07-30; kept as the record of what was asked and
+answered rather than emptied.
 
-- Decision: whether `check_mutation_run_proof` should exit 3 rather than 0 when
-  the range contents are unestablished (D42), and whether the loose-bar advisory
-  should become per-label (D43)
-- Owner: operator
-- Why deferred: both are operator-facing contract calls; deciding either inside a
-  defect-repair slice would smuggle a contract change in under a repair banner
-- Unblock action: read `docs/deferred-decisions.md` D42 and D43 and pick
-- Revisit trigger: the reopen triggers written into each entry
+- Decision: file the changed-line-gate capability improvement as a tracked issue?
+  ANSWERED: yes. Filed as #465.
+- Decision: should `check_mutation_run_proof` exit 3 rather than 0 when the range
+  contents are unestablished (D42)? ANSWERED: no — keep exit 0 with the loud
+  stderr hedge. D42's `Current choice` already records that as the standing
+  position, so no code changes; the entry stays open against its reopen trigger.
+- Decision: should the loose-bar advisory become per-label (D43)? ANSWERED: no —
+  keep the global constant. D43's `Current choice` already records that, so no
+  code changes; the entry stays open against its reopen trigger.
+- Owner: operator (all three)
+- Revisit trigger: #465's own review; and for D42/D43 the reopen triggers written
+  into each entry.
 
 ## Slice Log
 
@@ -584,9 +581,12 @@ Residual risks:
 
 Non-claims:
 
-- No push to `origin`. The push-time refusal is proven through the real hook
-  against a local bare remote only, so the unproven-gate critique's "no live
-  push has exercised `--refuse-unestablished`" narrows rather than clears.
+- ~~No push to `origin`.~~ **Discharged at closeout**: the operator authorised
+  the push, and it ran `.githooks/pre-push` with `CHARNESS_PRE_PUSH=1` set and
+  `--refuse-unestablished` armed. `check-changed-line-mutation-coverage` returned
+  PASS over a real 18-commit range (82 passed, 0 failed, read-only mode). The
+  unproven-gate critique's "no live push has exercised `--refuse-unestablished`
+  through the hook" is now false, and this is the run that made it false.
 - No runtime measurement was taken. Every statement about bars rests on the
   recorded window in `.charness/quality/runtime-signals.json`.
 - Both release permission tests self-skip where a `0o000` directory is not
@@ -625,11 +625,10 @@ Retro dispositions: applied: the "a rationale is a claim" lesson is persisted in
   surface with its own validation and dogfood obligations, while this goal's lane
   was the pre-push gate. Recorded here and in the retro so the next shaping run
   inherits it.
-- out-of-scope: the capability improvement (teach the changed-line gate to report
-  when a blocked line's only coverage is a subprocess test) changes a BLOCKING
-  gate's payload, so by this repo's own Critique Discipline it owes two bounded
-  review rounds of its own. Deliberately NOT filed as an issue inside this run:
-  creating a public issue on the shared repo is an outward-facing act the
-  operator has not been asked about. It is surfaced at closeout instead, with the
-  evidence — four identical changed-line BLOCKs across four files this session,
-  and 61 test-to-script subprocess pairs in the boundary-bypass baseline.
+- issue #465: the capability improvement (teach the changed-line gate to report
+  when a blocked line's only coverage is a subprocess test). Filed after the
+  operator authorised it at closeout — it was deliberately held during the run
+  because creating a public issue is outward-facing. The issue carries the four
+  identical BLOCKs from this session, the 61 test-to-script subprocess pairs in
+  the boundary-bypass baseline, and the two-round review obligation it inherits
+  for changing a blocking gate's payload.
