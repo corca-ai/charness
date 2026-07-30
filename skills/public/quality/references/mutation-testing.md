@@ -298,10 +298,17 @@ fails), two traps waste time and produce false proof:
 - **Reproduce with the gate's own coverage, not a naive `coverage run`.** The
   gate collects coverage with `parallel = True` + `COVERAGE_PROCESS_START`
   (`mutation_sampling_lib.run_test_coverage`), so it **captures subprocess-
-  invoked CLI scripts**. A plain `coverage run -m pytest` does not, and will
-  report a subprocess-only script as 0% — a measurement artifact, not the gap.
-  Drive `run_test_coverage` scoped to the file's test surface, then
-  `classify_changed_line_scope_gap`, to see the real blocking verdict.
+  invoked CLI scripts run at their real in-repo path with an inherited
+  environment** (measured 2026-07-30). A plain `coverage run -m
+  pytest` does not, and will report such a script as 0% — a measurement
+  artifact, not the gap. Drive `run_test_coverage` scoped to the file's test
+  surface, then `classify_changed_line_scope_gap`, to see the real blocking
+  verdict. **But a 0% under the gate's own producer is NOT always an
+  artifact:** a spawn whose `env=` replaces the environment drops
+  `COVERAGE_PROCESS_START`, and a test that runs an out-of-repo COPY of the
+  script falls outside the rcfile's `source = <repo-root>` and is dropped with
+  the environment fully intact. The gate's `subprocess_coverage_advisory`
+  payload names those cases on a BLOCK.
 - **`workflow_dispatch` cannot prove a changed-line fix.** Only `schedule`
   events compute `base_sha` (see `mutation-tests.yml`); a dispatch run has zero
   changed files, so the changed-line classifier is inert. A green dispatch

@@ -40,9 +40,17 @@ snapshotted before and verified at return.
   full suite runs at ~3 minutes each to rediscover sync-before-verify, which is
   the first line of this repo's Phase Rules.
 - **Four separate changed-line BLOCKs, all the same shape.** Every slice added
-  verdict branches exercised only through subprocess runs, which the coverage
-  mapper cannot see, so each slice committed, got blocked, and added in-process
-  tests. Four cycles of a lesson that was fully learned after the first.
+  verdict branches exercised only through subprocess runs, so each slice
+  committed, got blocked, and added in-process tests. Four cycles of a lesson
+  that was fully learned after the first. **Corrected 2026-07-30 while closing
+  #465, by measurement:** "the coverage mapper cannot see across a process
+  boundary" — as this entry originally read — is false here. The producer writes
+  a `sitecustomize` calling `coverage.process_startup()`, and a subprocess-only
+  test of a script at its real path attributes 143 lines. What loses the
+  measurement is narrower: an `env=` that REPLACES the environment, or a test
+  that runs an out-of-tree COPY of the script (outside the rcfile's
+  `source = <repo_root>`, 0 lines attributed). Some of the four BLOCKs were
+  therefore TRUE blocks on genuinely unexercised branches.
 - **Two adapter-schema guesses.** I wrote a test against
   `adapter["runtime_budgets"]["profiles"]` and then against a `budgets` key that
   did not exist, before reading the actual shape (`runtime_budget_profiles`).

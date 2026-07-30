@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 from typing import NamedTuple
 
-from scripts.subprocess_only_coverage_advisory import advisory_stderr_line
+from scripts.subprocess_only_coverage_advisory import advisory_scope_line, advisory_stderr_line
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:  # pragma: no cover - import bootstrap
@@ -300,7 +300,12 @@ def false_green_message(uncommitted: list[str]) -> str:
     )
 
 
-def write_blocking_stderr(blocking: list[str], blocking_targets: dict, advisory: dict | None = None) -> None:
+def write_blocking_stderr(
+    blocking: list[str],
+    blocking_targets: dict,
+    advisory: dict | None = None,
+    scope: dict | None = None,
+) -> None:
     """The operator-facing narration for a changed-line BLOCK.
 
     Lives here rather than in the gate for the reason this module exists: it is
@@ -324,3 +329,6 @@ def write_blocking_stderr(blocking: list[str], blocking_targets: dict, advisory:
     hint = advisory_stderr_line(advisory or {})
     if hint:
         sys.stderr.write(f"ADVISORY (not a blocker): {hint}")
+    scope_line = advisory_scope_line(scope)
+    if scope_line:
+        sys.stderr.write(f"ADVISORY SCOPE (not a blocker): {scope_line}")

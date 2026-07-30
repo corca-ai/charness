@@ -31,9 +31,18 @@ Two different "goods" were being conflated:
   **DSL**.
 
 The DSL improves **B, not A**. A subprocess test stays a subprocess test after
-you prettify it; coverage/type/mutation tools still cannot see across the
-process boundary (this repo has no subprocess coverage hook — `COVERAGE_PROCESS_START`
-is unused — and instead drives coverage via in-process `exercise_*` harnesses).
+you prettify it; type/mutation tools still cannot see across the process
+boundary (coverage CAN: corrected 2026-07-30 while closing #465, by measurement —
+[mutation_sampling_lib.py](../scripts/mutation_sampling_lib.py) writes a `sitecustomize` calling
+`coverage.process_startup()` and exports `COVERAGE_PROCESS_START`, so a child
+that inherits the environment and runs an in-repo script IS attributed. This
+document previously claimed that hook did not exist. Coverage is still lost when
+a spawn REPLACES the environment or runs an out-of-tree copy; the in-process
+`exercise_*` harnesses remain the way to get type and mutation reach). **The
+type/mutation half of that claim was NOT re-measured** — it is now the sole
+support for the thesis below, and it inherits the shape of the claim the
+coverage measurement just overturned, so treat it as unverified rather than as
+established.
 So **DSL usefulness is roughly the inverse of testability**: the heavy
 `seed_repo` + subprocess tests it helps most are exactly the lower-testability
 zone the [testability lens](../skills/public/quality/references/testability-and-selection.md)

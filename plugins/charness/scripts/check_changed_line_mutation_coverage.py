@@ -97,7 +97,7 @@ from scripts.mutation_sampling_lib import (  # noqa: E402
 )
 from scripts.sample_mutation_files import list_changed, list_eligible  # noqa: E402
 from scripts.subprocess_only_coverage_advisory import (  # noqa: E402
-    subprocess_coverage_advisory,
+    subprocess_coverage_advisory_report,
 )
 
 #: Re-export surface. These names moved to `changed_line_run_trust` when this file
@@ -407,10 +407,11 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
         "blocking": blocking,
         "blocking_detail": blocking_detail,
         "blocking_targets": blocking_targets,
-        # Advisory only (#465): names blocked files whose recorded tests reach them
-        # across a process boundary coverage.py cannot attribute. Never suppresses a
-        # blocker, and claims file-level granularity only — see the helper's docstring.
-        "subprocess_coverage_advisory": subprocess_coverage_advisory(repo_root, blocking_targets),
+        # Advisory only (#465): names blocked files whose candidate tests exercise them
+        # where coverage was never attributed. Never suppresses a blocker, and claims
+        # file-level granularity only — see the helper's docstring. `_scope` says what
+        # was examined, so advisory silence is a statement rather than an absence.
+        **subprocess_coverage_advisory_report(repo_root, blocking_targets, blocking=blocking),
         "targeted_mutant_proof": {
             "required": bool(blocking),
             "contract": (
@@ -558,7 +559,8 @@ def main() -> int:
     )
     if blocking and code == 1:
         _write_blocking_stderr(
-            blocking, report["blocking_targets"], report.get("subprocess_coverage_advisory")
+            blocking, report["blocking_targets"], report.get("subprocess_coverage_advisory"),
+            report.get("subprocess_coverage_advisory_scope"),
         )
     return code
 
