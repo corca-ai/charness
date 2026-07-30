@@ -646,3 +646,40 @@ def test_advisory_silence_is_narrated_to_the_operator_not_only_to_the_json(capsy
     # A scope that could not be computed says so rather than reading as "clean".
     trust.write_blocking_stderr(["scripts/foo.py"], {}, {}, {"error": "boom"})
     assert "advisory did not run (boom); silence is unexamined" in capsys.readouterr().err
+
+
+def test_a_reference_map_returning_a_non_mapping_degrades_to_no_candidates(tmp_path: Path, monkeypatch) -> None:
+    """The second candidate source is another module's function, so its return shape
+    is an assumption. The advisory rides a gate whose verdict already exists, so a
+    mapper that returns something unexpected must contribute no candidates rather
+    than raise on `.items()` and replace a blocking report with a traceback.
+    """
+    import sys
+    import types
+
+    lib = _advisory_lib()
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
+    _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
+    targets = {"scripts/foo.py": [{"line": 5, "source": "def b():"}]}
+
+    # Control first: with the real mapper, this file IS found via the reference map
+    # (there is no baseline here at all), so the assertions below are about the
+    # degraded shape and not about a helper that never finds anything.
+    assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
+
+    stub = types.ModuleType("scripts.suggest_mutation_coverage_command")
+    stub.tests_referencing_paths = lambda repo_root, paths: ["not", "a", "mapping"]
+    monkeypatch.setitem(sys.modules, "scripts.suggest_mutation_coverage_command", stub)
+
+    assert lib._referencing_tests(tmp_path, ["scripts/foo.py"]) == {}
+    assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}, "no baseline, no map -> silent"
+    assert lib.advisory_scope(tmp_path, targets)["reference_map"] == "empty-or-unavailable"
+
+    # ...and a mapper that RAISES is the same silence, not a lost verdict.
+    def explode(repo_root, paths):
+        raise RuntimeError("mapper blew up")
+
+    stub.tests_referencing_paths = explode
+    assert lib._referencing_tests(tmp_path, ["scripts/foo.py"]) == {}
+    assert lib.subprocess_coverage_advisory(tmp_path, targets) == {}

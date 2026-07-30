@@ -164,11 +164,6 @@ def unmeasured_spawn_mechanisms(repo_root: Path, test_file: str, script_path: st
     return mechanisms
 
 
-def spawns_with_scrubbed_env(repo_root: Path, test_file: str, script_path: str) -> bool:
-    """Back-compat predicate: any coverage-losing mechanism detected at all."""
-    return bool(unmeasured_spawn_mechanisms(repo_root, test_file, script_path))
-
-
 def _names_script(node: ast.expr, script_path: str) -> bool:
     """Does this expression contain a string constant naming `script_path`?
 
