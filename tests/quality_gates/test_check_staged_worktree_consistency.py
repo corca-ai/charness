@@ -154,3 +154,19 @@ def test_a_git_failure_is_unestablished_not_clean(tmp_path: Path, monkeypatch, c
     err = capsys.readouterr().err
     assert "UNESTABLISHED" in err
     assert "safe.directory" in err  # the remedy, not a bare traceback
+
+
+def test_git_being_unusable_is_unestablished_not_clean(tmp_path: Path, monkeypatch) -> None:
+    """The OSError twin of the git-failure test above: `git` missing, or an
+    unusable cwd, raises before a returncode exists. An empty set from that path
+    is indistinguishable from "nothing staged".
+    """
+
+    def _boom(*_args, **_kwargs):
+        raise FileNotFoundError("No such file or directory: 'git'")
+
+    monkeypatch.setattr(cswc.subprocess, "run", _boom)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        cswc._git_names(tmp_path, "diff", "--cached", "--name-only")
+    assert "git" in str(excinfo.value)

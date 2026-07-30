@@ -428,3 +428,12 @@ def test_issue_resolution_critique_refuses_a_date_bound_unrelated_critique(
     )
     assert ok_report["ok"] is True, ok_report
     assert not ok_report["binding_failures"]
+
+
+def test_a_timestamp_shaped_token_is_not_masked_away_by_the_date_mask(tmp_path: Path) -> None:
+    """The basename date-mask exists so `2026-05-14-013911-packet.md` cannot bind
+    #2026 or #14. A token that IS the timestamp-shaped run must survive it, or the
+    mask would erase the very identity it was asked about.
+    """
+    assert lib._token_matches("013911", "2026-05-14-013911-packet.md", in_name=True) is True
+    assert lib._token_matches("2026", "2026-05-14-013911-packet.md", in_name=True) is False

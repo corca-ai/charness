@@ -287,3 +287,74 @@ def test_an_unreadable_or_binary_test_file_is_silence_not_a_lost_blocking_report
     # control: a well-formed file in the same position does produce the advisory.
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
     assert list(lib.subprocess_coverage_advisory(tmp_path, targets)) == ["scripts/foo.py"]
+
+
+def test_a_malformed_baseline_key_is_skipped_without_losing_the_others(tmp_path: Path) -> None:
+    """A ratchet file is hand-edited; one bad key must not drop the rest."""
+    lib = _advisory_lib()
+    (tmp_path / "scripts").mkdir()
+    _write_boundary_baseline(
+        tmp_path,
+        ["no-separator-here", "::scripts/only.py", "tests/t.py::", "  ::  ", 42, "tests/t.py::scripts/real.py"],
+    )
+
+    assert lib.load_subprocess_boundary_pairs(tmp_path) == {"scripts/real.py": ["tests/t.py"]}
+
+
+def test_only_a_literal_dict_can_replace_the_environment(tmp_path: Path) -> None:
+    """`_replaces_environment` reads one AST node, and everything it cannot READ has
+    to answer "inherits" — silence is the safe direction for an advisory that rides a
+    blocking gate. A bare `env=env` name, `env=None`, and a call expression are all
+    unfollowable from here, so none of them may be reported as a scrub.
+    """
+    import ast
+
+    lib = _advisory_lib()
+    replaces = {
+        '{"PATH": "/usr/bin"}': True,
+        '{**base, "PATH": "/usr/bin"}': True,
+        '{**os.environ, "PATH": "/usr/bin"}': False,
+        '{**environ}': False,
+        '{**os.environ.copy()}': False,
+        'env': False,
+        'None': False,
+        'dict(os.environ, PATH="/usr/bin")': False,
+        'os.environ.copy()': False,
+    }
+    for source, expected in replaces.items():
+        node = ast.parse(source, mode="eval").body
+        assert lib._replaces_environment(node) is expected, source
+
+
+def test_a_blocked_file_without_proof_targets_is_named_rather_than_dropped(capsys) -> None:
+    """The narration's own unestablished arm: a file that BLOCKS but produced no
+    exact `path:line` target must be named, because the operator's next step
+    (`cite one blocking_targets entry, mutate that line`) is impossible for it and
+    silence would read as "every blocker has a target".
+    """
+    trust = import_repo_module(__file__, "scripts.changed_line_run_trust")
+
+    trust.write_blocking_stderr(
+        ["scripts/mapped.py", "scripts/unmapped.py"],
+        {"scripts/mapped.py": [{"line": 5, "source": "def b():"}]},
+    )
+
+    err = capsys.readouterr().err
+    assert "could not produce exact proof targets for: scripts/unmapped.py" in err
+    assert "scripts/mapped.py" not in err.split("could not produce")[1].split("\n")[0]
+    assert "2 changed file(s) have uncovered changed lines" in err
+    assert "ADVISORY (not a blocker)" not in err  # no advisory passed
+
+
+def test_the_advisory_sentence_rides_the_blocking_narration_when_one_exists(capsys) -> None:
+    trust = import_repo_module(__file__, "scripts.changed_line_run_trust")
+
+    trust.write_blocking_stderr(
+        ["scripts/foo.py"],
+        {"scripts/foo.py": [{"line": 5, "source": "def b():"}]},
+        {"scripts/foo.py": {"subprocess_tests": ["tests/test_foo.py"], "blocked_lines": [5]}},
+    )
+
+    err = capsys.readouterr().err
+    assert "ADVISORY (not a blocker)" in err
+    assert err.index("uncovered changed lines") < err.index("ADVISORY (not a blocker)")

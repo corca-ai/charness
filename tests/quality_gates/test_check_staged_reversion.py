@@ -266,3 +266,19 @@ def test_an_unmerged_path_is_skipped_rather_than_read_as_a_phantom(tmp_path: Pat
     (repo / "f.py").write_text("main\n", encoding="utf-8")
 
     assert csr.find_staged_reversions(str(repo)) == []
+
+
+def test_git_being_unusable_is_unestablished_not_clean(tmp_path: Path, monkeypatch) -> None:
+    """`git` absent, or a cwd that cannot be entered, raises OSError before any
+    returncode exists. Swallowing it would produce the same empty staged list a
+    clean repo does — the fail-open this row closed, arriving by another door.
+    """
+
+    def _boom(*_args, **_kwargs):
+        raise FileNotFoundError("No such file or directory: 'git'")
+
+    monkeypatch.setattr(csr.subprocess, "run", _boom)
+
+    with pytest.raises(RuntimeError) as excinfo:
+        csr._staged_paths(str(tmp_path))
+    assert "git" in str(excinfo.value)

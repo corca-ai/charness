@@ -453,3 +453,22 @@ def test_reconcile_mode_still_exits_zero_when_every_host_succeeds(tmp_path: Path
 
     assert result.returncode == 0, result.stdout
     assert json.loads(result.stdout)["failed_hosts"] == []
+
+
+def test_error_scan_ignores_non_dict_action_values() -> None:
+    """`actions` is a payload, not a schema: a host entry can be a string or None
+    from an older state file. Scanning it must not crash the runner whose whole
+    job at that point is to report the errors it DID find.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "reconcile_runner", REPO_ROOT / "scripts" / "reconcile_usage_episodes_host_hooks.py"
+    )
+    runner = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(runner)
+
+    assert runner._error_hosts("not-a-dict") == []
+    assert runner._error_hosts(None) == []
+    assert runner._error_hosts({"claude": "legacy-string", "codex": None}) == []
+    assert runner._error_hosts({"claude": "legacy-string", "codex": {"error": "boom"}}) == ["codex"]
