@@ -159,7 +159,18 @@ runtime_budget_profiles:
       # 300000 is the documented nine-commit figure. It had no bar at all while being
       # the most expensive gate in the bundle, which is how the aggregate above went
       # stale unnoticed.
-      check-changed-line-mutation-coverage: 300000
+      #
+      # 2026-07-30: 300000 -> 500000 (operator-directed). The recent median crossed by
+      # 0.8% (302429 vs 300000) while closing #465, which fails the gate by the
+      # documented median rule. Two things were checked before raising rather than
+      # after: (1) the slice under review added a test-reference-map call to this
+      # gate's BLOCKING path, and it was MEASURED at 2.4-2.5s of a ~352s run, so it is
+      # not the cause; (2) the same window holds runs at 103000-223000ms, which is the
+      # range-ceiling property above, not variance. 500000 is 1.4x the worst observed
+      # run (356859ms) over n=1069 — the standard derivation used throughout this
+      # profile. This raise makes the bar looser, which the slack advisory will now
+      # report against; that report is the intended check on it.
+      check-changed-line-mutation-coverage: 500000
       check-cli-skill-surface: 8500
       check-inventory-declaration-coverage: 500
       check-references-link-inventory: 800
@@ -218,7 +229,21 @@ runtime_budget_profiles:
       # paired samples falsify the additive model. 420000 still holds as "a lane of
       # ~417000", with slack over this bar for the full mode's extra gates, but the
       # stated reasoning was wrong and is not load-bearing for either number.
-      run-quality-read-only: 305000
+      #
+      # 2026-07-30: 305000 -> 420000 (operator-directed). Recent median crossed by
+      # 0.14% (305424 vs 305000) — the thinnest possible failure, on the same #465
+      # window as the lane above and from the same cause (a wide changed-test surface,
+      # not a code regression).
+      #
+      # Deliberately NOT re-derived as "lane + ~3000" against the lane's new 500000:
+      # that model would put this at ~505000 and this bar is the wall an operator
+      # actually feels. Keeping it at 420000 (matching `run-quality-full`) means an
+      # extreme multi-commit range can now fail HERE while the lane's own range ceiling
+      # still passes. That asymmetry is intentional and is the point: the lane bar
+      # tolerates the documented range blowup, the aggregate bar says the felt wall was
+      # crossed anyway. Recorded so the next reader does not "fix" the inconsistency by
+      # inflating this to 505000.
+      run-quality-read-only: 420000
       # 2026-07-25 retune. A runtime budget only ever moved one way here: a
       # violation forced a raise and nothing reported when the raise stopped being
       # needed, so several budgets had drifted to 6-10x their worst observed run
