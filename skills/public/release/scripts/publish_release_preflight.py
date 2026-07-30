@@ -5,6 +5,7 @@ import json
 import re
 import runpy
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any, Callable
@@ -220,11 +221,30 @@ def build_update_instructions_prep_payload(
     }
 
 
+def release_binding_tokens(version: str | None) -> list[str]:
+    """Context-identity tokens for a release closeout, from its target version.
+
+    Both spellings, because this repo names release artifacts either way: the
+    dotted `2.12.0` is what the manifest and the release notes carry, and the
+    hyphenated `2-12-0` is what the checked-in critique BASENAMES use
+    (`v2-1-6-release-candidate-packet.md`). Binding on only one form would
+    refuse artifacts the repo already writes, which is how a correctness gate
+    earns a bypass.
+    """
+    if not version:
+        return []
+    stripped = version.strip().lstrip("vV")
+    if not stripped:
+        return []
+    return sorted({stripped, stripped.replace(".", "-")})
+
+
 def enforce_release_critique_gate(
     repo_root: Path,
     *,
     critique_artifact: str | None,
     critique_blocked: str | None,
+    target_version: str | None = None,
 ) -> dict[str, Any]:
     """Refuse the publish unless the standalone critique either ran (artifact
     exists) or was honestly skipped with a blocked host signal.
@@ -241,12 +261,18 @@ def enforce_release_critique_gate(
             "`--critique-artifact <path>` or `--critique-blocked <host-signal>`"
         )
     if critique_artifact:
+        # Bound, not merely present. The closeout contract carried "`release`
+        # (version binding) remains a follow-up and still calls the same
+        # presence-only `check()` today" -- so until now any tracked critique
+        # under the artifact prefix satisfied the publish gate, including one
+        # written for an unrelated release.
         result = helper.check(
             repo_root=repo_root,
             required=["standalone_critique"],
             evidence={"standalone_critique": critique_artifact},
             skips={},
             kind="release",
+            tokens=release_binding_tokens(target_version),
         )
     elif critique_blocked:
         signal = critique_blocked.strip()
@@ -269,6 +295,17 @@ def enforce_release_critique_gate(
         raise SystemExit(
             "release publish gate refused: standalone critique not satisfied\n"
             + json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True)
+        )
+    if critique_artifact and not result.get("binding_checked"):
+        # LOUD, because this is the publish boundary and the run just silently
+        # degraded to presence-only: any tracked critique would have satisfied
+        # it. The report alone is not enough -- its only caller discarded the
+        # return value, so "the weaker run is visible" was not true of anything
+        # an operator could see.
+        sys.stderr.write(
+            "WARNING (release publish gate): the target version could not be resolved, so "
+            "the standalone critique was accepted on PRESENCE alone -- it was not checked "
+            "against the release being published.\n"
         )
     return result
 

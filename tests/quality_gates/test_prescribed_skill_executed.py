@@ -437,3 +437,122 @@ def test_a_timestamp_shaped_token_is_not_masked_away_by_the_date_mask(tmp_path: 
     """
     assert lib._token_matches("013911", "2026-05-14-013911-packet.md", in_name=True) is True
     assert lib._token_matches("2026", "2026-05-14-013911-packet.md", in_name=True) is False
+
+
+def test_check_binds_evidence_when_tokens_are_supplied(tmp_path: Path) -> None:
+    """S4, parent-reproduced: `evidence_binds_to_context` was defined but `check()`
+    never called it.
+
+    Binding therefore held only where `achieve` and `issue` wired the predicate by
+    hand, and nowhere else — the generic CLI and the release publish gate carried
+    none at all. Reproduced before the fix: a real critique about an unrelated
+    2026-07-27 topic satisfied an `issue-resolution` closeout for #466.
+    """
+    unrelated = tmp_path / "charness-artifacts/critique/2026-07-27-a3-staged-scope.md"
+    _touch(unrelated, "# A3 staged scope\n\nNothing to do with the closeout at hand.\n")
+
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["resolution_critique"],
+        evidence={"resolution_critique": "charness-artifacts/critique/2026-07-27-a3-staged-scope.md"},
+        skips={},
+        kind="issue-resolution",
+        tokens=["466"],
+    )
+    assert report["ok"] is False, report
+    assert [item["name"] for item in report["unbound_evidence"]] == ["resolution_critique"]
+    assert report["binding_checked"] is True
+
+    # Control: a critique that cites the issue satisfies the same call.
+    bound = tmp_path / "charness-artifacts/critique/2026-07-31-closeout.md"
+    _touch(bound, "# Closeout critique\n\nIssue: #466\n")
+    ok_report = lib.check(
+        repo_root=tmp_path,
+        required=["resolution_critique"],
+        evidence={"resolution_critique": "charness-artifacts/critique/2026-07-31-closeout.md"},
+        skips={},
+        kind="issue-resolution",
+        tokens=["466"],
+    )
+    assert ok_report["ok"] is True, ok_report
+    assert "content contains" in ok_report["satisfied"][0]["binding"]
+
+
+def test_presence_only_runs_report_that_they_are_presence_only(tmp_path: Path) -> None:
+    """No tokens is still allowed — some callers cannot derive an identity — but a
+    consumer reading `ok: true` must be able to tell a bound pass from an unbound
+    one. Before this the two were indistinguishable in the report."""
+    path = tmp_path / "charness-artifacts/critique/anything.md"
+    _touch(path, "# Anything\n")
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": "charness-artifacts/critique/anything.md"},
+        skips={},
+    )
+    assert report["ok"] is True
+    assert report["binding_checked"] is False
+    assert report["binding_tokens"] == []
+    assert report["satisfied"][0]["binding"] == "not-checked"
+
+
+@pytest.mark.xfail(
+    reason="S3 residual: no shape check runs on this gate's accept path, so a stub "
+    "that cites its context is accepted. Turning green means someone closed it.",
+    strict=False,
+)
+def test_s3_residual_a_stub_that_cites_its_context_is_not_refused(tmp_path: Path) -> None:
+    """Sweep row S3's stub half, recorded OPEN — as an xfail, not a green assertion.
+
+    Two byte floors were written for it and both withdrawn (see the "NOT a size
+    floor, deliberately" comment in `check_prescribed_skill_executed_lib.py`): a
+    basename-only floor left the CHEAPER content channel open, and a universal
+    one was still defeated by filler while failing 34 existing tests, i.e.
+    sitting above how this repo writes its own evidence.
+
+    `xfail(strict=False)` on purpose. Asserting `ok is True` would pin the HOLE
+    as required behavior: the next agent who wires a per-kind shape check into
+    the accept path would get a red test named "still satisfies the gate" and
+    read their own fix as a regression. This way the residual is executable and
+    documented, and closing it turns the test green instead of red.
+    """
+    stub = tmp_path / "charness-artifacts/critique/x.md"
+    _touch(stub, "#466")
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": str(stub)},
+        skips={},
+        tokens=["466"],
+    )
+    assert stub.stat().st_size == 4
+    assert report["satisfied"][0]["binding"] == "content contains '466'"
+    assert report["ok"] is False, "S3 residual closed — drop the xfail and this message"
+
+
+def test_a_dotted_version_token_is_boundary_matched(tmp_path: Path) -> None:
+    """A release version is not a slug. `_token_matches` fell through to plain
+    substring containment for anything that was not a hyphen/underscore numeric
+    cluster, so `2.12.0` bound a critique that merely mentioned a dependency at
+    `12.12.0` — and that critique then satisfied the mandatory release gate."""
+    assert lib._token_matches("2.12.0", "bumped the dep to 12.12.0 today") is False
+    assert lib._token_matches("2.12.0", "pinned 2.12.01 in the lockfile") is False
+    assert lib._token_matches("1.0.0", "node 21.0.0 required") is False
+    assert lib._token_matches("2.12.0", "publishing charness 2.12.0 now") is True
+    # The hyphenated spelling keeps working: both are real in this repo.
+    assert lib._token_matches("2-12-0", "v2-12-0-release-critique.md") is True
+
+
+def test_a_v_prefix_is_admitted_for_versions_and_refused_for_bare_issue_numbers() -> None:
+    """The `v` in `v2.12.0` has to be admitted or the release gate refuses this
+    repo's own artifact naming. Admitting it for EVERY token — which the first
+    version of this did — let a bare issue number bind the leading segment of a
+    version-named artifact: token `2` matched the checked-in
+    `v2-1-4-release-packet.md`, so closing issue #2 could be satisfied by an
+    unrelated release packet.
+    """
+    assert lib._token_matches("2-12-0", "v2-12-0-release-critique.md") is True
+    assert lib._token_matches("2.12.0", "2026-07-29-v2.12.0-release.md") is True
+    assert lib._token_matches("2", "v2-1-4-release-packet.md", in_name=True) is False
+    # The `v` still has to sit on a boundary of its own.
+    assert lib._token_matches("2.12.0", "rev2.12.0x") is False

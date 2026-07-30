@@ -47,6 +47,22 @@ def target_version(args: argparse.Namespace, current_version: str) -> str:
     return bump_part(current_version, args.part)
 
 
+def gate_target_version(repo_root: Path, args: argparse.Namespace) -> str | None:
+    """The version this publish is heading for, or `None` when it cannot be read.
+
+    `None` degrades the gate to presence-only rather than refusing: a version
+    lookup that failed is not evidence that the critique is wrong. The publish
+    payload records `binding_checked: false` and the gate warns on stderr.
+    """
+    try:
+        current_version = build_release_payload(repo_root)["surface_versions"]["packaging_manifest"]
+        if not isinstance(current_version, str):
+            return None
+        return target_version(args, current_version)
+    except Exception:  # pragma: no cover - defensive; presence-only fallback
+        return None
+
+
 def build_publish_payload(
     args: argparse.Namespace,
     adapter_data: dict[str, Any],

@@ -48,6 +48,37 @@ MIN_SKIP_LENGTH = 40
 # ``issue_resolution_critique.py``. This floor only refuses terseness.
 MIN_SKIP_DETAIL_LENGTH = 20
 
+# NOT a size floor, deliberately -- sweep row S3 asked for one and it does not
+# work here. S3 is right that `st_size == 0` is coarse: a 1-byte file satisfied
+# this gate. But a byte floor is just as coarse in the direction that matters.
+# Two floors were written and both were withdrawn:
+#
+#   * basename-channel-only (200 bytes), on the argument that a content bind
+#     needs no floor "because the token had to be written INTO the artifact".
+#     False, and cheaply so: `printf '#466' > x.md` is four bytes and binds by
+#     content. The unguarded channel was the cheaper one.
+#   * universal (200 bytes). Defensible, but still defeated by 200 bytes of
+#     filler, and it failed 34 existing tests -- i.e. it sat above how this
+#     repo's own evidence is written, which is the bar-moving shape.
+#
+# What actually distinguishes a stub from an artifact is SHAPE, and shape is
+# per-kind. Be precise about where that leaves things, because "the per-kind
+# validators own it" would be misdirection: `validate_critique_artifacts.py` and
+# `validate_retro_artifact.py` exist, but they run `--all` from the repo's own
+# quality gate (`.agents/surfaces.json`), NOT on this gate's accept path. At the
+# release publish boundary the ordering is backwards -- a stub unlocks the
+# publish, and the later shape check cannot un-publish it. They also cover 2 of
+# the >=5 evidence kinds `check()` is generic over (`host_log_probe`,
+# `disposition_review`, and any `NAME:PATH` through the CLI have none), and a
+# consuming repo that installs this skill does not get them at all.
+#
+# So: the stub half of S3 is OPEN on this path. Closing it means wiring a
+# per-kind shape check into the accept path, which is a contract change this
+# library -- deliberately policy-free and generic over evidence names -- is the
+# wrong layer to make unilaterally. Binding (below) is what this layer can
+# honestly enforce, and it kills the stale-unrelated-artifact half of S3
+# outright. The rest is recorded, not papered over with a number.
+
 # Cap how much of an evidence file is scanned for a binding token. A retro or
 # probe artifact references its goal/issue/release identity in the first
 # screenful when it does at all; reading more buys nothing and risks a large
@@ -58,7 +89,15 @@ _BINDING_CONTENT_SCAN_BYTES = 65536
 # non-alphanumeric boundaries, not raw substring, so ``185`` does not falsely
 # bind a file whose body merely contains ``21850`` or ``0185abc``. Slug tokens
 # carry their own distinctiveness and match as substrings.
-_NUMERIC_CLUSTER_TOKEN = re.compile(r"^\d+(?:[-_]\d+)*$")
+#
+# ``.`` is a cluster separator alongside ``-``/``_`` so a DOTTED release version
+# is boundary-matched too. Without it ``2.12.0`` fell to plain substring
+# containment and bound any file merely mentioning ``12.12.0`` or ``2.12.01`` --
+# a critique that names a dependency version satisfied the mandatory release
+# critique gate. The comment above called such tokens "slugs carrying their own
+# distinctiveness"; a version is not a slug, and in a consuming repo publishing
+# ``1.0.0`` the collision surface is every lockfile line quoted in an artifact.
+_NUMERIC_CLUSTER_TOKEN = re.compile(r"^\d+(?:[-_.]\d+)*$")
 
 # A *bare* numeric token (``27``) is far weaker than a compound cluster
 # (``230-229``): boundary matching alone still bound it to any standalone digit
@@ -99,9 +138,26 @@ _DATELIKE_RUN = re.compile(
 )
 
 
-def _boundary_match(token: str, haystack: str) -> bool:
+def _boundary_match(token: str, haystack: str, *, allow_v_prefix: bool = False) -> bool:
+    """Boundary-anchored search for ``token``.
+
+    ``allow_v_prefix`` admits the ``v`` in ``v2.12.0`` / ``v2-11-2-release-critique.md``,
+    which is how this repo names release artifacts: a bare ``(?<![0-9a-z])``
+    lookbehind reads that ``v`` as an alphanumeric neighbour and refuses the match.
+    The ``v`` must itself be on a boundary, so ``rev2.12.0`` still does not bind.
+
+    OFF by default, and that default is the load-bearing part. Enabling it for
+    every token — as the first version of this did — let a BARE issue number bind
+    the leading segment of any version-named artifact: token ``2`` matched the
+    checked-in ``v2-1-4-release-packet.md``, so closing issue #2 could be
+    satisfied by an unrelated release packet. That is the stale-unrelated-artifact
+    class this module exists to refuse, re-created one channel over, and it is
+    worst in exactly the consuming repos this skill ships into — the ones whose
+    whole backlog is #1-#99.
+    """
+    prefix = "v?" if allow_v_prefix else ""
     return (
-        re.search(rf"(?<![0-9a-z]){re.escape(token)}(?![0-9a-z])", haystack)
+        re.search(rf"(?<![0-9a-z]){prefix}{re.escape(token)}(?![0-9a-z])", haystack)
         is not None
     )
 
@@ -118,8 +174,9 @@ def _token_matches(token: str, haystack: str, *, in_name: bool = False) -> bool:
     if not _NUMERIC_CLUSTER_TOKEN.match(token):
         return token in haystack
     if not _BARE_NUMERIC_TOKEN.match(token):
-        # Compound clusters (``230-229``) are distinctive on their own.
-        return _boundary_match(token, haystack)
+        # Compound clusters (``230-229``, ``2.12.0``) are distinctive on their
+        # own, and are the only tokens that may carry a `v` release prefix.
+        return _boundary_match(token, haystack, allow_v_prefix=True)
     if in_name:
         if len(token) >= 6:
             # A token that is itself timestamp-shaped must not be masked away.
@@ -251,11 +308,26 @@ def check(
     evidence: dict[str, str],
     skips: dict[str, str],
     kind: str | None = None,
+    tokens: list[str] | None = None,
 ) -> dict[str, Any]:
     """Validate that every required evidence name has either a real file or a
     valid skip reason. Returns a structured report.
 
     ``evidence`` paths resolve relative to ``repo_root`` when not absolute.
+
+    ``tokens`` are the closeout's context identity (goal slug, issue number,
+    release version). When supplied, every evidence file must additionally BIND
+    to them. Binding lives here, at the shared choke point, rather than only in
+    the callers that remembered it: ``evidence_binds_to_context`` existed for
+    two releases and ``check()`` never called it, so binding held exactly where
+    ``achieve`` and ``issue`` wired it by hand and nowhere else. The generic CLI
+    and the release publish gate had none, and a real critique about an
+    unrelated 2026-07-27 topic satisfied an ``issue-resolution`` closeout.
+
+    ``tokens`` empty or omitted still means presence-only -- some callers
+    genuinely cannot derive an identity -- but the report now RECORDS that as
+    ``binding: not-checked`` per item, so a presence-only pass can no longer be
+    read as a bound one.
     """
     repo_root = repo_root.resolve()
     satisfied: list[dict[str, Any]] = []
@@ -263,6 +335,8 @@ def check(
     missing: list[str] = []
     invalid_skips: list[dict[str, Any]] = []
     missing_evidence_files: list[dict[str, Any]] = []
+    unbound_evidence: list[dict[str, Any]] = []
+    binding_tokens = [token for token in (tokens or []) if token]
 
     for name in required:
         if name in evidence:
@@ -275,7 +349,20 @@ def check(
             if not resolved.is_file() or resolved.stat().st_size == 0:
                 missing_evidence_files.append({"name": name, "path": str(resolved)})
                 continue
-            satisfied.append({"name": name, "via": "evidence", "path": str(resolved)})
+            if binding_tokens:
+                binds, reason = evidence_binds_to_context(resolved, tokens=binding_tokens)
+                if not binds:
+                    unbound_evidence.append(
+                        {"name": name, "path": str(resolved), "detail": reason}
+                    )
+                    continue
+                satisfied.append(
+                    {"name": name, "via": "evidence", "path": str(resolved), "binding": reason}
+                )
+                continue
+            satisfied.append(
+                {"name": name, "via": "evidence", "path": str(resolved), "binding": "not-checked"}
+            )
             continue
         if name in skips:
             reason = skips[name]
@@ -287,7 +374,7 @@ def check(
             continue
         missing.append(name)
 
-    ok = not (missing or invalid_skips or missing_evidence_files)
+    ok = not (missing or invalid_skips or missing_evidence_files or unbound_evidence)
     return {
         "ok": ok,
         "kind": kind,
@@ -297,4 +384,9 @@ def check(
         "missing": missing,
         "invalid_skips": invalid_skips,
         "missing_evidence_files": missing_evidence_files,
+        "unbound_evidence": unbound_evidence,
+        # Reported, not inferred: a consumer reading `ok: true` cannot otherwise
+        # tell a bound pass from a presence-only one.
+        "binding_tokens": sorted(set(binding_tokens)),
+        "binding_checked": bool(binding_tokens),
     }

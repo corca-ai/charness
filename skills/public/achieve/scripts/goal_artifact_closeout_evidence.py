@@ -264,6 +264,10 @@ def _apply_evidence_binding(helper, report: dict[str, Any], text: str) -> None:
         entry["binding"] = reason
         binding_failures.append({"name": entry["name"], "path": entry["path"], "reason": reason})
     report["binding_tokens"] = tokens
+    # This wrapper binds outside `check()`, so `check()` reported
+    # `binding_checked: false`. Leaving that would make the emitted report say
+    # the opposite of the truth right next to a populated `binding_tokens`.
+    report["binding_checked"] = bool(tokens)
     report["binding_failures"] = binding_failures
     if binding_failures:
         report["ok"] = False

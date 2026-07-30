@@ -38,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--require", action="append", default=[], metavar="NAME", help="Required evidence name (repeatable)")
     parser.add_argument("--evidence", action="append", default=[], metavar="NAME:PATH", help="Evidence file path for a required name (repeatable)")
     parser.add_argument("--skip", action="append", default=[], metavar="NAME:REASON", help="Skip reason for a required name (repeatable); REASON must start with one of host-blocked-subagent, host-log-not-exposed, evaluator-unavailable")
+    parser.add_argument("--context-token", action="append", default=[], metavar="TOKEN", help="Closeout context identity (issue number, goal slug, release version; repeatable). Every evidence file must bind to at least one, by basename or by cited content. Omitting these leaves the run presence-only, which the report records as binding_checked=false.")
     parser.add_argument("--json", action="store_true", help="Emit JSON to stdout (default true; flag retained for parity)")
     return parser.parse_args()
 
@@ -59,6 +60,7 @@ def main() -> int:
         evidence=evidence,
         skips=skips,
         kind=args.kind,
+        tokens=args.context_token,
     )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1

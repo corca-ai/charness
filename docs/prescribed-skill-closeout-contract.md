@@ -66,9 +66,11 @@ standalone (no `achieve`-only branch in `issue` or `release`).
 ```text
 check_prescribed_skill_executed.py
   --repo-root <path>
-  --closeout-kind <achieve|issue-resolution|release>
-  --evidence <name>:<path-or-glob>     # repeatable
+  --kind <achieve|issue-resolution|release>
+  --require <name>                     # repeatable
+  --evidence <name>:<path>             # repeatable
   --skip <name>:<reason-text>          # repeatable
+  --context-token <token>              # repeatable; see Context Binding
   --json
 ```
 
@@ -99,11 +101,46 @@ containment is clone-safe; an `mtime >= context-date` rule is deliberately
 **not** used because a fresh `git clone` resets every file's mtime to checkout
 time and would pass every stale file, silently reopening the hole.
 
-The achieve After-phase wrapper wires this for goal evidence. The
-`issue-resolution` wrapper now also binds resolution-critique evidence to each
+Binding lives in `check()` itself, at the shared choke point. It did not always:
+`evidence_binds_to_context` was defined and `check()` never called it, so binding
+held exactly where `achieve` and `issue` had wired the predicate by hand and
+nowhere else — the generic CLI and the release publish gate carried none at all,
+and a real critique about an unrelated topic satisfied an `issue-resolution`
+closeout (sweep S4, parent-reproduced). Callers pass `tokens=`; the generic CLI
+takes `--context-token`. `release` now binds to the version being published
+(both the dotted `2.12.0` and the hyphenated `2-12-0` the critique basenames
+use), closing what this section previously recorded as a follow-up.
+
+`tokens` empty still means presence-only — some callers genuinely cannot derive
+an identity — but the report records that as `binding_checked: false` and
+`binding: not-checked` per item, so a presence-only pass can no longer be read as
+a bound one.
+
+A dotted release version is boundary-matched like any other numeric cluster.
+It was not: `_token_matches` fell through to plain substring containment for
+anything that was not a hyphen/underscore cluster, so `2.12.0` bound a critique
+that merely mentioned a dependency at `12.12.0`. A leading `v` is allowed on the
+boundary, because `v2.12.0` / `v2-11-2-release-critique.md` is how this repo
+names release artifacts and refusing it would reject the artifacts the gate
+exists to accept.
+
+**Open, and deliberately not closed with a number:** sweep row S3 observes that
+the only content test is `st_size == 0`, so a stub satisfies the gate. Two byte
+floors were written for it and both withdrawn — a basename-channel-only floor
+left the *cheaper* content channel open (`printf '#466' > x.md` is four bytes
+and binds), and a universal one was still defeated by filler while failing 34
+existing tests, i.e. sitting above how this repo writes its own evidence. What
+separates a stub from an artifact is SHAPE, and shape is per-kind:
+`validate_critique_artifacts.py` and `validate_retro_artifact.py` own it. This
+library is deliberately policy-free and generic over evidence names, so it is
+the wrong layer for a kind-specific floor. Binding kills the
+stale-unrelated-artifact half of S3; the stub half stays open and is pinned by
+`test_a_stub_evidence_file_still_satisfies_the_gate_when_it_binds`.
+
+The achieve After-phase wrapper wires binding for goal evidence. The
+`issue-resolution` wrapper also binds resolution-critique evidence to each
 selected issue number, and multi-issue carriers must use explicit `Critique #N:`
-or `Critique #N #M:` lines. `release` (version binding) remains a follow-up and
-still calls the same presence-only `check()` today.
+or `Critique #N #M:` lines.
 
 ### Per-Skill Required Evidence
 

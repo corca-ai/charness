@@ -108,6 +108,15 @@ def _binding_failure(helper: Any, number: int, check: dict[str, Any]) -> dict[st
     if path is None:
         return None
     binds, reason = helper.evidence_binds_to_context(path, tokens=[str(number)])
+    # The report `check()` produced says `binding_checked: false`, because this
+    # wrapper binds out here instead of passing `tokens=` in. Left alone, a
+    # correctly-bound issue close reports that it was never bound -- the field
+    # added so a presence-only pass could not read as a bound one, saying the
+    # opposite of the truth.
+    check["binding_checked"] = True
+    check.setdefault("binding_tokens", [])
+    if str(number) not in check["binding_tokens"]:
+        check["binding_tokens"].append(str(number))
     if binds:
         return None
     return {"number": number, "path": str(path), "reason": reason}

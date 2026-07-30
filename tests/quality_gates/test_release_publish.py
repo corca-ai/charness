@@ -21,7 +21,11 @@ def test_publish_release_bumps_pushes_tags_and_creates_release(tmp_path: Path) -
     repo, remote, bin_dir = _seed_publish_release_repo(tmp_path)
     critique_artifact = repo / "charness-artifacts" / "critique" / "demo.md"
     critique_artifact.parent.mkdir(parents=True)
-    critique_artifact.write_text("# Demo critique\n", encoding="utf-8")
+    # Names its release. The publish gate now requires the standalone critique to
+    # BIND to the version being published, so a critique that could belong to any
+    # release no longer satisfies it -- which is the point, and means this fixture
+    # has to look like a real release critique rather than a placeholder.
+    critique_artifact.write_text("# Demo critique\n\nRelease: 0.0.1\n", encoding="utf-8")
     subprocess.run(["git", "add", str(critique_artifact)], cwd=repo, check=True, capture_output=True, text=True)
     subprocess.run(["git", "commit", "-m", "Add critique proof"], cwd=repo, check=True, capture_output=True, text=True)
 

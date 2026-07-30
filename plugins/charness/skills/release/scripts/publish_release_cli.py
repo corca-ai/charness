@@ -78,6 +78,7 @@ validate_release_observer_record = _post_create.validate_release_observer_record
 build_retro_trigger_evaluation = _release_retro.build_retro_trigger_evaluation
 build_publish_plan = _release_plan.build_publish_plan
 release_plan_target_version = _release_plan.target_version
+gate_target_version = _release_plan.gate_target_version
 release_previous_version = _helpers.release_previous_version
 resume_publish = _resume.resume_publish
 preflight_resume_state = _resume.preflight_resume_state
@@ -285,13 +286,25 @@ def commit_final_release_artifact(
         commit_post_publish_artifact(**kwargs, run_command=run)
 
 
-def _load_adapter_and_gate(args: argparse.Namespace, repo_root: Path) -> tuple[dict[str, Any], str | None]:
+def _load_adapter_and_gate(
+    args: argparse.Namespace, repo_root: Path
+) -> tuple[dict[str, Any], str | None, dict[str, Any]]:
+    """Returns the gate REPORT too: discarded here, a presence-only publish left
+    no durable record at an irreversible boundary."""
     adapter = load_adapter(repo_root)
     if not adapter["valid"]:
         raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
     critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
-    enforce_release_critique_gate(repo_root, critique_artifact=critique_artifact, critique_blocked=args.critique_blocked)
-    return adapter["data"], critique_artifact
+    critique_gate = enforce_release_critique_gate(
+        repo_root,
+        critique_artifact=critique_artifact,
+        critique_blocked=args.critique_blocked,
+        # Resolved here, not left to the plan: the gate runs BEFORE
+        # `build_publish_plan`, and a gate that cannot name its release cannot
+        # bind to it.
+        target_version=gate_target_version(repo_root, args),
+    )
+    return adapter["data"], critique_artifact, critique_gate
 
 
 def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> None:
@@ -343,7 +356,7 @@ def main() -> None:
         return
     if args.resume and not args.publish_current:
         raise SystemExit("--resume requires --publish-current (the manifest is already at the target version)")
-    adapter_data, critique_artifact = _load_adapter_and_gate(args, repo_root)
+    adapter_data, critique_artifact, critique_gate = _load_adapter_and_gate(args, repo_root)
     status = git_status(repo_root)
     if status:
         raise SystemExit("publish_release requires a clean worktree before it starts.\n" + "\n".join(status))
@@ -354,6 +367,10 @@ def main() -> None:
         else None
     )
     plan = build_publish_plan(args, repo_root, adapter_data, critique_artifact, run_command=run, resume=args.resume)
+    plan["payload"]["critique_gate"] = {
+        "binding_checked": critique_gate.get("binding_checked", False),
+        "binding_tokens": critique_gate.get("binding_tokens", []),
+    }
     try:
         if args.resume:
             resume_publish(
