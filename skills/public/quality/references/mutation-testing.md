@@ -225,6 +225,15 @@ inherits the gate without the mutation-runner wiring. Empty `eligible_globs`
 keeps it inert. Base/head come from `--base-sha`/`--head-sha` or
 `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA`.
 
+Pass only the base and leave the head defaulted. An analyzed head that is not the
+checked-out `HEAD` cannot be judged — coverage comes from the live worktree while
+the change set is diffed against that head — so the gate exits **3** (could not
+judge, `ok: true`, not a coverage failure) when the range touched eligible files,
+and exits 0 with an `analyzed_head_not_checked_out_head` disclosure plus a stderr
+warning when it did not. See the adapter contract's exit-code table. This also
+means a stale exported `MUTATION_HEAD_SHA` can no longer silently empty the range
+and report `OK` over a tree the gate would otherwise have blocked.
+
 ### Freshness guard: content fingerprint, not a commit SHA
 
 Reusing a coverage report is only safe if the report was built for the code being

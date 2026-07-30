@@ -34,6 +34,61 @@ def _confine_git_discovery_to_pytest_temp(
             os.environ["GIT_CEILING_DIRECTORIES"] = previous
 
 
+AMBIENT_RUNNER_ENV = ("MUTATION_BASE_SHA", "MUTATION_HEAD_SHA", "GITHUB_OUTPUT")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _scrub_ambient_runner_state() -> Iterator[None]:
+    """Stop the CI runner's own state from reaching the suite (#466).
+
+    The scheduled mutation workflow's "Select mutation sample" step launches the
+    coverage-baseline pytest (`python3 -m pytest -q -m 'not release_only' tests`)
+    with the STEP's environment, and the suite inherited it in two ways, both
+    reproduced:
+
+    * `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` -- `check_changed_line_coverage.py`
+      and `sample_mutation_files.py` default their base/head to these. A test that
+      seeds a throwaway git repo and runs the gate against it got THIS repo's HEAD
+      as the analyzed head, an invalid revision range, and an UNESTABLISHED
+      refusal where it expected a clean pass. The gate was right; the suite was
+      reading the runner's environment.
+    * `GITHUB_OUTPUT` -- `sample_mutation_files.py:append_github_output` writes
+      `sample_files=<...>` there whenever it is set, and the in-process
+      `main()` call in `test_mutation_baseline_abort.py` reaches it. Observed
+      writing a tmp-repo `sample_files=scripts/a.py` line into the real step
+      output file that the "Run mutation" step then consumes. Masked in practice
+      only by ordering (the baseline pytest runs before the real publish, and
+      GitHub keeps the last value for a duplicate key) -- luck, not isolation.
+
+    Scrubbed session-wide rather than per test: individual tests had already
+    started deleting the range one at a time, which only ever fixes the test that
+    remembers. A test that wants any of these sets it explicitly (via
+    `monkeypatch` or an explicit `env=` dict), which still works over this.
+
+    Not scrubbed: `MUTATION_SAMPLE_*`. Every reader was checked and none can change
+    a verdict TODAY -- but state the property accurately, because it is weaker than
+    it looks: it holds because the three live `sample_mutation_files.main()` call
+    sites happen to pin `MUTATION_SAMPLE_MAX_FILES`, the one knob whose workflow
+    value (`.agents/quality-adapter.yaml` `max_files: 5`) differs from the code
+    default (10). That is a call-site convention, not an attribute of the names,
+    and nothing enforces it. A future test that pins `SEED` and `CHANGED_QUOTA` but
+    not `MAX_FILES` -- the copy-paste-obvious subset -- would pass locally and fail
+    only in the nightly cron. Add the name here if that happens.
+    """
+    previous = {name: os.environ.pop(name, None) for name in AMBIENT_RUNNER_ENV}
+    try:
+        yield
+    finally:
+        # Restores the ABSENT case too, matching the two sibling fixtures in this
+        # file. Three session fixtures with two restore contracts is how the next
+        # editor copies the wrong one.
+        for name, value in previous.items():
+            if value is None:
+                os.environ.pop(name, None)
+            else:
+                os.environ[name] = value
+
+
 GIT_IDENTITY_ENV = {
     "GIT_AUTHOR_NAME": "Charness Test",
     "GIT_AUTHOR_EMAIL": "tests@example.com",
@@ -110,8 +165,18 @@ def _disable_plugin_fallback_manifests(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("CHARNESS_DISABLE_PLUGIN_FALLBACK_MANIFESTS", "1")
 
 
+NESTED_PYTEST_ENV = "CHARNESS_NESTED_PYTEST"
+
+
 def pytest_sessionfinish(session: pytest.Session) -> None:
-    if os.environ.get("PYTEST_XDIST_WORKER"):
+    # A NESTED session (one a test spawned) must not reap orphans against the real
+    # repo while the OUTER run is still going: the cleanup sends SIGTERM/SIGKILL to
+    # agent-browser trees it did not start, which silently repairs the very state
+    # `agent-browser-runtime-hygiene` exists to observe -- the suite erasing its own
+    # evidence. Only `PYTEST_XDIST_WORKER` guarded this, so a nested run was safe
+    # solely when the outer run happened to use xdist; `cosmic-ray.toml`'s
+    # test-command is serial, so under the scheduled mutation baseline it was not.
+    if os.environ.get("PYTEST_XDIST_WORKER") or os.environ.get(NESTED_PYTEST_ENV):
         return
     guard = _REPO_ROOT / "scripts" / "agent_browser_runtime_guard.py"
     if not guard.is_file():

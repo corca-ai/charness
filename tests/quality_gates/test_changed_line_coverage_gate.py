@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import re
 import subprocess
 from pathlib import Path
@@ -134,6 +135,156 @@ def test_invalid_adapter_fails_closed(tmp_path: Path) -> None:
     assert any("changed_line_mutation_gate must be a mapping" in e for e in payload["adapter_errors"])
 
 
+def test_a_head_that_is_not_the_checked_out_head_is_unestablished_not_a_pass(tmp_path: Path) -> None:
+    """Parent-reproduced false green: a stale head silently emptied the range.
+
+    Coverage is read from the LIVE worktree while the change set is diffed against
+    `--head-sha`, so a head that is not the checked-out HEAD makes the mapping and
+    the measurement describe different trees. `base..base` is empty, so the gate
+    reported `OK: no eligible changed files in this range` and exit 0 over a tree
+    it had just been failing -- and the human line never named the head it used.
+
+    The repo-local sibling (`scripts/changed_line_run_trust.py:probe_run_trust`)
+    has refused this since it was written; the portable gate had no counterpart
+    and its only guard, `_false_green_warning`, returns early on exactly this case.
+    """
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+    _write_coverage(repo, missing=[4], executed=[1, 2, 3])
+    _stamp(repo, base)
+
+    # Same repo, same base: an honest run blocks on the uncovered changed line.
+    honest = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--json")
+    assert honest.returncode == 1, honest.stdout + honest.stderr
+    assert json.loads(honest.stdout)["blocking"] == ["pkg/foo.py"]
+
+    # A third commit, so there is a head that is BOTH stale and the end of a
+    # non-empty range. `base..stale_head` still touches pkg/foo.py, which is the
+    # refusable case; an empty range is the other arm and exits 0 by design.
+    stale_head = _rev(repo)
+    (repo / "pkg" / "foo.py").write_text("a = 1\nb = 2\nc = 3\nd = 4\ne = 5\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "add line 5")
+
+    stale = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", stale_head, "--json")
+    assert stale.returncode == 3, stale.stdout + stale.stderr
+    payload = json.loads(stale.stdout)
+    # `ok: True` on purpose: a could-not-judge is not a coverage failure, and exit
+    # 3 is the bucket that says so. Collapsing it onto exit 1 is what made this
+    # arrive at a consumer's CI as "your changed lines are uncovered".
+    assert payload["ok"] is True
+    assert payload["unestablished"] is True
+    assert "is not the checked-out HEAD" in payload["reason"]
+
+    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", stale_head)
+    assert human.stdout.startswith("UNESTABLISHED:"), human.stdout
+    assert "OK:" not in human.stdout
+
+
+def test_a_stale_head_over_an_empty_range_discloses_instead_of_blocking(tmp_path: Path) -> None:
+    """Exit 0, because refusing an empty scope is an incoherent blocker.
+
+    `check_changed_line_mutation_coverage.py` reached this the hard way and wrote
+    down why: exit 3's contract scopes it to a NON-EMPTY changed set, and refusing
+    before the changed set is known let a push be stopped with the reason "no
+    eligible files changed" -- on the gate whose credibility is the whole point.
+
+    But the disclosure must not vanish with the refusal. The empty scope belongs to
+    the ANALYZED head, not to this tree, and a bare `OK:` on stdout is exactly the
+    false green this arm exists to close -- so the reason is carried on the report
+    and shouted on stderr, even though the exit code is 0.
+    """
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+    _write_coverage(repo, missing=[4], executed=[1, 2, 3])
+    _stamp(repo, base)
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", base, "--json")
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert payload.get("unestablished") is None
+    # Untouched on purpose: consumers prefix-match this to recognise an empty scope.
+    assert payload["reason"] == "no eligible changed files in this range"
+    assert "is not the checked-out HEAD" in payload["analyzed_head_not_checked_out_head"]
+    assert "ANALYZED head's, not this tree's" in result.stderr, result.stderr
+
+
+def test_an_unresolvable_head_refuses_instead_of_crashing(tmp_path: Path) -> None:
+    """`_false_green_warning` used to re-raise `GitUnavailable` after `run_gate`
+    had already built the UNESTABLISHED report, so the process died with a
+    traceback: the operator got neither the verdict line nor a parseable `--json`
+    payload. Exit 1, not 3 -- leniency granted because the head is a different
+    tree must not be inherited by a head the gate could not resolve at all."""
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "nosuchref")
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert result.stdout.startswith("UNESTABLISHED:"), result.stdout
+    assert "Traceback" not in result.stderr, result.stderr
+
+
+def test_an_annotated_tag_on_head_is_not_treated_as_a_different_tree(tmp_path: Path) -> None:
+    """One resolver, not two. The scope check peeled with `^{commit}` while
+    `_false_green_warning` used a bare `rev-parse`, so an annotated tag on the
+    checked-out commit read as the same head here and a different head there --
+    clearing the run to a verdict while the guard against an uncommitted-changes
+    false green silently switched itself off."""
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+    _write_coverage(repo, missing=[4], executed=[1, 2, 3])
+    _stamp(repo, base)
+    _git(repo, "tag", "-a", "v1", "-m", "release")
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "v1", "--json")
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload.get("unestablished") is None
+    assert payload["blocking"] == ["pkg/foo.py"]
+    # The RESOLVED commit, not the tag name, is what gets recorded and rendered.
+    assert payload["resolved_head_sha"] == _rev(repo)
+
+    human = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, "--head-sha", "v1")
+    assert f"[analyzed head: {_rev(repo)[:12]}]" in human.stdout, human.stdout
+
+
+def test_an_env_supplied_head_is_refused_and_named_the_same_way(tmp_path: Path) -> None:
+    """The head can arrive from `$MUTATION_HEAD_SHA`, not just from the CLI.
+
+    That is the shape the scheduled mutation workflow produces (it exports the
+    range for the whole sampler step), so an operator who never typed `--head-sha`
+    could still get a verdict over a range nobody asked for. The refusal must be
+    identical, and the analyzed head must appear in the human line -- before this
+    it was carried only by `--json`.
+    """
+    repo, base = _seed_repo(tmp_path)
+    _write_adapter(repo, ["pkg/**/*.py"])
+    _write_coverage(repo, missing=[4], executed=[1, 2, 3])
+    _stamp(repo, base)
+
+    stale_head = _rev(repo)
+    (repo / "pkg" / "foo.py").write_text("a = 1\nb = 2\nc = 3\nd = 4\ne = 5\n", encoding="utf-8")
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-m", "add line 5")
+
+    env = {**os.environ, "MUTATION_HEAD_SHA": stale_head}
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base, env=env)
+    assert result.returncode == 3, result.stdout + result.stderr
+    assert result.stdout.startswith("UNESTABLISHED:"), result.stdout
+    assert f"[analyzed head: {stale_head[:12]}]" in result.stdout
+
+    # The workflow's own shape -- head EQUALS the checked-out HEAD -- still renders
+    # a real verdict, so the refusal is scoped to the mismatch and not to the env.
+    head = _rev(repo)
+    _stamp(repo, base)
+    matching = run_script(SCRIPT, "--repo-root", str(repo), "--base-sha", base,
+                          env={**os.environ, "MUTATION_HEAD_SHA": head})
+    assert matching.returncode == 1, matching.stdout + matching.stderr
+    assert matching.stdout.startswith("FAIL:"), matching.stdout
+    assert f"[analyzed head: {head[:12]}]" in matching.stdout
+
+
 def test_help_explains_repo_root_and_json_options() -> None:
     result = run_script(SCRIPT, "--help")
     assert result.returncode == 0, result.stderr
@@ -218,7 +369,13 @@ def test_a_git_failure_while_fingerprinting_is_also_unestablished(tmp_path: Path
 
     def flaky(repo_root, args):
         calls["n"] += 1
-        if calls["n"] == 1:  # the changed-set probe succeeds
+        # Dispatch on the ARGS, not the call count. Counting made this stub depend
+        # on how many `git` calls `run_gate` happens to make before the fingerprint,
+        # so adding the analyzed-head resolution silently re-pointed the failure at
+        # the changed-set probe and the test asserted the wrong arm's message.
+        if args[:2] == ["rev-parse", "--verify"]:
+            return ["0" * 40]
+        if ".." in args[-1]:  # the changed-set probe succeeds
             return ["pkg/mod.py"]
         raise gate.GitUnavailable("git refused the fingerprint probe")
 

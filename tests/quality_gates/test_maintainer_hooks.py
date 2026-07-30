@@ -137,7 +137,17 @@ def _seed_source_repo_for_maintainer_setup(tmp_path: Path, pre_push_text: str) -
         shutil.copy2(ROOT / ".githooks" / name, repo / ".githooks" / name)
     (repo / ".githooks" / "pre-push").write_text(pre_push_text, encoding="utf-8")
     subprocess.run(["git", "init"], cwd=repo, check=True, capture_output=True, text=True)
-    subprocess.run(["git", "config", "core.hooksPath", ".githooks"], cwd=repo, check=True, capture_output=True, text=True)
+    # Absolute, because that is what `scripts/install-git-hooks.sh` writes
+    # (`git config core.hooksPath "$TARGET_REPO/.githooks"`). A relative value here
+    # would send `resolve_hookspath` down its other branch, so the seed would stop
+    # standing in for what the installer actually produces.
+    subprocess.run(
+        ["git", "config", "core.hooksPath", str(repo / ".githooks")],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
     return repo
 
 
@@ -363,18 +373,32 @@ def test_a_trailing_continuation_is_not_dropped() -> None:
     assert len(armed) == 1, (armed, unarmed, unclear, swallowed)
 
 
-def test_main_runs_the_arming_check_in_this_repo(monkeypatch, capsys) -> None:
+def test_main_runs_the_arming_check_on_a_source_shaped_repo(tmp_path: Path, monkeypatch, capsys) -> None:
     """The call site, not just the helper: `main()` must reach the content check.
 
     `main()` could stop calling `check_pre_push_arming` and every helper test
     above would stay green.
+
+    Run against a seeded source-shaped clone rather than `ROOT` (#466). Pointing
+    it at `ROOT` made the assertion depend on whether the CLONE had run
+    `install-git-hooks.sh` -- true on a maintainer machine, false in a fresh CI
+    checkout, where `main()` raised on the `core.hooksPath` check and never
+    reached the call site under test. That the real repo is source-shaped is a
+    separate claim, and `test_the_content_check_actually_runs_in_this_repo`
+    already owns it against `ROOT` without needing hooks installed.
     """
     module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
-    calls: list[str] = []
-    monkeypatch.setattr(module, "check_pre_push_arming", lambda path, rel: calls.append(rel))
-    monkeypatch.setattr(sys, "argv", ["validate_maintainer_setup.py", "--repo-root", str(ROOT)])
+    repo = _seed_source_repo_for_maintainer_setup(
+        tmp_path, (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    )
+    # The PATH is recorded too, not just the rel label: a `main()` that handed the
+    # checker `pre-commit` under the `.githooks/pre-push` label would validate the
+    # wrong file, and a label-only assertion stays green through that.
+    calls: list[tuple[Path, str]] = []
+    monkeypatch.setattr(module, "check_pre_push_arming", lambda path, rel: calls.append((Path(path), rel)))
+    monkeypatch.setattr(sys, "argv", ["validate_maintainer_setup.py", "--repo-root", str(repo)])
     assert module.main() == 0
-    assert calls == [".githooks/pre-push"], calls
+    assert calls == [(repo.resolve() / ".githooks" / "pre-push", ".githooks/pre-push")], calls
     assert "Validated maintainer hook setup" in capsys.readouterr().out
 
 

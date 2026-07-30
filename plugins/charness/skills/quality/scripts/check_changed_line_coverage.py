@@ -66,14 +66,28 @@ def _resolve_shas(args) -> tuple[str | None, str]:
 
 def _false_green_warning(repo_root: Path, head_sha: str, eligible_globs: list[str], exclude_globs: list[str]) -> str | None:
     """Warn when analyzing HEAD while eligible pool files have uncommitted changes
-    excluded from base..HEAD — a clean verdict would be a false green for them."""
-    resolved = _gate_lib._git_lines(repo_root, ["rev-parse", head_sha])
-    head = _gate_lib._git_lines(repo_root, ["rev-parse", "HEAD"])
-    if not (head_sha == "HEAD" or (resolved and head and resolved[0] == head[0])):
+    excluded from base..HEAD — a clean verdict would be a false green for them.
+
+    Resolves through `resolve_head_scope` rather than its own `rev-parse`. It used
+    a BARE `rev-parse <head>` while the scope check peeled with `^{commit}`, so an
+    annotated tag on the checked-out commit read as "same head" there and
+    "different head" here — and this guard, whose whole job is the false green,
+    turned itself off on a run that had just been cleared to render a verdict.
+
+    Nothing raises out of here any more either. `_git_lines` raises on a nonzero
+    git exit, so an unresolvable `--head-sha` used to kill the process with a
+    traceback AFTER `run_gate` had already produced the `UNESTABLISHED:` report —
+    the operator got neither the line nor a parseable `--json` payload.
+    """
+    scope = _gate_lib.resolve_head_scope(repo_root, head_sha)
+    if scope.error or scope.mismatch:
         return None
-    dirty = _gate_lib.eligible(
-        _gate_lib._git_lines(repo_root, ["diff", "--name-only", "HEAD"]), eligible_globs, exclude_globs
-    )
+    try:
+        dirty = _gate_lib.eligible(
+            _gate_lib._git_lines(repo_root, ["diff", "--name-only", "HEAD"]), eligible_globs, exclude_globs
+        )
+    except _gate_lib.GitUnavailable:
+        return None
     if not dirty:
         return None
     return (
@@ -101,7 +115,19 @@ def run(repo_root: Path, args) -> dict[str, object]:
         marker_path=_changed_files_lib.coverage_fingerprint_marker_path,
     )
     report["adapter_errors"] = []
-    if not report.get("inert"):
+    disclosure = report.get("analyzed_head_not_checked_out_head")
+    if disclosure:
+        # Exit stays 0 (the analyzed range really did change no eligible file), so
+        # this warning is the ONLY channel that says the empty scope belongs to the
+        # analyzed head and not to this tree. Without it the run prints a bare
+        # `OK:` -- the false green this whole arm exists to close, surviving in the
+        # human channel while `--json` alone carried the truth.
+        sys.stderr.write(
+            f"WARNING (changed-line coverage gate): {disclosure}. This range changed no "
+            "eligible file, so there was nothing to prove -- but the empty scope is the "
+            "ANALYZED head's, not this tree's.\n"
+        )
+    if not report.get("inert") and not report.get("unestablished"):
         warning = _false_green_warning(
             repo_root, head_sha, list(config.get("eligible_globs") or []), list(config.get("exclude_globs") or [])
         )
@@ -119,19 +145,33 @@ def human_line(report: dict) -> str:
     existed they fell through to the `OK:` line while the process exited 1 — a
     failing run narrating itself as a pass, which is the same conflation the
     unestablished state was introduced to end.
+
+    A non-default head is NAMED in the line. It can arrive from `$MUTATION_HEAD_SHA`
+    rather than from anything the operator typed, and only `--json` carried it
+    before, so a verdict over a range nobody asked for read as an unqualified one.
+    The RESOLVED commit is what gets rendered: echoing the raw input printed
+    `[analyzed head: refs/heads/m]` for a ref and `[analyzed head: main]` for a
+    branch — a truncated string in the position of a sha, naming no commit, which
+    is the opposite of the point.
     """
     if report.get("adapter_errors"):
         return f"quality adapter invalid: {'; '.join(str(e) for e in report['adapter_errors'])}"
     if report.get("inert"):
         return "changed_line_mutation_gate.eligible_globs is empty; gate inert (opted out)."
+    requested = str(report.get("head_sha") or "HEAD")
+    resolved = report.get("resolved_head_sha")
+    scope = "" if requested == "HEAD" or not resolved else f" [analyzed head: {str(resolved)[:12]}]"
     if report.get("unestablished"):
-        return f"UNESTABLISHED: {report.get('reason', 'this run established nothing')}"
+        return f"UNESTABLISHED: {report.get('reason', 'this run established nothing')}{scope}"
     if report["blocking"]:
         return (
             f"FAIL: {len(report['blocking'])} changed file(s) have uncovered changed lines: "
-            f"{', '.join(report['blocking'])}"
+            f"{', '.join(report['blocking'])}{scope}"
         )
-    return f"OK: {report.get('reason', 'no uncovered changed lines')}"
+    return f"OK: {report.get('reason', 'no uncovered changed lines')}{scope}"
+
+
+UNESTABLISHED_EXIT = 3
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -141,6 +181,15 @@ def main(argv: list[str] | None = None) -> int:
     print(json.dumps(report, indent=2, sort_keys=True) if args.json else human_line(report))
     if report.get("adapter_errors"):
         return 1
+    # Exit 3 for "this run could not judge the range", separately from exit 1 for
+    # "it judged and the changed lines are uncovered". A consumer's CI reads the
+    # exit code, not stdout, so collapsing them made a could-not-judge arrive as a
+    # coverage failure. `ok: True` marks the causes that are lenient by a NAMED
+    # reason (the analyzed head is not this worktree); a cause the gate could not
+    # even look into keeps `ok: False` and exit 1, because leniency granted for one
+    # reason must not be inherited by another.
+    if report.get("unestablished") and report.get("ok"):
+        return UNESTABLISHED_EXIT
     return 0 if report["ok"] else 1
 
 

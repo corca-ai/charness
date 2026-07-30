@@ -211,6 +211,73 @@ def test_select_eligible_writes_log_tail_when_no_nodeids_parsed(
     assert "ModuleNotFoundError" in "\n".join(marker["log_tail"])
 
 
+def test_the_baseline_pytest_run_does_not_inherit_the_workflow_mutation_range() -> None:
+    """The coverage-baseline pytest must not see the sampler's own range (#466).
+
+    The mutation workflow sets `MUTATION_BASE_SHA`/`MUTATION_HEAD_SHA` for the
+    whole "Select mutation sample" step, and the baseline pytest it launches
+    inherits the step environment. Any test that seeds a throwaway git repo and
+    runs a gate defaulting its head to `$MUTATION_HEAD_SHA` then analyzed THIS
+    repo's HEAD inside that repo -- an invalid revision range, an UNESTABLISHED
+    refusal, and a red baseline that aborted the whole mutation run before a
+    single mutant was sampled.
+
+    Run as a NESTED pytest with the range exported, because that is the only shape
+    that can fail. Asserting `"MUTATION_HEAD_SHA" not in os.environ` in this
+    process is a tautology in every lane that gates a merge: nothing outside the
+    scheduled mutation workflow sets these, so the assertion holds with the
+    fixture deleted. The child below reproduces the workflow's environment and
+    re-runs the actual victim, so deleting `_scrub_ambient_runner_state` turns
+    it red here rather than three hours later in the cron.
+
+    `CHARNESS_NESTED_PYTEST` marks the child so its `pytest_sessionfinish` skips
+    the agent-browser orphan reaper: a nested session must not kill process trees
+    belonging to the outer run.
+    """
+    repo_root = Path(__file__).resolve().parents[2]
+    outer_head = subprocess.run(
+        ["git", "rev-parse", "HEAD"], cwd=repo_root, check=True, capture_output=True, text=True
+    ).stdout.strip()
+
+    victim = "tests/quality_gates/test_changed_line_coverage_gate.py::test_a_git_failure_is_unestablished_not_an_empty_change_set"
+    nested = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly", victim],
+        cwd=repo_root,
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "CHARNESS_NESTED_PYTEST": "1",
+             "MUTATION_BASE_SHA": outer_head, "MUTATION_HEAD_SHA": outer_head},
+    )
+    assert nested.returncode == 0, nested.stdout + nested.stderr
+
+
+def test_the_baseline_pytest_run_does_not_write_to_the_runner_step_output(tmp_path: Path) -> None:
+    """`$GITHUB_OUTPUT` is the same inherited-runner-state class as the range.
+
+    `append_github_output` writes `sample_files=<...>` whenever `GITHUB_OUTPUT` is
+    set, and the in-process `main()` calls in this file reach it. Under the
+    mutation workflow that variable is the "Select mutation sample" step's own
+    output file, which the "Run mutation" step consumes -- so a tmp-repo sample
+    list from a test could stand in for the real one. Observed writing
+    `sample_files=scripts/a.py` before the scrub.
+    """
+    step_output = tmp_path / "github-output.txt"
+    step_output.write_text("", encoding="utf-8")
+
+    victim = "tests/quality_gates/test_mutation_baseline_abort.py::test_sample_script_removes_stale_marker_on_successful_start"
+    nested = subprocess.run(
+        [sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-p", "no:randomly", victim],
+        cwd=Path(__file__).resolve().parents[2],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={**os.environ, "CHARNESS_NESTED_PYTEST": "1", "GITHUB_OUTPUT": str(step_output)},
+    )
+    assert nested.returncode == 0, nested.stdout + nested.stderr
+    assert step_output.read_text(encoding="utf-8") == "", step_output.read_text(encoding="utf-8")
+
+
 def test_sample_script_removes_stale_marker_on_successful_start(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

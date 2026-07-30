@@ -599,6 +599,27 @@ fingerprint — so a missing/old coverage source never false-fails; it warns whe
 analyzing `HEAD` would exclude uncommitted eligible changes. Unknown sub-keys
 land in warnings.
 
+**The analyzed head must be the checked-out `HEAD`.** Coverage is read from the
+live worktree while the change set is diffed against the analyzed head, so when
+they differ the mapping and the measurement describe different trees and no
+verdict over them is trustworthy. Exit codes:
+
+| Exit | Meaning |
+| --- | --- |
+| 0 | judged clean, or skipped non-blocking for one of the reasons above |
+| 1 | judged, and changed lines are uncovered — or the gate could not resolve the head or the range at all |
+| 3 | **could not judge**: the analyzed head is not the checked-out `HEAD`, and the range did touch eligible files |
+
+Exit 3 is not a coverage failure and carries `ok: true`; treat it as unproven,
+not as a red. When the range touched no eligible file the run still exits 0, but
+the report carries `analyzed_head_not_checked_out_head` and a stderr warning —
+the empty scope belongs to the analyzed head, not to your worktree.
+
+**CI note.** `actions/checkout` on a `pull_request` event checks out the merge
+ref, so `HEAD` is the merge commit, not `github.event.pull_request.head.sha`.
+Pinning `--head-sha` to the PR head sha there produces exit 3 on every run. Leave
+the head defaulted to `HEAD` and pass only `--base-sha`.
+
 ## Design Rules
 
 - keep repo-specific commands in the adapter, not in the skill body

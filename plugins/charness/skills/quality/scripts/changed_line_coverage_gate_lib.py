@@ -21,7 +21,7 @@ import re
 import subprocess
 from functools import lru_cache
 from pathlib import Path
-from typing import Callable
+from typing import Callable, NamedTuple
 
 
 class GitUnavailable(RuntimeError):
@@ -103,6 +103,72 @@ def changed_eligible(
     return eligible(changed, eligible_globs, exclude_globs)
 
 
+class HeadScope(NamedTuple):
+    """What the analyzed head resolves to, and whether it can support a verdict.
+
+    Three fields, three distinct states, because collapsing them is how this gate
+    got into trouble in the first place:
+
+    * `resolved` -- the analyzed head as a COMMIT sha, for anything that renders
+      or records which head was judged. Never the raw input: `--head-sha main`
+      and `--head-sha refs/heads/main` name a commit but are not one, and a
+      verdict line that echoes the raw string names no commit at all.
+    * `error` -- the head (or `HEAD`) could not be resolved. Could-not-look, not
+      nothing-found.
+    * `mismatch` -- the head resolved fine but is not the checked-out `HEAD`.
+      Coverage is collected from the LIVE worktree while the change set is diffed
+      against the analyzed head, so the mapping and the measurement describe
+      different trees.
+    """
+
+    resolved: str | None
+    error: str | None
+    mismatch: str | None
+
+
+def resolve_head_scope(repo_root: Path, head_sha: str) -> HeadScope:
+    """Resolve the analyzed head ONCE, for every consumer that needs it.
+
+    Single-sourced deliberately. Two resolvers of the same input disagreed here:
+    this check peeled with `rev-parse --verify <head>^{commit}` while
+    `_false_green_warning` used a bare `rev-parse <head>`, so an ANNOTATED TAG on
+    the checked-out commit resolved equal here (peeled to the commit) and unequal
+    there (the tag object's own sha). The run was cleared to a verdict while the
+    one guard against an uncommitted-changes false green silently switched itself
+    off -- the same "render a verdict over inputs that cannot support one" class
+    this function exists to refuse.
+
+    Parent-reproduced, the case that started it: with `MUTATION_HEAD_SHA` exported
+    to the base commit, the same `--base-sha B` run over the same tree went from
+    `FAIL: 1 changed file(s) have uncovered changed lines` to `OK: no eligible
+    changed files in this range`, exit 0 -- `B..B` is empty, and the human line
+    never named the head it had actually analyzed.
+    """
+    try:
+        head = _git_lines(repo_root, ["rev-parse", "--verify", "HEAD^{commit}"])
+    except GitUnavailable as exc:
+        return HeadScope(None, f"could not resolve `HEAD`: {exc}", None)
+    if not head:
+        return HeadScope(None, "could not resolve `HEAD`", None)
+    if head_sha == "HEAD":
+        return HeadScope(head[0], None, None)
+    try:
+        resolved = _git_lines(repo_root, ["rev-parse", "--verify", f"{head_sha}^{{commit}}"])
+    except GitUnavailable as exc:
+        return HeadScope(None, f"could not resolve `{head_sha}` to a commit: {exc}", None)
+    if not resolved:
+        return HeadScope(None, f"could not resolve `{head_sha}` to a commit", None)
+    if resolved[0] == head[0]:
+        return HeadScope(resolved[0], None, None)
+    return HeadScope(
+        resolved[0],
+        None,
+        f"the analyzed head `{resolved[0][:12]}` is not the checked-out HEAD `{head[0][:12]}`, "
+        "but coverage is collected from the HEAD worktree, so the mapping and the "
+        "measurement describe different trees",
+    )
+
+
 def changed_pool_vs_base(
     repo_root: Path, base_sha: str, eligible_globs: list[str], exclude_globs: list[str]
 ) -> list[str]:
@@ -145,6 +211,33 @@ def gate_config(config: dict[str, object]) -> tuple[list[str], str, list[str]]:
     )
 
 
+def _scope_mismatch_report(base: dict, changed: list[str], mismatch: str) -> dict[str, object]:
+    """The analyzed head is not `HEAD` and the range DID touch eligible files.
+
+    `ok: True`, not `ok: False`, and reported only once the changed set is known.
+    Both choices copy `scripts/check_changed_line_mutation_coverage.py`, which
+    reached them the hard way and wrote down why:
+
+    * Placed AFTER the changed set, because refusing before it made an EMPTY scope
+      refusable -- a push stoppable with the reason "no eligible files changed",
+      which `prepush_focused_changed_line_coverage` names as an incoherent blocker
+      on the gate whose credibility is the point.
+    * `ok: True` with its own exit code, because a could-not-judge is not a
+      coverage failure. Collapsing them onto the failing exit puts "I could not
+      look" in the bucket reserved for "I looked and it is uncovered" -- the exact
+      conflation the unestablished state was introduced to end.
+
+    Callers read `unestablished` to pick the exit code; `ok` stays out of it.
+    """
+    return {
+        **base,
+        "ok": True,
+        "unestablished": True,
+        "changed_pool_files": changed,
+        "reason": f"cannot judge this range: {mismatch}",
+    }
+
+
 def run_gate(
     repo_root: Path,
     config: dict[str, object],
@@ -161,6 +254,10 @@ def run_gate(
     empty (opt-out). Non-blocking skip when there is no base SHA, no eligible
     changed file, no coverage report, or a stale freshness marker — matching the
     charness gate so a missing/old coverage source never false-fails.
+
+    An analyzed head that is not the checked-out `HEAD` establishes nothing, but
+    it is reported the way the repo-local sibling reports it, which is NOT the
+    obvious way. See `_scope_mismatch_report`.
     """
     eligible_globs = list(config.get("eligible_globs") or [])
     exclude_globs = list(config.get("exclude_globs") or [])
@@ -172,6 +269,13 @@ def run_gate(
         return {"ok": True, **base, "reason": "no base_sha: changed-line classifier is non-blocking (matches workflow_dispatch)"}
     if not coverage_rel:
         return {"ok": True, **base, "reason": "no coverage_json configured: gate skipped (non-blocking)"}
+    scope = resolve_head_scope(repo_root, head_sha)
+    base = {**base, "resolved_head_sha": scope.resolved}
+    if scope.error:
+        # Could-not-look, not nothing-found — the same distinction the changed-set
+        # arm below draws. `ok: False`, because a head this gate cannot resolve is
+        # not a range it may quietly decline to judge.
+        return {"ok": False, **base, "unestablished": True, "reason": f"could not establish the analyzed head: {scope.error}"}
     try:
         changed = changed_eligible(repo_root, base_sha, head_sha, eligible_globs, exclude_globs)
     except GitUnavailable as exc:
@@ -179,8 +283,18 @@ def run_gate(
         # to report an empty one -- the shape that let an unresolvable base_sha
         # pass as "nothing changed" while the classifier never ran.
         return {"ok": False, **base, "unestablished": True, "reason": f"could not establish the changed set: {exc}"}
+    if scope.mismatch and changed:
+        return _scope_mismatch_report(base, changed, scope.mismatch)
     if not changed:
-        return {"ok": True, **base, "reason": "no eligible changed files in this range"}
+        empty: dict[str, object] = {"ok": True, **base, "reason": "no eligible changed files in this range"}
+        if scope.mismatch:
+            # Exit stays 0 -- the range honestly changed no eligible file, and
+            # refusing an empty scope is the incoherent blocker the sibling names
+            # by name. But the DISCLOSURE must not vanish with the refusal: the
+            # empty scope is the ANALYZED head's, not this tree's. `reason` is
+            # deliberately untouched so consumers can still prefix-match it.
+            empty["analyzed_head_not_checked_out_head"] = scope.mismatch
+        return empty
     coverage_json = repo_root / coverage_rel
     if not coverage_json.is_file():
         return {"ok": True, **base, "changed_pool_files": changed,
