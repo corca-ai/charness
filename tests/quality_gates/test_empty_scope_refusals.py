@@ -394,3 +394,38 @@ def test_python_lengths_named_gated_path_still_validates() -> None:
     )
     assert result.returncode == 0, result.stdout + result.stderr
     assert "Validated Python length limits for 1 file(s)." in result.stdout
+
+
+def test_skill_cut_safety_unscoped_human_output_names_the_paths_and_the_remedy() -> None:
+    """The operator-facing half of the S43 refusal.
+
+    In-process on purpose. The `--json` arm above is exercised through `run_gate`,
+    a subprocess the coverage mapper cannot attribute, so the human renderer's
+    `unscoped` branch read as untested and the armed changed-line gate blocked on
+    it. That is issue #465's class arriving in the very slice that closed S43.
+
+    A refusal whose message does not name what it refused, or what to do instead,
+    is a refusal the operator can only work around.
+    """
+    cut_safety = _MODULES["scripts/check_skill_cut_safety.py"]
+    report = {
+        "status": "unscoped",
+        "skills": [],
+        "unscoped_paths": [
+            "skills/public/release/references/critique-boundary.md",
+            "docs/handoff.md",
+        ],
+    }
+
+    text = cut_safety.format_human(report)
+
+    assert text.splitlines()[0] == "skill-cut-safety: unscoped"
+    for path in report["unscoped_paths"]:
+        assert path in text
+    assert "nothing was checked" in text
+    assert "Name the SKILL.md" in text  # the remedy, not just the refusal
+
+    # Control: a real clean verdict does not borrow the unscoped narration.
+    clean = cut_safety.format_human({"status": "clean", "skills": []})
+    assert "nothing was checked" not in clean
+    assert "no changed public/support SKILL.md surfaces to check." in clean
