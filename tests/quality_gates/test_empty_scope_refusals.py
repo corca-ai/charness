@@ -38,6 +38,12 @@ _MODULES = {
         "scripts/validate_retro_artifact.py",
         "scripts/validate_ideation_artifact.py",
         "scripts/check_mutation_run_proof.py",
+        "scripts/check_python_lengths.py",
+        "scripts/check_skill_bootstrap_vars.py",
+        "scripts/check_skill_cut_safety.py",
+        "scripts/check_skill_surface_preflight.py",
+        "scripts/check_test_repo_copy_invariants.py",
+        "scripts/validate_integrations.py",
     )
 }
 
@@ -236,3 +242,155 @@ def test_known_red_run_is_distinguishable_from_unknown_conclusion() -> None:
     assert red.returncode != 0
     assert verdict["provable"] is False
     assert verdict["conclusion_established"] is True
+
+
+# --- 2026-07-28 triage sweep, class (a): a glob that matched NOTHING reported a
+# successful validation. Same two rules as above, applied per gate: a scope the
+# CALLER NAMED that resolves to nothing refuses; a DISCOVERED empty set stays a
+# pass. The third shape these added: named paths this gate does not govern
+# (`plugins/` mirrors, root-level helpers) stay a pass, but may not print a
+# `Validated ... 0 file(s)` verdict.
+
+
+@pytest.mark.parametrize(
+    ("script", "args", "expected_fragment"),
+    [
+        # S42: zero SKILL.md under the named root.
+        ("scripts/check_skill_bootstrap_vars.py", [], "no public/support SKILL.md files found"),
+        # S46: `find_violations` returns [] with no tests/ dir, and --repo-root
+        # defaults to the CWD, so a wrong cwd certified PASS over zero files.
+        ("scripts/check_test_repo_copy_invariants.py", [], "no test Python files found"),
+        # S49: every per-manifest rule iterates a hardcoded glob under the root.
+        ("scripts/validate_integrations.py", [], "no integration manifests found"),
+    ],
+)
+def test_zero_scope_scan_refuses_sweep(
+    tmp_path: Path, script: str, args: list[str], expected_fragment: str
+) -> None:
+    result = run_gate(script, "--repo-root", str(_empty_root(tmp_path)), *args)
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
+
+
+@pytest.mark.parametrize(
+    "script",
+    [
+        "scripts/check_skill_bootstrap_vars.py",
+        "scripts/check_test_repo_copy_invariants.py",
+        "scripts/validate_integrations.py",
+    ],
+)
+def test_zero_scope_refusal_is_not_an_unconditional_failure_sweep(script: str) -> None:
+    """Positive control: an implementation that exits 1 always would pass every
+    refusal above. These gates must still pass on the real repo."""
+    result = run_gate(script, "--repo-root", str(ROOT))
+    assert result.returncode == 0, result.stdout + result.stderr
+
+
+def test_skill_cut_safety_named_non_skill_path_refuses() -> None:
+    """S43: `--path` is how a caller ASKS whether a cut is safe. A named path this
+    gate cannot judge (a references/*.md contract home) answered `clean` over zero
+    checks -- a green verdict for a question that was never evaluated."""
+    result = run_gate(
+        "scripts/check_skill_cut_safety.py",
+        "--repo-root", str(ROOT),
+        "--path", "skills/public/release/references/critique-boundary.md",
+        "--json",
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unscoped"
+    assert payload["unscoped_paths"] == ["skills/public/release/references/critique-boundary.md"]
+
+
+def test_skill_cut_safety_named_skill_md_still_passes() -> None:
+    """Control: a named SKILL.md with no broken pin is a real clean verdict."""
+    result = run_gate(
+        "scripts/check_skill_cut_safety.py",
+        "--repo-root", str(ROOT), "--path", "skills/public/release/SKILL.md", "--json",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["status"] == "clean"
+
+
+def test_skill_core_headroom_absolute_path_refuses() -> None:
+    """S44: `_is_skill_core_path` requires exactly four REPO-RELATIVE parts, so the
+    ABSOLUTE path of a real SKILL.md was dropped and reported `status: ok`."""
+    result = run_gate(
+        "scripts/check_skill_surface_preflight.py",
+        "--repo-root", str(ROOT),
+        "--changed-skill-md", str(ROOT / "skills/public/impl/SKILL.md"),
+        "--json",
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "unscoped"
+    assert payload["checked"] == []
+
+
+def test_skill_core_headroom_empty_list_stays_a_pass() -> None:
+    """The asymmetry, at this gate: `--changed-skill-md` with NO values is the hook
+    reporting an empty changed set -- a real answer that must stay a cheap pass."""
+    result = run_gate(
+        "scripts/check_skill_surface_preflight.py", "--repo-root", str(ROOT), "--changed-skill-md", "--json"
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert json.loads(result.stdout)["status"] == "ok"
+
+
+def test_skill_core_headroom_relative_path_still_passes() -> None:
+    """Control for the refusal above: the same file, named the way the commit-gate
+    caller names it, is really ratcheted."""
+    result = run_gate(
+        "scripts/check_skill_surface_preflight.py",
+        "--repo-root", str(ROOT), "--changed-skill-md", "skills/public/impl/SKILL.md", "--json",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "ok"
+    assert [row["path"] for row in payload["checked"]] == ["skills/public/impl/SKILL.md"]
+
+
+def test_python_lengths_headroom_without_paths_reports_every_gated_file() -> None:
+    """S39: `args.paths or []` turned an OMITTED --paths into an explicit EMPTY
+    selection, so the advisory whose --help promises per-gated-file headroom
+    printed `{"headroom": []}`."""
+    result = run_gate("scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--headroom", "--json")
+    assert result.returncode == 0, result.stdout + result.stderr
+    rows = json.loads(result.stdout)["headroom"]
+    assert len(rows) > 1
+    assert "scripts/check_python_lengths.py" in {row["path"] for row in rows}
+
+
+def test_python_lengths_unresolvable_named_path_refuses() -> None:
+    """S40: a named path that resolves to nothing (a typo, or paths expressed
+    relative to a subdirectory) measured zero files and printed `Validated ... 0
+    file(s).` -- a hard length gate passing over nothing."""
+    result = run_gate(
+        "scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--paths", "scripts/no_such_file.py"
+    )
+    assert result.returncode != 0, result.stdout + result.stderr
+    assert "resolve to nothing" in (result.stdout + result.stderr)
+
+
+def test_python_lengths_named_ungated_paths_pass_without_a_validated_verdict() -> None:
+    """The false-refusal boundary, and why this half is NOT a refusal: the staged
+    pre-commit caller hands over staged .py files, and real ones sit outside the
+    gated globs (`runtime_bootstrap.py`, the generated `plugins/` mirror). Failing
+    those would block a legitimate commit -- but the run may not claim it validated."""
+    result = run_gate(
+        "scripts/check_python_lengths.py", "--repo-root", str(ROOT), "--paths", "runtime_bootstrap.py"
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Validated Python length limits for 0 file(s)." not in result.stdout
+    assert "nothing was validated" in result.stdout
+
+
+def test_python_lengths_named_gated_path_still_validates() -> None:
+    """Control: the ordinary staged-file invocation still measures and passes."""
+    result = run_gate(
+        "scripts/check_python_lengths.py",
+        "--repo-root", str(ROOT), "--paths", "scripts/check_python_lengths.py",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "Validated Python length limits for 1 file(s)." in result.stdout

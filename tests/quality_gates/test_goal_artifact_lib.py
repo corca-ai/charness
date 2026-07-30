@@ -73,6 +73,36 @@ def test_check_goal_flags_missing_activation_preamble_line() -> None:
     assert not any("Activation" in issue for issue in gal.check_goal(with_activation)["issues"])
 
 
+def test_check_goal_activation_ignores_a_fenced_template_excerpt() -> None:
+    """S53 (audit 2026-07-28): the check was a bare substring test
+    (`"Activation:" not in text`) over the RAW body, so a goal whose only
+    `Activation:` occurrence was a fenced template excerpt passed with no real
+    activation line, and a valueless bare label passed too."""
+    fenced_only = (
+        "# Achieve Goal: T\n\nStatus: draft\n\n"
+        "```\nActivation: `/goal @template.md`\n```\n\n## Goal\nbody\n"
+    )
+    valueless = "# Achieve Goal: T\n\nStatus: draft\nActivation:\n\n## Goal\nbody\n"
+
+    for text in (fenced_only, valueless):
+        assert any("Activation" in issue for issue in gal.check_goal(text)["issues"]), text
+        assert gal.check_goal(text)["ok"] is False
+
+
+def test_check_goal_activation_control_real_line_beside_a_fence_passes() -> None:
+    """Control (false-refusal guard): a real activation line still satisfies the
+    check when the artifact also carries a fenced example, and the list-item and
+    indented forms stay accepted."""
+    beside_fence = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "```\nActivation: `/goal @template.md`\n```\n\n## Goal\nbody\n"
+    )
+    list_item = "# Achieve Goal: T\n\nStatus: draft\n- Activation: `/goal @x.md`\n\n## Goal\nbody\n"
+
+    for text in (beside_fence, list_item):
+        assert not any("Activation" in issue for issue in gal.check_goal(text)["issues"]), text
+
+
 def test_append_slice_numbers_and_spacing(tmp_path: Path) -> None:
     gal.upsert_goal(tmp_path, date="2026-05-27", slug="g", title="T")
     path = gal.goal_path(tmp_path, "2026-05-27", "g")

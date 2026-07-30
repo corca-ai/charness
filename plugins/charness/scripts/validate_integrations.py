@@ -103,6 +103,18 @@ def validate_config_layers(manifest: dict[str, object], path: Path) -> None:
         raise ValidationError(f"{path}: env config layer requires capability_requirements.env_vars")
 
 
+def validate_shared_declaration_schema(document: dict, path: Path) -> None:
+    """The rules an integration manifest and a support capability BOTH declare.
+
+    One home so the two callers cannot drift apart: a rule added for manifests and
+    silently not applied to capabilities is a gate whose coverage depends on which
+    of two copies the author happened to edit.
+    """
+    validate_access_mode_order(document, path)
+    validate_capability_requirements(document, path)
+    validate_config_layers(document, path)
+
+
 def validate_support_install_entrypoint(manifest: dict[str, object], path: Path) -> None:
     support = manifest.get("support_skill_source")
     if not isinstance(support, dict):
@@ -240,13 +252,25 @@ def main() -> int:
         manifests = load_manifests(repo_root)
         support_capabilities = load_support_capabilities(repo_root)
         advisories: list[str] = []
-        for manifest_path in sorted((repo_root / "integrations" / "tools").glob("*.json")):
-            if manifest_path.name in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}:
-                continue
+        owned_manifest_paths = [
+            path
+            for path in sorted((repo_root / "integrations" / "tools").glob("*.json"))
+            if path.name not in {"manifest.schema.json", "dependencies.json", "dependencies.schema.json"}
+        ]
+        if not owned_manifest_paths:
+            # Every per-manifest and per-capability rule below iterates a hardcoded
+            # glob under this root. Zero repo-owned manifests means those rules ran
+            # over nothing while the summary line still read as a validation, so the
+            # scope was never established (see the empty-scope family critique). The
+            # plugin-fallback manifests `load_manifests` merges in do NOT count: they
+            # are not what a `--repo-root` run was asked to validate.
+            raise ValidationError(
+                f"no integration manifests found under {repo_root / 'integrations' / 'tools'}; "
+                "nothing was validated. Check --repo-root."
+            )
+        for manifest_path in owned_manifest_paths:
             manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-            validate_access_mode_order(manifest, manifest_path)
-            validate_capability_requirements(manifest, manifest_path)
-            validate_config_layers(manifest, manifest_path)
+            validate_shared_declaration_schema(manifest, manifest_path)
             validate_support_install_entrypoint(manifest, manifest_path)
             validate_cautilus_trigger_specificity(manifest, manifest_path)
             validate_agent_browser_check_commands(manifest, manifest_path)
@@ -258,9 +282,7 @@ def main() -> int:
                 advisories.append(advisory)
         for capability_path in sorted((repo_root / "skills" / "support").glob("*/capability.json")):
             capability = json.loads(capability_path.read_text(encoding="utf-8"))
-            validate_access_mode_order(capability, capability_path)
-            validate_capability_requirements(capability, capability_path)
-            validate_config_layers(capability, capability_path)
+            validate_shared_declaration_schema(capability, capability_path)
             validate_agent_browser_readiness_commands(capability, capability_path)
         lock_schema = load_lock_schema()
         lock_files = lock_paths(repo_root)

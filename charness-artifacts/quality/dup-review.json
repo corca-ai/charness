@@ -422,6 +422,13 @@
     },
     {
       "class": "intentional",
+      "id": "4fb906d492e93c84",
+      "note": "the `print(summary); return 0` / `if __name__ == \"__main__\": raise SystemExit(main())` CLI tail, shared by scripts/check_skill_bootstrap_vars.py and scripts/check_markdown_inline_code.py. Every other member is untouched by this slice; the empty-scope refusal shifted the line numbers into an existing shape. The tail is the repo's uniform gate-CLI contract, not extractable debt.",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "50f11ad09152927c",
       "note": "standard adapter-resolution echo {found, valid, path, warnings} shared by the find-skills list_capabilities output and the narrative adapter-review output; the find-skills span re-fingerprinted after the next_step / recommendation_interpretation addition, surfacing this pre-existing intentional adapter-echo shape — a shared echo helper would couple unrelated skill adapter libs for negligible value",
       "reviewed_at": "2026-06-28",
@@ -625,6 +632,13 @@
     },
     {
       "class": "intentional",
+      "id": "707d4517f948f272",
+      "note": "the achieve goal-artifact `## <heading>` section-scan idiom, shared by goal_artifact_closeout_evidence.py, goal_artifact_section_placeholders.py and goal_artifact_operator_queue.py. The three scan for DIFFERENT section vocabularies with different emptiness rules; the operator-queue member is the only one this slice touched (it now slices the masked copy so a fenced example is not read as a real decision), and collapsing three verdict-specific readers into one is how a rule added for one silently fails to apply to the others.",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7205c9cd09e28aee",
       "note": "the 111-member `_load_skill_runtime_bootstrap` portability preamble every portable skill script carries so it stays directly executable in both source and exported plugin layouts. This is the blind spot the nose advisory names about itself; the family rotated only because dup_ratchet_rebaseline.py (a split forced by check-python-lengths) became member 111. Extracting it is impossible by construction: the preamble is what finds the shared loader",
       "reviewed_at": "2026-07-26",
@@ -691,6 +705,13 @@
       "id": "7c18c445e63ebe16",
       "note": "the ordinary Python early-return-with-a-long-message idiom (`if <status-cond>: return (\"...\" \"...\")`) in three unrelated modules: scripts/check_staged_reversion.py:122-133 (untouched), skills/public/quality/scripts/propose_mutation_testing.py:115-119 (untouched), skills/public/release/scripts/publish_release_artifact_sections.py:178-182. Surfaced by scan rotation when the distinct-channel qualifier was extracted into its own function to clear a C901 complexity failure; the shared tokens are the control-flow keywords and string-continuation shape, not logic. Two of three members untouched this session (#441 rotation class)",
       "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7dd66ad639d0d9db",
+      "note": "the preflight/inventory `argparse -> build report -> emit JSON or human -> exit code` main() shape, shared by four unrelated repo scripts. Only check_skill_surface_preflight.py is in this diff (its named-scope refusal), and the other three are untouched. This is the repo's CLI contract surfacing as duplication.",
+      "reviewed_at": "2026-07-30",
       "surface": "code"
     },
     {
@@ -782,6 +803,13 @@
       "id": "90cebad1d0bdb633",
       "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
       "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "91bc7279701970c8",
+      "note": "the achieve floor helpers' `heading match -> body span -> return` slice, shared by goal_artifact_operator_queue.py, goal_artifact_blocked_matrix.py and goal_artifact_closeout_delegation.py. Same reasoning as 707d4517f948f272: three floors reading three different sections. The queue member changed in this slice only to slice the MASKED copy.",
+      "reviewed_at": "2026-07-30",
       "surface": "code"
     },
     {
@@ -933,6 +961,13 @@
     },
     {
       "class": "intentional",
+      "id": "b4e7c89bc8c6546d",
+      "note": "goal_artifact_operator_queue.py and goal_artifact_blocked_matrix.py as whole floor modules: both are `parse the section -> classify -> return an applies/ok verdict` shapes for two DIFFERENT floors with different vocabularies and different refusal semantics. Merging them would produce one module whose verdict depends on a mode flag, which is the shape this repo's own audit keeps finding defects in.",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b56c1479ef7c3d0e",
       "note": "handoff auto-draft goal template intentionally shares achieve goal artifact section skeleton; single-sourcing would blur source template ownership more than reduce maintenance risk",
       "reviewed_at": "2026-06-27",
@@ -964,6 +999,13 @@
       "id": "b89f4eca9f566307",
       "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
       "reviewed_at": "2026-06-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b99895fcd6c55dbc",
+      "note": "the `findings -> render lines -> print -> exit` reporting tail, shared by check_skill_cut_safety.py, check_prose_pin.py and render_critique_section_changed_surfaces.py. Only the first is in this diff (its named-path refusal); the other two are untouched.",
+      "reviewed_at": "2026-07-30",
       "surface": "code"
     },
     {
@@ -1166,6 +1208,13 @@
       "class": "intentional",
       "id": "dd9ce9abe53447dc",
       "note": "the standard try/except ImportError sibling-module bootstrap block, shared by scripts/host_hook_entry_identity.py and scripts/host_hook_skill_anchor_guard.py. This is the repo's portability idiom for a script that must import a sibling both as a package member and when invoked as a bare file from an installed copy; it cannot be centralized, because the helper that centralized it would need the very import it is bootstrapping. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
+      "reviewed_at": "2026-07-30",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "de8e920be17d0d8b",
+      "note": "the character-preserving line-blank loop (`\"\".join(\"\\n\" if char == \"\\n\" else \" \" ...)`) in goal_artifact_markdown.mask_fences, disposition_form.py and proof_mismatch.py. Offset-preserving masking is the shared TECHNIQUE, but each has its own notion of what to blank and each is reached by a different vendored package; the achieve copy ships inside skills/public/achieve and cannot import a repo-root helper.",
       "reviewed_at": "2026-07-30",
       "surface": "code"
     },

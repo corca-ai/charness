@@ -352,6 +352,18 @@ def main() -> int:
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
+    tests_root = repo_root / "tests"
+    if not tests_root.is_dir() or not _iter_python_files(tests_root):
+        # `find_violations` returns [] for a missing/empty tests tree, and
+        # --repo-root defaults to the cwd, so a wrong cwd used to certify PASS
+        # over zero files. Scanning nothing is an unestablished scope, not a
+        # clean one (charness-artifacts/critique/2026-07-27-empty-scope-family.md).
+        print(
+            f"no test Python files found under {tests_root}; nothing was scanned. "
+            "Check --repo-root (it defaults to the current directory).",
+            file=sys.stderr,
+        )
+        return 1
     violations = find_violations(repo_root)
     if not violations:
         return 0

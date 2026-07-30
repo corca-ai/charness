@@ -49,6 +49,7 @@ metric_window_attention = _metric_window.metric_window_attention
 check_timebox_closeout = _timebox.check_timebox_closeout
 check_blocked_matrix = _blocked_matrix.check
 _mask_fences = _markdown.mask_fences
+_fences_balanced = _markdown.fences_balanced
 slice_plan_data_row_count = _markdown.slice_plan_data_row_count
 
 GOAL_DIR = "charness-artifacts/goals"
@@ -91,6 +92,15 @@ _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# A real activation line: its own line (optionally a list item) with a non-empty
+# value. The old substring test (`"Activation:" not in text`) passed a goal whose
+# only occurrence was a fenced template excerpt or a bare valueless label.
+# Prefix class matches the sibling `_CREATED_LINE` in goal_artifact_floor_grammar:
+# a bold, bullet or blockquoted `Activation:` line is present, only decorated, and
+# refusing it with "missing `Activation:` line" asserts something the code did not
+# establish. The shape check is that the line stands on its own and carries a
+# non-empty value -- what the old bare `"Activation:" in text` substring never did.
+_ACTIVATION_LINE = re.compile(r"^[ \t>*\-]*\**[ \t]*Activation[ \t]*:[ \t]*\**[ \t]*\S", re.MULTILINE)
 
 
 _TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
@@ -335,7 +345,18 @@ def check_goal(text: str) -> dict[str, Any]:
         issues.append("missing `Status:` line")
     elif status not in VALID_STATUSES:
         issues.append(f"status {status!r} is not one of {VALID_STATUSES}")
-    if "Activation:" not in text:
+    if not _fences_balanced(text):
+        # `mask_fences` fails open on odd parity, so every check below just read the
+        # RAW body, fenced template examples included. Say that, rather than render
+        # a verdict over a reading nobody established -- and name the one-character
+        # fix, because the alternative repair (pair fences left-to-right and mask
+        # everything but the tail) was measured to hide real sections behind a
+        # single stray marker.
+        issues.append(
+            "unbalanced code fence: an unclosed ``` leaves fenced examples readable "
+            "as real fields, so fence-masked checks below are unestablished; close it"
+        )
+    if _ACTIVATION_LINE.search(_mask_fences(text)) is None:
         issues.append("missing `Activation:` line")
     if missing:
         issues.append("missing sections: " + ", ".join(missing))

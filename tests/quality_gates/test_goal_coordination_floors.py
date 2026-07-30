@@ -894,3 +894,102 @@ def test_evidence_missing_bits_surfaces_every_rung_reason() -> None:
     assert "disposition form: prose-only disposition rejected" in joined
     assert "recurrence-lineage floor: no recurs:/follow-up: lineage marker" in joined
     assert "closeout delegation: quality not routed before HITL" in joined
+
+
+# --- S14/S17: the Created-scope parse must not be steerable by quoted or ------
+# --- fenced text (audit 2026-07-28 rows S14 class h, S17 class g) -------------
+
+
+def test_created_scope_prefers_the_goals_own_line_over_a_quoted_one() -> None:
+    """S14: a body that blockquotes another artifact's date line above its own.
+
+    First-match-wins read the quoted 2025-01-02 and grandfathered every
+    Created-gated floor at once. The plain line is the goal's own field, so it
+    wins; the quoted one is inert.
+    """
+    text = "# Goal\n\n> Created: 2025-01-02\n\nCreated: 2026-07-01\nStatus: complete\n"
+
+    assert cf.goal_created_date(text).isoformat() == "2026-07-01"
+    assert cf.coordination_floors_apply(text) is True
+    assert pr.phase_routing_floor_applies(text) is True
+
+
+def test_created_scope_fails_closed_on_conflicting_unquoted_dates() -> None:
+    """Two plain `Created:` lines disagree: nothing says which is the artifact's
+    own, so the scope verdict is refused (None -> fail closed -> floors run)."""
+    text = "Created: 2025-01-02\nCreated: 2026-07-01\n"
+
+    assert cf.goal_created_date(text) is None
+    assert cf.coordination_floors_apply(text) is True
+
+
+def test_created_scope_control_quoted_only_line_still_grandfathers() -> None:
+    """Control (false-refusal guard): the tested relaxation that reads a
+    prefixed/quoted `Created:` when it is the ONLY one is preserved, including a
+    repeated identical value."""
+    assert cf.goal_created_date("> Created: 2026-01-01\n").isoformat() == "2026-01-01"
+    assert cf.coordination_floors_apply("- created: 2026-01-01\n") is False
+    assert cf.coordination_floors_apply("Created: 2026-01-01\n> Created: 2026-01-01\n") is False
+    assert cf.coordination_floors_apply("Created: 2026-07-01\n") is True
+
+
+def test_an_unbalanced_fence_is_reported_rather_than_guessed_at() -> None:
+    """S17, after the repair that the repair needed.
+
+    The first cut masked every balanced region and returned only the unclosed tail
+    raw. Measured wrong: fences pair left to right, so ONE stray marker early
+    re-pairs every later fence and masks the real sections between them — a
+    malformed-markdown goal became a false "missing sections" refusal. With odd
+    parity nothing in the text says which marker is the stray one, so `mask_fences`
+    keeps failing open and the FACT of imbalance becomes readable instead.
+    """
+    text = (
+        "```\nCreated: 2020-01-01\n```\n\nCreated: 2026-07-20\n\n"
+        "## Notes\n\n```\nstill open at EOF\n"
+    )
+
+    assert md.fences_balanced(text) is False
+    assert md.mask_fences(text) == text  # fails open, unchanged
+    assert md.fences_balanced("```\nx\n```\n") is True
+    assert "x" not in md.mask_fences("```\nx\n```\n")
+
+    # ...and the stray-marker shape the first cut broke: real sections stay visible.
+    stray = "```\n\n## Slice Log\n\n- What changed: real work\n\n```\nexample\n```\n"
+    assert "## Slice Log" in md.mask_fences(stray)
+
+
+def test_phase_routing_scope_survives_a_fenced_template_plus_unclosed_fence() -> None:
+    """S17 end to end: in-scope work stayed unproven because a fenced example
+    date won. Now the floor runs and refuses the unrouted impl work."""
+    text = (
+        "```\nCreated: 2020-01-01\n```\n\nCreated: 2026-07-20\nStatus: complete\n\n"
+        "## Slice Log\n\n- What changed: rewrote the parser\n\n"
+        "## Coordination Cues\n\n(none)\n\n```\nunclosed example\n"
+    )
+    report = {"ok": True}
+    pr.apply_phase_routing_floor(report, text)
+
+    # The date is UNESTABLISHED, not 2026-07-20: with the fence unbalanced the
+    # masked body is the raw body, so the fenced 2020-01-01 and the real date are
+    # indistinguishable. Failing closed runs the floor, which is the whole point —
+    # the pre-fix behavior let the fenced date silently take it out of scope.
+    assert pr.goal_created_date(text) is None
+    assert report["phase_routing_floor"]["in_scope"] is True
+    assert report["phase_routing_floor"]["required"] == ["impl"]
+    assert report["ok"] is False
+
+
+def test_phase_routing_control_routed_work_still_passes_with_fences() -> None:
+    """Control: the same in-scope goal with a real `Routing:` line — and both a
+    closed and an unclosed fence — is still accepted."""
+    text = (
+        "```\nCreated: 2020-01-01\n```\n\nCreated: 2026-07-20\nStatus: complete\n\n"
+        "## Slice Log\n\n- What changed: rewrote the parser\n\n"
+        "## Coordination Cues\n\nRouting: impl — routed per installed skill metadata\n\n"
+        "```\nunclosed example\n"
+    )
+    report = {"ok": True}
+    pr.apply_phase_routing_floor(report, text)
+
+    assert report["phase_routing_floor"]["satisfied"] is True
+    assert report["ok"] is True

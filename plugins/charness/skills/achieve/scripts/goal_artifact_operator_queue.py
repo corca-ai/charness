@@ -50,13 +50,37 @@ def _section_body(text: str, heading: str) -> str | None:
         if body_start == -1:
             return ""
         body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        return text[body_start + 1:body_end].strip()
+        # Slice the MASKED copy, not the raw text: the headings were located on
+        # the masked copy, and returning the raw span un-masked every fenced
+        # example inside the section, so an illustrative `- Decision: …` in a code
+        # fence was read as the author's real operator decision. Masking preserves
+        # offsets, so the span is identical apart from the blanked fence regions.
+        return masked[body_start + 1:body_end].strip()
     return None
 
 
 def check(text: str) -> dict[str, Any]:
     if not applies(text):
-        return {"applies": False, "ok": True, "reason": "pre-rule goal"}
+        # Not a pass: the floor never ran. The scope came from one self-declared
+        # `Created:` line, so the result discloses that basis (`evaluated: False`
+        # plus the observed date) instead of reporting a bare `ok` that reads like
+        # a satisfied floor. Grandfathering itself stays — the checked-in corpus is
+        # majority pre-rule and refusing it would be a mass false refusal — so
+        # `ok` stays True and `applies: False` keeps the floor non-blocking.
+        created = parse_created_date(text)
+        return {
+            "applies": False,
+            "ok": True,
+            "evaluated": False,
+            "created": created.isoformat() if created else None,
+            "rule_date": RULE_DATE.isoformat(),
+            "reason": (
+                "not evaluated: self-declared `Created: "
+                + (created.isoformat() if created else "?")
+                + f"` precedes the floor rule date {RULE_DATE.isoformat()}, so the "
+                "complete-state queue floor is grandfathered off (not satisfied)"
+            ),
+        }
     # Describe-first rejections: every refusal names the target shape to author,
     # not just the violation, so the author fixes once instead of reverse-
     # engineering the parser. The satisfying forms are `none — <reason>` (a

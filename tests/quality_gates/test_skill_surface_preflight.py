@@ -338,11 +338,18 @@ def test_scan_changed_skill_md_blocks_brand_new_skill_without_buffer(tmp_path: P
 
 
 def test_scan_changed_skill_md_ignores_non_skill_core_paths(tmp_path: Path) -> None:
+    """A non-core path in a mixed named set is dropped, not gated — but the set
+    still has to ratchet something, or the verdict covers no scope at all (that
+    all-dropped case is pinned in test_empty_scope_refusals.py)."""
     repo = tmp_path / "repo"
     (repo / "docs").mkdir(parents=True)
     (repo / "docs" / "note.md").write_text("# Note\n", encoding="utf-8")
-    report = preflight.scan_changed_skill_md(repo.resolve(), ["docs/note.md"])
-    assert report == {"status": "ok", "blocked": [], "checked": []}
+    rel = "skills/public/demo/SKILL.md"
+    _git_commit_skill(repo, rel, _skill_with_core(_LIMIT - (_BUFFER + 4)))
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), ["docs/note.md", rel])
+    assert report["status"] == "ok"
+    assert [row["path"] for row in report["checked"]] == [rel]
 
 
 def test_changed_skill_md_cli_blocks_with_exit_one(tmp_path: Path, monkeypatch, capsys) -> None:

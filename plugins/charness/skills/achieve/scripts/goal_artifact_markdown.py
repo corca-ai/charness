@@ -10,6 +10,20 @@ def mask_fences(text: str) -> str:
     Heading and marker scans run on the masked copy so examples inside fenced
     blocks stay inert. If a fence is unbalanced, fail open and trust the raw text;
     masking to EOF would hide real sections after the unmatched fence.
+
+    That fail-open leaves fenced examples visible, which is how a template's
+    `Created:` / `Activation:` / `- Decision:` line got read as the author's own.
+    The tempting repair -- mask every balanced region and return only the unclosed
+    tail raw -- is WRONG, and was measured wrong: fences are paired left to right,
+    so ONE stray marker early in the file re-pairs every later fence and masks the
+    real sections between them, turning a malformed-markdown goal into a false
+    "missing sections" refusal. With odd parity nothing in the text says which
+    marker is the stray one.
+
+    So this function keeps failing open, and the answer to "which reading is real"
+    moves to the callers that render verdicts: `fences_balanced` lets them refuse
+    (or fail closed) on an unbalanced document instead of silently picking one of
+    two irreconcilable readings.
     """
     masked: list[str] = []
     in_fence = False
@@ -22,6 +36,16 @@ def mask_fences(text: str) -> str:
     if in_fence:
         return text
     return "".join(masked)
+
+
+def fences_balanced(text: str) -> bool:
+    """False when a fence marker is left unclosed, so `mask_fences` failed open.
+
+    A caller that reads a field out of the masked body is reading the RAW body in
+    that case, fenced examples included. This is the fact that lets it say so
+    rather than render a verdict over a reading it could not establish.
+    """
+    return sum(1 for line in text.splitlines() if line.lstrip().startswith(("```", "~~~"))) % 2 == 0
 
 
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)

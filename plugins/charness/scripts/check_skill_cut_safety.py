@@ -247,6 +247,13 @@ def build_report(
             blocks = [f for f in findings if f["severity"] == "block"]
             reviews = [f for f in findings if f["severity"] == "review"]
             skills.append({"path": rel, "status": "blocked" if blocks else "review", "blocks": blocks, "reviews": reviews})
+    if paths and not skills:
+        # A NAMED scope this gate cannot judge. `--path` is how a caller asks "is
+        # this cut safe", and every named path being dropped by `_is_skill_md`
+        # (a references/*.md contract home, a docs path, a typo) used to answer
+        # `clean` over zero checks. A DISCOVERED empty set (no --path, nothing
+        # changed) stays a cheap pass, per the empty-scope family rule.
+        return {"status": "unscoped", "skills": [], "unscoped_paths": targets}
     any_block = any(s["blocks"] for s in skills)
     any_review = any(s["reviews"] for s in skills)
     status = "blocked" if any_block else ("review" if any_review else "clean")
@@ -255,6 +262,17 @@ def build_report(
 
 def format_human(report: dict[str, Any]) -> str:
     lines = [f"skill-cut-safety: {report['status']}"]
+    if report["status"] == "unscoped":
+        lines.append(
+            "- none of the named --path values is a public/support SKILL.md, so "
+            "nothing was checked: "
+            + ", ".join(report["unscoped_paths"])
+        )
+        lines.append(
+            "This gate judges SKILL.md cuts only. Name the SKILL.md, or run without "
+            "--path to check the changed set (which also reviews deleted references)."
+        )
+        return "\n".join(lines)
     if not report["skills"]:
         lines.append("- no changed public/support SKILL.md surfaces to check.")
         return "\n".join(lines)
@@ -339,7 +357,7 @@ def main() -> int:
     else:
         print(format_human(report))
 
-    if report["status"] == "blocked":
+    if report["status"] in {"blocked", "unscoped"}:
         return 1
     if args.strict and report["status"] == "review":
         return 1

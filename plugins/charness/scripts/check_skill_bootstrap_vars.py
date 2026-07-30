@@ -155,6 +155,19 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"{rel}: {msg}", file=sys.stderr)
         return 1
 
+    if not targets:
+        # Zero SKILL.md files under a root this gate was pointed at is an
+        # unestablished scope, not a clean one: it reads identically to a full
+        # pass while proving nothing. Same rule as the packaging and export-safe
+        # scans (charness-artifacts/critique/2026-07-27-empty-scope-family.md).
+        print(
+            f"no public/support SKILL.md files found under {root}; nothing was "
+            "validated. Check --repo-root: this gate is scoped to a charness-shaped "
+            f"root carrying {' or '.join(patterns)}.",
+            file=sys.stderr,
+        )
+        return 1
+
     print(f"Validated SKILL.md bootstrap vars for {len(targets)} skill file(s).")
     return 0
 

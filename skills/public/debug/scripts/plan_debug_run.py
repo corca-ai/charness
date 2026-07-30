@@ -33,6 +33,7 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.risk_interrupt_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+declarations = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_declarations")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -53,45 +54,6 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
         "path": rel_path,
     }
 
-
-def _parse_field(text: str, label: str) -> str | None:
-    prefix = f"- {label}:"
-    for line in text.splitlines():
-        stripped = line.strip()
-        if stripped.startswith(prefix):
-            value = stripped[len(prefix) :].strip()
-            return value or None
-    return None
-
-
-def _risk_summary(path: Path) -> dict[str, Any]:
-    if not path.is_file():
-        return {
-            "risk_classes": [],
-            "next_step": None,
-            "requires_interrupt": False,
-        }
-    text = path.read_text(encoding="utf-8")
-    risk_class_raw = _parse_field(text, "Risk Class")
-    next_step = _parse_field(text, "Next Step")
-    generalization_pressure = _parse_field(text, "Generalization Pressure")
-    try:
-        risk_classes = risk_interrupt_lib._parse_risk_classes(risk_class_raw or "")
-        risk_parse_error = None
-    except risk_interrupt_lib.ValidationError as exc:
-        risk_classes = ()
-        risk_parse_error = str(exc)
-    forced = bool(
-        set(risk_classes) & risk_interrupt_lib.FORCED_RISK_CLASSES
-        or generalization_pressure == "factor-now"
-    )
-    return {
-        "risk_classes": list(risk_classes),
-        "risk_parse_error": risk_parse_error,
-        "generalization_pressure": generalization_pressure,
-        "next_step": next_step,
-        "requires_interrupt": forced,
-    }
 
 
 def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
@@ -114,7 +76,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
     # behavior; only an explicit `resolved` (set at closeout) makes the planner
     # treat the pointer as a closed prior incident instead of a continuation, so a
     # closed artifact stops hijacking a fresh bug (#debug claim-fidelity mis-fire).
-    resolution = "resolved" if (exists and (_parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
+    resolution = "resolved" if (exists and (declarations.parse_field(text, "Resolution") or "").strip().lower() == "resolved") else "open"
     if exists and scaffold.get("current_pointer_is_symlink"):
         status = "current_pointer_target_exists"
     elif exists:
@@ -133,7 +95,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
         "write_role": scaffold["write_artifact_role"],
         "current_pointer_symlink_target": scaffold["current_pointer_symlink_target"],
     }
-    summary.update(_risk_summary(artifact_path))
+    summary.update(declarations.risk_summary(artifact_path, risk_interrupt_lib))
     return summary
 
 
@@ -308,6 +270,16 @@ def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str
             "read the current artifact and seam references, then hand off a named spec artifact before ordinary repair",
             artifact,
         )
+    if artifact["exists"] and not artifact.get("risk_scope_established", True):
+        action = _artifact_next_action(
+            "repair-risk-declaration",
+            "the `- Risk Class:` declaration could not be read (unparseable, or hidden behind "
+            "an unclosed code fence), so the risk interrupt decision is unproven; repair the "
+            "line -- and close any open fence above it -- then re-run this plan before ordinary repair",
+            artifact,
+        )
+        action["risk_parse_error"] = artifact["risk_parse_error"]
+        return action
     if artifact["exists"] and artifact["resolution"] != "resolved":
         return _artifact_next_action(
             "continue-existing-artifact",
@@ -341,6 +313,8 @@ def build_plan(repo_root: Path) -> dict[str, Any]:
     prior_incidents = _prior_incidents(repo_root, output_dir, str(artifact["write_path"]))
     if artifact["requires_interrupt"]:
         mode = "risk-interrupt"
+    elif artifact["exists"] and not artifact.get("risk_scope_established", True):
+        mode = "repair-risk-declaration"
     elif artifact["exists"] and artifact["resolution"] != "resolved":
         mode = "continue-existing-artifact"
     elif prior_incidents or artifact["exists"]:

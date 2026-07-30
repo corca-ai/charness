@@ -270,8 +270,16 @@ def scan_changed_skill_md(repo_root: Path, paths: list[str]) -> dict[str, Any]:
         row["path"] = rel
         checked.append(row)
     blocked = [row["path"] for row in checked if row["blocked"]]
+    # `unscoped`: a NAMED scope that ratcheted nothing is not `ok`.
+    # `_is_skill_core_path` requires exactly four REPO-RELATIVE parts, so the
+    # ABSOLUTE path of a real SKILL.md was dropped and the run still reported a
+    # pass. An EMPTY `paths` keeps its meaning — the hook computed "no SKILL.md
+    # changed", a real answer — per the empty-scope family's discovered-vs-named
+    # asymmetry (charness-artifacts/critique/2026-07-27-empty-scope-family.md).
+    # No per-path `unscoped` list and no extra human line: this file sits at its
+    # 480-line cap, and `checked: []` beside the status already names the scope.
     return {
-        "status": "blocked" if blocked else "ok",
+        "status": "blocked" if blocked else ("unscoped" if paths and not checked else "ok"),
         "blocked": blocked,
         "checked": checked,
     }
@@ -529,7 +537,7 @@ def main() -> int:
             print(json.dumps(report, indent=2, sort_keys=True))
         else:
             print(format_changed_human(report))
-        return 1 if report["status"] == "blocked" else 0
+        return 1 if report["status"] in {"blocked", "unscoped"} else 0
 
     if args.scan_issue_anchors is not None:
         try:

@@ -29,7 +29,7 @@ from pathlib import Path
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
-from goal_artifact_markdown import join_soft_wraps, mask_fences  # noqa: E402
+from goal_artifact_markdown import fences_balanced, join_soft_wraps, mask_fences  # noqa: E402
 
 # Permissive ``Created:`` line: tolerant of a leading ``>``/``-``/``*`` prefix,
 # surrounding whitespace, and case, so a blockquoted or list-item ``Created:`` line
@@ -38,9 +38,10 @@ from goal_artifact_markdown import join_soft_wraps, mask_fences  # noqa: E402
 # blocked-matrix floors are migrated onto it (a deliberate, tested relaxation that
 # grandfathers a correctly-dated pre-rule goal whose date sat behind a prefix).
 _CREATED_LINE = re.compile(
-    r"^[\s>*-]*Created\s*:\s*(\d{4}-\d{2}-\d{2})\b",
+    r"^(?P<prefix>[\s>*-]*)Created\s*:\s*(?P<value>\d{4}-\d{2}-\d{2})\b",
     re.MULTILINE | re.IGNORECASE,
 )
+_QUOTED_PREFIX = re.compile(r"[>*-]")
 
 
 def parse_created_date(text: str) -> date | None:
@@ -48,12 +49,39 @@ def parse_created_date(text: str) -> date | None:
 
     Scoped to the fence-masked body so a fenced example line is not read as the
     real ``Created:``. Callers fail closed (treat ``None`` as in-scope).
+
+    Two disambiguation rules, because first-match-wins let a body that *quotes*
+    another artifact's date line above its own silence every Created-gated floor
+    at once:
+
+    - **Plain lines outrank quoted/list ones.** A bare ``Created: <date>`` is the
+      goal's own field; a ``> Created: …`` / ``- Created: …`` is as likely to be
+      quoted-from-elsewhere. Only when no plain line exists do prefixed lines
+      stay eligible, so the tested relaxation that grandfathers a correctly-dated
+      goal whose only date sits behind a prefix is preserved.
+    - **Conflicting dates inside the winning tier fail closed** (``None`` ->
+      in-scope). Nothing in the text says which one is the artifact's own, so the
+      surface must not pick one and render a scope verdict on it.
+
+    An UNBALANCED fence fails closed for the same reason and is the sharper case:
+    ``mask_fences`` fails open there, so a fenced template's ``Created:`` is
+    indistinguishable from the goal's own field, and the earlier date silently
+    took every Created-gated floor out of scope at once. Failing closed runs the
+    floors; the goal is then refused with a message naming the unclosed fence
+    rather than passing on a reading nobody established.
     """
-    match = _CREATED_LINE.search(mask_fences(text))
-    if match is None:
+    if not fences_balanced(text):
+        return None
+    plain: list[str] = []
+    prefixed: list[str] = []
+    for match in _CREATED_LINE.finditer(mask_fences(text)):
+        target = prefixed if _QUOTED_PREFIX.search(match.group("prefix")) else plain
+        target.append(match.group("value"))
+    candidates = plain or prefixed
+    if not candidates or len(set(candidates)) > 1:
         return None
     try:
-        return date.fromisoformat(match.group(1))
+        return date.fromisoformat(candidates[0])
     except ValueError:
         return None
 

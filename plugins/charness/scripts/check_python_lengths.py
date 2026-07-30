@@ -203,9 +203,10 @@ def validate_file_length(path: Path, root: Path, *, code_lines: int) -> str | No
     return None
 
 
-def headroom_for(paths: list[Path], root: Path) -> list[dict[str, object]]:
+def headroom_for(paths: list[Path] | None, root: Path) -> list[dict[str, object]]:
     """Advisory pre-write/closeout headroom report for the gated subset of
-    ``paths``: per file, ``headroom = limit - current`` where ``current`` is the
+    ``paths`` (``None`` means every gated file, matching the gate's own default):
+    per file, ``headroom = limit - current`` where ``current`` is the
     tokei Python code-line count, and whether the file is already inside the warn
     band. This is the affordance behind #256 — the hard gate
     (``validate_file_length``) blocks an over-limit *commit*, but the recurring
@@ -284,7 +285,10 @@ def main() -> int:
 
     root = args.repo_root.resolve()
     if args.headroom:
-        rows = headroom_for(args.paths or [], root)
+        # `args.paths`, not `args.paths or []`: an omitted --paths is None (report
+        # every gated file, as --help promises), while `[]` would be read by
+        # `select_targets` as an explicit empty selection and print nothing.
+        rows = headroom_for(args.paths, root)
         near = [r["path"] for r in rows if r["near_limit"]]
         if args.json:
             payload: dict[str, object] = {"headroom": rows}
@@ -311,6 +315,33 @@ def main() -> int:
     targets = select_targets(
         root, paths=args.paths, require_git=args.require_git_file_listing
     )
+    if args.paths is not None and not targets:
+        # A NAMED scope that measured nothing must not read as a pass. Two shapes,
+        # deliberately answered differently:
+        #  - a named path that does not exist at all (a typo, or paths expressed
+        #    relative to a subdirectory so they never resolve under --repo-root) is
+        #    a broken scope and refuses;
+        #  - named paths that exist but sit outside the gated glob universe (the
+        #    generated `plugins/` mirror, root-level `runtime_bootstrap.py`) are the
+        #    caller saying "none of this is yours" — a legitimate pass, as for the
+        #    artifact family, but it may not print `Validated ... 0 file(s)`.
+        unresolved = [
+            path for path in args.paths
+            if not (path if path.is_absolute() else root / path).exists()
+        ]
+        if unresolved:
+            raise ValidationError(
+                "named --paths resolve to nothing under "
+                f"{root}: {', '.join(str(path) for path in unresolved)}; nothing was "
+                "validated. Pass paths relative to --repo-root, or drop --paths to "
+                "gate the whole repo."
+            )
+        print(
+            f"No gated Python files among the {len(args.paths)} named path(s); "
+            "nothing was validated (the gated globs are scripts/, tests/, and skill "
+            "package scripts/)."
+        )
+        return 0
     counts = tokei_code_counts(targets)
     warnings: list[str] = []
     for path in targets:

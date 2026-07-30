@@ -369,3 +369,203 @@ def test_debug_plan_uses_canonical_forced_risk_taxonomy(tmp_path: Path) -> None:
     assert payload["artifact"]["risk_classes"] == ["repeated-symptom"]
     assert payload["artifact"]["requires_interrupt"] is True
     assert payload["next_action"]["kind"] == "interrupt-to-spec"
+
+
+def write_seam_risk_artifact(repo: Path, body: list[str]) -> None:
+    write_adapter(repo)
+    debug_dir = repo / "charness-artifacts" / "debug"
+    debug_dir.mkdir(parents=True)
+    (debug_dir / "latest.md").write_text("\n".join([*body, ""]), encoding="utf-8")
+
+
+SEAM_RISK_BODY = (
+    "## Seam Risk",
+    "",
+    "- Interrupt ID: I1",
+    "- Risk Class: external-seam",
+    "- Generalization Pressure: factor-now",
+    "",
+    "## Interrupt Decision",
+    "",
+    "- Next Step: spec",
+)
+
+
+def test_debug_plan_ignores_fenced_template_quote_above_real_seam_risk(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "The scaffold template declares:",
+            "",
+            "```",
+            "- Risk Class: none",
+            "- Generalization Pressure: none",
+            "```",
+            "",
+            *SEAM_RISK_BODY,
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_classes"] == ["external-seam"]
+    assert payload["artifact"]["generalization_pressure"] == "factor-now"
+    assert payload["artifact"]["requires_interrupt"] is True
+    assert payload["mode"] == "risk-interrupt"
+    assert payload["next_action"]["kind"] == "interrupt-to-spec"
+
+
+def test_debug_plan_reads_unfenced_declaration_as_authoritative(tmp_path: Path) -> None:
+    """Control: prose that is not fenced still declares state, including `none`."""
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "## Seam Risk",
+            "",
+            "- Risk Class: none",
+            "- Generalization Pressure: none",
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_classes"] == ["none"]
+    assert payload["artifact"]["requires_interrupt"] is False
+    assert payload["mode"] == "continue-existing-artifact"
+    assert payload["next_action"]["kind"] == "continue-existing-artifact"
+
+
+def test_debug_plan_interrupts_when_forced_class_shares_line_with_unknown_token(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "## Seam Risk",
+            "",
+            "- Interrupt ID: I1",
+            "- Risk Class: external-seam, bogus",
+            "- Generalization Pressure: none",
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_classes"] == ["external-seam"]
+    assert "bogus" in payload["artifact"]["risk_parse_error"]
+    assert payload["artifact"]["requires_interrupt"] is True
+    assert payload["mode"] == "risk-interrupt"
+    assert payload["next_action"]["kind"] == "interrupt-to-spec"
+
+
+def test_debug_plan_routes_unparseable_risk_line_to_repair(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "## Seam Risk",
+            "",
+            "- Interrupt ID: I1",
+            "- Risk Class: bogus",
+            "- Generalization Pressure: none",
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_scope_established"] is False
+    assert payload["mode"] == "repair-risk-declaration"
+    assert payload["next_action"]["kind"] == "repair-risk-declaration"
+    assert "bogus" in payload["next_action"]["risk_parse_error"]
+
+
+def test_debug_plan_legacy_artifact_without_seam_risk_still_continues(tmp_path: Path) -> None:
+    """Control: a pre-taxonomy artifact declares no risk line and must not be refused."""
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(repo, ["# Legacy Debug", "", "## Problem", "", "something broke"])
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_scope_established"] is True
+    assert payload["artifact"]["requires_interrupt"] is False
+    assert payload["mode"] == "continue-existing-artifact"
+    assert payload["next_action"]["kind"] == "continue-existing-artifact"
+
+
+def test_a_risk_line_hidden_behind_an_unclosed_fence_is_unestablished(tmp_path: Path) -> None:
+    """The S18 repair's own escape, wearing the opposite coat.
+
+    Ignoring fenced content stops a quoted template being read as the author's
+    declaration — and an UNCLOSED fence then makes every later line fenced, so the
+    REAL declaration is dropped with it. The first cut fell through to the legacy
+    `no risk line at all` carve-out and emitted `continue`, requires_interrupt
+    False, risk_scope_established True, over a declared `external-seam`. Pre-fix
+    code interrupted correctly on that input, so it was a regression, and nothing
+    downstream catches it: `validate_debug_artifact` is byte-blind to fencing and
+    passes the artifact clean.
+    """
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "```text",
+            "- Risk Class: none",
+            "- Generalization Pressure: none",
+            "",
+            "## Seam Risk",
+            "",
+            "- Interrupt ID: I1",
+            "- Risk Class: external-seam",
+            "- Generalization Pressure: factor-now",
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_scope_established"] is False
+    assert payload["mode"] == "repair-risk-declaration"
+    assert "unclosed code fence" in str(payload["next_action"])
+
+
+def test_a_closed_template_fence_above_the_real_declaration_still_interrupts(tmp_path: Path) -> None:
+    """The paired control for the test above and for S18 itself.
+
+    Same artifact with the template fence CLOSED: the quoted example is inert, the
+    real declaration is read, and the forced class interrupts. Without this, the
+    test above would also pass against a planner that refused every fenced artifact.
+    """
+    repo = tmp_path / "repo"
+    write_seam_risk_artifact(
+        repo,
+        [
+            "# Current Debug",
+            "",
+            "```text",
+            "- Risk Class: none",
+            "- Generalization Pressure: none",
+            "```",
+            "",
+            "## Seam Risk",
+            "",
+            "- Interrupt ID: I1",
+            "- Risk Class: external-seam",
+            "- Generalization Pressure: factor-now",
+        ],
+    )
+
+    payload = run_plan(repo)
+
+    assert payload["artifact"]["risk_scope_established"] is True
+    assert payload["artifact"]["risk_classes"] == ["external-seam"]
+    assert payload["mode"] == "risk-interrupt"

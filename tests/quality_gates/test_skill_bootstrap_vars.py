@@ -102,6 +102,11 @@ def test_main_validates_reference_when_present(tmp_path: Path, capsys) -> None:
     canonical = tmp_path / "skills" / "shared" / "references" / "bootstrap-resolution.md"
     canonical.parent.mkdir(parents=True)
     canonical.write_text("```bash\nexport SKILL_DIR=/path\n```\n", encoding="utf-8")
+    # A SKILL.md has to exist for the run to have a scope at all: the zero-target
+    # case is a refusal, pinned in test_empty_scope_refusals.py.
+    skill = tmp_path / "skills" / "public" / "demo" / "SKILL.md"
+    skill.parent.mkdir(parents=True)
+    skill.write_text("# Demo\n\n## Bootstrap\n\n```bash\nexport SKILL_DIR=/path\n```\n", encoding="utf-8")
 
     assert gate.main(["--repo-root", str(tmp_path)]) == 0
     assert "Validated" in capsys.readouterr().out
