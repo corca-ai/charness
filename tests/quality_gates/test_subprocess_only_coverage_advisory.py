@@ -357,6 +357,15 @@ def test_only_a_literal_dict_can_replace_the_environment(tmp_path: Path) -> None
         # A real repo shape the dict-literal-only reader used to miss entirely:
         # tests/quality_gates/test_python_and_security_gates.py passes this.
         'dict(PATH="/usr/bin", TEST_OUTPUT="x")': True,
+        # A `**` inside a dict() call carries the parent through just like the literal
+        # splat does; it is a keyword whose arg is None, not a positional argument.
+        'dict(**os.environ, PATH="/usr/bin")': False,
+        # A `**`-free literal REPLACES even when a value reads os.environ: forwarding
+        # one variable still drops COVERAGE_PROCESS_START. An earlier cut walked the
+        # whole node for `environ` and called this "inherits" — a false negative reached
+        # by the wrong reasoning, and the arms that produced it were unreachable once
+        # the splat check ran first, which is how the changed-line gate surfaced it.
+        '{"PATH": os.environ["PATH"]}': True,
     }
     for source, expected in replaces.items():
         node = ast.parse(source, mode="eval").body

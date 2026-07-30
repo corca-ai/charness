@@ -271,21 +271,21 @@ def _replaces_environment(node: ast.expr) -> bool:
     `dict(PATH=...)` with no positional argument.
     """
     if isinstance(node, ast.Dict):
-        if any(key is None for key in node.keys):  # {**something, ...} - unreadable
-            return False
-        return not _reads_environ(node)
+        # A `**`-free dict literal cannot carry the parent environment wholesale, so
+        # it replaces — even when a VALUE reads os.environ. `{"PATH": os.environ["PATH"]}`
+        # forwards one variable and drops COVERAGE_PROCESS_START with it; an earlier cut
+        # walked the whole node for `environ` and called that shape "inherits", which was
+        # a false negative reached by the wrong reasoning.
+        return not any(key is None for key in node.keys)
     if isinstance(node, ast.Call) and getattr(node.func, "id", None) == "dict":
-        return not node.args and bool(node.keywords) and not _reads_environ(node)
-    return False
-
-
-def _reads_environ(node: ast.expr) -> bool:
-    """`os.environ`, `environ`, `os.environ.copy()`, `dict(os.environ)`, ..."""
-    for child in ast.walk(node):
-        if isinstance(child, ast.Attribute) and child.attr == "environ":
-            return True
-        if isinstance(child, ast.Name) and child.id == "environ":
-            return True
+        # `dict(PATH=...)` replaces; `dict(os.environ, PATH=...)` (positional mapping)
+        # and `dict(**os.environ, PATH=...)` (a `**` keyword, arg is None) both carry the
+        # parent through.
+        return (
+            not node.args
+            and bool(node.keywords)
+            and all(keyword.arg is not None for keyword in node.keywords)
+        )
     return False
 
 
