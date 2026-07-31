@@ -239,3 +239,15 @@ def test_check_chunk_contract_lib_falls_back_to_raw_text_on_an_unterminated_fenc
     asking = "```yaml\napprove: true\n\nApprove or revise before I apply.\n"
 
     assert lib_errors(asking) != []
+
+
+def test_check_chunk_contract_script_reports_an_unreadable_chunk_file_as_an_error() -> None:
+    # A missing path used to raise FileNotFoundError with exit 1 — the same code a
+    # well-formed `blocked` verdict returns, so "you gave me nothing" and "the
+    # chunk violates the contract" were indistinguishable to a caller.
+    result = run_script(CHECK_SCRIPT, "--chunk-file", "/tmp/charness-does-not-exist.md")
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "error"
+    assert "could not be read" in payload["errors"][0]

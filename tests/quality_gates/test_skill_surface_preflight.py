@@ -695,3 +695,48 @@ def test_tilde_fenced_example_inside_an_exempt_block_is_not_audited_as_prose() -
     )
 
     assert preflight.pressure_exempt_findings(text) == []
+
+
+def test_exempt_section_block_prints_its_own_remediation_not_the_headroom_one() -> None:
+    # The gate has two blocking causes with opposite remedies. Printing the
+    # headroom paragraph for an exempt-section block told an author with 158 lines
+    # of headroom to split a concept out — an action that does not clear the block.
+    report = {
+        "status": "blocked",
+        "checked": [
+            {
+                "path": "skills/public/demo/SKILL.md",
+                "blocked": True,
+                "base_remaining": None,
+                "new_remaining": 158,
+                "buffer": 4,
+                "exempt_findings": ["`## References` line is multi-sentence prose, not a token: '...'"],
+            }
+        ],
+    }
+
+    human = preflight.format_changed_human(report)
+
+    assert "token-shaped" in human
+    assert "dropped below the core_nonempty headroom buffer" not in human
+
+
+def test_headroom_block_still_prints_the_headroom_remediation() -> None:
+    report = {
+        "status": "blocked",
+        "checked": [
+            {
+                "path": "skills/public/demo/SKILL.md",
+                "blocked": True,
+                "base_remaining": 5,
+                "new_remaining": 3,
+                "buffer": 4,
+                "exempt_findings": [],
+            }
+        ],
+    }
+
+    human = preflight.format_changed_human(report)
+
+    assert "dropped below the core_nonempty headroom buffer" in human
+    assert "token-shaped" not in human

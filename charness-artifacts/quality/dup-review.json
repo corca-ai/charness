@@ -1423,6 +1423,13 @@
     },
     {
       "class": "intentional",
+      "id": "fce03d2223b4f9dc",
+      "note": "argparse preamble shared by the two cautilus CLI entrypoints (validate_cautilus_diagnostics.py, validate_cautilus_proof.py): the same `--repo-root` / `--paths` declarations plus the changed-path resolution. Extracting it would hide which flags each CLI actually accepts, the explicitness the repo already preferred at fc9d43f98b928157. Surfaced 2026-07-31 as a rotation when the `--all` help string was corrected",
+      "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "fdfdeb1559cc111b",
       "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
       "reviewed_at": "2026-06-27",

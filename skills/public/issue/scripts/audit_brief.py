@@ -2,9 +2,11 @@
 """Audit transcript events to verify the resolution brief precedes mutations.
 
 The audit consumes a transcript JSON that lists ordered events for one or more
-issue-resolve fix-units. A fix-unit fails when its classification is `feature`
-or `deferred-work` and a `mutation` event appears before either a `brief` event
-or a `trivial_brief` event for that fix-unit.
+issue-resolve fix-units. A fix-unit fails two ways. First, whatever its class,
+when a `mutation` event appears before any recognized `classification` event for
+that fix-unit — omission used to disarm the check entirely. Second, when its
+classification is `feature` or `deferred-work` and a `mutation` event appears
+before either a `brief` event or a `trivial_brief` event for that fix-unit.
 
 Transcript schema (single JSON file):
 

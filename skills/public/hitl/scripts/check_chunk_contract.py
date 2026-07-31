@@ -21,9 +21,19 @@ _hitl_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.
 check_chunk_contract = _hitl_lib.check_chunk_contract
 
 
+class ChunkInputError(Exception):
+    """The chunk could not be read at all — an invocation error, not a verdict."""
+
+
 def _read_chunk(args: argparse.Namespace) -> str:
     if args.chunk_file is not None:
-        return args.chunk_file.read_text(encoding="utf-8")
+        try:
+            return args.chunk_file.read_text(encoding="utf-8")
+        except OSError as exc:
+            # An unreadable path used to escape as a traceback with exit 1 — the
+            # same code a well-formed `blocked` verdict returns, so "you gave me
+            # nothing" and "the chunk violates the contract" were indistinguishable.
+            raise ChunkInputError(f"chunk file could not be read: {exc}") from exc
     if args.chunk_text is not None:
         return args.chunk_text
     return sys.stdin.read()
@@ -40,7 +50,13 @@ def main() -> int:
     source.add_argument("--chunk-file", type=Path, help="Path to chunk file to validate")
     source.add_argument("--chunk-text", help="Chunk text passed inline")
     args = parser.parse_args()
-    chunk_text = _read_chunk(args)
+    try:
+        chunk_text = _read_chunk(args)
+    except ChunkInputError as exc:
+        sys.stdout.write(
+            json.dumps({"status": "error", "errors": [str(exc)]}, ensure_ascii=False, indent=2) + "\n"
+        )
+        return 2
     errors = check_chunk_contract(chunk_text)
     payload = {
         "status": "blocked" if errors else "pass",

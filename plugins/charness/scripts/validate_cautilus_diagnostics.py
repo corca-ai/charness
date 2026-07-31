@@ -286,7 +286,7 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--paths", nargs="*", help="Explicit repo-relative paths. Defaults to current git diff.")
-    parser.add_argument("--all", action="store_true", help="Validate every diagnostic bundle with a finding.md")
+    parser.add_argument("--all", action="store_true", help="Validate every diagnostic bundle, including one that is bundle-shaped but missing finding.md")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()

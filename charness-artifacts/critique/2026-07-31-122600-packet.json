@@ -1,0 +1,237 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-07-31T12:26:00Z",
+  "prepared_for": "release 3.0.1 patch critique",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- docs/handoff.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/check_skill_surface_preflight.py\n- plugins/charness/scripts/validate_cautilus_diagnostics.py\n- plugins/charness/skills/create-skill/references/portable-authoring.md\n- plugins/charness/skills/hitl/scripts/check_chunk_contract.py\n- plugins/charness/skills/issue/scripts/audit_brief.py\n- scripts/check_skill_surface_preflight.py\n- scripts/validate_cautilus_diagnostics.py\n- skills/public/create-skill/references/portable-authoring.md\n- skills/public/hitl/scripts/check_chunk_contract.py\n- skills/public/issue/scripts/audit_brief.py\n- tests/quality_gates/test_hitl_chunk_contract.py\n- tests/quality_gates/test_skill_surface_preflight.py\n- charness-artifacts/critique/2026-07-31-121055-packet.json\n- charness-artifacts/critique/2026-07-31-121055-packet.md\n- charness-artifacts/critique/2026-07-31-121102-packet.json\n- charness-artifacts/critique/2026-07-31-121102-packet.md\n- charness-artifacts/critique/2026-07-31-release-3-0-1.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_skill_surface_preflight.py, scripts/validate_cautilus_diagnostics.py, skills/public/create-skill/references/portable-authoring.md, skills/public/hitl/scripts/check_chunk_contract.py, skills/public/issue/scripts/audit_brief.py\n  derived matches: plugins/charness/scripts/check_skill_surface_preflight.py, plugins/charness/scripts/validate_cautilus_diagnostics.py, plugins/charness/skills/create-skill/references/portable-authoring.md, plugins/charness/skills/hitl/scripts/check_chunk_contract.py, plugins/charness/skills/issue/scripts/audit_brief.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: docs/handoff.md, skills/public/create-skill/references/portable-authoring.md, charness-artifacts/critique/2026-07-31-121055-packet.md, charness-artifacts/critique/2026-07-31-121102-packet.md, charness-artifacts/critique/2026-07-31-release-3-0-1.md\n  derived matches: plugins/charness/skills/create-skill/references/portable-authoring.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/create-skill/references/portable-authoring.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/create-skill/references/portable-authoring.md, skills/public/hitl/scripts/check_chunk_contract.py, skills/public/issue/scripts/audit_brief.py\n  derived matches: plugins/charness/skills/create-skill/references/portable-authoring.md, plugins/charness/skills/hitl/scripts/check_chunk_contract.py, plugins/charness/skills/issue/scripts/audit_brief.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/create-skill/references/portable-authoring.md, skills/public/hitl/scripts/check_chunk_contract.py, skills/public/issue/scripts/audit_brief.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/create-skill/references/portable-authoring.md, skills/public/hitl/scripts/check_chunk_contract.py, skills/public/issue/scripts/audit_brief.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-07-31-121055-packet.json, charness-artifacts/critique/2026-07-31-121055-packet.md, charness-artifacts/critique/2026-07-31-121102-packet.json, charness-artifacts/critique/2026-07-31-121102-packet.md, charness-artifacts/critique/2026-07-31-release-3-0-1.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_skill_surface_preflight.py, plugins/charness/scripts/validate_cautilus_diagnostics.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_skill_surface_preflight.py, scripts/validate_cautilus_diagnostics.py, tests/quality_gates/test_hitl_chunk_contract.py, tests/quality_gates/test_skill_surface_preflight.py\n  derived matches: plugins/charness/scripts/check_skill_surface_preflight.py, plugins/charness/scripts/validate_cautilus_diagnostics.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_skill_surface_preflight.py, scripts/validate_cautilus_diagnostics.py, skills/public/hitl/scripts/check_chunk_contract.py, skills/public/issue/scripts/audit_brief.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 2,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "64ebf14dec47c2ad602a8e04f6c0b7eeb9874573",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md",
+      "charness-artifacts/goals/2026-07-31-repair-the-sweep-s-remaining-high-rows-s5-density-exemption.md",
+      "charness-artifacts/probe/2026-07-31-v3.0.0-release-observer.json",
+      "charness-artifacts/quality/dup-review.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/retro/2026-07-31-session-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/recent-lessons.md",
+      "docs/conventions/authoring-preflight.md",
+      "docs/handoff.md",
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/scripts/check_skill_surface_preflight.py",
+      "plugins/charness/scripts/hitl_review_artifact_lib.py",
+      "plugins/charness/scripts/skill_core_density.py",
+      "plugins/charness/scripts/skill_gate_report_render.py",
+      "plugins/charness/scripts/skill_issue_anchor_scan.py",
+      "plugins/charness/scripts/skill_markdown_lib.py",
+      "plugins/charness/scripts/validate_cautilus_diagnostics.py",
+      "plugins/charness/skills/create-skill/references/portable-authoring.md",
+      "plugins/charness/skills/hitl/scripts/check_chunk_contract.py",
+      "plugins/charness/skills/issue/scripts/audit_brief.py",
+      "scripts/check_skill_surface_preflight.py",
+      "scripts/hitl_review_artifact_lib.py",
+      "scripts/skill_core_density.py",
+      "scripts/skill_gate_report_render.py",
+      "scripts/skill_issue_anchor_scan.py",
+      "scripts/skill_markdown_lib.py",
+      "scripts/validate_cautilus_diagnostics.py",
+      "skills/public/create-skill/references/portable-authoring.md",
+      "skills/public/hitl/scripts/check_chunk_contract.py",
+      "skills/public/issue/scripts/audit_brief.py",
+      "tests/quality_gates/test_hitl_chunk_contract.py",
+      "tests/quality_gates/test_issue_audit_brief.py",
+      "tests/quality_gates/test_skill_surface_preflight.py",
+      "tests/test_cautilus_diagnostic_artifact.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md",
+        "content_sha256": "b1658281b23736433048ff0d6549b9f42abb8dc44ac260b3fef46d75e28b5bcc"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-07-31-repair-the-sweep-s-remaining-high-rows-s5-density-exemption.md",
+        "content_sha256": "d0b5eb11ff460ea9581134fdb986cd3afe95c041f11c91feb236bb15d9d2e1de"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-07-31-v3.0.0-release-observer.json",
+        "content_sha256": "60bce4d5d96cb1189b827e12a79e650b92f0584158521f55675a75f93386ec33"
+      },
+      {
+        "path": "charness-artifacts/quality/dup-review.json",
+        "content_sha256": "a6f83131c895c5158080415e60851c56f961b891622eb4a74b3b86719a346f92"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "fbc4c2171ddc37cc1c49a42dfe25171d01edbc876ccf33cf9f57455806aa1531"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-07-31-session-retro.md",
+        "content_sha256": "e5b15e7a9e152e4ac42d7850fb2e06779dd7aac58736e94890ceecdc9a481fe1"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "6f9c5b4842d738c6f79d127321dff2aaa14f20bb77289af8d5bc9115ee95d693"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "16568a8f26a9aa7674c85b5526854fd941bcd64f29ac0c452435ede03b2a18c0"
+      },
+      {
+        "path": "docs/conventions/authoring-preflight.md",
+        "content_sha256": "177764d60d1ff314aa488c832a59811ee8ad15884f7394101c7fb358dc9e73db"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "cc434c603b8c90484cd27cd99314c66458c3e1a85e68437bd81d2bd538585fc6"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "90ae49958969a7d2d946ba5dc8de0561103303e9c01971a4c5a20dbd5e1bb89e"
+      },
+      {
+        "path": "plugins/charness/scripts/check_skill_surface_preflight.py",
+        "content_sha256": "9c8980ff247dedc164ca2ded48c9f39a63a5fa2f62f15da43b48d3b8c0173366"
+      },
+      {
+        "path": "plugins/charness/scripts/hitl_review_artifact_lib.py",
+        "content_sha256": "f84b3e7e5847b4b4e896a729b641190c3cb0c7c2accf4c93a8b1db48f019059e"
+      },
+      {
+        "path": "plugins/charness/scripts/skill_core_density.py",
+        "content_sha256": "b26e6b392a79af624a0f03820d07216b4d260af49d233b495d3177c227e8efa0"
+      },
+      {
+        "path": "plugins/charness/scripts/skill_gate_report_render.py",
+        "content_sha256": "b02927d51670764b3c8b3c68f3c455a434d775b9b6f00b8a35a6ee0be950f244"
+      },
+      {
+        "path": "plugins/charness/scripts/skill_issue_anchor_scan.py",
+        "content_sha256": "ff510272e2b7aa21a620907b158fd800a211cffc5a47de8a7d2ae1a2b8f63fbb"
+      },
+      {
+        "path": "plugins/charness/scripts/skill_markdown_lib.py",
+        "content_sha256": "b9d843153e3f4ab698f2b3eb93bf0dc35f91f3d729d908a304183d7ec9724804"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_cautilus_diagnostics.py",
+        "content_sha256": "700a839c40c58a90acf2eb08600a58adeda8b7461ebb36b5ec1c2c1df35ea82a"
+      },
+      {
+        "path": "plugins/charness/skills/create-skill/references/portable-authoring.md",
+        "content_sha256": "0e66136ea227d7d95be25e7a8eb70547f575460cf3dd8e9dcf8913eba2cb1b96"
+      },
+      {
+        "path": "plugins/charness/skills/hitl/scripts/check_chunk_contract.py",
+        "content_sha256": "9d51cfff6f0a61b9d6c31b65330a6f86c271b8874f40a02f24e89c904852d339"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/audit_brief.py",
+        "content_sha256": "4ff11df131c111681f2cd5b92452d8e0cc16092e92afedeeb5dd1e764ba9cd6c"
+      },
+      {
+        "path": "scripts/check_skill_surface_preflight.py",
+        "content_sha256": "9c8980ff247dedc164ca2ded48c9f39a63a5fa2f62f15da43b48d3b8c0173366"
+      },
+      {
+        "path": "scripts/hitl_review_artifact_lib.py",
+        "content_sha256": "f84b3e7e5847b4b4e896a729b641190c3cb0c7c2accf4c93a8b1db48f019059e"
+      },
+      {
+        "path": "scripts/skill_core_density.py",
+        "content_sha256": "b26e6b392a79af624a0f03820d07216b4d260af49d233b495d3177c227e8efa0"
+      },
+      {
+        "path": "scripts/skill_gate_report_render.py",
+        "content_sha256": "b02927d51670764b3c8b3c68f3c455a434d775b9b6f00b8a35a6ee0be950f244"
+      },
+      {
+        "path": "scripts/skill_issue_anchor_scan.py",
+        "content_sha256": "ff510272e2b7aa21a620907b158fd800a211cffc5a47de8a7d2ae1a2b8f63fbb"
+      },
+      {
+        "path": "scripts/skill_markdown_lib.py",
+        "content_sha256": "b9d843153e3f4ab698f2b3eb93bf0dc35f91f3d729d908a304183d7ec9724804"
+      },
+      {
+        "path": "scripts/validate_cautilus_diagnostics.py",
+        "content_sha256": "700a839c40c58a90acf2eb08600a58adeda8b7461ebb36b5ec1c2c1df35ea82a"
+      },
+      {
+        "path": "skills/public/create-skill/references/portable-authoring.md",
+        "content_sha256": "0e66136ea227d7d95be25e7a8eb70547f575460cf3dd8e9dcf8913eba2cb1b96"
+      },
+      {
+        "path": "skills/public/hitl/scripts/check_chunk_contract.py",
+        "content_sha256": "9d51cfff6f0a61b9d6c31b65330a6f86c271b8874f40a02f24e89c904852d339"
+      },
+      {
+        "path": "skills/public/issue/scripts/audit_brief.py",
+        "content_sha256": "4ff11df131c111681f2cd5b92452d8e0cc16092e92afedeeb5dd1e764ba9cd6c"
+      },
+      {
+        "path": "tests/quality_gates/test_hitl_chunk_contract.py",
+        "content_sha256": "c7e01f778c574090483e5972f18699f00effdcc2a0127d4992f56790abc6c338"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_audit_brief.py",
+        "content_sha256": "5de5cd6ca1e335628916b20449e39903020d65736ec5c523053054c3f481d3f8"
+      },
+      {
+        "path": "tests/quality_gates/test_skill_surface_preflight.py",
+        "content_sha256": "4e1ac730dfe073b73f20e438e745d196b0a1baa625d553c0154c870cb62fa361"
+      },
+      {
+        "path": "tests/test_cautilus_diagnostic_artifact.py",
+        "content_sha256": "7dc25fbe6baa971567debea08cd8d39f594d262f552e84d14a0a9cbe4554a6f4"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "26528421f64439e012d9831445b9080b0c44202fdd98ad8302fda07d8be06972",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "d48b562bdaf495e1465f44bb6ded4f2f805362e0a472555c8df04ae3480b85ff"
+  }
+}

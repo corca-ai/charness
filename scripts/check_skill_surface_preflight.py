@@ -28,6 +28,15 @@ CLOSEOUT_VOCAB_MAX_LINES = _density.CLOSEOUT_VOCAB_MAX_LINES
 PRESSURE_EXEMPT_BUDGET = _density.PRESSURE_EXEMPT_BUDGET
 pressure_exempt_findings = _density.pressure_exempt_findings
 _core_nonempty_lines = _density.core_nonempty_lines
+# The one action that clears an exempt-section block. The gate's other blocking
+# cause (core headroom) has the opposite remedy, so naming only that one left an
+# author restructuring a healthy skill and still blocked.
+EXEMPT_SECTION_REMEDIATION = (
+    "A line under an exempt `## References` / `## Load-Bearing Anchors` / "
+    "`## Closeout Vocabulary` heading must stay token-shaped. Rewrite the flagged "
+    "line as a single clause, or move the explanation into `references/` — see "
+    "docs/conventions/authoring-preflight.md `## SKILL.md core headroom`."
+)
 MAX_SKILL_MD_LINES = 200
 # Non-blocking near-cap warning floor (#350): at or above this total, an added
 # line (e.g. a reciprocal propagation line from an adjacent skill's author) may
@@ -40,6 +49,8 @@ MAX_CORE_NONEMPTY_LINES = 160
 # by the broad-gate core-headroom test and the commit-boundary ratchet below, so
 # the two surfaces can never disagree on the buffer width.
 CORE_NONEMPTY_HEADROOM_BUFFER = 4
+
+
 class PreflightError(Exception):
     pass
 
@@ -216,18 +227,33 @@ def format_changed_human(report: dict[str, Any]) -> str:
             f"[{'BLOCK' if row['blocked'] else 'ok'}]"
         )
         rows.extend(f"  - exempt-section: {finding}" for finding in row.get("exempt_findings", []))
+    # Two different causes set `blocked`, and each needs its own remediation. The
+    # headroom paragraph told an author with 158 lines of headroom to split a
+    # concept out — a prescribed action that does not clear an exempt-section
+    # block, on a gate whose own row line said the opposite one line above.
     return render_gate_report(
         "skill-core-headroom",
         report["status"],
         rows,
         blocked=report["status"] == "blocked",
-        blocked_message=(
+        blocked_message=_changed_blocked_message(report),
+    )
+
+
+def _changed_blocked_message(report: dict[str, Any]) -> str:
+    checked = report["checked"]
+    under_buffer = [row for row in checked if row["blocked"] and not row.get("exempt_findings")]
+    messages: list[str] = []
+    if any(row.get("exempt_findings") for row in checked):
+        messages.append(EXEMPT_SECTION_REMEDIATION)
+    if under_buffer or not messages:
+        messages.append(
             "Changed SKILL.md core dropped below the core_nonempty headroom "
             f"buffer ({CORE_NONEMPTY_HEADROOM_BUFFER} lines). Split a concept "
             "into its own surface or delete one — do not shave lines to fit; "
             "fix this before the broad gate core-headroom test fails late."
-        ),
-    )
+        )
+    return "\n".join(messages)
 
 
 def _couplings(target_kind: str, skill_kind: str) -> list[dict[str, str]]:
@@ -421,6 +447,8 @@ def format_human(report: dict[str, Any]) -> str:
         lines.append(f"WARN {row['id']}: {row['message']}")
     for finding in report.get("exempt_findings", []):
         lines.append(f"BLOCK exempt-section: {finding}")
+    if report.get("exempt_findings"):
+        lines.append(EXEMPT_SECTION_REMEDIATION)
     if report["target"]["current_lines"] is not None:
         lines.append(f"target current lines: {report['target']['current_lines']}")
     lines.append("couplings:")

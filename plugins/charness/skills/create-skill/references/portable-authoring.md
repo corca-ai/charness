@@ -316,6 +316,13 @@ in both cases across *every* block of the heading rather than only the first:
   blocking finding, whichever exempt heading it sits under,
 - the total `SKILL.md` line ceiling still counts the whole block.
 
+Caveat, and it matters if you quote a number: the `quality` skill's own skill
+inventory computes `core_nonempty_lines` with the older unbounded rules (no
+budget, no audit, `## Closeout Vocabulary` not exempt), so the two numbers differ
+for a skill with a Closeout Vocabulary block, an over-budget `## References`
+block, or a fenced example inside an exempt section. Quote the inventory's number
+in a quality artifact; its validator recomputes and refuses a mismatch.
+
 The honest bound: it is the BUDGET, not the audit, that limits the hatch. A short
 single-sentence line under an exempt heading is still exempt and unread, so a
 skill can park a bounded number of such lines there for free — the budget is what
