@@ -119,6 +119,28 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     round-2 repair after the producer invalidates the coverage fingerprint.
   - A docs, artifact, or ordinary-code slice keeps the single-round obligation
     above.
+- **A multi-slice goal runs a bounded GOAL-CLAIMS review at its midpoint, not only
+  at closeout.** The slice rule above puts a fresh eye on every repair; nothing
+  put one on the goal's own claims until the end, and a goal artifact is a verdict
+  surface too — it asserts what each row now is, and downstream sessions plan
+  against those assertions rather than against the code.
+  - **Trigger:** a goal with three or more slices. Two-slice goals keep the
+    closeout review alone; the midpoint round is not worth its cost there.
+  - **What the reviewer reads:** the goal artifact's per-row claims against the
+    OWNING records and the commits, not the code. The question is "does the Slice
+    Log claim match what the record says and what the commit did", which is a
+    different question from "is this repair correct" and is answered by a
+    different packet.
+  - **Why the midpoint and not only closeout.** Measured on the 2026-08-01
+    stragglers goal: the closeout review found two blockers — an acceptance
+    criterion (one critique artifact per slice) that had gone unmet for all five
+    slices, and a row marked `FIXED` whose own record's prose still said the
+    opposite. Both were cheap to fix at the midpoint and expensive at the end,
+    because by then five slices of claims had been written against the same
+    unnoticed gap. Catching a claims defect once costs one round; catching it at
+    closeout costs re-writing every artifact the defect touched.
+  - The closeout disposition review still runs. The midpoint round does not
+    replace it, and a goal that stops early runs only the closeout one.
 - `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record

@@ -10,9 +10,9 @@ partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
 D4 partially fixed on 2026-07-28 as the distinct-channel family; D7, D9, D10, E5
 fixed on 2026-07-28 as the empty-scope family remainder.
 
-**Remaining: 5 OPEN (E1, E3, E4, E6, E7) + 4 PARTIAL (A3, A8, D4, E2)** as of
+**Remaining: 5 OPEN (E1, E3, E4, E6, E7) + 3 PARTIAL (A3, A8, E2)** as of
 2026-08-01 — C6 moved to `FIXED (narrowed)`, A3's residual 1 was narrowed, and D4
-became an operator decision rather than agent work. A6 was reopened and re-closed
+is `WONTFIX` by operator decision. A6 was reopened and re-closed
 the same day; see its paragraph below. Count fully-open rows and partial rows separately; a PARTIAL is not a
 landed row, and rolling them into a single "N remain" figure is the same class of
 claim this file exists to hunt. Two of those rows are not work to pick up: **E4 is
@@ -485,7 +485,7 @@ mode. Class (c).
 | D1 | FIXED | A `## Release State` heading with any suffix disables the entire five-entry ledger check; audit still reports `passed` | `skills/public/release/scripts/audit_public_release_narrative.py:44,66` |
 | D2 | FIXED | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers | same file, `:80` |
 | D3 | FIXED | The same-proxy guard is a positional prefix match: flag order, wrappers, and absolute paths defeat it | `skills/public/release/scripts/publish_release_post_create.py:124` |
-| D4 | PARTIAL — OPERATOR DECISION (2026-08-01) | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
+| D4 | WONTFIX (operator decision, 2026-08-01) | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
 | D5 | FIXED | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
 | D6 | FIXED | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
 | D7 | FIXED | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
@@ -610,11 +610,19 @@ reported version is now the first version-shaped token and must EQUAL the
 expected one. And `published_notes_audit` reached nobody: it lived only in the
 publish run's stdout JSON, so it is now rendered into the release artifact.
 
-**D4 — dispositioned to an operator decision (2026-08-01).** Re-read rather than
+**D4 — WONTFIX, decided by the repo owner 2026-08-01.** Re-read rather than
 re-probed, because the live measurement below is stronger than any fixture a
-session could build: the remaining question is whether the release probe gets an
-authenticated channel, which is a credentials decision, not agent work. Queued in
-the 2026-08-01 goal's Operator Decision Queue. No code changed.
+session could build. The remaining question was whether the release probe gets an
+authenticated channel, and the answer is **no: the tag-vs-release ambiguity is
+accepted as rendered.** What makes that defensible rather than a shrug is that the
+probe already separates its claims — it records `establishes` and
+`does_not_establish` and the release artifact renders both, so `confirmed` cannot
+be read as the stronger claim it never earned. The obvious alternative was
+considered and is worse: reusing the `gh` credential the publish flow already
+holds would make the release confirm itself through the same provider, which is
+the one thing a DISTINCT-channel probe exists not to do. Reopen if a consuming
+repo needs the stronger claim at that boundary, or if a release is confirmed by
+this probe and the distinction turns out to matter. No code changed.
 
 **D4 stays PARTIAL, and this is the important part.** The content check closes
 the "any 200 with any body" hole. It does NOT make the probe proof that a

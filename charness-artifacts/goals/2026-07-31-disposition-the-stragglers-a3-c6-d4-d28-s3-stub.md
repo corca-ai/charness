@@ -351,6 +351,12 @@ Queue:
     task.
   - Revisit trigger: the next release whose publish is confirmed by that probe, or
     any consuming repo that asks what `confirmed` means at that boundary.
+  - **Answered 2026-08-01 by the repo owner: do not authenticate. Accept the
+    tag-vs-release ambiguity as rendered.** The probe keeps its content check and
+    keeps reporting `establishes` / `does_not_establish` separately, so the
+    weaker claim stays visible at the boundary instead of being read as the
+    stronger one. This closes the decision, not the defect: the row is `WONTFIX`
+    with the reason recorded, and the revisit trigger above still stands.
 **Withdrawn from this queue on the disposition review's finding, and correctly:**
 "should the A3 residual be closed structurally" was filed here as an operator
 decision, and it is not one — this run already answered it (slice 1 closed the

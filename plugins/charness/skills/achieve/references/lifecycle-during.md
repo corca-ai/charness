@@ -83,6 +83,18 @@ behind this rule are owned by
 for cross-slice drift and Auto-Retro disposition instead of redoing every slice
 review.
 
+**A goal of three or more slices also runs a bounded GOAL-CLAIMS review at its
+midpoint.** Slice critique puts a fresh eye on each repair; this one reads the
+goal artifact's per-row CLAIMS against the owning records and the commits, which
+is a different question and needs a different packet: "does the Slice Log claim
+match what the record says and what the commit did." A goal artifact is a verdict
+surface — downstream sessions plan against its assertions rather than against the
+code — and leaving it reviewed only at closeout is what let one goal write five
+slices of claims against an acceptance criterion none of them met. Catching a
+claims defect once costs one round; catching it at closeout costs re-writing every
+artifact the defect touched. It does not replace the closeout disposition review,
+and a two-slice goal keeps the closeout round alone.
+
 `run_slice_closeout.py` auto-surfaces two recurring-trap signals so they are
 workflow affordances, not agent memory: a **length-headroom advisory** for any
 changed gated file already near its limit (`limit − current`; choose a new
