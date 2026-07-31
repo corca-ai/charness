@@ -42,6 +42,13 @@ def build_per_file_floor_report(
     warn_band: list[dict[str, object]] = []
     exempt: list[dict[str, object]] = []
     unmeasured: list[dict[str, object]] = []
+    # Rows that actually reached the floor comparison. NOT `len(files)`: the loop
+    # routes rows into `unmeasured` (zero statements) and `exempt` (under the
+    # statement threshold) before any comparison happens, so a population that is
+    # entirely unmeasured or entirely exempt has an empty `violations` list for the
+    # same reason an EMPTY population does — round 1 caught the first cut keying on
+    # the input length, which left the S1 green reachable one bucket over.
+    compared = 0
     for item in files:
         total = int(item["total"])
         coverage = float(item["coverage"])
@@ -71,12 +78,25 @@ def build_per_file_floor_report(
             "total": total,
             "coverage": coverage,
         }
+        compared += 1
         if coverage < floor:
             violations.append(candidate)
         elif coverage < PER_FILE_WARN_BELOW:
             warn_band.append(candidate)
     return {
-        "status": "enforced",
+        # An empty population produced `status: "enforced"` with every bucket
+        # empty — a fully green, self-declared-enforced floor report over nothing
+        # (S1). The reachable causes are all silent: a coverage JSON read with the
+        # wrong key, a scope filter that matched nothing, a failed producer.
+        # The denominator is `compared`, not `files_received`: those two disagree
+        # for an all-unmeasured or all-exempt population, and the borrowed token
+        # `measurement_scope` therefore does NOT share a predicate with the sibling
+        # in `check_coverage.summarize`, which keys on statement count. Same word,
+        # narrower subject, stated here so the two are not read as one claim.
+        "status": "enforced" if compared else "unestablished",
+        "measurement_scope": "evaluated" if compared else "empty",
+        "files_received": len(files),
+        "files_evaluated": compared,
         "relationship": "per-file-floor",
         "min_statements_threshold": PER_FILE_MIN_STATEMENTS,
         "floor": floor,

@@ -123,16 +123,21 @@ def _timing_layer_gates(repo_root: Path, paths: list[str], existing: list[str] |
             )
         )
     if _any_starts(paths, ".github/workflows/"):
-        # <0.1s; only a workflow edit can flip the parity verdict. Carries
-        # --require-canonical-gate-match so the commit boundary enforces the
-        # same bar as the broad gate's real-repo parity test, not just the
-        # inventory's parity-issue subset.
+        # <0.1s; only a workflow edit can flip the parity verdict. Carries both
+        # match flags so the commit boundary enforces the same bar as the broad
+        # gate's real-repo parity test, not just the inventory's parity-issue
+        # subset. --require-established-gate-match was added when the
+        # unestablished-match bucket split off: it is a no-op on this repo today
+        # (both workflows are exempt), and without it the comment's "same bar"
+        # claim became false the moment the broad test started asserting
+        # `jobs_gate_match_unestablished == []`.
         gates.extend(
             _timing_pull_gate(
                 repo_root, "inventory-ci-local-gate-parity",
                 "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
                 "--repo-root", str(repo_root), "--require-empty-parity-issues",
-                "--require-canonical-gate-match", "--require-git-file-listing",
+                "--require-canonical-gate-match", "--require-established-gate-match",
+                "--require-git-file-listing",
             )
         )
     return gates

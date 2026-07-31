@@ -375,8 +375,9 @@ removed when this contract landed; wrappers that still set it now get the
 default full mode and should switch to the canonical surface.
 
 `domain_language_contract` optionally declares canonical repo terms for a
-DDD-style ubiquitous-language inventory. The field is advisory by default and is
-consumed by `scripts/inventory_ubiquitous_language.py`.
+DDD-style ubiquitous-language inventory, consumed by
+`scripts/inventory_ubiquitous_language.py`. Declaring the field is optional; once
+declared, it is NOT purely advisory — see "What hard-fails" below.
 
 Shape:
 
@@ -399,9 +400,25 @@ domain_language_contract:
 
 Use `allowed_aliases` for deliberately user-friendly phrasing and
 `deprecated_aliases` for low-noise strings that should disappear from
-user-facing docs, CLI references, adapters, or artifacts. A deprecated alias hit
-may hard-fail; an allowed alias without the canonical term is advisory review
-material. Use `exemption_globs` for quoted examples or historical records that
+user-facing docs, CLI references, adapters, or artifacts. An allowed alias
+without the canonical term is advisory review material.
+
+What hard-fails (exit 1), because a clean verdict over an unread scope is not a
+clean verdict:
+
+- a `deprecated_aliases` hit;
+- a `surface_globs` list you DECLARED that matches no file at all — the term was
+  never scanned, so its clean result establishes nothing. Remedy: correct the
+  glob, or remove the term. Note the scan enumerates through
+  `git ls-files --cached --others --exclude-standard`, so a declared surface that
+  is gitignored (a generated docs tree, say) reads as unmatched;
+- `surface_globs: []` (or `null`) on a term — a declared empty scope, which is
+  different from omitting the key to inherit the contract-level scope.
+
+What is reported but stays exit 0: a scope emptied entirely by `exemption_globs`
+(deliberate, and named in the output), and a glob in a multi-glob list that
+matched nothing while its siblings matched (that surface is silently unread, so
+the run says so). Use `exemption_globs` for quoted examples or historical records that
 intentionally document non-canonical wording; the default scan scope excludes
 adapter YAML files so the contract does not fail on its own deprecated alias
 declarations.

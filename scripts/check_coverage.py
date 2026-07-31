@@ -386,6 +386,45 @@ def summarize(
     return summary
 
 
+def format_per_file_floor_line(floor_report: dict, *, min_file_coverage: float) -> str:
+    """The operator-facing per-file-floor line.
+
+    Extracted so the UNESTABLISHED arm is reachable from a test: `run-quality.sh`
+    runs this gate WITHOUT --json, so this string is the operator surface, and an
+    unrendered branch on a gate in the changed-line pool is the shape #465 punished.
+
+    Keyed on the evaluated COUNT rather than on `measurement_scope` so a payload
+    missing the key fails CLOSED onto the caveat instead of taking the green
+    numeric arm.
+
+    Deliberately NOT an exit-code change. `main` already refuses when nothing was
+    measured at all (`summary["coverage"] is None` -> CoverageError), and the one
+    remaining green-over-unestablished shape — a population entirely below the
+    statement threshold — needs every entry of the fixed `TARGET_FILES` list to be
+    a sub-30-statement file, which no current entry is. Recorded rather than wired
+    because turning `status == "unestablished"` into a refusal is a gate-contract
+    change that belongs to whoever narrows `TARGET_FILES`, not to this repair.
+    """
+    if not floor_report.get("files_evaluated"):
+        # Otherwise this prints "0 below the floor, 0 in the warn band" —
+        # byte-identical to a clean repo — over a population of zero.
+        return (
+            "Per-file floor: UNESTABLISHED — zero files reached the floor comparison "
+            f"(received {floor_report.get('files_received', 'an unrecorded number of')}; "
+            "the rest were unmeasured "
+            "or below the statement threshold), so the floor was not enforced over "
+            "anything. Read this as a missing measurement, not a passing one."
+        )
+    violations = floor_report["violations"]
+    warn_band = floor_report["warn_band"]
+    return (
+        "Per-file floor: "
+        f"{len(violations)} below {min_file_coverage * 100:.1f}%, "
+        f"{len(warn_band)} in {min_file_coverage * 100:.1f}-"
+        f"{PER_FILE_WARN_BELOW * 100:.1f}% warn band"
+    )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -423,16 +462,11 @@ def main() -> int:
             )
         floor_report = summary["per_file_floor"]
         assert isinstance(floor_report, dict)
-        violations = floor_report["violations"]
-        warn_band = floor_report["warn_band"]
-        assert isinstance(violations, list)
-        assert isinstance(warn_band, list)
-        print(
-            "Per-file floor: "
-            f"{len(violations)} below {args.min_file_coverage * 100:.1f}%, "
-            f"{len(warn_band)} in {args.min_file_coverage * 100:.1f}-"
-            f"{PER_FILE_WARN_BELOW * 100:.1f}% warn band"
-        )
+        # No unconditional `floor_report["violations"]` read here: round 2 caught the
+        # extraction leaving the old locals behind, where a partial payload raised
+        # KeyError BEFORE the helper's fail-closed caveat could print — which made
+        # the fail-closed repair dead at its only production call site.
+        print(format_per_file_floor_line(floor_report, min_file_coverage=args.min_file_coverage))
         # The exemption is deliberate policy; being silent about it was not.
         # `run-quality.sh` invokes this gate WITHOUT --json, so the operator who
         # reads it would otherwise never see the excused population.

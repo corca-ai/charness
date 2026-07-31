@@ -44,6 +44,9 @@ _MODULES = {
         "scripts/check_skill_surface_preflight.py",
         "scripts/check_test_repo_copy_invariants.py",
         "scripts/validate_integrations.py",
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "scripts/check_coverage.py",
     )
 }
 
@@ -429,3 +432,535 @@ def test_skill_cut_safety_unscoped_human_output_names_the_paths_and_the_remedy()
     clean = cut_safety.format_human({"status": "clean", "skills": []})
     assert "nothing was checked" not in clean
     assert "no changed public/support SKILL.md surfaces to check." in clean
+
+
+# --- 2026-08-01, triage-sweep rows S1/S26/S30/S32. Same rule, four more surfaces:
+# a denominator that reached zero must be a value in the payload, and a scope the
+# CALLER NAMED that resolved to nothing must refuse. Each pairs its refusal with a
+# positive control, because a gate that always fails passes every refusal test.
+
+
+def test_per_file_floor_over_zero_files_is_not_enforced() -> None:
+    """S1: `build_per_file_floor_report([])` self-declared `status: "enforced"` with
+    every bucket empty — a fully green per-file floor report over a population of
+    zero, reachable from a coverage JSON read with the wrong key, a scope filter
+    that matched nothing, or a failed producer. The sibling summary in the same
+    subsystem already answered this with `measurement_scope`; the floor now does.
+    """
+    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/check_coverage_lib.py")
+
+    empty = lib.build_per_file_floor_report([])
+    assert empty["status"] == "unestablished"
+    assert empty["measurement_scope"] == "empty"
+    assert empty["files_evaluated"] == 0
+
+    # Control: a real population still reports an enforced floor, and still finds
+    # the violation in it. An implementation that returned "unestablished" always
+    # would pass the assertions above.
+    evaluated = lib.build_per_file_floor_report(
+        [{"path": "a.py", "covered": 10, "total": 100, "coverage": 0.10}], floor=0.85
+    )
+    assert evaluated["status"] == "enforced"
+    assert evaluated["measurement_scope"] == "evaluated"
+    assert [item["path"] for item in evaluated["violations"]] == ["a.py"]
+
+
+def _workflow_repo(tmp_path: Path, name: str, body: str) -> Path:
+    repo = tmp_path / "wf-repo"
+    (repo / ".github" / "workflows").mkdir(parents=True, exist_ok=True)
+    (repo / ".github" / "workflows" / name).write_text(body, encoding="utf-8")
+    return repo
+
+
+_PARITY_WORKFLOW = (
+    "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+    "    steps:\n      - run: npm run verify\n      - run: npm run secret-scan\n"
+)
+_ALL_USES_WORKFLOW = (
+    "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+    "    steps:\n      - uses: actions/checkout@v4\n      - uses: ./.github/actions/run-everything\n"
+)
+
+
+@pytest.mark.parametrize("suffix", ["yml", "yaml"])
+def test_parity_gate_reads_both_workflow_extensions(tmp_path: Path, suffix: str) -> None:
+    """S30: GitHub Actions accepts both extensions and the default glob read only
+    `.yml`, so the identical workflow saved as `ci.yaml` scanned 0 files and exited
+    0 where `ci.yml` raised a parity issue and exited 1. The denominator, not the
+    verdict, was wrong.
+    """
+    repo = _workflow_repo(tmp_path, f"ci.{suffix}", _PARITY_WORKFLOW)
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-empty-parity-issues",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "secret-scan" in result.stdout + result.stderr
+
+
+def test_parity_gate_refuses_a_named_glob_that_matched_nothing(tmp_path: Path) -> None:
+    """A scope the caller NAMED that resolves to nothing is a failed assertion."""
+    repo = _workflow_repo(tmp_path, "ci.yml", _PARITY_WORKFLOW)
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--workflow-glob",
+        ".github/workflows/*.toml",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "matched no workflow file" in result.stdout + result.stderr
+
+
+def test_parity_gate_discovered_empty_scope_stays_a_pass(tmp_path: Path) -> None:
+    """Control, and the asymmetry this file exists to pin: a repo with no workflows
+    at all is a real answer, not a failed assertion. It must still SAY it evaluated
+    nothing."""
+    repo = tmp_path / "no-workflows"
+    repo.mkdir()
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-empty-parity-issues",
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "establishes NOTHING" in result.stdout + result.stderr
+
+
+def test_parity_gate_names_a_job_it_could_not_read(tmp_path: Path) -> None:
+    """S26: a job whose steps are all `uses:` was dropped by a bare `continue`, so
+    it was indistinguishable from a job that passed. The canonical gate may run
+    inside the composite action; this reader cannot open it. Unestablished is its
+    own answer.
+    """
+    repo = _workflow_repo(tmp_path, "ci.yml", _ALL_USES_WORKFLOW)
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-established-gate-match",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "gate-match-unestablished" in result.stdout + result.stderr
+
+    # Control: the same flag over a job whose gate IS visible stays a pass, so the
+    # refusal is about the unreadable job and not about the flag.
+    ok_repo = _workflow_repo(
+        tmp_path,
+        "ci.yml",
+        "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+        "    steps:\n      - run: npm run verify\n",
+    )
+    ok = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(ok_repo),
+        "--require-established-gate-match",
+        "--require-canonical-gate-match",
+    )
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+
+    # ...and the OLD flag does not fire on the unreadable job: round 1 established
+    # that a composite-action wrapper is an honest CI shape whose only escapes from
+    # a folded-in refusal were dropping real teeth or misusing a gate-policy marker.
+    unfolded = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-canonical-gate-match",
+    )
+    assert unfolded.returncode == 0, unfolded.stdout + unfolded.stderr
+
+
+def _language_repo(tmp_path: Path, glob: str, *, exemption: str | None = None) -> Path:
+    repo = tmp_path / "lang-repo"
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / "docs").mkdir(parents=True, exist_ok=True)
+    (repo / "docs" / "a.md").write_text("corca-harness twice: corca-harness\n", encoding="utf-8")
+    lines = [
+        "domain_language_contract:",
+        "  terms:",
+        "    - id: harness",
+        "      canonical: charness",
+        "      deprecated_aliases:",
+        "        - corca-harness",
+        "      surface_globs:",
+        f"        - {glob}",
+    ]
+    if exemption:
+        lines += ["      exemption_globs:", f"        - {exemption}"]
+    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
+    return repo
+
+
+def test_language_inventory_refuses_declared_globs_that_read_nothing(tmp_path: Path) -> None:
+    """S32: a typo'd `surface_globs` (`doc/**` for `docs/**`) scanned zero files and
+    reported `ok`, while a deprecated alias sat twice in a real doc. `ok` over an
+    unread scope is the same defect as a green over an empty one.
+    """
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(_language_repo(tmp_path, "doc/**/*.md")),
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "matched no file" in result.stdout + result.stderr
+
+    # Control: the corrected glob finds the alias it was blind to.
+    found = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(_language_repo(tmp_path, "docs/**/*.md")),
+    )
+    assert found.returncode == 1, found.stdout + found.stderr
+    assert "deprecated alias" in found.stdout + found.stderr
+
+
+def test_language_inventory_does_not_refuse_a_scope_emptied_by_exemption(tmp_path: Path) -> None:
+    """The false positive the first cut of the S32 repair shipped: a glob that
+    matches files, all of which are deliberately EXEMPT, is not a wrong contract.
+    It reads zero files for a reason the contract itself states, so it stays a pass.
+    """
+    repo = _language_repo(tmp_path, "docs/**/*.md", exemption="docs/a.md")
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "matched no file" not in result.stdout + result.stderr
+
+
+# --- Round 2 of the same slice: cases round 1 established the first cut missed.
+
+
+def test_parity_gate_names_a_job_level_reusable_workflow_call(tmp_path: Path) -> None:
+    """The S26 class in its more common shape, which the first cut still dropped:
+    `jobs.<id>.uses:` has NO `steps` key, so it fell through the `not steps` skip
+    into no bucket at all — exit 0 with every list empty, verified by execution
+    before this repair. That is how repos factor a whole gate graph.
+    """
+    repo = _workflow_repo(
+        tmp_path,
+        "ci.yml",
+        "name: ci\non: [push]\njobs:\n  build:\n    uses: ./.github/workflows/run-everything.yml\n",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-established-gate-match",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "gate-match-unestablished" in result.stdout + result.stderr
+
+    # Control: a job with neither steps nor `uses:` genuinely runs nothing, so it
+    # stays a silent skip rather than joining the unestablished bucket.
+    empty_job = _workflow_repo(
+        tmp_path, "ci.yml", "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+    )
+    ok = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(empty_job),
+        "--require-established-gate-match",
+    )
+    assert ok.returncode == 0, ok.stdout + ok.stderr
+
+
+def test_parity_named_scope_refusal_carries_a_payload(tmp_path: Path) -> None:
+    """A refusal a `--json` consumer cannot read is indistinguishable from a crash.
+    The sibling rule is already pinned above for check_bootstrap_shim_consistency."""
+    repo = _workflow_repo(tmp_path, "ci.yml", _PARITY_WORKFLOW)
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--workflow-glob",
+        ".github/workflows/*.toml",
+        "--json",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "named-scope-empty"
+    assert payload["jobs_evaluated"] == 0
+    assert "Remedy" in payload["reason"]
+
+
+def test_parity_require_evaluated_scope_has_both_arms(tmp_path: Path) -> None:
+    """The flag shipped untested in the first cut. Both arms, because a flag that
+    always refuses and a flag that never refuses both pass a one-arm test."""
+    exempt = _workflow_repo(
+        tmp_path,
+        "ci.yml",
+        "# charness:gate-policy scheduled-deeper-check\nname: ci\non: [push]\njobs:\n"
+        "  build:\n    runs-on: ubuntu-latest\n    steps:\n      - run: mutmut run\n",
+    )
+    refused = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(exempt),
+        "--require-evaluated-scope",
+    )
+    assert refused.returncode == 1, refused.stdout + refused.stderr
+
+    evaluated = _workflow_repo(
+        tmp_path,
+        "ci.yml",
+        "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+        "    steps:\n      - run: npm run verify\n",
+    )
+    passed = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(evaluated),
+        "--require-evaluated-scope",
+        "--json",
+    )
+    assert passed.returncode == 0, passed.stdout + passed.stderr
+    # A nonzero denominator, asserted: every other pin on these fields is a zero,
+    # so a refactor that made `jobs_evaluated` always 0 would pass all of them.
+    assert json.loads(passed.stdout)["jobs_evaluated"] == 1
+
+
+def test_language_inventory_says_when_exemptions_emptied_the_scope(tmp_path: Path) -> None:
+    """Round 1's blocker on this slice: an exemption-emptied scope is a legitimate
+    PASS, but the first cut made it a SILENT pass — output byte-identical to a full
+    clean scan. The sibling parity gate is pinned to state its empty scope; this one
+    now states its own, and still does not refuse.
+    """
+    repo = _language_repo(tmp_path, "docs/**/*.md", exemption="docs/a.md")
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 0, result.stdout + result.stderr
+    output = result.stdout + result.stderr
+    assert "0 file(s) read" in output
+    assert "establishes nothing" in output
+    assert "matched no file" not in output  # still not the refusal
+
+    # Control: a scope that actually read files says nothing of the kind.
+    scanned = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(_language_repo(tmp_path, "docs/**/*.md")),
+    )
+    assert "0 file(s) read" not in scanned.stdout + scanned.stderr
+
+
+def test_language_inventory_refuses_an_explicitly_empty_declared_scope(tmp_path: Path) -> None:
+    """`surface_globs: []` is a declared empty scope, not an absent declaration.
+    Collapsing the two silently handed the term an inherited scope and then reported
+    globs it never declared."""
+    repo = tmp_path / "empty-scope-repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "a.md").write_text("corca-harness\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
+        "      deprecated_aliases:\n        - corca-harness\n      surface_globs: []\n",
+        encoding="utf-8",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "declared EMPTY" in result.stdout + result.stderr
+
+
+def test_language_inventory_scope_rules_hold_inside_a_git_repo(tmp_path: Path) -> None:
+    """Round 1, MINOR 9: the new tests all ran the `rglob` fallback because their
+    fixture was not a git repo, while every real invocation takes the `git ls-files`
+    branch. Same two verdicts, other branch."""
+    repo = _seeded_repo(tmp_path)
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "a.md").write_text("corca-harness\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
+        "      deprecated_aliases:\n        - corca-harness\n      surface_globs:\n"
+        "        - doc/**/*.md\n",
+        encoding="utf-8",
+    )
+    _git(repo, "add", "-A")
+    _git(repo, "commit", "-qm", "seed language contract")
+
+    refused = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert refused.returncode == 1, refused.stdout + refused.stderr
+    assert "matched no file" in refused.stdout + refused.stderr
+
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        (repo / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8").replace(
+            "- doc/**", "- docs/**"
+        ),
+        encoding="utf-8",
+    )
+    found = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    assert found.returncode == 1, found.stdout + found.stderr
+    assert "deprecated alias" in found.stdout + found.stderr
+
+
+def test_per_file_floor_over_an_all_exempt_population_is_not_enforced() -> None:
+    """Round 1's blocker on the S1 slice: the first cut keyed `status` on the INPUT
+    length, so a population that is entirely unmeasured or entirely below the
+    statement threshold still self-declared `enforced` with an empty `violations`
+    list — the same green, one bucket over.
+    """
+    lib = load_script_module("scripts_check_coverage_lib", ROOT / "scripts/check_coverage_lib.py")
+
+    all_exempt = lib.build_per_file_floor_report(
+        [{"path": "a.py", "covered": 0, "total": 5, "coverage": 0.0}]
+    )
+    assert all_exempt["status"] == "unestablished"
+    assert all_exempt["files_received"] == 1
+    assert all_exempt["files_evaluated"] == 0
+
+    all_unmeasured = lib.build_per_file_floor_report(
+        [{"path": "b.py", "covered": 0, "total": 0, "coverage": 1.0}]
+    )
+    assert all_unmeasured["status"] == "unestablished"
+    assert all_unmeasured["files_evaluated"] == 0
+
+    # Control: one comparable file among exempt ones restores an enforced verdict.
+    mixed = lib.build_per_file_floor_report(
+        [
+            {"path": "a.py", "covered": 0, "total": 5, "coverage": 0.0},
+            {"path": "b.py", "covered": 90, "total": 100, "coverage": 0.90},
+        ],
+        floor=0.85,
+    )
+    assert mixed["status"] == "enforced"
+    assert mixed["files_evaluated"] == 1
+
+
+def test_per_file_floor_human_output_names_the_unestablished_scope() -> None:
+    """The human renderer is the operator surface (`run-quality.sh` runs this gate
+    without --json), and the new branch had no test — the exact shape #465 punished
+    when an unrendered branch met the armed changed-line gate."""
+    check_coverage = _MODULES["scripts/check_coverage.py"]
+    empty = {"measurement_scope": "empty", "files_received": 3, "files_evaluated": 0}
+    text = check_coverage.format_per_file_floor_line(empty, min_file_coverage=0.85)
+    assert "UNESTABLISHED" in text
+    assert "received 3" in text
+
+    populated = {
+        "measurement_scope": "evaluated",
+        "files_received": 2,
+        "files_evaluated": 2,
+        "violations": [{"path": "a.py", "coverage": 0.1}],
+        "warn_band": [],
+    }
+    assert "UNESTABLISHED" not in check_coverage.format_per_file_floor_line(
+        populated, min_file_coverage=0.85
+    )
+
+    # A payload MISSING the key must fail closed onto the caveat, not take the
+    # green numeric arm — round 1, MINOR 2.
+    assert "UNESTABLISHED" in check_coverage.format_per_file_floor_line(
+        {"violations": [], "warn_band": []}, min_file_coverage=0.85
+    )
+
+
+def test_language_inventory_advisories_do_not_invent_a_cause(tmp_path: Path) -> None:
+    """Round 2: the exemption advisory fired with `0 matched ... all were removed by
+    exemption_globs` when NO exemption was configured — a fabricated cause on the
+    built-in discovery fallback, which is the shape an unconfigured consumer hits.
+    """
+    repo = tmp_path / "no-surface-repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n",
+        encoding="utf-8",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    output = result.stdout + result.stderr
+    assert result.returncode == 0, output
+    assert "no exemption was involved" in output
+    assert "removed by exemption_globs" not in output
+
+
+def test_language_inventory_names_a_dead_glob_among_live_ones(tmp_path: Path) -> None:
+    """Round 1, MINOR 4, which shipped with no discriminator: the aggregate hides the
+    likelier shape — one typo in a multi-glob list, siblings still matching, that
+    surface silently unread. Reported, not refused: the scan did establish something.
+    """
+    repo = tmp_path / "partial-repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "a.md").write_text("charness\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
+        "      surface_globs:\n        - docs/**/*.md\n        - skil/**/*.md\n",
+        encoding="utf-8",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    output = result.stdout + result.stderr
+    assert result.returncode == 0, output
+    assert "skil/**/*.md" in output
+    assert "silently unread" in output
+
+
+def test_language_inventory_empty_scope_message_names_the_term_key(tmp_path: Path) -> None:
+    """Round 2 blocker: `scope_declared` is False for `surface_globs: []`, so the
+    shared `owner` string named the CONTRACT-level key — a false statement whose
+    remedy would not clear the failure and would drop every other term's scope."""
+    repo = tmp_path / "empty-declared-repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "a.md").write_text("charness\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "domain_language_contract:\n  surface_globs:\n    - docs/**/*.md\n  terms:\n"
+        "    - id: harness\n      canonical: charness\n      surface_globs: []\n",
+        encoding="utf-8",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+    )
+    output = result.stdout + result.stderr
+    assert result.returncode == 1, output
+    assert "domain_language_contract.harness.surface_globs is declared EMPTY" in output
+
+
+def test_parity_gate_names_a_job_whose_steps_it_could_not_parse(tmp_path: Path) -> None:
+    """Round 2: a `steps:` key the reader could not parse (the repo's loader returns
+    a YAML flow sequence as a string) landed in NO bucket — the S26 escape surviving
+    in a third shape, on valid GitHub Actions YAML."""
+    repo = _workflow_repo(
+        tmp_path,
+        "ci.yml",
+        "name: ci\non: [push]\njobs:\n  build:\n    runs-on: ubuntu-latest\n"
+        "    steps: [{run: npm test}, {run: npm run secret-scan}]\n",
+    )
+    result = run_gate(
+        "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
+        "--repo-root",
+        str(repo),
+        "--require-established-gate-match",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "gate-match-unestablished" in result.stdout + result.stderr

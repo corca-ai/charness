@@ -47,7 +47,7 @@ import ci_local_gate_parity_lib as parity_lib  # noqa: E402
 import ci_recoverable_gates_lib as lens_lib  # noqa: E402
 
 
-def _load_workflows(root: Path, glob_pattern: str, *, require_git: bool) -> list[dict[str, Any]]:
+def _load_workflows(root: Path, glob_pattern, *, require_git: bool) -> list[dict[str, Any]]:
     workflows: list[dict[str, Any]] = []
     for path in parity_lib.iter_workflow_files(root, glob_pattern, require_git=require_git):
         parsed = parity_lib.parse_workflow(path, load_yaml_file)
@@ -137,11 +137,7 @@ def summarize(report: dict[str, Any], *, sample_limit: int = 10) -> dict[str, An
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description=__doc__.split("\n", 1)[0])
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT, help="Repo root for the CI-recoverable gate triage")
-    parser.add_argument(
-        "--workflow-glob",
-        default=parity_lib.DEFAULT_WORKFLOW_GLOB,
-        help=f"glob for CI workflow files (default: {parity_lib.DEFAULT_WORKFLOW_GLOB})",
-    )
+    parity_lib.add_workflow_glob_arg(parser)
     parser.add_argument(
         "--runtime-profile",
         help="Named machine/runner profile for wall-clock ranking. Defaults to CHARNESS_RUNTIME_PROFILE or adapter default.",
@@ -160,7 +156,9 @@ def main() -> int:
     root = args.repo_root.resolve()
     report = build_report(
         root,
-        glob_pattern=args.workflow_glob,
+        # Tuple, not the single-glob alias: reading only `*.yml` here would keep the
+        # S30 blind spot alive in this triage even after the parity gate closed it.
+        glob_pattern=parity_lib.resolve_workflow_globs(args.workflow_glob),
         runtime_profile=args.runtime_profile,
         require_git=args.require_git_file_listing,
     )

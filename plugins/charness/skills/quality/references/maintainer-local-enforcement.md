@@ -158,12 +158,34 @@ repeat local proof, but CI must not be the first place a required quality
 failure can appear.
 
 Use `../scripts/inventory_ci_local_gate_parity.py` to
-inventory parity. The helper takes `--workflow-glob`,
+inventory parity. The helper takes `--workflow-glob` (repeatable),
 `--canonical-gate-pattern` (repeatable), and `--ci-only-marker` for detecting
 forbidden CI-only language. With `--require-empty-parity-issues` it returns
 exit 1 when any subsequent step is classified as `parity-issue` or
 `ci-only-violation`, which is the right shape for a standing gate or pre-push
 hook in repos where the parity contract is intentional.
+
+Scope, and what a green here does not say:
+
+- The default scope is both extensions GitHub Actions accepts —
+  `.github/workflows/*.yml` and `*.yaml`. A repo with no workflows exits 0 and
+  says it evaluated nothing; a `--workflow-glob` you NAME that matches nothing
+  exits 1 with a `status: named-scope-empty` payload, because that is a failed
+  assertion rather than an empty repo.
+- The report separates `workflows_scanned` (files read) from
+  `workflows_not_exempt` and `jobs_evaluated` (what was actually judged). A run
+  whose every workflow carries a `# charness:gate-policy` marker evaluates zero
+  jobs, and a green over zero jobs is the absence of a measurement.
+  `--require-evaluated-scope` turns that into exit 1 when you want teeth.
+- `--require-canonical-gate-match` exits 1 when a workflow has `run:` steps but
+  no canonical-gate match. A job whose steps are all `uses:`, or which is itself
+  a `jobs.<id>.uses:` reusable-workflow call, is reported separately as
+  `jobs_gate_match_unestablished`: the gate may run inside something this reader
+  cannot open, so that is neither a pass nor a violation. Use
+  `--require-established-gate-match` to refuse on it. It is deliberately a
+  SEPARATE flag — wrapping your CI in a composite action is an honest shape, and
+  folding the refusal into `--require-canonical-gate-match` would leave you
+  choosing between dropping real teeth and misusing a gate-policy marker.
 
 The default canonical-gate patterns cover `npm run verify`, `make verify`,
 `bash scripts/run-quality.sh`, `bash scripts/run-verify.{mjs,sh}`, and

@@ -329,6 +329,14 @@ def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, c
             {"path": "scripts/empty.py", "covered": 0, "total": 0, "coverage": 1.0, "measured": False},
         ],
         "per_file_floor": {
+            # `files_received`/`files_evaluated` are load-bearing in this fixture:
+            # without them the renderer fails CLOSED onto the UNESTABLISHED caveat
+            # (correctly), and this — the only test that drives `main()`'s human
+            # block — would stop observing the POPULATED arm that ships on every
+            # real run. Round 2 caught the repair un-covering the old branch while
+            # making the new one reachable.
+            "files_received": 2,
+            "files_evaluated": 1,
             "violations": [],
             "warn_band": [],
             "exempt_below_floor": [{"path": "scripts/tiny.py", "coverage": 0.1}],
@@ -345,6 +353,10 @@ def test_human_report_names_the_exempt_and_unmeasured_populations(monkeypatch, c
     assert CHECK_COVERAGE.main() == 0
     out = capsys.readouterr().out
     assert "[UNMEASURED: 0 executable lines]" in out
+    # The populated arm's exact text, pinned so the extraction into
+    # `format_per_file_floor_line` cannot silently change what an operator reads.
+    assert "Per-file floor: 0 below 85.0%, 0 in 85.0-95.0% warn band" in out
+    assert "UNESTABLISHED" not in out
     assert "1 file(s) below the floor but EXEMPT for having fewer than 30 statements: scripts/tiny.py" in out
     assert "Unmeasured: 1 target file(s) have zero executable lines" in out
     assert "scripts/empty.py" in out

@@ -2,7 +2,7 @@
 
 ## Workflow Trigger
 
-- **No open irreversible boundary. Six commits unpushed** (`cb35991e..HEAD`),
+- **No open irreversible boundary. Eight commits unpushed** (`cb35991e..HEAD`),
   which is why the armed changed-line gate below needs an explicit `--base-sha`.
   The latest release is published and verified per
   [release state](../charness-artifacts/release/latest.md). So the ordinary rule
@@ -12,21 +12,16 @@
 ## Continuation Capability
 
 The [2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-is now **5 OPEN (E1, E3, E4, E6, E7) + 4 PARTIAL (A3, A8, D4, E2)** — E4 is D39
-and stays deferred, so the E-cluster is E1/E3/E6/E7 plus E2's residual. The
+is **5 OPEN (E1, E3, E4, E6, E7) + 4 PARTIAL (A3, A8, D4, E2)** — E4 is D39, so the
+E-cluster is E1/E3/E6/E7 plus E2's residual. The
 [triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
-has 25 CLOSED of 113 rows; its 13 SUBAGENT-CONFIRMED high rows are the largest
-un-worked block and appear in NO `## Next Session` entry below, which is how they
-stayed invisible. Each header owns its own counts and the two tables use
+has 29 CLOSED of 113 rows. Each header owns its own counts and the two tables use
 different status vocabularies.
 
-Refresh kept: the unpushed-commits fact, the E-cluster, the sweep's unnamed high
-rows, and the two residuals that bound what last session closed.
-
-Refresh non-claims: **A3 and C6 are narrowed, not closed** — a scheduled gate can
-still walk the worktree over a scope the commit changes, and the commit-boundary
-arms deliberately do not pass `--include-worktree`. **S3's floor refuses a stub,
-not a lie.** No live cautilus run, no CI dispatch, no push.
+Refresh non-claims: **A3, C6 and S31 are narrowed, not closed.** A scheduled gate
+can still walk the worktree over a scope the commit changes; **S3's floor refuses a
+stub, not a lie**; and this repo's CI-parity gate still evaluates zero jobs of its
+own. No live cautilus run, no CI dispatch, no push.
 
 ## Current State
 
@@ -45,10 +40,13 @@ not a lie.** No live cautilus run, no CI dispatch, no push.
    residual the review found (candidate-test NAMES as remedy info). Unspent: **batch
    independent review rounds across slices** — 84.6 min of `sleep` vs 50.5 min of review
    last run; this one-round slice did not test the lever.
-2. **The sweep's 13 SUBAGENT-CONFIRMED high rows** — the largest block left and
-   the one no handoff entry has ever named, which is how it stayed invisible.
-   S1/S2/S9/S10/S12/S13/S23/S24/S26/S28/S30/S31/S32 plus S35; S110-S113 are newer
-   LEADs. Per-row cost is now known: one slice plus two review rounds.
+2. **The sweep's high rows — 4 of 14 closed 2026-08-01, 9 left.** S1/S26/S30/S32
+   went as ONE batch (all were "a zero denominator renders a PASS"), with the two
+   review rounds run three-abreast: 6 reviewers, 2 rounds, ~4 min wall-clock each.
+   That is the batching lever, now tested. Left:
+   S2/S9/S10/S12/S13/S23/S24/S28/S35, plus S31 (NARROWED, not closed — its arming
+   question is [D45](./deferred-decisions.md)) and S110-S113 as newer LEADs.
+   Batch by CLASS, not by file: the shared repair was written once.
 3. **The hunt's E-cluster** — E1/E3/E6/E7 plus E2's residual. Mutation-score and
    freshness-marker proof; the most expensive lane, and E1 is a contract change.
    Not before 1, or it is the most painful lane to enter.

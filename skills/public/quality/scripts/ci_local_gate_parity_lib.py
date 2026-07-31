@@ -3,11 +3,25 @@
 from __future__ import annotations
 
 import re
-import subprocess
+import sys
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, Callable
 
-DEFAULT_WORKFLOW_GLOB = ".github/workflows/*.yml"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from git_inventory_lib import GitFileListingError, visible_repo_files  # noqa: E402
+
+# GitHub Actions accepts BOTH extensions, and the gate saw only one: the same
+# workflow saved as `ci.yaml` scanned 0 files and exited 0 where `ci.yml` raised a
+# parity issue and exited 1 (S30, reproduced 2026-08-01 with that exact pair). A
+# single glob cannot express the alternation portably across `Path.glob`, so the
+# scope is a TUPLE and `--workflow-glob` stays repeatable for callers who narrow it.
+DEFAULT_WORKFLOW_GLOBS = (".github/workflows/*.yml", ".github/workflows/*.yaml")
+#: Back-compat for out-of-repo callers that read the single-glob name. It is ONE
+#: entry, not the scope: a caller defaulting to it re-creates the S30 blind spot,
+#: which is exactly what round 1 found `inventory_ci_recoverable_gates.py` doing.
+#: No in-repo caller reads it now; kept only so an external import does not break.
+DEFAULT_WORKFLOW_GLOB = DEFAULT_WORKFLOW_GLOBS[0]
 DEFAULT_CANONICAL_GATE_PATTERNS = (
     r"\bnpm\s+run\s+verify\b",
     r"\bnpm\s+run\s+lint\s*&&\s*npm\s+run\s+test\b",
@@ -58,30 +72,56 @@ class WorkflowListingError(SystemExit):
     pass
 
 
-def _decode_output(value: bytes) -> str:
-    return value.decode("utf-8", errors="replace")
+def iter_workflow_files(
+    repo_root: Path, glob_pattern: str | Sequence[str], *, require_git: bool = False
+) -> list[Path]:
+    """Workflow files under one glob or several, de-duplicated and ordered.
+
+    Accepts a bare string so existing callers keep working; the default scope is
+    now several globs because GitHub Actions accepts both `.yml` and `.yaml` and
+    reading only one silently emptied the denominator (S30).
+    """
+    patterns = [glob_pattern] if isinstance(glob_pattern, str) else list(glob_pattern)
+    # `visible_repo_files` owns "which files does git list" for this skill package.
+    # This module used to hand-roll the same subprocess block; restructuring it for
+    # the multi-glob scope made that a NEW duplicate family, which is the dup
+    # ratchet doing its job — the fix is to adopt the owner, not to re-baseline.
+    try:
+        visible = visible_repo_files(
+            repo_root, require_git=require_git, context="CI/local gate parity workflow listing"
+        )
+    except GitFileListingError as error:
+        # Re-raised as this module's SystemExit subclass so the CLI still fails
+        # closed with a clean exit rather than a traceback.
+        raise WorkflowListingError(str(error)) from error
+    candidates = {p for pattern in patterns for p in repo_root.glob(pattern) if p.is_file()}
+    if visible is None:
+        return sorted(candidates)
+    return sorted(candidates & visible)
 
 
-def iter_workflow_files(repo_root: Path, glob_pattern: str, *, require_git: bool = False) -> list[Path]:
-    command = ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"]
-    result = subprocess.run(
-        command,
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
+def add_workflow_glob_arg(parser: Any) -> None:
+    """The repeatable `--workflow-glob` option, declared once for both CLIs.
+
+    Both parity entrypoints grew the identical block when the default scope became
+    a tuple; one owner keeps the next extension from landing in only one of them.
+    """
+    parser.add_argument(
+        "--workflow-glob",
+        action="append",
+        default=None,
+        help=(
+            "glob for CI workflow files, repeatable (default: "
+            f"{', '.join(DEFAULT_WORKFLOW_GLOBS)}). A glob NAMED here that matches "
+            "nothing is a refusal where the caller asserted a scope; the discovered "
+            "default matching nothing stays a pass."
+        ),
     )
-    if result.returncode != 0:
-        if require_git:
-            raise WorkflowListingError(
-                "CI/local gate parity workflow listing failed\n"
-                f"command: {' '.join(command)}\n"
-                f"exit_code: {result.returncode}\n"
-                f"STDOUT:\n{_decode_output(result.stdout)}\n"
-                f"STDERR:\n{_decode_output(result.stderr)}"
-            )
-        return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file())
-    visible = {repo_root / rel.decode("utf-8") for rel in result.stdout.split(b"\0") if rel}
-    return sorted(p for p in repo_root.glob(glob_pattern) if p.is_file() and p in visible)
+
+
+def resolve_workflow_globs(named: list[str] | None) -> tuple[str, ...]:
+    """Caller-named globs, else the discovered default scope."""
+    return tuple(named) if named else DEFAULT_WORKFLOW_GLOBS
 
 
 def classify_step(step: dict[str, Any]) -> str:
@@ -225,8 +265,24 @@ def evaluate_workflow(
             "exempt": True,
             "jobs": [],
             "jobs_without_canonical_gate": [],
+            # Present-but-empty, not absent: `payload["workflows"]` must not carry
+            # two schemas, and in this repo EVERY workflow takes this branch.
+            "jobs_gate_match_unestablished": [],
         }
-    findings: dict[str, Any] = {"workflow": str(path), "jobs": [], "jobs_without_canonical_gate": []}
+    findings: dict[str, Any] = {
+        "workflow": str(path),
+        "jobs": [],
+        "jobs_without_canonical_gate": [],
+        # Jobs whose canonical-gate match this reader CANNOT ESTABLISH, in either
+        # composite shape: every step is a `uses:`, or the job itself is a
+        # `jobs.<id>.uses:` reusable-workflow call with no `steps` key at all. The
+        # gate may well run inside; this reader cannot open either one. Both used
+        # to `continue` silently, so such a job was indistinguishable from a job
+        # that passed (S26). Round 1 caught the job-level shape still escaping the
+        # first cut of this repair — and caught the comment that had declared the
+        # escape correct.
+        "jobs_gate_match_unestablished": [],
+    }
     data = workflow["data"]
     if not isinstance(data, dict):
         return findings
@@ -236,12 +292,34 @@ def evaluate_workflow(
     marker_re = re.compile(re.escape(ci_only_marker), re.IGNORECASE)
     for job_id, job in jobs_block.items():
         if not isinstance(job, dict):
+            # A truthy non-mapping job is unreadable, not absent.
+            if job:
+                findings["jobs_gate_match_unestablished"].append(job_id)
             continue
         steps_raw = job.get("steps") or []
         if not isinstance(steps_raw, list):
+            # A `steps:` key this reader could not parse (e.g. a YAML flow sequence,
+            # which the repo's hand-rolled loader returns as a string) is exactly
+            # "could not establish", not "nothing here" — round 2 caught it still
+            # landing in no bucket at all.
+            findings["jobs_gate_match_unestablished"].append(job_id)
             continue
         steps = [step for step in steps_raw if isinstance(step, dict)]
-        if not steps or all(not isinstance(step.get("run"), str) for step in steps):
+        if steps_raw and not steps:
+            # Steps were declared but none of them is a readable mapping.
+            findings["jobs_gate_match_unestablished"].append(job_id)
+            continue
+        if not steps:
+            # A job with no steps but a job-level `uses:` is a reusable-workflow
+            # call — it runs an entire workflow this reader cannot open, which is
+            # how repos factor a whole gate graph. Silently skipping it was the
+            # same defect as S26 in its more common shape. A job with neither
+            # steps nor `uses:` genuinely runs nothing and stays a plain skip.
+            if isinstance(job.get("uses"), str):
+                findings["jobs_gate_match_unestablished"].append(job_id)
+            continue
+        if all(not isinstance(step.get("run"), str) for step in steps):
+            findings["jobs_gate_match_unestablished"].append(job_id)
             continue
         steps = steps_with_leading_comments(workflow["text"], steps)
         gate_index = find_canonical_gate_index(steps, gate_patterns)
@@ -272,7 +350,9 @@ def evaluate_workflow(
 def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
     parity_issues: list[dict[str, Any]] = []
     misses: list[dict[str, Any]] = []
+    unseen_jobs: list[dict[str, Any]] = []
     exempt_workflows: list[dict[str, Any]] = []
+    jobs_evaluated = 0
     for workflow in report:
         if workflow.get("exempt"):
             exempt_workflows.append({
@@ -295,10 +375,33 @@ def render_report(report: list[dict[str, Any]]) -> dict[str, Any]:
         without_gate = workflow.get("jobs_without_canonical_gate") or []
         if without_gate:
             misses.append({"workflow": workflow["workflow"], "jobs": list(without_gate)})
+        unseen = workflow.get("jobs_gate_match_unestablished") or []
+        if unseen:
+            unseen_jobs.append({"workflow": workflow["workflow"], "jobs": list(unseen)})
+        jobs_evaluated += len(workflow.get("jobs", [])) + len(without_gate)
     return {
+        # Always present, so a consumer switching on `status` sees a VALUE rather
+        # than a missing key. Without it the refusal payload (`named-scope-empty`)
+        # and a clean run differed by key presence, and a consumer switching on
+        # content read the refusal as a pass — this slice's own thesis, one level up.
+        "status": "evaluated" if jobs_evaluated else "nothing-evaluated",
         "workflows_scanned": len(report),
+        # `scanned` counts files READ; `evaluated` counts files NOT exempted —
+        # which is weaker than "judged", since an unparseable workflow or one with
+        # no `jobs:` mapping counts here while contributing no job. `jobs_evaluated`
+        # is the honest denominator and is what the refusal keys on. Both exist
+        # because they diverged silently: in charness's own repo both workflows
+        # carry a `# charness:gate-policy` exemption marker, so the gate reported
+        # green over ZERO evaluated jobs and nothing in the payload said so (S31's
+        # consequence). A denominator that reached zero is now a value, not a gap.
+        "workflows_not_exempt": len(report) - len(exempt_workflows),
+        "jobs_evaluated": jobs_evaluated,
         "workflows": report,
         "parity_issues": parity_issues,
         "jobs_without_canonical_gate": misses,
+        # Not a pass and not a violation: the canonical gate may run inside the
+        # composite action or reusable workflow, which this reader cannot open, so
+        # the match is UNESTABLISHED for these jobs (S26).
+        "jobs_gate_match_unestablished": unseen_jobs,
         "exempt_workflows": exempt_workflows,
     }

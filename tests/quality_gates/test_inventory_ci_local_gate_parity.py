@@ -24,11 +24,19 @@ def test_silent_when_no_workflows(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
+    # Still exact-equality, and still a clean exit: a DISCOVERED empty scope stays
+    # a pass (`test_empty_scope_refusals.py`'s rule). What the payload gained is the
+    # denominator — `workflows_not_exempt` / `jobs_evaluated` — because scanned-but-
+    # all-exempt used to be indistinguishable from every-job-checked-and-passed.
     assert payload == {
+        "status": "nothing-evaluated",
         "workflows_scanned": 0,
+        "workflows_not_exempt": 0,
+        "jobs_evaluated": 0,
         "workflows": [],
         "parity_issues": [],
         "jobs_without_canonical_gate": [],
+        "jobs_gate_match_unestablished": [],
         "exempt_workflows": [],
     }
 
@@ -507,22 +515,32 @@ jobs:
 
 
 def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
-    """Real-repo smoke test: charness has no .github/workflows/ today.
+    """Real-repo watchdog, with charness's ACTUAL posture pinned.
 
-    Pin both branches of the dual contract: either the repo has zero
-    workflows scanned (the current charness shape, no dogfood surface) OR,
-    once a workflow lands, the helper still reports zero parity-issues.
-    The test will start firing the first time a workflow is added without
-    aligning the local gate, which is exactly the watchdog signal #137
-    asks for.
+    The docstring here used to say "charness has no .github/workflows/ today",
+    which stopped being true: there are two, and BOTH carry a
+    `# charness:gate-policy` exemption marker. So the gate evaluates zero jobs in
+    its own repo and the old `jobs_without_canonical_gate == []` assertion was
+    trivially true forever — a watchdog that could not bark. The posture is now
+    asserted directly, so a third workflow (exempt or not) fires this test, which
+    is the signal #137 actually asked for.
     """
     result = run_script(SCRIPT, "--repo-root", str(REPO_ROOT), "--json")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["parity_issues"] == []
-    if payload["workflows_scanned"] == 0:
-        return
     assert payload["jobs_without_canonical_gate"] == []
+    assert payload["jobs_gate_match_unestablished"] == []
+    # Counts, not absolute filenames: pinning the exact paths would fail on a
+    # rename with an opaque set diff, while the posture — every workflow exempt —
+    # is what this test is actually about.
+    assert payload["workflows_scanned"] == 2
+    assert len(payload["exempt_workflows"]) == payload["workflows_scanned"]
+    assert payload["workflows_not_exempt"] == 0
+    # The uncomfortable fact, pinned rather than left implicit: charness's own
+    # parity gate establishes nothing about charness. See D45 for the open
+    # question of whether run-quality.sh should arm --require-evaluated-scope.
+    assert payload["jobs_evaluated"] == 0
 
 
 def test_repo_does_not_reintroduce_pytest_ci_only_marker() -> None:
