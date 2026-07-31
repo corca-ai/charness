@@ -2,12 +2,13 @@
 
 ## Workflow Trigger
 
-- **No open irreversible boundary; two commits unpushed.** `4302aeaa` +
-  `ec72c301` sit on `main` above `0e8d9760` with the full lane green and nothing
-  published. The ordinary rule applies: with no explicit task, run
-  `charness:handoff` chunked routing over the live backlog; an explicit user task
-  keeps its own authority. **Push is the operator's call and has not been asked
-  for.**
+- **No open irreversible boundary, nothing unpushed.** The latest release
+  (`git describe --tags --abbrev=0`) is published and verified — release page
+  confirmed on a distinct channel, installed readback matched, per
+  [release state](../charness-artifacts/release/latest.md); `main` and
+  `origin/main` agree. So the ordinary rule
+  applies: with no explicit task, run `charness:handoff` chunked routing over the
+  live backlog; an explicit user task keeps its own authority.
 
 ## Continuation Capability
 
@@ -32,15 +33,15 @@ caller.** No live cautilus run, no mutation lane, no CI dispatch this session.
 
 ## Current State
 
-- **Goal complete:**
-  [2026-07-31 sweep high rows](../charness-artifacts/goals/2026-07-31-repair-the-sweep-s-remaining-high-rows-s5-density-exemption.md)
-  — four repairs, one refutation, full lane green, changed-line gate clean at
-  `--base-sha 0e8d9760`, `pytest` 6361 passed.
-- **S8 was refuted, not repaired:** the row described documented posture, and the
-  naive fix would have reddened the lane for every future `SKILL.md` commit.
-- **Round 2 caught what round 1 could not, twice** — a fence fix that dropped
-  fenced lines from a density count, and a false-positive fix that silenced
-  ordinary decision requests. Both were created by round 1's own repairs.
+- **Published a patch release** ([notes](../charness-artifacts/release/2026-07-31-v3.0.1-notes.md),
+  [critique](../charness-artifacts/critique/2026-07-31-release-3-0-1.md)). Four gates
+  got stricter and three ship in the plugin, so a consumer's previously-green run can
+  go red — the notes' Migration section is the load-bearing part.
+- **Goal complete** — four repairs, one refutation, all proof executed:
+  [goal record](../charness-artifacts/goals/2026-07-31-repair-the-sweep-s-remaining-high-rows-s5-density-exemption.md).
+- **Round 2 caught what round 1 could not, twice**, and the release critique
+  caught a third: a gate whose remediation named the wrong cause. Every one was
+  created by the previous round's own repair.
   [retro](../charness-artifacts/retro/2026-07-31-session-retro.md)
 
 ## Next Session
@@ -70,9 +71,8 @@ caller.** No live cautilus run, no mutation lane, no CI dispatch this session.
   in one work unit, unify it then.** Three ad hoc fence walks cost two review
   findings and a dup-ratchet cycle before `skill_markdown_lib.split_fenced_lines`
   existed.
-- **List the checked-in assertions that pin today's behavior before writing a
-  verdict-logic slice plan.** Three of five rows had one, and one plan slice was
-  internally contradictory because of it.
+- **List the assertions that pin today's behavior before planning verdict-logic
+  work.** Three of five rows had one; one plan slice contradicted itself over it.
 
 ## References
 
