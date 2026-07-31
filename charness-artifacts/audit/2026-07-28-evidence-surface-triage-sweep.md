@@ -4,9 +4,28 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**23 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
-S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then S4 on
-2026-07-31 — reproduced in the parent, fixed, and regression-tested. **S3 is PARTIAL:**
+**24 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then S4 and S11 on
+2026-07-31 — reproduced in the parent, fixed, and regression-tested.
+**What S11's floor does NOT prove, recorded because two review rounds kept finding the
+gap wider than the previous claim:** it proves the section names an unnegated English
+review word or cites a path-shaped token — never that a reviewer ran. `executed —
+foundational sweep` passes on `found` inside `foundational`; the language-neutral arm
+takes ANY backticked slash-and-extension token or markdown link and checks neither that
+the file exists nor that it is the review's record. The contradiction arm is anchored on
+the verb (`no bounded reviewer ran`), because adjacency cannot separate a denied event
+from a negative RESULT — `no reviewer identified a blocker` is honest checked-in text and
+stays legal — so a denial phrased any other way is not caught. Its incentive gradient
+points the wrong way: it fires on the author honest enough to write that nothing ran, and
+clears the vague one. `declared_delegated_review_status` reads the earliest status token
+on the first status-bearing line, so a section opening `not_applicable for X; executed for
+Y` skips the floor entirely, and the sibling `slow_gate_scope` branch still keys on the
+bare substring `executed` — left unnarrowed so this slice could not weaken an existing
+rule. The one channel that could actually substantiate an executed review —
+`reviewer_boundary_fingerprint.py` snapshot/verify output, or the reviewer's returned
+text — is not consulted; that is the next slice, not this one. Round-2 repairs (comment
+stripping over joined text, the verb-anchored denial arm, negation-aware substantiation,
+the path-shape requirement) are **accepted-unreviewed** under the two-round cap. **S3 is PARTIAL:**
 its stale-unrelated-artifact half is closed by the same binding fix as S4 (evidence now
 binds inside `check()`), but its stub half is OPEN: two byte floors were written and
 withdrawn — a basename-only floor left the cheaper CONTENT channel open (`printf '#466' >
@@ -152,7 +171,7 @@ where this repo's proof surfaces keep failing.
 | S8 | high | SUBAGENT-CONFIRMED | c | `scripts/validate_cautilus_proof.py:200` | `validate_cautilus_proof.py --paths skills/public/quality/SKILL.md` — a prompt-affecting surface changed, proof artifact untouched. | exit 0 with the reassuring `no live cautilus proof artifact changed; deterministic validation owns 1 prompt-affecting path(s)`. Every downstream floor (behavior source, commands ru |
 | S9 | high | SUBAGENT-CONFIRMED | h | `scripts/validate_inventory_consumption.py:117` | The same quality artifact, once with `Date: 2026-07-28` and once with `Date: 2020-01-01` (a self-declared line inside the artifact the validator is judging). | Backdated: exit 0, `predates contract start; skipped.` Same file dated today: exit 1 with SIX distinct floor violations (0-of-14 field engagement, missing prose_review_status, Targ |
 | S10 | high | SUBAGENT-CONFIRMED | b | `scripts/validate_inventory_consumption.py:146` | Artifact body containing `- I did not read scope_status or finding_status at all.` plus five stub lines `Target boundary: n/a`, `Ambient repo findings: n/a`, `prose review result:  | `Validated inventory consumption for 1 declared inventory citation(s)`, exit 0. 'Engagement' is `\b<field>\b` presence, so an explicit negation and five `n/a` stubs satisfy the con |
-| S11 | high | SUBAGENT-CONFIRMED | b | `scripts/validate_quality_artifact.py:232` | `## Delegated Review` section containing only the line `- status: executed (no reviewer, no findings, nothing ran)`. | validate_delegated_review_section PASSES. The verdict keys on the substring `executed` anywhere in the section; only `blocked` must cite a host/tool signal. The repo's fresh-eye-su |
+| S11 | high | CLOSED (parent-reproduced 2026-07-31) | b | `scripts/validate_quality_artifact.py:232` | `## Delegated Review` section containing only the line `- status: executed (no reviewer, no findings, nothing ran)`. | validate_delegated_review_section PASSES. The verdict keys on the substring `executed` anywhere in the section; only `blocked` must cite a host/tool signal. The repo's fresh-eye-su |
 | S12 | high | SUBAGENT-CONFIRMED | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
 | S13 | high | SUBAGENT-CONFIRMED | h | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:159` | A goal artifact with a `## Closeout Delegation` section listing `Delegated proof:` items but with the `Closeout mode:` line absent, or present-and-blank. `mode_tokens` is empty so  | Ran both shapes: `ok=True`, `mode='standalone'`, `delegated_items=['final push/CI green','provider live proof']` with zero failures. A goal that visibly delegates external proof is |
 | S14 | high | CLOSED (parent-reproduced 2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_disposition.py:255` | A goal body that quotes another artifact's date line before its own, e.g. a blockquote `> Created: 2025-01-02` above the real `Created: 2026-07-01`. `parse_created_date` (goal_arti | Ran it: `parse_created_date` returns 2025-01-02 and `is_floor_in_scope(..., 2026-06-08)` returns False. Every Created-gated floor at once (disposition form 1c, recurrence lineage 1 |

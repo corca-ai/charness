@@ -122,6 +122,12 @@ def render_template(*, title: str, date_text: str) -> str:
                     " or blocked with a concrete `host signal:`/`tool signal:`.",
                     "- Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):"
                     " TODO whether re-delegated (required when status is executed and slow-gate scope).",
+                    "<!-- fill guard: an executed status must substantiate itself — name the review"
+                    " channel that ran (reviewer, bounded subagent, critique angle, counterweight),"
+                    " the disposition it returned (findings, verdict, what it confirmed or refuted),"
+                    " or the path of the record it wrote; the standing slow-gate lens bullet alone"
+                    " does not count, and an executed status that also says no reviewer ran is"
+                    " refused. Guard comments are stripped before these rules read the section -->",
                     "",
                 ]
             )

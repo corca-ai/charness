@@ -214,3 +214,55 @@ def test_exported_quality_scaffold_validator_command_runs_from_consumer_repo(tmp
         text=True,
     )
     assert validation.returncode == 0, validation.stderr
+
+
+def test_quality_scaffold_template_validates_with_the_executed_slot_filled(tmp_path: Path) -> None:
+    """The template's own fill guard must not refuse the status it tells authors to record.
+
+    The `## Delegated Review` guard names the substantiation vocabulary and the
+    "no review ran" contradiction, so an author who fills the slot in place — the
+    authoring path `render_template` prescribes — used to trip the contradiction arm on
+    boilerplate they did not write. The validator now reads authored lines only.
+    """
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+    payload = scaffold_payload(repo)
+    template = payload["template"]
+    unfilled = next(line for line in template.splitlines() if "Delegated Review: not_applicable" in line)
+    filled = template.replace(
+        unfilled,
+        "- Delegated Review: executed — one bounded fresh-eye reviewer returned no blocking findings.",
+    )
+
+    artifact_path = repo / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(filled, encoding="utf-8")
+
+    _validate_quality_artifact.validate_quality_artifact(artifact_path, repo_root=repo)
+
+
+def test_quality_scaffold_guard_does_not_scope_every_artifact_as_a_slow_gate_review(
+    tmp_path: Path,
+) -> None:
+    """The delegated-review guard names slow-gate lenses; unstripped it armed that rule.
+
+    An author whose review has no slow-gate scope drops the boilerplate lens bullet. The
+    guard comment must not then demand the three lens ids back.
+    """
+    repo = tmp_path / "repo"
+    _write_adapter(repo, "demo")
+    payload = scaffold_payload(repo)
+    lines = payload["template"].splitlines()
+    kept = [line for line in lines if not line.startswith("- Slow-gate lenses")]
+    filled = "\n".join(
+        "- Delegated Review: executed — one bounded fresh-eye reviewer returned no blocking findings."
+        if "Delegated Review: not_applicable" in line
+        else line
+        for line in kept
+    )
+
+    artifact_path = repo / payload["artifact_path"]
+    artifact_path.parent.mkdir(parents=True)
+    artifact_path.write_text(filled + "\n", encoding="utf-8")
+
+    _validate_quality_artifact.validate_quality_artifact(artifact_path, repo_root=repo)

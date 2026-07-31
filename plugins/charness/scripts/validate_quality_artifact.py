@@ -94,8 +94,83 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "same agent fallback",
     "same-agent pass as equivalent",
 )
+HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
 DELEGATED_REVIEW_STATUSES = ("executed", "blocked", "not_applicable")
 FORBIDDEN_DELEGATED_REVIEW_STATUSES = ("missed", "not run", "not executed")
+# An `executed` delegated review must substantiate itself: name the review channel
+# that ran, or the disposition it came back with. A bare `- status: executed.` and a
+# section whose only other content is the standing slow-gate lens bullet both fail
+# this, which is the S11 stub the 2026-07-28 triage sweep reproduced.
+EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION = (
+    "reviewer",
+    "subagent",
+    "sub-agent",
+    "fresh-eye",
+    "fresh eye",
+    "bounded",
+    "delegated to",
+    "counterweight",
+    "critique",
+    "audit",
+    "angle",
+    "review round",
+    "found",
+    "finding",
+    "verdict",
+    "confirmed",
+    "refuted",
+    "refutation",
+    "blocker",
+    "revise",
+    "sound",
+    "challenged",
+    "corrected",
+    "inspected",
+    "reviewed the",
+    "returned",
+    "fingerprint",
+)
+# A marker that the section itself negates is not substantiation: `executed (no
+# reviewer, no findings)` names the vocabulary while denying every word of it.
+NEGATED_MARKER_RE = re.compile(
+    r"\bno\s+(?:[\w-]+\s+){0,2}?(?:" + "|".join(re.escape(marker) for marker in EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION) + r")"
+)
+# Language-neutral alternative to the vocabulary above: a section that cites the
+# review record itself (a backticked file path or a markdown link to one) has
+# substantiated the claim without writing an English review noun. The validator ships
+# to consuming repos whose adapter `language:` is not English, and every marker above
+# is English. It requires a path SHAPE — a slash and an extension — so that filler
+# like `n/a` or `and/or` does not clear the arm; it does NOT check that the file
+# exists, and nothing cross-checks the cited record against the claim.
+DELEGATED_REVIEW_EVIDENCE_REFERENCE_RES = (
+    re.compile(r"`[^`\s]+/[^`\s]*\.[A-Za-z0-9]+`"),
+    re.compile(r"\[[^\]]+\]\([^)\s]+/[^)\s]*\.[A-Za-z0-9]+\)"),
+)
+# Clauses that assert no review EVENT happened. These are refused under an `executed`
+# status for the same reason `missed` is: the section contradicts its own verdict.
+# Anchored on the verb, with modifiers allowed between `no` and the noun, because
+# adjacency alone cannot tell a denied event from a negative RESULT of one: real
+# checked-in artifacts write "no reviewer identified a blocker", "no reviewer saw the
+# post-fix tree", and "no reviewer-attributable worktree change", and all three must
+# stay legal. Denials the author phrases some other way are not caught here — the
+# substantiation arm below is what a vague stub still has to clear.
+_NO_REVIEWER = r"\bno (?:[\w-]+ ){0,3}(?:reviewers?|sub-?agents?)"
+_NO_REVIEW_VERBS = (
+    r"(?:ran|was run|were run|was spawned|were spawned|was found|were found|was available"
+    r"|were available|executed|existed|participated|reviewed)"
+)
+EXECUTED_DELEGATED_REVIEW_CONTRADICTION_RES = tuple(
+    re.compile(pattern)
+    for pattern in (
+        r"\bnothing (?:ran|was run|executed)\b",
+        r"\bno (?:delegated )?reviews? (?:ran|was run|were run|executed|happened|occurred)\b",
+        _NO_REVIEWER + r"\s+" + _NO_REVIEW_VERBS + r"\b",
+        _NO_REVIEWER + r"\s+(?:was|were|could)\s+(?:not|never)\b",
+        r"\b(?:nobody|no one|no-one) reviewed\b",
+        r"\bwas not (?:actually )?reviewed\b",
+        r"\bnever (?:ran|reviewed|executed)\b",
+    )
+)
 SLOW_GATE_DELEGATED_LENSES = (
     "fixture-economics",
     "parallel-critical-path",
@@ -222,23 +297,94 @@ def validate_advisory_section(lines: list[str]) -> None:
             raise ValidationError("advisory bullets must cite inventory, command, artifact, or other explicit evidence")
 
 
+def strip_html_comments(lines: list[str]) -> list[str]:
+    """Drop `<!-- ... -->` fill-guard text before reading a section as author claims.
+
+    Authoring guidance planted in the template is not the author's own assertion; the
+    repo has already confirmed that class (quoted text read as an assertion). Left in,
+    the `## Delegated Review` fill guard both trips the contradiction arm and satisfies
+    the substantiation arm all by itself.
+
+    Substitution runs over the JOINED text, not line by line, so a guard an author or a
+    formatter wrapped across lines is still stripped. Callers apply this per rule rather
+    than to the whole artifact on purpose: `<!-- reproduction-source -->` on the runtime
+    source line is a machine marker other checkers consume, and must survive.
+    """
+    return [line.strip() for line in HTML_COMMENT_RE.sub("", "\n".join(lines)).splitlines() if line.strip()]
+
+
+def declared_delegated_review_status(section_lines: list[str]) -> str | None:
+    """Return the status the section actually declares, not any status word it mentions.
+
+    The first status-bearing line wins, and within it the earliest status token wins, so
+    `not_applicable — TODO record executed with the reviewer verdict` (the scaffold's own
+    unfilled slot) reads as `not_applicable` rather than arming the executed floor.
+    """
+    for line in section_lines:
+        lowered = line.lower()
+        hits = [(lowered.index(status), status) for status in DELEGATED_REVIEW_STATUSES if status in lowered]
+        if hits:
+            return min(hits)[1]
+    return None
+
+
+def validate_executed_delegated_review_substance(section_lines: list[str]) -> None:
+    # floor-addition-restraint: added as a blocking floor because the fail-open was
+    # MEASURED, not imagined — sweep row S11 reproduced `- status: executed` certifying
+    # a review that named nothing that ran, on the section whose whole job is to
+    # disclose whether a different agent context read the work. Restraint applied:
+    # substantiation stays a disclosure floor (name the channel, the disposition, or
+    # the record's path), not a shape the author must learn a new label for, and it is
+    # measured against every checked-in executed section (71 of 71 pass).
+    section_text = "\n".join(section_lines)
+    lowered = section_text.lower()
+    contradiction = next(
+        (regex for regex in EXECUTED_DELEGATED_REVIEW_CONTRADICTION_RES if regex.search(lowered)), None
+    )
+    if contradiction is not None:
+        raise ValidationError(
+            "executed delegated review must not also state that no review ran; report blocked with a "
+            "concrete host/tool signal, or not_applicable with a reason"
+        )
+    unnegated = NEGATED_MARKER_RE.sub(" ", lowered)
+    if any(marker in unnegated for marker in EXECUTED_DELEGATED_REVIEW_SUBSTANTIATION):
+        return
+    if any(regex.search(section_text) for regex in DELEGATED_REVIEW_EVIDENCE_REFERENCE_RES):
+        return
+    raise ValidationError(
+        "executed delegated review must name the review channel that ran (reviewer, bounded "
+        "subagent, critique angle, counterweight), the disposition it returned (findings, "
+        "verdict, what it confirmed or refuted), or cite the review record's path"
+    )
+
+
 def validate_delegated_review_section(lines: list[str]) -> None:
     start = find_index(lines, "## Delegated Review") + 1
     end = find_index(lines, "## Commands Run")
-    section_lines = [line.strip() for line in lines[start:end] if line.strip()]
+    section_lines = strip_html_comments(lines[start:end])
     if not section_lines:
         raise ValidationError("`## Delegated Review` must record executed, blocked, or not_applicable status")
     lowered = "\n".join(section_lines).lower()
-    if any(status in lowered for status in FORBIDDEN_DELEGATED_REVIEW_STATUSES):
+    # A forbidden status is refused wherever it appears, comment or not: stripping
+    # guidance must never buy back a "not run" the author wrote down.
+    raw_lowered = "\n".join(lines[start:end]).lower()
+    if any(status in raw_lowered for status in FORBIDDEN_DELEGATED_REVIEW_STATUSES):
         raise ValidationError(
             "`## Delegated Review` must not report a missed review; use executed, blocked with a concrete "
             "host/tool signal, or not_applicable with a reason"
         )
     if not any(status in lowered for status in DELEGATED_REVIEW_STATUSES):
         raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
-    if "blocked" in lowered and "host signal:" not in lowered and "tool signal:" not in lowered:
+    # Trigger on the authored claim, but let the signal itself satisfy it from anywhere
+    # in the section, so a host signal written inside a comment still counts.
+    if "blocked" in lowered and "host signal:" not in raw_lowered and "tool signal:" not in raw_lowered:
         raise ValidationError("blocked delegated review must cite a concrete host signal or tool signal")
-    artifact_text = "\n".join(lines).lower()
+    if declared_delegated_review_status(section_lines) == "executed":
+        validate_executed_delegated_review_substance(section_lines)
+    # Comments stripped here too: the scaffold's own delegated-review guard mentions
+    # slow-gate lenses, and unstripped it scoped every scaffolded artifact as a
+    # runtime review that must name all three.
+    artifact_text = "\n".join(strip_html_comments(lines)).lower()
     slow_gate_scope = any(token in artifact_text for token in ("slow", "standing test", "fixture economics"))
     if slow_gate_scope and "executed" in lowered:
         missing = [lens for lens in SLOW_GATE_DELEGATED_LENSES if lens not in lowered]

@@ -119,6 +119,11 @@ executed or blocked instead of silently replacing it with a same-agent pass.
 When the review is executed, name the concrete lens ids in the artifact, for
 example `fixture-economics`, `parallel-critical-path`, and
 `duplicated-proof`; when blocked, cite the concrete host or tool signal.
+An `executed` status must also substantiate itself — name the review channel
+that ran (reviewer, bounded subagent, critique angle, counterweight), the
+disposition it returned, or the path of the record it wrote. A bare
+`- status: executed.` is refused, and so is an `executed` status that also
+says no reviewer ran.
 
 ## Guardrails
 
