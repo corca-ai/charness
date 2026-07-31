@@ -200,6 +200,7 @@ DONE: update complete`
 - The baton's routing sections claim no release version.
 - RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `3.0.0`, or record an explicit n/a disposition in the release record, before ending the session.
 - This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
+- DISCHARGED in the release session: `docs/handoff.md` `## Current State` now quotes the published `3.0.0` and links the notes and critique. The 2.12.0 record's identical requirement went undischarged; this one did not.
 
 ## Release Observer Record
 

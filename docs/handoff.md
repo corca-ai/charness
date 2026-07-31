@@ -31,16 +31,16 @@ by a second observer.
 
 ## Current State
 
+- **Published `charness` at version `3.0.0`** (tag `v3.0.0`;
+  [notes](../charness-artifacts/release/2026-07-31-v3.0.0-notes.md),
+  [critique](../charness-artifacts/critique/2026-07-31-release-3-0-0.md)). Major, not
+  minor: the changed-line gate's mismatched head used to exit 0 and now exits 3, which
+  breaks a documented-natural CI config.
 - **Sweep S11 CLOSED** (`4fba59af`, `c8a39e13`;
   [critique](../charness-artifacts/critique/2026-07-31-sweep-s11-delegated-review-substantiation.md)).
-  An `executed` delegated review must now name the channel that ran, the disposition it
-  returned, or the record's path; negated markers do not count. 71 of 71 checked-in
-  executed sections still pass.
-- **Round 1's blocker was the slice's own guidance text**: the fill guard explaining the
-  rule contained the words the rule refuses. Comments are now stripped before a section
-  is read as author claims. Round 2 then caught two false refusals against checked-in
-  text ("no reviewer identified a blocker") and a denial arm defeated by one adjective —
-  **adjacency cannot tell a denied event from a negative result of one.**
+  An `executed` delegated review must now substantiate itself. **Round 1's blocker was
+  the slice's own guidance text**, and round 2 caught two false refusals against
+  checked-in text — **adjacency cannot tell a denied event from a negative result.**
 - **Sweep S4 CLOSED, S3 PARTIAL** (`612dbaad`, `244bdf31`;
   [critique](../charness-artifacts/critique/2026-07-31-sweep-s3-s4-closeout-evidence-binding.md)).
 
