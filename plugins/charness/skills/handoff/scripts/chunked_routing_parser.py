@@ -9,23 +9,29 @@ import re
 from pathlib import Path
 
 
-def _load_sibling_types():
+def _load_sibling(module_name: str):
     spec = importlib.util.spec_from_file_location(
-        "chunked_routing_types",
-        Path(__file__).resolve().parent / "chunked_routing_types.py",
+        module_name,
+        Path(__file__).resolve().parent / f"{module_name}.py",
     )
     if spec is None or spec.loader is None:
         raise ImportError(
-            "chunked_routing_types.py not found beside chunked_routing_parser.py"
+            f"{module_name}.py not found beside chunked_routing_parser.py"
         )
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
 
 
-_types = _load_sibling_types()
+_types = _load_sibling("chunked_routing_types")
 HandoffEntry = _types.HandoffEntry
 is_nontrivial_token = _types.is_nontrivial_token
+
+_paths = _load_sibling("chunked_routing_paths")
+# Re-exported: `chunked_routing_issue_source` normalizes through
+# `_parser._normalize_path`, and moving the function must not move that seam.
+_normalize_path = _paths.normalize_path
+_strip_relative_prefixes = _paths.strip_relative_prefixes
 
 
 _H2 = re.compile(r"^## (.+?)\s*$", re.MULTILINE)
@@ -155,17 +161,6 @@ def _collect_paths(text: str) -> tuple[tuple[str, ...], tuple[str, ...]]:
     return tuple(link_targets), tuple(bare)
 
 
-def _normalize_path(token: str) -> str:
-    """Strip ``../`` and ``./`` prefixes so two link forms canonicalize."""
-    stripped = token.strip()
-    while stripped.startswith(("./", "../")):
-        if stripped.startswith("./"):
-            stripped = stripped[2:]
-        else:
-            stripped = stripped[3:]
-    return stripped
-
-
 def _collect_issues(text: str) -> tuple[int, ...]:
     seen: list[int] = []
     seen_set: set[int] = set()
@@ -289,9 +284,28 @@ def _is_inert_goal_activation(
 
 
 def parse_handoff_entries(
-    text: str, *, repo_root: Path | None = None
+    text: str,
+    *,
+    repo_root: Path | None = None,
+    artifact_dir: Path | None = None,
+    path_root: Path | None = None,
 ) -> list[HandoffEntry]:
-    """Parse the ``## Next Session`` block of a handoff markdown body."""
+    """Parse the ``## Next Session`` block of a handoff markdown body.
+
+    ``artifact_dir`` is the directory the handoff itself lives in. Supplying it
+    lets cited relative links resolve against their real base instead of being
+    prefix-stripped; see ``_normalize_path``.
+
+    ``path_root`` is the tree those citations are relative TO, and it defaults to
+    ``repo_root`` only because they usually coincide. They are separate questions
+    and conflating them has a cost: ``repo_root`` also arms the LIVE filters
+    (goal-status lookups), so handing a checked-in fixture snapshot the repo that
+    merely contains it made those filters judge the snapshot against today's real
+    artifacts and drop an entry. Canonicalizing a path and deciding whether a
+    cited goal is already complete are not the same question.
+    """
+    if path_root is None:
+        path_root = repo_root
     block = extract_next_session_block(text)
     if not block.strip():
         return []
@@ -303,7 +317,14 @@ def parse_handoff_entries(
         normalized_paths: list[str] = []
         seen_normalized: set[str] = set()
         for token in list(link_paths) + list(bare_paths):
-            canonical = _normalize_path(token)
+            canonical = _normalize_path(
+                token, artifact_dir=artifact_dir, repo_root=path_root
+            )
+            if not canonical:
+                # An anchor-only link (`[rule](#skill-routing)`) leaves nothing to
+                # cite. Pre-slice it reached `referenced_paths` as an empty string
+                # and rendered as an empty backtick in a drafted goal's Boundaries.
+                continue
             if canonical in seen_normalized:
                 continue
             seen_normalized.add(canonical)

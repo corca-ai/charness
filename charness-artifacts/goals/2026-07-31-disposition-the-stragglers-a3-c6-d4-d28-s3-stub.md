@@ -14,10 +14,11 @@ the handoff chunker's ranked list; both read as "run it", not "draft it".
 ## Active Operating Frame
 
 - Current disposition: **active run.**
-- Current slice: 3 of 5 complete (A3 residual 1, S3's stub half, C6 — all
-  repaired). Next: slice 4, the handoff chunker's path resolution.
-- Next action: slice 4 — resolve cited paths against the citing artifact's
-  directory instead of stripping `./` and `../` prefixes.
+- Current slice: 4 of 5 complete (A3 residual 1, S3's stub half, C6, and the
+  chunker's path resolution — all repaired). Next: slice 5, record sync.
+- Next action: slice 5 — bookkeeping. Mark sibling-scan Tier 2 D CLOSED with its
+  commit, record D28's unfired trigger, queue D4 as an operator decision, and
+  make every owning record's Status match slices 1-4.
 - Verification cadence: cheap deterministic gates at each commit boundary
   (`check_doc_authoring_preflight.py` read for findings, the touched validator's
   own tests); `scripts/run-quality.sh` once at the bundle boundary;
@@ -312,7 +313,7 @@ recorded here so `--pursue-ready` does not clear until they have been seen.
 | 1 | A3 residual 1 — RE-SCOPED by its own reproduction: repair the untrack blindness in `check_staged_worktree_consistency` rather than annotate the planner | The only row here whose wrong verdict escapes on every commit; the probe showed the assurance is refusable, not merely illegible | Reproduced with a discriminating control; predicate replaced; 34 tests green, 13 red against the pre-slice gate; 199 planner-family tests green | **repaired** |
 | 2 | S3 stub half — closed, but NOT with the per-kind shape check planned: a markdown-shape floor was measured and rejected (22 real artifacts have no headings), and the rule that worked is "evidence must say more than the identity it was checked against" | The pin is checked in and two prior attempts bound the design space; success flips a test green | Measurement scripted and recorded; floor 8 below both measured minima (337 markdown / 530 JSON probe); xfail replaced by real refusal assertions; the motivating case refused at the issue-close gate | **repaired** |
 | 3 | C6: opt-in `--include-worktree` that unions rather than replaces | `--changed-path` was already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Blindness reproduced with a control; false-refusal cost measured at 11 of 965 artifacts; second consumer unbroken; the scope report now names which scope and which path produced the verdict | **repaired** |
-| 4 | Chunker path resolution: resolve cited paths against the citing artifact's directory | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | A `docs/handoff.md` parse reporting `missing_path_count: 0`; regression test; plugin mirror synced and staged | pending |
+| 4 | Chunker path resolution: base follows the citation style, resolved lexically | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | `missing_path_count` 1 -> 0 on the repo's own handoff; 9 tests, all red against the pre-slice parser; mirrors synced | **repaired** |
 | 5 | Record sync and queue: sibling-scan Tier 2 D -> CLOSED, D28 trigger -> not fired, D4 -> operator decision, hunt/sweep statuses matched to slices 1-3 | Bookkeeping is what makes the next session's backlog true; today's run found an 11-day-stale row | Every touched record's Status column matches this run; D4 queue item written with the 403/quota constraint stated | pending |
 
 ## Operator Decision Queue
@@ -422,6 +423,69 @@ Queue item form:
   whole defect. And now three for three: the round that reads the repairs caught
   something the repair itself introduced. This time it was my comment repair
   contradicting the comment it was repairing.
+
+### Slice 4 — the handoff chunker resolved cited paths against the wrong base
+
+- Objective: resolve a cited path against the directory of the artifact that
+  cites it, instead of stripping `./` and `../` prefixes and testing the result
+  against the repo root.
+- Why this approach: prefix-stripping is not canonicalization. From `docs/`,
+  `../charness-artifacts/x.md` stripped to the right answer by coincidence
+  (`docs/..` IS the root) and `./deferred-decisions.md` stripped to a path that
+  does not exist. A check run against the wrong base, reporting its miss as a
+  fact — the same class the rest of this goal repairs, inside the tool that
+  selects the work.
+- What changed: `skills/public/handoff/scripts/chunked_routing_parser.py`
+  (`_normalize_path`, `_resolve_lexically`, `_with_token_slash`,
+  `_strip_relative_prefixes`, and a new `path_root` parameter),
+  `skills/public/handoff/scripts/parse_handoff_entries.py`
+  (`_path_root_for_citations`, and staleness now takes the citation root);
+  `tests/test_handoff_chunker_parse.py` (+9 tests); `plugins/` mirrors synced.
+- Alternatives rejected: resolving EVERYTHING against the artifact directory —
+  tried first, and the repo's own CLI test caught it: a bare
+  `charness-artifacts/goals/x.md` became `docs/charness-artifacts/goals/x.md` and
+  the completed-goal filter stopped firing. Reusing the live-filter root as the
+  citation root — tried, and it made a checked-in fixture snapshot inherit this
+  repo, so live goal-status filters judged the snapshot against today's artifacts
+  and dropped an entry.
+- Verification: reproduced on the repo's own handoff — `missing_paths` returned
+  a live file as stale and `missing_path_count` was 1 with zero stale citations;
+  it is 0 now, and `deferred-decisions.md` resolves to `docs/deferred-decisions.md`.
+  The `--handoff-path` form from another cwd now resolves AND reports missing
+  paths. 9 tests added; all fail against the pre-slice parser. 681
+  handoff/chunker/achieve tests green.
+- Test duplication pressure: 9 tests in one existing module, no new file. Three
+  of them exist because a reviewer showed an earlier test proved less than its
+  docstring claimed, which is its own kind of duplication debt.
+- Critique: two rounds, both fingerprint-verified clean.
+  - Round 1, one blocker: a directory token lost its trailing slash under the new
+    resolution, so `integrations/tools` (handoff side) stopped intersecting
+    `integrations/tools/` (issue side) in the merger's exact-string boundary-token
+    intersection — a merge that fired before silently stopped firing, in the very
+    invocation the slice enables. Also: `.resolve()` followed symlinks, and this
+    repo checks in current pointers (`charness-artifacts/quality/latest.md` and
+    `CLAUDE.md` are symlinks), so a cited pointer was rewritten to its frozen
+    dated target; the cross-style fallback could launder a stale citation into a
+    different existing file; an out-of-repo citation could be pulled back inside;
+    and the escape test did not test escape.
+  - Round 2, no blocker: the blocker's repair had re-created the same divergence
+    with the BASE diverging instead of the slash — a bare `conventions/x.md`
+    became `docs/conventions/x.md` on the handoff side while the issue side kept
+    the bare form. And an anchor-only link (`[rule](#skill-routing)`) normalized
+    to the artifact DIRECTORY, so the drafter rendered `In scope: docs` — a goal
+    claiming a whole top-level directory from a link that cites nothing. Both are
+    the wrong-base class, running through the new base. Also caught: the rewritten
+    escape test still shipped a claim it could not establish, the
+    directory-slash test never reached the branch it named, and the citation-root
+    docstring contradicted the code beside it. All folded; round-2 repairs are
+    accepted-unreviewed under the two-round cap.
+- Off-goal findings: none new.
+- Lessons: four for four now — the round that reads the repairs caught something
+  the repair itself introduced, every slice this session. Slice 4 went further:
+  round 1's repair created round 2's blocker, and round 1's OTHER repair created
+  the fixture regression that the repo's own test caught before any reviewer saw
+  it. The cheapest guard remains running the existing suite against the repair
+  before believing it.
 
 ## Context Sources
 

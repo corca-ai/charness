@@ -565,3 +565,259 @@ def test_draft_goal_help_prefers_installed_achieve_over_stale_source(tmp_path):
 
     assert result.returncode == 0, result.stderr
     assert "--date" in result.stdout
+
+
+def test_a_dot_slash_link_resolves_against_the_citing_artifact(tmp_path: Path, lib) -> None:
+    """A cited link is relative to the CITING file, not to the repo root.
+
+    Prefix-stripping made `../charness-artifacts/x.md` right by coincidence (from
+    `docs/`, `docs/..` IS the root) and `./deferred-decisions.md` wrong, so a live
+    correct link was reported as a stale citation and the drafter stamped MISSING
+    on it. Reproduced against the repo's own handoff before this fix:
+    `missing_path_count` was 1 with zero stale citations.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "deferred-decisions.md").write_text("d\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "critique").mkdir(parents=True)
+    (repo / "charness-artifacts" / "critique" / "x.md").write_text("c\n", encoding="utf-8")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n"
+        "1. Work the rows in [that critique](../charness-artifacts/critique/x.md)\n"
+        "   and the deferred [D39](./deferred-decisions.md).\n",
+        encoding="utf-8",
+    )
+
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == [
+        "charness-artifacts/critique/x.md",
+        "docs/deferred-decisions.md",
+    ]
+
+    staleness = import_repo_module(
+        REPO_ROOT / "skills" / "public" / "handoff" / "scripts" / "chunked_routing_staleness.py",
+        "skills.public.handoff.scripts.chunked_routing_staleness",
+    )
+    assert staleness.missing_paths(repo, entries[0].referenced_paths) == ()
+
+
+def test_prefix_stripping_survives_when_no_artifact_dir_is_supplied(tmp_path: Path, lib) -> None:
+    """Library callers that only have text keep today's behavior.
+
+    The fallback is deliberate, not an oversight: without the citing directory
+    there is no correct base, and inventing one would be the same wrong-base
+    mistake in the other direction.
+    """
+    text = "# H\n\n## Next Session\n\n1. See [d](./deferred-decisions.md).\n"
+    entries = lib.parse_handoff_entries(text)
+    assert list(entries[0].referenced_paths) == ["deferred-decisions.md"]
+
+
+def test_a_link_escaping_the_repo_is_not_pulled_back_inside(tmp_path: Path, lib) -> None:
+    """An out-of-tree citation must not be claimed as an in-repo path.
+
+    What this pins is the ESCAPE GUARD: without the `../` check in
+    `_resolve_lexically` the token would canonicalize to `../outside/thing.md` and
+    the assertion fails.
+
+    What it does NOT pin, stated because the first version of this docstring
+    claimed it did: a restored root-base fallback would resolve the stripped form
+    against `.` and return the same string, so this test cannot tell the two
+    apart. The in-repo decoy below is therefore scenery for that half; the
+    cross-style laundering it was meant to catch is pinned by
+    `test_a_genuinely_missing_citation_is_reported_at_its_CORRECT_base` instead,
+    where the two behaviors DO produce different strings.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "outside").mkdir(parents=True)
+    (repo / "outside" / "thing.md").write_text("the IN-repo decoy\n", encoding="utf-8")
+    (tmp_path / "outside").mkdir(parents=True, exist_ok=True)
+    (tmp_path / "outside" / "thing.md").write_text("the real target\n", encoding="utf-8")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [up](../../outside/thing.md).\n", encoding="utf-8"
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["outside/thing.md"]
+    assert not any(path.startswith("/") for path in entries[0].referenced_paths)
+
+
+def test_a_repo_root_relative_bare_path_is_not_resolved_against_the_artifact_dir(
+    tmp_path: Path, lib
+) -> None:
+    """The other citation style, pinned as the regression it was.
+
+    This repo's handoffs also write bare repo-root-relative paths. Resolving those
+    against the citing directory turns `charness-artifacts/goals/x.md` into
+    `docs/charness-artifacts/goals/x.md`, which does not exist -- and the
+    completed-goal filter silently stops firing. The first cut of this fix did
+    exactly that and the repo's own CLI test caught it.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "charness-artifacts" / "goals").mkdir(parents=True)
+    (repo / "charness-artifacts" / "goals" / "x.md").write_text("g\n", encoding="utf-8")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [g](charness-artifacts/goals/x.md).\n",
+        encoding="utf-8",
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["charness-artifacts/goals/x.md"]
+
+
+def test_a_genuinely_missing_citation_is_reported_at_its_CORRECT_base(
+    tmp_path: Path, lib
+) -> None:
+    """An explicitly relative link resolves whether or not the file is on disk.
+
+    Falling back to the stripped form when the correct base is missing is not
+    neutral: `./README.md` cited from `docs/` strips to `README.md`, which the
+    staleness check then finds at the ROOT and reports live — the citation names
+    the wrong surface with no MISSING marker, which is this row's own defect
+    running in the other direction. Reporting `docs/README.md` as missing is the
+    honest answer.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("the ROOT readme, not the cited one\n", encoding="utf-8")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [r](./README.md).\n", encoding="utf-8"
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["docs/README.md"]
+
+    staleness = import_repo_module(
+        REPO_ROOT / "skills" / "public" / "handoff" / "scripts" / "chunked_routing_staleness.py",
+        "skills.public.handoff.scripts.chunked_routing_staleness",
+    )
+    assert staleness.missing_paths(repo, entries[0].referenced_paths) == ("docs/README.md",)
+
+
+def test_a_directory_token_keeps_its_trailing_slash(tmp_path: Path, lib) -> None:
+    """Boundary tokens are intersected as EXACT strings across sources.
+
+    Handoff entries normalize with an artifact dir; issue-derived entries do not.
+    Path joining discards a trailing slash, so `integrations/tools` (handoff side)
+    and `integrations/tools/` (issue side) stopped intersecting and a merge that
+    fired before this slice silently stopped firing — in the very invocation the
+    slice enables (`--with-issues`).
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "integrations" / "tools").mkdir(parents=True)
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. Work integrations/tools/ next.\n", encoding="utf-8"
+    )
+    with_dir = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    without_dir = lib.parse_handoff_entries(handoff.read_text(encoding="utf-8"))
+    assert list(with_dir[0].referenced_paths) == ["integrations/tools/"]
+    assert list(with_dir[0].referenced_paths) == list(without_dir[0].referenced_paths)
+
+
+def test_a_relative_directory_token_keeps_its_trailing_slash(tmp_path: Path, lib) -> None:
+    """The relative branch's slash re-append, which the bare-token test never reaches.
+
+    A bare token resolves through the root base and returns before the relative
+    branch runs, so deleting that branch's `_with_token_slash` wrapper would leave
+    the suite green while re-introducing the blocker for `../integrations/tools/`.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "integrations" / "tools").mkdir(parents=True)
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. Work [tools](../integrations/tools/) next.\n",
+        encoding="utf-8",
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["integrations/tools/"]
+
+
+def test_a_bare_token_uses_the_root_base_on_both_sources(tmp_path: Path, lib) -> None:
+    """Round 1's blocker, re-created by round 1's repair with the BASE diverging.
+
+    Issue-derived entries normalize with no artifact dir. When bare tokens also
+    tried the artifact base, a handoff citation of `conventions/x.md` became
+    `docs/conventions/x.md` while the issue side stayed `conventions/x.md`, and the
+    merger intersects boundary tokens as EXACT strings — so the two never met.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "docs" / "conventions" / "x.md").write_text("x\n", encoding="utf-8")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See conventions/x.md.\n", encoding="utf-8"
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    parser = import_repo_module(
+        REPO_ROOT / "skills" / "public" / "handoff" / "scripts" / "chunked_routing_parser.py",
+        "skills.public.handoff.scripts.chunked_routing_parser",
+    )
+    issue_side = parser._normalize_path("conventions/x.md")
+    assert list(entries[0].referenced_paths) == [issue_side]
+
+
+def test_an_anchor_only_link_cites_no_path(tmp_path: Path, lib) -> None:
+    """`[the rule](#skill-routing)` names no path and must not become one.
+
+    The fragment split leaves an empty token; joined onto the artifact base it
+    normalized to the artifact DIRECTORY, and the drafter rendered
+    `- In scope: docs` — a goal claiming a whole top-level directory, sourced from
+    a link that cites nothing. Pre-slice it reached `referenced_paths` as an empty
+    string and rendered as an empty backtick; neither is a citation.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [the rule](#skill-routing) first.\n",
+        encoding="utf-8",
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == []
+
+
+def test_a_cited_current_pointer_is_not_rewritten_to_its_target(tmp_path: Path, lib) -> None:
+    """Resolution is LEXICAL, so a checked-in current-pointer symlink survives.
+
+    `Path.resolve()` follows symlinks, and this repo checks in current pointers
+    (`charness-artifacts/*/latest.md`, `CLAUDE.md -> AGENTS.md`). Resolving would
+    put the frozen dated target into a drafted goal's Boundaries instead of the
+    pointer the author cited, and collapse a pointer+target pair into one entry.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    quality = repo / "charness-artifacts" / "quality"
+    quality.mkdir(parents=True)
+    (quality / "2026-07-25-review.md").write_text("frozen\n", encoding="utf-8")
+    (quality / "latest.md").symlink_to("2026-07-25-review.md")
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [q](../charness-artifacts/quality/latest.md).\n",
+        encoding="utf-8",
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["charness-artifacts/quality/latest.md"]

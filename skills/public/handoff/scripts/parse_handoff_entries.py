@@ -75,6 +75,33 @@ def _repo_root_for_live_filters(args: argparse.Namespace) -> Path | None:
     return None
 
 
+def _path_root_for_citations(args: argparse.Namespace) -> Path | None:
+    """The tree cited relative links are relative TO.
+
+    Usually the live-filter root, and it is returned first when there is one; the
+    `.git` walk is the FALLBACK for an explicit path from another cwd, where the
+    live-filter root is deliberately None. The two are separate parameters, not
+    separate values in the common case -- widening the live-filter root to cover
+    this instead would have armed goal-status lookups for any explicit path, and a
+    checked-in FIXTURE snapshot was then judged against today's real artifacts and
+    lost an entry (measured).
+
+    `.git` is the marker rather than a guess at depth, and None is still returned
+    when there is no tree, because inventing a root is the wrong-base mistake this
+    whole change is about.
+    """
+    live = _repo_root_for_live_filters(args)
+    if live is not None:
+        return live
+    explicit = _explicit_handoff_path(args)
+    if explicit is None:
+        return None
+    for candidate in explicit.resolve().parents:
+        if (candidate / ".git").exists():
+            return candidate
+    return None
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -123,7 +150,16 @@ def main() -> int:
             return 2
         text = handoff_path.read_text(encoding="utf-8")
         repo_root = _repo_root_for_live_filters(args)
-        entries = chunked_routing_lib.parse_handoff_entries(text, repo_root=repo_root)
+        citation_root = _path_root_for_citations(args)
+        entries = chunked_routing_lib.parse_handoff_entries(
+            text,
+            repo_root=repo_root,
+            # The handoff's own directory: a cited relative link is relative to
+            # THIS file, not to the repo root, and resolving it anywhere else
+            # reports live citations as stale.
+            artifact_dir=handoff_path.parent,
+            path_root=citation_root,
+        )
         handoff_count = len(entries)
         issue_count = 0
         issue_source_diagnostic = None
@@ -149,7 +185,14 @@ def main() -> int:
         # repo root resolved; the issue-state check needs the tracker, so it runs
         # only under --with-issues (the flag that already sanctions provider
         # calls) and reuses that listing's open set instead of re-asking.
-        staleness_repo_root = repo_root
+        # The path half of staleness is the SAME lexical+existence question as
+        # normalization, so it takes the citation root. Without this the fix was
+        # armed for `--handoff-path` from another cwd while the consumer that
+        # motivated it -- the MISSING marker -- stayed off for that form, so the
+        # slice would have claimed a scope its own output did not demonstrate.
+        # Goal-status filtering stays on `repo_root`: that one needs the tree whose
+        # goals are live, which a fixture snapshot's containing repo is not.
+        staleness_repo_root = repo_root if repo_root is not None else citation_root
         issue_states = None
         issue_state_diagnostic = None
         if args.with_issues:
