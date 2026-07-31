@@ -255,6 +255,7 @@ Reopen trigger:
 - Impact surfaces: [scripts/artifact_validator.py](../scripts/artifact_validator.py), the debug/critique/retro/ideation/handoff/quality validators, [scripts/run-quality.sh](../scripts/run-quality.sh), [scripts/scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py) and the five sibling scaffolds.
 - Non-claims: the deprecated `--report-all` is accepted and ignored, NOT removed — a caller that passes it gets one-pass behavior, which is what it asked for. `--fail-fast` on debug and critique now also stops at the first failing ARTIFACT, not only the first rule; previously those two always collected across artifacts. That is the shared runner's semantics, adopted deliberately.
 - Reopen trigger: `emit_payload_main --write`; fill guards for any family that accumulates observed n-fold rework evidence; or a new artifact validator that needs a hook `run_changed_artifact_validator` cannot express, since forking `main()` again is what re-opens the polarity risk.
+- Trigger checked 2026-08-01: **not fired, stays deferred.** `emit_payload_main` in [scaffold_artifact_lib.py](../scripts/scaffold_artifact_lib.py) still has no `--write` argument; no family has accumulated recorded n-fold rework evidence; and no new artifact validator has forked `main()`. Checked, not assumed — the remainder was carried on the handoff as un-dispositioned work for weeks without anyone reading the trigger.
 
 ### D29. Quality-Signal Scorecard Helper Script And Metric-Only Closeout Guard
 

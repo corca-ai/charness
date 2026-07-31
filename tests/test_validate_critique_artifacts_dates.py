@@ -150,3 +150,29 @@ def test_an_empty_resolved_scope_is_not_established_even_with_the_flag(
     )
     assert empty.state == "not-established"
     assert empty.overrides is False
+
+
+def test_the_empty_worktree_scope_note_states_its_real_cause() -> None:
+    """The rendered note, not just the state.
+
+    `not-established` is reached two ways now, and the generic text ("no
+    --changed-ref/--changed-path resolved") is FALSE for the new one: a ref and
+    the worktree were both supplied, the probe ran, and the union was empty.
+    """
+    import importlib
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    scope = importlib.import_module("critique_enforcement_scope")
+
+    empty_with_worktree = scope.CrossSurfaceScope(
+        scope.CROSS_SURFACE_NOT_ESTABLISHED, False, 0, True, None
+    )
+    note = scope._cross_surface_note(empty_with_worktree)
+    assert "resolved 0 path(s)" in note
+    assert "nothing to probe" in note
+
+    never_handed_a_scope = scope.CrossSurfaceScope(
+        scope.CROSS_SURFACE_NOT_ESTABLISHED, False, 0, False, None
+    )
+    assert "no changed scope resolved" in scope._cross_surface_note(never_handed_a_scope)

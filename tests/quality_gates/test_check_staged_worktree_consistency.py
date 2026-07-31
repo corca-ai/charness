@@ -471,3 +471,22 @@ def test_a_non_utf8_filename_does_not_take_the_gate_down(tmp_path: Path, monkeyp
 
     assert cswc.find_stale_staged(repo) == [name]
     assert cswc.main(["--repo-root", str(repo)]) == 1
+
+
+def test_an_unreadable_path_is_treated_as_present(tmp_path: Path, monkeypatch) -> None:
+    """`_on_disk` fails toward PRESENT, because the predicate only ever refuses.
+
+    Guessing "absent" on an OSError (a name too long, a permission on a parent)
+    would fail open on exactly the paths hardest to inspect.
+    """
+    monkeypatch.delenv(cswc.ALLOW_ENV, raising=False)
+    repo = _repo(tmp_path)
+    _git(repo, "rm", "-q", "--cached", "f.txt")
+    (repo / "f.txt").unlink()
+
+    def _raise(_self):
+        raise OSError("cannot stat")
+
+    monkeypatch.setattr(Path, "is_symlink", _raise)
+    assert cswc._on_disk(repo, "f.txt") is True
+    assert cswc.find_stale_staged(repo) == ["f.txt"]

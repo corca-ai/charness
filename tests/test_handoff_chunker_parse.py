@@ -821,3 +821,99 @@ def test_a_cited_current_pointer_is_not_rewritten_to_its_target(tmp_path: Path, 
         handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
     )
     assert list(entries[0].referenced_paths) == ["charness-artifacts/quality/latest.md"]
+
+
+def test_an_artifact_dir_outside_the_repo_falls_back_to_stripping(tmp_path: Path, lib) -> None:
+    """No usable base: keep the pre-slice behavior rather than inventing one.
+
+    `relative_to` raises when the artifact does not live under the given root —
+    a mismatched `--repo-root`, or a handoff outside the tree. Guessing a base
+    there is the wrong-base mistake this change exists to remove.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    handoff = elsewhere / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See [d](./deferred-decisions.md).\n", encoding="utf-8"
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["deferred-decisions.md"]
+
+
+def test_a_bare_token_that_escapes_the_root_falls_back_to_stripping(tmp_path: Path, lib) -> None:
+    """A bare token whose lexical resolution leaves the tree keeps the stripped form."""
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    handoff = repo / "docs" / "handoff.md"
+    handoff.write_text(
+        "# H\n\n## Next Session\n\n1. See ../../escaped/thing.md there.\n", encoding="utf-8"
+    )
+    entries = lib.parse_handoff_entries(
+        handoff.read_text(encoding="utf-8"), repo_root=repo, artifact_dir=handoff.parent
+    )
+    assert list(entries[0].referenced_paths) == ["escaped/thing.md"]
+
+
+def test_the_citation_root_is_none_outside_any_repo(tmp_path: Path, monkeypatch) -> None:
+    """`_path_root_for_citations` returns None rather than guessing.
+
+    The `.git` ancestor is faked ABSENT rather than assumed absent: pytest's
+    tmp_path can itself sit inside a git repo (it does on this machine, under
+    `~/.cache`), so a test that merely used a temp directory would pin the
+    environment instead of the code. That latching is real but bounded — it only
+    chooses between two candidate base strings and never drops an entry.
+    """
+    cli = import_repo_module(PARSER_SCRIPT, "skills.public.handoff.scripts.parse_handoff_entries")
+    import argparse
+
+    lonely = tmp_path / "nowhere" / "handoff.md"
+    lonely.parent.mkdir(parents=True)
+    lonely.write_text("# H\n", encoding="utf-8")
+
+    real_exists = Path.exists
+    monkeypatch.setattr(
+        Path, "exists", lambda self: False if self.name == ".git" else real_exists(self)
+    )
+    args = argparse.Namespace(repo_root=None, handoff=None, handoff_path=lonely)
+    assert cli._path_root_for_citations(args) is None
+
+
+def test_a_bare_token_resolving_to_nothing_keeps_the_stripped_form(tmp_path: Path, lib) -> None:
+    """The bare branch's own fallback: `resolve_lexically` can return empty.
+
+    A bare `./` (or any token that normalizes away) yields no candidate, and the
+    stripped form is what stays — the same non-inventing posture as the relative
+    branch.
+    """
+    paths = import_repo_module(
+        REPO_ROOT / "skills" / "public" / "handoff" / "scripts" / "chunked_routing_paths.py",
+        "skills.public.handoff.scripts.chunked_routing_paths",
+    )
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    assert paths.resolve_lexically(".", "./") == ""
+    assert (
+        paths.normalize_path("./", artifact_dir=repo / "docs", repo_root=repo) == "docs/"
+    )
+    assert paths.normalize_path("", artifact_dir=repo / "docs", repo_root=repo) == ""
+    # A BARE token that normalizes away takes the bare branch's own fallback.
+    assert paths.normalize_path(".", artifact_dir=repo / "docs", repo_root=repo) == "."
+
+
+def test_the_citation_root_uses_the_live_filter_root_when_there_is_one(tmp_path: Path) -> None:
+    """The common case: the two roots coincide and the `.git` walk never runs.
+
+    `--repo-root` is the documented form, and the walk exists only for an explicit
+    path from another cwd.
+    """
+    cli = import_repo_module(PARSER_SCRIPT, "skills.public.handoff.scripts.parse_handoff_entries")
+    import argparse
+
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    args = argparse.Namespace(repo_root=repo, handoff=None, handoff_path=None)
+    assert cli._path_root_for_citations(args) == repo.resolve()

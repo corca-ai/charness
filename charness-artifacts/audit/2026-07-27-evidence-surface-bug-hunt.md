@@ -58,7 +58,7 @@ deliberate, with the reason recorded.
 | --- | --- | --- | --- |
 | A1 | FIXED | The in-repo install source (the checked-in plugin tree) is exempt from the provenance guard as `same-tree` | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
 | A2 | FIXED | A non-empty drift list (and a version mismatch) is discarded when the invoked entry script is absent from the target | `scripts/helper_provenance_lib.py` (`inspect_helper_provenance`) |
-| A3 | PARTIAL | A deletion-only or rename-only staged commit schedules zero commit-boundary gates — scheduling fixed; what the scheduled gates then *inspect* is the residual (see below) | `scripts/staged_commit_gate_plan_helpers.py` (`collect_staged_scope_paths`), `scripts/staged_commit_gate_plan.py` (`staged_commit_gate_plan`, `run_predict_commit`) |
+| A3 | PARTIAL (residual 1 narrowed 2026-08-01) | A deletion-only or rename-only staged commit schedules zero commit-boundary gates — scheduling fixed; what the scheduled gates then *inspect* is the residual (see below) | `scripts/staged_commit_gate_plan_helpers.py` (`collect_staged_scope_paths`), `scripts/staged_commit_gate_plan.py` (`staged_commit_gate_plan`, `run_predict_commit`) |
 | A4 | FIXED | `validate_packaging` exits 0 on an empty manifest set, and it is the whole engine of the mirror-drift gate | `scripts/validate_packaging.py:425` |
 | A5 | FIXED (2026-07-30) | `check_staged_reversion` prints a positive clean verdict whenever git fails | `scripts/check_staged_reversion.py:76` |
 | A6 | FIXED (2026-07-30) | `check_staged_worktree_consistency` misses staged-then-deleted, and `CHARNESS_ALLOW_PARTIAL_STAGE=0` enables the bypass | `scripts/check_staged_worktree_consistency.py:41,52` |
@@ -104,6 +104,23 @@ running the suppressed gate directly reports that the checked-in plugin public
 skills do not match the source public skills. Class (c)+(d). Fix must separate the
 *gate-scheduling* path list (needs D/R) from the *per-file validator* list
 (needs existing files only).
+
+**A3 residual 1 — narrowed 2026-08-01.** Not by converting the scheduled gates to
+index readers; the owning critique declined that and this session kept the fence.
+What the probe found instead was a refusable hole in the gate whose stated
+question is exactly this one. `git rm --cached x` removes the path's INDEX ENTRY,
+so `git diff --name-only` (worktree vs index) can no longer name it, and
+`check_staged_worktree_consistency`'s staged-vs-unstaged intersection went empty
+and passed. Reproduced in an isolated clone with NO bypass set: that gate and
+`check_staged_reversion` both passed, then four worktree-walking doc gates printed
+PASS and the commit landed, deleting the file — with the discriminating control
+that `check_doc_links` FAILS once the worktree matches the committed tree. The
+predicate is now `staged(--no-renames) - ls-files(--full-name)` filtered by
+on-disk presence. Residuals 2 and 3 are unchanged and were re-read, not re-probed:
+`git revert` still runs no pre-commit hook (already measured here), and A5/A6
+closed on 2026-07-30. The BROADER residual stands: a scheduled gate can still walk
+the worktree over a scope the commit changes, and the only structural closure is
+running those gates against a materialized index tree.
 
 **A3 — what landed, and what did not (2026-07-27).** Scheduling is fixed both
 ways: a deletion and a detected rename now plan the same gates a modification
@@ -314,7 +331,7 @@ deleting only its `Date:` line flips the verdict to a binding failure. Class (b)
 | C3 | FIXED (narrowed) | `- Packet consumed:` (bullet form) does not match the binding trigger, so the binding floor never runs | `scripts/critique_reviewed_input_binding.py:14` |
 | C4 | FIXED (narrowed) | `--all` — the surface's own declared verify command — disables tier evidence, delivery state, and binding currency | `scripts/validate_critique_artifacts.py:549` |
 | C5 | FIXED (narrowed) | `--paths <nonexistent>` reports `Validated 0 critique artifact(s).` and exits 0 | `scripts/validate_critique_artifacts.py:130`, `scripts/artifact_validator.py:458` |
-| C6 | PARTIAL | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/validate_critique_artifacts.py:514`, `scripts/run-quality.sh:511` |
+| C6 | FIXED (2026-08-01) | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/boundary_probe_lib.py` (`resolve_changed_paths`), `scripts/critique_enforcement_scope.py`, `scripts/run-quality.sh` |
 
 **C1** — `Requested tier: TODO ...` is truthy, and `pending-parent-spawn` is a
 full typed value with an empty remainder, so the scaffold's own defaults satisfy
@@ -442,7 +459,7 @@ mode. Class (c).
 | D1 | FIXED | A `## Release State` heading with any suffix disables the entire five-entry ledger check; audit still reports `passed` | `skills/public/release/scripts/audit_public_release_narrative.py:44,66` |
 | D2 | FIXED | The mutable-tag notes audit blocks the *pinned* pointer and passes `main`/raw pointers | same file, `:80` |
 | D3 | FIXED | The same-proxy guard is a positional prefix match: flag order, wrappers, and absolute paths defeat it | `skills/public/release/scripts/publish_release_post_create.py:124` |
-| D4 | PARTIAL | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
+| D4 | PARTIAL — OPERATOR DECISION (2026-08-01) | The HTTP distinct-channel probe confirms on any 200 with ≥1 body byte; content is never checked — content is checked now, but the channel still cannot tell a released tag from a pushed one (measured) | same file, `:99` |
 | D5 | FIXED | `validate_release_version_claim` silently no-ops when the claim is absent or reformatted, and a decoy first match shadows the real claim | `scripts/validate_current_pointer_freshness.py:160` |
 | D6 | FIXED | The installed readback records `observed` on exit code alone; the version read back is never compared | `skills/public/release/scripts/release_observer.py:60` |
 | D7 | FIXED | `check_real_host_proof` returns `not-required` for an empty scope, for a clean tree, and for an unconfigured repo, all indistinguishably | `skills/public/release/scripts/check_real_host_proof.py:124,146` |
@@ -566,6 +583,12 @@ available)`, reporting a match while the wrong version was installed. The
 reported version is now the first version-shaped token and must EQUAL the
 expected one. And `published_notes_audit` reached nobody: it lived only in the
 publish run's stdout JSON, so it is now rendered into the release artifact.
+
+**D4 — dispositioned to an operator decision (2026-08-01).** Re-read rather than
+re-probed, because the live measurement below is stronger than any fixture a
+session could build: the remaining question is whether the release probe gets an
+authenticated channel, which is a credentials decision, not agent work. Queued in
+the 2026-08-01 goal's Operator Decision Queue. No code changed.
 
 **D4 stays PARTIAL, and this is the important part.** The content check closes
 the "any 200 with any body" hole. It does NOT make the probe proof that a

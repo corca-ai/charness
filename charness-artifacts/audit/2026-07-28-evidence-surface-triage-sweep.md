@@ -31,9 +31,18 @@ binds inside `check()`), but its stub half is OPEN: two byte floors were written
 withdrawn — a basename-only floor left the cheaper CONTENT channel open (`printf '#466' >
 x.md` is four bytes and binds), and a universal one was defeated by filler while failing
 34 existing tests. What separates a stub from an artifact is per-kind SHAPE, and no shape
-check runs on this gate's accept path. Pinned as a non-strict xfail
-(`test_s3_residual_a_stub_that_cites_its_context_is_not_refused`) so closing it turns a
-test green rather than red. See
+check runs on this gate's accept path. **Closed 2026-08-01.** Not with a byte floor and not with the per-kind shape check
+that was planned: a markdown-shape floor was measured and rejected (22 of 2168 real
+artifacts carry no headings, all commit-message drafts, so it sits above how this
+repo writes its own evidence). The rule that worked is narrower — evidence must say
+something BEYOND the identity it was checked against. Measured by a checked-in
+script ([measure_evidence_residual.py](../../scripts/measure_evidence_residual.py),
+run recorded at
+[the residual-floor probe](../probe/2026-08-01-evidence-residual-floor.json)):
+the stub scores 0, markdown artifacts floor at 337 over 2168 files, JSON host-log
+probes at 530 over 83. The floor sits at 8. The xfail is gone, replaced by real
+refusal assertions. What stays open is written down rather than implied: a few
+characters of filler still passes, so this refuses a stub, not a lie. See
 [the S3/S4 critique](../critique/2026-07-31-sweep-s3-s4-closeout-evidence-binding.md).
 **Found while closing S4 and NOT repaired — no row of its own, recorded here so it is
 not held only in a critique:** a bare issue token boundary-matches an interior version
@@ -179,7 +188,7 @@ decision out of S8's refutation), which is why the table's row count exceeds
 | --- | --- | --- | --- | --- | --- | --- |
 | S1 | high | SUBAGENT-CONFIRMED | f | `scripts/check_coverage_lib.py:78` | `build_per_file_floor_report([])` — an empty file list, i.e. a coverage JSON read with the wrong key, a scope filter that matched nothing, or a failed coverage run. | `{"status": "enforced", "violations": [], "warn_band": [], "exempt_below_floor": [], "unmeasured": []}` — a fully green, self-declared-'enforced' per-file floor report over a popul |
 | S2 | high | SUBAGENT-CONFIRMED | b | `scripts/check_markdown_inline_code.py:67` | A markdown line carrying one stray/unmatched backtick before a genuinely wrapped span, e.g. `A stray backtick don\`t worry, then \`python3 foo.py` / newline / `--bar\` ends the spa | Ran it: `Validated inline code spans in 1 markdown file(s).` exit 0 — a real cross-line inline-code span is reported clean. In a milder variant (/tmp/w2.md) the violation fires but |
-| S3 | high | PARTIAL (parent-reproduced 2026-07-31) | b | `scripts/check_prescribed_skill_executed_lib.py:211` | printf 'x' > charness-artifacts/critique/one-byte.md; python3 scripts/check_prescribed_skill_executed.py --repo-root /tmp/t3 --require standalone_critique --evidence standalone_cri | ok:true, exit 0. The verdict is keyed on `resolved.stat().st_size == 0` — a coarse field. A 1-byte file, or a 2019 unrelated critique, satisfies the mandatory closeout critique gat |
+| S3 | high | CLOSED (parent-reproduced 2026-07-31; stub half closed 2026-08-01) | b | `scripts/check_prescribed_skill_executed_lib.py:211` | printf 'x' > charness-artifacts/critique/one-byte.md; python3 scripts/check_prescribed_skill_executed.py --repo-root /tmp/t3 --require standalone_critique --evidence standalone_cri | ok:true, exit 0. The verdict is keyed on `resolved.stat().st_size == 0` — a coarse field. A 1-byte file, or a 2019 unrelated critique, satisfies the mandatory closeout critique gat |
 | S4 | high | CLOSED (parent-reproduced 2026-07-31) | e | `scripts/check_prescribed_skill_executed_lib.py:81` | `evidence_binds_to_context` (the #233 F1 backstop) is defined here but `check()` never calls it. grep shows only skills/public/issue/scripts/issue_resolution_critique.py:110 and sk | The binding check lives only in the copies the achieve/issue callers chose. The RELEASE publish gate and the generic CLI carry no binding check at all: a stale, unrelated charness- |
 | S5 | high | CLOSED (parent-reproduced 2026-07-31) | c | `scripts/check_skill_surface_preflight.py:152` | A SKILL.md containing TWO `## Closeout Vocabulary` H2 blocks. `_remove_pressure_exempt_sections` (line 109) exempts EVERY section with that heading from the core_nonempty density c | Ran it: 60 lines of multi-sentence prose under a second `## Closeout Vocabulary` gives `core_nonempty == 4` and `vocab findings == 0`. The exemption and its anti-abuse read differe |
 | S6 | high | CLOSED (parent-reproduced 2026-07-28) | a | `scripts/check_test_completeness.py:50` | `check_test_completeness.py --repo-root /tmp/ct -- ""` — one empty-string target. run-quality.sh:48-49 builds the target array with `mapfile` from `run_standing_pytest.py --print-e | exit 0. `repo_root / ""` resolves to the repo root, so relative_test_files rglobs the WHOLE repo and every test file is 'covered by standing targets'. The gate reports full complet |

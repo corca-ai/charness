@@ -893,3 +893,30 @@ def test_narration_required_sections_surface_from_bound_retro(tmp_path: Path) ->
         "Next Improvements",
         "Sibling Search",
     ]
+
+
+def test_a_stub_only_refusal_names_its_reason(tmp_path: Path) -> None:
+    """The stub-evidence refusal must render, or the flip is refused with no message.
+
+    `stub_evidence` is a distinct `ok=False` category: the file exists and is
+    non-empty, so neither `missing` nor `missing_evidence_files` names it. Left
+    unrendered, a stub-only refusal printed the message prefix and an empty tail —
+    the no-diagnosis failure this renderer's siblings each repaired once already.
+    """
+    import importlib
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"))
+    cga = importlib.import_module("check_goal_artifact")
+
+    report = {
+        "missing": [],
+        "missing_evidence_files": [],
+        "invalid_skips": [],
+        "stub_evidence": [
+            {"name": "retro_artifact", "path": "x.md", "detail": "says nothing beyond its identity"}
+        ],
+    }
+    bits = cga._stub_evidence_bits(report)
+    assert bits == ["stub evidence: retro_artifact (says nothing beyond its identity)"]
+    assert cga._stub_evidence_bits({"stub_evidence": []}) == []

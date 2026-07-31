@@ -77,7 +77,17 @@ is the standing rule; this heading exists so the next reader does not need it.
 
 ## Tier 2 — real but conditional (latent); needs a little design
 
-- **D. `tests/test_usage_episodes_host_hooks.py:15-53,406-469`.** Two tests snapshot
+- **D — CLOSED (2026-07-20, commit `48b51a39`; verified 2026-08-01).** The fix
+  landed the same day this scan was written and the record was never updated, so
+  the handoff carried the row as open for eleven days.
+  `tests/test_usage_episodes_host_hooks.py` now excludes the live-writer paths
+  (`sessions/**`, `usage_episode.jsonl`) from the snapshot, with the finding id in
+  the code comment, and carries three regression tests including a discriminating
+  control (`..._tolerates_concurrent_live_writers`,
+  `..._still_catches_state_file_mutation`, `..._still_catches_unexpected_new_file`).
+  Verified independently by the parent and by two bounded reviewers. The original
+  statement follows, unedited.
+- **D (as written 2026-07-20). `tests/test_usage_episodes_host_hooks.py:15-53,406-469`.** Two tests snapshot
   the REAL shared `REPO_ROOT/.charness/usage-episodes/` tree, run a CLI subprocess,
   then assert the whole tree is byte-identical and "no new files appeared". If a live
   Claude/Codex **SessionStart hook** (this repo ships/installs `usage_episode_session_start.py`,
@@ -148,5 +158,10 @@ is the standing rule; this heading exists so the next reader does not need it.
 ## Next-session pickup
 
 Tier 1 (A, B, C) is **done** — see the Tier 1 heading above; do not re-plan it.
-Remaining: decide on Tier 2 (D) as its own small slice (it needs design, not a
-1-2 line fix). Tier 3 is opportunistic / boy-scout only.
+Tier 2 (D) is **done too**, and was already done when this line was written —
+closed on 2026-07-20 in `48b51a39`, confirmed 2026-08-01. Do not re-plan it.
+Tier 3 is opportunistic / boy-scout only.
+
+The eleven days this row spent on the handoff as open work is the lesson worth
+keeping: a record that is not updated when its fix lands is a backlog entry that
+costs a future session a reproduction attempt.

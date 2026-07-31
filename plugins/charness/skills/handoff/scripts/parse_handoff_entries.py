@@ -93,9 +93,11 @@ def _path_root_for_citations(args: argparse.Namespace) -> Path | None:
     live = _repo_root_for_live_filters(args)
     if live is not None:
         return live
+    # `live is None` happens only when an explicit handoff path was given -- the
+    # no-path case returns cwd above -- so there is always one to walk from. No
+    # re-guard here: a branch that cannot fire reads as a backstop and is not one,
+    # and an AttributeError would be loud rather than a silent None.
     explicit = _explicit_handoff_path(args)
-    if explicit is None:
-        return None
     for candidate in explicit.resolve().parents:
         if (candidate / ".git").exists():
             return candidate

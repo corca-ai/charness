@@ -14,11 +14,9 @@ the handoff chunker's ranked list; both read as "run it", not "draft it".
 ## Active Operating Frame
 
 - Current disposition: **active run.**
-- Current slice: 4 of 5 complete (A3 residual 1, S3's stub half, C6, and the
-  chunker's path resolution — all repaired). Next: slice 5, record sync.
-- Next action: slice 5 — bookkeeping. Mark sibling-scan Tier 2 D CLOSED with its
-  commit, record D28's unfired trigger, queue D4 as an operator decision, and
-  make every owning record's Status match slices 1-4.
+- Current slice: all 5 complete. Awaiting closeout verification and the goal
+  status flip.
+- Next action: closeout — final verification, non-claims, and `retro`.
 - Verification cadence: cheap deterministic gates at each commit boundary
   (`check_doc_authoring_preflight.py` read for findings, the touched validator's
   own tests); `scripts/run-quality.sh` once at the bundle boundary;
@@ -329,6 +327,35 @@ Queue item form:
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
 
+Queue:
+
+- Decision: does the release distinct-channel probe get an authenticated channel,
+  or is the tag-vs-release ambiguity accepted as rendered by `does_not_establish`?
+  This is audit row D4's whole remainder. The hunt already measured it LIVE: a
+  pushed tag with no release returns HTTP 200 with the tag present 23 times, and
+  both that page and a real release page title themselves `Release <tag>`. The
+  channel that discriminates — the unauthenticated REST API — answered 403 and is
+  not a dependable default.
+  - Owner: repo owner.
+  - Why deferred: it is a credentials/availability question, not agent work. A
+    local-server fixture cannot produce evidence stronger than a live measurement
+    of the real surface, so building one would be theater.
+  - Unblock action: decide authenticate-vs-accept. If authenticate, it wants its
+    own slice and a decision about where the token lives for a consuming repo.
+  - Revisit trigger: the next release whose publish is confirmed by that probe, or
+    any consuming repo that asks what `confirmed` means at that boundary.
+- Decision: should the A3 residual be closed structurally — running the
+  worktree-walking pre-commit gates against a materialized index tree
+  (`git worktree add` from the index, or `git stash -k`) — or does the narrowed
+  refusal shipped in slice 1 suffice?
+  - Owner: repo owner.
+  - Why deferred: it is a redesign of the commit-boundary contract, well past this
+    goal's no-widening fence, and slice 1 closed the reachable escape.
+  - Unblock action: decide structural-vs-sufficient; if structural, it is its own
+    goal, not a slice.
+  - Revisit trigger: the next observed commit whose gates passed over a scope the
+    commit changed.
+
 ## Slice Log
 
 ### Slice 1: Slice 1 — A3 residual 1: scheduled is not judged
@@ -486,6 +513,43 @@ Queue item form:
   the fixture regression that the repo's own test caught before any reviewer saw
   it. The cheapest guard remains running the existing suite against the repair
   before believing it.
+
+### Slice 5 — record sync, and the closeout gates
+
+- Objective: make every owning record's Status match what slices 1-4 actually did,
+  check D28's reopen trigger rather than assume it, and queue D4 as the operator
+  decision it is.
+- Why this approach: bookkeeping is what makes the next session's backlog true.
+  This run started by finding an 11-day-stale row that cost a reproduction attempt,
+  so leaving the same debt behind would be the session's own lesson unlearned.
+- What changed: the sibling-scan record (Tier 2 D marked CLOSED with its commit and
+  the eleven-day gap named), the hunt (A3 residual 1 narrowed, C6 FIXED, D4
+  dispositioned to an operator decision), the sweep (S3 CLOSED with the measurement
+  cited), `docs/deferred-decisions.md` (D28's trigger checked and recorded unfired),
+  and the goal's own Operator Decision Queue. Plus the coverage work below.
+- Alternatives rejected: leaving the records and describing the outcomes only here.
+  A goal artifact is not where a future session looks for a row's status.
+- Verification: full suite 6403 passed. The armed changed-line gate
+  (`--base-sha <pre-slice-1> --refuse-unestablished`, the source copy) found NINE
+  uncovered changed lines across five files — every one of them this session's own
+  code — and they are now covered; `blocking_targets` is empty. It also reported
+  `scripts/measure_evidence_residual.py` as mapped to no test, which is the
+  measurement script slice 2's whole claim rests on, so it got its own module
+  including a test that RE-RUNS the recorded probe artifact against today's tree.
+  D28's trigger was read, not assumed: `emit_payload_main` still has no `--write`.
+- Test duplication pressure: one new test module for the measurement script, plus
+  nine coverage tests spread across four existing modules. The new module is
+  justified by the script being new; the rest went where their subject lives.
+- Critique: no separate round. This slice ships record edits plus tests for code
+  that has already had two review rounds each; the rounds that mattered are logged
+  under slices 1-4. Recorded as a deliberate omission rather than an oversight.
+- Off-goal findings: a defensive `return None` in `_path_root_for_citations` was
+  unreachable — `live is None` implies an explicit path exists — and the coverage
+  gate is what surfaced it. Removed rather than test-covered: a branch that cannot
+  fire reads as a backstop and is not one.
+- Lessons: the armed changed-line gate earned its keep for the second session
+  running, and it earned it on MY code, not inherited code. Running it before
+  believing a slice is done is cheaper than any review round.
 
 ## Context Sources
 
