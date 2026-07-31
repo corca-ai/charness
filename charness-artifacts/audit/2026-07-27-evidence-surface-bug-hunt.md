@@ -10,8 +10,10 @@ partially fixed on 2026-07-27 as the publish-gate family; D2, D6, D8 fixed and
 D4 partially fixed on 2026-07-28 as the distinct-channel family; D7, D9, D10, E5
 fixed on 2026-07-28 as the empty-scope family remainder.
 
-**Remaining: 5 OPEN (E1, E3, E4, E6, E7) + 5 PARTIAL (A3, A8, C6, D4, E2)** as of
-2026-07-30. Count fully-open rows and partial rows separately; a PARTIAL is not a
+**Remaining: 5 OPEN (E1, E3, E4, E6, E7) + 4 PARTIAL (A3, A8, D4, E2)** as of
+2026-08-01 — C6 moved to `FIXED (narrowed)`, A3's residual 1 was narrowed, and D4
+became an operator decision rather than agent work. A6 was reopened and re-closed
+the same day; see its paragraph below. Count fully-open rows and partial rows separately; a PARTIAL is not a
 landed row, and rolling them into a single "N remain" figure is the same class of
 claim this file exists to hunt. Two of those rows are not work to pick up: **E4 is
 the same defect as [D39](../../docs/deferred-decisions.md)** and stays deferred
@@ -152,6 +154,18 @@ row stays `PARTIAL` because of them:
 `No packaging manifests found.` and exits 0. Since `check_staged_mirror_drift` inspects
 only that returncode, an index with the packaging manifest staged for deletion
 gets a green `staged plugin mirror matches staged sources` verdict. Class (a).
+
+**A6 — reopened and re-closed 2026-08-01.** Recorded here rather than only under
+A3, because a row marked FIXED after two review rounds that turns out to have
+another hole in the SAME predicate is exactly the fact this file exists to hold.
+The 2026-07-30 closure widened the query from an `ACM` filter to a staged-vs-
+unstaged intersection. That intersection is structurally blind to `git rm --cached`:
+removing a path from the index removes its ENTRY, so the unstaged side can no
+longer name it. Reproduced 2026-08-01 with no bypass set, repaired to
+`staged(--no-renames) - ls-files(--full-name)` filtered by on-disk presence, and
+reviewed in two more rounds — the second of which found a fail-open the first
+repair had introduced. See the A3 residual-1 paragraph above and
+[the slice-1 critique](../critique/2026-08-01-slice-1-a3-residual-1.md).
 
 **A5, A6, A8, A9, A10 — closed 2026-07-30.** Each was reproduced in a fixture with
 a discriminating control before any fix, adversarially verified, and then read again
@@ -331,7 +345,7 @@ deleting only its `Date:` line flips the verdict to a binding failure. Class (b)
 | C3 | FIXED (narrowed) | `- Packet consumed:` (bullet form) does not match the binding trigger, so the binding floor never runs | `scripts/critique_reviewed_input_binding.py:14` |
 | C4 | FIXED (narrowed) | `--all` — the surface's own declared verify command — disables tier evidence, delivery state, and binding currency | `scripts/validate_critique_artifacts.py:549` |
 | C5 | FIXED (narrowed) | `--paths <nonexistent>` reports `Validated 0 critique artifact(s).` and exits 0 | `scripts/validate_critique_artifacts.py:130`, `scripts/artifact_validator.py:458` |
-| C6 | FIXED (2026-08-01) | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/boundary_probe_lib.py` (`resolve_changed_paths`), `scripts/critique_enforcement_scope.py`, `scripts/run-quality.sh` |
+| C6 | FIXED (narrowed, 2026-08-01) | The cross-surface probe reads the committed range only, and is silently off when `merge-base origin/main HEAD` fails | `scripts/boundary_probe_lib.py` (`resolve_changed_paths`), `scripts/critique_enforcement_scope.py`, `scripts/run-quality.sh` |
 
 **C1** — `Requested tier: TODO ...` is truthy, and `pending-parent-spawn` is a
 full typed value with an empty remainder, so the scaffold's own defaults satisfy
@@ -428,10 +442,22 @@ class under repair:
   silent.
 - **C6** distinguishes `not-configured` / `not-established` / `not-resolved` /
   `evaluated (match|no match)`, which closes the "off is indistinguishable from
-  clean" half. It does NOT close the other half: the probe still reads the
-  COMMITTED range, so the slice under critique — which is in the worktree at
-  validation time, because verify precedes commit — is invisible to it. Closing
-  that needs the probe to read the working tree, which is a contract change.
+  clean" half. The committed-range half is **narrowed on 2026-08-01**, not closed:
+  `run-quality.sh` now passes `--include-worktree`, which unions the working tree
+  into the probe's scope, so the slice under critique is visible to the run that
+  judges it. What is NOT closed, and is why the row reads `FIXED (narrowed)`: the
+  flag is opt-in, and the commit-boundary arms of
+  `check_artifact_surface_preflight.py` deliberately do not pass it — that arm
+  targets whichever artifact the author is holding while the tooth judges the
+  current worktree, so arming it there refused a critique artifact written for an
+  earlier change (tried, measured, reverted). The two surfaces therefore still
+  disagree on a worktree slice, narrowly and by design, and the residual is
+  recorded in the code as `CROSS_SURFACE_RESIDUAL`. The original statement of the
+  defect follows, unedited.
+- **C6 (as written 2026-07-27):** the probe still reads the COMMITTED range, so
+  the slice under critique — which is in the worktree at validation time, because
+  verify precedes commit — is invisible to it. Closing that needs the probe to
+  read the working tree, which is a contract change.
 - **C2's residual, stated:** when only one date channel parses, that channel
   decides alone. Corroboration is unavailable, not achieved.
 

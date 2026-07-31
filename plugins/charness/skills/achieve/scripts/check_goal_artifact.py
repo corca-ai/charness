@@ -60,22 +60,27 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def _stub_evidence_bits(evidence_report: dict) -> list[str]:
-    """The stub-evidence refusal, rendered.
+def _refusal_bits(entries, label: str, render, *, joiner: str = ", ") -> list[str]:
+    """``["<label>: a, b"]`` for a non-empty refusal set, else ``[]``.
 
-    A distinct ``ok=False`` category: the file exists and is non-empty, so neither
-    ``missing`` nor ``missing_evidence_files`` names it. Left unrendered, a
-    stub-only refusal printed the message prefix and an empty tail -- the
-    no-diagnosis failure this renderer's siblings already repaired once each.
-    Its own function so the caller's branch budget does not grow.
+    Every refusal category in this renderer is the same shape -- name the set, join
+    its entries -- and writing that shape out per category is what let a NEW
+    category (`stub_evidence`) ship with no branch at all, refusing the flip with
+    an empty tail. One home makes adding a category one line.
     """
-    entries = evidence_report.get("stub_evidence") or []
+    entries = entries or []
     if not entries:
         return []
-    return [
-        "stub evidence: "
-        + ", ".join(f"{entry['name']} ({entry['detail']})" for entry in entries)
-    ]
+    return [label + ": " + joiner.join(render(entry) for entry in entries)]
+
+
+def _stub_evidence_bits(evidence_report: dict) -> list[str]:
+    """The stub-evidence refusal: present and non-empty, so no other set names it."""
+    return _refusal_bits(
+        evidence_report.get("stub_evidence"),
+        "stub evidence",
+        lambda entry: f"{entry['name']} ({entry['detail']})",
+    )
 
 
 def _evidence_missing_bits(evidence_report: dict) -> list[str]:
@@ -86,27 +91,21 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
     report. Extracted from ``main`` to keep its cyclomatic complexity in budget.
     """
     bits: list[str] = []
-    if evidence_report["missing"]:
-        bits.append("missing: " + ", ".join(evidence_report["missing"]))
-    if evidence_report["missing_evidence_files"]:
-        bits.append(
-            "missing files: "
-            + ", ".join(entry["name"] for entry in evidence_report["missing_evidence_files"])
-        )
-    bits.extend(_stub_evidence_bits(evidence_report))
-    if evidence_report["invalid_skips"]:
-        bits.append(
-            "invalid skips: "
-            + ", ".join(
-                f"{entry['name']} ({entry['detail']})" if entry.get("detail") else entry["name"]
-                for entry in evidence_report["invalid_skips"]
-            )
-        )
-    if evidence_report.get("binding_failures"):
-        bits.append(
-            "evidence not bound to this goal: "
-            + ", ".join(entry["name"] for entry in evidence_report["binding_failures"])
-        )
+    bits += _refusal_bits(evidence_report["missing"], "missing", str)
+    bits += _refusal_bits(
+        evidence_report["missing_evidence_files"], "missing files", lambda e: e["name"]
+    )
+    bits += _stub_evidence_bits(evidence_report)
+    bits += _refusal_bits(
+        evidence_report["invalid_skips"],
+        "invalid skips",
+        lambda e: f"{e['name']} ({e['detail']})" if e.get("detail") else e["name"],
+    )
+    bits += _refusal_bits(
+        evidence_report.get("binding_failures"),
+        "evidence not bound to this goal",
+        lambda e: e["name"],
+    )
     if evidence_report.get("disposition_blank"):
         bits.append(
             "improvement-disposition gate: cited retro lists improvements but "

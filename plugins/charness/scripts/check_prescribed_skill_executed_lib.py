@@ -417,6 +417,28 @@ def _stub_failure(name: str, path: Path, tokens: list[str]) -> dict[str, Any] | 
     }
 
 
+def _accept_or_stub(
+    name: str, path: Path, tokens: list[str], *, binding: str
+) -> dict[str, Any]:
+    """The satisfied record, or the stub-evidence record if the file is a stub.
+
+    One home for both the bound and the presence-only branch. They differ only in
+    the `binding` string they carry, and writing the stub check plus the accept
+    record out twice is how the two drifted apart in the first cut -- the
+    presence-only branch got the floor added later and separately.
+    """
+    stub = _stub_failure(name, path, tokens) if tokens else None
+    if stub is not None:
+        return stub
+    return {
+        "name": name,
+        "via": "evidence",
+        "path": str(path),
+        "binding": binding,
+        "residual_chars": _residual_of(path, tokens) if tokens else None,
+    }
+
+
 def check(
     *,
     repo_root: Path,
@@ -488,34 +510,11 @@ def check(
                         {"name": name, "path": str(resolved), "detail": reason}
                     )
                     continue
-                stub = _stub_failure(name, resolved, stub_tokens)
-                if stub is not None:
-                    stub_evidence.append(stub)
-                    continue
-                satisfied.append(
-                    {
-                        "name": name,
-                        "via": "evidence",
-                        "path": str(resolved),
-                        "binding": reason,
-                        "residual_chars": _residual_of(resolved, stub_tokens),
-                    }
-                )
+                accepted = _accept_or_stub(name, resolved, stub_tokens, binding=reason)
+                (satisfied if "binding" in accepted else stub_evidence).append(accepted)
                 continue
-            if stub_tokens:
-                stub = _stub_failure(name, resolved, stub_tokens)
-                if stub is not None:
-                    stub_evidence.append(stub)
-                    continue
-            satisfied.append(
-                {
-                    "name": name,
-                    "via": "evidence",
-                    "path": str(resolved),
-                    "binding": "not-checked",
-                    "residual_chars": _residual_of(resolved, stub_tokens) if stub_tokens else None,
-                }
-            )
+            accepted = _accept_or_stub(name, resolved, stub_tokens, binding="not-checked")
+            (satisfied if "binding" in accepted else stub_evidence).append(accepted)
             continue
         if name in skips:
             reason = skips[name]

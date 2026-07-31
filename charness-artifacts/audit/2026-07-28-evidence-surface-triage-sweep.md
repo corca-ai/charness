@@ -4,9 +4,9 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**24 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+**25 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
 S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then S4 and S11 on
-2026-07-31 — reproduced in the parent, fixed, and regression-tested.
+2026-07-31, then S3 on 2026-08-01 — reproduced in the parent, fixed, and regression-tested.
 **What S11's floor does NOT prove, recorded because two review rounds kept finding the
 gap wider than the previous claim:** it proves the section names an unnegated English
 review word or cites a path-shaped token — never that a reviewer ran. `executed —
@@ -25,7 +25,8 @@ rule. The one channel that could actually substantiate an executed review —
 `reviewer_boundary_fingerprint.py` snapshot/verify output, or the reviewer's returned
 text — is not consulted; that is the next slice, not this one. Round-2 repairs (comment
 stripping over joined text, the verb-anchored denial arm, negation-aware substantiation,
-the path-shape requirement) are **accepted-unreviewed** under the two-round cap. **S3 is PARTIAL:**
+the path-shape requirement) are **accepted-unreviewed** under the two-round cap. **S3 — CLOSED 2026-08-01; the PARTIAL statement it replaced is kept below because
+the reasoning still bounds what the closure does and does not claim.** S3 was
 its stale-unrelated-artifact half is closed by the same binding fix as S4 (evidence now
 binds inside `check()`), but its stub half is OPEN: two byte floors were written and
 withdrawn — a basename-only floor left the cheaper CONTENT channel open (`printf '#466' >
@@ -42,8 +43,12 @@ run recorded at
 the stub scores 0, markdown artifacts floor at 337 over 2168 files, JSON host-log
 probes at 530 over 83. The floor sits at 8. The xfail is gone, replaced by real
 refusal assertions. What stays open is written down rather than implied: a few
-characters of filler still passes, so this refuses a stub, not a lie. See
-[the S3/S4 critique](../critique/2026-07-31-sweep-s3-s4-closeout-evidence-binding.md).
+characters of filler still passes, so this refuses a stub, not a lie. The 2026-07-31
+[S3/S4 critique](../critique/2026-07-31-sweep-s3-s4-closeout-evidence-binding.md)
+is the record of the PARTIAL state and records the stub half as OPEN; it predates
+this closure and is cited for that reasoning, not as review evidence for the fix.
+The fix's own two review rounds are in
+[the slice-2 critique](../critique/2026-08-01-slice-2-s3-stub-half.md).
 **Found while closing S4 and NOT repaired — no row of its own, recorded here so it is
 not held only in a critique:** a bare issue token boundary-matches an interior version
 segment, so token `1` binds the checked-in
@@ -178,8 +183,9 @@ survivors, the same dominant shape the first hunt found. The negative space is
 where this repo's proof surfaces keep failing.
 
 Every number above describes the 2026-07-28 sweep RUN and is frozen at that run.
-The findings table has since gained one row (S110, opened 2026-07-31 by operator
-decision out of S8's refutation), which is why the table's row count exceeds
+The findings table has since gained four rows — S110 (opened 2026-07-31 by
+operator decision out of S8's refutation) and S111-S113 (found while working the
+2026-08-01 stragglers goal) — which is why the table's row count exceeds
 `survived`. A later row is not a later survivor of this run's refutation pass.
 
 ## Findings
@@ -296,6 +302,9 @@ decision out of S8's refutation), which is why the table's row count exceeds
 | S108 | low | LEAD | c | `skills/public/release/scripts/publish_release_cli.py:178` | A release adapter whose `product_surfaces` key is absent, misspelled, or missing either `installable_cli` or `bundled_skill`. `run_cli_skill_surface_gate` is a plain `if` with no e | `check_cli_skill_surface.py --run-probes` never runs and the publish proceeds with no signal that the CLI/skill surface gate was skipped; the release payload carries no field disti |
 | S109 | low | LEAD | a | `skills/public/release/scripts/publish_release_retro.py:133` | `build_retro_trigger_evaluation` called with an empty `release_content_paths` list (a publish whose content commit produced no changed paths, or a `--resume` path). `check_auto_tri | `persist_retro_trigger_closeout` returns `{"status": "skipped", "reason": "retro trigger did not match the evaluated release paths"}` — asserting a non-match over zero evaluated pa |
 | S110 | medium | LEAD (opened 2026-07-31 by operator decision) | b | `scripts/validate_cautilus_proof.py:200` | An ALREADY-CHECKED-IN cautilus proof artifact that was validated against the prompt surfaces of an earlier commit, plus a later commit that changes one of those same prompt surfaces without touching the artifact. Every floor (`validate_prompt_surfaces`, `validate_behavior_source`, `validate_commands_run`, `validate_scenario_review`) runs only inside the `artifact_repo_path in changed_paths` branch. | Not run — reasoned from source. The predicted verdict is the S8-refuted exit-0 message, but the residual is a different claim from S8's: S8 was about a prompt change with NO artifact and was correctly refuted (deterministic validators own that case). This row is about an artifact that EXISTS and asserts coverage of a prompt surface that has since moved. The gate keys on 'was the artifact edited in this diff', which is coarse where currency is what matters, so the artifact's own `## Prompt Surfaces` list is never re-checked against the surfaces' current state. Reproduce before working it. |
+| S111 | high | PARENT-CONFIRMED (observed live 2026-08-01) | f | `scripts/check_doc_links.py:24` | Any commit whose changed paths are entirely under `charness-artifacts/`. The pre-commit hook schedules `check-doc-links` for it and the gate walks `DOC_GLOBS` = README/AGENTS/docs/presets/profiles/skills — which excludes `charness-artifacts/` — with no path override. | Observed on this session's OWN first commit: the hook printed `RUN`, `PASS`, and `charness pre-commit: ok` for `check-doc-links` over a commit it could not see a single changed file of. Green over a denominator that is empty by construction. The same class A3 names at index granularity, here at glob granularity; the A3 critique fenced per-gate denominators out of that row, so this is its own. |
+| S112 | medium | PARENT-CONFIRMED (observed live 2026-08-01) | d | `tests/test_usage_episodes_host_hooks.py:40` and every sibling that snapshots shared state | Two pytest runs over the same tree concurrently — a background full suite plus a second invocation. | 17 failures and 21 errors, none of them real: the shared-state snapshot tests saw each other's writes. A clean serial run of the identical tree is 6403 passed. This is sibling-scan Tier 2 D's flake class one level up: that row fenced the assertion against concurrent live WRITERS, and concurrent test RUNNERS are the same hazard from a different direction. A false red is cheaper than a false green, but it cost a full re-run to disprove. |
+| S113 | low | LEAD (2026-08-01) | b | `scripts/boundary_probe_lib.py:123` vs `scripts/critique_enforcement_scope.py:340` | Any repo where the injected `adapter_lib` and the module-level `_critique_adapter_lib` could resolve differently. | `resolve_cross_surface_scope` reads the adapter handed to it to decide `not-configured`, while `resolve_hit` re-reads its own module-level adapter for the probe config — two adapter reads deciding one verdict. In this repo both resolve to the same module so they cannot disagree today, and the 2026-08-01 slice made the matched-path witness consume the read `resolve_hit` actually used. Recorded because a future injection point makes "configured" and "hit" separable. |
 ## 2026-07-31 closeout non-claims
 
 - **S5 is closed at the author-time preflight only.** The same pressure-exempt

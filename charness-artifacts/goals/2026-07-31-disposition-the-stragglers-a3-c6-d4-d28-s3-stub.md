@@ -1,6 +1,6 @@
 # Achieve Goal: Disposition the stragglers — A3, C6, D4, D28, sibling-scan Tier 2 D, S3's stub half
 
-Status: active
+Status: complete
 Created: 2026-07-31
 Activation: `/goal @charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md`
 
@@ -13,10 +13,11 @@ the handoff chunker's ranked list; both read as "run it", not "draft it".
 
 ## Active Operating Frame
 
-- Current disposition: **active run.**
-- Current slice: all 5 complete. Awaiting closeout verification and the goal
-  status flip.
-- Next action: closeout — final verification, non-claims, and `retro`.
+- Current disposition: **complete.** All five slices landed, closeout verified,
+  retro persisted, disposition review folded.
+- Current slice: none — the run is closed.
+- Next action: none for this goal. The one live operator decision is in
+  `## Operator Decision Queue`; the two structural follow-ups are on the handoff.
 - Verification cadence: cheap deterministic gates at each commit boundary
   (`check_doc_authoring_preflight.py` read for findings, the touched validator's
   own tests); `scripts/run-quality.sh` once at the bundle boundary;
@@ -312,7 +313,7 @@ recorded here so `--pursue-ready` does not clear until they have been seen.
 | 2 | S3 stub half — closed, but NOT with the per-kind shape check planned: a markdown-shape floor was measured and rejected (22 real artifacts have no headings), and the rule that worked is "evidence must say more than the identity it was checked against" | The pin is checked in and two prior attempts bound the design space; success flips a test green | Measurement scripted and recorded; floor 8 below both measured minima (337 markdown / 530 JSON probe); xfail replaced by real refusal assertions; the motivating case refused at the issue-close gate | **repaired** |
 | 3 | C6: opt-in `--include-worktree` that unions rather than replaces | `--changed-path` was already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Blindness reproduced with a control; false-refusal cost measured at 11 of 965 artifacts; second consumer unbroken; the scope report now names which scope and which path produced the verdict | **repaired** |
 | 4 | Chunker path resolution: base follows the citation style, resolved lexically | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | `missing_path_count` 1 -> 0 on the repo's own handoff; 9 tests, all red against the pre-slice parser; mirrors synced | **repaired** |
-| 5 | Record sync and queue: sibling-scan Tier 2 D -> CLOSED, D28 trigger -> not fired, D4 -> operator decision, hunt/sweep statuses matched to slices 1-3 | Bookkeeping is what makes the next session's backlog true; today's run found an 11-day-stale row | Every touched record's Status column matches this run; D4 queue item written with the 403/quota constraint stated | pending |
+| 5 | Record sync and queue: sibling-scan Tier 2 D -> CLOSED, D28 trigger -> not fired, D4 -> operator decision, hunt/sweep statuses matched | Bookkeeping is what makes the next session's backlog true; today's run found an 11-day-stale row | Every touched record's Status matches this run; D4 queued with the distinct-channel constraint stated; the armed coverage gate's 9 uncovered lines closed; S111-S113 opened for this run's own off-goal findings | **done** |
 
 ## Operator Decision Queue
 
@@ -342,49 +343,84 @@ Queue:
     of the real surface, so building one would be theater.
   - Unblock action: decide authenticate-vs-accept. If authenticate, it wants its
     own slice and a decision about where the token lives for a consuming repo.
+    The option a reader thinks of first — reuse the `gh` credential the publish
+    flow already holds — is excluded on purpose: the whole point of this probe is
+    to be a DISTINCT channel from the one that created the release, so an
+    authenticated same-provider check would confirm the release against itself.
+    Any answer has to clear that, which is what makes it a decision rather than a
+    task.
   - Revisit trigger: the next release whose publish is confirmed by that probe, or
     any consuming repo that asks what `confirmed` means at that boundary.
-- Decision: should the A3 residual be closed structurally — running the
-  worktree-walking pre-commit gates against a materialized index tree
-  (`git worktree add` from the index, or `git stash -k`) — or does the narrowed
-  refusal shipped in slice 1 suffice?
-  - Owner: repo owner.
-  - Why deferred: it is a redesign of the commit-boundary contract, well past this
-    goal's no-widening fence, and slice 1 closed the reachable escape.
-  - Unblock action: decide structural-vs-sufficient; if structural, it is its own
-    goal, not a slice.
-  - Revisit trigger: the next observed commit whose gates passed over a scope the
-    commit changed.
+**Withdrawn from this queue on the disposition review's finding, and correctly:**
+"should the A3 residual be closed structurally" was filed here as an operator
+decision, and it is not one — this run already answered it (slice 1 closed the
+reachable escape) and nothing in it needs information only the repo owner holds.
+It is a next-goal candidate, carried on the handoff rather than blocked on a
+human. Recorded rather than deleted, because a queue that quietly absorbs
+agent-decidable work is how a decision stops being anyone's.
+
+## Public-Skill Validation Decision
+
+Three public skills changed semantically: `handoff` (citation canonicalization),
+`achieve` and `issue` (a new refusal category on their closeout wrappers).
+`plan_cautilus_proof.py --detail` over the committed range reports
+`status: not-required`, `run_mode: ask`, and
+`scenario_registry_review_required: true`.
+
+**Decision: deterministic validation owns these changes; no live cautilus run.**
+
+- **No `cautilus evaluate` was run**, and none is claimed. The planner itself says
+  the proof is not required, the repo contract is ask-before-run, and this goal's
+  Non-Goals forbid it. Recorded as a decision, not skipped silently.
+- **Scenario registry, reviewed:** the three consumer prompts in the dogfood
+  matrix are `handoff` pickup routing, `achieve` goal shaping, and `issue`
+  filing/resolution through `gh`. None of them exercises the changed behavior:
+  the chunker's path canonicalization is below the pickup prompt, and the stub
+  floor fires only on evidence a scenario would have to deliberately stub. So the
+  maintained coverage does not need to change for these edits — and that is a
+  statement about these edits, not a claim that the scenarios cover them.
+- **Consumer-visible risk, stated plainly:** all three changes make a gate
+  STRICTER. A consuming repo whose closeout previously passed with a stub-shaped
+  evidence file, or whose critique carried a bare `single-surface` verdict while
+  its worktree touched a cross-surface path, will now be refused. That is the
+  intent, and it is the same migration shape the 3.0.1 notes carried. It is not
+  in a release this session — no version bump, no publish — so the note belongs to
+  whoever cuts the next one.
+- **Dogfood contract:** not re-frozen. `docs/public-skill-dogfood.json` describes
+  the consumer PROMPT and expected routing, neither of which these edits change.
+  Freezing it would record a contract change that did not happen.
 
 ## Slice Log
 
-### Slice 1: Slice 1 — A3 residual 1: scheduled is not judged
+### Slice 1 — A3 residual 1: scheduled is not judged
 
 - Objective: Close the shape where every worktree-walking pre-commit gate prints PASS over content the commit removes from the tree. Planned as a legibility change to the gate PLANNER; the reproduction found a repairable hole in check_staged_worktree_consistency instead, so the slice repaired that and left the planner untouched.
 - Why this approach: The planned repair (annotate each scheduled gate with the scope it inspects) would have made a false assurance readable. The probe showed the assurance is refusable: the gate whose stated question is 'does this path appear on BOTH sides' was structurally blind to the untrack shape, because removing a path from the index removes its index ENTRY and the worktree-vs-index diff can no longer name it. Repairing the predicate beats annotating around it, and it stays inside the critique's 'not converting scheduled gates to index readers' fence.
-- Commits:
+- Commits: `a4925516`
 - What changed: scripts/check_staged_worktree_consistency.py (canonical) + plugins/charness/scripts/ mirror (synced, sha256-identical); tests/quality_gates/test_check_staged_worktree_consistency.py (+16 tests, 18 -> 34)
 - Alternatives rejected: Annotating the planner's output with a per-gate inspected-scope field: rejected once the hole turned out to be repairable — a legible false assurance is still a false assurance. Converting the scheduled gates to index readers: out of bounds, declined by the owning critique as 'a change to every gate rather than to the plan'.
 - Targeted verification: REPRODUCED in an isolated clone with NO bypass set: git rm --cached docs/handoff.md + an on-disk edit cleared check_staged_reversion AND check_staged_worktree_consistency, then check_doc_links / check-markdown / check_title_slug_drift / validate_current_pointer_freshness all printed PASS and the commit landed, deleting the file. DISCRIMINATING CONTROL: with the worktree made to match the committed tree, check_doc_links FAILS (AGENTS.md: broken relative link ./docs/handoff.md) — so the green was over a tree that is not what got committed. REPAIRED: predicate is now staged(--no-renames) - ls-files(--full-name), filtered by on-disk presence. 34 tests green; 13 of them fail against the pre-slice gate; reverting only --no-renames fails exactly the rename test, reverting only the case fold fails exactly the fail-open test. Planner-family suites 199 green. ruff clean.
 - Test duplication pressure: 16 tests added to one existing module, all against the same gate; no new test file, no fixture duplication — each new test constructs its own git state through the module's existing _repo/_git helpers. Two tests execute the offered remedies rather than string-matching them, which is what caught a remedy that exits 128.
+- Critique artifact: [slice 1 critique](../critique/2026-08-01-slice-1-a3-residual-1.md)
 - Critique: Two rounds, bounded read-only reviewers, each bracketed by reviewer_boundary_fingerprint snapshot/verify — both windows verified clean. Round 1 (2 reviewers): 3 BLOCKERs, all parent-confirmed by command — rename detection collapses D+A into R so --diff-filter=D missed the move-and-recreate shape; the offered `git rm <path>` exits 128 on a path with no index entry; the legitimate untrack workflow had no correct offered move. Plus the Floor-Addition Restraint record manufactured a recurrence count where the honest statement is that it promotes A3-critique F8's documented deferral. Round 2 (read the repairs): 1 BLOCKER — the case-only-rename exemption folded over the whole tracked set, so untracking Foo.md escaped whenever an unrelated foo.md was tracked; a fail-open in the repaired predicate, in the class the slice closes. Parent reproduced it before fixing. Also: --no-renames was on the staged read only, so an intent-to-add rename (what git add -p creates) resurfaced the ORIGINAL shape-1 defect; ls-files is cwd-scoped where diff --cached is repo-wide; and three tests proved less than their docstrings claimed. All folded. Round-2 repairs are accepted-unreviewed under the two-round cap.
 - Off-goal findings: The pre-commit hook on this session's own first commit scheduled check_doc_links and printed PASS over a commit that was entirely under charness-artifacts/, which check_doc_links' DOC_GLOBS excludes — the same 'green over an uninspected scope' class, at glob granularity rather than index granularity. Not repaired here: each gate owns its own denominator, which the A3 critique fenced out.
 - Lessons carried forward: The reproduction is what re-scoped the slice: the planned repair was designed against the audit's prose, and the prose described a shape that a later fix had already made unreachable by its stated route. Probing first turned a legibility patch into a refusable hole. Second: my repair introduced a status-letter allowlist four lines below the file's own comment arguing that a status-letter allowlist is the wrong shape for this gate — the round that read the repair is what caught it, for the fourth measured slice running.
-- Metrics:
+- Metrics: not recorded per slice. The goal carried no `Host metric window:` line, so any per-slice token or duration number would be a proxy; the run-level host log probe is cited in `## Final Verification` instead.
 
-### Slice 2: Slice 2 — S3's stub half
+### Slice 2 — S3's stub half
 
 - Objective: Close the stub half of sweep row S3: a four-byte file whose whole content is its own citation satisfied the mandatory closeout-critique gate, because the only content test was st_size == 0 and the file bound by content.
 - Why this approach: Not the byte floor S3 asked for, and not either of the two that were withdrawn. The precise defect is narrower than 'the file is small': the content IS the token. So the rule is that evidence must say something BEYOND the identity it was checked against. Measured before it was written, which is what both withdrawn attempts skipped.
-- Commits:
+- Commits: `eedb7ec6`
 - What changed: scripts/check_prescribed_skill_executed_lib.py (the floor + residual_tokens); skills/public/issue/scripts/issue_resolution_critique.py and skills/public/achieve/scripts/goal_artifact_closeout_evidence.py (wired); skills/public/achieve/scripts/check_goal_artifact.py, skills/public/achieve/scripts/describe_goal_closeout_shape.py, scripts/check_issue_closeout_commit_msg.py (renderers taught the new category); scripts/measure_evidence_residual.py (new, the measurement as a script); charness-artifacts/probe/2026-08-01-evidence-residual-floor.json (its recorded run); docs/prescribed-skill-closeout-contract.md; tests (+7 in the gate's own module, 4 degenerate fixtures rewritten in 3 files); plugins/ mirrors synced
 - Alternatives rejected: A per-kind markdown SHAPE check (require headings): measured and REJECTED — 22 of 2168 real artifacts have no headings, all of them commit-message drafts, so it sits above how this repo writes its own evidence, which is the shape that withdrew the last attempt. A third byte floor: rejected, coarse in the direction that matters. Copying the floor into each wrapper: rejected — that is the mistake evidence_binds_to_context already made once, and residual_tokens keeps it at the choke point.
 - Targeted verification: Measured first, by a checked-in script (scripts/measure_evidence_residual.py, run recorded at charness-artifacts/probe/2026-08-01-evidence-residual-floor.json): the stub's residual is 0; markdown artifacts floor at 337 over 2168 files; real JSON host-log probes at 530 over 83. The floor sits at 8, below every measured minimum. The gate's own module went 31 -> 43 tests, 4 of which fail against the pre-slice library. Live corpus check: a real checked-in critique scores 5951 against a floor of 8. The motivating case executed end to end at the gate it lives on — a 4-byte '#466' file is refused by the issue-close gate and a real critique still closes the issue. Consumer suites 705 green; full suite run separately.
 - Test duplication pressure: 7 tests added to the gate's own module; no new test file. Four EXISTING fixtures in three other files were rewritten because they were degenerate (12-byte shapes like {"goal":"g"}); git diff confirms no assertion moved, only fixture content and comments. Two of those rewrites shipped malformed JSON in the first cut and were fixed after round 2 caught it.
+- Critique artifact: [slice 2 critique](../critique/2026-08-01-slice-2-s3-stub-half.md)
 - Critique: Two rounds, bounded read-only reviewers, both windows fingerprinted. ROUND 1 BLOCKER, parent-confirmed by running it: the floor was in the library and did not reach the gate that motivated it — issue_resolution_critique and goal_artifact_closeout_evidence bind OUT-OF-BAND and pass no tokens, so a 4-byte '#466' file still closed issue #466 with the floor shipped. Also: the floor at 20 cleared a real fixture by 2 characters, and the corpus measurement covered markdown only while the gate is generic over kinds. ROUND 2 BLOCKER, parent-confirmed: the new stub_evidence refusal category had no renderer in three consumer surfaces, so a stub-only refusal printed a prefix with an empty tail — and each of those files carries a comment saying that exact no-diagnosis defect was already repaired there once for other categories. Round 2 also found the code and the doc contradicting each other about whether the JSON kind was measured, two fixture rewrites emitting invalid JSON, a test whose name asserted an invariant the repair had deleted, and that the measurement numbers were reproducible from nothing. Every one folded; the measurement is now a checked-in script. Round-2 repairs are accepted-unreviewed under the two-round cap.
 - Off-goal findings: Running two pytest suites concurrently produced 17 false failures and 21 errors in shared-state tests — the same flake class sibling-scan Tier 2 D fixed for concurrent SessionStart hooks, one level up. Not repaired; the clean serial run is 6388 passed.
 - Lessons carried forward: Measuring before writing is what separated this attempt from the two that were withdrawn — and the withdrawal reasoning itself was a mis-measurement: 34 failing TEST FIXTURES were read as evidence about how the repo writes EVIDENCE, when the artifacts start at 427 bytes. Second: both rounds found the same shape of miss — the repair was correct where I was looking and absent where the thing is actually used (round 1: the wrapper that never passed tokens; round 2: the renderers that never learned the category).
-- Metrics:
+- Metrics: not recorded per slice. The goal carried no `Host metric window:` line, so any per-slice token or duration number would be a proxy; the run-level host log probe is cited in `## Final Verification` instead.
 
 ### Slice 3 — C6: the probe read the committed range only
 
@@ -422,6 +458,7 @@ Queue:
 - Test duplication pressure: 4 tests across two existing modules, no new file. Two
   of them pin STATES rather than values, which is what this module exists to
   distinguish.
+- Critique artifact: [slice 3 critique](../critique/2026-08-01-slice-3-c6-worktree-scope.md)
 - Critique: two rounds, both fingerprint-verified clean.
   - Round 1, no blocker, six should-fixes. The flag made `not-established`
     structurally unreachable, so an empty ref plus a clean tree reported
@@ -484,6 +521,7 @@ Queue:
 - Test duplication pressure: 9 tests in one existing module, no new file. Three
   of them exist because a reviewer showed an earlier test proved less than its
   docstring claimed, which is its own kind of duplication debt.
+- Critique artifact: [slice 4 critique](../critique/2026-08-01-slice-4-chunker-path-resolution.md)
 - Critique: two rounds, both fingerprint-verified clean.
   - Round 1, one blocker: a directory token lost its trailing slash under the new
     resolution, so `integrations/tools` (handoff side) stopped intersecting
@@ -540,6 +578,7 @@ Queue:
 - Test duplication pressure: one new test module for the measurement script, plus
   nine coverage tests spread across four existing modules. The new module is
   justified by the script being new; the rest went where their subject lives.
+- Critique artifact: [slice 5 critique](../critique/2026-08-01-slice-5-record-sync-and-closeout.md)
 - Critique: no separate round. This slice ships record edits plus tests for code
   that has already had two review rounds each; the rounds that mattered are logged
   under slices 1-4. Recorded as a deliberate omission rather than an oversight.
@@ -671,10 +710,12 @@ acceptance line requiring at least one revert-checked repair.
 
 ## Coordination Cues
 
-- Routing: shaped by `achieve` Before-phase after `handoff` chunked routing
-  produced the skeleton. Slices route to `impl`/`prove` for repairs, `debug` for
-  any row whose reproduction is not immediate, and `critique` for the plan pass
-  and the per-slice fresh-eye reviews.
+- Routing: `achieve` — selected from installed skill metadata as the owner of a
+  multi-slice goal lifecycle, after `handoff` chunked routing produced the
+  skeleton. Within it, repairs routed to `impl`/`prove`, the plan pass and all ten
+  per-slice rounds to `critique`, the closeout review to `critique` as a
+  disposition reviewer, and the quality phase to `quality` (dup-ratchet triage and
+  classification, the armed changed-line gate, the locked closeout producer).
 - Gather: n/a — no external source; every input is a checked-in repo artifact.
 - Release: n/a — Non-Goals forbid a version bump, tag, or publish.
 - Issue closeout: n/a — no tracked issue; the repo's open-issue backlog is empty
@@ -708,6 +749,102 @@ acceptance line requiring at least one revert-checked repair.
 
 ## Final Verification
 
+Retro: charness-artifacts/retro/2026-08-01-session-retro.md
+Host log probe: charness-artifacts/probe/2026-08-01-disposition-the-stragglers-a3-c6-d4-d28-s3-stub-host-log.json
+Disposition review: charness-artifacts/critique/2026-08-01-disposition-the-stragglers-a3-c6-d4-d28-s3-stub-disposition-review.md
+
+Every row reached a state a future session can act on. What each one is, and what
+it is NOT:
+
+- **A3 residual 1 — repaired, narrowed.** Reproduced with a discriminating control
+  in an isolated clone, no bypass set. NOT closed: the broader residual stands and
+  the hunt row stays `PARTIAL` — a scheduled gate can still walk the worktree over
+  a scope the commit changes, and the only structural closure is running those
+  gates against a materialized index tree.
+- **A3 residuals 2 and 3 — status only.** Re-read, not re-probed. Residual 2's
+  measurement was already in the record; A5/A6 closed 2026-07-30. A6 was then
+  reopened and re-closed by slice 1, and now says so in its own row.
+- **S3 stub half — repaired.** The checked-in xfail is gone, replaced by refusal
+  assertions. NOT closed: a few characters of filler still passes. This refuses a
+  stub, not a lie.
+- **C6 — repaired, narrowed.** The row reads `FIXED (narrowed)`, not `FIXED`. The
+  flag is opt-in and the commit-boundary arms deliberately do not pass it, so the
+  two surfaces still disagree on a worktree slice; the residual is in the code as
+  `CROSS_SURFACE_RESIDUAL`.
+- **sibling-scan Tier 2 D — already closed; record synced.** No code changed.
+- **D28 — trigger read, stays deferred.** `emit_payload_main` still has no
+  `--write`.
+- **D4 — dispositioned to an operator decision.** No code changed and none is
+  claimed; the measurement is inherited from the hunt's live run and disclosed as
+  inherited.
+- **Chunker path resolution — repaired.** Promoted in from off-goal.
+
+Acceptance line satisfied: four rows ended `repaired` with revert-checked
+regression tests, not one.
+
+Executed proof:
+
+- Full suite: **6403 passed**, serial.
+- The locked slice closeout, run with `--base` so it covers the committed bundle
+  rather than the worktree, with mutation-coverage production and the
+  public-skill review acknowledged: **completed, 0 FAIL**.
+- Armed changed-line coverage over the committed range
+  (`--base-sha cb35991e --refuse-unestablished`, source copy): **clean**. It first
+  found NINE uncovered changed lines across five files, all of them this session's
+  own code, and one changed pool file mapped to no test at all; both are closed.
+- `check_dup_ratchet --summary`: **0 new code families** after two real
+  extractions and five recorded classifications.
+- Ten bounded review rounds across five slices, each bracketed by
+  `reviewer_boundary_fingerprint.py`; every window verified `clean` or
+  `parent-attributed` with zero undeclared drift. One critique artifact per slice.
+- `plan_cautilus_proof.py`: `status: not-required`, `run_mode: ask`.
+
+Non-claims:
+
+- **No live cautilus run.** None was required and none was requested.
+- **No CI dispatch, no push, no release.** Nothing here is proven on a remote.
+- **No mutation SCORE claim.** The closeout produced mutation coverage; it did not
+  run a mutation campaign, and no score is cited.
+- **D4 is not re-measured.** Its live evidence predates this session.
+- **The A3 probes prove the clone's behavior, not this host's installed hook.**
+- **Per-slice token and duration numbers are not recorded.** The goal carried no
+  `Host metric window:` line, so the host log probe's `goal_metric_window` is
+  `absent` and any per-slice figure would be a proxy.
+
 ## User Verification Instructions
 
+1. `git log --oneline cb35991e..HEAD` — six commits, one per slice plus the shape.
+2. Re-run the measurement slice 2's floor rests on:
+   `python3 scripts/measure_evidence_residual.py --repo-root .` — it should exit 0
+   and report the floor below both measured minima.
+3. Re-run the gate that found this session's own uncovered lines —
+   `prepush_focused_changed_line_coverage.py` with `--repo-root .`,
+   `--base-sha cb35991e`, and `--refuse-unestablished`. It reports `clean`.
+4. Reproduce slice 1's defect against the PRE-slice gate if you want the control:
+   in a throwaway clone at `a4925516~1`, `git rm --cached docs/handoff.md`, edit
+   the on-disk copy, and commit — it lands, deleting the file, with every doc gate
+   green. At `a4925516` it is refused.
+5. The two queued decisions are in `## Operator Decision Queue`: the release
+   probe's authentication question, and nothing else — the second item was
+   withdrawn as agent-decidable and is recorded as withdrawn.
+
 ## Auto-Retro
+
+- applied: `scripts/measure_evidence_residual.py` plus its recorded run and its
+  own test module — the "a threshold defended by prose gets withdrawn, a
+  threshold defended by a script survives" lesson, made executable rather than
+  written down.
+- applied: `stub_evidence` rendered in all three consumer surfaces
+  (`check_goal_artifact`, `describe_goal_closeout_shape`,
+  `check_issue_closeout_commit_msg`), and `_refusal_bits` extracted so adding the
+  NEXT refusal category is one line rather than a new unrendered branch.
+- applied: S111-S113 opened in the sweep for this run's own off-goal findings,
+  rather than leaving them in a goal artifact about to be closed.
+- out-of-scope: a refusal-category renderer gate (a detector for "a bucket feeds
+  `ok` but appears in no message builder") — the retro's Portable Candidate says
+  it needs one more independent instance before it earns a checkable form.
+  Carried on the handoff, not filed: this repo's open-issue backlog is empty by
+  policy and its follow-ups live in docs.
+- out-of-scope: the measurement-as-script sweep over the remaining prose
+  thresholds (`MIN_SKIP_DETAIL_LENGTH`, the dup-ratchet baselines, the coverage
+  floors). Named in the retro's Sibling Search as a follow-up outside this slice.
