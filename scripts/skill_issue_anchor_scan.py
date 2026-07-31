@@ -13,6 +13,8 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
+from skill_gate_report_render import render_gate_report
+
 from runtime_bootstrap import load_path_module, repo_root_from_script
 
 # The canonical anchor-rule lib ships beside this script, so resolve it from the
@@ -80,17 +82,24 @@ def scan_issue_anchors(repo_root: Path, paths: list[str]) -> dict[str, Any]:
 
 
 def format_human(report: dict[str, Any]) -> str:
-    lines = [f"skill-issue-anchor-scan: {report['status']}"]
-    for row in report["checked"]:
-        verdict = "BLOCK" if row["findings"] else "ok"
-        lines.append(f"- {row['path']}: {row['findings']} anchor(s) [{verdict}]")
-    for finding in report["findings"]:
-        lines.append(f"  {finding['path']}:{finding['line']}: {finding['excerpt']}")
-    if report["status"] == "blocked":
-        lines.append(
+    rows = [
+        f"- {row['path']}: {row['findings']} anchor(s) "
+        f"[{'BLOCK' if row['findings'] else 'ok'}]"
+        for row in report["checked"]
+    ]
+    rows.extend(
+        f"  {finding['path']}:{finding['line']}: {finding['excerpt']}"
+        for finding in report["findings"]
+    )
+    return render_gate_report(
+        "skill-issue-anchor-scan",
+        report["status"],
+        rows,
+        blocked=bool(report["findings"]),
+        blocked_message=(
             "Disallowed issue anchors (`#NNN`, `owner/repo#N`, `issues/N`) in a "
             "portable skill package. Keep issue provenance in the commit message and "
             "the goal/critique artifact, not the package, before the commit-time "
             "validate_skill_ergonomics sweep blocks it."
-        )
-    return "\n".join(lines)
+        ),
+    )

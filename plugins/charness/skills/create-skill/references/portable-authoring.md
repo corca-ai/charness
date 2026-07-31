@@ -303,13 +303,23 @@ line be malformed without these exact characters?"
 - Yes -> the token lives in core, under a dedicated `## Closeout Vocabulary` H2.
 - No (it teaches WHEN or WHY) -> it is prose and stays in a `references/` doc.
 
-`## Closeout Vocabulary` is headroom-exempt in
-`scripts/check_skill_surface_preflight.py` (`PRESSURE_EXEMPT_H2_SECTIONS`), so
-inlining emittable tokens does not spend core decision-prose density — the same
-treatment `## References` and `## Load-Bearing Anchors` already get. The total
-`SKILL.md` line ceiling still counts the block, and an anti-abuse check keeps it
-token-shaped (at most ~12 non-empty lines, each a label + one clause, never
-multi-sentence prose), so the exemption cannot become a prose escape hatch.
+`## Closeout Vocabulary` is headroom-exempt in the repo's core-density accounting
+(`PRESSURE_EXEMPT_H2_SECTIONS`), so inlining emittable tokens does not spend core
+decision-prose density — the same treatment `## References` and
+`## Load-Bearing Anchors` already get. The exemption is **bounded and audited**,
+in both cases across *every* block of the heading rather than only the first:
+
+- each heading has a line budget (`PRESSURE_EXEMPT_BUDGET`); non-empty lines past
+  it are charged back to the core count, so a long list costs density rather than
+  blocking,
+- every exempt line must be token-shaped — a multi-sentence prose line is a
+  blocking finding, whichever exempt heading it sits under,
+- the total `SKILL.md` line ceiling still counts the whole block.
+
+The honest bound: it is the BUDGET, not the audit, that limits the hatch. A short
+single-sentence line under an exempt heading is still exempt and unread, so a
+skill can park a bounded number of such lines there for free — the budget is what
+keeps that number small.
 
 Never strand an emittable token in a `references/` doc and then pin a
 claim-fidelity spec's `requiredCommandFragments` to that doc's filename: that

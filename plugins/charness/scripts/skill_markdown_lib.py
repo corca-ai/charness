@@ -49,13 +49,31 @@ def count_fence_blocks(lines: Iterable[str]) -> int:
     return count
 
 
-def strip_fenced_lines(lines: Iterable[str]) -> list[str]:
-    result: list[str] = []
-    in_fence = False
+def split_fenced_lines(lines: Iterable[str]) -> tuple[list[str], list[str], bool]:
+    """`(unfenced, fenced, unbalanced)` for one markdown region.
+
+    A fence closes only on the token that opened it: toggling on any fence-looking
+    line let an inner `~~~` close a ``` block early and a later ``` re-open it, so
+    the tail of the region vanished. `unbalanced` is True when a fence is still
+    open at the end, so each caller can choose its own failure direction instead of
+    silently trusting a truncated read."""
+    unfenced: list[str] = []
+    fenced: list[str] = []
+    opener: str | None = None
     for raw in lines:
-        if raw.strip().startswith("```"):
-            in_fence = not in_fence
+        stripped = raw.strip()
+        marker = "```" if stripped.startswith("```") else ("~~~" if stripped.startswith("~~~") else None)
+        if marker is not None and opener is None:
+            opener = marker
+            fenced.append(raw)
             continue
-        if not in_fence:
-            result.append(raw)
-    return result
+        if marker is not None and marker == opener:
+            opener = None
+            fenced.append(raw)
+            continue
+        (fenced if opener is not None else unfenced).append(raw)
+    return unfenced, fenced, opener is not None
+
+
+def strip_fenced_lines(lines: Iterable[str]) -> list[str]:
+    return split_fenced_lines(lines)[0]

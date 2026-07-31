@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 from scripts.adapter_lib import load_yaml_file
+from scripts.skill_markdown_lib import split_fenced_lines
 
 
 def iso_from_ts(timestamp: float) -> str:
@@ -154,6 +156,49 @@ def _metadata(repo_root: Path, session: dict[str, Any]) -> dict[str, str]:
     }
 
 
+# Ways a chunk asks a human to decide without a question mark or the literal
+# section marker. Two tiers, because the cost of a false positive here is a
+# blocked chunk that asked nothing:
+#   - unambiguous phrases: a request wherever they appear;
+#   - bare verbs: only in request position (line-initial, after a list marker, or
+#     after "please"), so prose ABOUT a gate — "the validator will reject an empty
+#     digest", "I can confirm the rewrite is clean" — stays informational.
+# The bare noun "decision" is in neither tier, so "no decision yet" still passes.
+_DECISION_REQUEST_PHRASES = (
+    r"approval needed",
+    r"please\s+(?:approve|reject|confirm|revise|defer|choose|pick|decide|sign off)",
+    r"(?:approve|accept)\s+or\s+(?:reject|revise|defer|decline)",
+    r"sign[- ]off needed",
+    r"let me know",
+    r"should i\b",
+    r"shall i\b",
+    r"waiting on you",
+    r"needs your (?:call|decision|approval)",
+    r"your call\b",
+)
+_DECISION_REQUEST_VERBS = r"approve|reject|confirm|revise|defer|choose|pick|decide|sign off"
+_DECISION_REQUEST_RE = re.compile(
+    r"(?m)(?:" + "|".join(_DECISION_REQUEST_PHRASES) + r")"
+    # Request position: line start, past any mix of list/quote/table/task markers.
+    r"|^[ \t]*(?:[-*+>|][ \t]*|\d+[.)][ \t]+|\[[ xX]\][ \t]+)*(?:please[ \t]+)?(?:"
+    + _DECISION_REQUEST_VERBS
+    + r")\b"
+)
+
+
+def _decision_request_text(chunk_text: str) -> str:
+    """Chunk text with fenced blocks removed, lowercased.
+
+    A fenced example (`approve: true` in a YAML sample, a quoted command) is the
+    author showing a shape, not asking the reader to act on it. An UNTERMINATED
+    fence falls back to the raw text: a missed request is the expensive direction
+    here, so the ambiguous case fails toward detection."""
+    unfenced, _fenced, unbalanced = split_fenced_lines(chunk_text.splitlines())
+    if unbalanced:
+        return chunk_text.lower()
+    return "\n".join(unfenced).lower()
+
+
 _CHUNK_REQUIRED_SECTIONS = (
     ("agent_assessment", ("agent assessment",)),
     ("recommended_disposition", ("recommended disposition",)),
@@ -162,9 +207,23 @@ _CHUNK_REQUIRED_SECTIONS = (
 
 
 def check_chunk_contract(chunk_text: str) -> list[str]:
-    text = chunk_text.lower()
+    if not chunk_text.strip():
+        # An empty or whitespace-only chunk certified itself as contract-satisfying:
+        # the self-check ran over nothing and reported `pass`. No chunk means no
+        # scope, which is a caller error, not a satisfied contract.
+        return ["no chunk text supplied; the contract self-check had nothing to read"]
+    # Every decision signal reads the same fence-stripped text: a `?` or a literal
+    # `Decision Needed` inside a quoted example is the author showing a shape too.
+    text = _decision_request_text(chunk_text)
     found = {key: any(marker in text for marker in markers) for key, markers in _CHUNK_REQUIRED_SECTIONS}
-    asks_for_decision = found["decision_for_human"] or "?" in chunk_text
+    # A chunk can ask a human to decide without a `?` and without the exact section
+    # marker — "Approve or revise before I continue." armed nothing. Detection is
+    # the request, not its punctuation; a purely informational chunk still skips.
+    asks_for_decision = (
+        found["decision_for_human"]
+        or "?" in text
+        or bool(_DECISION_REQUEST_RE.search(text))
+    )
     errors: list[str] = []
     if not asks_for_decision:
         return errors

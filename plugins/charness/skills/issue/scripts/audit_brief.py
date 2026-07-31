@@ -34,6 +34,8 @@ from typing import Any
 
 REQUIRE_BRIEF_CLASSIFICATIONS = ("feature", "deferred-work")
 EVENT_KINDS = ("classification", "brief", "trivial_brief", "mutation", "close")
+# The vocabulary `check_issue_closeout_commit_msg.py` accepts on a closeout commit.
+KNOWN_CLASSIFICATIONS = ("bug", "feature", "deferred-work", "question", "decision-needed")
 
 
 def load_transcript(path: Path) -> list[dict[str, Any]]:
@@ -43,6 +45,11 @@ def load_transcript(path: Path) -> list[dict[str, Any]]:
     events = raw["events"]
     if not isinstance(events, list):
         raise ValueError("transcript 'events' must be a list")
+    if not events:
+        # An empty event list is not a clean run: the audit read nothing and used
+        # to report `audit ok: 0 fix-unit(s) checked`, exit 0 — the same
+        # absent-input-certifies-itself shape this checker exists to catch.
+        raise ValueError("transcript records no events; there is nothing to audit")
     for index, event in enumerate(events):
         if not isinstance(event, dict):
             raise ValueError(f"event #{index} is not an object")
@@ -51,6 +58,13 @@ def load_transcript(path: Path) -> list[dict[str, Any]]:
             raise ValueError(f"event #{index} has unknown kind: {kind!r}")
         if "issue" not in event:
             raise ValueError(f"event #{index} missing 'issue'")
+        try:
+            int(event["issue"])
+        except (TypeError, ValueError) as exc:
+            # Without this the crash surfaced from `audit()`, outside main()'s
+            # try block: a traceback and exit 1, indistinguishable from a real
+            # audit failure.
+            raise ValueError(f"event #{index} has a non-numeric 'issue': {event['issue']!r}") from exc
     return events
 
 
@@ -77,7 +91,24 @@ def audit(events: list[dict[str, Any]]) -> dict[str, Any]:
             if unit["first_mutation_index"] is None:
                 unit["first_mutation_index"] = index
             classification = unit["classification"]
-            if (
+            if classification is None or classification not in KNOWN_CLASSIFICATIONS:
+                # The contract was armed only by a declared, recognized
+                # classification, so omitting the event — or recording it after the
+                # mutation, or misspelling its value — disarmed the whole check and
+                # still reported `audit ok`. Omission is not evidence of triviality.
+                violations.append(
+                    {
+                        "issue": issue,
+                        "classification": classification,
+                        "event_index": index,
+                        "reason": (
+                            "mutation event for issue "
+                            f"#{issue} with no recognized classification recorded first "
+                            f"(saw {classification!r})"
+                        ),
+                    }
+                )
+            elif (
                 classification in REQUIRE_BRIEF_CLASSIFICATIONS
                 and not unit["brief_seen"]
                 and not unit["trivial_seen"]

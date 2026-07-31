@@ -62,12 +62,27 @@ near-limit *changed* files at every slice closeout, so this is workflow signal, 
 ## SKILL.md core headroom
 
 A `skills/public/**` or `skills/support/**` `SKILL.md` core (frontmatter and body
-above the exempt `## Load-Bearing Anchors` / `## References` sections) is governed
+outside the exempt `## Load-Bearing Anchors` / `## References` /
+`## Closeout Vocabulary` sections — exempt only up to each heading's budget in
+[`scripts/skill_core_density.py`](../../scripts/skill_core_density.py), with the
+overflow charged back to the count) is governed
 by *two* separate limits: a hard `core_nonempty` ceiling of **160** lines, and a
 broad-gate test that additionally requires at least **4** lines of headroom below
 that ceiling. Authoring a core to exactly 160 (0 headroom) passes the hard limit
 but fails the headroom buffer — the trap that bit `achieve/SKILL.md` during the
 306-317 goal.
+
+**The preflight's `core nonempty` is not the quality inventory's
+`core_nonempty_lines`.** [skill_ergonomics_lib.py](../../skills/public/quality/scripts/skill_ergonomics_lib.py)
+keeps its own exemption walk — it must stay skill-local-portable, so it cannot
+import the repo module — and that copy exempts only `## Load-Bearing Anchors` /
+`## References`, without a budget, without an audit, and without fence awareness
+(a literal `## References` inside a code fence still opens a real exempt block
+there). The two numbers therefore
+diverge on any skill carrying a `## Closeout Vocabulary` block or an over-budget
+exempt section. Quote the **inventory's** number in a quality artifact:
+[validate_quality_artifact.py](../../scripts/validate_quality_artifact.py)
+recomputes it and hard-fails a mismatch.
 
 [check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
 gates this buffer at the commit boundary for *changed* SKILL.md files (it runs in

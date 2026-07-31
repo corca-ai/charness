@@ -8,6 +8,8 @@ import pytest
 
 from scripts import check_skill_surface_preflight as preflight
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def _write_skill(repo: Path, *, skill_lines: list[str]) -> Path:
     skill_dir = repo / "skills" / "public" / "demo"
@@ -377,10 +379,10 @@ def test_changed_skill_md_cli_empty_list_is_ok(tmp_path: Path, monkeypatch) -> N
     assert preflight.main() == 0
 
 
-# --- closeout-vocabulary anti-abuse preflight ---
+# --- pressure-exempt-section anti-abuse preflight ---
 
 
-def test_closeout_vocabulary_findings_flags_overlong_and_prose() -> None:
+def test_pressure_exempt_findings_flags_overlong_and_prose() -> None:
     tokens = [f"- token-{index} <command>" for index in range(12)]
     text = "\n".join(
         [
@@ -396,14 +398,19 @@ def test_closeout_vocabulary_findings_flags_overlong_and_prose() -> None:
             "- after",
         ]
     )
-    findings = preflight.closeout_vocabulary_findings(text)
-    # 13 non-empty lines (> the 12 cap) => an over-length finding, plus the
-    # multi-sentence line => a prose finding. The trailing `## Next` bounds the block.
-    assert any("non-empty lines" in finding for finding in findings)
+    findings = preflight.pressure_exempt_findings(text)
+    # The prose line is a finding; the block being over its 12-line budget is NOT.
+    # Overflow pays core density instead, so a long-but-token-shaped list is never
+    # blocked by a rule whose own remediation says it merely costs density.
     assert any("multi-sentence prose" in finding for finding in findings)
+    assert not any("budget" in finding for finding in findings)
+    # 13 non-empty exempt lines against a 12-line budget: one line of overflow,
+    # charged to core density.
+    without_overflow = text.replace("- token-11 <command>\n", "")
+    assert preflight._core_nonempty_lines(text) == preflight._core_nonempty_lines(without_overflow) + 1
 
 
-def test_closeout_vocabulary_findings_empty_when_token_shaped() -> None:
+def test_pressure_exempt_findings_empty_when_token_shaped() -> None:
     text = "\n".join(
         [
             "# Demo",
@@ -417,11 +424,11 @@ def test_closeout_vocabulary_findings_empty_when_token_shaped() -> None:
             "- after",
         ]
     )
-    assert preflight.closeout_vocabulary_findings(text) == []
+    assert preflight.pressure_exempt_findings(text) == []
 
 
-def test_format_human_surfaces_closeout_vocab_block(tmp_path: Path) -> None:
-    tokens = [f"- token-{index} <command>" for index in range(13)]
+def test_format_human_surfaces_exempt_section_block(tmp_path: Path) -> None:
+    tokens = ["- token <command>", "One sentence here. And a second one follows."]
     skill_lines = [
         "---",
         "name: demo",
@@ -443,12 +450,12 @@ def test_format_human_surfaces_closeout_vocab_block(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     skill_path = _write_skill(repo, skill_lines=skill_lines)
     payload = preflight.build_report(repo.resolve(), str(skill_path), 0, False)
-    assert payload["closeout_vocab"]
+    assert payload["exempt_findings"]
     human = preflight.format_human(payload)
-    assert "BLOCK closeout-vocab:" in human
+    assert "BLOCK exempt-section:" in human
 
 
-def test_format_changed_human_surfaces_vocab_findings() -> None:
+def test_format_changed_human_surfaces_exempt_findings() -> None:
     report = {
         "status": "blocked",
         "checked": [
@@ -458,10 +465,233 @@ def test_format_changed_human_surfaces_vocab_findings() -> None:
                 "base_remaining": None,
                 "new_remaining": 3,
                 "buffer": 5,
-                "vocab_findings": ["`## Closeout Vocabulary` line is multi-sentence prose"],
+                "exempt_findings": ["`## Closeout Vocabulary` line is multi-sentence prose"],
             }
         ],
     }
     human = preflight.format_changed_human(report)
-    assert "closeout-vocab:" in human
+    assert "exempt-section:" in human
     assert "[BLOCK]" in human
+
+
+# --- S5 (2026-07-28 triage sweep): the exemption audited less than it exempted ---
+
+
+def _prose_block(count: int) -> list[str]:
+    return [f"Decision prose line {index}. It carries a second sentence." for index in range(count)]
+
+
+def _skill_with_exempt_prose(section: str, *, repeat_heading: bool) -> str:
+    lines = ["# Demo", "", "## Workflow", "", "Step one.", "Step two.", ""]
+    if repeat_heading:
+        lines += [f"## {section}", "", "- `Refresh kept:` tokens", ""]
+    # 60 lines: past every exempt budget, and the sweep's own reproduction size.
+    lines += [f"## {section}", "", *_prose_block(60), ""]
+    return "\n".join(lines)
+
+
+@pytest.mark.parametrize(
+    ("section", "repeat_heading"),
+    [
+        # The sweep's own trigger: a SECOND `## Closeout Vocabulary` block was
+        # exempt while only the first was audited.
+        (preflight.CLOSEOUT_VOCAB_SECTION, True),
+        # Cheaper bypass the row did not name: `## References` is exempt with no
+        # audit at all, so one block was enough.
+        ("References", False),
+    ],
+)
+def test_exempt_section_prose_pays_density_and_is_reported(section: str, repeat_heading: bool) -> None:
+    text = _skill_with_exempt_prose(section, repeat_heading=repeat_heading)
+    core = preflight._core_nonempty_lines(text)
+
+    # Before the repair both variants cost nothing: the prose was exempt and, for
+    # a second block or a sibling heading, never audited either.
+    core_without_the_block = preflight._core_nonempty_lines(
+        "\n".join(["# Demo", "", "## Workflow", "", "Step one.", "Step two.", ""])
+    )
+    assert core >= core_without_the_block + 20, "prose past the exempt budget must pay density"
+
+
+@pytest.mark.parametrize(
+    ("section", "repeat_heading"),
+    [(preflight.CLOSEOUT_VOCAB_SECTION, True), ("References", False)],
+)
+def test_exempt_section_prose_is_audited_in_every_block(section: str, repeat_heading: bool) -> None:
+    findings = preflight.pressure_exempt_findings(
+        _skill_with_exempt_prose(section, repeat_heading=repeat_heading)
+    )
+    # Every block of the heading is read, not just the first: the prose sits in the
+    # SECOND `## Closeout Vocabulary` block in the repeat-heading case.
+    assert any("multi-sentence prose" in finding for finding in findings)
+    assert len(findings) >= 60
+
+
+def test_exempt_budget_leaves_the_live_corpus_headroom() -> None:
+    # Read the REAL corpus, not a generated fixture sized from the constant under
+    # test: a fixture built from PRESSURE_EXEMPT_BUDGET passes for any budget value,
+    # including one that would block every skill in the repo.
+    skill_paths = sorted((ROOT / "skills").glob("*/*/SKILL.md"))
+    assert len(skill_paths) >= 20, "corpus scan found no skills; the guard would be vacuous"
+    observed: dict[str, int] = {}
+    for path in skill_paths:
+        text = path.read_text(encoding="utf-8")
+        assert preflight.pressure_exempt_findings(text) == [], path
+        _kept, blocks = preflight._density.split_pressure_exempt_sections(
+            preflight._density.strip_frontmatter(text).splitlines()
+        )
+        for section, section_blocks in blocks.items():
+            count = sum(1 for block in section_blocks for line in block if line.strip())
+            observed[section] = max(observed.get(section, 0), count)
+    for section, count in observed.items():
+        budget = preflight.PRESSURE_EXEMPT_BUDGET[section]
+        assert count <= budget, (
+            f"{section}: live corpus already spends {count} exempt lines against a "
+            f"budget of {budget}"
+        )
+        # Ratchet the budget from ABOVE too. A budget far over observed usage is
+        # the hatch in its original form: exempt lines nobody is asking for.
+        assert budget <= count + 6, (
+            f"{section}: budget {budget} sits far above the observed corpus maximum "
+            f"{count}; the slack is free unaudited prose"
+        )
+
+
+def test_ordered_lists_and_abbreviations_are_not_multi_sentence_prose() -> None:
+    # Both shapes match the raw sentence-boundary regex but are ordinary reference
+    # entries; the audit blocks, so a false positive is a blocked legitimate skill.
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            "## References",
+            "",
+            "1. Read the ladder before deciding",
+            "- `references/hosts.md` - per-host defaults, e.g. Codex hosts",
+            "",
+        ]
+    )
+    assert preflight.pressure_exempt_findings(text) == []
+
+
+def test_fenced_exempt_heading_does_not_open_a_real_exempt_block() -> None:
+    # A skill teaching SKILL.md shape carries a literal `## References` inside a
+    # fence; treating it as a heading would exempt everything after it for free.
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            "## Workflow",
+            "",
+            "```markdown",
+            "## References",
+            "```",
+            *[f"Decision prose line {index}. It runs two sentences." for index in range(20)],
+            "",
+        ]
+    )
+    assert preflight._core_nonempty_lines(text) >= 20
+
+
+def test_fenced_lines_still_pay_core_density() -> None:
+    # Suppressing heading detection inside a fence must not excuse the fenced lines
+    # from the count: that would re-open the free-prose hatch one layer down.
+    base = ["# Demo", "", "## Workflow", "", "Step one.", ""]
+    fenced = base + ["```bash", *[f"command_{index} --flag" for index in range(10)], "```", ""]
+    assert preflight._core_nonempty_lines("\n".join(fenced)) == preflight._core_nonempty_lines(
+        "\n".join(base)
+    ) + 12  # 10 commands + the two fence markers
+
+
+def test_exempt_budget_keys_match_the_exempt_sections() -> None:
+    # A heading added to one constant and not the other silently gets a budget of 0
+    # (fail-safe at runtime) and a KeyError in the corpus guard.
+    assert set(preflight.PRESSURE_EXEMPT_H2_SECTIONS) == set(preflight.PRESSURE_EXEMPT_BUDGET)
+
+
+def test_changed_skill_md_scan_blocks_on_exempt_section_prose(tmp_path: Path) -> None:
+    # The enforcement point for a staged SKILL.md, driven end to end rather than
+    # through a hand-built report dict: a formatting-only test would still pass if
+    # the scan stopped consulting the audit at all.
+    repo = tmp_path / "repo"
+    skill_path = _write_skill(
+        repo,
+        skill_lines=[
+            "---",
+            "name: demo",
+            'description: "Demo skill."',
+            "---",
+            "",
+            "# Demo",
+            "",
+            "Use this when the repo needs a demo skill.",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            "- ran-fail-deferred <command> <issue|anchor>",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            "This block is prose. It teaches when to act rather than what to emit.",
+        ],
+    )
+    rel = skill_path.resolve().relative_to(repo.resolve()).as_posix()
+
+    report = preflight.scan_changed_skill_md(repo.resolve(), [rel])
+    assert report["status"] == "blocked"
+    assert report["blocked"] == [rel]
+    assert any(
+        "multi-sentence prose" in finding
+        for row in report["checked"]
+        for finding in row["exempt_findings"]
+    )
+
+
+def test_fenced_example_inside_an_exempt_block_is_not_audited_as_prose() -> None:
+    # `## Closeout Vocabulary` exists to carry the literal shape a run must emit;
+    # blocking a skill for quoting a two-sentence commit message would punish the
+    # section for doing its job. The lines still pay density.
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            "```",
+            "Fixes #123. Verified by scripts/run-quality.sh.",
+            "```",
+            "",
+        ]
+    )
+
+    assert preflight.pressure_exempt_findings(text) == []
+
+
+def test_fenced_lines_in_an_exempt_block_pay_density_even_within_budget() -> None:
+    # The audit excuses fenced lines, so if the budget also excused them a fence
+    # would be a window that is both uncharged and unread. 10 fenced lines sit
+    # under every budget and must still cost 12 (10 + the two fence markers).
+    base = ["# Demo", "", f"## {preflight.CLOSEOUT_VOCAB_SECTION}", "", "- token <command>", ""]
+    fenced = base + ["```", *[f"Example line {index}. Second sentence." for index in range(10)], "```", ""]
+
+    assert preflight.pressure_exempt_findings("\n".join(fenced)) == []
+    assert preflight._core_nonempty_lines("\n".join(fenced)) == preflight._core_nonempty_lines(
+        "\n".join(base)
+    ) + 12
+
+
+def test_tilde_fenced_example_inside_an_exempt_block_is_not_audited_as_prose() -> None:
+    text = "\n".join(
+        [
+            "# Demo",
+            "",
+            f"## {preflight.CLOSEOUT_VOCAB_SECTION}",
+            "",
+            "~~~text",
+            "Fixes #123. Verified by scripts/run-quality.sh.",
+            "~~~",
+            "",
+        ]
+    )
+
+    assert preflight.pressure_exempt_findings(text) == []

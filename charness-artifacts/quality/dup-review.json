@@ -590,6 +590,13 @@
     },
     {
       "class": "intentional",
+      "id": "65da50d58d3ffcd9",
+      "note": "stdlib import preamble (`from __future__`, hashlib/json/re, pathlib, typing) shared by scripts/hitl_review_artifact_lib.py and scripts/t_events_emit_lib.py; an import block cannot be extracted. Surfaced 2026-07-31 when `import re` was added to the first file, i.e. a membership rotation of the same boilerplate family already classified at 8a9078e2e55bf7ff",
+      "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "678d8f09da69b267",
       "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
       "reviewed_at": "2026-07-11",
@@ -677,6 +684,13 @@
       "id": "74fdf03457be94c9",
       "note": "three-term `bool(a or b or c)` predicate shared by the cautilus-plan visible-work check and the skill-ergonomics failure check; the families are unrelated domains whose key sets evolve independently, so a generic any-truthy-key helper would couple them behind a name that describes neither. Surfaced only after a dead `required` term was deleted from the cautilus predicate",
       "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "76b34d112c417b21",
+      "note": "the pressure-exempt section walk exists twice by boundary, not by accident: scripts/skill_core_density.py is repo-internal and skills/public/quality/scripts/skill_ergonomics_lib.py must stay skill-local-portable (it cannot import scripts/), the same portability rule already recorded for the run_plan_envelope planners; the two also differ in semantics (the repo copy budgets and audits every block, the portable copy only strips)",
+      "reviewed_at": "2026-07-31",
       "surface": "code"
     },
     {
@@ -789,6 +803,13 @@
       "id": "89d83f450e19e19b",
       "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
       "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8a9078e2e55bf7ff",
+      "note": "repo-script bootstrap header (stdlib imports + `REPO_ROOT = repo_root_from_script(__file__)` + an import_repo_module call) across check_command_docs / check_artifact_surface_preflight / check_cli_skill_surface / validate_quality_reference_catalog; an import preamble cannot be extracted without an indirection that hides which module each script actually loads. Surfaced on 2026-07-31 as a membership rotation when check_skill_surface_preflight.py's own header changed and left the family, not as new duplication: no member is in that slice's diff",
+      "reviewed_at": "2026-07-31",
       "surface": "code"
     },
     {

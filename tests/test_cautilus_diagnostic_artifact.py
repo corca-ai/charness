@@ -335,3 +335,74 @@ def test_run_quality_uses_all_cautilus_diagnostics_mode() -> None:
         'queue_selected "validate-cautilus-diagnostics" '
         'python3 scripts/validate_cautilus_diagnostics.py --repo-root "$REPO_ROOT" --all'
     ) in run_quality
+
+
+# --- S7 (2026-07-28 triage sweep): an unrecognized bundle was not a bundle ---
+
+
+@pytest.mark.parametrize(
+    "marker",
+    ["cautilus-report.json", "justification.md", "outcome-grade.md", "trace-digest.jsonl", "transcript.txt", "observation.stderr"],
+)
+def test_every_bundle_shape_marker_makes_the_floors_reachable(tmp_path: Path, marker: str) -> None:
+    # One case per marker: a single fixture would pass with the other markers
+    # reverted, which is how two of them were added untested in the first place.
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "2026-07-28-run"
+    bundle.mkdir()
+    (bundle / marker).write_text("{}\n" if marker.endswith(".json") else "x\n", encoding="utf-8")
+
+    result = run_diagnostic_validator(repo, all_bundles=True)
+
+    assert result.returncode == 1, result.stdout
+    assert "must include `finding.md`" in result.stderr
+
+
+@pytest.mark.parametrize("all_bundles", [False, True])
+def test_bundle_shaped_dir_without_recognized_evidence_is_reported(
+    tmp_path: Path, all_bundles: bool
+) -> None:
+    # The sweep's fixture: a capture that wrote a report and a justification but
+    # neither `finding.md` nor a machine-evidence name. Both arms used to answer
+    # `no changed cautilus diagnostic bundles` and exit 0, so every floor below was
+    # unreachable exactly when the bundle had the least evidence.
+    repo = seed_repo(tmp_path, None)
+    bundle = repo / "charness-artifacts" / "cautilus" / "2026-07-28-run"
+    bundle.mkdir()
+    (bundle / "notes.md").write_text("notes\n", encoding="utf-8")
+    (bundle / "cautilus-report.json").write_text(json.dumps({"x": 1}), encoding="utf-8")
+    (bundle / "justification.md").write_text("why\n", encoding="utf-8")
+
+    result = run_diagnostic_validator(
+        repo,
+        "charness-artifacts/cautilus/2026-07-28-run/notes.md",
+        all_bundles=all_bundles,
+    )
+
+    assert result.returncode == 1, result.stdout
+    assert "must include `finding.md`" in result.stderr
+
+
+@pytest.mark.parametrize("all_bundles", [False, True])
+def test_evaluator_output_dirs_are_not_diagnostic_bundles(tmp_path: Path, all_bundles: bool) -> None:
+    # `.agents/cautilus-adapter.yaml` asks the evaluator to write into `held-out/`
+    # and `full-gate/`. Those are scenario-run results, so an eval run must not turn
+    # this lane red — and the exclusion has to hold in BOTH arms, which it did not
+    # while the directory arm compared a bare tail against slash-terminated
+    # prefixes. The fixture writes a bundle-shape marker on purpose: with only
+    # `summary.json` the dirs are skipped anyway and this test proves nothing.
+    repo = seed_repo(tmp_path, None)
+    for name in ("held-out", "full-gate"):
+        output_dir = repo / "charness-artifacts" / "cautilus" / name
+        output_dir.mkdir()
+        (output_dir / "summary.json").write_text(json.dumps({"ok": True}), encoding="utf-8")
+        (output_dir / "cautilus-report.json").write_text(json.dumps({"x": 1}), encoding="utf-8")
+
+    result = run_diagnostic_validator(
+        repo,
+        "charness-artifacts/cautilus/held-out/cautilus-report.json",
+        all_bundles=all_bundles,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "no changed cautilus diagnostic bundles" in result.stdout

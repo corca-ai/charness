@@ -22,7 +22,37 @@ NON_DIAGNOSTIC_DIR_PREFIXES = (
     "chatbot-benchmark/",
     "chatbot-proposals/",
     "skill-experiment-",
+    # Evaluator OUTPUT directories declared by `.agents/cautilus-adapter.yaml`
+    # (`held_out` / `full_gate` write `summary.json`). They are scenario-run
+    # results, not finding bundles, and the adapter asks for them by name — so an
+    # eval run must not turn the diagnostics lane red.
+    "held-out/",
+    "full-gate/",
 )
+# A directory that carries any of these is a diagnostic bundle even when it lacks
+# `finding.md` and every name in MACHINE_EVIDENCE_NAMES. Before this, "no
+# recognized evidence" meant "not a bundle", so the bundle floors below were
+# unreachable exactly when a capture wrote nothing they could read (2026-07-28
+# triage sweep, row S7). `cautilus-report.json` is the common near-miss: 10 live
+# bundles carry it and none of MACHINE_EVIDENCE_NAMES would have matched it alone.
+BUNDLE_SHAPE_MARKERS = (
+    "cautilus-report.json",
+    "justification.md",
+    "outcome-grade.md",
+    "trace-digest.jsonl",
+    "transcript.txt",
+    "observation.stderr",
+)
+
+
+def _is_non_diagnostic_tail(tail: str) -> bool:
+    """Prefix test that works for a FILE tail (`held-out/summary.json`) and a bare
+    DIRECTORY tail (`held-out`) alike. The slash-terminated entries silently never
+    matched in the `--all` arm, which is the arm `run-quality.sh` invokes — so the
+    two arms could disagree about the same directory."""
+    return f"{tail.rstrip('/')}/".startswith(NON_DIAGNOSTIC_DIR_PREFIXES) or tail.startswith(
+        tuple(prefix for prefix in NON_DIAGNOSTIC_DIR_PREFIXES if not prefix.endswith("/"))
+    )
 VALID_STATUSES = {"passed", "failed", "degraded", "blocked"}
 VALID_RECOMMENDATIONS = {"accept-now", "accept", "reject", "discard", "revise", "blocked"}
 # floor-addition-restraint: keep as a narrow blocking floor because evaluator
@@ -64,7 +94,17 @@ def _is_diagnostic_bundle_path(path: str) -> bool:
         return False
     # First-class diagnostic bundles are run directories, not the rolling proof
     # pointer, maintained benchmark summaries, or skill-experiment demo packet.
-    return not tail.startswith(NON_DIAGNOSTIC_DIR_PREFIXES)
+    return not _is_non_diagnostic_tail(tail)
+
+
+def _has_bundle_shape(bundle_abs: Path) -> bool:
+    """Bundle-shaped evidence with no recognized evidence file.
+
+    Keeps the floors reachable for a capture that wrote a report and a
+    justification but no `finding.md` and no machine evidence — the shape that
+    used to answer `no changed cautilus diagnostic bundles` and exit 0. A
+    genuinely contentless directory (a stray `raw.log`) is still not a bundle."""
+    return any((bundle_abs / marker).is_file() for marker in BUNDLE_SHAPE_MARKERS)
 
 
 def _bundle_dir_for_path(repo_root: Path, path: str) -> Path | None:
@@ -73,7 +113,12 @@ def _bundle_dir_for_path(repo_root: Path, path: str) -> Path | None:
     rel = Path(normalize_repo_path(path))
     bundle_dir = Path(rel.parts[0], rel.parts[1], rel.parts[2])
     finding = repo_root / bundle_dir / "finding.md"
-    if finding.exists() or rel.name == "finding.md" or rel.name in MACHINE_EVIDENCE_NAMES:
+    if (
+        finding.exists()
+        or rel.name == "finding.md"
+        or rel.name in MACHINE_EVIDENCE_NAMES
+        or _has_bundle_shape(repo_root / bundle_dir)
+    ):
         return bundle_dir
     return None
 
@@ -103,9 +148,13 @@ def _all_bundle_dirs(repo_root: Path) -> list[Path]:
             continue
         rel = path.relative_to(repo_root).as_posix()
         tail = rel.removeprefix(f"{CAUTILUS_DIR.as_posix()}/")
-        if tail.startswith(NON_DIAGNOSTIC_DIR_PREFIXES):
+        if _is_non_diagnostic_tail(tail):
             continue
-        if (path / "finding.md").is_file() or any((path / name).is_file() for name in MACHINE_EVIDENCE_NAMES):
+        if (
+            (path / "finding.md").is_file()
+            or any((path / name).is_file() for name in MACHINE_EVIDENCE_NAMES)
+            or _has_bundle_shape(path)
+        ):
             bundle_dirs.append(path.relative_to(repo_root))
     return bundle_dirs
 
@@ -196,8 +245,8 @@ def _validate_finding(bundle_abs: Path) -> None:
 def _validate_trace_digest(bundle_abs: Path) -> None:
     # Per-tool-call efficiency trace emitted by build-skill-execution-observation.mjs.
     # Validated WHEN PRESENT, not required: build now always writes it next to
-    # --output, but `--all` currently has a pre-existing finding.md gap in older
-    # bundles (the retro capture bundles use PROOF.md), so requiring a digest here
+    # --output, but `--all` currently has a pre-existing gap in older bundles that
+    # simply predate the digest, so requiring a digest here
     # would pile onto an already-red --all.
     # floor-addition-restraint: promote to required once --all is green and every
     # capture bundle ships a digest (recorded gap: the 2026-06-29 hitl capture lost
