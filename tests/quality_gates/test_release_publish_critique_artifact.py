@@ -18,6 +18,15 @@ def _load_preflight_module():
     return module
 
 
+def _load_plan_module():
+    path = ROOT / "skills/public/release/scripts/publish_release_plan.py"
+    spec = importlib.util.spec_from_file_location("publish_release_plan", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 _preflight = _load_preflight_module()
 
 
@@ -121,3 +130,44 @@ def test_release_binding_tokens_accept_both_spellings_the_repo_writes() -> None:
     # that failed is not evidence that the critique is wrong.
     assert _preflight.release_binding_tokens(None) == []
     assert _preflight.release_binding_tokens("  ") == []
+
+
+def test_an_unresolvable_version_degrades_to_presence_only_and_says_so(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The fail-open at the publish boundary must be audible and auditable.
+
+    When the target version cannot be read the gate accepts the critique on
+    PRESENCE alone — the pre-binding behavior — rather than refusing, because a
+    version lookup that failed is not evidence that the critique is wrong. But
+    that is a silent downgrade at an irreversible boundary unless it is
+    announced, so it warns on stderr and the report carries
+    `binding_checked: false` for the payload to record.
+    """
+    artifact = tmp_path / "charness-artifacts" / "critique" / "v1-4-0-release-packet.md"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_text("# Release critique\n\nRelease: 1.4.0\n", encoding="utf-8")
+
+    result = _preflight.enforce_release_critique_gate(
+        tmp_path,
+        critique_artifact="charness-artifacts/critique/v1-4-0-release-packet.md",
+        critique_blocked=None,
+        target_version=None,
+    )
+
+    assert result["ok"] is True
+    assert result["binding_checked"] is False
+    assert "accepted on PRESENCE alone" in capsys.readouterr().err
+
+
+def test_a_non_string_manifest_version_resolves_to_no_binding_token(tmp_path: Path) -> None:
+    """`gate_target_version` returns `None` rather than letting a malformed
+    manifest version reach `target_version` and bind something arbitrary."""
+    plan = _load_plan_module()
+    args = SimpleNamespace(publish_current=True, set_version=None, part=None)
+
+    plan.build_release_payload = lambda _root: {"surface_versions": {"packaging_manifest": 3}}
+    try:
+        assert plan.gate_target_version(tmp_path, args) is None
+    finally:
+        plan.build_release_payload = plan._current_release.build_payload
