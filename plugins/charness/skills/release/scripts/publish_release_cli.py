@@ -286,14 +286,20 @@ def commit_final_release_artifact(
         commit_post_publish_artifact(**kwargs, run_command=run)
 
 
+def _valid_adapter_data(repo_root: Path) -> dict[str, Any]:
+    """The one place an invalid release adapter stops a run, for every entrypoint."""
+    adapter = load_adapter(repo_root)
+    if not adapter["valid"]:
+        raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
+    return adapter["data"]
+
+
 def _load_adapter_and_gate(
     args: argparse.Namespace, repo_root: Path
 ) -> tuple[dict[str, Any], str | None, dict[str, Any]]:
     """Returns the gate REPORT too: discarded here, a presence-only publish left
     no durable record at an irreversible boundary."""
-    adapter = load_adapter(repo_root)
-    if not adapter["valid"]:
-        raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
+    adapter_data = _valid_adapter_data(repo_root)
     critique_artifact = validate_critique_artifact_arg(repo_root, args.critique_artifact, run_command=run)
     critique_gate = enforce_release_critique_gate(
         repo_root,
@@ -304,7 +310,7 @@ def _load_adapter_and_gate(
         # bind to it.
         target_version=gate_target_version(repo_root, args),
     )
-    return adapter["data"], critique_artifact, critique_gate
+    return adapter_data, critique_artifact, critique_gate
 
 
 def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> None:
@@ -315,10 +321,7 @@ def run_prep_update_instructions(args: argparse.Namespace, repo_root: Path) -> N
     real publish would use, and prints the prep payload without requiring a clean
     worktree or the critique gate.
     """
-    adapter = load_adapter(repo_root)
-    if not adapter["valid"]:
-        raise SystemExit(f"release adapter is invalid: {adapter['errors']}")
-    adapter_data = adapter["data"]
+    adapter_data = _valid_adapter_data(repo_root)
     current_payload = build_release_payload(repo_root)
     current_version = current_payload["surface_versions"]["packaging_manifest"]
     if not isinstance(current_version, str):

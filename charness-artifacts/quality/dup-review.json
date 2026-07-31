@@ -191,6 +191,13 @@
     },
     {
       "class": "intentional",
+      "id": "26abb1630fbc98f6",
+      "note": "three unrelated two-line empty-input guards (`if not <arg>: return []`) in scripts/subprocess_guard.py:66-67, scripts/vendored_path_lib.py:17-18, and skills/public/release/scripts/publish_release_preflight.py:234-235. Different owners, different arguments, different return contracts; there is nothing to centralize in a two-line early return, and a shared helper would couple a subprocess runner, a path normalizer, and a release version parser. Surfaced as new by scan rotation, all three members untouched by the slice that surfaced it.",
+      "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2826323f1e95a766",
       "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
       "reviewed_at": "2026-07-13",
@@ -649,6 +656,13 @@
       "id": "74117ca8de06e8d0",
       "note": "per-lib _fail/action payload boilerplate across worktree_create_lib.py and worktree_cleanup_lib.py: each worktree command lib stays standalone by design; surfaced as 'new' by scan rotation, members untouched (#441 rotation class)",
       "reviewed_at": "2026-07-17",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "74217a4b69c47386",
+      "note": "the hand-rolled importlib `_load_lib()` prologue plus argparse block shared by scripts/check_prescribed_skill_executed.py:17-43 and scripts/classify_push_diff.py:26-50. Both are standalone entrypoints that must run from a consuming repo's checkout without the runtime_bootstrap import path, which is exactly why they load their lib by explicit spec instead of importing a shared helper; extracting the helper would reintroduce the import dependency the boilerplate exists to avoid. The argparse half is per-command surface, not duplication. Portability boilerplate, same class as the copied resolve_adapter.py.",
+      "reviewed_at": "2026-07-31",
       "surface": "code"
     },
     {
