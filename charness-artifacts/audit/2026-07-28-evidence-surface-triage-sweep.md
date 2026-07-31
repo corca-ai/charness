@@ -4,9 +4,30 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**22 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
-S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30 — reproduced in the
-parent, fixed, and regression-tested. **S15 is PARTIAL:** the pre-rule scope verdict now
+**23 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then S4 on
+2026-07-31 — reproduced in the parent, fixed, and regression-tested. **S3 is PARTIAL:**
+its stale-unrelated-artifact half is closed by the same binding fix as S4 (evidence now
+binds inside `check()`), but its stub half is OPEN: two byte floors were written and
+withdrawn — a basename-only floor left the cheaper CONTENT channel open (`printf '#466' >
+x.md` is four bytes and binds), and a universal one was defeated by filler while failing
+34 existing tests. What separates a stub from an artifact is per-kind SHAPE, and no shape
+check runs on this gate's accept path. Pinned as a non-strict xfail
+(`test_s3_residual_a_stub_that_cites_its_context_is_not_refused`) so closing it turns a
+test green rather than red. See
+[the S3/S4 critique](../critique/2026-07-31-sweep-s3-s4-closeout-evidence-binding.md).
+**Found while closing S4 and NOT repaired — no row of its own, recorded here so it is
+not held only in a critique:** a bare issue token boundary-matches an interior version
+segment, so token `1` binds the checked-in
+`charness-artifacts/critique/v1-0-1-retired-hook-ledger-packet.md`. Verified present at
+HEAD *before* the 2026-07-31 slice, so it is not a regression from it. It is a
+false-acceptance at the issue-closeout boundary and wants its own slice. Three further
+token residuals affect CONSUMING repos only, none of them this repo's current versioning:
+a CalVer release version boundary-matches any artifact's `Date:` header; a two-component
+version like `1.2` binds prose ("section 1.2"); and a pre-release such as `2.12.0-rc.1`
+contains letters, so it falls out of cluster matching back to substring containment.
+
+**S15 is PARTIAL:** the pre-rule scope verdict now
 discloses its basis (`evaluated`, `created`, `rule_date`), but the self-declared `Created:`
 line still decides whether the floor runs, because forcing it in scope was MEASURED to
 refuse 82 of 82 pre-rule goals and the one in-text corroboration channel (the goal's own
@@ -21,7 +42,10 @@ dropped a real `- Risk Class: external-seam` behind an unclosed fence into the l
 "artifact has no risk line" carve-out and emitted a silent continue, which is the S18
 defect statement verbatim; and the new `Activation:` shape check refused bold and
 blockquoted lines with a message asserting the line was missing. Every other row is still open at the
-provenance its own cell states — in the MAIN findings table. The reviewer-derived leads
+provenance its own cell states — in the MAIN findings table. S4's wrong output was
+reproduced in the parent before the fix (an unrelated 2026-07-27 critique satisfied an
+`issue-resolution` closeout through the generic CLI), and S3's stale-artifact half with
+it. The reviewer-derived leads
 table at the end of this file has its own statuses (see the vocabulary block below);
 twelve of its rows are `REPAIRED` and one is `DISPOSITIONED`, so "every other row is
 still open" is a claim about the main table only.
@@ -120,8 +144,8 @@ where this repo's proof surfaces keep failing.
 | --- | --- | --- | --- | --- | --- | --- |
 | S1 | high | SUBAGENT-CONFIRMED | f | `scripts/check_coverage_lib.py:78` | `build_per_file_floor_report([])` — an empty file list, i.e. a coverage JSON read with the wrong key, a scope filter that matched nothing, or a failed coverage run. | `{"status": "enforced", "violations": [], "warn_band": [], "exempt_below_floor": [], "unmeasured": []}` — a fully green, self-declared-'enforced' per-file floor report over a popul |
 | S2 | high | SUBAGENT-CONFIRMED | b | `scripts/check_markdown_inline_code.py:67` | A markdown line carrying one stray/unmatched backtick before a genuinely wrapped span, e.g. `A stray backtick don\`t worry, then \`python3 foo.py` / newline / `--bar\` ends the spa | Ran it: `Validated inline code spans in 1 markdown file(s).` exit 0 — a real cross-line inline-code span is reported clean. In a milder variant (/tmp/w2.md) the violation fires but |
-| S3 | high | SUBAGENT-CONFIRMED | b | `scripts/check_prescribed_skill_executed_lib.py:211` | printf 'x' > charness-artifacts/critique/one-byte.md; python3 scripts/check_prescribed_skill_executed.py --repo-root /tmp/t3 --require standalone_critique --evidence standalone_cri | ok:true, exit 0. The verdict is keyed on `resolved.stat().st_size == 0` — a coarse field. A 1-byte file, or a 2019 unrelated critique, satisfies the mandatory closeout critique gat |
-| S4 | high | SUBAGENT-CONFIRMED | e | `scripts/check_prescribed_skill_executed_lib.py:81` | `evidence_binds_to_context` (the #233 F1 backstop) is defined here but `check()` never calls it. grep shows only skills/public/issue/scripts/issue_resolution_critique.py:110 and sk | The binding check lives only in the copies the achieve/issue callers chose. The RELEASE publish gate and the generic CLI carry no binding check at all: a stale, unrelated charness- |
+| S3 | high | PARTIAL (parent-reproduced 2026-07-31) | b | `scripts/check_prescribed_skill_executed_lib.py:211` | printf 'x' > charness-artifacts/critique/one-byte.md; python3 scripts/check_prescribed_skill_executed.py --repo-root /tmp/t3 --require standalone_critique --evidence standalone_cri | ok:true, exit 0. The verdict is keyed on `resolved.stat().st_size == 0` — a coarse field. A 1-byte file, or a 2019 unrelated critique, satisfies the mandatory closeout critique gat |
+| S4 | high | CLOSED (parent-reproduced 2026-07-31) | e | `scripts/check_prescribed_skill_executed_lib.py:81` | `evidence_binds_to_context` (the #233 F1 backstop) is defined here but `check()` never calls it. grep shows only skills/public/issue/scripts/issue_resolution_critique.py:110 and sk | The binding check lives only in the copies the achieve/issue callers chose. The RELEASE publish gate and the generic CLI carry no binding check at all: a stale, unrelated charness- |
 | S5 | high | SUBAGENT-CONFIRMED | c | `scripts/check_skill_surface_preflight.py:152` | A SKILL.md containing TWO `## Closeout Vocabulary` H2 blocks. `_remove_pressure_exempt_sections` (line 109) exempts EVERY section with that heading from the core_nonempty density c | Ran it: 60 lines of multi-sentence prose under a second `## Closeout Vocabulary` gives `core_nonempty == 4` and `vocab findings == 0`. The exemption and its anti-abuse read differe |
 | S6 | high | CLOSED (parent-reproduced 2026-07-28) | a | `scripts/check_test_completeness.py:50` | `check_test_completeness.py --repo-root /tmp/ct -- ""` — one empty-string target. run-quality.sh:48-49 builds the target array with `mapfile` from `run_standing_pytest.py --print-e | exit 0. `repo_root / ""` resolves to the repo root, so relative_test_files rglobs the WHOLE repo and every test file is 'covered by standing targets'. The gate reports full complet |
 | S7 | high | SUBAGENT-CONFIRMED | c | `scripts/validate_cautilus_diagnostics.py:76` | A cautilus bundle directory containing neither `finding.md` nor any of `observed.v1.json`/`summary.v1.json`/`report.json` — e.g. charness-artifacts/cautilus/2026-07-28-run/{notes.m | Ran both arms: `no changed cautilus diagnostic bundles` exit 0 for `--paths ...` AND for `--all`. The floors `must include finding.md` (line 179) and `must include one machine evid |
