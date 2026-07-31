@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-01",
-  "source_artifact_count": 408,
-  "candidate_count": 1657,
+  "source_artifact_count": 409,
+  "candidate_count": 1656,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -126,10 +126,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:a7b9ab2f096d",
+      "candidate_id": "current_focus:c7b1432e3f33",
       "kind": "current_focus",
-      "lesson": "One goal run, end to end: handoff chunked routing over the live backlog, the operator's two queued decisions answered, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk to completion.",
-      "normalized_key": "one goal run end to end handoff chunked routing over the live backlog the",
+      "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits.",
+      "normalized_key": "one goal run end to end handoff chunked routing two operator decisions then achieve",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -147,15 +147,15 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "One goal run, end to end: handoff chunked routing over the live backlog, the operator's two queued decisions answered, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk to completion."
+          "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:3e9952c6906a",
+      "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
-      "lesson": "**a `blocking_targets` payload that names subprocess-only coverage paths** — carried forward unapplied from two retros now, and this session's nine uncovered lines included exactly that shape. Still owed its own two-round review.",
-      "normalized_key": "a blocking targets payload that names subprocess only coverage paths carried forward unapplied from",
+      "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
+      "normalized_key": "a goal s own claims are a verdict surface and got one review round",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -173,15 +173,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**a `blocking_targets` payload that names subprocess-only coverage paths** — carried forward unapplied from two retros now, and this session's nine uncovered lines included exactly that shape. Still owed its own two-round review."
+          "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:b3d12b5b100e",
+      "candidate_id": "next_improvement:3d2064a419ad",
       "kind": "next_improvement",
-      "lesson": "**a threshold defended by prose gets withdrawn; a threshold defended by a checked-in script survives.** The S3 floor is the worked example — script, recorded run, and a test that re-runs the recorded run.",
-      "normalized_key": "a threshold defended by prose gets withdrawn a threshold defended by a checked in",
+      "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears.",
+      "normalized_key": "a refusal category renderer detector per the portable candidate once a second instance appears",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -199,15 +199,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**a threshold defended by prose gets withdrawn; a threshold defended by a checked-in script survives.** The S3 floor is the worked example — script, recorded run, and a test that re-runs the recorded run."
+          "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:5762129ad2b8",
+      "candidate_id": "next_improvement:ae679da08a16",
       "kind": "next_improvement",
-      "lesson": "**run the existing suite against a repair before designing the next one.** Both reverted repairs this session were designed on top of an untested predecessor; the fixture regression in slice 4 was caught by a test that already existed and would have been free to run.",
-      "normalized_key": "run the existing suite against a repair before designing the next one both reverted",
+      "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent.",
+      "normalized_key": "batch independent review rounds across slices and do real work while they run 84",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -225,14 +225,66 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**run the existing suite against a repair before designing the next one.** Both reverted repairs this session were designed on top of an untested predecessor; the fixture regression in slice 4 was caught by a test that already existed and would have been free to run."
+          "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:007946a679fb",
+      "kind": "next_improvement",
+      "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan.",
+      "normalized_key": "blocking targets should name subprocess only coverage paths carried unapplied for three retros either",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2b303a3072ec",
+      "kind": "next_improvement",
+      "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced.",
+      "normalized_key": "run retro after the disposition review returns not beside it concretely closeout evidence disposition",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced."
         }
       ]
     },
     {
       "candidate_id": "next_improvement:44defe3b9805",
       "kind": "next_improvement",
-      "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking.** Written into the goal's slice log and the recent-lessons digest, not just here.",
+      "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here.",
       "normalized_key": "the two round rule is four for four and the class arrives in the",
       "recurrence_class": null,
       "source_count": 1,
@@ -251,15 +303,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking.** Written into the goal's slice log and the recent-lessons digest, not just here."
+          "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here."
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:497efd7af809",
-      "kind": "repeat_trap",
-      "lesson": "**Not waste, though it looks like it:** ten review rounds on five slices. Nine of them changed the code. The one that did not (the disposition review) is the one the contract requires anyway.",
-      "normalized_key": "not waste though it looks like it ten review rounds on five slices nine",
+      "candidate_id": "next_improvement:4f50e4ce11c1",
+      "kind": "next_improvement",
+      "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation.",
+      "normalized_key": "use edit write for file mutation 158 heredoc edits against 15 tool edits cost",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -274,88 +326,36 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
           "date": "2026-08-01",
-          "section": "Waste",
+          "section": "Next Improvements",
           "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Not waste, though it looks like it:** ten review rounds on five slices. Nine of them changed the code. The one that did not (the disposition review) is the one the contract requires anyway."
+          "kind": "next_improvement",
+          "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation."
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:15ee21808846",
-      "kind": "repeat_trap",
-      "lesson": "**The slice-log helper mangled a slice report.** Backticks in shell arguments were command-substituted, and the recorded report lost every code span before I noticed and rewrote it by hand. Pure transport waste.",
-      "normalized_key": "the slice log helper mangled a slice report backticks in shell arguments were command",
+      "candidate_id": "current_focus:2a3fa610f00d",
+      "kind": "current_focus",
+      "lesson": "One goal run: handoff chunked routing picked chunk 1 (the 2026-07-28 triage sweep's remaining high rows), `achieve` shaped it, and `/goal` ran it to completion.",
+      "normalized_key": "one goal run handoff chunked routing picked chunk 1 the 2026 07 28 triage",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
+      "latest_source_path": "charness-artifacts/retro/2026-07-31-session-retro.md",
+      "latest_source_date": "2026-07-31",
+      "age_days": 1,
+      "recency_weight": 0.9847,
       "alpha": 0.12,
-      "selection_weight": 1.0,
+      "selection_weight": 0.9847,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
+          "artifact_path": "charness-artifacts/retro/2026-07-31-session-retro.md",
+          "date": "2026-07-31",
+          "section": "Context",
           "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The slice-log helper mangled a slice report.** Backticks in shell arguments were command-substituted, and the recorded report lost every code span before I noticed and rewrote it by hand. Pure transport waste."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f26ac93b2d9b",
-      "kind": "repeat_trap",
-      "lesson": "**Two pytest runs raced.** Running a full suite in the background while starting another produced 17 false failures and 21 errors in shared-state tests, which I then had to disprove with a clean serial run. The irony is the finding: that is the concurrency flake class sibling-scan Tier 2 D fixed for SessionStart hooks, reappearing one level up.",
-      "normalized_key": "two pytest runs raced running a full suite in the background while starting another",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two pytest runs raced.** Running a full suite in the background while starting another produced 17 false failures and 21 errors in shared-state tests, which I then had to disprove with a clean serial run. The irony is the finding: that is the concurrency flake class sibling-scan Tier 2 D fixed for SessionStart hooks, reappearing one level up."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c928b8ce600b",
-      "kind": "repeat_trap",
-      "lesson": "**Two repairs were built, measured, and reverted.** Giving the commit-boundary preflight `--include-worktree` refused a critique artifact written for an earlier change; reusing the live-filter root as the citation root made a checked-in fixture inherit this repo and drop an entry. Both were correct instincts (close the divergence, arm the fix everywhere) and both were wrong in a way only execution showed. Not avoidable by more thinking — but cheaper if the existing suite had been run against the repair before the second one was designed.",
-      "normalized_key": "two repairs were built measured and reverted giving the commit boundary preflight include worktree",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two repairs were built, measured, and reverted.** Giving the commit-boundary preflight `--include-worktree` refused a critique artifact written for an earlier change; reusing the live-filter root as the citation root made a checked-in fixture inherit this repo and drop an entry. Both were correct instincts (close the divergence, arm the fix everywhere) and both were wrong in a way only execution showed. Not avoidable by more thinking — but cheaper if the existing suite had been run against the repair before the second one was designed."
+          "kind": "current_focus",
+          "lesson": "One goal run: handoff chunked routing picked chunk 1 (the 2026-07-28 triage sweep's remaining high rows), `achieve` shaped it, and `/goal` ran it to completion."
         }
       ]
     }
@@ -472,10 +472,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:a7b9ab2f096d",
+      "candidate_id": "current_focus:c7b1432e3f33",
       "kind": "current_focus",
-      "lesson": "One goal run, end to end: handoff chunked routing over the live backlog, the operator's two queued decisions answered, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk to completion.",
-      "normalized_key": "one goal run end to end handoff chunked routing over the live backlog the",
+      "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits.",
+      "normalized_key": "one goal run end to end handoff chunked routing two operator decisions then achieve",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -493,15 +493,15 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "One goal run, end to end: handoff chunked routing over the live backlog, the operator's two queued decisions answered, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk to completion."
+          "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:3e9952c6906a",
+      "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
-      "lesson": "**a `blocking_targets` payload that names subprocess-only coverage paths** — carried forward unapplied from two retros now, and this session's nine uncovered lines included exactly that shape. Still owed its own two-round review.",
-      "normalized_key": "a blocking targets payload that names subprocess only coverage paths carried forward unapplied from",
+      "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
+      "normalized_key": "a goal s own claims are a verdict surface and got one review round",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -519,15 +519,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**a `blocking_targets` payload that names subprocess-only coverage paths** — carried forward unapplied from two retros now, and this session's nine uncovered lines included exactly that shape. Still owed its own two-round review."
+          "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:b3d12b5b100e",
+      "candidate_id": "next_improvement:3d2064a419ad",
       "kind": "next_improvement",
-      "lesson": "**a threshold defended by prose gets withdrawn; a threshold defended by a checked-in script survives.** The S3 floor is the worked example — script, recorded run, and a test that re-runs the recorded run.",
-      "normalized_key": "a threshold defended by prose gets withdrawn a threshold defended by a checked in",
+      "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears.",
+      "normalized_key": "a refusal category renderer detector per the portable candidate once a second instance appears",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -545,15 +545,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**a threshold defended by prose gets withdrawn; a threshold defended by a checked-in script survives.** The S3 floor is the worked example — script, recorded run, and a test that re-runs the recorded run."
+          "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:5762129ad2b8",
+      "candidate_id": "next_improvement:ae679da08a16",
       "kind": "next_improvement",
-      "lesson": "**run the existing suite against a repair before designing the next one.** Both reverted repairs this session were designed on top of an untested predecessor; the fixture regression in slice 4 was caught by a test that already existed and would have been free to run.",
-      "normalized_key": "run the existing suite against a repair before designing the next one both reverted",
+      "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent.",
+      "normalized_key": "batch independent review rounds across slices and do real work while they run 84",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -571,14 +571,66 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**run the existing suite against a repair before designing the next one.** Both reverted repairs this session were designed on top of an untested predecessor; the fixture regression in slice 4 was caught by a test that already existed and would have been free to run."
+          "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:007946a679fb",
+      "kind": "next_improvement",
+      "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan.",
+      "normalized_key": "blocking targets should name subprocess only coverage paths carried unapplied for three retros either",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2b303a3072ec",
+      "kind": "next_improvement",
+      "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced.",
+      "normalized_key": "run retro after the disposition review returns not beside it concretely closeout evidence disposition",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced."
         }
       ]
     },
     {
       "candidate_id": "next_improvement:44defe3b9805",
       "kind": "next_improvement",
-      "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking.** Written into the goal's slice log and the recent-lessons digest, not just here.",
+      "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here.",
       "normalized_key": "the two round rule is four for four and the class arrives in the",
       "recurrence_class": null,
       "source_count": 1,
@@ -597,15 +649,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking.** Written into the goal's slice log and the recent-lessons digest, not just here."
+          "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here."
         }
       ]
     },
     {
-      "candidate_id": "repeat_trap:497efd7af809",
-      "kind": "repeat_trap",
-      "lesson": "**Not waste, though it looks like it:** ten review rounds on five slices. Nine of them changed the code. The one that did not (the disposition review) is the one the contract requires anyway.",
-      "normalized_key": "not waste though it looks like it ten review rounds on five slices nine",
+      "candidate_id": "next_improvement:4f50e4ce11c1",
+      "kind": "next_improvement",
+      "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation.",
+      "normalized_key": "use edit write for file mutation 158 heredoc edits against 15 tool edits cost",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -620,88 +672,10 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
           "date": "2026-08-01",
-          "section": "Waste",
+          "section": "Next Improvements",
           "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Not waste, though it looks like it:** ten review rounds on five slices. Nine of them changed the code. The one that did not (the disposition review) is the one the contract requires anyway."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:15ee21808846",
-      "kind": "repeat_trap",
-      "lesson": "**The slice-log helper mangled a slice report.** Backticks in shell arguments were command-substituted, and the recorded report lost every code span before I noticed and rewrote it by hand. Pure transport waste.",
-      "normalized_key": "the slice log helper mangled a slice report backticks in shell arguments were command",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The slice-log helper mangled a slice report.** Backticks in shell arguments were command-substituted, and the recorded report lost every code span before I noticed and rewrote it by hand. Pure transport waste."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f26ac93b2d9b",
-      "kind": "repeat_trap",
-      "lesson": "**Two pytest runs raced.** Running a full suite in the background while starting another produced 17 false failures and 21 errors in shared-state tests, which I then had to disprove with a clean serial run. The irony is the finding: that is the concurrency flake class sibling-scan Tier 2 D fixed for SessionStart hooks, reappearing one level up.",
-      "normalized_key": "two pytest runs raced running a full suite in the background while starting another",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two pytest runs raced.** Running a full suite in the background while starting another produced 17 false failures and 21 errors in shared-state tests, which I then had to disprove with a clean serial run. The irony is the finding: that is the concurrency flake class sibling-scan Tier 2 D fixed for SessionStart hooks, reappearing one level up."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c928b8ce600b",
-      "kind": "repeat_trap",
-      "lesson": "**Two repairs were built, measured, and reverted.** Giving the commit-boundary preflight `--include-worktree` refused a critique artifact written for an earlier change; reusing the live-filter root as the citation root made a checked-in fixture inherit this repo and drop an entry. Both were correct instincts (close the divergence, arm the fix everywhere) and both were wrong in a way only execution showed. Not avoidable by more thinking — but cheaper if the existing suite had been run against the repair before the second one was designed.",
-      "normalized_key": "two repairs were built measured and reverted giving the commit boundary preflight include worktree",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two repairs were built, measured, and reverted.** Giving the commit-boundary preflight `--include-worktree` refused a critique artifact written for an earlier change; reusing the live-filter root as the citation root made a checked-in fixture inherit this repo and drop an entry. Both were correct instincts (close the divergence, arm the fix everywhere) and both were wrong in a way only execution showed. Not avoidable by more thinking — but cheaper if the existing suite had been run against the repair before the second one was designed."
+          "kind": "next_improvement",
+          "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation."
         }
       ]
     },

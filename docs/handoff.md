@@ -31,31 +31,30 @@ not a lie.** No live cautilus run, no CI dispatch, no push.
 ## Current State
 
 - **Five straggler rows dispositioned, four repaired**
-  ([goal](../charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md)).
-  A3 residual 1, S3's stub half, C6, and the handoff chunker's path resolution;
-  sibling-scan Tier 2 D was already fixed and only needed the record; D28's
-  trigger was read and stays deferred; D4 became an operator decision.
-- **Ten bounded review rounds, and the round that read the REPAIRS caught
-  something the repair introduced in all four repair slices.** Three-for-three
-  became four-for-four. [retro](../charness-artifacts/retro/2026-08-01-session-retro.md)
-- **The armed changed-line gate found nine uncovered lines, all of it this
-  session's own code**, plus one changed pool file mapped to no test.
+  ([goal](../charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md)):
+  A3 residual 1, S3's stub half, C6, and the chunker's path resolution.
+- **The round that read the REPAIRS caught something the repair introduced, in all
+  four repair slices** — three-for-three became four-for-four, and the goal's own
+  claims got one review that found two blockers.
+  [retro](../charness-artifacts/retro/2026-08-01-session-retro.md)
 
 ## Next Session
 
-1. **One live operator decision**: whether the release distinct-channel probe gets
-   an authenticated channel, or the tag-vs-release ambiguity is accepted. It is in
-   the goal's `## Operator Decision Queue` with the distinct-channel constraint
-   that rules out the obvious answer.
-2. **The sweep's 13 SUBAGENT-CONFIRMED high rows** — the largest block left, and
+1. **One live operator decision** in the goal's `## Operator Decision Queue`:
+   authenticate the release distinct-channel probe, or accept the tag-vs-release
+   ambiguity.
+2. **The sweep's 13 SUBAGENT-CONFIRMED high rows** — the largest block left and
    the one no handoff entry has ever named. S1/S2/S9/S10/S12/S13/S23/S24/S26/S28/
    S30/S31/S32 plus S35; S110-S113 are newer LEADs.
 3. **The hunt's E-cluster** — E1/E3/E6/E7 plus E2's residual. Mutation-score and
    freshness-marker proof; the most expensive lane, and E1 is a contract change.
-4. **Two structural follow-ups from this run**, held nowhere else:
-   `refusal-category-renderer-gate` (a detector for "a bucket feeds `ok` but
-   appears in no message builder" — needs one more instance first) and
-   `measurement-as-script` (the sweep over thresholds still defended by prose).
+4. **Follow-ups held nowhere else.** `blocking-targets-subprocess-coverage` has
+   now been carried unapplied for THREE retros — land it or record it declined,
+   because a third "carried forward" is not a plan. Then
+   `refusal-category-renderer-gate` (needs one more instance first),
+   `measurement-as-script` (thresholds still defended by prose), and
+   `retro-after-disposition-review` (this run wrote its retro twice because that
+   order was implicit).
 5. **Un-dispositioned:** C6's cross-arm residual, D28 (trigger unfired), A8's
    basename half, sibling-scan Tier 3, [D39/D41](./deferred-decisions.md).
 
@@ -66,12 +65,13 @@ not a lie.** No live cautilus run, no CI dispatch, no push.
   found nine uncovered branches in this session's own code, and the flag is what
   stops a dirty tree from returning a green that proves nothing.
 - **Reproduce before planning a repair.** Three of five rows changed size once
-  probed: a legibility patch became a refusable hole, a "contract change" became
-  one caller argument, and a planned floor was measured and rejected before it
-  was written.
+  probed.
 - **A threshold defended by prose gets withdrawn; one defended by a checked-in
   script survives.** S3's floor died twice on a number nobody could re-run — and
   that number turned out to be counting test fixtures.
+- **Batch independent review rounds and work while they run.** Measured: 84.6 min
+  of polling `sleep` (29% of a 4h49m session) against 50.5 min of actual reviewer
+  time, with slices 2-4 mutually independent and reviewed strictly in series.
 
 ## References
 
