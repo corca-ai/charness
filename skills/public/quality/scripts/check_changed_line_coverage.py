@@ -17,6 +17,15 @@ git would not answer (all fail closed). The last case prints `UNESTABLISHED:`
 rather than `FAIL:`, because "could not look" is not "looked and found a gap" —
 it used to return an empty changed set and pass as `ok`. Base/head come from `--base-sha` /
 `--head-sha` or `MUTATION_BASE_SHA` / `MUTATION_HEAD_SHA` (head defaults to HEAD).
+
+Exit **3** is a third code, not a variant of 1: the analyzed head is not the
+checked-out `HEAD` and the range touched eligible files, so the run could not
+judge. It carries `ok: true` and is not a coverage failure — but it IS nonzero,
+and a caller that treats every nonzero as red will read it as one. This case
+exited 0 before the code existed, which is the silent false green it replaces.
+Pinning `--head-sha` to a PR head sha on a `pull_request` event produces it on
+every run; pass only `--base-sha`. Full table: the `changed_line_mutation_gate`
+section of the quality `references/adapter-contract.md`.
 """
 from __future__ import annotations
 
