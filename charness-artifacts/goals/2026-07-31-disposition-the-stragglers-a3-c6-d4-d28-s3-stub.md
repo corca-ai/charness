@@ -1,0 +1,492 @@
+# Achieve Goal: Disposition the stragglers — A3, C6, D4, D28, sibling-scan Tier 2 D, S3's stub half
+
+Status: draft
+Created: 2026-07-31
+Activation: `/goal @charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+Mode: **implementation-continuation** (assumed, not asked). The originating
+request was "리포 자율 개선 해봅시다" and the operator then selected this chunk from
+the handoff chunker's ranked list; both read as "run it", not "draft it".
+
+## Active Operating Frame
+
+- Current disposition: **real draft awaiting activation.** Shaped and
+  plan-critiqued on 2026-07-31; not stale, not reshape-pending.
+- Current slice: shaping complete; not activated.
+- Next action: operator runs the activation command; the During loop then starts
+  at slice 1.
+- Verification cadence: cheap deterministic gates at each commit boundary
+  (`check_doc_authoring_preflight.py` read for findings, the touched validator's
+  own tests); `scripts/run-quality.sh` once at the bundle boundary;
+  `prepush_focused_changed_line_coverage.py` with `--base-sha <pre-slice-1 sha>`
+  and `--refuse-unestablished`; then the locked slice closeout with
+  mutation-coverage production, before closeout.
+- Slice review packet: per slice — intent, changed files with owning/generated
+  surfaces, the assertions that pinned today's behavior, expected invariants,
+  tests, non-claims, out-of-scope lines, and questions.
+- History boundary: keep this frame current during the active run; move
+  completed detail to `## Slice Log`, `## Operator Decision Queue`,
+  `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Take every un-dispositioned straggler on the backlog and move it to a state a
+future session can act on without re-deriving it: either a repair with a
+regression test, or a recorded disposition carrying the evidence that justifies
+it. The rows are A3's three residuals, C6's committed-range half, D4's
+released-vs-pushed half, the D28 remainder, sibling-scan Tier 2 D, and S3's
+xfail-pinned stub half.
+
+**What the plan critique changed about that list.** Two of the six are not work:
+sibling-scan Tier 2 D already shipped on 2026-07-20, and D4's remaining question
+is an operator credentials decision the hunt already measured live. What is left
+is three repairs (A3 residual 1, S3's stub half, C6's caller-side scope), one
+promoted tool fix found live this session, and a bookkeeping pass.
+
+**A disposition is a first-class outcome here** — with a floor. A row whose right
+answer is "not now, and here is the evidence" closes as a disposition. But at
+least one row must end repaired with a revert-checked regression test, or the
+goal is incomplete; without that line a run that changes zero lines of code would
+satisfy every other criterion.
+
+**Source handoff entry #4: Un-dispositioned:**
+
+> A3 PARTIAL (needs a live staged/revert probe — the
+> [A3 staged-scope critique](../critique/2026-07-27-a3-staged-scope.md) F8/F9),
+> C6, D4, D28 remainder, sibling-scan Tier 2 D;
+> [D39/D41](../../docs/deferred-decisions.md) deferred, S3's stub half pinned as
+> an xfail.
+
+## Non-Goals
+
+- Not a release: no plugin version bump, no publish, no tag, no push.
+- Not a re-audit. Rows outside the six named here are not re-read, and the
+  hunt's E-cluster (handoff entry 2) and S11's second channel (entry 3) stay out
+  even where the defect shape rhymes.
+- D39 and D41 stay deferred; this goal does not reopen them.
+- No repair may widen into a redesign of the surface it lands in. Each row gets
+  the smallest change that makes the wrong verdict fail, or no change and a
+  disposition.
+- No live cautilus run, no mutation lane, no CI dispatch.
+- Not a fix for S110 (the freshness row opened today) — it is a new `LEAD`, not a
+  straggler.
+
+## Boundaries
+
+- In scope, one surface family per row (re-locate by symbol; line numbers are the
+  owning record's, as-of its date):
+  - **A3 residual 1 — "scheduled is not judged".** Surface:
+    `scripts/staged_commit_gate_plan.py` (+ `staged_commit_gate_plan_helpers.py`)
+    and the `.githooks/pre-commit` rendering path. The repair is to make the
+    **scope each scheduled gate actually inspects** legible next to its verdict,
+    so `git rm --cached docs/x.md` no longer prints a bare `ok` over gates that
+    walked the worktree instead of the index. **Explicitly NOT** converting the
+    scheduled gates from worktree readers to index readers: the owning critique
+    already declined that as "a change to every gate rather than to the plan"
+    ([A3 staged-scope critique](../critique/2026-07-27-a3-staged-scope.md),
+    `## Deliberately Not Doing`), and this goal's no-redesign fence keeps that
+    decision. Consumers of the planner besides the hook —
+    `run_slice_closeout.py --predict-commit` and the structural sweep — are in
+    scope for not-breaking, not for change.
+  - **A3 residuals 2 and 3 — status only, no probe.** Residual 2 (`git revert` and
+    auto-merge never reach the hook) was already probed and recorded in the hunt
+    with `core.hooksPath` set; re-probing it would re-derive a written measurement.
+    Residual 3 (A5/A6 inside the floor) closed on 2026-07-30. Both get a Status
+    line, not a slice.
+  - **S3 stub half.** Surface: the accept path of
+    `scripts/check_prescribed_skill_executed_lib.py` (see its
+    "NOT a size floor, deliberately" comment). The pin is
+    `tests/quality_gates/test_prescribed_skill_executed.py`
+    `test_s3_residual_a_stub_that_cites_its_context_is_not_refused`, marked
+    `xfail(strict=False)`. **Removing that marker is part of the repair**, not a
+    consequence of it.
+  - **C6.** The committed-range read is in `scripts/boundary_probe_lib.py`
+    (`resolve_hit` -> `collect_changed_paths_for_ref`), reached through
+    `scripts/critique_enforcement_scope.py` `resolve_cross_surface_scope`;
+    `scripts/validate_critique_artifacts.py` only calls into them, and
+    `scripts/run-quality.sh` is the caller that supplies scope. The audit names
+    the validator and `run-quality.sh` together, and the plan follows the code.
+    `boundary_probe_lib.resolve_hit` has a **second consumer** (the impl
+    stop-gate hook) — in scope for not-breaking, not for change.
+  - **D4 — decision, not repair.** Surface:
+    `skills/public/release/scripts/publish_release_post_create.py`
+    (`_http_release_probe` / `confirm_release_via_distinct_channel`). The hunt
+    already measured the defect **live**: a pushed tag with no release returns
+    200 with the tag present 23 times and the same `Release <tag>` title, and the
+    one channel that discriminates (unauthenticated REST) answered 403 and "is
+    not a dependable default". A local-server fixture cannot produce evidence
+    stronger than that live measurement, so this row becomes an Operator Decision
+    Queue item, not a slice.
+  - **D28 remainder — trigger check only.** `emit_payload_main` in
+    `scripts/scaffold_artifact_lib.py` still has no `--write`, and the fill-guard
+    arm needs observed n-fold rework evidence. Read the trigger, record the
+    verdict, do not reopen.
+  - **sibling-scan Tier 2 D — ALREADY CLOSED; record sync only.** Repaired in
+    commit `48b51a39` (2026-07-20) with the finding id in the code comment and
+    three regression tests including a discriminating control. The only artifact
+    left is the stale "Remaining: decide on Tier 2 (D)" line in the sibling-scan
+    record. Verified independently by the parent and by two bounded reviewers.
+  - **The handoff chunker's path-resolution defect — promoted from Off-Goal.**
+    `skills/public/handoff/scripts/chunked_routing_staleness.py` `missing_paths`
+    resolves cited paths against the repo root, so a correct dot-slash link in
+    `docs/handoff.md` is reported missing and `draft_goal_from_chunk.py` can stamp
+    a live citation `MISSING`. Observed live this session; it hits every future
+    goal draft.
+- Also in scope: the regression test for each repair, and any generated/mirror
+  surface the changed files feed.
+- **Mirror sync is a named step, not a note.** The chunker fix and any
+  release-surface edit are public-skill exports: run
+  `python3 scripts/sync_root_plugin_manifests.py` (and the skill mirror sync the
+  repo's implementation-discipline names) BEFORE validators, and stage
+  `plugins/ .claude-plugin/ .agents/plugins/` in the same commit —
+  `check_staged_mirror_drift.py` enforces this at pre-commit.
+- Out of scope as an editing target: `plugins/` copies. Mutate canonical source
+  and sync.
+- **Live git probes run in an isolated worktree (`charness worktree create`) or a
+  throwaway clone, never against this worktree's index.** Running `git rm --cached`
+  or `git revert` here would stage a reversion into the closeout commit (#258).
+- **Round-2 bounded review is owed by whichever slices SHIP changed verdict
+  logic on a proof surface — currently A3, S3, and C6.** The trigger is what the
+  surface decides, not that its file was touched. The A3 planner decides which
+  gates run and whether a commit is refused, so it owes the round; D4 and D28 now
+  ship no code, so they owe nothing. Cap is two rounds; round-2 repairs are
+  recorded as accepted-unreviewed. A first round that produces no repairs
+  discharges the obligation. Ordering is fixed: round 1 -> repairs -> round 2 ->
+  repairs -> mutation-coverage producer, so the producer is not paid for twice.
+- **Every bounded review is bracketed by
+  `skills/shared/scripts/reviewer_boundary_fingerprint.py` snapshot/verify**, with
+  parent writes declared via `--parent-path` / `--parent-staged`. This run
+  interleaves clone-based probes, mirror syncs, and reviewer rounds, which is the
+  highest-risk shape for unattributable drift; a failed verify quarantines that
+  review's approvals.
+- **A new blocking floor requires a recorded Floor-Addition Restraint call.**
+  Slice 2 (S3) is a third attempt at a floor and slice 3 (C6) may add a refusal
+  condition. Run the three-question checklist and record the call as a
+  `Floor-Addition Restraint:` line or a site comment; the two withdrawn byte
+  floors are the recurrence evidence the checklist asks for, cited under the rule
+  rather than instead of it.
+- **Portability classification is a closeout checkpoint.** Each shipped repair
+  gets a `host-local` vs `skill-capability` call, because contract-shaped repairs
+  are inheritable policy and defect-repair framing is exactly what keeps that call
+  out of view.
+- **The assertions that pin today's behavior, listed now, before the slice plan**
+  (the shaping-time rule, not a during-run one):
+  - A3: `tests/quality_gates/test_staged_commit_gate_plan.py` (56 tests) pins the
+    plan's gate scheduling; `tests/quality_gates/test_new_proof_surface_advisory.py`,
+    `test_slice_closeout_decaying_habit_advisory.py`,
+    `test_slice_closeout_close_keyword_advisory.py`, and
+    `tests/test_doc_authoring_preflight.py` also read the planner. A repair that
+    adds a per-gate scope field must keep all of them green.
+  - S3: `tests/quality_gates/test_prescribed_skill_executed.py` (31 tests) — this
+    is the "34 existing tests" surface that defeated the universal byte floor.
+    Any shape floor must be measured against these first, not after.
+  - C6: `tests/test_boundary_probe.py`, `tests/test_critique_artifact_validation.py`,
+    `tests/test_validate_critique_artifacts_dates.py`. (The release-publish
+    critique-artifact tests pin D4's surface, which ships no code this run.)
+- **No repair may turn an ordinary run red.** A silently weakened assertion is the
+  escape `docs/conventions/operating-contract.md` names; a re-pinned assertion is
+  named in the slice review packet.
+- Reproduction first. A row whose wrong output cannot be reproduced does not get a
+  fix — it gets a recorded disposition saying so.
+- Stop conditions: (1) a row's reproduction fails -> re-disposition, do not fix;
+  (2) a repair would need a change larger than its row -> record the question in
+  the Operator Decision Queue and move on; (3) any probe that would touch a live
+  external boundary (a real release page, a real push) stops for operator
+  approval.
+
+## User Acceptance
+
+The operator can open this artifact after the run and, for each row, read one
+line saying either "repaired, and here is the test that fails when the fix is
+reverted" or "not repaired, and here is the evidence plus the reason". No row is
+left un-dispositioned.
+
+Concretely:
+
+- Each row appears in `## Slice Log` with one of three outcomes: repaired,
+  disposition recorded, or refuted.
+- **At least one row ends `repaired` with a revert-checked regression test, or
+  this goal is incomplete.** Recorded because the plan legitimately treats
+  dispositions as success, and without this line a run that changes zero lines of
+  code and writes six paragraphs would satisfy every other criterion.
+- Every repaired row names a regression test and the check showing that test
+  fails against the pre-fix code. For S3 specifically the check is only
+  meaningful after the `xfail` marker is removed: with `strict=False` a reverted
+  fix yields XFAIL and the suite stays green in both states, so the marker's
+  removal is part of the repair.
+- Every disposition names the evidence that justifies stopping — a probe
+  transcript, a measured refusal count, a checked-in prior measurement, or a
+  scope statement — not an assertion that it seemed hard.
+- One critique artifact per slice, recording both review rounds (or
+  `Critique: blocked <host-signal>` if the bounded path is host-blocked).
+- The owning records — the hunt, the sweep, the sibling-scan backlog, and
+  `docs/deferred-decisions.md` — are updated so their Status columns match this
+  goal's outcomes.
+
+## Agent Verification Plan
+
+Low-cost, at every commit boundary:
+
+- `python3 scripts/check_doc_authoring_preflight.py --path <changed md>` for every
+  changed markdown surface, **read for findings, not for exit code**: the preflight
+  exits 1 on advisory `pathy` backticked refs for essentially every checked-in
+  artifact, including `docs/handoff.md` and the prior goal. Its markdownlint,
+  wrapped-inline-code, and broken-relative-link findings are the signal.
+- The touched module's own test file, run directly.
+- **`scripts/check_doc_links.py` does NOT cover `charness-artifacts/`.** Its
+  `DOC_GLOBS` is README/AGENTS/docs/presets/profiles/skills only, with no path
+  override, so running it proves nothing about the audit records this goal must
+  update. The preflight's `doc-links` findings on an explicit `--path` are the
+  only link channel that reaches an artifact; a green `check_doc_links` over this
+  goal's changes is a non-claim.
+- `python3 scripts/validate_handoff_artifact.py --repo-root .` if the handoff is
+  touched at closeout.
+
+Slice-boundary:
+
+- The full test module for the changed surface plus the pinning assertions listed
+  in Boundaries.
+- For each repair, the revert check: apply the fix's inverse, confirm the new test
+  fails, restore.
+
+Bundle boundary, before closeout:
+
+- `bash scripts/run-quality.sh` (or the documented substitute if a lane is
+  unavailable — record which).
+- `prepush_focused_changed_line_coverage.py` with `--repo-root .`,
+  `--base-sha <sha before slice 1's first commit>`, and
+  **`--refuse-unestablished`** — the source copy, never `plugins/`. Without that
+  flag an unestablished run stays non-blocking and merely loud, so the closeout
+  evidence could be green over a run that established nothing. The default
+  merge-base is right only while the commits are unpushed and vacuous after, so
+  the explicit `--base-sha` is required.
+- `run_slice_closeout.py` with `--produce-mutation-coverage` at the final
+  `--verification-lock`. `scripts/**` and `skills/public/*/scripts/**` are both
+  eligible mutation pools and this goal edits both, so the closeout producer is
+  the broad proof; the pre-push changed-line lane does not substitute for it.
+
+High-confidence / high-cost proof, and what is NOT run:
+
+- A3's residual-1 repair is exercised by **live git shapes** (staged deletion,
+  `git rm --cached`, a detected rename) in an isolated worktree or throwaway
+  clone. That proves the planner's behavior on that clone's shapes, never this
+  host's installed `core.hooksPath` behavior.
+- **D4 is not probed at all this run.** The hunt already measured it live; the
+  remaining question is credentials/availability and belongs to the operator.
+- **A green changed-line coverage result over an empty or near-empty changed set
+  is a non-claim.** If the bundle lands as mostly markdown, the changed-line gate
+  has an empty denominator — the exact class this backlog hunts — and the closeout
+  says so rather than citing the green.
+- No mutation lane beyond the closeout producer, no cautilus run, no CI dispatch.
+
+## Discuss before activation
+
+RESOLVED 2026-07-31. Each item below was decided by the shaping session against
+the three bounded plan reviews and surfaced in the transcript before activation
+was offered; the operator may overturn any of them at activation. They are
+recorded here so `--pursue-ready` does not clear until they have been seen.
+
+- **The plan shrank from six slices to three repairs plus bookkeeping.** Two
+  reviewers independently found that sibling-scan Tier 2 D already shipped on
+  2026-07-20, and that D4's remaining question is a credentials decision the hunt
+  already measured live. Both were re-verified by the parent against the tree.
+  The operator selected a six-row chunk; what is actually left is smaller, and
+  the difference is recorded rather than padded.
+- **A3's repair is deliberately narrower than the defect.** The owning critique
+  declined converting scheduled gates to index readers. This goal makes the
+  scope-vs-verdict mismatch legible instead of fixing it, which retires the
+  "legible assurance over an uninspected scope" class without the every-gate
+  change. That is a smaller claim than "A3 closed", and the record will say so.
+- **S3's third attempt may fail like the first two.** If a per-kind shape floor
+  cannot clear the 31 pinning tests, the correct outcome is to leave the xfail in
+  place and record what the attempt ruled out — not to ship a floor that passes by
+  being weak.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| 1 | A3 residual 1: make each scheduled gate's inspected scope legible beside its verdict | The only row here whose wrong verdict escapes on every commit; silence has been upgraded to false assurance | Isolated-worktree probe of `git rm --cached` / staged deletion / rename; per-gate scope rendered; 56 planner tests still green; revert check | pending |
+| 2 | S3 stub half: per-kind shape check on the accept path, xfail marker removed | The pin is checked in and two prior attempts bound the design space; success flips a test green | Shape floor measured against the 31 pinning tests FIRST; Floor-Addition Restraint call recorded; or a recorded third-attempt refutation | pending |
+| 3 | C6: pass worktree-changed paths from the caller, then measure false refusals | `--changed-path` is already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Reproduction of today's blindness; false-refusal count over the checked-in critique corpus; second consumer (impl stop-gate) unbroken | pending |
+| 4 | Chunker path resolution: resolve cited paths against the citing artifact's directory | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | A `docs/handoff.md` parse reporting `missing_path_count: 0`; regression test; plugin mirror synced and staged | pending |
+| 5 | Record sync and queue: sibling-scan Tier 2 D -> CLOSED, D28 trigger -> not fired, D4 -> operator decision, hunt/sweep statuses matched to slices 1-3 | Bookkeeping is what makes the next session's backlog true; today's run found an 11-day-stale row | Every touched record's Status column matches this run; D4 queue item written with the 403/quota constraint stated | pending |
+
+## Operator Decision Queue
+
+Operator-only decisions surfaced by this run. Seeded empty; the During loop
+appends. Use `none — <reason>` at closeout if nothing was surfaced.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
+
+## Slice Log
+
+## Context Sources
+
+- Selected by handoff chunked routing on 2026-07-31 from
+  [docs/handoff.md](../../docs/handoff.md) `## Next Session` entry 4, ranked 4 of
+  5 and chosen by the operator over the ranker's recommendation.
+- [2026-07-27 evidence-surface bug hunt](../audit/2026-07-27-evidence-surface-bug-hunt.md)
+  — owns A3, C6, D4 and the class taxonomy (a)-(h).
+- [2026-07-28 evidence-surface triage sweep](../audit/2026-07-28-evidence-surface-triage-sweep.md)
+  — owns S3 and its `## 2026-07-31 closeout non-claims`.
+- [2026-07-20 abstracted-pattern sibling scan](../audit/2026-07-20-abstracted-pattern-sibling-scan.md)
+  — owns Tier 2 D.
+- [A3 staged-scope critique](../critique/2026-07-27-a3-staged-scope.md) — F8/F9
+  are the named residuals this goal probes.
+- [deferred decisions](../../docs/deferred-decisions.md) — D28's reopen trigger,
+  and D39/D41 which stay deferred.
+- [recent lessons](../retro/recent-lessons.md) — read before changing any repo
+  operating contract or proof surface.
+
+## Interview Decisions
+
+- **Mode: implementation-continuation.** Family considered: artifact-only draft
+  vs implementation-continuation. Chosen because the operator's opening request
+  was an autonomous-improvement instruction and the chunk selection followed a
+  ranked list, which is a "run this one" signal. Rejected artifact-only: it would
+  strand a draft the operator asked to have executed.
+  `single-point: mode is a per-invocation intent, not a system axis.`
+- **Chunk: un-dispositioned rows, over the ranker's recommendation.** Family
+  considered: all five ranked chunks. The operator chose rank 4 over rank 2
+  (S11's second channel). Recorded because the ranking reasoning is still on file
+  and a later session should not read the choice as the ranker's output.
+  `single-point: an operator override of a proposal, not a configurable value.`
+- **Sandboxed probes over live ones.** Family considered: live repo index / live
+  release surface / throwaway clone + local server. Chose the sandbox because the
+  live variants are exactly the irreversible-boundary and index-corruption
+  failures this repo's contracts exist to prevent. Rejected live probing: its
+  extra proof does not pay for a corrupted closeout commit.
+  Anti-anchoring: `axis: host` — hook installation and the `core.hooksPath`
+  setting vary by host, which is itself why a clone-scoped probe cannot claim
+  installed-host behavior.
+- **Disposition counts as success, with a floor.** Family considered:
+  repair-only criterion, disposition-friendly criterion, or disposition-friendly
+  plus a minimum. Chose the third after the counterweight review showed the
+  second admits a run that changes zero lines of code and still passes every
+  criterion. A repair-only criterion is still rejected: it is precisely the
+  pressure that produced S3's two withdrawn floors.
+  `single-point: a success definition for this goal.`
+- **Plan size: three repairs plus bookkeeping, not six slices.** Family
+  considered: the six-row chunk as selected, a five-slice plan, or a cut plan.
+  Cut after two reviewers independently showed one row had already shipped and
+  another's remaining question was an operator credentials decision. The operator
+  selected a six-row chunk; recording that what remains is smaller is more useful
+  than padding the plan to match the selection.
+  `single-point: a sizing call for this goal, re-decided against evidence.`
+
+## Plan Critique Findings
+
+Three bounded read-only reviewers (`bounded-reviewer`, spawned unnamed, shared
+parent worktree) read the draft on 2026-07-31 at distinct angles:
+scope-and-reproducibility, repo-contract conflict, and counterweight/over-worry.
+Parent bracketed the round with
+`skills/shared/scripts/reviewer_boundary_fingerprint.py` snapshot/verify; verify
+returned `verdict: clean` with empty drift, so all three reviews are admissible.
+The parent independently re-verified every blocker against the tree before
+folding — no finding below rests on a reviewer's reading alone.
+
+**Blockers, folded:**
+
+- **Slice 2's defect already shipped.** Two reviewers found it independently and
+  the parent confirmed: `tests/test_usage_episodes_host_hooks.py` carries the
+  fence with the finding id in its comment plus three regression tests, landed in
+  `48b51a39` on 2026-07-20. The plan had called it "the cheapest real repair in
+  the set" — the one row it counted on as a repair. Folded: the row became a
+  record sync, and the plan's shape claim was rewritten rather than preserved.
+- **`check_doc_links.py` does not scan `charness-artifacts/`.** Its `DOC_GLOBS`
+  covers README/AGENTS/docs/presets/profiles/skills with no path override, so the
+  plan's stated link evidence for the audit records was a verdict over a scope it
+  never establishes — the class this goal hunts, inside its own verification plan.
+  Folded into `## Agent Verification Plan` as an explicit non-claim.
+- **The round-2 trigger set was close to inverted.** The draft named S3/C6/D4 —
+  the three rows most likely to ship no code — and omitted A3, whose planner
+  decides which gates run and whether a commit is refused. Folded: the trigger is
+  now "whichever slices SHIP changed verdict logic", currently A3/S3/C6.
+- **The mutation-coverage producer and the locked closeout were absent.** Both
+  `scripts/**` and `skills/public/*/scripts/**` are eligible mutation pools and
+  this goal edits both; the pre-push changed-line lane does not substitute for the
+  closeout producer. Folded, with the fixed
+  round-1 -> repairs -> round-2 -> repairs -> producer ordering.
+
+**Also folded:** the `xfail(strict=False)` discrimination gap (a reverted fix
+yields XFAIL, so the revert check proves nothing until the marker is removed, and
+"strict-passing" is not a pytest state); C6's real surface is
+`scripts/boundary_probe_lib.py` with a second consumer, not the validator;
+`--refuse-unestablished` on the changed-line gate; the reviewer-boundary
+fingerprint rail; Floor-Addition Restraint records; portability classification;
+one critique artifact per slice; the shaping-time pinning-assertion list; and the
+acceptance line requiring at least one revert-checked repair.
+
+**Raised and NOT folded, deliberately:**
+
+- **"Cut D4's slice to a queue item" — folded; "cut A3's probe" — not.** The
+  counterweight reviewer argued A3's residuals are decidable by reading. Residuals
+  2 and 3 are, and were demoted to status lines. Residual 1's repair changes what
+  the hook prints on a real staged deletion, and that is worth executing rather
+  than reasoning about.
+- **"Six slices will half-finish"** — accepted as the diagnosis, and the plan was
+  cut to three repairs plus bookkeeping. The reviewer's stronger form ("ship only
+  A3 residual 1") is not adopted: slices 2-4 are each independently small, and
+  slice 4 was promoted precisely because it is cheap and hits every future draft.
+- **Over-worry confirmed in the plan's favor:** the round-2 obligation carries its
+  own discharge clause and costs nothing when a row ends as a disposition, and the
+  throwaway-clone rule is one command against a failure (#258) that corrupts the
+  closeout commit. Neither was cut.
+- **A note for the next session, not this one:** the evaluated / empty /
+  not-configured scope concept now has two independent implementations in tree
+  (`critique_enforcement_scope.CrossSurfaceScope` and D7's `evaluation_scope`).
+  The unify-on-second-occurrence rule means the next row in that family should
+  unify rather than add a third. None of this goal's rows is in that family.
+
+## Coordination Cues
+
+- Routing: shaped by `achieve` Before-phase after `handoff` chunked routing
+  produced the skeleton. Slices route to `impl`/`prove` for repairs, `debug` for
+  any row whose reproduction is not immediate, and `critique` for the plan pass
+  and the per-slice fresh-eye reviews.
+- Gather: n/a — no external source; every input is a checked-in repo artifact.
+- Release: n/a — Non-Goals forbid a version bump, tag, or publish.
+- Issue closeout: n/a — no tracked issue; the repo's open-issue backlog is empty
+  as of 2026-07-31.
+
+## Off-Goal Findings
+
+- **The handoff chunker resolves cited paths against the repo root, not against
+  the citing artifact's directory.** `docs/handoff.md` cites the deferred-decisions doc with a
+  dot-slash relative link, which is correct from `docs/`;
+  `chunked_routing_staleness.missing_paths` normalizes it to
+  `deferred-decisions.md`, tests it against the repo root, and reports it as a
+  missing path. `staleness.missing_path_count` was 1 on a handoff with zero stale
+  citations. Because `draft_goal_from_chunk.py` renders a `MISSING` marker from
+  that fact and refuses to put such a path in Boundaries, a live citation can be
+  stamped stale in a drafted goal. Same class as the surfaces this backlog
+  hunts: the check ran against the wrong base and reported its miss as a fact.
+  Observed live this session. **Promoted to slice 4** on the counterweight
+  reviewer's finding that it is the best operator-value-per-minute item on the
+  page, so it is no longer off-goal.
+- **`draft_goal_from_chunk.py` validates with `check_goal` but not with the doc
+  authoring preflight.** Its output for this chunk carried four markdownlint
+  findings (H1 trailing punctuation from a sentence-shaped objective, three
+  `MD027` blockquote indents copied verbatim from the handoff's list
+  continuation) and two broken relative links: the handoff's link targets are
+  written relative to `docs/`, and the drafter copies them verbatim into
+  `charness-artifacts/goals/`, where the same text resolves to nothing. Fixed by
+  hand in this file; the drafter still emits them. Stays off-goal: it shares
+  slice 4's file family, so fold it there only if it is free, otherwise leave it
+  recorded.
+
+## Final Verification
+
+## User Verification Instructions
+
+## Auto-Retro

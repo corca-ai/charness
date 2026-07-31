@@ -137,7 +137,8 @@ and none of them is `CLOSED`:
   `tests/test_cautilus_proof_artifact.py:12` pins the exit-0 behavior — so the
   "repair" would have turned the lane red for every future SKILL.md commit. The
   residual (an EXISTING proof artifact going stale relative to a later prompt
-  change) is a different class and was not opened as a row.
+  change) is a different class; the operator decided on 2026-07-31 to open it as
+  its own row, **S110**, at `LEAD` — reasoned from source, not reproduced.
 
 **What is NOT claimed:** that 109 defects exist. That is the count of surviving
 claims, not of reproduced defects. The prior hunt's discipline was that
@@ -166,6 +167,12 @@ By class: (a) 34, (b) 19, (c) 19, (d) 12, (e) 3, (f) 10, (g) 4, (h) 8
 Class (a) — *empty or degenerate input still returns PASS* — is a third of the
 survivors, the same dominant shape the first hunt found. The negative space is
 where this repo's proof surfaces keep failing.
+
+Every number above describes the 2026-07-28 sweep RUN and is frozen at that run.
+The findings table has since gained one row (S110, opened 2026-07-31 by operator
+decision out of S8's refutation), which is why the table's row count exceeds
+`survived`. A later row is not a later survivor of this run's refutation pass.
+
 ## Findings
 
 | id | sev | provenance | class | surface:line | trigger | wrong output |
@@ -279,6 +286,7 @@ where this repo's proof surfaces keep failing.
 | S107 | low | LEAD | c | `skills/public/quality/scripts/inventory_brittle_source_guards.py:92` | A source guard whose quoted pattern is shorter than --min-pattern-chars (default 40) and which is NOT present in its target file at all. | `_finding_for_guard` returns early with the pre-seeded `status: "ok", exact_found: False, normalized_found: False` before ever opening the target. A completely broken guard (missin |
 | S108 | low | LEAD | c | `skills/public/release/scripts/publish_release_cli.py:178` | A release adapter whose `product_surfaces` key is absent, misspelled, or missing either `installable_cli` or `bundled_skill`. `run_cli_skill_surface_gate` is a plain `if` with no e | `check_cli_skill_surface.py --run-probes` never runs and the publish proceeds with no signal that the CLI/skill surface gate was skipped; the release payload carries no field disti |
 | S109 | low | LEAD | a | `skills/public/release/scripts/publish_release_retro.py:133` | `build_retro_trigger_evaluation` called with an empty `release_content_paths` list (a publish whose content commit produced no changed paths, or a `--resume` path). `check_auto_tri | `persist_retro_trigger_closeout` returns `{"status": "skipped", "reason": "retro trigger did not match the evaluated release paths"}` — asserting a non-match over zero evaluated pa |
+| S110 | medium | LEAD (opened 2026-07-31 by operator decision) | b | `scripts/validate_cautilus_proof.py:200` | An ALREADY-CHECKED-IN cautilus proof artifact that was validated against the prompt surfaces of an earlier commit, plus a later commit that changes one of those same prompt surfaces without touching the artifact. Every floor (`validate_prompt_surfaces`, `validate_behavior_source`, `validate_commands_run`, `validate_scenario_review`) runs only inside the `artifact_repo_path in changed_paths` branch. | Not run — reasoned from source. The predicted verdict is the S8-refuted exit-0 message, but the residual is a different claim from S8's: S8 was about a prompt change with NO artifact and was correctly refuted (deterministic validators own that case). This row is about an artifact that EXISTS and asserts coverage of a prompt surface that has since moved. The gate keys on 'was the artifact edited in this diff', which is coarse where currency is what matters, so the artifact's own `## Prompt Surfaces` list is never re-checked against the surfaces' current state. Reproduce before working it. |
 ## 2026-07-31 closeout non-claims
 
 - **S5 is closed at the author-time preflight only.** The same pressure-exempt

@@ -188,6 +188,12 @@ Queue:
   - Unblock action: decide port-vs-accept; if port, it wants its own slice.
   - Revisit trigger: the next quality-artifact `core_nonempty_lines` mismatch, or
     the first skill that crosses an exempt budget.
+  - **Answered 2026-07-31 by the repo owner: accept the divergence.** The
+    bounded+audited contract stays author-time-preflight-only; the portable
+    `skill_ergonomics_lib.py` and `scripts/validate_quality_artifact.py` copies keep
+    their unbounded walks. This is an accepted, documented divergence
+    (`docs/conventions/authoring-preflight.md`), not a closed defect — the revisit
+    trigger above stands.
 - Decision: is S8's freshness residual — an *existing* proof artifact going stale
   relative to a later prompt change — worth its own sweep row? (The demotion
   itself is settled; this is the leftover.)
@@ -196,6 +202,9 @@ Queue:
     repair question.
   - Unblock action: open a freshness-class row with its own trigger, or decline.
   - Revisit trigger: slice 6, when the sweep rows are written.
+  - **Answered 2026-07-31 by the repo owner: open the row.** Recorded as S110 in
+    the triage sweep's main findings table (freshness class, LEAD — not
+    parent-reproduced). Opening the row is not a repair claim.
 - Decision: should `audit_brief.py` ever be wired into the `issue` flow?
   (Settled for this goal: slice 5 stays a checker repair.)
   - Owner: repo owner.
