@@ -1,6 +1,6 @@
 # Achieve Goal: Repair the sweep's remaining high rows so an absent or degenerate input stops rendering a green verdict: S5 density exemption, S7 unrecognized cautilus bundle, S21 empty/decision-free chunk, S22 disarmed brief contract — with S8 dispositioned rather than repaired.
 
-Status: active
+Status: complete
 Created: 2026-07-31
 Activation: `/goal @charness-artifacts/goals/2026-07-31-repair-the-sweep-s-remaining-high-rows-s5-density-exemption.md`
 
@@ -9,10 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active run, slice 1 of 6 complete; nothing committed yet
-  (the bundle commits at slice 6).
-- Current slice: slices 1-5 closed, uncommitted. Slice 6 (bundle closeout) is next.
-- Next action: slice 6 — record the Fresh-eye pass lines and the cautilus skill-review decision, run the full pre-push lane plus the changed-line gate with `--base-sha 0e8d9760`, then commit.
+- Current disposition: complete — four rows repaired, one refuted, all proof executed and committed; nothing pushed.
+- Current slice: none — all six slices closed and committed (`4302aeaa`, `ec72c301`; HEAD `ec72c301`).
+- Next action: none — the goal is complete. The two operator decisions in the queue are the only open threads, and neither blocks anything shipped.
 - Verification cadence: per slice, the row's own reproduction test plus the
   owning surface's existing test module, run in-process. The full pre-push lane
   runs once at the bundle boundary before the commit, not per slice.
@@ -169,21 +168,12 @@ wrong output — and the full pre-push lane is green on the final bundle.
 | 3 (done) | S8: **no repair.** Record the disposition (design posture, not a defect) in the sweep row and route the freshness residual to the Operator Decision Queue | The reviewer showed the "floors skipped" reading is wrong: those floors judge artifact shape, and there is no artifact under judgment when it did not change; the repo's posture is that deterministic validators own prompt-affecting diffs | The two citations that settle it (`skills/public/quality/references/cautilus-on-demand.md:21`, `tests/test_cautilus_proof_artifact.py:12`) recorded on the row; no code change, no test change | done |
 | 4 (done) | S21: reject empty and whitespace-only input, and widen decision detection beyond `?`/the exact marker; keep informational chunks passing | Independent skill; the sweep row fuses two defects and only the degenerate-input half plus detection-widening is safe | Empty and `'   \n\n'` stdin rejected; a decision-asking chunk without `?` rejected; `tests/quality_gates/test_hitl_chunk_contract.py:71` (informational chunk passes) still green as written; `plugins/` mirror synced | done |
 | 5 (done) | S22: arm the contract on absent, post-mutation, and unrecognized classification alike; create the surface's first test module | Independent skill, last because it is least entangled; a fix handling only `classification is None` would ship the class it fixes | All three transcript shapes reported instead of `audit ok`; the four checked-in fixtures still pass; new `tests/` module; `plugins/` mirror synced | done |
-| 6 | Bundle closeout: update the sweep rows, run the full pre-push lane and the changed-line gate with an explicit `--base-sha 0e8d9760`, commit | The bundle boundary is where broad proof is affordable and where the dup/changed-line ratchets are answered | Full gate lane green; rows carry `CLOSED (parent-reproduced 2026-07-31)` only where the parent actually reproduced, and S8 carries its disposition status instead | pending |
+| 6 (done) | Bundle closeout: update the sweep rows, run the full pre-push lane and the changed-line gate with an explicit `--base-sha 0e8d9760`, commit | The bundle boundary is where broad proof is affordable and where the dup/changed-line ratchets are answered | Full gate lane green; rows carry `CLOSED (parent-reproduced 2026-07-31)` only where the parent actually reproduced, and S8 carries its disposition status instead | done |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+Operator-only decisions surfaced by this run and left for the repo owner. Each
+blocks nothing that shipped.
 
 Queue:
 
@@ -426,6 +416,83 @@ routing, or acceptance evidence, and `issue`'s scenario does not exercise
 
 ## Final Verification
 
+Self-verification (executed this run):
+
+- Every row reproduced first on a seeded temp repo, wrong output captured
+  verbatim, before any edit. S8 was reproduced too — and the reproduction is what
+  showed the row described intended behavior.
+- Per repair: targeted tests, then a patch-shaped revert-check
+  (`git diff > p; git apply -R p; pytest; git apply p`) confirming the new test
+  fails on its own assertion, naming the invariant, not on an import error.
+- `run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review`
+  → `Closeout status: completed` (sync, packaging, ruff, lengths, markdown,
+  secrets, doc links, dup ratchet, skill ergonomics, boundary-bypass, mirror drift).
+- Full `pytest tests/` → **6361 passed, 1 xfailed**.
+- `prepush_focused_changed_line_coverage.py --repo-root . --base-sha 0e8d9760`
+  → `clean`. It first reported one uncovered changed line (the unbalanced-fence
+  fallback); that branch now has a test, committed as `ec72c301`.
+- Live corpus checks: `validate_cautilus_diagnostics.py --all` validates 34
+  bundles; a simulated `held-out/` eval output dir does not redden the lane; 0 of
+  22 `SKILL.md` files produce an exempt-section finding.
+- Commits: `4302aeaa` (the bundle), `ec72c301` (the coverage fix). Nothing pushed.
+
+Retro: charness-artifacts/retro/2026-07-31-session-retro.md
+Host log probe: skipped: host-log-not-exposed: the Claude host exposes per-message token snapshots and function-call counts thread-wide, but no per-goal window was set on this artifact, so no goal-scoped total exists to cite.
+Disposition review: charness-artifacts/retro/2026-07-31-session-retro.md
+
+Residual risks:
+
+- S5 is repaired at the author-time preflight only; the portable
+  `skill_ergonomics_lib.py` copy and `validate_quality_artifact.py` keep the
+  unbounded, unaudited, fence-blind walk, so the two `core_nonempty` numbers
+  diverge on any skill with a `## Closeout Vocabulary` block. Documented, queued.
+- S21's widened detection is a floor, not a detector: a decision request phrased
+  outside the known phrases and positions still passes silently.
+- Round-2 repairs are accepted-unreviewed (the two-round cap).
+
+Non-claims:
+
+- No live cautilus run, no mutation-score lane, no CI dispatch, no push.
+- S7 is proven against fixture bundles plus this repo's live corpus; that is not
+  a claim about other repos.
+- S22 repairs a checker with no caller in the `issue` workflow — a verdict fixed,
+  not an enforced boundary.
+- The reviewer-boundary fingerprint verified `parent-attributed` with no
+  unattributed drift, but the path declarations are the parent's own: git proves
+  the tree changed, never who changed it.
+
+
 ## User Verification Instructions
 
+Run each row's trigger and see it fail where it used to exit 0:
+
+```bash
+# S21 — all three used to print {"status": "pass"}, exit 0
+printf '' | python3 skills/public/hitl/scripts/check_chunk_contract.py
+python3 skills/public/hitl/scripts/check_chunk_contract.py --chunk-text "Please approve or reject this rename before I continue."
+# still passes, by design:
+python3 skills/public/hitl/scripts/check_chunk_contract.py --chunk-text "Status update: still gathering evidence; no decision yet."
+
+# S22 — used to print `audit ok: 1 fix-unit(s) checked`
+printf '{"events":[{"kind":"mutation","issue":143,"tool":"Edit"},{"kind":"close","issue":143}]}' > /tmp/t.json
+python3 skills/public/issue/scripts/audit_brief.py --transcript /tmp/t.json
+
+# S5 / S7 — the reproductions live in the regression tests
+python3 -m pytest tests/quality_gates/test_skill_surface_preflight.py tests/test_cautilus_diagnostic_artifact.py -q
+```
+
+Then confirm nothing ordinary broke: `python3 scripts/validate_cautilus_diagnostics.py --repo-root . --all`
+(34 bundles) and `python3 scripts/run-quality.sh` for the full lane.
+
+
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-07-31-session-retro.md
+
+- Retro dispositions: applied: consolidated the three ad hoc fence walks into `skill_markdown_lib.split_fenced_lines` (token-matched close plus an explicit `unbalanced` flag), both consumers switched over, committed in `4302aeaa`
+- Retro dispositions: applied: wrote the "S5 is closed at the preflight only" non-claim into `docs/conventions/authoring-preflight.md` and the sweep record's closeout section, so the next reader of either `core_nonempty` number sees the divergence
+- Retro dispositions: accepted-risk: the "unify a structural walk on its second occurrence" lesson stays prose in the retro — it is a judgment habit rather than something a gate can express, and the duplicate ratchet already catches the mechanical half
+- Retro dispositions: out-of-scope: teaching the changed-line gate to report subprocess-only coverage (carried from the 2026-07-30 retro) changes a blocking gate's payload and owes its own two-round review; this goal's scope was the sweep rows
+
+Structural follow-up: applied: `scripts/skill_markdown_lib.py::split_fenced_lines` — one fence walk with a declared failure direction, replacing the three ad hoc walks this run kept re-deriving.
+
