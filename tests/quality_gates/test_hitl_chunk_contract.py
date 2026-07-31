@@ -226,3 +226,16 @@ def test_check_chunk_contract_script_blocks_empty_stdin() -> None:
 
     assert result.returncode == 1
     assert json.loads(result.stdout)["status"] == "blocked"
+
+
+def lib_errors(text: str):
+    return _load_hitl_lib().check_chunk_contract(text)
+
+
+def test_check_chunk_contract_lib_falls_back_to_raw_text_on_an_unterminated_fence() -> None:
+    # An unterminated fence would otherwise swallow the rest of the chunk, hiding a
+    # real request. A missed request is the expensive direction, so the ambiguous
+    # case fails toward detection.
+    asking = "```yaml\napprove: true\n\nApprove or revise before I apply.\n"
+
+    assert lib_errors(asking) != []
