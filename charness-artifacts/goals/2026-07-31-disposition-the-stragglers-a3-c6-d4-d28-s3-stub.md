@@ -1,6 +1,6 @@
 # Achieve Goal: Disposition the stragglers — A3, C6, D4, D28, sibling-scan Tier 2 D, S3's stub half
 
-Status: draft
+Status: active
 Created: 2026-07-31
 Activation: `/goal @charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md`
 
@@ -13,11 +13,12 @@ the handoff chunker's ranked list; both read as "run it", not "draft it".
 
 ## Active Operating Frame
 
-- Current disposition: **real draft awaiting activation.** Shaped and
-  plan-critiqued on 2026-07-31; not stale, not reshape-pending.
-- Current slice: shaping complete; not activated.
-- Next action: operator runs the activation command; the During loop then starts
-  at slice 1.
+- Current disposition: **active run.**
+- Current slice: 1 of 5 complete (A3 residual 1, repaired). Next: slice 2, S3's
+  stub half.
+- Next action: slice 2 — a per-kind shape check on the
+  `check_prescribed_skill_executed_lib` accept path, measured against its 31
+  pinning tests FIRST.
 - Verification cadence: cheap deterministic gates at each commit boundary
   (`check_doc_authoring_preflight.py` read for findings, the touched validator's
   own tests); `scripts/run-quality.sh` once at the bundle boundary;
@@ -309,7 +310,7 @@ recorded here so `--pursue-ready` does not clear until they have been seen.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | A3 residual 1: make each scheduled gate's inspected scope legible beside its verdict | The only row here whose wrong verdict escapes on every commit; silence has been upgraded to false assurance | Isolated-worktree probe of `git rm --cached` / staged deletion / rename; per-gate scope rendered; 56 planner tests still green; revert check | pending |
+| 1 | A3 residual 1 — RE-SCOPED by its own reproduction: repair the untrack blindness in `check_staged_worktree_consistency` rather than annotate the planner | The only row here whose wrong verdict escapes on every commit; the probe showed the assurance is refusable, not merely illegible | Reproduced with a discriminating control; predicate replaced; 34 tests green, 13 red against the pre-slice gate; 199 planner-family tests green | **repaired** |
 | 2 | S3 stub half: per-kind shape check on the accept path, xfail marker removed | The pin is checked in and two prior attempts bound the design space; success flips a test green | Shape floor measured against the 31 pinning tests FIRST; Floor-Addition Restraint call recorded; or a recorded third-attempt refutation | pending |
 | 3 | C6: pass worktree-changed paths from the caller, then measure false refusals | `--changed-path` is already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Reproduction of today's blindness; false-refusal count over the checked-in critique corpus; second consumer (impl stop-gate) unbroken | pending |
 | 4 | Chunker path resolution: resolve cited paths against the citing artifact's directory | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | A `docs/handoff.md` parse reporting `missing_path_count: 0`; regression test; plugin mirror synced and staged | pending |
@@ -329,6 +330,20 @@ Queue item form:
 - Revisit trigger: event, date, or proof boundary that reopens this
 
 ## Slice Log
+
+### Slice 1: Slice 1 — A3 residual 1: scheduled is not judged
+
+- Objective: Close the shape where every worktree-walking pre-commit gate prints PASS over content the commit removes from the tree. Planned as a legibility change to the gate PLANNER; the reproduction found a repairable hole in check_staged_worktree_consistency instead, so the slice repaired that and left the planner untouched.
+- Why this approach: The planned repair (annotate each scheduled gate with the scope it inspects) would have made a false assurance readable. The probe showed the assurance is refusable: the gate whose stated question is 'does this path appear on BOTH sides' was structurally blind to the untrack shape, because removing a path from the index removes its index ENTRY and the worktree-vs-index diff can no longer name it. Repairing the predicate beats annotating around it, and it stays inside the critique's 'not converting scheduled gates to index readers' fence.
+- Commits:
+- What changed: scripts/check_staged_worktree_consistency.py (canonical) + plugins/charness/scripts/ mirror (synced, sha256-identical); tests/quality_gates/test_check_staged_worktree_consistency.py (+16 tests, 18 -> 34)
+- Alternatives rejected: Annotating the planner's output with a per-gate inspected-scope field: rejected once the hole turned out to be repairable — a legible false assurance is still a false assurance. Converting the scheduled gates to index readers: out of bounds, declined by the owning critique as 'a change to every gate rather than to the plan'.
+- Targeted verification: REPRODUCED in an isolated clone with NO bypass set: git rm --cached docs/handoff.md + an on-disk edit cleared check_staged_reversion AND check_staged_worktree_consistency, then check_doc_links / check-markdown / check_title_slug_drift / validate_current_pointer_freshness all printed PASS and the commit landed, deleting the file. DISCRIMINATING CONTROL: with the worktree made to match the committed tree, check_doc_links FAILS (AGENTS.md: broken relative link ./docs/handoff.md) — so the green was over a tree that is not what got committed. REPAIRED: predicate is now staged(--no-renames) - ls-files(--full-name), filtered by on-disk presence. 34 tests green; 13 of them fail against the pre-slice gate; reverting only --no-renames fails exactly the rename test, reverting only the case fold fails exactly the fail-open test. Planner-family suites 199 green. ruff clean.
+- Test duplication pressure: 16 tests added to one existing module, all against the same gate; no new test file, no fixture duplication — each new test constructs its own git state through the module's existing _repo/_git helpers. Two tests execute the offered remedies rather than string-matching them, which is what caught a remedy that exits 128.
+- Critique: Two rounds, bounded read-only reviewers, each bracketed by reviewer_boundary_fingerprint snapshot/verify — both windows verified clean. Round 1 (2 reviewers): 3 BLOCKERs, all parent-confirmed by command — rename detection collapses D+A into R so --diff-filter=D missed the move-and-recreate shape; the offered `git rm <path>` exits 128 on a path with no index entry; the legitimate untrack workflow had no correct offered move. Plus the Floor-Addition Restraint record manufactured a recurrence count where the honest statement is that it promotes A3-critique F8's documented deferral. Round 2 (read the repairs): 1 BLOCKER — the case-only-rename exemption folded over the whole tracked set, so untracking Foo.md escaped whenever an unrelated foo.md was tracked; a fail-open in the repaired predicate, in the class the slice closes. Parent reproduced it before fixing. Also: --no-renames was on the staged read only, so an intent-to-add rename (what git add -p creates) resurfaced the ORIGINAL shape-1 defect; ls-files is cwd-scoped where diff --cached is repo-wide; and three tests proved less than their docstrings claimed. All folded. Round-2 repairs are accepted-unreviewed under the two-round cap.
+- Off-goal findings: The pre-commit hook on this session's own first commit scheduled check_doc_links and printed PASS over a commit that was entirely under charness-artifacts/, which check_doc_links' DOC_GLOBS excludes — the same 'green over an uninspected scope' class, at glob granularity rather than index granularity. Not repaired here: each gate owns its own denominator, which the A3 critique fenced out.
+- Lessons carried forward: The reproduction is what re-scoped the slice: the planned repair was designed against the audit's prose, and the prose described a shape that a later fix had already made unreachable by its stated route. Probing first turned a legibility patch into a refusable hole. Second: my repair introduced a status-letter allowlist four lines below the file's own comment arguing that a status-letter allowlist is the wrong shape for this gate — the round that read the repair is what caught it, for the fourth measured slice running.
+- Metrics:
 
 ## Context Sources
 
