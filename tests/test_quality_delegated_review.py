@@ -260,3 +260,13 @@ def test_validate_quality_artifact_strips_a_fill_guard_wrapped_across_lines(tmp_
     )
     with pytest.raises(ValidationError, match=re.escape("executed delegated review must name the review channel")):
         validate(repo)
+
+
+def test_declared_delegated_review_status_is_none_without_a_status_line() -> None:
+    """The helper reports absence rather than guessing; the section rule owns the refusal."""
+    assert (
+        _validate_quality_artifact.declared_delegated_review_status(
+            ["- the reviewer read the diff.", "- lenses: fixture-economics."]
+        )
+        is None
+    )
