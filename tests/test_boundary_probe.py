@@ -117,6 +117,56 @@ def test_resolve_changed_paths_falls_back_to_working_tree_diff(tmp_path: Path, m
     assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, "") == [f"wt:{tmp_path}"]
 
 
+def test_include_worktree_unions_instead_of_replacing(tmp_path: Path, monkeypatch) -> None:
+    """Audit row C6: verify precedes commit, so the slice under critique is on disk.
+
+    A committed range alone is structurally blind to it — measured on the live
+    repo, the same working tree gave `hit=False` from `HEAD..HEAD` and `hit=True`
+    from its own worktree paths, so the #408 5b tooth was armed or disarmed by
+    which question was asked rather than by the code. The union is the fix; a
+    REPLACE would have lost the committed half of a pre-push range.
+    """
+    monkeypatch.setattr(
+        boundary_probe_lib._surfaces_lib,
+        "collect_changed_paths_for_ref",
+        lambda repo_root, ref: ["committed.py"],
+    )
+    monkeypatch.setattr(
+        boundary_probe_lib._surfaces_lib,
+        "collect_changed_paths",
+        lambda repo_root: ["worktree.py", "committed.py"],
+    )
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, "base..HEAD") == ["committed.py"]
+    assert boundary_probe_lib.resolve_changed_paths(
+        tmp_path, None, "base..HEAD", include_worktree=True
+    ) == ["committed.py", "worktree.py"]
+    # Explicit paths keep winning, and are unioned rather than replaced too.
+    assert boundary_probe_lib.resolve_changed_paths(
+        tmp_path, ["explicit.py"], "base..HEAD", include_worktree=True
+    ) == ["explicit.py", "worktree.py", "committed.py"]
+
+
+def test_include_worktree_does_not_widen_ref_or_explicit_scope(tmp_path: Path, monkeypatch) -> None:
+    """Off by default for the two shapes that RESOLVE a scope of their own.
+
+    Named for what it tests. The third shape (no ref, no explicit paths) reads the
+    working tree by default and always has -- an earlier name claimed the worktree
+    was never read without the flag, which is false there.
+    """
+
+    def _boom(*_a, **_k):
+        raise AssertionError("a resolved ref/explicit scope must not be widened without the flag")
+
+    monkeypatch.setattr(
+        boundary_probe_lib._surfaces_lib,
+        "collect_changed_paths_for_ref",
+        lambda repo_root, ref: ["committed.py"],
+    )
+    monkeypatch.setattr(boundary_probe_lib._surfaces_lib, "collect_changed_paths", _boom)
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, None, "base..HEAD") == ["committed.py"]
+    assert boundary_probe_lib.resolve_changed_paths(tmp_path, ["x.py"], None) == ["x.py"]
+
+
 # The impl stop-gate hook's in-process tests (AC7) live in
 # tests/quality_gates/test_critique_boundary_ownership_presence.py so they reuse
 # that file's single critique-adapter fixture writer instead of a second copy.

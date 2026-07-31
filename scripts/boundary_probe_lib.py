@@ -70,24 +70,56 @@ def cross_surface_hit(
     return False
 
 
-def resolve_changed_paths(repo_root: Path, changed_path: list[str] | None, changed_ref: str | None) -> list[str]:
+def resolve_changed_paths(
+    repo_root: Path,
+    changed_path: list[str] | None,
+    changed_ref: str | None,
+    *,
+    include_worktree: bool = False,
+) -> list[str]:
     """The changed paths for the probe: explicit ``changed_path`` wins, else the
-    ``changed_ref`` git range, else the working-tree diff."""
+    ``changed_ref`` git range, else the working-tree diff.
+
+    ``include_worktree`` UNIONS the working tree into whichever of those was
+    chosen, instead of replacing it. It exists because verify precedes commit: a
+    caller that hands this a committed range is asking about work that already
+    landed, while the slice actually under review is still on disk. With the
+    committed range alone the probe is structurally blind to the change it is
+    meant to judge -- measured, the same working tree produced `hit=False` from
+    `HEAD..HEAD` and `hit=True` from its own worktree paths, so the cross-surface
+    tooth was armed or disarmed by which question was asked, not by the code.
+
+    Off by default: the existing callers' semantics do not change, and a caller
+    that genuinely means "the committed range" (a post-hoc audit) must not have
+    an unrelated dirty file quietly widen its scope.
+    """
     if changed_path is not None:
-        return list(changed_path)
-    if changed_ref:
-        return _surfaces_lib.collect_changed_paths_for_ref(repo_root, changed_ref)
-    return _surfaces_lib.collect_changed_paths(repo_root)
+        resolved = list(changed_path)
+    elif changed_ref:
+        resolved = _surfaces_lib.collect_changed_paths_for_ref(repo_root, changed_ref)
+    else:
+        return _surfaces_lib.collect_changed_paths(repo_root)
+    if not include_worktree:
+        return resolved
+    return _surfaces_lib.dedupe_preserve_order(
+        resolved + _surfaces_lib.collect_changed_paths(repo_root)
+    )
 
 
 def resolve_hit(
-    repo_root: Path, *, changed_path: list[str] | None = None, changed_ref: str | None = None
+    repo_root: Path,
+    *,
+    changed_path: list[str] | None = None,
+    changed_ref: str | None = None,
+    include_worktree: bool = False,
 ) -> tuple[bool, list[str], dict[str, list[str]]]:
     """Resolve the changed paths, read the critique adapter's probe config, and
     return ``(triggered, changed_paths, probe_config)``. The one home both the
     critique validator's severity upgrade and the impl stop-gate hook call so the
     resolve-and-probe logic lives in a single place."""
-    changed = resolve_changed_paths(repo_root, changed_path, changed_ref)
+    changed = resolve_changed_paths(
+        repo_root, changed_path, changed_ref, include_worktree=include_worktree
+    )
     probe = probe_config_from_adapter(_critique_adapter_lib.load_adapter(repo_root)["data"])
     triggered = cross_surface_hit(repo_root, changed, surfaces=probe["surfaces"], globs=probe["globs"])
     return triggered, changed, probe

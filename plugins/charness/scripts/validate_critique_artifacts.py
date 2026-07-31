@@ -484,6 +484,7 @@ def _validate_factory(run, resolved: dict[str, object] | None = None):
         run.args.changed_path,
         probe_lib=_boundary_probe_lib,
         adapter_lib=_critique_adapter_lib,
+        include_worktree=getattr(run.args, "include_worktree", False),
     )
     if resolved is not None:
         resolved["cross_surface"] = cross_surface

@@ -14,11 +14,10 @@ the handoff chunker's ranked list; both read as "run it", not "draft it".
 ## Active Operating Frame
 
 - Current disposition: **active run.**
-- Current slice: 2 of 5 complete (A3 residual 1 and S3's stub half, both
-  repaired). Next: slice 3, C6.
-- Next action: slice 3 — pass the worktree's changed paths from `run-quality.sh`
-  into the critique cross-surface probe, then MEASURE false refusals over the
-  checked-in critique corpus before shipping.
+- Current slice: 3 of 5 complete (A3 residual 1, S3's stub half, C6 — all
+  repaired). Next: slice 4, the handoff chunker's path resolution.
+- Next action: slice 4 — resolve cited paths against the citing artifact's
+  directory instead of stripping `./` and `../` prefixes.
 - Verification cadence: cheap deterministic gates at each commit boundary
   (`check_doc_authoring_preflight.py` read for findings, the touched validator's
   own tests); `scripts/run-quality.sh` once at the bundle boundary;
@@ -312,7 +311,7 @@ recorded here so `--pursue-ready` does not clear until they have been seen.
 | --- | --- | --- | --- | --- |
 | 1 | A3 residual 1 — RE-SCOPED by its own reproduction: repair the untrack blindness in `check_staged_worktree_consistency` rather than annotate the planner | The only row here whose wrong verdict escapes on every commit; the probe showed the assurance is refusable, not merely illegible | Reproduced with a discriminating control; predicate replaced; 34 tests green, 13 red against the pre-slice gate; 199 planner-family tests green | **repaired** |
 | 2 | S3 stub half — closed, but NOT with the per-kind shape check planned: a markdown-shape floor was measured and rejected (22 real artifacts have no headings), and the rule that worked is "evidence must say more than the identity it was checked against" | The pin is checked in and two prior attempts bound the design space; success flips a test green | Measurement scripted and recorded; floor 8 below both measured minima (337 markdown / 530 JSON probe); xfail replaced by real refusal assertions; the motivating case refused at the issue-close gate | **repaired** |
-| 3 | C6: pass worktree-changed paths from the caller, then measure false refusals | `--changed-path` is already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Reproduction of today's blindness; false-refusal count over the checked-in critique corpus; second consumer (impl stop-gate) unbroken | pending |
+| 3 | C6: opt-in `--include-worktree` that unions rather than replaces | `--changed-path` was already a first-class input and `overrides` fires only on evaluated+hit, so widening is strictly stricter — a bounded, testable question, not a redesign | Blindness reproduced with a control; false-refusal cost measured at 11 of 965 artifacts; second consumer unbroken; the scope report now names which scope and which path produced the verdict | **repaired** |
 | 4 | Chunker path resolution: resolve cited paths against the citing artifact's directory | Hits every future goal draft, was observed live this session, and is the same wrong-base class this backlog hunts | A `docs/handoff.md` parse reporting `missing_path_count: 0`; regression test; plugin mirror synced and staged | pending |
 | 5 | Record sync and queue: sibling-scan Tier 2 D -> CLOSED, D28 trigger -> not fired, D4 -> operator decision, hunt/sweep statuses matched to slices 1-3 | Bookkeeping is what makes the next session's backlog true; today's run found an 11-day-stale row | Every touched record's Status column matches this run; D4 queue item written with the 403/quota constraint stated | pending |
 
@@ -358,6 +357,71 @@ Queue item form:
 - Off-goal findings: Running two pytest suites concurrently produced 17 false failures and 21 errors in shared-state tests — the same flake class sibling-scan Tier 2 D fixed for concurrent SessionStart hooks, one level up. Not repaired; the clean serial run is 6388 passed.
 - Lessons carried forward: Measuring before writing is what separated this attempt from the two that were withdrawn — and the withdrawal reasoning itself was a mis-measurement: 34 failing TEST FIXTURES were read as evidence about how the repo writes EVIDENCE, when the artifacts start at 427 bytes. Second: both rounds found the same shape of miss — the repair was correct where I was looking and absent where the thing is actually used (round 1: the wrapper that never passed tokens; round 2: the renderers that never learned the category).
 - Metrics:
+
+### Slice 3 — C6: the probe read the committed range only
+
+- Objective: Make the critique cross-surface probe judge the change under review.
+  Verify precedes commit, so the slice under critique is in the worktree and
+  structurally invisible to a committed range.
+- Why this approach: Not the contract change the hunt implied. `--changed-path`
+  was already a first-class input and `resolve_changed_paths` already had a
+  worktree fallback; the blindness was manufactured entirely by the caller passing
+  only `--changed-ref`. An opt-in `--include-worktree` that UNIONS rather than
+  replaces keeps `--changed-path`'s documented precedence and the second consumer
+  (the `prove` stop-gate) untouched.
+- What changed: `scripts/boundary_probe_lib.py`,
+  `scripts/critique_enforcement_scope.py`,
+  `scripts/validate_critique_artifacts.py`, `scripts/run-quality.sh`,
+  `scripts/check_artifact_surface_preflight.py` (comment and recorded residual
+  only); `tests/test_boundary_probe.py`,
+  `tests/test_validate_critique_artifacts_dates.py` (+4 tests); `plugins/`
+  mirrors synced.
+- Alternatives rejected: making `--changed-path` union by default — it has
+  documented wins-over semantics and a second consumer. Giving the commit-boundary
+  preflight the same flag — TRIED and REVERTED on measurement: it refused a
+  critique artifact written for an earlier change, because that arm targets the
+  artifact the author holds while the tooth judges the current worktree.
+- Verification: REPRODUCED on the live repo — one worktree-only edit to a
+  configured `scripts/*_lib.py` glob with an empty committed range gave
+  `state=evaluated hit=False overrides=False` from the range, and
+  `hit=True overrides=True` from the same tree's worktree paths. The 5b tooth was armed
+  or disarmed by which question was asked, not by the code. FALSE-REFUSAL COST
+  MEASURED before shipping: 11 of 965 checked-in critique artifacts carry a bare
+  `single-surface` verdict past the grandfather cutoff, and widening can only make
+  the gate stricter, because `overrides` fires solely on `evaluated AND hit`. Four
+  tests added, all red against the pre-slice library; 366 boundary/critique/
+  preflight tests green.
+- Test duplication pressure: 4 tests across two existing modules, no new file. Two
+  of them pin STATES rather than values, which is what this module exists to
+  distinguish.
+- Critique: two rounds, both fingerprint-verified clean.
+  - Round 1, no blocker, six should-fixes. The flag made `not-established`
+    structurally unreachable, so an empty ref plus a clean tree reported
+    `evaluated (no match)` over ZERO paths — the empty-scope class this backlog
+    hunts, introduced by my own repair. The parent found and confirmed it
+    independently before the review returned; the state is now decided by the
+    RESOLVED path list rather than by which flags were passed. Round 1 also caught
+    that the slice RELOCATED the same-tree-two-questions divergence to the
+    commit-boundary preflight instead of closing it.
+  - Round 2, no blocker, six more. The run-quality comment "fix" had ADDED a
+    second comment five lines below the stale one, leaving the file
+    self-contradictory — the class the repair was fixing. The `not-established`
+    note still stated a cause that had become false. `matched_path` was scored
+    against a different adapter read than the `hit` it explains, which could
+    render a match on `None`. And the residual comment's story was wrong: a
+    genuinely months-old artifact CANNOT be refused, because the override is
+    date-grandfathered at 2026-07-06, so the reachable case is narrower than I
+    wrote. All folded; round-2 repairs are accepted-unreviewed under the two-round
+    cap.
+- Off-goal findings: `resolve_hit` re-reads the adapter through its own
+  module-level binding while `resolve_cross_surface_scope` reads the adapter
+  handed to it — two adapter reads on one decision. Pre-existing and not worsened;
+  the matched-path repair now consumes the read `resolve_hit` actually used.
+- Lessons: the reproduction re-sized the row again — the hunt called C6 a contract
+  change and the code already had every piece, with one caller argument as the
+  whole defect. And now three for three: the round that reads the repairs caught
+  something the repair itself introduced. This time it was my comment repair
+  contradicting the comment it was repairing.
 
 ## Context Sources
 

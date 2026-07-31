@@ -325,6 +325,30 @@ def _extract_preamble(text: str) -> str:
     return "\n".join(out).rstrip() + "\n" if out else "(template preamble not found)"
 
 
+# Audit row C6's recorded residual, for BOTH arms below (`describe` and
+# `changed_artifacts`), because a reader of either needs it.
+#
+# `run-quality.sh` passes `--include-worktree` to the critique validator so the
+# cross-surface probe judges the slice under review rather than the previous one.
+# These invocations deliberately do NOT, and the flag was tried here and reverted
+# on measurement: this surface targets whichever artifact the author is holding,
+# while the tooth judges the CURRENT working tree. Editing a critique artifact
+# written for an EARLIER change then refuses it for paths that artifact never
+# covered -- reproduced against
+# `charness-artifacts/critique/2026-07-31-release-3-0-1.md`.
+#
+# Blast radius is narrower than it sounds, and saying so is part of the record:
+# the override is date-grandfathered at `BOUNDARY_OWNERSHIP_RULE_DATE`
+# (2026-07-06), so a genuinely old artifact cannot be refused by it at all. The
+# reachable case is a post-cutoff artifact whose own scope predates the current
+# worktree.
+#
+# So the two surfaces still disagree on a worktree slice, narrowly and by design:
+# this one is a fail-fast SHAPE check on one artifact, and the cross-surface
+# question needs the change under review, which these invocations do not model.
+CROSS_SURFACE_RESIDUAL = "commit-boundary arms do not pass --include-worktree (audit row C6)"
+
+
 def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> str:
     out = [
         f"artifact-surface-preflight: {surface.artifact_type}",
@@ -339,6 +363,7 @@ def describe(repo_root: Path, surface: Surface, *, target_rel: str | None) -> st
         # take --paths for a changed-scoped verdict.
         argv = ["python3", surface.validator, "--repo-root", str(repo_root)]
         cmd = f"python3 {surface.validator} --repo-root ."
+        # See CROSS_SURFACE_RESIDUAL below: deliberately no `--include-worktree`.
         if surface.paths_arg and target_rel:
             argv += ["--paths", target_rel]
             cmd += f" --paths {target_rel}"
@@ -398,6 +423,10 @@ def changed_artifacts(repo_root: Path, paths: list[str]) -> dict[str, Any]:
     (`paths_arg=True`); validate-all surfaces are author-time-only (not here),
     because a validate-all gate in the fail-fast sweep would reorder the deeper
     closeout stages and block on pre-existing siblings.
+
+    Like the author-time arm, this one does not pass `--include-worktree` to the
+    critique validator — see ``CROSS_SURFACE_RESIDUAL`` for the measurement that
+    reverted it and what still disagrees with `run-quality.sh`.
     """
     groups: dict[str, tuple[Surface, list[str]]] = {}
     for raw in paths:

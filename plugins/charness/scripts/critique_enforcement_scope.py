@@ -313,6 +313,13 @@ class CrossSurfaceScope:
 
     state: str
     hit: bool
+    # What the verdict was computed over, so a reader can tell WHICH question
+    # produced it. Without these two the widened scope was invisible in the
+    # report: the same tree can arm or disarm the tooth depending on whether the
+    # working tree was included, and that is exactly what this row repaired.
+    scanned_paths: int = 0
+    worktree_included: bool = False
+    matched_path: str | None = None
 
     @property
     def overrides(self) -> bool:
@@ -329,6 +336,7 @@ def resolve_cross_surface_scope(
     *,
     probe_lib,
     adapter_lib,
+    include_worktree: bool = False,
 ) -> CrossSurfaceScope:
     """Resolve the probe to a typed state without shelling out when it cannot run.
 
@@ -339,18 +347,56 @@ def resolve_cross_surface_scope(
     probe = probe_lib.probe_config_from_adapter(adapter_lib.load_adapter(repo_root)["data"])
     if not probe["globs"] and not probe["surfaces"]:
         return CrossSurfaceScope(CROSS_SURFACE_NOT_CONFIGURED, False)
-    if not changed_ref and not changed_path:
+    if not changed_ref and not changed_path and not include_worktree:
         return CrossSurfaceScope(CROSS_SURFACE_NOT_ESTABLISHED, False)
-    hit, _changed, _probe = probe_lib.resolve_hit(
-        repo_root, changed_path=changed_path, changed_ref=changed_ref
+    hit, changed, resolved_probe = probe_lib.resolve_hit(
+        repo_root,
+        changed_path=changed_path,
+        changed_ref=changed_ref,
+        include_worktree=include_worktree,
     )
-    return CrossSurfaceScope(CROSS_SURFACE_EVALUATED, hit)
+    # `resolved_probe`, not the outer `probe`: `resolve_hit` re-reads the adapter
+    # through its OWN module-level binding, so scoring the witness against the
+    # injected adapter's config could disagree with the `hit` it is explaining and
+    # render ``match on `None` ``. Same config, one decision.
+    matched = (
+        next(
+            (
+                path
+                for path in changed
+                if probe_lib.cross_surface_hit(
+                    repo_root,
+                    [path],
+                    surfaces=resolved_probe["surfaces"],
+                    globs=resolved_probe["globs"],
+                )
+            ),
+            None,
+        )
+        if hit
+        else None
+    )
+    if not changed:
+        # The state is decided by the RESOLVED path list, not by which flags were
+        # passed. A scope that resolved to nothing was not evaluated: reporting
+        # `evaluated (no match)` over zero paths is the same "no hit is
+        # indistinguishable from never ran" defect this vocabulary exists to kill,
+        # and `--include-worktree` reintroduced it (empty base + clean tree) until
+        # the condition moved off the flags. `overrides` is False either way, so
+        # this changes no verdict -- only whether the report makes a claim it
+        # cannot support.
+        return CrossSurfaceScope(
+            CROSS_SURFACE_NOT_ESTABLISHED, False, 0, include_worktree, None
+        )
+    return CrossSurfaceScope(
+        CROSS_SURFACE_EVALUATED, hit, len(changed), include_worktree, matched
+    )
 
 
 _CROSS_SURFACE_NOTE = {
     CROSS_SURFACE_NOT_CONFIGURED: "not-configured (this repo declares no cross-surface globs or surfaces)",
     CROSS_SURFACE_NOT_ESTABLISHED: (
-        "not-established (probe is configured but no --changed-ref/--changed-path resolved; "
+        "not-established (probe is configured but no changed scope resolved; "
         "the #408 objective override did NOT run)"
     ),
     CROSS_SURFACE_NOT_RESOLVED: "not-resolved (no critique artifact was in scope, so no floor ran at all)",
@@ -360,11 +406,29 @@ _CROSS_SURFACE_NOTE = {
 def _cross_surface_note(cross_surface: CrossSurfaceScope | None) -> str:
     if cross_surface is None:
         return _CROSS_SURFACE_NOTE[CROSS_SURFACE_NOT_RESOLVED]
+    if cross_surface.state == CROSS_SURFACE_NOT_ESTABLISHED and cross_surface.worktree_included:
+        # A ref AND the worktree were both supplied and the union still resolved to
+        # nothing. Rendering the generic "no --changed-ref/--changed-path resolved"
+        # here would state a cause that is false: the probe ran and found an empty
+        # scope, which is a different fact from never being handed one.
+        return (
+            "not-established (a ref and the worktree both resolved 0 path(s); "
+            "nothing to probe, so the #408 objective override did NOT run)"
+        )
     if cross_surface.state == CROSS_SURFACE_EVALUATED:
         # Hit and miss are different facts, and only the hit changes a verdict
         # (it rejects a bare `single-surface`). Rendering both as `evaluated`
         # hides the one state that does something.
-        return "evaluated (match — #408 override active)" if cross_surface.hit else "evaluated (no match)"
+        scope_note = (
+            f"{cross_surface.scanned_paths} path(s)"
+            + (", worktree included" if cross_surface.worktree_included else ", committed scope only")
+        )
+        if cross_surface.hit:
+            return (
+                f"evaluated over {scope_note} (match on `{cross_surface.matched_path}` "
+                "— #408 override active)"
+            )
+        return f"evaluated over {scope_note} (no match)"
     # An unrecognized state must NOT default to the strongest reading; the whole
     # point of typing this was that an unknown outcome is not a clean one.
     return _CROSS_SURFACE_NOTE.get(cross_surface.state, f"unknown ({cross_surface.state})")
@@ -379,7 +443,21 @@ def add_cross_surface_args(parser) -> None:
     parser.add_argument(
         "--changed-path",
         nargs="*",
-        help="Explicit changed paths for the cross-surface probe (bypasses git; wins over --changed-ref).",
+        help=(
+            "Explicit changed paths for the cross-surface probe (bypasses git; wins "
+            "over --changed-ref). With --include-worktree the working tree is unioned "
+            "in, so these paths win but are not the whole scope."
+        ),
+    )
+    parser.add_argument(
+        "--include-worktree",
+        action="store_true",
+        help=(
+            "Union the working tree into the probe's changed paths. Verify precedes "
+            "commit, so the slice under critique is on disk and invisible to a "
+            "committed range alone; pass this from a pre-commit/pre-push quality run "
+            "so the probe judges the change under review rather than the previous one."
+        ),
     )
 
 

@@ -549,8 +549,10 @@ queue_selected "validate-inventory-consumption-declaration" python3 scripts/vali
 queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
 # Base for the changed-path probes below — the merge-base with origin/main (the
-# unpushed range). Empty (no origin/main base) makes the probes non-blocking by
-# construction. Shared by the critique cross-surface probe (--changed-ref, the
+# unpushed range). An empty base leaves the changed-line mutation gate below
+# non-blocking; it no longer does so for the critique cross-surface probe, which
+# passes --include-worktree (see that line). Shared by the critique probe
+# (--changed-ref, the
 # #408 5b tooth: a bare `single-surface` verdict is rejected when the unpushed
 # range touches a boundary_cross_surface_globs path) and the changed-line
 # mutation-coverage gate below.
@@ -558,11 +560,20 @@ CHANGED_LINE_BASE_SHA="$(git -C "$REPO_ROOT" merge-base origin/main HEAD 2>/dev/
 # Pass a RANGE (base..HEAD) so surfaces_lib routes it through `git diff <range>`
 # (the changed set of the unpushed range). A BARE sha would instead resolve to
 # that single commit's OWN diff-tree — the fork-point's history, not the change
-# under review — silently mis-targeting the 5b tooth. Empty base -> empty ref ->
-# the validator short-circuits cross_surface_hit to False (non-blocking).
+# under review — silently mis-targeting the 5b tooth. A scope that resolves to NO
+# paths reports `not-established` rather than `evaluated (no match)`, so the tooth
+# is off without claiming it looked.
 CRITIQUE_CHANGED_REF=""
 [ -n "$CHANGED_LINE_BASE_SHA" ] && CRITIQUE_CHANGED_REF="${CHANGED_LINE_BASE_SHA}..HEAD"
-queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT" --changed-ref "$CRITIQUE_CHANGED_REF"
+# `--include-worktree` unions the working tree into the probe's scope. Verify
+# precedes commit, so the slice under critique is on disk and a committed range
+# alone cannot see it: measured, the same tree gave hit=false from the range and
+# hit=true from its own worktree paths, which armed or disarmed the #408 5b tooth
+# by which question was asked rather than by the code. Widening can only make the
+# gate stricter -- `overrides` fires solely on an EVALUATED probe that matched --
+# so the whole cost is false refusals, and the checked-in corpus carries 11 bare
+# `single-surface` verdicts out of 965 artifacts to bound that.
+queue_selected "validate-critique-artifacts" python3 scripts/validate_critique_artifacts.py --repo-root "$REPO_ROOT" --changed-ref "$CRITIQUE_CHANGED_REF" --include-worktree
 queue_selected "validate-ideation-artifact" python3 scripts/validate_ideation_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-retro-artifact" python3 scripts/validate_retro_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-current-pointer-freshness" python3 scripts/validate_current_pointer_freshness.py --repo-root "$REPO_ROOT"
