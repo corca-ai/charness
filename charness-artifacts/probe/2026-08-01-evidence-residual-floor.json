@@ -1,0 +1,61 @@
+{
+  "corpus_established": true,
+  "floor": 8,
+  "floor_below_every_measured_minimum": true,
+  "kinds": {
+    "json_host_log_probes": {
+      "files": 83,
+      "min_residual": 530,
+      "min_residual_path": "charness-artifacts/probe/2026-07-14-v1.0.6-installed-bootstrap-consumer.json",
+      "smallest_five": [
+        {
+          "path": "charness-artifacts/probe/2026-07-14-v1.0.6-installed-bootstrap-consumer.json",
+          "residual": 530
+        },
+        {
+          "path": "charness-artifacts/probe/2026-07-18-v2.1.3-release-observer.json",
+          "residual": 601
+        },
+        {
+          "path": "charness-artifacts/probe/2026-07-19-v2.1.4-release-observer.json",
+          "residual": 672
+        },
+        {
+          "path": "charness-artifacts/probe/2026-07-14-v1.0.7-installed-reviewer-boundary-consumer.json",
+          "residual": 687
+        },
+        {
+          "path": "charness-artifacts/probe/2026-07-10-issue-430-bounded-reviewer-envelope-probe.json",
+          "residual": 700
+        }
+      ]
+    },
+    "markdown_artifacts": {
+      "files": 2168,
+      "min_residual": 337,
+      "min_residual_path": "charness-artifacts/cautilus/gather-private-saas-claim-fidelity-2026-07-01/justification.md",
+      "smallest_five": [
+        {
+          "path": "charness-artifacts/cautilus/gather-private-saas-claim-fidelity-2026-07-01/justification.md",
+          "residual": 337
+        },
+        {
+          "path": "charness-artifacts/cautilus/hotl-claim-fidelity-recon-2026-07-01/justification.md",
+          "residual": 346
+        },
+        {
+          "path": "charness-artifacts/reference-compaction/symptom-ledger.md",
+          "residual": 395
+        },
+        {
+          "path": "charness-artifacts/cautilus/hotl-confirm-slice9b-2026-07-09/justification.md",
+          "residual": 438
+        },
+        {
+          "path": "charness-artifacts/retro/2026-07-11-issue-create-safety-quality-speed-sweep-retro-packet.md",
+          "residual": 454
+        }
+      ]
+    }
+  }
+}

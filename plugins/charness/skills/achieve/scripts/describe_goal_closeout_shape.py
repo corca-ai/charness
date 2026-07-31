@@ -145,6 +145,12 @@ def _evidence_unsatisfied(ev: dict[str, Any], name: str) -> str | None:
     for entry in ev.get("binding_failures", []):
         if entry.get("name") == name:
             return "evidence file does not bind to this goal's slug"
+    for entry in ev.get("stub_evidence", []):
+        if entry.get("name") == name:
+            # Present and non-empty, so no other refusal set names it. Without
+            # this the row read "present and well-formed" while the flip was
+            # refused -- the same divergence recorded for early_close_report below.
+            return entry.get("detail") or "evidence says nothing beyond its own identity"
     if name == "early_close_report":
         # A present, bound report can still refuse the flip on section-body shape
         # (``apply_report_shape`` -> ``invalid_early_close_reports`` -> ok=False).

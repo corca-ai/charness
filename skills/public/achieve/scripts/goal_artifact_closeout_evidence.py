@@ -325,6 +325,11 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
         evidence=evidence,
         skips=skips,
         kind="achieve-after",
+        # `residual_tokens`, not `tokens`: binding stays in `_apply_evidence_binding`
+        # below, which reports a per-ENTRY reason this generic call cannot produce.
+        # The stub floor is per-file and belongs at the choke point, so it is wired
+        # separately rather than copied out here.
+        residual_tokens=derive_goal_tokens(text),
     )
     _early_close_report.reject_skip(report)
     _early_close_report.apply_report_shape(report)

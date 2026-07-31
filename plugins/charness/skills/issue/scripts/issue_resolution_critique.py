@@ -76,7 +76,9 @@ def _line_numbers(line: dict[str, Any], numbers: list[int]) -> list[int]:
     return []
 
 
-def _check_value(helper: Any, repo_root: Path, value: str) -> dict[str, Any]:
+def _check_value(
+    helper: Any, repo_root: Path, value: str, target_numbers: list[int]
+) -> dict[str, Any]:
     blocked_match = _CRITIQUE_BLOCKED.match(value)
     if blocked_match:
         signal = blocked_match.group(1).strip()
@@ -93,6 +95,13 @@ def _check_value(helper: Any, repo_root: Path, value: str) -> dict[str, Any]:
         evidence={"resolution_critique": value},
         skips={},
         kind="issue-resolution",
+        # `residual_tokens`, not `tokens`: binding stays per-ISSUE below, because
+        # one critique line may name several issues and each must bind on its own,
+        # while `tokens=` means "bind if ANY match". The stub floor is a per-FILE
+        # question, so it can run here. Without it this gate accepted an evidence
+        # file whose entire content was the issue citation itself -- the floor
+        # lived in the shared library and this caller never reached it.
+        residual_tokens=[str(number) for number in target_numbers],
     )
 
 
@@ -187,7 +196,7 @@ def check_resolution_critique(
         target_numbers = _line_numbers(line, numbers)
         if not target_numbers:
             continue
-        check = _check_value(helper, repo_root, line["value"])
+        check = _check_value(helper, repo_root, line["value"], target_numbers)
         checks.append(
             {
                 "target": line["target"],

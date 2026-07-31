@@ -317,6 +317,19 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     }
 
 
+def _stub_evidence_lines(critique: dict[str, Any]) -> list[str]:
+    """The stub-evidence refusal, rendered for the commit carrier.
+
+    The file exists and is non-empty, so none of the other refusal sets name it;
+    without this the author got nine words and no diagnosis on the one surface
+    that stops a commit -- the defect the sibling loops above already repaired.
+    """
+    return [
+        f"    {entry.get('name')}: {entry.get('detail')}"
+        for entry in critique.get("stub_evidence", []) or []
+    ]
+
+
 def _format_failure(report: dict[str, Any]) -> str:
     # #444 F5: a pause-only failure has exactly one remedy (the brief's
     # `AI-provenance:` line); the generic header/footer would misdirect the
@@ -376,6 +389,7 @@ def _format_failure(report: dict[str, Any]) -> str:
                 lines.append(f"    {entry.get('name')}: evidence file missing or empty: {entry.get('path')}")
             for failure in critique.get("binding_failures", []):
                 lines.append(f"    #{failure.get('number')}: {failure.get('reason')}")
+            lines.extend(_stub_evidence_lines(critique))
         behavioral = item.get("behavioral_verdict", {})
         if behavioral.get("applies") and not behavioral.get("ok", True):
             missing_behavior = ", ".join(f"#{number}" for number in behavioral.get("missing", []))

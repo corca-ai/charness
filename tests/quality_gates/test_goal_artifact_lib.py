@@ -449,14 +449,22 @@ def test_operator_decision_queue_is_not_global_required_section() -> None:
 def _seed_retro(tmp_path: Path, slug: str = "g") -> Path:
     retro = tmp_path / "charness-artifacts/retro" / f"2026-05-28-{slug}.md"
     retro.parent.mkdir(parents=True, exist_ok=True)
-    retro.write_text("# Retro\n\nbody\n", encoding="utf-8")
+    # Non-degenerate on purpose; see the note in test_goal_early_close_report.py.
+    retro.write_text(
+        "# Retro\n\n## What Happened\n\nThe slice landed and its proof ran to green.\n",
+        encoding="utf-8",
+    )
     return retro
 
 
 def _seed_probe(tmp_path: Path, slug: str = "g") -> Path:
     probe = tmp_path / "charness-artifacts/probe" / f"2026-05-28-{slug}.json"
     probe.parent.mkdir(parents=True, exist_ok=True)
-    probe.write_text('{"host":"claude-code"}\n', encoding="utf-8")
+    probe.write_text(
+        '{"host": "claude-code", "surface": "session-log",'
+        ' "observed": ["slice-start", "slice-end"], "verdict": "probed"}\n',
+        encoding="utf-8",
+    )
     return probe
 
 
@@ -588,20 +596,23 @@ def _complete_evidence_for_new_goal(tmp_path: Path, *, queue_body: str) -> str:
     date = "2026-06-17"
     slug = "operator-queue"
     gal.upsert_goal(tmp_path, date=date, slug=slug, title="T")
+    # Non-degenerate fixtures on purpose; see the note in
+    # test_goal_early_close_report.py. The assertions below are unchanged.
     retro = _seed_named(
         tmp_path,
         f"charness-artifacts/retro/{date}-{slug}.md",
-        f"# Retro\n\n{slug}\n",
+        f"# Retro\n\n{slug}\n\n## What Happened\n\nThe run closed with its proof green.\n",
     )
     probe = _seed_named(
         tmp_path,
         f"charness-artifacts/probe/{date}-{slug}.json",
-        '{"host":"claude-code"}\n',
+        '{"host": "claude-code", "surface": "session-log",'
+        ' "observed": ["slice-start", "slice-end"], "verdict": "probed"}\n',
     )
     review = _seed_named(
         tmp_path,
         f"charness-artifacts/critique/{date}-{slug}-disposition.md",
-        f"# Disposition review for {slug}\n",
+        f"# Disposition review for {slug}\n\nEvery queue entry was read and dispositioned.\n",
     )
     text = _goal_text(tmp_path, slug=slug, date=date)
     start = text.index("\n## Operator Decision Queue") + 1

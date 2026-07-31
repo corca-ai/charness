@@ -49,8 +49,22 @@ def _seed_closeout_lines(tmp_path: Path, slug: str = "g") -> str:
     probe = tmp_path / "charness-artifacts/probe" / f"2026-05-28-{slug}.json"
     retro.parent.mkdir(parents=True, exist_ok=True)
     probe.parent.mkdir(parents=True, exist_ok=True)
-    retro.write_text(f"# Retro for {slug}\n\nbody\n", encoding="utf-8")
-    probe.write_text(f'{{"goal":"{slug}"}}\n', encoding="utf-8")
+    # Non-degenerate on purpose. A 12-byte `{"goal":"g"}` probe is a STUB by
+    # any measure, and the closeout gate now refuses one: real host-log probes
+    # in this repo floor at 923 bytes / 530 residual characters, and real
+    # markdown artifacts at 337, so fixture minimalism was standing in for
+    # evidence minimalism. The assertions below are unchanged.
+    retro.write_text(
+        f"# Retro for {slug}\n\n"
+        "## What Happened\n\nThe slice landed and its proof ran to green.\n\n"
+        "## What To Change\n\nNothing outstanding for this fixture.\n",
+        encoding="utf-8",
+    )
+    probe.write_text(
+        '{"goal": "' + slug + '", "host": "claude-code", "surface": "session-log",'
+        ' "observed": ["slice-start", "slice-end"], "verdict": "probed"}\n',
+        encoding="utf-8",
+    )
     report = _seed_bound_report(tmp_path, slug)
     return (
         f"Retro: {retro.relative_to(tmp_path)}\n"

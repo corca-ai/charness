@@ -496,27 +496,30 @@ def test_presence_only_runs_report_that_they_are_presence_only(tmp_path: Path) -
     assert report["satisfied"][0]["binding"] == "not-checked"
 
 
-@pytest.mark.xfail(
-    reason="S3 residual: no shape check runs on this gate's accept path, so a stub "
-    "that cites its context is accepted. Turning green means someone closed it.",
-    strict=False,
-)
-def test_s3_residual_a_stub_that_cites_its_context_is_not_refused(tmp_path: Path) -> None:
-    """Sweep row S3's stub half, recorded OPEN — as an xfail, not a green assertion.
+def test_a_stub_that_cites_its_context_is_refused(tmp_path: Path) -> None:
+    """Sweep row S3's stub half, CLOSED -- this was a checked-in xfail.
 
-    Two byte floors were written for it and both withdrawn (see the "NOT a size
-    floor, deliberately" comment in `check_prescribed_skill_executed_lib.py`): a
-    basename-only floor left the CHEAPER content channel open, and a universal
-    one was still defeated by filler while failing 34 existing tests, i.e.
-    sitting above how this repo writes its own evidence.
+    `printf '#466' > x.md` is four bytes and binds by CONTENT, because its content
+    IS the token. Two floors were written for this and both withdrawn: a
+    basename-only one left the cheaper content channel open, and a universal
+    200-byte one was still defeated by filler while failing 34 existing tests.
 
-    `xfail(strict=False)` on purpose. Asserting `ok is True` would pin the HOLE
-    as required behavior: the next agent who wires a per-kind shape check into
-    the accept path would get a red test named "still satisfies the gate" and
-    read their own fix as a regression. This way the residual is executable and
-    documented, and closing it turns the test green instead of red.
+    The rule that closed it is not a size number: evidence must say something
+    BEYOND the identity it was checked against. Measured before it was written,
+    by a checked-in script (`scripts/measure_evidence_residual.py`) rather than a
+    comment: the stub's residual is 0, markdown artifacts floor at 337 over 2168
+    files, and real JSON host-log probes at 530 over 83. The floor sits at 8,
+    below every measured minimum rather than between two of them.
+
+    It broke no existing ASSERTION, and it did break four degenerate FIXTURES
+    (12-byte shapes like `{"goal":"g"}`), which were rewritten to be realistic.
+    Recorded plainly, because the previous withdrawal of this floor rested on the
+    mirror-image elision -- counting fixtures as if they were evidence.
+
+    What it does not close: a few characters of filler still passes. This refuses
+    a stub, not a lie.
     """
-    stub = tmp_path / "charness-artifacts/critique/x.md"
+    stub = tmp_path / "charness-artifacts/critique/one-byte.md"
     _touch(stub, "#466")
     report = lib.check(
         repo_root=tmp_path,
@@ -526,8 +529,96 @@ def test_s3_residual_a_stub_that_cites_its_context_is_not_refused(tmp_path: Path
         tokens=["466"],
     )
     assert stub.stat().st_size == 4
-    assert report["satisfied"][0]["binding"] == "content contains '466'"
-    assert report["ok"] is False, "S3 residual closed — drop the xfail and this message"
+    assert report["ok"] is False
+    assert report["satisfied"] == []
+    assert [item["name"] for item in report["stub_evidence"]] == ["standalone_critique"]
+    assert report["stub_evidence"][0]["residual_chars"] == 0
+    assert report["residual_checked"] is True
+
+
+def test_a_real_artifact_that_binds_is_still_accepted(tmp_path: Path) -> None:
+    """The discriminating control for the refusal above.
+
+    Same token, same binding channel, same path -- only the artifact is real. If
+    this ever goes red the floor has become bar-moving, which is what withdrew the
+    two previous attempts.
+    """
+    artifact = tmp_path / "charness-artifacts/critique/2026-07-31-real.md"
+    _touch(
+        artifact,
+        "# Critique: issue #466\n\n"
+        "Angle one: the accept path took file presence for the executed skill.\n"
+        "Angle two: the binding token and the artifact body were the same string.\n",
+    )
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": str(artifact)},
+        skips={},
+        tokens=["466"],
+    )
+    assert report["ok"] is True
+    assert report["stub_evidence"] == []
+    assert report["satisfied"][0]["residual_chars"] >= lib.MIN_BOUND_RESIDUAL_CHARS
+
+
+def test_the_residual_floor_does_not_run_without_any_identity(tmp_path: Path) -> None:
+    """A caller that can derive NO identity sees no change in bar, and the report says so.
+
+    Not "the floor runs only where binding runs" -- that was true of the first cut
+    and is not true now: `residual_tokens=` runs the floor on the presence-only
+    branch for the two wrappers that bind out-of-band. The surviving invariant is
+    narrower: with no tokens of either kind there is nothing to remove, so the
+    floor is inert and `residual_checked` says so.
+    """
+    stub = tmp_path / "charness-artifacts/critique/one-byte.md"
+    _touch(stub, "#466")
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": str(stub)},
+        skips={},
+    )
+    assert report["ok"] is True
+    assert report["residual_checked"] is False
+    assert report["satisfied"][0]["binding"] == "not-checked"
+
+
+def test_residual_tokens_run_the_floor_on_the_presence_only_branch(tmp_path: Path) -> None:
+    """The new path, pinned at the library rather than only through a wrapper.
+
+    `residual_tokens` supplies identity for the stub floor without binding, which
+    is what lets the issue and achieve gates keep their own binding rules.
+    """
+    stub = tmp_path / "charness-artifacts/critique/one-byte.md"
+    _touch(stub, "#466")
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": str(stub)},
+        skips={},
+        residual_tokens=["466"],
+    )
+    assert report["ok"] is False
+    assert report["binding_checked"] is False, "binding must stay untouched"
+    assert report["residual_checked"] is True
+    assert report["stub_evidence"][0]["residual_chars"] == 0
+
+
+def test_an_overlapping_token_leaves_no_counting_fragment(tmp_path: Path) -> None:
+    """Longest-token-first removal, so `466` inside `issue-466` cannot leave `issue-`
+    behind as content when both are binding tokens."""
+    stub = tmp_path / "charness-artifacts/critique/issue-466.md"
+    _touch(stub, "issue-466")
+    report = lib.check(
+        repo_root=tmp_path,
+        required=["standalone_critique"],
+        evidence={"standalone_critique": str(stub)},
+        skips={},
+        tokens=["466", "issue-466"],
+    )
+    assert report["ok"] is False
+    assert report["stub_evidence"][0]["residual_chars"] == 0
 
 
 def test_a_dotted_version_token_is_boundary_matched(tmp_path: Path) -> None:
@@ -556,3 +647,76 @@ def test_a_v_prefix_is_admitted_for_versions_and_refused_for_bare_issue_numbers(
     assert lib._token_matches("2", "v2-1-4-release-packet.md", in_name=True) is False
     # The `v` still has to sit on a boundary of its own.
     assert lib._token_matches("2.12.0", "rev2.12.0x") is False
+
+
+def test_the_residual_floor_reaches_the_issue_close_gate(tmp_path: Path) -> None:
+    """The motivating case, at the gate it actually lives on.
+
+    The floor was in the library and this gate never reached it: the
+    resolution-critique wrapper binds per ISSUE NUMBER out-of-band and supplies no
+    `tokens=`, so a four-byte `#466` file still closed issue #466 with the floor
+    shipped. `residual_tokens=` wires the per-file question in without weakening
+    the per-issue binding rule.
+    """
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills/public/issue/scripts"))
+    import issue_resolution_critique as irc
+
+    stub = tmp_path / "charness-artifacts/critique/x.md"
+    _touch(stub, "#466")
+    body = "Close #466\n\nCritique: charness-artifacts/critique/x.md\n"
+    report = irc.check_resolution_critique(
+        repo_root=tmp_path, body=body, classification="bug", numbers=[466]
+    )
+    assert report["ok"] is False
+    assert report["residual_checked"] is True
+    assert [entry["name"] for entry in report["stub_evidence"]] == ["resolution_critique"]
+
+
+def test_a_real_resolution_critique_still_closes_its_issue(tmp_path: Path) -> None:
+    """Discriminating control for the refusal above: same gate, same token, real file."""
+    import sys
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills/public/issue/scripts"))
+    import issue_resolution_critique as irc
+
+    real = tmp_path / "charness-artifacts/critique/2026-08-01-real.md"
+    _touch(
+        real,
+        "# Resolution critique for #466\n\n"
+        "Angle one: the accept path took file presence for skill execution.\n"
+        "Angle two: the binding token and the artifact body were the same string.\n",
+    )
+    body = "Close #466\n\nCritique: charness-artifacts/critique/2026-08-01-real.md\n"
+    report = irc.check_resolution_critique(
+        repo_root=tmp_path, body=body, classification="bug", numbers=[466]
+    )
+    assert report["ok"] is True
+    assert report["stub_evidence"] == []
+
+
+def test_an_unreadable_evidence_file_is_not_diagnosed_as_a_stub(tmp_path: Path) -> None:
+    """Read failure and stub-ness are different facts.
+
+    A file that bound by BASENAME but whose content cannot be read would score
+    residual 0 and be reported as saying nothing — a wrong diagnosis at a refusal
+    an operator has to act on.
+    """
+    artifact = tmp_path / "charness-artifacts/critique/2026-08-01-466-real.md"
+    _touch(artifact, "# Critique\n\nA real body that the gate will not be able to read.\n")
+    artifact.chmod(0o000)
+    try:
+        report = lib.check(
+            repo_root=tmp_path,
+            required=["standalone_critique"],
+            evidence={"standalone_critique": str(artifact)},
+            skips={},
+            tokens=["466"],
+        )
+        if report["satisfied"]:  # root can read anything; skip the assertion there
+            assert report["ok"] is True
+            assert report["stub_evidence"] == []
+            assert report["satisfied"][0]["residual_chars"] is None
+    finally:
+        artifact.chmod(0o644)

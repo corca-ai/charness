@@ -79,6 +79,79 @@ MIN_SKIP_DETAIL_LENGTH = 20
 # honestly enforce, and it kills the stale-unrelated-artifact half of S3
 # outright. The rest is recorded, not papered over with a number.
 
+# floor-addition-restraint: recorded call. Q1 (closeout-contract weight): YES,
+# partly -- it adds no field or section, but the contract's word is "form", and a
+# refusal an author meets by failing the flip is a form. That raises the bar to
+# add it, and it is why the three consumer renderers
+# (`check_goal_artifact`, `describe_goal_closeout_shape`,
+# `check_issue_closeout_commit_msg`) were taught the category in the same slice:
+# a form discovered by failing the flip AND with no message is the churn pattern
+# the checklist exists to stop. Standing floors are audited in
+# `charness-artifacts/audit/closeout-floors.md`; this one is a `keep` by Q3. Q2 (is advisory enough?): no. The recurrence is recorded:
+# sweep row S3, two withdrawn floors, and an xfail checked in against this exact
+# accept path. Q3 (preflight absorption): no -- the condition is a property of the
+# cited file at check time, not a static artifact shape, so this is a `keep`.
+# Scope: it runs wherever identity tokens are available -- either the `tokens=`
+# binding path, or `residual_tokens=` for the two wrappers that must bind
+# out-of-band. A caller that can supply no identity at all still sees no change.
+#
+# 8, not 20. The teeth are at residual == 0 (the content IS the token); the number
+# only guards near-empty residue like `#` or `x`. It is therefore set BELOW every
+# measured datapoint rather than between two of them. Both accepted evidence kinds
+# are measured, and the measurement is a checked-in script, not an assertion --
+# `scripts/measure_evidence_residual.py`, whose recorded run is
+# `charness-artifacts/probe/2026-08-01-evidence-residual-floor.json`:
+#   markdown artifacts   min residual 337 over 2168 files
+#   JSON host-log probes min residual 530 over 83 files
+# `_bound_residual_chars` counts alphanumerics only, so a punctuation-heavy JSON
+# probe scores lower than prose of the same size; that is why the JSON kind was
+# measured separately rather than assumed. 20 would have sat 2 characters under a
+# real fixture, which is a knife edge, not a floor.
+MIN_BOUND_RESIDUAL_CHARS = 8
+
+# Sweep row S3's stub half. NOT the byte floor S3 asked for, and not the two that
+# were withdrawn -- see the note above `MIN_SKIP_DETAIL_LENGTH` for why a size
+# number is coarse in the direction that matters.
+#
+# The precise defect is narrower than "the file is small": `printf '#466' > x.md`
+# binds by CONTENT because its content IS the token. So the rule is that evidence
+# must say something BEYOND the identity it binds to. Measured before it was
+# written, which is what the two withdrawn attempts skipped:
+#
+#   * the stub's residual after removing its token occurrences is 0 characters;
+#   * across all 2168 checked-in `charness-artifacts/**/*.md`, scored against every
+#     word of each file's own name as a token, the SMALLEST residual is 337.
+#
+# That is a 337-to-0 separation, not a threshold on a continuum, and it holds for
+# both accepted kinds (see the measurement script named above). Note the
+# earlier "it failed 34 existing tests, i.e. it sat above how this repo's own
+# evidence is written" reasoning: those 34 were TEST FIXTURES. The artifacts
+# themselves start at 427 bytes (p1 = 816, median = 4119), so fixture minimalism
+# was standing in for evidence minimalism.
+#
+# What this does NOT close: a few characters of filler still passes, exactly as any
+# floor here would. This refuses a STUB, not a lie. The remaining distance is
+# per-kind SHAPE, which this deliberately policy-free layer is still the wrong
+# place to decide -- see the note above.
+def _bound_residual_chars(text: str, tokens: list[str]) -> int:
+    """Alphanumeric characters left after removing every binding token occurrence.
+
+    Case-insensitive and longest-token-first so overlapping tokens (``466`` inside
+    ``issue-466``) cannot leave a fragment that counts as content.
+
+    Removal is plain substring, deliberately WIDER than ``_token_matches``, which
+    is boundary- and citation-anchored: token ``466`` also erases the ``466``
+    inside ``1466``. The asymmetry only ever removes more, so it can make a real
+    artifact look thinner but can never let a stub through -- and this predicate's
+    job is to refuse, so erring toward "less residual" errs toward refusing, which
+    the floor's placement two orders of magnitude below the corpus absorbs.
+    """
+    residual = text
+    for token in sorted({token for token in tokens if token}, key=len, reverse=True):
+        residual = re.sub(re.escape(token), " ", residual, flags=re.IGNORECASE)
+    return len(re.sub(r"[^0-9A-Za-z]", "", residual))
+
+
 # Cap how much of an evidence file is scanned for a binding token. A retro or
 # probe artifact references its goal/issue/release identity in the first
 # screenful when it does at all; reading more buys nothing and risks a large
@@ -191,6 +264,21 @@ def _token_matches(token: str, haystack: str, *, in_name: bool = False) -> bool:
     return False
 
 
+def _read_binding_text(path: Path) -> tuple[str, bool]:
+    """``(text, readable)`` over the same window ``evidence_binds_to_context`` scans.
+
+    ``readable`` is returned rather than folded into an empty string: a file that
+    bound by BASENAME but whose content cannot be read (permissions, a race) would
+    otherwise score residual 0 and be reported as a stub -- a wrong diagnosis at a
+    refusal an operator has to act on.
+    """
+    try:
+        with path.open("r", encoding="utf-8", errors="ignore") as handle:
+            return handle.read(_BINDING_CONTENT_SCAN_BYTES), True
+    except OSError:
+        return "", False
+
+
 def evidence_binds_to_context(
     path: Path, *, tokens: list[str]
 ) -> tuple[bool, str]:
@@ -301,6 +389,34 @@ def _validate_skip_reason(reason: str) -> tuple[bool, str | None]:
     return True, None
 
 
+def _residual_of(path: Path, tokens: list[str]) -> int | None:
+    text, readable = _read_binding_text(path)
+    return _bound_residual_chars(text, tokens) if readable else None
+
+
+def _stub_failure(name: str, path: Path, tokens: list[str]) -> dict[str, Any] | None:
+    """A stub-evidence entry, or ``None`` when the file says enough (or cannot be read).
+
+    An unreadable file is NOT reported as a stub: that is a different fact, and
+    ``evidence_binds_to_context`` may legitimately have bound it by basename.
+    """
+    residual = _residual_of(path, tokens)
+    if residual is None or residual >= MIN_BOUND_RESIDUAL_CHARS:
+        return None
+    return {
+        "name": name,
+        "path": str(path),
+        "residual_chars": residual,
+        "detail": (
+            f"evidence says nothing beyond the identity it was checked against "
+            f"({residual} character(s) remain after removing "
+            f"{sorted(set(tokens))}; {MIN_BOUND_RESIDUAL_CHARS} required). This "
+            f"is a stub check, not a binding verdict -- on a presence-only caller "
+            f"the file may not have been bound at all."
+        ),
+    }
+
+
 def check(
     *,
     repo_root: Path,
@@ -309,6 +425,7 @@ def check(
     skips: dict[str, str],
     kind: str | None = None,
     tokens: list[str] | None = None,
+    residual_tokens: list[str] | None = None,
 ) -> dict[str, Any]:
     """Validate that every required evidence name has either a real file or a
     valid skip reason. Returns a structured report.
@@ -328,6 +445,19 @@ def check(
     genuinely cannot derive an identity -- but the report now RECORDS that as
     ``binding: not-checked`` per item, so a presence-only pass can no longer be
     read as a bound one.
+
+    ``residual_tokens`` supplies identity for the STUB floor alone, without
+    changing binding. Two wrappers bind out-of-band for structural reasons --
+    ``issue_resolution_critique`` binds per ISSUE NUMBER because one critique line
+    may carry several, and ``goal_artifact_closeout_evidence`` binds per entry
+    against goal-derived tokens -- and ``tokens=`` here means "bind if ANY of these
+    match", which is strictly weaker than what those two need. Wiring the stub
+    floor through ``tokens`` would therefore have forced them to choose between a
+    weaker binding rule and no stub floor: measured, a four-byte ``#466`` file
+    closed issue #466 through the resolution-critique gate with the floor already
+    in the library, because that gate supplies no ``tokens``. This parameter keeps
+    the floor at the one choke point instead of copying it into each wrapper,
+    which is the mistake ``evidence_binds_to_context`` already made once.
     """
     repo_root = repo_root.resolve()
     satisfied: list[dict[str, Any]] = []
@@ -336,7 +466,9 @@ def check(
     invalid_skips: list[dict[str, Any]] = []
     missing_evidence_files: list[dict[str, Any]] = []
     unbound_evidence: list[dict[str, Any]] = []
+    stub_evidence: list[dict[str, Any]] = []
     binding_tokens = [token for token in (tokens or []) if token]
+    stub_tokens = [token for token in (residual_tokens or []) if token] or binding_tokens
 
     for name in required:
         if name in evidence:
@@ -356,12 +488,33 @@ def check(
                         {"name": name, "path": str(resolved), "detail": reason}
                     )
                     continue
+                stub = _stub_failure(name, resolved, stub_tokens)
+                if stub is not None:
+                    stub_evidence.append(stub)
+                    continue
                 satisfied.append(
-                    {"name": name, "via": "evidence", "path": str(resolved), "binding": reason}
+                    {
+                        "name": name,
+                        "via": "evidence",
+                        "path": str(resolved),
+                        "binding": reason,
+                        "residual_chars": _residual_of(resolved, stub_tokens),
+                    }
                 )
                 continue
+            if stub_tokens:
+                stub = _stub_failure(name, resolved, stub_tokens)
+                if stub is not None:
+                    stub_evidence.append(stub)
+                    continue
             satisfied.append(
-                {"name": name, "via": "evidence", "path": str(resolved), "binding": "not-checked"}
+                {
+                    "name": name,
+                    "via": "evidence",
+                    "path": str(resolved),
+                    "binding": "not-checked",
+                    "residual_chars": _residual_of(resolved, stub_tokens) if stub_tokens else None,
+                }
             )
             continue
         if name in skips:
@@ -374,7 +527,13 @@ def check(
             continue
         missing.append(name)
 
-    ok = not (missing or invalid_skips or missing_evidence_files or unbound_evidence)
+    ok = not (
+        missing
+        or invalid_skips
+        or missing_evidence_files
+        or unbound_evidence
+        or stub_evidence
+    )
     return {
         "ok": ok,
         "kind": kind,
@@ -385,8 +544,13 @@ def check(
         "invalid_skips": invalid_skips,
         "missing_evidence_files": missing_evidence_files,
         "unbound_evidence": unbound_evidence,
+        "stub_evidence": stub_evidence,
         # Reported, not inferred: a consumer reading `ok: true` cannot otherwise
         # tell a bound pass from a presence-only one.
         "binding_tokens": sorted(set(binding_tokens)),
         "binding_checked": bool(binding_tokens),
+        # The floor runs wherever identity tokens were available -- the bound path,
+        # or a presence-only caller that supplied `residual_tokens`. A pass with no
+        # identity at all must not read as one that was checked for stub-ness.
+        "residual_checked": bool(stub_tokens),
     }

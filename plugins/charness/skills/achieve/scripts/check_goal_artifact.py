@@ -60,6 +60,24 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def _stub_evidence_bits(evidence_report: dict) -> list[str]:
+    """The stub-evidence refusal, rendered.
+
+    A distinct ``ok=False`` category: the file exists and is non-empty, so neither
+    ``missing`` nor ``missing_evidence_files`` names it. Left unrendered, a
+    stub-only refusal printed the message prefix and an empty tail -- the
+    no-diagnosis failure this renderer's siblings already repaired once each.
+    Its own function so the caller's branch budget does not grow.
+    """
+    entries = evidence_report.get("stub_evidence") or []
+    if not entries:
+        return []
+    return [
+        "stub evidence: "
+        + ", ".join(f"{entry['name']} ({entry['detail']})" for entry in entries)
+    ]
+
+
 def _evidence_missing_bits(evidence_report: dict) -> list[str]:
     """Human-facing reasons the After-phase evidence gate refused the flip.
 
@@ -75,6 +93,7 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
             "missing files: "
             + ", ".join(entry["name"] for entry in evidence_report["missing_evidence_files"])
         )
+    bits.extend(_stub_evidence_bits(evidence_report))
     if evidence_report["invalid_skips"]:
         bits.append(
             "invalid skips: "

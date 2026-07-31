@@ -124,18 +124,45 @@ boundary, because `v2.12.0` / `v2-11-2-release-critique.md` is how this repo
 names release artifacts and refusing it would reject the artifacts the gate
 exists to accept.
 
-**Open, and deliberately not closed with a number:** sweep row S3 observes that
-the only content test is `st_size == 0`, so a stub satisfies the gate. Two byte
-floors were written for it and both withdrawn — a basename-channel-only floor
-left the *cheaper* content channel open (`printf '#466' > x.md` is four bytes
-and binds), and a universal one was still defeated by filler while failing 34
-existing tests, i.e. sitting above how this repo writes its own evidence. What
-separates a stub from an artifact is SHAPE, and shape is per-kind:
-`validate_critique_artifacts.py` and `validate_retro_artifact.py` own it. This
-library is deliberately policy-free and generic over evidence names, so it is
-the wrong layer for a kind-specific floor. Binding kills the
-stale-unrelated-artifact half of S3; the stub half stays open and is pinned by
-`test_a_stub_evidence_file_still_satisfies_the_gate_when_it_binds`.
+**Closed, and not with a byte floor:** sweep row S3 observed that the only
+content test was `st_size == 0`, so a stub satisfied the gate. Two byte floors
+were written for it and both withdrawn — a basename-channel-only floor left the
+*cheaper* content channel open (`printf '#466' > x.md` is four bytes and binds),
+and a universal one was still defeated by filler while failing 34 existing
+tests. That second withdrawal rested on a mis-measurement worth recording: the
+34 were TEST FIXTURES, not evidence. The artifacts start at 427 bytes.
+
+The rule that closed it is narrower than size: **evidence must say something
+beyond the identity it cites.** After the citation tokens are removed, at least
+`MIN_BOUND_RESIDUAL_CHARS` alphanumeric characters must remain. Measured before
+it was written, and the measurement is a **checked-in script** rather than a
+number in a comment — [`scripts/measure_evidence_residual.py`](../scripts/measure_evidence_residual.py),
+whose recorded run is
+[`charness-artifacts/probe/2026-08-01-evidence-residual-floor.json`](../charness-artifacts/probe/2026-08-01-evidence-residual-floor.json).
+The stub's residual is 0; markdown artifacts floor at 337 over 2168 files, and
+real JSON host-log probes at 530 over 83. The floor sits at 8, below every
+measured minimum rather than between two of them.
+
+It broke no existing **assertion**. It did break four degenerate **fixtures** —
+12-byte shapes such as `{"goal":"g"}` — which were rewritten to be realistic with
+their assertions untouched. That is recorded here rather than omitted, because
+the previous withdrawal of this floor rested on the mirror-image elision: it
+counted 34 failing fixtures as evidence about how this repo writes evidence.
+
+It runs wherever an identity is available: the `tokens=` binding path, and
+`residual_tokens=` for the two wrappers that must bind out-of-band
+(`issue_resolution_critique` binds per issue NUMBER, `goal_artifact_closeout_evidence`
+per entry). Wiring it through `tokens=` alone would have missed both: measured,
+a four-byte `#466` file closed issue #466 with the floor already in the library.
+A caller that can derive no identity at all still gets presence-only, and the
+report says so through `residual_checked`.
+
+**What stays open:** a few characters of filler still passes, exactly as any
+floor here would — this refuses a stub, not a lie. The remaining distance is
+per-kind SHAPE, and this library is deliberately policy-free and generic over
+evidence names, so it remains the wrong layer for a kind-specific floor.
+`validate_critique_artifacts.py` and `validate_retro_artifact.py` own shape, and
+they run from the repo's quality gate rather than on this accept path.
 
 The achieve After-phase wrapper wires binding for goal evidence. The
 `issue-resolution` wrapper also binds resolution-critique evidence to each
