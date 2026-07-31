@@ -40,11 +40,11 @@ not a lie.** No live cautilus run, no CI dispatch, no push.
 
 ## Next Session
 
-1. **Cheapest first, because it lowers every later slice's price.** Decide
-   `blocking-targets-subprocess-coverage` — land it or record it declined; a
-   FOURTH carried-forward is not a plan. Then batch independent review rounds
-   across slices: measured last run, 84.6 min of polling `sleep` against 50.5 min
-   of reviewer time, with three mutually independent slices reviewed in series.
+1. **DONE — `blocking-targets-subprocess-coverage` DECLINED, [D44](./deferred-decisions.md)**:
+   premise falsified by measurement, residue already shipped. D44 names one STILL-OPEN
+   residual the review found (candidate-test NAMES as remedy info). Unspent: **batch
+   independent review rounds across slices** — 84.6 min of `sleep` vs 50.5 min of review
+   last run; this one-round slice did not test the lever.
 2. **The sweep's 13 SUBAGENT-CONFIRMED high rows** — the largest block left and
    the one no handoff entry has ever named, which is how it stayed invisible.
    S1/S2/S9/S10/S12/S13/S23/S24/S26/S28/S30/S31/S32 plus S35; S110-S113 are newer

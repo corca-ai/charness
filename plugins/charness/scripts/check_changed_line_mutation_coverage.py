@@ -396,7 +396,17 @@ def _blocking_report(repo_root, args, base_sha, head_sha, changed_before_coverag
     for path in blocking:
         changed = changed_line_numbers(repo_root, base_sha, head_sha, path)
         if path not in statement_lines:
-            blocking_detail[path] = "file not tracked by the test suite (subprocess-only or untested) -> covers as 0%"
+            # "subprocess-only" was the pre-#465 wording and asserted a cause the
+            # 2026-07-30 measurement narrowed: a spawn that inherits the environment
+            # and runs the script at its real in-repo path IS attributed, so being
+            # subprocess-tested is not by itself why a file is untracked. Name the
+            # two honest possibilities and point at the payload that examines one.
+            blocking_detail[path] = (
+                "file not tracked by the test suite (untested, or exercised only where coverage "
+                "was never attributed -- see subprocess_coverage_advisory, and its _scope "
+                "sibling, which says what was examined when the advisory itself is empty) "
+                "-> covers as 0%"
+            )
         else:
             _executed, missing = statement_lines[path]
             blocking_detail[path] = {"changed_and_missing": sorted(changed & missing)}

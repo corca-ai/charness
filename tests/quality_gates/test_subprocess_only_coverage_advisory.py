@@ -596,7 +596,8 @@ def test_a_blocked_file_with_no_proof_targets_is_still_examined(tmp_path: Path) 
     """Round 2, finding 7. The advisory keyed on `blocking_targets`, but a file that
     blocks WITHOUT producing a `path:line` target is the single most likely candidate
     for this diagnosis — its own `blocking_detail` reads "file not tracked by the test
-    suite (subprocess-only or untested)". It was examined zero times, and `scope`
+    suite (untested, or exercised only where coverage was never attributed)". It was
+    examined zero times, and `scope`
     reported that as nothing to examine.
     """
     lib = _advisory_lib()

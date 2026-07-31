@@ -332,8 +332,9 @@ def _advisory(
     # Union, not just the files WITH proof targets. A file that blocks but produced
     # no `path:line` target is reported by the narration as "could not produce exact
     # proof targets", and its `blocking_detail` literally reads "file not tracked by
-    # the test suite (subprocess-only or untested)" — i.e. it is the single most
-    # likely candidate for this diagnosis, and keying on `blocking_targets` alone
+    # the test suite (untested, or exercised only where coverage was never
+    # attributed)" — i.e. it is the single most likely candidate for this diagnosis,
+    # and keying on `blocking_targets` alone
     # examined it zero times while `scope` reported that as nothing to examine.
     blocked = sorted({*blocking_targets, *(blocking or [])})
     baseline = load_subprocess_boundary_pairs(repo_root, baseline_rel=baseline_rel)

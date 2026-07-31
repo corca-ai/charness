@@ -46,7 +46,16 @@ snapshotted before and verified at return.
   #465, by measurement:** "the coverage mapper cannot see across a process
   boundary" — as this entry originally read — is false here. The producer writes
   a `sitecustomize` calling `coverage.process_startup()`, and a subprocess-only
-  test of a script at its real path attributes 143 lines. What loses the
+  test of a script at its real path has its executed lines attributed. (**Amended
+  2026-08-01 while declining D44:** this sentence originally cited "143 lines",
+  the figure round-2 review RETRACTED as confounded — it came from
+  `test_release_narrative_audit.py`, which also loads the module in-process, so it
+  proved nothing about the child. The conclusion survives on the purpose-built
+  control that replaced it; see the
+  [#465 critique](../critique/2026-07-30-issue-465-resolution.md) and
+  [subprocess_only_coverage_advisory.py](../../scripts/subprocess_only_coverage_advisory.py)'s
+  docstring. The number is removed rather than restated because the clean control
+  measured a different, purpose-built script.) What loses the
   measurement is narrower: an `env=` that REPLACES the environment, or a test
   that runs an out-of-tree COPY of the script (outside the rcfile's
   `source = <repo_root>`, 0 lines attributed). Some of the four BLOCKs were
