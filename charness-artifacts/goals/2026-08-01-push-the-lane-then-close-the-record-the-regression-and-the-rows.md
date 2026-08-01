@@ -1,6 +1,6 @@
 # Achieve Goal: Push the lane, then close the closeout record, the mutation regression, and the sweep's remaining high rows
 
-Status: draft
+Status: active
 Created: 2026-08-01
 Activation: `/goal @charness-artifacts/goals/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md`
 

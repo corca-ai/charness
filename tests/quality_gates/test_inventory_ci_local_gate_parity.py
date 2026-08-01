@@ -543,6 +543,76 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     assert payload["jobs_evaluated"] == 0
 
 
+def test_named_scope_refusal_survives_summary_mode(tmp_path: Path) -> None:
+    """The refusal payload must stay readable in `--summary`, not only in full mode.
+
+    Summary mode has its own key set, so a consumer keyed on `parity_issue_count`
+    used to raise on the raw refusal — "cannot tell refused from crashed" one
+    register down from the defect the refusal payload exists to fix. The three
+    refusal-only keys must survive summarization alongside the summary counts.
+    """
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run verify
+""",
+    )
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--workflow-glob",
+        ".github/workflows/*.toml",
+        "--summary",
+        "--json",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    payload = json.loads(result.stdout)
+    # The summary key set is present, so a summary consumer does not raise.
+    assert payload["parity_issue_count"] == 0
+    assert payload["jobs_evaluated"] == 0
+    # And the refusal is still legible as a refusal rather than an empty pass.
+    assert payload["status"] == "named-scope-empty"
+    assert payload["named_workflow_globs"] == [".github/workflows/*.toml"]
+    assert "matched no workflow file" in payload["reason"]
+
+
+def test_named_scope_refusal_summary_yaml_names_the_glob(tmp_path: Path) -> None:
+    """The YAML arm of summary mode carries the same refusal keys.
+
+    `emit_selected` branches on `--json` before `--summary`, so the YAML path is a
+    separate exit from the one above and needs its own assertion.
+    """
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm run verify
+""",
+    )
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--workflow-glob",
+        ".github/workflows/nope-*.yml",
+        "--summary",
+    )
+    assert result.returncode == 1, result.stdout + result.stderr
+    assert "status: named-scope-empty" in result.stdout
+    assert "nope-*.yml" in result.stdout
+    assert "matched no workflow file" in result.stdout
+
+
 def test_repo_does_not_reintroduce_pytest_ci_only_marker() -> None:
     mark_literal = "pytest.mark." + "ci_only"
     pyproject_literal = '"ci' + '_only:'

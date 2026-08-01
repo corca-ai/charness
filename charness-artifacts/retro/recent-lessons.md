@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`; sources: 2)
-- One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the "un-dispositioned stragglers" chunk through five slices and seven commits. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
+- Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md). (source: `charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md`)
 
 ## Repeat Traps
 
@@ -35,3 +35,4 @@
 - `charness-artifacts/retro/2026-08-01-session-retro.md`
 - `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`
 - `charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md`
+- `charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md`

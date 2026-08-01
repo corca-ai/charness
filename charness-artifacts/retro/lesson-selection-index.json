@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-01",
   "source_artifact_count": 412,
-  "candidate_count": 1669,
+  "candidate_count": 1670,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -126,6 +126,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:8a11d03d2fe9",
+      "kind": "current_focus",
+      "lesson": "Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md).",
+      "normalized_key": "goal under review 2026 08 01 get the operator call on the three unarmed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md)."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c7b1432e3f33",
       "kind": "current_focus",
       "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits.",
@@ -174,32 +200,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b9bb0ea80d9e",
-      "kind": "current_focus",
-      "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47.",
-      "normalized_key": "the three unarmed refusals goal handoff chunked routing over the live backlog selected chunk",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
-          "date": "2026-08-01",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47."
         }
       ]
     },
@@ -472,6 +472,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:8a11d03d2fe9",
+      "kind": "current_focus",
+      "lesson": "Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md).",
+      "normalized_key": "goal under review 2026 08 01 get the operator call on the three unarmed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md)."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:c7b1432e3f33",
       "kind": "current_focus",
       "lesson": "One goal run end to end — handoff chunked routing, two operator decisions, then `achieve` shaped and `/goal` ran the \"un-dispositioned stragglers\" chunk through five slices and seven commits.",
@@ -520,32 +546,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:b9bb0ea80d9e",
-      "kind": "current_focus",
-      "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47.",
-      "normalized_key": "the three unarmed refusals goal handoff chunked routing over the live backlog selected chunk",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
-          "date": "2026-08-01",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47."
         }
       ]
     },
@@ -962,6 +962,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a47b17d92db3",
+      "kind": "next_improvement",
+      "lesson": "**workflow — a closeout needs a distinct observer too.** The `Disposition review:` line pointed at this retro, which I wrote; a bounded closeout-claims review then found four blockers in the goal's own numbers, including the dup-ratchet win-rate this retro repeated. Applied: the line now points at `charness-artifacts/critique/2026-08-01-three-unarmed-refusals-closeout-claims-review.md`.",
+      "normalized_key": "workflow a closeout needs a distinct observer too the disposition review line pointed at",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — a closeout needs a distinct observer too.** The `Disposition review:` line pointed at this retro, which I wrote; a bounded closeout-claims review then found four blockers in the goal's own numbers, including the dup-ratchet win-rate this retro repeated. Applied: the line now points at `charness-artifacts/critique/2026-08-01-three-unarmed-refusals-closeout-claims-review.md`."
         }
       ]
     },
