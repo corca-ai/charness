@@ -519,3 +519,47 @@ def test_each_floor_module_bootstraps_itself_in_a_fresh_interpreter() -> None:
         )
         assert result.returncode == 0, f"{name}: {result.stderr}"
         assert result.stdout.strip() == "applies"
+
+
+def test_the_refusal_set_is_enumerable() -> None:
+    """The claim the arming rests on, checked rather than asserted.
+
+    This floor is armed on an ENUMERATION, not on a corpus pass rate — the pass
+    rate was measured over a population that could not have contained a violation
+    (23 in scope, 20 undatable, 2 actually compared), and the sibling figure-form
+    floor was disarmed for exactly that. What makes arming honest here is that
+    the question is decidable by reading: two evidence lines, three outcomes, no
+    fourth case. If a fourth ever appears, this test fails and the arming call
+    should be re-opened rather than the case quietly absorbed.
+    """
+    module = _load("goal_artifact_evidence_distinctness")
+    same = "charness-artifacts/retro/2026-08-01-a-retro.md"
+    other = "charness-artifacts/critique/2026-08-01-a-review.md"
+
+    def _verdict(retro_kind: str, review_kind: str, retro: str, review: str) -> tuple[bool, str]:
+        report = {
+            "satisfied": [
+                {"name": "retro_artifact", "via": retro_kind, "path": retro},
+                {"name": "disposition_review", "via": review_kind, "path": review},
+            ]
+        }
+        result = module.check(report, _artifact(DISTINCTNESS_IN_SCOPE, "x"))
+        return result["ok"], result["reason"]
+
+    outcomes = {
+        "both bound, different files": _verdict("evidence", "evidence", same, other),
+        "both bound, same file": _verdict("evidence", "evidence", same, same),
+        "review skipped": _verdict("evidence", "skip", same, "host-blocked-subagent"),
+        "retro skipped": _verdict("skip", "evidence", "host-log-not-exposed", other),
+        "both skipped": _verdict("skip", "skip", "a", "b"),
+    }
+
+    # Exactly one of the five inputs refuses, and it is the collision.
+    refusals = [name for name, (ok, _) in outcomes.items() if not ok]
+    assert refusals == ["both bound, same file"], outcomes
+
+    # The three non-refusing shapes are not one bucket: a skip is NOT COMPARED,
+    # and saying so is what stops a degraded host reading as a satisfied floor.
+    assert "different paths" in outcomes["both bound, different files"][1]
+    for skipped in ("review skipped", "retro skipped", "both skipped"):
+        assert "nothing to compare" in outcomes[skipped][1], skipped

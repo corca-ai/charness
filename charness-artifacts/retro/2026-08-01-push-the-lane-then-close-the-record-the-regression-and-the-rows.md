@@ -36,7 +36,12 @@ was caught by a bounded reviewer rather than by a gate.** That is the retro.
   narrow and the defect is cheap — but "0 refused" is a green over a population
   that could not have contained a violation, and it is the SAME shape round 2
   refuted for the sibling floor in the same slice. See the corrected Sibling
-  Search below.
+  Search below. **Operator call 2026-08-02: stay ARMED, and replace the
+  justification.** The corpus count is not what makes it safe; the rule is narrow
+  enough to enumerate — pass, not-compared (a `skipped:` line has no path), and
+  refuse — with no legitimate fourth case. The figure floor needed a corpus
+  because its question is fuzzy; this one is settled by reading it. The
+  enumeration is now pinned by a test rather than asserted in prose.
 - Figure floor over the **127 dated** artifacts: strict form **90 refusals**,
   relaxed form **41** — not armed, recorded as D49.
 - Lane C: scoped `cosmic-ray` run reproduced exactly the six mutants; re-run

@@ -51,9 +51,12 @@
 
 ## Discuss
 
-- **The distinctness floor is armed on a denominator that could not object**: 23
-  in scope, 20 undatable, only 2 dated and actually compared. Same shape the
-  figure floor was disarmed for, one screen away in the same slice. Operator call.
+- **Answered 2026-08-02, kept here as the pattern**: the distinctness floor was
+  armed on "23 in scope, 0 refused" — a population that could not have contained
+  a violation. Operator call: STAY ARMED, replace the justification. A pass rate
+  is the wrong evidence for a rule you can enumerate (pass / not-compared /
+  refuse, no fourth case); it was the right evidence for the figure floor, whose
+  question is fuzzy. Use the cheaper instrument when the rule admits it.
 - **A read-only check and an irreversible boundary deserve different teeth** —
   D48 left `drift` alone and refused at publish; whether other gates adopt that
   split is still open.

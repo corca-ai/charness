@@ -13,6 +13,31 @@ false positive on that question trains exactly the token-theater the disposition
 module already argues against. Path distinctness is the defect that was actually
 observed, and it is decidable from the text alone.
 
+**Why this is ARMED, and why the justification is NOT a corpus count.** The
+first version of this docstring rested on "23 in scope, 0 refused". That number
+does not support arming: 20 of those 23 artifacts carry no parseable `Created:`
+and are in scope only because the grandfather predicate fails closed, 3 are
+dated, and only 2 were ever really compared. A pass rate measured over a
+population that could not have contained a violation says nothing — which is the
+exact defect the sibling figure-form floor was DISARMED for, in the same slice.
+
+The honest justification is enumeration, not statistics. This floor asks one
+decidable question — do two paths resolve to the same file — and the failure
+modes are countable by hand rather than sampled:
+
+- both bound to different files: pass (the ordinary case);
+- one or both recorded as `skipped:`: not compared at all, because a skip has no
+  path (see `_satisfied_evidence_paths`);
+- both bound to the SAME file: refuse.
+
+There is no fourth case, and **no legitimate reason for one artifact to be both
+the record and its own independent review** — which is why a thin corpus is
+acceptable HERE and was not acceptable for the figure floor. That floor asks a
+fuzzy question (which tokens are figures, which prose is a source) whose answer
+can only be learned by running it over real artifacts; this one asks a question
+you can settle by reading it. `test_the_refusal_set_is_enumerable` pins that
+enumeration so the claim is checked rather than asserted.
+
 Rung-1: presence/identity only. Whether the second file's CONTENT is a real
 independent review stays author judgment plus the fresh-eye round.
 """
