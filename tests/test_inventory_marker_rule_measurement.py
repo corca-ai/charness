@@ -198,3 +198,107 @@ def test_the_presence_only_count_reproduces_the_denominator_d47_cited():
     assert recorded["field_mentions_presence_only"] == (
         sibling_probe["field_mention_residuals"]["count"]
     )
+
+
+def test_the_human_render_names_every_refused_artifact(tmp_path):
+    """The default (non-`--json`) output is what an operator actually reads."""
+    repo, fields = _corpus(
+        tmp_path,
+        _CITING
+        + "## Findings\n\n- the scope of this pass was every checked-in skill package\n"
+        + "- runtime hotspot ranking excludes samples older than fourteen days\n",
+    )
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo),
+         "--corpus", str(repo / "charness-artifacts" / "quality"),
+         "--consumer-fields-path", str(fields)],
+        capture_output=True, text=True, check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    out = result.stdout
+    assert "top level only" in out
+    assert "field mentions clearing today's floor: 2" in out
+    assert "without a marker: 2" in out
+    assert "citations a marker rule would refuse: 1 across 1 artifact(s)" in out
+    assert "- charness-artifacts/quality/review.md" in out
+
+
+def test_the_recursive_render_says_so_in_its_scope_line(tmp_path):
+    repo, fields = _corpus(tmp_path, _CITING + "## Findings\n\n- `scope` covered everything\n")
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo),
+         "--corpus", str(repo / "charness-artifacts" / "quality"),
+         "--consumer-fields-path", str(fields), "--recursive"],
+        capture_output=True, text=True, check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "(recursive)" in result.stdout
+
+
+def test_a_corroborated_pre_contract_citation_is_skipped_and_named(tmp_path, monkeypatch):
+    """The gate exits 0 on it without running a floor, so counting it would report a
+    cost on an artifact the gate never judges. Measured-zero in this repo, so the
+    branch is driven here rather than left to a corpus that happens not to have one."""
+    repo, fields = _corpus(
+        tmp_path,
+        _CITING + "## Findings\n\n- the scope of this pass covered everything at the time\n",
+    )
+    monkeypatch.setattr(MEASURE.corpus_lib, "exemption_state", lambda *a, **k: "corroborated")
+
+    report = MEASURE.scan(repo, repo / "charness-artifacts" / "quality", fields, recursive=False)
+
+    assert report["pre_contract_citations_skipped"] == ["charness-artifacts/quality/review.md"]
+    assert report["citations_refused_by_the_marker_rule"] == []
+    assert report["field_mentions_clearing_todays_floor"] == 0
+
+
+def test_main_renders_in_process_so_the_render_path_is_measurable(tmp_path, monkeypatch, capsys):
+    """Driven through `main()` rather than a subprocess.
+
+    The subprocess tests above prove the CLI contract, but in-process coverage cannot
+    see them, so the human-render path read as uncovered to the changed-line gate.
+    """
+    repo, fields = _corpus(
+        tmp_path,
+        _CITING
+        + "## Findings\n\n- the scope of this pass was every checked-in skill package\n"
+        + "- runtime hotspot ranking excludes samples older than fourteen days\n",
+    )
+    monkeypatch.setattr(sys, "argv", [
+        "measure_inventory_marker_rule.py", "--repo-root", str(repo),
+        "--corpus", str(repo / "charness-artifacts" / "quality"),
+        "--consumer-fields-path", str(fields),
+    ])
+
+    assert MEASURE.main() == 0
+    out = capsys.readouterr().out
+    assert "top level only" in out
+    assert "citations a marker rule would refuse: 1 across 1 artifact(s)" in out
+    assert "- charness-artifacts/quality/review.md" in out
+
+
+def test_main_json_mode_returns_early_without_the_render(tmp_path, monkeypatch, capsys):
+    repo, fields = _corpus(tmp_path, _CITING + "## Findings\n\n- `scope` covered everything\n")
+    monkeypatch.setattr(sys, "argv", [
+        "measure_inventory_marker_rule.py", "--repo-root", str(repo),
+        "--corpus", str(repo / "charness-artifacts" / "quality"),
+        "--consumer-fields-path", str(fields), "--json",
+    ])
+
+    assert MEASURE.main() == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["artifacts_scanned"] == 1
+
+
+def test_main_refuses_an_empty_corpus_in_process(tmp_path, monkeypatch, capsys):
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    monkeypatch.setattr(sys, "argv", [
+        "measure_inventory_marker_rule.py", "--repo-root", str(tmp_path),
+        "--corpus", str(empty),
+    ])
+
+    assert MEASURE.main() == 2
+    assert "not a measurement" in capsys.readouterr().err

@@ -183,17 +183,13 @@ Discuss before activation: Resolved with the operator in the shaping transcript,
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+All three of this goal's originating decisions were answered live, and the two
+reshape questions the plan critique forced were answered before any code moved.
+Nothing new was deferred to the operator during the run.
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+Remaining for a future call, recorded but NOT queued here because each already has
+its own owning entry: D45's premise (see [issue #468](https://github.com/corca-ai/charness/issues/468)),
+and the release resume gap named in D48.
 
 ### Q1 — RESOLVED 2026-08-01: measurement-only
 
@@ -481,6 +477,46 @@ The three consequential activation items and their resolutions are recorded in t
 `Discuss before activation:` summary above the Operator Decision Queue.
 
 ## Off-Goal Findings
+
+- **`publish_release_resume.py` reaches `create_release` with no release-surface
+  check at all** — not `drift`, not the new corroboration arm. Pre-existing, so a
+  surface deleted or corrupted between a failed publish and its resume reaches the
+  irreversible boundary unchecked. Gating it was built and reverted: every resume
+  fixture exercises a repo with no generated tree, so it is a contract change with
+  its own blast radius. Recorded in D48 as a known gap. OPEN.
+- **A test fixture misrepresented a release surface for months.**
+  `release_publish_sync_root_plugin_manifests.py` wrote the claude marketplace as
+  `{"version": ...}` while the real reader wants `metadata.version`, so that surface
+  read as `no-version` and every publish test was silently exempt from its arm.
+  REPAIRED in slice 2, and it means prior publish-test greens over that surface were
+  never real.
+- **`markers_for` still has one-way false positives** — a field name inside a
+  backticked PATH or flag scores as a citation; odd-backtick lines and fenced blocks
+  are unmodelled. All verified inert on today's corpus, all biased the same way as
+  the bug slice 3 fixed. Recorded in the probe and D47. OPEN by decision (round 2 is
+  the review cap).
+- **D45's premise may carry the same defect D48 just found** — it names "moving the
+  exemption to the adapter" as S31's correct repair, the same self-declaration
+  channel, and both D46 and D48 cite it as precedent. Not verified. Filed as
+  [#468](https://github.com/corca-ai/charness/issues/468).
+
+## Coordination Cues
+
+- Routing: `handoff` chunked routing selected the chunk, `achieve` shaped and ran
+  the goal, `impl`-class work ran per slice under the goal's own cadence, `critique`
+  supplied every bounded review round, `issue` filed the retro's structural finding,
+  and `retro` closed it. Selected from installed skill metadata and the repo's
+  Work Phase Map, not from an inline phase-to-skill table.
+- Release: n/a — this goal cut no release. It CHANGED release verdict logic
+  (`current_release.py`, `publish_release_preflight.py`, a new adapter field), and
+  those changes are proven by the release test modules and the bundle quality gate,
+  but no version was bumped, no manifest was published, and no tag was cut. The next
+  release will be the first to carry the new publish refusal.
+- Gather: n/a — no external source was consulted; every input was repo-local
+  (the deferred-decisions record, the sweep audit, the scripts under review).
+- Issue closeout: n/a — this goal resolved no tracked issue. It OPENED one
+  ([#468](https://github.com/corca-ai/charness/issues/468)) from the retro's sibling
+  scan, which is a filing, not a closeout.
 
 ## Final Verification
 

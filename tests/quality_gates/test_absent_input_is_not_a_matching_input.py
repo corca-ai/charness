@@ -15,6 +15,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from .support import ADAPTER_LIB, ROOT, _load_script_module
 
 ISSUE_RESOLVE_ADAPTER = _load_script_module(
@@ -898,3 +900,49 @@ def test_d48_the_refusal_message_names_the_field_that_actually_remedies_it(tmp_p
     blocker = PREFLIGHT.release_surface_blocker(CURRENT_RELEASE.build_payload(repo), "9.9.9")
 
     assert "unpublished_release_surfaces" in blocker
+
+
+def test_d48_a_version_mismatch_still_blocks_publish(tmp_path):
+    """The pre-existing arm, kept intact when the blocker moved out of the CLI."""
+    # A fully-corroborated repo, so the version arm is the only one that can fire.
+    complete = (
+        "version: 1\nrepo: charness\npackage_id: charness\n"
+        "sync_command: noop\nquality_command: noop\n"
+        "required_release_surfaces:\n- claude_plugin\n- codex_plugin\n"
+        "unpublished_release_surfaces:\n- claude_marketplace_version\n"
+        "- codex_marketplace_source_path\n"
+    )
+    repo = _release_repo(tmp_path, adapter=complete, codex=True)
+    payload = CURRENT_RELEASE.build_payload(repo)
+    assert payload["drift"] == []
+
+    blocker = PREFLIGHT.release_surface_blocker(payload, "1.2.3")
+
+    assert blocker == "expected packaging manifest version `1.2.3`"
+
+
+def test_d48_ensure_release_surface_raises_the_blocker_it_is_given(tmp_path, monkeypatch):
+    """`ensure_release_surface` is the caller at the irreversible boundary; it must
+    turn a blocker string into a refusal rather than reporting and continuing."""
+    cli = _load_script_module(
+        "publish_release_cli_absent_input",
+        ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py",
+    )
+    monkeypatch.setattr(cli, "build_release_payload", lambda root: {"stub": True})
+    monkeypatch.setattr(cli, "release_surface_blocker", lambda payload, version: "boom")
+
+    with pytest.raises(SystemExit) as excinfo:
+        cli.ensure_release_surface(tmp_path, "9.9.9")
+
+    assert "boom" in str(excinfo.value)
+
+
+def test_d48_ensure_release_surface_is_silent_when_there_is_no_blocker(tmp_path, monkeypatch):
+    cli = _load_script_module(
+        "publish_release_cli_absent_input_clean",
+        ROOT / "skills" / "public" / "release" / "scripts" / "publish_release_cli.py",
+    )
+    monkeypatch.setattr(cli, "build_release_payload", lambda root: {"stub": True})
+    monkeypatch.setattr(cli, "release_surface_blocker", lambda payload, version: None)
+
+    assert cli.ensure_release_surface(tmp_path, "9.9.9") is None

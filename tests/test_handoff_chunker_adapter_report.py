@@ -18,6 +18,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
 PARSER_SCRIPT = SCRIPTS / "parse_handoff_entries.py"
@@ -92,3 +94,56 @@ def test_adapter_report_survives_propose_merges_and_prepare_chunk_packet(tmp_pat
         input=json.dumps(payload), capture_output=True, text=True, check=True,
     ).stdout)
     assert packet["issue_adapter_report"] == report
+
+
+# --- the shared pipeline-stage helpers the forwarding extraction created ---------
+
+
+def _load_cli_module():
+    spec = importlib.util.spec_from_file_location(
+        "chunked_routing_cli", SCRIPTS / "chunked_routing_cli.py"
+    )
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_a_malformed_payload_refuses_at_the_stage_that_read_it():
+    """`entries_from_pipeline_payload` must turn a restore failure into a stage
+    refusal, not a traceback two stages downstream."""
+    cli = _load_cli_module()
+
+    class _Lib:
+        @staticmethod
+        def entries_from_payload(payload):
+            raise ValueError("entries[] is not a list")
+
+    with pytest.raises(SystemExit) as excinfo:
+        cli.entries_from_pipeline_payload({"entries": "nope"}, _Lib)
+
+    assert "entries[] is not a list" in str(excinfo.value)
+
+
+def test_forwarding_a_non_payload_is_a_no_op_not_a_crash():
+    """The stages accept either the full parser payload or a bare entries array."""
+    cli = _load_cli_module()
+    output = {"kept": True}
+
+    cli.forward_carried_keys([{"index": 1}], output, ("staleness",))
+
+    assert output == {"kept": True}
+
+
+def test_forwarding_copies_only_present_non_null_keys():
+    cli = _load_cli_module()
+    output = {}
+
+    cli.forward_carried_keys(
+        {"staleness": {"paths_checked": True}, "issue_source_diagnostic": None},
+        output,
+        ("staleness", "issue_source_diagnostic", "issue_adapter_report"),
+    )
+
+    # Absent stays absent, so a missing key never reads as "the check ran and found
+    # nothing" -- and an explicit null is treated the same as absent.
+    assert output == {"staleness": {"paths_checked": True}}

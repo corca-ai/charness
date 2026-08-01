@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-01",
-  "source_artifact_count": 411,
-  "candidate_count": 1664,
+  "source_artifact_count": 412,
+  "candidate_count": 1669,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -178,6 +178,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b9bb0ea80d9e",
+      "kind": "current_focus",
+      "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47.",
+      "normalized_key": "the three unarmed refusals goal handoff chunked routing over the live backlog selected chunk",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:5514318fb6bf",
       "kind": "current_focus",
       "lesson": "The whole `achieve` run: chunked routing picked the sweep's high rows, the goal was shaped and plan-critiqued, four slices ran, and the closeout disposition review cleared it.",
@@ -330,32 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5274cc395543",
-      "kind": "next_improvement",
-      "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded.",
-      "normalized_key": "applied scripts measure adapter yaml uninterpreted py refuses an empty corpus exit 2 and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded."
         }
       ]
     }
@@ -520,6 +520,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:b9bb0ea80d9e",
+      "kind": "current_focus",
+      "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47.",
+      "normalized_key": "the three unarmed refusals goal handoff chunked routing over the live backlog selected chunk",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The three-unarmed-refusals goal: handoff chunked routing over the live backlog selected `chunk-c`, `achieve` shaped it, the operator answered three deferred decisions, and three implementation slices plus a closeout ran against D46, D48, and D47."
         }
       ]
     },
@@ -758,6 +784,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:b5ed3daed1e3",
+      "kind": "next_improvement",
+      "lesson": "**capability — a superseded-number sweep.** When a number is replaced in a durable record, grep the repo for the old value. Round 2 found the stale figure in the gate comment, and I had already missed it in the sibling docstring and the dogfood record.",
+      "normalized_key": "capability a superseded number sweep when a number is replaced in a durable record",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability — a superseded-number sweep.** When a number is replaced in a durable record, grep the repo for the old value. Round 2 found the stale figure in the gate comment, and I had already missed it in the sibling docstring and the dogfood record."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:4e3b4eb77a6c",
+      "kind": "next_improvement",
+      "lesson": "**memory — the units rule.** A measurement that lands near an expected number invites narrating agreement. Record the unit before the value: \"5 reviews\" and \"5 citations across 4 artifacts\" are not the same claim.",
+      "normalized_key": "memory the units rule a measurement that lands near an expected number invites narrating",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory — the units rule.** A measurement that lands near an expected number invites narrating agreement. Record the unit before the value: \"5 reviews\" and \"5 citations across 4 artifacts\" are not the same claim."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:2b303a3072ec",
       "kind": "next_improvement",
       "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced.",
@@ -884,6 +962,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2b74a43fb454",
+      "kind": "next_improvement",
+      "lesson": "**workflow — premortem a borrowed remedy.** When a deferred decision or issue names \"the better repair\", spend one command verifying its premise before shaping a slice around it. Two of three slices needed this.",
+      "normalized_key": "workflow premortem a borrowed remedy when a deferred decision or issue names the better",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — premortem a borrowed remedy.** When a deferred decision or issue names \"the better repair\", spend one command verifying its premise before shaping a slice around it. Two of three slices needed this."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9701b04eaf97",
+      "kind": "next_improvement",
+      "lesson": "**workflow — verify a string-replace landed.** After any exact-string edit to a file I do not immediately re-read, assert the superseded text is absent. The silent-no-op class produced the only false claim this session.",
+      "normalized_key": "workflow verify a string replace landed after any exact string edit to a file",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow — verify a string-replace landed.** After any exact-string edit to a file I do not immediately re-read, assert the superseded text is absent. The silent-no-op class produced the only false claim this session."
         }
       ]
     },
