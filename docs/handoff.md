@@ -2,78 +2,66 @@
 
 ## Workflow Trigger
 
-- **No open irreversible boundary. Eight commits unpushed** (`cb35991e..HEAD`),
-  which is why the armed changed-line gate below needs an explicit `--base-sha`.
-  The latest release is published and verified per
-  [release state](../charness-artifacts/release/latest.md). So the ordinary rule
-  applies: with no explicit task, run `charness:handoff` chunked routing over the
-  live backlog; an explicit user task keeps its own authority.
+- **An `achieve` goal is ACTIVE with a clean worktree.** Resume
+  [the goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md),
+  do not start new work. Slices 1-3 are committed with both review rounds each.
+  The next move is the **MIDPOINT goal-claims review**, which the operating
+  contract owes at 3+ slices and which has not run. No open irreversible
+  boundary; nothing pushed.
 
 ## Continuation Capability
 
-The [2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md)
-is **5 OPEN (E1, E3, E4, E6, E7) + 4 PARTIAL (A3, A8, D4, E2)** — E4 is D39, so the
-E-cluster is E1/E3/E6/E7 plus E2's residual. The
-[triage sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md)
-has 29 CLOSED of 113 rows. Each header owns its own counts and the two tables use
-different status vocabularies.
+Sweep rows close as **NARROWED** far more often than CLOSED, and the row must
+say what stays open. This run's arming posture is the operator's: **measure,
+then decide** — and where a repair would refuse consumer-authored files or
+frozen artifacts, it ships legible and the arming becomes a numbered deferred
+decision ([D46](./deferred-decisions.md) adapter-YAML refusal,
+[D47](./deferred-decisions.md) inventory value markers).
 
-Refresh non-claims: **A3, C6 and S31 are narrowed, not closed.** A scheduled gate
-can still walk the worktree over a scope the commit changes; **S3's floor refuses a
-stub, not a lie**; and this repo's CI-parity gate still evaluates zero jobs of its
-own. No live cautilus run, no CI dispatch, no push.
+Non-claims to carry: a length floor **refuses a stub, not a lie**; S35's own
+repair is an instance of the class the sweep catalogues (a self-declared adapter
+field decides whether the floor fires); S9's corroboration cannot see a repo
+git cannot date. No push, no CI dispatch, no cautilus run this session.
 
 ## Current State
 
-- **Five straggler rows dispositioned, four repaired**
-  ([goal](../charness-artifacts/goals/2026-07-31-disposition-the-stragglers-a3-c6-d4-d28-s3-stub.md)):
-  A3 residual 1, S3's stub half, C6, and the chunker's path resolution.
-- **The round that read the REPAIRS caught something the repair introduced, in all
-  four repair slices** — three-for-three became four-for-four, and the goal's own
-  claims got one review that found two blockers.
-  [retro](../charness-artifacts/retro/2026-08-01-session-retro.md)
+- **7 of the 9 rows dispositioned. Only 2 CLOSED.** S28 and S13 CLOSED; S24,
+  S35, S9, S10, S12 NARROWED with their residuals written into the sweep rows.
+  **S12's ROW is corrected** — two of its three stated triggers never
+  reproduced.
+- **Round 2 caught defects created by round 1's own repairs in BOTH slices.**
+  Nine reviewers so far. Treat one round as insufficient here, not as a formality.
+- **Nine dup-ratchet hard-blocks across two slices**, all at the closeout
+  aggregate.
 
 ## Next Session
 
-1. **DONE — `blocking-targets-subprocess-coverage` DECLINED, [D44](./deferred-decisions.md)**:
-   premise falsified by measurement, residue already shipped. D44 names one STILL-OPEN
-   residual the review found (candidate-test NAMES as remedy info). Unspent: **batch
-   independent review rounds across slices** — 84.6 min of `sleep` vs 50.5 min of review
-   last run; this one-round slice did not test the lever.
-2. **The sweep's high rows — 4 of 14 closed 2026-08-01, 9 left.** S1/S26/S30/S32
-   went as ONE batch (all were "a zero denominator renders a PASS"), with the two
-   review rounds run three-abreast: 6 reviewers, 2 rounds, ~4 min wall-clock each.
-   That is the batching lever, now tested. Left:
-   S2/S9/S10/S12/S13/S23/S24/S28/S35, plus S31 (NARROWED, not closed — its arming
-   question is [D45](./deferred-decisions.md)) and S110-S113 as newer LEADs.
-   Batch by CLASS, not by file: the shared repair was written once.
-3. **The hunt's E-cluster** — E1/E3/E6/E7 plus E2's residual. Mutation-score and
-   freshness-marker proof; the most expensive lane, and E1 is a contract change.
-   Not before 1, or it is the most painful lane to enter.
-4. **Not yet:** `refusal-category-renderer-gate` has one instance, and a floor
-   built on one instance is what this repo has withdrawn twice. Wait for a second.
-5. **Un-dispositioned:** C6's cross-arm residual, D28 (trigger unfired), A8's
-   basename half, sibling-scan Tier 3, [D39/D41](./deferred-decisions.md),
-   `measurement-as-script`, `retro-after-disposition-review`.
+1. **The MIDPOINT goal-claims review**, before slice 4. Bounded, fresh-eye, and
+   it reads the goal's per-row claims against the sweep and the commits — a
+   different question from "is this repair correct".
+2. **Slice 4**: S23 (carries a REFUTE prediction — the `if ok else None` guard
+   landed 2026-07-20, before the sweep) and S2's parser bug.
+3. **Then closeout**: serial full pytest, [run-quality.sh](../scripts/run-quality.sh),
+   the armed changed-line lane over this goal's own range with
+   `--refuse-unestablished`, the disposition review, then `retro` — in that
+   order.
+4. **Off-goal, found not fixed:** `goal_artifact_floor_grammar.parse_created_date`
+   is consumed by FIVE floors with no corroboration — S15's family, and a
+   one-helper repair since goal artifacts carry a filename date that
+   `critique_enforcement_scope.observed_date` already reads.
 
 ## Discuss
 
-- **Run the armed changed-line gate over your own committed range** with
-  `--base-sha <sha before your first commit>` and `--refuse-unestablished`. It
-  found nine uncovered branches in this session's own code, and the flag is what
-  stops a dirty tree from returning a green that proves nothing.
-- **Reproduce before planning, and defend a threshold with a script not a
-  sentence.** Three of five rows changed size once probed, and S3's floor died
-  twice on a number nobody could re-run — which turned out to count fixtures.
-- **A goal of 3+ slices now runs a bounded goal-claims review at its MIDPOINT**,
-  not only at closeout — adopted 2026-08-01, owned by
-  [operating-contract](./conventions/operating-contract.md) Critique Discipline and
-  wired into `achieve`'s During phase. It reads the goal's per-row claims against
-  the owning records and commits, which is a different question from "is this
-  repair correct".
+- **A self-authored constraint in a goal artifact is not a check.** This session
+  violated its own stop condition two hours after writing it, and a reviewer
+  caught it. Whether goal stop conditions become machine-read is an operator
+  call.
+- **Run the dup-ratchet at the first edit to a gated file, not at the closeout
+  aggregate.** Four late hard-blocks this session, four last session; the
+  recorded lesson has now failed to prevent itself twice.
 
 ## References
 
-- [chunked-routing contract](./handoff-chunked-routing.md) · [deferred decisions](./deferred-decisions.md) · [design north star](./design-north-star.md)
-- [why the class stayed invisible](../charness-artifacts/audit/2026-07-28-why-the-hunt-class-stayed-invisible.md) · [sibling scan backlog](../charness-artifacts/audit/2026-07-20-abstracted-pattern-sibling-scan.md)
-- [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [active goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md) · [slice-1 critique](../charness-artifacts/critique/2026-08-01-slice-1-absent-input-batch.md) · [slice-1 retro](../charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md)
+- [the sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md) · [2026-07 hunt](../charness-artifacts/audit/2026-07-27-evidence-surface-bug-hunt.md) · [deferred decisions](./deferred-decisions.md)
+- [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)

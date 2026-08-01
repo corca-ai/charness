@@ -21,6 +21,7 @@ from scripts.repo_layout import (
     support_capability_paths,
     support_capability_schema_path,
 )
+from scripts.repo_path_display import display_path
 from scripts.runtime_bootstrap import repo_root_from_script
 from scripts.subprocess_guard import run_process
 
@@ -96,10 +97,7 @@ def validate_support_capability_data(data: dict[str, Any], schema: dict[str, Any
         )
 
 def _manifest_path_for_payload(path: Path, repo_root: Path) -> str:
-    try:
-        return str(path.relative_to(repo_root))
-    except ValueError:
-        return str(path)
+    return display_path(path, repo_root)
 
 def _append_manifest_payload(
     manifests: list[dict[str, Any]],

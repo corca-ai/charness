@@ -225,7 +225,7 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
     mode = deleg.get("mode", "standalone")
     failures = deleg.get("failures", [])
     rows.append({"floor": "closeout_delegation", "label": f"`## Closeout Delegation` ({mode}) checklist",
-                 "triggered": bool(deleg.get("declared")) and mode in {"orchestrated", "orchestrator"},
+                 "triggered": bool(deleg.get("declared")) and mode in {"orchestrated", "orchestrator", "undeclared"},
                  "satisfied": not failures,
                  "detail": "; ".join(failures) if failures else "every delegated-proof item resolved (verified/skipped/issue #N)"})
     oq = ev.get("operator_decision_queue", {})

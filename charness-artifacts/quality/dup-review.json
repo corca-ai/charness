@@ -1500,8 +1500,8 @@
     },
     {
       "class": "intentional",
-      "id": "dcf7602d59906e68",
-      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature.",
+      "id": "c9a1067198c8bb00",
+      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     },
@@ -1509,6 +1509,27 @@
       "class": "intentional",
       "id": "a52782e0aaebcff2",
       "note": "a two-line list comprehension that formats one string per input item, shared by four untouched call sites (prompt_mutant_files_lib twice, run_skill_efficiency_ab, tool_recommendation_lib) that adapter_lib.uninterpreted_warnings joined on 2026-08-01 while closing sweep row S24. The shape is `[f\"...\" for x in xs]` and nothing but the format string differs; extracting it would mean a helper that takes a format string, which is what f-strings already are. Pre-existing family, new membership.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "447ce891d33e3595",
+      "note": "the `main()` of the two measurement scripts written on 2026-08-01 — measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f5fac9e4015758dd",
+      "note": "three achieve goal-artifact floor modules (disposition_grammar, coordination_floors, phase_routing) sharing their module preamble. All three members are UNTOUCHED by the 2026-08-01 slice; the family surfaced as new because a sibling module in the same package was edited and the scan rotated. Pre-existing shape, no new duplication introduced here, and the preamble is the package's standard bootstrap.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "12fd6c4518a06d6c",
+      "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
     }

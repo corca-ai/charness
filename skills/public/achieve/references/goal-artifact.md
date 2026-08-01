@@ -243,7 +243,11 @@ See `references/lifecycle-during.md` *Remaining-boundary matrix before `blocked`
 A goal stays **standalone** by default — it owns all closeout proof itself and
 needs no extra section. A goal only adds `## Closeout Delegation` when it runs in
 orchestrated mode (`references/lifecycle-after.md` *Orchestrated closeout*). Absence of
-the section, or `Closeout mode: standalone`, keeps the strict standalone default.
+the SECTION, or an explicit `Closeout mode: standalone`, keeps the strict standalone
+default. A section that is PRESENT with the mode line absent or blank is `undeclared`
+and is refused (sweep row S13): the section itself declares that closeout is delegated,
+so silence about the mode used to grant `standalone` — the strongest claim in the
+taxonomy — to a goal that had just listed the proof it was handing to someone else.
 
 A **sub-goal** that delegates external proof to a named orchestrator:
 

@@ -113,12 +113,33 @@ def _delegated_items(section: str) -> list[str]:
     return items
 
 
+# Sweep row S12: an issue/PR reference alone marked a delegated external proof RESOLVED,
+# so `push to CI and confirm green for PR <number> — NOT DONE, still pending` read as done.
+# A reference is a POINTER to where the proof will live, not the proof; the negation guard
+# that already protects `verified` has to protect it too.
+_NEGATED_ITEM = re.compile(
+    r"(?i)\b(not\s+done|undone|incomplete|still\s+(?:pending|open|outstanding|failing)|"
+    r"pending|outstanding|blocked|awaiting|unverified|unresolved|to\s+do|todo|tbd|"
+    r"never\s+ran|did\s+not\s+run|no(?:t)?\s+yet)\b"
+)
+
+
 def _item_resolved(item: str) -> bool:
     if _UNCHECKED_BOX.search(item):
         return False
-    if _SKIP_TOKEN.search(item) or _ISSUE_REF.search(item):
+    # An explicit `skipped: <reason>` or `verified: <reason>` is a resolution, and its
+    # REASON is exactly where words like "blocked", "pending" and "awaiting" naturally
+    # appear (`skipped: blocked on an upstream outage`). Checking the negation first
+    # refused those — the same "a token stands in for reading the sentence" move S12 was
+    # filed against, pointed the other way. So the negation guard applies only to the
+    # claim, and only to the form S12 actually broke: a bare reference.
+    if _SKIP_TOKEN.search(item):
         return True
-    return bool(_VERIFIED.search(item) and not _NEG_BEFORE_VERIFIED.search(item))
+    if _VERIFIED.search(item) and not _NEG_BEFORE_VERIFIED.search(item):
+        return True
+    if _ISSUE_REF.search(item):
+        return not _NEGATED_ITEM.search(item)
+    return False
 
 
 def parse_closeout_delegation(text: str) -> dict[str, Any]:
@@ -135,7 +156,12 @@ def parse_closeout_delegation(text: str) -> dict[str, Any]:
     # Take the first bareword of the mode value so a trailing comment/clause
     # (`standalone (owns all proof)`) cannot reclassify the mode and block a goal.
     mode_tokens = mode_match.group(1).strip().split() if mode_match else []
-    mode = mode_tokens[0].lower() if mode_tokens else "standalone"
+    # Sweep row S13: an absent or blank `Closeout mode:` line produced empty tokens and
+    # fell through to `standalone` — the strongest claim in the taxonomy, granted by
+    # silence. A section that exists at all is a declaration that closeout is delegated,
+    # so the absence of the mode is `undeclared`, not `standalone`. Only a section that
+    # is not there at all still means standalone (handled above, `declared: False`).
+    mode = mode_tokens[0].lower() if mode_tokens else "undeclared"
     orchestrator_match = _ORCHESTRATOR.search(section)
     orchestrator = orchestrator_match.group(1).strip() if orchestrator_match else ""
     return {
@@ -156,7 +182,25 @@ def apply_closeout_delegation(report: dict[str, Any], text: str) -> None:
     parsed = parse_closeout_delegation(text)
     report["closeout_delegation"] = parsed
     mode = parsed["mode"]
-    if not parsed["declared"] or mode in {"", "standalone"}:
+    if mode == "undeclared":
+        # The section is present, so closeout IS delegated; the mode line that says HOW is
+        # missing. Refusing here rather than defaulting is the point of sweep row S13: the
+        # old fall-through let a goal listing `final push/CI green` and `provider live
+        # proof` pass as standalone, which is the opposite of what it declared.
+        message = (
+            "`## Closeout Delegation` is present but `Closeout mode:` is absent or blank. "
+            "A section that declares delegated proof must say which mode it is in "
+            "(standalone / orchestrated / orchestrator); silence used to read as "
+            "`standalone`, which claims the goal owns proof it just delegated."
+        )
+        report["ok"] = False
+        # On `parsed`, not on the report's top level: `check_goal_artifact` and
+        # `describe_goal_closeout_shape` both read `closeout_delegation["failures"]`, so a
+        # message left anywhere else refuses with no stated reason while the shape
+        # describer renders the refused floor as satisfied.
+        parsed["failures"] = [message]
+        return
+    if not parsed["declared"] or mode == "standalone":
         return
 
     failures: list[str] = []

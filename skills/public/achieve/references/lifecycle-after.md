@@ -393,7 +393,7 @@ When an operator runs a larger **orchestrator** goal that queues sub-goals and
 wants the external-proof boundary owned once at the end, a sub-goal may close at
 `impl-local`/`carrier` and *delegate* the later levels — but only explicitly,
 to a *named* orchestrator, never by silent omission. This is **opt-in**: a goal
-with no `## Closeout Delegation` section, or `Closeout mode: standalone`, keeps
+with no `## Closeout Delegation` section, or an explicit `Closeout mode: standalone`, keeps
 the strict standalone default (the non-weakening constraint).
 
 A goal opts in with a `## Closeout Delegation` section. `references/goal-artifact.md`

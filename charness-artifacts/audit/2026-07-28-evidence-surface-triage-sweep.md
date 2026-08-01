@@ -4,9 +4,9 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**34 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+**35 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
 S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then
-S3/S4/S5/S7/S11/S21/S22 on 2026-07-31, then S1/S26/S30/S32 on 2026-08-01, then S28 on
+S3/S4/S5/S7/S11/S21/S22 on 2026-07-31, then S1/S26/S30/S32 on 2026-08-01, then S28 and S13 on
 2026-08-01 — reproduced in the parent, fixed, and regression-tested. **Count corrected
 2026-08-01:** the header asserted 29 while the table carried 33 rows whose status began
 CLOSED — the 2026-07-31 group listed only S4 and S11 where the table shows seven. The
@@ -63,6 +63,45 @@ under the two-round cap.
   that the declaration lives in the adapter rather than in the audited file, which is the
   channel D45 names as S31's correct repair. Deleting those four lines disarms it with
   nothing corroborating them.
+
+**What the 2026-08-01 S9/S10/S12/S13 batch does and does NOT close.** One class — what the
+audited content says about itself is not proof — across two files, both reproduced in the
+parent with controls. Two rounds, four reviewers. **Round 2 again found defects created by
+round 1's own repairs**, and one of them is this sweep's own class committed by the repair:
+a code comment defending the floor asserted "raising it to 20 still refuses zero", which
+the slice's own recorded probe and its own test refute. Round-2 repairs ship
+**accepted-unreviewed** under the two-round cap.
+
+- **S9 — NARROWED, not closed.** The `Date:` line no longer decides alone: `commit_state`
+  refuses a backdated artifact that is uncommitted, dirty, or last-committed on or after
+  the contract start. Must admit: `%cs` is the COMMITTER date and `GIT_COMMITTER_DATE`
+  forges it — this is a different channel, not an unforgeable one, and the repo's own test
+  fakes a 2020 commit exactly that way. A shallow (`fetch-depth: 1`) checkout would flip
+  frozen artifacts to false refusals, so this must not join a CI job without
+  `fetch-depth: 0`. **Zero** checked-in artifacts claim the exemption, so the corroboration
+  arm is exercised by no real content; its only evidence is the regression tests.
+- **S10 — NARROWED, not closed.** A field mention and a `Label:` value must now carry ≥5
+  alphanumerics beyond every declared field name and every stub token, so the five `n/a`
+  stubs are refused — including the quoted, em-dashed, multi-word and
+  bare-field-enumeration shapes the first cut let through. Must admit: an explicit
+  negation still counts as engagement (scores 18), which is S11's class; and a field whose
+  NAME is an ordinary English word (`scope`, `ranking`, `excludes`, `notes`) is still
+  engaged by incidental prose — the value-marker rule that would refuse the sampled cases
+  costs 5 checked-in reviews and is deferred as [D47](../../docs/deferred-decisions.md).
+- **S12 — NARROWED, and THE ROW ITSELF IS CORRECTED.** The row claims "any PR number,
+  runbook step number, or heading anchor" marks a delegated proof RESOLVED. That is false
+  for two of its three examples: `_ISSUE_REF` matches only `#<digits>` and `issue <digits>`,
+  so `see runbook step 3` never resolved, and the row's recorded `unresolved_items == []`
+  could not have held for its own second item. What the repair closes is narrower still —
+  a reference plus a self-declared not-done. **A bare `- live proof — #412` with no
+  negation still resolves, so the headline class (a pointer is not the proof) is
+  untouched.**
+- **S13 — CLOSED.** A present `## Closeout Delegation` with an absent or blank
+  `Closeout mode:` is `undeclared` and refused; absence of the SECTION still means
+  standalone. Round 2 caught the first repair writing its reason to a key no consumer
+  reads, which left `describe_goal_closeout_shape` rendering the refused floor as
+  SATISFIED. Zero checked-in goal artifacts declare the section, so the floor costs
+  nothing here and is unexercised by real content.
 
 **What S11's floor does NOT prove, recorded because two review rounds kept finding the
 gap wider than the previous claim:** it proves the section names an unnegated English
@@ -257,11 +296,11 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S6 | high | CLOSED (parent-reproduced 2026-07-28) | a | `scripts/check_test_completeness.py:50` | `check_test_completeness.py --repo-root /tmp/ct -- ""` — one empty-string target. run-quality.sh:48-49 builds the target array with `mapfile` from `run_standing_pytest.py --print-e | exit 0. `repo_root / ""` resolves to the repo root, so relative_test_files rglobs the WHOLE repo and every test file is 'covered by standing targets'. The gate reports full complet |
 | S7 | high | CLOSED (parent-reproduced 2026-07-31) | c | `scripts/validate_cautilus_diagnostics.py:76` | A cautilus bundle directory containing neither `finding.md` nor any of `observed.v1.json`/`summary.v1.json`/`report.json` — e.g. charness-artifacts/cautilus/2026-07-28-run/{notes.m | Ran both arms: `no changed cautilus diagnostic bundles` exit 0 for `--paths ...` AND for `--all`. The floors `must include finding.md` (line 179) and `must include one machine evid |
 | S8 | high | REFUTED (design posture, 2026-07-31) | c | `scripts/validate_cautilus_proof.py:200` | `validate_cautilus_proof.py --paths skills/public/quality/SKILL.md` — a prompt-affecting surface changed, proof artifact untouched. | exit 0 with the reassuring `no live cautilus proof artifact changed; deterministic validation owns 1 prompt-affecting path(s)`. Every downstream floor (behavior source, commands ru |
-| S9 | high | SUBAGENT-CONFIRMED | h | `scripts/validate_inventory_consumption.py:117` | The same quality artifact, once with `Date: 2026-07-28` and once with `Date: 2020-01-01` (a self-declared line inside the artifact the validator is judging). | Backdated: exit 0, `predates contract start; skipped.` Same file dated today: exit 1 with SIX distinct floor violations (0-of-14 field engagement, missing prose_review_status, Targ |
-| S10 | high | SUBAGENT-CONFIRMED | b | `scripts/validate_inventory_consumption.py:146` | Artifact body containing `- I did not read scope_status or finding_status at all.` plus five stub lines `Target boundary: n/a`, `Ambient repo findings: n/a`, `prose review result:  | `Validated inventory consumption for 1 declared inventory citation(s)`, exit 0. 'Engagement' is `\b<field>\b` presence, so an explicit negation and five `n/a` stubs satisfy the con |
+| S9 | high | NARROWED (2026-08-01, not closed) | h | `scripts/validate_inventory_consumption.py:117` | The same quality artifact, once with `Date: 2026-07-28` and once with `Date: 2020-01-01` (a self-declared line inside the artifact the validator is judging). | Backdated: exit 0, `predates contract start; skipped.` Same file dated today: exit 1 with SIX distinct floor violations (0-of-14 field engagement, missing prose_review_status, Targ |
+| S10 | high | NARROWED (2026-08-01, not closed) | b | `scripts/validate_inventory_consumption.py:146` | Artifact body containing `- I did not read scope_status or finding_status at all.` plus five stub lines `Target boundary: n/a`, `Ambient repo findings: n/a`, `prose review result:  | `Validated inventory consumption for 1 declared inventory citation(s)`, exit 0. 'Engagement' is `\b<field>\b` presence, so an explicit negation and five `n/a` stubs satisfy the con |
 | S11 | high | CLOSED (parent-reproduced 2026-07-31) | b | `scripts/validate_quality_artifact.py:232` | `## Delegated Review` section containing only the line `- status: executed (no reviewer, no findings, nothing ran)`. | validate_delegated_review_section PASSES. The verdict keys on the substring `executed` anywhere in the section; only `blocked` must cite a host/tool signal. The repo's fresh-eye-su |
-| S12 | high | SUBAGENT-CONFIRMED | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
-| S13 | high | SUBAGENT-CONFIRMED | h | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:159` | A goal artifact with a `## Closeout Delegation` section listing `Delegated proof:` items but with the `Closeout mode:` line absent, or present-and-blank. `mode_tokens` is empty so  | Ran both shapes: `ok=True`, `mode='standalone'`, `delegated_items=['final push/CI green','provider live proof']` with zero failures. A goal that visibly delegates external proof is |
+| S12 | high | NARROWED (2026-08-01, row CORRECTED) | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
+| S13 | high | CLOSED (parent-reproduced 2026-08-01) | h | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:159` | A goal artifact with a `## Closeout Delegation` section listing `Delegated proof:` items but with the `Closeout mode:` line absent, or present-and-blank. `mode_tokens` is empty so  | Ran both shapes: `ok=True`, `mode='standalone'`, `delegated_items=['final push/CI green','provider live proof']` with zero failures. A goal that visibly delegates external proof is |
 | S14 | high | CLOSED (parent-reproduced 2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_disposition.py:255` | A goal body that quotes another artifact's date line before its own, e.g. a blockquote `> Created: 2025-01-02` above the real `Created: 2026-07-01`. `parse_created_date` (goal_arti | Ran it: `parse_created_date` returns 2025-01-02 and `is_floor_in_scope(..., 2026-06-08)` returns False. Every Created-gated floor at once (disposition form 1c, recurrence lineage 1 |
 | S15 | high | PARTIAL (2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:40` | Goal artifact text with 'Created: 2020-01-01' and 'Status: complete' and no ## Operator Decision Queue section at all → check(text) | {'applies': False, 'ok': True, 'reason': 'pre-rule goal'}. A single author-written Created: line decides whether the complete-state floor runs. The grammar docstring claims 'a goal |
 | S16 | high | CLOSED (parent-reproduced 2026-07-30) | g | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:53` | Goal with Created: 2026-07-01 and a '## Operator Decision Queue' section whose only content is a fenced block containing '- Decision: this is only an EXAMPLE inside a fence'. _sect | {'applies': True, 'ok': True, 'reason': 'queue disposition recorded'}. A quoted/illustrative example inside a code fence is read as the author's real operator decision, satisfying  |

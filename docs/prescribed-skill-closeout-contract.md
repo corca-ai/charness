@@ -304,7 +304,7 @@ An *opt-in* orchestrated-closeout mode in
 wired through the same After-phase evidence gate. It lets a sub-goal close at
 `impl-local`/`carrier` while a *named* orchestrator goal owns the deferred
 external proof, without weakening standalone goals: a goal with no
-`## Closeout Delegation` section, or `Closeout mode: standalone`, is untouched —
+`## Closeout Delegation` section, or an explicit `Closeout mode: standalone`, is untouched (a present section with the mode line missing is `undeclared` and refused) —
 the strict standalone default stays the hard default.
 
 Closeout-state taxonomy (documentation vocabulary; the gate is

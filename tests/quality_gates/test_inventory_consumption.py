@@ -281,6 +281,11 @@ def test_artifact_predating_contract_start_is_skipped(tmp_path: Path) -> None:
 
     assert result.returncode == 0, result.stderr
     assert "predates contract start" in result.stdout
+    # This fixture is a NON-git tmp_path, so the arm it actually exercises is the
+    # uncorroborated one. Asserting that keeps the test from reading as coverage of the
+    # corroborated exemption, which `test_a_declaration_is_not_its_own_corroboration.py`
+    # owns.
+    assert "NOT CORROBORATED" in result.stdout
 
 
 def test_no_commands_run_section_means_nothing_to_enforce(tmp_path: Path) -> None:

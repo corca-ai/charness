@@ -551,6 +551,39 @@ Reopen trigger:
   does not support", since that is what makes the refusal safe; or the mini parser gaining
   real YAML coverage.
 
+### D47. Should inventory-field engagement require a value marker?
+
+- Question: `_engages` in [validate_inventory_consumption.py](../scripts/validate_inventory_consumption.py)
+  now requires a field mention to carry ≥5 alphanumerics beyond every declared field name.
+  That closes the stub shapes, but a field whose NAME is an ordinary English word —
+  `scope`, `status`, `notes`, `paths`, `ranking`, `advisory`, `command`, `families` — is
+  engaged by incidental prose. Should a mention additionally require a value marker
+  (`field=`, `field:`, or `` `field` ``)?
+- Current choice: **Defer — measure recorded, refusal not armed.**
+- Why now: found by round-1 bounded review while closing sweep row S10 on 2026-08-01, and
+  measured rather than argued: 51 of 169 field mentions across the 105 checked-in quality
+  artifacts carry no marker, and every sampled one is incidental prose rather than a
+  citation.
+- Why deferral is right at the time: arming the marker refuses **5 checked-in reviews** that cite
+  `inventory_nose_clones` or `inventory_doc_duplicates` (2026-06 and 2026-07, not all
+  2026-06 as a first draft of this entry said), all of which were only ever passing on incidental prose. The remedy is either
+  rewriting frozen artifacts to satisfy a later gate — the Goodhart move this validator's
+  own docstring exists to refuse — or accepting a standing red. Choosing that toll is the
+  owner's, as in [D45](#d45-should-run-qualitysh-arm---require-evaluated-scope-on-the-cilocal-parity-gate).
+  There is also a better repair available: qualify the generic tokens in
+  [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json)
+  so a field declares whether its name is distinctive, which is a contract change
+  deserving its own slice.
+- Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
+  about an ordinary word. Nothing here narrows sweep row S11.
+- Impact surfaces: [validate_inventory_consumption.py](../scripts/validate_inventory_consumption.py),
+  [measure_inventory_consumption_floor.py](../scripts/measure_inventory_consumption_floor.py),
+  [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
+- Reopen trigger: a quality artifact passing the floor on incidental prose and later found
+  not to have consumed the inventory; or the declaration file gaining per-field
+  distinctiveness; or those five reviews being rewritten for another reason. Both numbers in this
+  entry are hand measurements, not output of the recorded probe command.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

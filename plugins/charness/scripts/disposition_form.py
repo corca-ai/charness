@@ -42,7 +42,10 @@ from datetime import date
 # — the motivating dogfood instance), this #329 goal, and the triggering retros
 # were all Created/Dated 2026-06-07. Enforcement begins the NEXT day so those
 # frozen artifacts are grandfathered (the Goodhart Non-Goal: the original author
-# never had this floor). Mirrors ``validate_inventory_consumption.ENFORCED_FROM_DATE``.
+# never had this floor). Mirrors the ``validate_inventory_consumption.ENFORCED_FROM_DATE`` SHAPE, not its
+# corroboration: after 2026-08-01 that constant is checked against git, and this one
+# relies on the ``observed_date`` its callers supply (see
+# ``critique_enforcement_scope.observed_date``, the later-of-body-and-filename rule).
 # Clone-safe: an in-file constant, not mtime.
 DISPOSITION_FORM_RULE_DATE = date(2026, 6, 8)
 
