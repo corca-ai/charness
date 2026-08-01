@@ -543,6 +543,62 @@ def test_real_repo_workflows_or_zero_parity_issues(tmp_path: Path) -> None:
     assert payload["jobs_evaluated"] == 0
 
 
+def test_unreadable_job_shapes_land_in_the_unestablished_bucket(tmp_path: Path) -> None:
+    """Two job shapes this reader cannot open must be NAMED, not silently skipped.
+
+    Both used to fall into no bucket at all, which made "could not establish"
+    indistinguishable from "checked and passed" (S26). They reach different arms:
+    a truthy non-mapping job never gets as far as `steps`, while a `steps:` list
+    whose members are all unreadable has steps declared and none usable.
+    """
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  string_job: just-a-string
+  bare_step_job:
+    runs-on: ubuntu-latest
+    steps:
+      - a bare string step
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    unestablished = payload["jobs_gate_match_unestablished"]
+    assert len(unestablished) == 1
+    assert sorted(unestablished[0]["jobs"]) == ["bare_step_job", "string_job"]
+    # Neither shape may be reported as a job that passed: `jobs_evaluated` is the
+    # denominator, and counting an unopenable job in it is the defect itself.
+    assert payload["jobs_evaluated"] == 0
+    assert payload["jobs_without_canonical_gate"] == []
+    assert payload["parity_issues"] == []
+
+
+def test_a_falsy_non_mapping_job_is_absent_not_unreadable(tmp_path: Path) -> None:
+    """The control for the arm above: `if job:` is a real distinction, not noise.
+
+    An empty job value is nothing to read, so naming it "could not establish"
+    would inflate the unestablished bucket with jobs that say nothing at all.
+    """
+    repo = _write_workflow(
+        tmp_path,
+        """name: verify
+on: [push]
+jobs:
+  empty_job:
+""",
+    )
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+
+    assert payload["jobs_gate_match_unestablished"] == []
+    assert payload["jobs_evaluated"] == 0
+
+
 def test_named_scope_refusal_survives_summary_mode(tmp_path: Path) -> None:
     """The refusal payload must stay readable in `--summary`, not only in full mode.
 
