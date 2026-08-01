@@ -516,3 +516,103 @@ def test_leading_markup_does_not_defeat_the_typed_read() -> None:
     assert observer.observer_disposition(
         "Fresh-eye satisfaction: `parent-delegated`\n", strip_code_fences=_strip_code_fences
     )["disposition"] == "delegated"
+
+
+# --------------------------------------------------------------------------- #
+# Degrade branches. A new proof-surface module's fallbacks are the paths that
+# decide what happens when the world is not as expected, and they are exactly
+# what a caller-driven suite never reaches — so the changed-line gate blocked the
+# push until each was walked, which is the gate doing its job.
+# --------------------------------------------------------------------------- #
+def test_an_unedited_todo_short_circuits_before_the_negation_scan() -> None:
+    """`todo` anywhere demotes, without looking at where the token sits — a
+    scaffold claiming delegation is the rubber stamp wearing a typed value."""
+    observer = _load_observer()
+
+    assert observer.observer_disposition(
+        "Fresh-eye satisfaction: TODO confirm parent-delegated after the reviewer runs\n",
+        strip_code_fences=_strip_code_fences,
+    )["disposition"] == "undelegated"
+
+
+def test_an_empty_satisfaction_section_reports_absent_not_a_stray_later_line() -> None:
+    """A section that opens and closes with nothing in it must not fall through to
+    the inline scan and pick up an unrelated line further down the document."""
+    observer = _load_observer()
+    text = "## Fresh-Eye Satisfaction\n\n## Next Section\n\nFresh-eye satisfaction: parent-delegated\n"
+
+    assert observer.observer_disposition(text, strip_code_fences=_strip_code_fences) == {
+        "value": None,
+        "disposition": "absent",
+    }
+
+
+def test_a_value_that_is_only_markup_is_absent_rather_than_undelegated() -> None:
+    """`Fresh-eye satisfaction: **` is an empty record, not a positive statement
+    that nobody reviewed. Calling it `undelegated` would refuse a close over what
+    is really a formatting accident."""
+    observer = _load_observer()
+
+    assert observer.observer_disposition(
+        "Fresh-eye satisfaction: **\n", strip_code_fences=_strip_code_fences
+    )["disposition"] == "absent"
+
+
+def test_an_unparseable_date_is_treated_as_current_not_grandfathered() -> None:
+    """A malformed date must not become a grandfather bypass — `2026-13-45` parses
+    as a date SHAPE and fails only at value construction."""
+    observer = _load_observer()
+
+    assert observer.predates_typed_contract(Path("res.md"), "Date: 2026-13-45\n") is False
+
+
+def test_an_unreadable_agents_file_means_no_contract_not_a_crash(tmp_path: Path) -> None:
+    """The contract probe reads a file the consuming repo controls. If it cannot be
+    read, the honest answer is "no contract adopted" — refusing to close because a
+    probe raised would strand every close on an unrelated filesystem problem."""
+    observer = _load_observer()
+    # A real unreadable FILE, not a directory: a directory is rejected by the
+    # `is_file()` check and never reaches the read, so it would prove nothing
+    # about the branch this test exists for.
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text(CONTRACT_AGENTS_MD, encoding="utf-8")
+    agents.chmod(0o000)
+    try:
+        if os.access(agents, os.R_OK):  # running as root: the chmod proves nothing
+            return
+        assert observer.repo_requires_delegated_observer(tmp_path) is False
+    finally:
+        agents.chmod(0o644)
+
+    # And the control: the same file, readable, DOES report the contract.
+    assert observer.repo_requires_delegated_observer(tmp_path) is True
+
+
+def test_an_unreadable_cited_artifact_becomes_a_typed_refusal(tmp_path: Path) -> None:
+    """The `unreadable` disposition, reached through a real OSError rather than a
+    decode error. A cited critique nobody can open is not a delegated one, and it
+    must be typed rather than crashing the close command."""
+    critique = tmp_path / "res-42.md"
+    critique.write_text("Critique of #42.\n\nFresh-eye satisfaction: parent-delegated\n", encoding="utf-8")
+    critique.chmod(0o000)
+    try:
+        if os.access(critique, os.R_OK):  # running as root: the chmod proves nothing
+            return
+        module = _load_resolution_critique()
+        check = {"satisfied": [{"name": "resolution_critique", "via": "evidence", "path": str(critique)}]}
+
+        observer = module._observer_disposition(tmp_path, check)
+
+        assert observer["disposition"] == "unreadable"
+        assert observer["reason"]
+    finally:
+        critique.chmod(0o644)
+
+
+def _load_resolution_critique():
+    path = ROOT / "skills" / "public" / "issue" / "scripts" / "issue_resolution_critique.py"
+    spec = importlib.util.spec_from_file_location("issue_resolution_critique_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
