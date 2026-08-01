@@ -3,6 +3,9 @@ Date: 2026-08-01
 
 ## Context
 
+Goal under review:
+[2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md).
+
 The three-unarmed-refusals goal: handoff chunked routing over the live backlog
 selected `chunk-c`, `achieve` shaped it, the operator answered three deferred
 decisions, and three implementation slices plus a closeout ran against D46, D48,

@@ -1,6 +1,6 @@
 # Achieve Goal: Get the operator call on the three unarmed refusals D46 (adapter-YAML), D47 (inventory value markers), D48 (release surfaces), then arm or record what the call decides
 
-Status: active
+Status: complete
 Created: 2026-08-01
 Activation: `/goal @charness-artifacts/goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md`
 
@@ -9,12 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: ACTIVE — shaped this session from handoff chunk `chunk-c`,
-  plan-critiqued, reshaped by the operator's Q1/Q2 answers, and activated.
-- Current slice: slice 1 (D46 consumer repair), in progress. Slices 2 and 3 were
-  reshaped by the operator's Q1/Q2 answers after the plan critique broke the
-  premise of the repairs both deferred-decision entries had named.
-- Next action: run slice 1, then 2, then 3, then the slice-4 closeout.
+- Current disposition: COMPLETE — all four slices ran, five bounded review rounds,
+  three deferred decisions answered and recorded.
+- Current slice: none. Slices 2 and 3 were reshaped by the operator's Q1/Q2
+  answers after the plan critique broke the premise of the repairs both
+  deferred-decision entries had named.
+- Next action: none for this goal. The baton is in `docs/handoff.md`.
 - Verification cadence: dup-ratchet at the FIRST edit to a gated file (not at the
   closeout aggregate — ten late hard-blocks last session); targeted pytest plus the
   owning validator at each commit boundary; the full serial suite plus a bounded
@@ -502,11 +502,13 @@ The three consequential activation items and their resolutions are recorded in t
 
 ## Coordination Cues
 
-- Routing: `handoff` chunked routing selected the chunk, `achieve` shaped and ran
-  the goal, `impl`-class work ran per slice under the goal's own cadence, `critique`
-  supplied every bounded review round, `issue` filed the retro's structural finding,
-  and `retro` closed it. Selected from installed skill metadata and the repo's
-  Work Phase Map, not from an inline phase-to-skill table.
+- Routing: handoff — selected from installed skill metadata for the pickup, which
+  chunked the live backlog and drafted the goal; then achieve for the goal
+  lifecycle, impl for each slice's code, quality for the bundle-boundary gate and
+  the dup ratchet, critique for all five bounded review rounds, issue for the
+  filing the retro's sibling scan produced, and retro for closeout. Chosen from
+  installed skill metadata and the repo's Work Phase Map, not an inline
+  phase-to-skill table.
 - Release: n/a — this goal cut no release. It CHANGED release verdict logic
   (`current_release.py`, `publish_release_preflight.py`, a new adapter field), and
   those changes are proven by the release test modules and the bundle quality gate,
@@ -520,6 +522,96 @@ The three consequential activation items and their resolutions are recorded in t
 
 ## Final Verification
 
+**Self-verification, with what each command actually returned.**
+
+- Bundle quality gate `./scripts/run-quality.sh`: **82 passed, 1 failed, 707.0s.**
+  The single failure was `check-changed-line-mutation-coverage`, naming five files
+  with uncovered changed lines. Four were this goal's and are now covered; the
+  fifth, `inventory_ci_local_gate_parity.py`, is INHERITED — the gate's default
+  base is the last pushed commit, and `7efa0240` from an earlier session changed
+  it. Re-run scoped to this goal's own base (`8c3b3446`), the inherited file
+  correctly disappears and exactly one line remained,
+  `inventory_measurement_lib.py:99`, which the final slice covered. The confirming
+  re-run after that slice returns `"ok": true` with `"blocking_targets": {}`.
+- Targeted suites: 6570 collected repo-wide; the touched families all green —
+  handoff/chunker 138, release+absent-input 122, inventory/declaration 320, the
+  new measurement-lib module 10.
+- `check_dup_ratchet.py`: OK, `fixable_ceiling=0`. It fired FOUR times during the
+  run, at the first edit to a gated file each time, and each firing produced a real
+  extraction (`forward_carried_keys`, `entries_from_pipeline_payload`,
+  `cited_inventories`, `inventory_measurement_lib`) rather than a late hard-block.
+  Five families were classified `intentional` against named precedent; one was
+  recorded as a fingerprint rotation.
+- Executed before/after proof for D48 on a scratch worktree, not asserted: with the
+  codex `plugin.json` deleted AND the four declaration lines removed, the
+  pre-slice script returned `drift: []` — a clean publish verdict over a missing
+  surface — while the current one reports `absence_corroboration: uncorroborated`
+  and the publish blocker fires. A present-but-truncated `plugin.json` with no
+  declaration went from `drift: []` to `drift: ['codex_plugin=<unreadable>']`.
+- Executed measurement for D47, recorded at
+  [2026-08-01-inventory-marker-rule.json](../probe/2026-08-01-inventory-marker-rule.json)
+  and pinned against the live tree.
+- Boundary integrity: five `reviewer_boundary_fingerprint` windows opened and
+  verified, all `clean`, no drift.
+
+**Non-claims.** No `git push`, no remote CI dispatch, no `cautilus evaluate`, no
+release publish, no version bump. Every verdict here is local. None of the three
+refusals was armed. The D48 publish refusal has never run against a real publish —
+it is proven by tests and by a scratch-worktree reproduction, not by a release.
+`publish_release_resume.py` still reaches `create_release` with no surface check.
+The D47 measurement's remaining false positives are verified inert on today's
+corpus, not repaired.
+
+Retro: charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md
+Host log probe: skipped: host-log-not-exposed: the Claude session log exposes
+thread-wide token snapshots, function calls and subagent spawns, but this goal
+carries no `Host metric window:` line, so no per-goal scoped total can be derived
+and the thread-wide figures are pressure, not this goal's cost.
+Disposition review: charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md
+
 ## User Verification Instructions
 
+1. **Read the three decisions and what changed.** `docs/deferred-decisions.md`
+   D46, D47, D48 — each now carries the 2026-08-01 operator call, what shipped,
+   what stays deferred, and a `Withdrawn, do not retry` note where the entry's own
+   named remedy turned out to be unbuildable.
+2. **Reproduce D48's closure yourself:**
+
+   ```bash
+   git worktree add /tmp/d48 HEAD && rm -f /tmp/d48/plugins/charness/.codex-plugin/plugin.json
+   python3 -c "import re,pathlib;p=pathlib.Path('/tmp/d48/.agents/release-adapter.yaml');p.write_text(re.sub(r'required_release_surfaces:\n(- \w+\n)+','',p.read_text()))"
+   python3 skills/public/release/scripts/current_release.py --repo-root /tmp/d48
+   ```
+
+   Expect `absence_corroboration: "uncorroborated"` with `drift: []` — the
+   read-only call stays free, and the refusal is at publish.
+3. **Re-run D47's measurement:**
+   `python3 scripts/measure_inventory_marker_rule.py --repo-root .` — expect 5
+   refused citations across 4 artifacts, matching the recorded probe.
+4. **Check the review record:** the goal's `## Plan Critique Findings` and each
+   slice's `Critique` field name what every round found, including the three
+   findings that were about my claims rather than the code.
+
 ## Auto-Retro
+
+Full retro: [2026-08-01-three-unarmed-refusals-retro.md](../retro/2026-08-01-three-unarmed-refusals-retro.md).
+
+The run's dominant waste was building three things that had to be reverted, all in
+slice 2 — lane inference, planner routing, the resume gate — each refuted by a fact
+readable in one command before building. The run's most consequential finding was
+that three of five review rounds caught defects in a CLAIM rather than in code: a
+string-replace "repair" that silently never applied, a units swap that made two
+different numbers look like agreement, and a comment asserting a branch was live
+beside a probe recording zero.
+
+Retro dispositions: applied: an in-process `main()` test path for the marker
+measurement, so a render path proven only by subprocess stops reading as uncovered
+to the changed-line gate; applied: the shared exemption ladder's four states are
+now driven directly rather than left to a corpus that exercises one; applied: both
+inventory declaration fields now warn on an unreadable name, so a discarded typo is
+diagnosable; issue #468 for the transferable pattern.
+Structural follow-up: issue #468 (novel: no prior entry records that a durable
+record's named remedy is stored as prose and never re-verified against the channel
+it reads; D47 and D48 are the first two measured instances, and D45 is the
+unverified candidate).
+
