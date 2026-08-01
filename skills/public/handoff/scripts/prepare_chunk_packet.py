@@ -25,13 +25,6 @@ chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_cli")
 
 
-def _restore_entries(payload):
-    try:
-        return chunked_routing_lib.entries_from_payload(payload)
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument(
@@ -51,6 +44,11 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+# `staleness` is already an argument to build_chunk_proposal_packet above; the rest
+# would die here, at the last stage before the agent reads the packet.
+CARRIED_KEYS = ("issue_adapter_report",)
+
+
 def main() -> int:
     cancel_timeout = SKILL_RUNTIME.arm_cli_timeout(label="handoff prepare_chunk_packet")
     try:
@@ -60,7 +58,9 @@ def main() -> int:
             stage="prepare_chunk_packet",
             expects="a parse_handoff_entries payload (with entries[]) or an entries array",
         )
-        entries = _restore_entries(payload)
+        entries = chunked_routing_cli.entries_from_pipeline_payload(
+            payload, chunked_routing_lib
+        )
         hints = chunked_routing_lib.propose_merges(entries)
         policy = chunked_routing_lib.load_chunk_policy_config(args.repo_root.resolve())
         packet = chunked_routing_lib.build_chunk_proposal_packet(
@@ -69,6 +69,7 @@ def main() -> int:
             policy=policy,
             staleness=payload.get("staleness") if isinstance(payload, dict) else None,
         )
+        chunked_routing_cli.forward_carried_keys(payload, packet, CARRIED_KEYS)
         sys.stdout.write(json.dumps(packet, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

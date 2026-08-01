@@ -81,6 +81,37 @@ def read_pipeline_json(input_arg: str, *, stage: str, expects: str) -> Any:
         )
 
 
+def entries_from_pipeline_payload(payload: Any, chunked_routing_lib: Any) -> Any:
+    """Accept either the full parser payload or a bare entries array.
+
+    Shared by ``propose_merges`` and ``prepare_chunk_packet``: both restore the
+    same records from the same two input shapes, and a malformed payload must
+    refuse at the stage that read it rather than surface as a traceback.
+    """
+    try:
+        return chunked_routing_lib.entries_from_payload(payload)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
+
+
+def forward_carried_keys(payload: Any, output: dict[str, Any], keys: tuple[str, ...]) -> None:
+    """Copy each present, non-None ``keys`` entry from ``payload`` into ``output``.
+
+    Forwarded, not recomputed. A fact the parser established must survive to the
+    stage that builds the agent's packet, or it arrives stripped from the only
+    surface an agent reads -- the defect recorded as F3 for
+    ``issue_source_diagnostic``, and the same one ``staleness`` and
+    ``issue_adapter_report`` would hit stage by stage. Absent stays absent, so a
+    missing key never reads as "the check ran and found nothing".
+    """
+    if not isinstance(payload, dict):
+        return
+    for key in keys:
+        value = payload.get(key)
+        if value is not None:
+            output[key] = value
+
+
 def _fail(*, stage: str, source: str, expects: str, reason: str,
           hint: str | None = None) -> "None":
     payload = {

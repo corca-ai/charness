@@ -77,6 +77,58 @@ LAST_ISSUE_SOURCE_DIAGNOSTIC: dict[str, Any] | None = None
 # filters. A filtered-out issue is still open, so keeping the pre-filter set is
 # what stops the staleness check paying a provider call to rediscover that.
 LAST_OPEN_ISSUE_NUMBERS: tuple[int, ...] = ()
+# The issue adapter's self-report for THIS run. `build_issue_entries` used to take
+# `adapter["data"]` and drop the report around it, so a typo'd `default_org` was
+# silently defaulted -- D46's "the warning is legibility, not teeth. Nothing reads
+# it today." REPORTING, not a verdict: nothing branches on `valid`, because
+# refusing the listing would empty the issue backlog from pickup indistinguishably
+# from the trackerless fallback. Arming that refusal is D46's open question.
+LAST_ISSUE_ADAPTER_REPORT: dict[str, Any] | None = None
+
+
+def _report_lines(value: Any) -> list[str]:
+    """A loader's `errors`/`warnings` list, defensively.
+
+    `_load_issue_module` resolves the CONSUMER's installed issue skill, so this
+    shape is not guaranteed to be ours. A raise here would land in
+    `build_issue_entries`'s `except`, which returns `[]` -- emptying the backlog
+    while merely *reporting*. A bare string is wrapped, not exploded per char.
+    """
+    if isinstance(value, (list, tuple)):
+        return [str(item) for item in value]
+    return [] if value is None else [str(value)]
+
+
+def _adapter_report(adapter: dict[str, Any]) -> dict[str, Any] | None:
+    """The issue adapter's self-report, or ``None`` when it reported nothing.
+
+    ``None`` means "loaded clean", so an absent payload key never reads as "the
+    check did not run". `errors` is carried, not just `warnings`: the two lists are
+    DISJOINT in that loader and every invalidity reason goes to `errors` alone --
+    the parse-failure branch returns `errors=[...]` with `warnings=[]` -- so a bare
+    `valid: false` would be a verdict with no diagnosis, worse legibility than the
+    case D46 set out to repair. A not-FOUND adapter is not reported: its two
+    "create one" warnings are unconditional boilerplate in the ordinary
+    no-adapter case, and would bury the one shape D46 cares about.
+    """
+    if adapter.get("found") is False:
+        return None
+    errors = _report_lines(adapter.get("errors"))
+    warnings = _report_lines(adapter.get("warnings"))
+    valid = adapter.get("valid")
+    # `valid` absent is not `valid: false`: an installed loader that returns only
+    # `{"data": ...}` never claimed invalidity, and asserting it would fabricate a
+    # verdict. `errors` present with no `valid` key IS reported, so a real problem
+    # in a variant shape cannot arrive as silently clean.
+    invalid = valid is False or (valid is None and bool(errors))
+    if not invalid and not errors and not warnings:
+        return None
+    return {
+        "valid": not invalid,
+        "errors": errors,
+        "warnings": warnings,
+        "path": adapter.get("path"),
+    }
 
 
 def _label_slug(name: str) -> str:
@@ -242,8 +294,10 @@ def build_issue_entries(
     union with handoff entries stays collision-free.
     """
     global LAST_ISSUE_SOURCE_DIAGNOSTIC, LAST_OPEN_ISSUE_NUMBERS
+    global LAST_ISSUE_ADAPTER_REPORT
     LAST_ISSUE_SOURCE_DIAGNOSTIC = None
     LAST_OPEN_ISSUE_NUMBERS = ()
+    LAST_ISSUE_ADAPTER_REPORT = None
     config = load_issue_source_config(repo_root)
     if not config["enabled"]:
         return []
@@ -254,6 +308,7 @@ def build_issue_entries(
         issue_runtime = _load_issue_module(repo_root, "issue_runtime")
         stage = "load_issue_adapter"
         adapter = issue_resolver.load_adapter(repo_root)
+        LAST_ISSUE_ADAPTER_REPORT = _adapter_report(adapter)
         adapter_data = adapter.get("data", {})
         backend = adapter_data.get("issue_backend") or {"id": "gh", "binary": "gh", "commands": None}
         stage = "resolve_target"

@@ -135,6 +135,13 @@
     },
     {
       "class": "intentional",
+      "id": "12fd6c4518a06d6c",
+      "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "13741926e48b3ac1",
       "note": "handoff auto-draft goal template intentionally preserves achieve goal artifact decision-queue skeleton so generated drafts satisfy the same operator contract; guarded by exact render golden and goal validators",
       "reviewed_at": "2026-06-27",
@@ -369,6 +376,20 @@
       "id": "43d64c0037d4c0a6",
       "note": "standard five-line future/json/path typing import header in unrelated artifact and runtime-budget modules; not a shared behavior contract",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "447ce891d33e3595",
+      "note": "the `main()` of the two measurement scripts written on 2026-08-01 — measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "449b33b02d20b1fc",
+      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 — _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) — and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output — a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
+      "reviewed_at": "2026-08-01",
       "surface": "code"
     },
     {
@@ -975,6 +996,13 @@
     },
     {
       "class": "intentional",
+      "id": "a52782e0aaebcff2",
+      "note": "a two-line list comprehension that formats one string per input item, shared by four untouched call sites (prompt_mutant_files_lib twice, run_skill_efficiency_ab, tool_recommendation_lib) that adapter_lib.uninterpreted_warnings joined on 2026-08-01 while closing sweep row S24. The shape is `[f\"...\" for x in xs]` and nothing but the format string differs; extracting it would mean a helper that takes a format string, which is what f-strings already are. Pre-existing family, new membership.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "a60c7e0a171aac7c",
       "note": "small internal-schema stdout branch remains local because critique and retro build different packet contracts and return evidence; extraction would add abstraction without policy ownership",
       "reviewed_at": "2026-07-19",
@@ -1014,6 +1042,13 @@
       "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
       "reviewed_at": "2026-06-30",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "af879894e690c749",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "chunker per-stage CLI main() shape shared by prepare_chunk_packet and prepare_ranker_packet: arm timeout -> parse_args -> read_pipeline_json (naming its OWN stage in the refusal) -> emit the stage payload -> return 0 -> cancel timeout. Same class already accepted as 6ff3e380d6a8fcaf and 0bc23ea0000c6cf9: the shape IS the pipeline's CLI contract, because the stages run as independent piped processes and each must name the stage that read a malformed input. Surfaced as new only because D46 slice 1 added one forwarding line to prepare_chunk_packet; prepare_ranker_packet is untouched. The extractable half WAS extracted in this same slice, not argued away -- _restore_entries became chunked_routing_cli.entries_from_pipeline_payload and the three per-key forwarding blocks became chunked_routing_cli.forward_carried_keys, which removed the family the first ratchet run flagged between propose_merges and prepare_chunk_packet."
     },
     {
       "class": "intentional",
@@ -1153,6 +1188,13 @@
       "id": "c86d5365eb700947",
       "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c9a1067198c8bb00",
+      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
+      "reviewed_at": "2026-08-01",
       "surface": "code"
     },
     {
@@ -1367,6 +1409,13 @@
     },
     {
       "class": "intentional",
+      "id": "e870767ba8b3d1ab",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "same chunker per-stage CLI skeleton anchoring a long span between parse_handoff_entries.main and draft_goal_from_chunk.main; the skeleton matches at both ends while the bodies do entirely different work (handoff parsing + staleness + issue union vs goal-artifact drafting + check_goal rollback). Same accepted class as 6ff3e380d6a8fcaf. Surfaced as new because D46 slice 1 added the issue_adapter_report plumbing to parse_handoff_entries; draft_goal_from_chunk is untouched. Not collapsible: the two stages are separate executables in a documented pipe, and coupling their mains would defeat the per-stage refusal contract chunked_routing_cli exists to hold."
+    },
+    {
+      "class": "intentional",
       "id": "e8742da4a5390480",
       "note": "two-line empty-input early return (`if not <collection>: return []`) shared by seven unrelated functions across scripts/ and three portable skills. Verified by reading all seven: they guard different collections, return different types of empty result, and share no caller -- the identity is the Python idiom, not copied logic. Extracting it would require every caller to import a helper to express `return []`. Nothing to remove; classified rather than absorbed.",
       "reviewed_at": "2026-07-29",
@@ -1423,6 +1472,13 @@
     },
     {
       "class": "intentional",
+      "id": "f1b3765205bd97ef",
+      "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "f1ecdb322d57f29e",
       "note": "a 14-member family of two-to-five-line `if <cond>: return <literal>` guard clauses spread over eight unrelated modules (a staged-reversion check, a mutation-testing proposer, a t-signal classifier, a prompt-sentinel scorer, a tool-recommendation table, a JS eval runtime, and this release qualifier). It has no shared concept to centralize: each member returns its own module's own message for its own condition. It surfaced as new because widening the `same-proxy-flagged` qualifier text (S93) changed this file's normalized shape, not because duplication was introduced; the same guard-clause chain is present at 920b05ab.",
       "reviewed_at": "2026-07-28",
@@ -1433,6 +1489,13 @@
       "id": "f47a6c0ed140b9fb",
       "note": "the parallel argparse main() of the repo's two index builders (build_retro_lesson_selection_index.py, build_debug_seam_risk_index.py): both expose the same deliberate --write/--check/--json operator contract over different payloads, and that contract IS the shared surface a reader relies on. Extraction would need a generic index-CLI framework parameterized by builder, checker, renderer, and result keys -- more indirection than the ~25 duplicated lines it removes, for two callers. Re-fingerprinted when the retro builder's write branch was routed through the library writer that owns the helper-provenance refusal",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f5fac9e4015758dd",
+      "note": "three achieve goal-artifact floor modules (disposition_grammar, coordination_floors, phase_routing) sharing their module preamble. All three members are UNTOUCHED by the 2026-08-01 slice; the family surfaced as new because a sibling module in the same package was edited and the scan rotated. Pre-existing shape, no new duplication introduced here, and the preamble is the package's standard bootstrap.",
+      "reviewed_at": "2026-08-01",
       "surface": "code"
     },
     {
@@ -1489,55 +1552,6 @@
       "id": "ff84c95bf1ddf43e",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "449b33b02d20b1fc",
-      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 — _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) — and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output — a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c9a1067198c8bb00",
-      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a52782e0aaebcff2",
-      "note": "a two-line list comprehension that formats one string per input item, shared by four untouched call sites (prompt_mutant_files_lib twice, run_skill_efficiency_ab, tool_recommendation_lib) that adapter_lib.uninterpreted_warnings joined on 2026-08-01 while closing sweep row S24. The shape is `[f\"...\" for x in xs]` and nothing but the format string differs; extracting it would mean a helper that takes a format string, which is what f-strings already are. Pre-existing family, new membership.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "447ce891d33e3595",
-      "note": "the `main()` of the two measurement scripts written on 2026-08-01 — measure_adapter_yaml_uninterpreted and measure_inventory_consumption_floor: parse --repo-root/--json, call scan(), print JSON or a human summary, map the findings to an exit code. The SHAPE is deliberately the same because this repo's rule is that a threshold is defended by a re-runnable number, and an operator should be able to run either script the same way. What differs is every line of the body: different corpora, different report keys, different exit conditions (one refuses uninterpreted lines and unreadable files, the other refuses lowered citations, refused exemptions, and below-floor label values). Extracting a shared CLI would mean a framework that takes a scan function and a printer, which is more machinery than two ~40-line mains.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f5fac9e4015758dd",
-      "note": "three achieve goal-artifact floor modules (disposition_grammar, coordination_floors, phase_routing) sharing their module preamble. All three members are UNTOUCHED by the 2026-08-01 slice; the family surfaced as new because a sibling module in the same package was edited and the scan rotated. Pre-existing shape, no new duplication introduced here, and the preamble is the package's standard bootstrap.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "12fd6c4518a06d6c",
-      "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
-      "reviewed_at": "2026-08-01",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f1b3765205bd97ef",
-      "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
-      "reviewed_at": "2026-08-01",
       "surface": "code"
     }
   ],

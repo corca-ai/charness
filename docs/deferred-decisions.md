@@ -514,7 +514,27 @@ Reopen trigger:
   surface as **warnings**. Should they be errors, so `valid: false` and the skill's CLI
   exits 1?
 - Current choice: **Defer — warn, do not refuse.** The report ships; the refusal does
-  not.
+  not. **Operator call 2026-08-01: deferral CONFIRMED, and the recorded consumer defect
+  repaired.** The refusal stays unarmed for the reason below (the population it would
+  judge cannot be enumerated), but the "nothing reads the warning" half of the
+  non-claim is now closed: `build_issue_entries` records the issue adapter's `valid`,
+  `errors`, and `warnings` in `LAST_ISSUE_ADAPTER_REPORT`, and the field is forwarded
+  through all three documented pipeline stages —
+  `parse_handoff_entries.py --with-issues` emits `issue_adapter_report`, and
+  `propose_merges.py` and `prepare_chunk_packet.py` forward it, as they already do for
+  `staleness`. It carries `errors`, not only `warnings`: the two lists are disjoint in
+  that loader and the parse-failure branch returns `errors=[...]` with `warnings=[]`, so
+  a `valid: false` with no reason would be worse legibility than the case being repaired.
+  An adapter that was not FOUND is deliberately not reported — its two "create one"
+  warnings are unconditional boilerplate in the ordinary no-adapter case. It is reporting
+  only: nothing branches on `valid`, because refusing the listing would empty the issue
+  backlog from pickup indistinguishably from the documented trackerless fallback.
+  Pinned by eleven tests across
+  [test_handoff_chunker_issue_source.py](../tests/test_handoff_chunker_issue_source.py)
+  (including two that drive the REAL `resolve_adapter.load_adapter` — one over a
+  colon-less `default_org` line, D46's own example) and
+  [test_handoff_chunker_adapter_report.py](../tests/test_handoff_chunker_adapter_report.py)
+  (CLI emission, clean-adapter omission, and survival through both downstream stages).
 - Why now: found while closing sweep row S24 on 2026-08-01. The first cut of that slice
   DID arm the refusal, and the round-1 bounded review caught that it violates the goal's
   own stop condition: an adapter YAML is consumer-authored, so refusing it turns a
@@ -532,15 +552,20 @@ Reopen trigger:
   the refusal firing on legal YAML the mini parser merely does not support — a document
   marker was refused before that was fixed, and a 4-space indent step still records
   `over-indented line` — so "malformed" and "unsupported-by-us" are not yet separable.
-- Non-claims: the warning is legibility, not teeth. Nothing reads it today: the handoff
-  chunker's issue-source path
+- Non-claims: the warning is legibility, not teeth — that half is unchanged and
+  deliberate. **Superseded 2026-08-01:** "Nothing reads it today" was true when this
+  entry was written and is no longer; the handoff chunker's issue-source path
   ([chunked_routing_issue_source.py](../skills/public/handoff/scripts/chunked_routing_issue_source.py))
-  consumes `adapter["data"]` without checking `valid` OR `warnings`, so a typo'd
-  `default_org` is never surfaced there. The consequence is conditional, not certain:
-  `issue_runtime.resolve_target` only reaches `default_org` when the target argument is
-  empty AND the git remote yields nothing AND `default_repo` is unset, so in a repo with
-  an `origin` remote the typo has no effect on that path. A pre-existing defect this entry
-  records rather than repairs.
+  consumed `adapter["data"]` without checking `valid` OR `warnings`, so a typo'd
+  `default_org` was never surfaced there. It is now reported. The consequence was
+  always conditional, not certain: `issue_runtime.resolve_target` only reaches
+  `default_org` when the target argument is empty AND the git remote yields nothing AND
+  `default_repo` is unset, so in a repo with an `origin` remote the typo has no effect on
+  that path — the repair makes the typo *visible*, it does not make it *matter* more.
+  Still non-claims: only the handoff chunker's three-stage pipeline reads the report; the
+  other nine skills sharing the contract loader were not audited, and a warning that
+  reaches an agent-facing packet is legibility, not enforcement — nothing obliges the
+  reading agent to act on it.
 - Impact surfaces: [adapter_lib.py](../scripts/adapter_lib.py),
   [simple_skill_adapter_lib.py](../scripts/simple_skill_adapter_lib.py),
   [issue resolve_adapter.py](../skills/public/issue/scripts/resolve_adapter.py), and the

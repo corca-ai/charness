@@ -35,15 +35,8 @@ chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_routing_cli")
 
 
-def _restore_entries(payload):
-    """Accept either the full parser payload or just the entries array."""
-    is_payload = isinstance(payload, dict)
-    diagnostic = payload.get("issue_source_diagnostic") if is_payload else None
-    staleness = payload.get("staleness") if is_payload else None
-    try:
-        return chunked_routing_lib.entries_from_payload(payload), diagnostic, staleness
-    except ValueError as exc:
-        raise SystemExit(str(exc)) from exc
+# Facts the parser established that must reach the agent-facing packet unchanged.
+CARRIED_KEYS = ("issue_source_diagnostic", "staleness", "issue_adapter_report")
 
 
 def parse_args() -> argparse.Namespace:
@@ -68,16 +61,12 @@ def main() -> int:
             stage="propose_merges",
             expects="a parse_handoff_entries payload (with entries[]) or an entries array",
         )
-        entries, issue_source_diagnostic, staleness = _restore_entries(payload)
+        entries = chunked_routing_cli.entries_from_pipeline_payload(
+            payload, chunked_routing_lib
+        )
         proposal = chunked_routing_lib.propose_merges(entries)
         output = proposal.to_dict()
-        if issue_source_diagnostic is not None:
-            output["issue_source_diagnostic"] = issue_source_diagnostic
-        # Forwarded, not recomputed: the checked/not-checked flags must survive
-        # to the stage that builds the agent's packet, or the per-entry facts
-        # arrive stripped of the one thing that makes an empty list readable.
-        if staleness is not None:
-            output["staleness"] = staleness
+        chunked_routing_cli.forward_carried_keys(payload, output, CARRIED_KEYS)
         sys.stdout.write(json.dumps(output, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

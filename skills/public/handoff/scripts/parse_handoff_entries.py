@@ -165,6 +165,7 @@ def main() -> int:
         handoff_count = len(entries)
         issue_count = 0
         issue_source_diagnostic = None
+        issue_adapter_report = None
         open_issue_numbers: set[int] = set()
         if args.with_issues:
             issue_repo_root = _repo_root_for_adapter(args)
@@ -179,6 +180,11 @@ def main() -> int:
             issue_source_diagnostic = getattr(
                 chunked_routing_issue_source,
                 "LAST_ISSUE_SOURCE_DIAGNOSTIC",
+                None,
+            )
+            issue_adapter_report = getattr(
+                chunked_routing_issue_source,
+                "LAST_ISSUE_ADAPTER_REPORT",
                 None,
             )
             entries = chunked_routing_issue_source.dedup_and_union(entries, issue_entries)
@@ -240,6 +246,12 @@ def main() -> int:
         }
         if args.with_issues:
             payload["issue_source_diagnostic"] = issue_source_diagnostic
+            # Emitted only when the adapter had something to say (invalid, or at
+            # least one warning). D46's warnings were computed and then dropped by
+            # every consumer; this is the reader that makes them visible. It never
+            # gates the listing -- see LAST_ISSUE_ADAPTER_REPORT's contract.
+            if issue_adapter_report is not None:
+                payload["issue_adapter_report"] = issue_adapter_report
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

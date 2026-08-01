@@ -19,6 +19,15 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPTS = REPO_ROOT / "skills" / "public" / "handoff" / "scripts"
 
 
+def _load_issue_script(name: str):
+    """Load a REAL script from skills/public/issue/scripts (not a stub)."""
+    path = REPO_ROOT / "skills" / "public" / "issue" / "scripts" / f"{name}.py"
+    spec = importlib.util.spec_from_file_location(f"issue_{name}", path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def _load(name: str):
     spec = importlib.util.spec_from_file_location(name, SCRIPTS / f"{name}.py")
     module = importlib.util.module_from_spec(spec)
@@ -570,3 +579,219 @@ def test_list_open_issues_raises_on_malformed_payload(backend):
         backend.list_open_issues("o/r", runner=lambda argv: {"items": []})
     with pytest.raises(RuntimeError, match="non-list JSON"):
         backend.list_open_issues("o/r", runner=lambda argv: "not-json-list")
+
+
+# --- D46: the adapter warning finally has a reader ------------------------
+#
+# Slice 1 of the 2026-08-01 three-unarmed-refusals goal. D46 recorded that its
+# uninterpreted-line warnings are "legibility, not teeth. Nothing reads it today"
+# and named this exact consumer: build_issue_entries took `adapter["data"]` and
+# dropped `valid`/`warnings` on the floor. These tests pin the reader AND pin
+# that it stayed a reader -- the refusal is still deferred.
+
+
+def _issue_adapter_stub(adapter_payload):
+    """A `_load_issue_module` fake whose `load_adapter` returns `adapter_payload`."""
+
+    def fake_load_issue_module(root, name):
+        class _Mod:
+            @staticmethod
+            def load_adapter(r):
+                return adapter_payload
+
+            @staticmethod
+            def resolve_target(r, repo, data):
+                return {"full_name": "corca-ai/charness"}
+
+            @staticmethod
+            def _backend_json(argv):
+                return []
+
+        return _Mod
+
+    return fake_load_issue_module
+
+
+def _enable_issue_source(src, monkeypatch):
+    monkeypatch.setattr(src, "load_issue_source_config", lambda root: {
+        "enabled": True, "limit": 50, "repo": None,
+        "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
+    })
+
+
+def test_real_issue_adapter_uninterpretable_line_reaches_the_chunker_report(
+    src, monkeypatch, tmp_path
+):
+    """End-to-end through the REAL issue adapter loader, not a stub of it.
+
+    A `default_org` line with no colon is exactly D46's recorded example. Before
+    this slice the warning was computed by `resolve_adapter.load_adapter` and then
+    discarded here, so nothing anywhere reported it.
+    """
+    resolve_adapter = _load_issue_script("resolve_adapter")
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "issue-adapter.yaml").write_text(
+        "version: 1\ndefault_org corca-ai\ndefault_repo: charness\n", encoding="utf-8"
+    )
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(
+        src, "_load_issue_module",
+        lambda root, name: resolve_adapter if name == "resolve_adapter"
+        else _issue_adapter_stub({})(root, name),
+    )
+
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+
+    report = src.LAST_ISSUE_ADAPTER_REPORT
+    assert report is not None, "the uninterpretable line produced no report at all"
+    # Identify the UNINTERPRETED-LINE warning specifically, not merely any string
+    # containing the field name: the loader stamps every such warning with the D46
+    # pointer, so this cannot pass on the not-found boilerplate or a constant.
+    assert any(
+        "default_org" in w and "deferred-decisions.md D46" in w
+        for w in report["warnings"]
+    ), report["warnings"]
+    # The typo is reported, and the lane still runs: D46 stays unarmed.
+    assert report["valid"] is True
+    assert report["errors"] == []
+
+
+def test_clean_adapter_reports_nothing_so_absence_never_means_not_checked(
+    src, monkeypatch, tmp_path
+):
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"valid": True, "warnings": [], "data": {}}
+    ))
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    assert src.LAST_ISSUE_ADAPTER_REPORT is None
+
+
+def test_invalid_adapter_is_reported_but_never_gates_the_listing(
+    src, monkeypatch, tmp_path
+):
+    """The refusal D46 defers: `valid: false` must NOT empty the backlog.
+
+    Dropping the listing here would be indistinguishable from the documented
+    trackerless fallback, which is why this stayed reporting-only.
+    """
+    _enable_issue_source(src, monkeypatch)
+    # Faithful to the real loader: `errors` and `warnings` are DISJOINT, and
+    # "version must be an integer" is an errors-list message. A fixture that put it
+    # in `warnings` would hide the dropped-`errors` gap it looks like it covers.
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"found": True, "valid": False, "errors": ["version must be an integer"],
+         "warnings": [], "path": "/x/.agents/issue-adapter.yaml", "data": {}}
+    ))
+
+    entries = src.build_issue_entries(
+        tmp_path, start_index=1,
+        runner=lambda argv: [{"number": 467, "title": "still listed", "labels": [], "body": ""}],
+    )
+
+    assert [e.referenced_issues[0] for e in entries] == [467]
+    assert src.LAST_ISSUE_ADAPTER_REPORT == {
+        "valid": False,
+        "errors": ["version must be an integer"],
+        "warnings": [],
+        "path": "/x/.agents/issue-adapter.yaml",
+    }
+
+
+def test_report_is_cleared_between_runs(src, monkeypatch, tmp_path):
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"found": True, "valid": False, "errors": ["dirty"], "warnings": [], "data": {}}
+    ))
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    assert src.LAST_ISSUE_ADAPTER_REPORT is not None
+
+    monkeypatch.setattr(src, "load_issue_source_config", lambda root: {
+        "enabled": False, "limit": 50, "repo": None,
+        "labels_include": (), "labels_exclude": (), "exclude_numbers": (),
+    })
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    assert src.LAST_ISSUE_ADAPTER_REPORT is None
+
+
+def test_real_loader_parse_failure_reports_its_reason_not_a_bare_verdict(
+    src, monkeypatch, tmp_path
+):
+    """The loader's parse-failure branch returns `errors=[...]`, `warnings=[]`.
+
+    Reporting `valid: false` with nothing else is a verdict with no diagnosis --
+    strictly worse legibility than the warning case this slice repaired.
+    """
+    resolve_adapter = _load_issue_script("resolve_adapter")
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents" / "issue-adapter.yaml").write_text(
+        "version: 1\ndefault_org: corca-ai\n\t\tbroken: indent\n", encoding="utf-8"
+    )
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(
+        src, "_load_issue_module",
+        lambda root, name: resolve_adapter if name == "resolve_adapter"
+        else _issue_adapter_stub({})(root, name),
+    )
+
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+
+    report = src.LAST_ISSUE_ADAPTER_REPORT
+    if report is not None and report["valid"] is False:
+        assert report["errors"], "invalid adapter reported with no reason at all"
+
+
+def test_missing_adapter_file_is_not_reported_as_something_to_say(
+    src, monkeypatch, tmp_path
+):
+    """The not-found branch is `valid: True` with two boilerplate warnings.
+
+    Reporting it would fire on every pickup in the ordinary no-adapter case the
+    trackerless fallback already serves, burying the one shape D46 cares about.
+    """
+    resolve_adapter = _load_issue_script("resolve_adapter")
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(
+        src, "_load_issue_module",
+        lambda root, name: resolve_adapter if name == "resolve_adapter"
+        else _issue_adapter_stub({})(root, name),
+    )
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    assert src.LAST_ISSUE_ADAPTER_REPORT is None
+
+
+def test_absent_valid_key_is_not_fabricated_into_a_false_verdict(src, monkeypatch, tmp_path):
+    """An installed loader returning only `{"data": ...}` never claimed invalidity."""
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"warnings": ["a compatibility-fallback note"], "data": {}}
+    ))
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    assert src.LAST_ISSUE_ADAPTER_REPORT["valid"] is True
+
+
+def test_errors_only_shape_is_not_silently_clean(src, monkeypatch, tmp_path):
+    """A variant loader that reports `errors` and nothing else is still a problem."""
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"errors": ["backend command template missing"], "data": {}}
+    ))
+    src.build_issue_entries(tmp_path, start_index=1, runner=lambda argv: [])
+    report = src.LAST_ISSUE_ADAPTER_REPORT
+    assert report is not None and report["valid"] is False
+    assert report["errors"] == ["backend command template missing"]
+
+
+def test_malformed_warnings_value_never_empties_the_backlog(src, monkeypatch, tmp_path):
+    """Reporting runs inside the try whose except returns []; a raise there would
+    make the whole issue backlog vanish, indistinguishable from the trackerless
+    fallback. That is the outcome the reporting-only rule forbids."""
+    _enable_issue_source(src, monkeypatch)
+    monkeypatch.setattr(src, "_load_issue_module", _issue_adapter_stub(
+        {"valid": True, "warnings": 0.0, "data": {}}
+    ))
+    entries = src.build_issue_entries(
+        tmp_path, start_index=1,
+        runner=lambda argv: [{"number": 467, "title": "still listed", "labels": [], "body": ""}],
+    )
+    assert [e.referenced_issues[0] for e in entries] == [467]
