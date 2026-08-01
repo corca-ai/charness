@@ -1532,6 +1532,13 @@
       "note": "a multi-line `print(f\"...\" f\"...\")` operator-message block, shared by seven untouched sites (slice_closeout_advisories x4, check_references_link_inventory, check_test_repo_copy_invariants) that validate_inventory_consumption's extracted exemption helper joined on 2026-08-01. The duplication IS the message-emitting shape this repo uses everywhere; the content of every member differs entirely. Extracting it would mean a print wrapper, which is what print already is. Pre-existing family, new membership from a helper extraction that the complexity gate required.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f1b3765205bd97ef",
+      "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

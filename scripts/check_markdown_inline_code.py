@@ -140,13 +140,20 @@ def main() -> int:
                 # Reporting the WRAP message here would point an operator at a line where
                 # nothing wraps: the leftover is the tail of a shifted pairing, and the
                 # real defect is an odd backtick count somewhere earlier in the file.
+                #
+                # HONEST LIMIT, because an earlier version of this comment claimed the
+                # misdirection was confined to this branch: once the pairing is shifted,
+                # the WRAPPED branch below can ALSO name a line with no wrap on it. With
+                # a stray backtick on its own line, the stray pairs with the real opener
+                # and a WRAPPED finding is emitted at the stray's line. Correct pairing
+                # needs a stack this checker does not keep.
                 print(f"{rel}:{line_num}: unterminated inline code span; an odd number of single backticks makes every later span in this file unreliable, so audit the pairing rather than this line: ...{snippet}...", file=sys.stderr)
             else:
                 print(f"{rel}:{line_num}: inline code span wraps across line; collapse so the literal text stays on one line: ...{snippet}...", file=sys.stderr)
             violation_count += 1
 
     if violation_count:
-        print(f"{violation_count} wrapped inline code span(s) found.", file=sys.stderr)
+        print(f"{violation_count} inline code span issue(s) found.", file=sys.stderr)
         return 1
     print(f"Validated inline code spans in {len(targets)} markdown file(s).")
     return 0

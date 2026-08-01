@@ -104,7 +104,12 @@ def test_s2_a_stray_backtick_no_longer_masks_a_real_cross_line_span():
     # paired with the real opener, leaving the real closer unmatched and dropped.
     text = "A stray backtick don`t worry, then `python3 foo.py\n--bar` ends the span.\n"
 
-    assert INLINE.find_wrapped_inline_code(text) != []
+    violations = INLINE.find_inline_code_violations(text)
+
+    # Pinned precisely, not as "non-empty": the leftover is on line 2 and is reported as
+    # unterminated, because the operator remedy is to audit the pairing, not collapse a
+    # wrap that is not there.
+    assert violations == [(2, "--bar` ends the span.", INLINE.UNTERMINATED_REASON)]
 
 
 def test_s2_a_plain_cross_line_span_is_still_reported():
@@ -161,19 +166,41 @@ def test_s2_charness_artifacts_stay_outside_the_checkers_scope():
     assert "charness-artifacts" not in scoped
 
 
-def test_s2_the_release_carrier_also_clears_its_confirmation(tmp_path):
-    # The S23 class one level up: `release_issue_closeout_message` flips `ok` after
-    # `verify_closeout` has already rendered the confirmation sentence. Found by round 1.
-    release = _load_script_module(
-        "release_issue_closeout_message_under_test",
-        ROOT / "skills" / "public" / "release" / "scripts" / "release_issue_closeout_message.py",
+def test_s23_the_release_carrier_also_clears_its_confirmation(tmp_path):
+    """The S23 class one level up, pinned by BEHAVIOR.
+
+    Round 1 found that `release_issue_closeout_message` flips `ok` after `verify_closeout`
+    has already rendered the confirmation sentence. The FIRST version of this test asserted
+    that the string `sync_confirmation_line` appeared in the source file — which passes if
+    the call is deleted and a comment remains, if it sits in an unreachable branch, or if
+    it runs BEFORE the flip. Round 2 caught it: a test whose verdict outlived its check, in
+    the file whose thesis is that verdicts must not outlive their checks.
+    """
+    from tests.quality_gates.test_release_issue_closeout_preflight import (  # noqa: PLC0415
+        _load_release_closeout_message_module,
+        bug_closeout_body,
     )
 
-    assert "sync_confirmation_line" in (
-        (ROOT / "skills" / "public" / "release" / "scripts"
-         / "release_issue_closeout_message.py").read_text(encoding="utf-8")
+    message = _load_release_closeout_message_module()
+    commit_message = "\n\n".join([
+        "Release demo v1.0.0",
+        bug_closeout_body(
+            close_line="Close #44.\n\nClose #45.",
+            behavior_line="Behavior #44: confirmed via fresh checkout install",
+        ),
+    ])
+
+    result = message.validate_release_closeout_commit_message(
+        tmp_path,
+        repo="example/demo",
+        issue_numbers=[44],
+        classification="bug",
+        commit_message=commit_message,
     )
-    assert release is not None
+
+    assert result["ok"] is False
+    assert result["unexpected_close_keywords"] == [{"repo": None, "number": 45}]
+    assert result["confirmation"]["line"] is None
 
 
 def test_s2_the_unterminated_case_has_its_own_message():

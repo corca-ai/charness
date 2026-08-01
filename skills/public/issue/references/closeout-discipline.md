@@ -129,9 +129,13 @@ a pre-rendered `line` whose verb tracks the scope: it renders
 `confirmed: <observer> via <channel> (<scope>)` only for the final
 state-checked verdict, and the `carrier-checked:` verb with the same shape
 when only carrier-body checks ran, so a pre-publication pass never renders the
-stronger claim. Final handoffs and closeout prose
-should render that line instead of re-claiming a bare `verified`, so the claim
-never sounds stronger than the observation. The line names the verifier's own
+stronger claim. **`line` is `None` whenever the verdict is not ok** — including
+when a later fold or a carrier check refuses the payload AFTER the line was
+rendered, which is how a refused verdict once shipped a `carrier-checked:`
+sentence (sweep row S23). When it is `None` there is nothing to quote: render
+the refusal and its reasons, never the bare status token. Final handoffs and
+closeout prose should render that line instead of re-claiming a bare
+`verified`, so the claim never sounds stronger than the observation. The line names the verifier's own
 observer and channel; it is not the distinct-observer behavioral confirmation
 the next section mandates. Existing artifacts that recorded bare status tokens
 are grandfathered as-written; do not reinterpret or rewrite them.

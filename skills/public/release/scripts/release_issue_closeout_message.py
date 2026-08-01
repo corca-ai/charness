@@ -178,14 +178,17 @@ def validate_release_closeout_commit_message(
     result["unexpected_close_keywords"] = unexpected
     if unexpected:
         result["ok"] = False
-        result["status"] = "failed"
+        # The draft vocabulary, not the post-publication one: `validate_closeout_draft`
+        # set `draft_verified`, and a consumer keyed on the draft tokens saw neither.
+        result["status"] = "draft_failed"
         # Sweep row S23, one level up: this is a SECOND post-hoc flip of a verdict whose
         # confirmation sentence was already rendered by `verify_closeout`. Without this the
         # release carrier shipped `ok: False, status: failed` alongside
         # `carrier-checked: ...` — the exact line the closeout-discipline contract tells
         # handoffs to quote instead of the status token.
-        if _ISSUE_VERIFY_CLOSEOUT is not None:
-            _ISSUE_VERIFY_CLOSEOUT.sync_confirmation_line(result)
+        # No `is not None` guard: the early raise above makes a None module unreachable
+        # here, and a guard would advertise a silent fallback that cannot happen.
+        _ISSUE_VERIFY_CLOSEOUT.sync_confirmation_line(result)
     return result
 
 

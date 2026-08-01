@@ -182,9 +182,14 @@ def collect_markdownlint(repo_root: Path, rel: str) -> dict[str, Any]:
 
 def collect_wrapped_inline_code(doc: Path) -> list[dict[str, Any]]:
     text = doc.read_text(encoding="utf-8")
+    # The reason token has to survive the hop: the back-compat two-tuple shim drops it,
+    # and this collector then renders an UNTERMINATED finding under the `wrapped-inline-code`
+    # label — the operator misdirection the checker itself split a message for. This
+    # consumer also applies no `EXCLUDE_PARTS`, so it can be pointed at the very files the
+    # checker's own scope excludes.
     return [
-        {"line": lineno, "snippet": snippet}
-        for lineno, snippet in _inline_code.find_wrapped_inline_code(text)
+        {"line": lineno, "snippet": snippet, "reason": reason}
+        for lineno, snippet, reason in _inline_code.find_inline_code_violations(text)
     ]
 
 
@@ -379,6 +384,28 @@ def _regenerable_lines(findings: list[dict[str, Any]]) -> list[str]:
     return lines
 
 
+def _inline_code_lines(findings: list[dict[str, Any]]) -> list[str]:
+    """Render the two inline-code classes under their own labels.
+
+    They have different remedies: a wrap is collapsed, while an unterminated span means an
+    odd single-backtick count made the file's pairing unreliable and the named line is the
+    last unmatched backtick, not a span to fix. Rendering both as `wrapped-inline-code`
+    sent the operator to a line where nothing wraps.
+    """
+    wrapped = [row for row in findings if row.get("reason") != "unterminated"]
+    unterminated = [row for row in findings if row.get("reason") == "unterminated"]
+    lines: list[str] = []
+    if wrapped:
+        lines.append(f"wrapped-inline-code: {len(wrapped)} finding(s)")
+        lines.extend(f"  - line {row['line']}: ...{row['snippet']}..." for row in wrapped)
+    else:
+        lines.append("wrapped-inline-code: clean")
+    if unterminated:
+        lines.append(f"unterminated-inline-code: {len(unterminated)} finding(s)")
+        lines.extend(f"  - line {row['line']}: ...{row['snippet']}..." for row in unterminated)
+    return lines
+
+
 def format_human(report: Report) -> str:
     lines = [f"doc-authoring-preflight: {report.target} [{report.to_dict()['status']}]"]
     for warning in report.warnings:
@@ -395,12 +422,7 @@ def format_human(report: Report) -> str:
     else:
         lines.append("markdownlint: clean")
 
-    if report.wrapped_inline_code:
-        lines.append(f"wrapped-inline-code: {len(report.wrapped_inline_code)} finding(s)")
-        for row in report.wrapped_inline_code:
-            lines.append(f"  - line {row['line']}: ...{row['snippet']}...")
-    else:
-        lines.append("wrapped-inline-code: clean")
+    lines.extend(_inline_code_lines(report.wrapped_inline_code))
 
     if report.doc_links:
         lines.append(f"doc-links: {len(report.doc_links)} finding(s)")

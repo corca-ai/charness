@@ -117,8 +117,8 @@ reproduction refuted the refutation, which is the whole reason the rule is repro
 before repairing.
 
 - **S23 — CLOSED, and the ROW's surface:line was wrong while its verdict was right.** The
-  row points at the confirmation construction, which does carry an `if ok else None`
-  guard introduced 2026-07-20, before this sweep — the basis for the REFUTE prediction
+  row pointed at the pre-repair confirmation construction, which does carry an
+  `if ok else None` guard introduced 2026-07-20, before this sweep — the basis for the REFUTE prediction
   that both the plan and a round-1 reviewer reached. But the guard runs BEFORE
   `_fold_proof_mismatch`, which flips `ok` to False and `status` to `failed` afterward and
   never touched the sentence. `sync_confirmation_line` now enforces that a refused verdict
@@ -135,7 +135,9 @@ before repairing.
   a genuinely wrapped span render clean. Must admit: **the reported line is the LEFTOVER
   backtick, not the opener of the wrapped span**, so the finding says "audit the pairing"
   rather than naming the real span — correct pairing needs a stack this repair does not
-  add. `_strip_fences` handles fenced blocks only, so a lone backtick inside a blockquote
+  add. And the misdirection is NOT confined to the new class: once the pairing is
+  shifted, the WRAPPED branch can also name a line with no wrap on it (a stray backtick
+  on its own line pairs with the real opener, and the wrap is reported at the stray). `_strip_fences` handles fenced blocks only, so a lone backtick inside a blockquote
   or a 4-space indented block is a new false-positive vector the old drop-the-leftover
   behavior absorbed silently. And the measured zero is **not** a safety argument:
   `check-markdown.sh` treats this checker as ADVISORY and exits with markdownlint's status
@@ -353,7 +355,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S20 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/handoff/scripts/draft_goal_from_chunk.py:158` | `--chunk` payload `{"entries": [], "label": "", "objective_summary": ""}` — a chunk with zero sources and no objective. | `{"ok": true, ..., "status": "draft"}`, exit 0, and a goal artifact written with the title `# Achieve Goal: ` and an empty `## Goal` section. `check_goal` — the gate the docstring  |
 | S21 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/hitl/scripts/check_chunk_contract.py:44` | printf '' \| python3 skills/public/hitl/scripts/check_chunk_contract.py (also '   \n\n'). The underlying scripts/hitl_review_artifact_lib.py:169 short-circuits `if not asks_for_dec | {"status": "pass", "errors": []}, exit 0. An EMPTY chunk is certified as contract-satisfying. Worse in the normal case: any chunk that asks a human to decide without a '?' or the e |
 | S22 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/issue/scripts/audit_brief.py:80` | A transcript whose fix-unit records mutation and close events but no `classification` event: {"events":[{"kind":"mutation","issue":143,"tool":"Edit"},{"kind":"close","issue":143}]} | Ran it: `audit ok: 1 fix-unit(s) checked` exit 0. The brief-before-mutation contract is voided by omitting the one event that arms it — omission is rewarded over declaration. Same  |
-| S23 | high | CLOSED (parent-reproduced 2026-08-01; the row's `surface:line` was WRONG — see the batch note) | d | `skills/public/issue/scripts/issue_verify_closeout.py:293` | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
+| S23 | high | CLOSED (parent-reproduced 2026-08-01; the row's `surface:line` was WRONG — see the batch note) | d | `skills/public/issue/scripts/issue_verify_closeout.py:63` (the fold; the row originally pointed at the pre-repair confirmation construction, now `:317`) | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
 | S24 | high | NARROWED (2026-08-01, not closed) | d | `skills/public/issue/scripts/resolve_adapter.py:226` | /tmp/t2/.agents/issue-adapter.yaml containing `default_org corca-typo` (missing colon), or a top-level YAML list instead of a mapping. Ran: python3 skills/public/issue/scripts/reso | "valid": true, "errors": [], "warnings": [] and exit 0. The malformed line is silently dropped and default_org silently falls back to the hardcoded "corca-ai". The `Adapter file di |
 | S25 | high | CLOSED (parent-reproduced 2026-07-30) | d | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:145` | run_gate(Path('.'), {'eligible_globs':['**/*.py'],'coverage_json':'cov.json'}, base_sha='deadbeef...'(unknown sha), head_sha='HEAD', ...). _git_lines swallows the non-zero git exit | {'ok': True, 'reason': 'no eligible changed files in this range'} — the classify callback (which would have returned blocking rows) is never invoked. A git failure is reported as ' |
 | S26 | high | CLOSED (parent-reproduced 2026-08-01) | c | `skills/public/quality/scripts/ci_local_gate_parity_lib.py:244` | A workflow job whose steps are all `uses:` (e.g. `- uses: actions/checkout@v4` then `- uses: ./.github/actions/run-everything`). Guard: `if not steps or all(not isinstance(step.get | render_report → {'workflows_scanned': 1, 'parity_issues': [], 'jobs_without_canonical_gate': []}. The backstop that should have flagged 'this job never invokes the canonical local  |
