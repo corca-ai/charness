@@ -99,7 +99,12 @@ def test_close_with_comment_proceeds_with_compliant_body(tmp_path: Path) -> None
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["ok"] is True
-    assert payload["review_advisory"] == []
+    # This body's critique line is `blocked <signal>` — no fresh eye read the
+    # resolution. `verify-closeout` said so already; the carrier that writes to
+    # GitHub itself did not, so the close with the WEAKEST review reached the
+    # irreversible boundary with the quietest output. It is still advisory: the
+    # close proceeds, the operator just gets told.
+    assert any("was SKIPPED, not executed" in line for line in payload["review_advisory"])
     entries = json.loads(log.read_text(encoding="utf-8"))
     assert ["issue", "comment", "--repo", "corca-ai/charness", "42", "--body-file", str(body)] in entries
     assert ["issue", "close", "--repo", "corca-ai/charness", "42", "--reason", "completed"] in entries

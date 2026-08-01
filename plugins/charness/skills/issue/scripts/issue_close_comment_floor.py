@@ -119,7 +119,12 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
             "itself as agent-authored so the rung-2 observer can read the write for what it is."
         )
     critique = report["resolution_critique"]
-    if not critique.get("ok", True):
+    # Observer refusals FIRST and on their own line: the critique line is present
+    # and valid on this path, so the generic "add `Critique: <path>`" message would
+    # send the author to fix the one thing that is not wrong.
+    for refusal in critique.get("observer_refusals", []) or []:
+        lines.append(f"  {refusal['reason']}")
+    if not critique.get("ok", True) and not critique.get("observer_refusals"):
         lines.append(
             "  missing/invalid resolution-critique evidence: add `Critique: <path>` or "
             "`Critique: blocked <host-signal>`."

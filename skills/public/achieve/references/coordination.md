@@ -39,6 +39,18 @@ does not improvise them:
   out-of-band close (push timing stays the maintainer's call). Without the
   keyword a goal can resolve an issue yet leave it open after push; that gap is
   what this coordination closes.
+- **The resolution critique's fresh-eye round runs BEFORE the close, not after.**
+  The floor requires a critique artifact at close time; it does not by itself
+  order the review that artifact records. Measured once in this harness: a close
+  landed at 14:25 and the bounded review that found its load-bearing claim wrong
+  returned at 14:35, so the correction had to be posted publicly on an issue
+  already closed — a private rework turned into a public one by ten minutes of
+  ordering. Run the review, fold its findings, and only then call the close. The
+  `issue` skill now
+  reads the cited artifact's own `Fresh-eye satisfaction:` value at the close
+  boundary and refuses a record that states no distinct observer read it, so the
+  ordering has teeth as well as prose — but the teeth cannot see a claim written
+  before the review it describes. That part stays discipline.
 - **Record the close-intended ledger.** In `## Coordination Cues`, add
   `Issue closeout:` with the issue numbers, chosen carrier, close-keyword state,
   classification/critique evidence, and the exact `validate-closeout-draft` or

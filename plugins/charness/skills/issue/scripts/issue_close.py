@@ -159,6 +159,13 @@ def close_with_comment(
     # live to confirm, so the only obligation is surfacing that the
     # classification-driven exemption applied, never blocking on it.
     review_advisory = _CLOSE_COMMENT_FLOOR.review_advisory_for_classification(classification)
+    # The floor report is only FORMATTED on failure, so a close that passed while
+    # its critique recorded `blocked` or carried no fresh-eye line said so nowhere
+    # the closing operator would see. `verify-closeout` already surfaces these;
+    # the carrier that writes to GitHub itself did not.
+    review_advisory = review_advisory + list(
+        floor_report.get("resolution_critique", {}).get("review_advisory", []) or []
+    )
     lifecycle_capture = _capture_lifecycle(repo_root, repo=repo, number=number)
     return {
         "ok": True,
