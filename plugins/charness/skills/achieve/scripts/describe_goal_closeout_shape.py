@@ -234,6 +234,23 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "satisfied": bool(oq.get("ok", True)),
                  "detail": oq.get("reason")
                  or "replace the seeded scaffold prose with `none — <reason>` (~20+ chars) or a `- Decision:` item"})
+    # Both floors added 2026-08-01. A blocking floor with no row here is invisible
+    # to the describe-first preflight, which is the whole point of that step: the
+    # author discovers the refusal by failing the flip instead of by reading it.
+    distinct = ev.get("closeout_evidence_distinctness", {})
+    rows.append({"floor": "closeout_evidence_distinctness",
+                 "label": "`Retro:` and `Disposition review:` resolve to different paths",
+                 "triggered": bool(distinct.get("applies")),
+                 "satisfied": bool(distinct.get("ok", True)),
+                 "detail": distinct.get("reason")
+                 or "point the disposition review at its own artifact, not the retro"})
+    figures = ev.get("final_verification_figure_form", {})
+    rows.append({"floor": "final_verification_figure_form",
+                 "label": "`## Final Verification` figures carry a source or say `unbacked:`",
+                 "triggered": bool(figures.get("applies")),
+                 "satisfied": bool(figures.get("ok", True)),
+                 "detail": figures.get("reason")
+                 or "use `<value> — <source path or command>` or `<value> — unbacked: <why>`"})
     placeholders = ev.get("section_placeholders", [])
     rows.append({"floor": "section_placeholders", "label": "no seeded section placeholders remain (final-status floor)",
                  "triggered": bool(placeholders), "satisfied": not placeholders,

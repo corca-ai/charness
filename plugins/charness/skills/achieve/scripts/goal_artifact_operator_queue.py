@@ -62,16 +62,12 @@ def _section_body(text: str, heading: str) -> str | None:
 
 def check(text: str) -> dict[str, Any]:
     if not applies(text):
-        # Not a pass: the floor never ran. The scope came from one self-declared
-        # `Created:` line, so the result discloses that basis (`evaluated: False`
-        # plus the observed date) instead of reporting a bare `ok` that reads like
-        # a satisfied floor. Grandfathering itself stays — the checked-in corpus is
-        # majority pre-rule and refusing it would be a mass false refusal — so
-        # `ok` stays True and `applies: False` keeps the floor non-blocking.
-        # Shared with every sibling Created-gated floor. The payload still
+        # Not a pass: the floor never ran, and the shared payload says so. It
         # discloses its basis (`evaluated: False`, the observed `created`, and the
-        # `rule_date` that excluded it) — which is the S15 repair, and the reason
-        # this must never collapse to a bare `ok`.
+        # `rule_date` that excluded it) rather than reporting a bare `ok` that
+        # reads like a satisfied floor — the S15 repair. Grandfathering itself
+        # stays: the checked-in corpus is majority pre-rule and refusing it would
+        # be a mass false refusal.
         return grandfathered_report(text, RULE_DATE, "complete-state queue")
     # Describe-first rejections: every refusal names the target shape to author,
     # not just the violation, so the author fixes once instead of reverse-

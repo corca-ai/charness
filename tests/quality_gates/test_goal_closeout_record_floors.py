@@ -15,8 +15,9 @@ from datetime import date, timedelta
 from .support import ROOT
 
 SCRIPT_DIR = ROOT / "skills" / "public" / "achieve" / "scripts"
-IN_SCOPE = "2026-08-01"
+IN_SCOPE = "2026-08-02"
 GRANDFATHERED = "2026-07-01"
+DISTINCTNESS_IN_SCOPE = "2026-08-01"
 
 
 def _load(name: str):
@@ -136,7 +137,7 @@ def test_figure_floor_grandfathers_a_prior_goal() -> None:
     assert result["applies"] is False
     assert result["ok"] is True
     assert result["evaluated"] is False
-    assert result["rule_date"] == "2026-08-01"
+    assert result["rule_date"] == "2026-08-02"
     # The scope verdict rests on a line the author wrote, with no corroborating
     # channel, and the reason has to say so rather than read as established fact.
     assert "self-declared" in result["reason"]
@@ -164,7 +165,7 @@ def _distinctness_check(created: str, retro: str, review: str) -> dict:
 
 def test_one_file_cannot_be_both_the_record_and_its_own_review() -> None:
     same = "charness-artifacts/retro/2026-08-01-a-retro.md"
-    result = _distinctness_check(IN_SCOPE, same, same)
+    result = _distinctness_check(DISTINCTNESS_IN_SCOPE, same, same)
 
     assert result["applies"] is True
     assert result["ok"] is False
@@ -202,7 +203,7 @@ def test_a_skipped_review_does_not_collide_with_the_retro() -> None:
         ]
     }
     result = _load("goal_artifact_evidence_distinctness").check(
-        report, _artifact(IN_SCOPE, "x")
+        report, _artifact(DISTINCTNESS_IN_SCOPE, "x")
     )
 
     assert result["ok"] is True
@@ -227,41 +228,90 @@ def test_distinctness_floor_does_not_claim_to_check_authorship() -> None:
     assert "authorship PROXY" in source
 
 
-def test_the_figure_floor_is_a_captured_observable_not_a_refusal() -> None:
-    """Pinned so nobody arms it without redoing the measurement.
-
-    Armed, it refuses frozen same-day goal artifacts, and the only way to green
-    those is to edit finished records to satisfy a rule written after them. The
-    non-blocking posture is a decision with a reason, not an oversight, so the
-    test asserts the wiring rather than trusting the comment.
-    """
+def test_the_figure_floor_refuses_the_flip() -> None:
+    """It is ARMED. The first cut shipped it non-blocking on the belief that no
+    rule date could avoid refusing frozen artifacts; a bounded round measured the
+    next day and found the corpus clean, so the teeth went in."""
     module = _load("goal_artifact_figure_form")
     report = {"ok": True}
     module.apply_figure_form_floor(report, _artifact(IN_SCOPE, "- Score was 94.9% overall."))
 
-    fragment = report["final_verification_figure_form"]
-    assert fragment["ok"] is False, "the form question still gets a real answer"
-    assert fragment["blocking"] is False
-    assert fragment["figure_lines"] == 1, "publishes its own denominator"
-    assert report["ok"] is True, "must not flip the caller's verdict"
+    assert report["ok"] is False
+    assert report["final_verification_figure_form"]["figure_lines"] == 1
 
 
-def test_the_armed_figure_floor_would_refuse_frozen_artifacts() -> None:
-    """The measurement the deferral rests on, executed rather than asserted.
+def test_arming_the_floor_refuses_no_checked_in_artifact() -> None:
+    """The measurement the arming rests on, executed rather than asserted.
 
-    If a later change makes the corpus clean, this test fails and the deferral
-    should be revisited — which is the point of pinning a premise instead of a
-    conclusion.
+    If a checked-in artifact ever refuses, this fails — and the answer is NOT to
+    edit that artifact, which is the Goodhart move the floor's own rule date
+    exists to avoid. It is to re-open the rule-date call.
     """
     module = _load("goal_artifact_figure_form")
-    goals = sorted((ROOT / "charness-artifacts" / "goals").glob("*.md"))
     refused = []
-    for path in goals:
+    in_scope = 0
+    for path in sorted((ROOT / "charness-artifacts" / "goals").glob("*.md")):
         result = module.check(path.read_text(encoding="utf-8"))
-        if result["applies"] and not result["ok"]:
+        if not result["applies"]:
+            continue
+        in_scope += 1
+        if not result["ok"]:
             refused.append(path.name)
 
-    assert refused, (
-        "the armed floor no longer refuses any checked-in goal; the deferral in "
-        "apply_figure_form_floor rests on that refusal and should be revisited"
+    assert in_scope > 0, "the floor is in scope for nothing; the rule date is too late"
+    assert refused == [], f"armed floor refuses checked-in artifact(s): {refused}"
+
+
+def test_an_unbalanced_fence_refuses_to_render_a_verdict() -> None:
+    """`applies()` fails closed while `mask_fences` fails open, so without this
+    guard the two combine into: forced in scope, fenced examples read as real."""
+    text = (
+        f"# Goal\n\nCreated: {IN_SCOPE}\nStatus: complete\n\n"
+        "## Final Verification\n\n```\n- Mutation score 94.9%\n"
     )
+    result = _load("goal_artifact_figure_form").check(text)
+
+    assert result["evaluated"] is False
+    assert "unbalanced" in result["reason"]
+
+
+def test_a_four_digit_figure_is_seen() -> None:
+    """The first cut capped the digit run at three, so the exact line the floor
+    was built for slipped past it."""
+    result = _figure_check(IN_SCOPE, "- 1024 mutants tested with no source.")
+
+    assert result["figure_lines"] == 1
+    assert result["ok"] is False
+
+
+def test_a_bare_prose_slash_is_not_a_citation() -> None:
+    """`pass/fail` and `2/3` used to certify a line as sourced — worse than a
+    miss, because the figure was detected and then affirmatively cleared."""
+    for body in (
+        "- 12 rows remain — pass/fail unknown at this point",
+        "- 6 mutants survived — about 2/3 of the suite",
+    ):
+        assert _figure_check(IN_SCOPE, body)["ok"] is False, body
+
+
+def test_a_citation_followed_by_commentary_still_passes() -> None:
+    """Rightmost-separator-wins false-refused a correctly-sourced line that kept
+    talking. A false refusal teaches padding, which is the failure mode a form
+    floor most has to avoid."""
+    result = _figure_check(
+        IN_SCOPE,
+        "- 9 of 9 rows — `charness-artifacts/critique/x.md` — the 10th was out of scope",
+    )
+
+    assert result["ok"] is True
+
+
+def test_a_wrapped_command_argument_is_not_read_as_a_figure() -> None:
+    """Inline-code masking is single-line, so a soft-wrapped command left its
+    second line with no backtick pair and its arguments exposed as figures."""
+    result = _figure_check(
+        IN_SCOPE,
+        "- Ran `python3 scripts/plan_cautilus_proof.py --repo-root .\n  --limit 250` and it passed",
+    )
+
+    assert result["ok"] is True, result.get("offenders")

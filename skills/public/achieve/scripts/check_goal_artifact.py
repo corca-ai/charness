@@ -134,11 +134,27 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
                 for entry in evidence_report["section_placeholders"]
             )
         )
-    if evidence_report.get("operator_decision_queue", {}).get("reason"):
-        bits.append(
-            "operator-decision-queue floor: "
-            + evidence_report["operator_decision_queue"]["reason"]
-        )
+    # Guarded on `applies and not ok`, not on `reason` truthiness: this floor
+    # carries a reason when it PASSES too (`queue disposition recorded`) and when
+    # it is grandfathered off, so the old truthiness guard put a passing floor's
+    # text into the refusal message for every in-scope goal — noise that reads as
+    # the cause of a refusal it had nothing to do with.
+    _queue = evidence_report.get("operator_decision_queue", {})
+    if _queue.get("applies") and not _queue.get("ok", True):
+        bits.append("operator-decision-queue floor: " + _queue.get("reason", ""))
+    # Guarded on `applies and not ok`, NOT on `reason` truthiness: the
+    # grandfathered payload always carries a reason, so a truthiness guard would
+    # append a PASSING floor's text. That is the shape round 1 caught one line
+    # down — an in-scope distinctness refusal emitted only the operator-queue
+    # floor's `queue disposition recorded`, naming a floor that passed as the
+    # reason for a refusal.
+    for _floor_key, _floor_label in (
+        ("closeout_evidence_distinctness", "closeout-evidence distinctness"),
+        ("final_verification_figure_form", "final-verification figure form"),
+    ):
+        _floor = evidence_report.get(_floor_key, {})
+        if _floor.get("applies") and not _floor.get("ok", True):
+            bits.append(f"{_floor_label}: {_floor.get('reason', 'refused with no reason recorded')}")
     if evidence_report.get("invalid_early_close_reports"):
         bits.append(
             "early-close report shape: "

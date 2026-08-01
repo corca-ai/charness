@@ -762,45 +762,38 @@ Reopen trigger:
 - Question: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py)
   reads every figure stated under a goal artifact's `## Final Verification` and reports
   which ones carry neither a source (`<value> — <path/command/URL>`) nor an explicit
-  `<value> — unbacked: <why>`. It ships **non-blocking**: `apply_figure_form_floor`
-  records the report and never touches `report["ok"]`. Should it be armed, so an
-  unsourced figure refuses the flip to `complete`?
-- Current choice: **Defer — the floor ships, unwired.** The form question gets a real
-  answer (`ok` on the fragment, plus `figure_lines` as its published denominator); the
-  refusal does not.
-- Why now: found while building it on 2026-08-01. Armed with its rule date
-  (`2026-08-01`), it refuses **2 of the 23 in-scope checked-in goal artifacts** —
-  [the sweep-rows-by-class goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md)
-  (12 offending lines) and
-  [the three-unarmed-refusals goal](../charness-artifacts/goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md)
-  (5).
-  Both are FROZEN completed closeouts.
-- Why deferral is right at the time: grandfathering is by `Created:` DATE, and both
-  refused artifacts were created the same day as the floor, so no rule date separates
-  "the goal that built this" from "a goal completed this morning". The only way to green
-  them is to edit finished records to satisfy a rule written after them — the Goodhart
-  move this repo's validators exist to refuse, and a named non-goal of the goal that
-  built the floor. Narrowing the trigger does **not** rescue it: the refused lines are
-  real figures (`82 passed, 1 failed`, `9 of 9 rows dispositioned`, `CLOSED count moves
-  33 → 36`), not parser noise, so any predicate honest enough to catch a bare figure
-  catches theirs too. The lever that would work — a finer grandfather key than a date,
-  e.g. the artifact's first-commit identity — is a contract change for every
-  `goal_artifact_*` floor and deserves its own slice rather than a ride-along.
-- Non-claims: non-blocking means nothing refuses an unsourced figure today; the report is
-  one fragment in a large closeout payload, and this entry does not claim anyone reads
-  it. The floor checks FORM only — whether a cited source actually says the number is not
-  machine-decidable and stays author judgment plus the fresh-eye round. It does not
-  narrow the sibling distinctness floor, which IS armed (it is clean across all 23
-  in-scope artifacts).
+  `<value> — unbacked: <why>`. Should it refuse the flip to `complete`, or only report?
+- Current choice: **Withdrawn, do not retry — the floor is ARMED.** Resolved the day it
+  was opened, by the bounded review round that read it.
+- Why now: the entry was opened on 2026-08-01 to defer arming, on the measurement that a
+  `2026-08-01` rule date refuses 2 of 23 in-scope checked-in artifacts — both FROZEN
+  same-day closeouts — and that greening them would mean editing finished records to
+  satisfy a rule written after them. That measurement was correct. **The conclusion drawn
+  from it was not.** The entry asserted "no rule date separates the goal that built this
+  from a goal completed this morning", which is true and irrelevant: grandfathering BOTH
+  is an acceptable outcome, because the floor exists for the goals that come after it.
+  Re-measured at `2026-08-02`: **20 in scope, 0 refused.** The floor arms with no frozen
+  artifact touched, and the deferral's central claim — "the only way to green them is to
+  edit finished records" — was false.
+- Why the withdrawal is right: the cheap lever (move the rule date one day) was available
+  the whole time and was not considered; the entry instead reached for "a finer
+  grandfather key than a date", a contract change across the whole `goal_artifact_*`
+  family, to solve a problem one day of grandfathering solves. Deferring would have
+  shipped a floor with no teeth on the strength of an argument that did not survive
+  being read.
+- Non-claims: arming does not make the floor decide honesty. It checks FORM — whether a
+  cited source actually says the number is not machine-decidable and stays author
+  judgment plus the fresh-eye round. This goal's OWN artifact is grandfathered by the
+  `2026-08-02` date, so the floor's effect on it was demonstrated by running it, not by
+  the gate refusing.
 - Impact surfaces: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py),
   [goal_artifact_closeout_evidence.py](../skills/public/achieve/scripts/goal_artifact_closeout_evidence.py),
-  [goal-artifact.md](../skills/public/achieve/references/goal-artifact.md),
+  [check_goal_artifact.py](../skills/public/achieve/scripts/check_goal_artifact.py),
+  [goal-artifact lifecycle-after.md](../skills/public/achieve/references/lifecycle-after.md),
   [test_goal_closeout_record_floors.py](../tests/quality_gates/test_goal_closeout_record_floors.py).
-- Reopen trigger: the checked-in corpus ceasing to refuse — pinned by
-  `test_the_armed_figure_floor_would_refuse_frozen_artifacts`, which FAILS when that
-  happens, so the premise is re-measured rather than remembered; or a finer grandfather
-  key landing for the `goal_artifact_*` floor family; or an unsourced figure in a
-  closeout being planned against and turning out wrong.
+- Reopen trigger: a checked-in artifact refusing —
+  `test_arming_the_floor_refuses_no_checked_in_artifact` FAILS if one ever does, and the
+  answer then is to re-open the rule-date call, never to edit the artifact.
 
 ## Next Action Contract
 

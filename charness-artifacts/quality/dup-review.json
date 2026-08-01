@@ -842,6 +842,13 @@
     },
     {
       "class": "intentional",
+      "id": "7ed3536055f2897c",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "The two closeout-shape rows added this slice (closeout_evidence_distinctness, final_verification_figure_form) match each other. `describe_goal_closeout_shape._rows` is a TABLE: roughly ten sibling rows already share this exact five-key dict shape (floor/label/triggered/satisfied/detail), because a uniform row is what makes the rendered preflight readable. Collapsing adjacent rows into a loop would hide the per-floor `triggered`/`detail` expressions, which differ per row and are the only interesting part. The uniformity is the design."
+    },
+    {
+      "class": "intentional",
       "id": "7f11e1cbf8266c06",
       "note": "low-value local string/assignment idiom family spanning unrelated Python and JavaScript helper code; the duplicated spans are not a stable shared concept and extraction would add cross-surface coupling",
       "reviewed_at": "2026-07-09",
@@ -898,6 +905,13 @@
     },
     {
       "class": "intentional",
+      "id": "881bfadf34629bca",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "The `apply_<floor>_floor` protocol shared by goal_artifact_figure_form and goal_artifact_operator_queue: call `check`, attach the fragment under the floor's own report key, and flip `report[\"ok\"]` only when `applies and not ok`. Every Created-gated floor in this family implements this three-line contract identically ON PURPOSE -- it is the protocol goal_artifact_closeout_evidence calls them through, and the `applies and not ok` guard specifically is the invariant a bounded round just caught two consumers getting WRONG (guarding on reason-truthiness instead). Making it uniform and greppable is worth more than removing three lines."
+    },
+    {
+      "class": "intentional",
       "id": "89d83f450e19e19b",
       "note": "#432 identity guard: the release preflight deliberately duplicates the repo-root check_git_identity resolve+check logic because the plugin ships standalone and cannot import repo-root scripts; the two copies are bound by the test_release_preflight_parity matrix so semantic drift fails a test instead of diverging silently",
       "reviewed_at": "2026-07-10",
@@ -909,6 +923,13 @@
       "note": "repo-script bootstrap header (stdlib imports + `REPO_ROOT = repo_root_from_script(__file__)` + an import_repo_module call) across check_command_docs / check_artifact_surface_preflight / check_cli_skill_surface / validate_quality_reference_catalog; an import preamble cannot be extracted without an indirection that hides which module each script actually loads. Surfaced on 2026-07-31 as a membership rotation when check_skill_surface_preflight.py's own header changed and left the family, not as new duplication: no member is in that slice's diff",
       "reviewed_at": "2026-07-31",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8c41129333077c9f",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "ROTATION of c28c913feb04ce73 (same two members, window shifted by the round-1 repairs to goal_artifact_figure_form). Per-module sys.path + import bootstrap shared by the two floors added this slice. Unextractable by construction: this block is the mechanism by which a module finds shared code, so it cannot itself be shared. The REAL duplication these modules carried -- the Created-gated grandfathered payload -- was extracted into goal_artifact_floor_grammar.grandfathered_report, and BOTH remaining inline copies (operator_queue and blocked_matrix) were migrated onto it in the same slice."
     },
     {
       "class": "intentional",
@@ -1052,6 +1073,13 @@
     },
     {
       "class": "intentional",
+      "id": "a82bba62dcfd4317",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "ROTATION of 8c41129333077c9f (itself a rotation of c28c913feb04ce73) -- same two members, window shifted once more when `ruff --fix` reordered the import block. Per-module sys.path + import bootstrap shared by the two floors added this slice; unextractable by construction, since this block is the mechanism by which a module finds shared code. The real duplication these modules carried was extracted into goal_artifact_floor_grammar.grandfathered_report and both remaining inline copies migrated onto it."
+    },
+    {
+      "class": "intentional",
       "id": "a915bc1ab3025599",
       "note": "both modules correctly use the canonical runtime loader but bind different local dependencies; module-local binding is not duplicate loader behavior",
       "reviewed_at": "2026-07-19",
@@ -1105,6 +1133,13 @@
       "note": "independently executable root and support-skill sibling loaders differ in sys.modules registration and export portability; unifying them would weaken the support package boundary",
       "reviewed_at": "2026-07-19",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b0693c1c5b2d6fe7",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "ROTATION of 7a9e7d9fedbac40f. The flat `## `-only `_section_body` variant plus surrounding constants, shared by goal_artifact_operator_queue and goal_artifact_blocked_matrix. Deliberately NOT migrated onto goal_artifact_floor_grammar.section_body, whose docstring records why: that helper is level-aware (a `### Subsection` does not end the body) and these two floors keep the flat variant `unless a divergence-exposing proof migrates them`. Collapsing them would silently change both floors' section boundaries against a recorded decision, with no proof the level-aware semantics are correct for either."
     },
     {
       "class": "intentional",
@@ -1189,6 +1224,13 @@
       "note": "scripts/host_hook_entry_identity.py: the two thin public wrappers entries_match_command / entry_carries_foreign_command over the single _entry_holds predicate. Collapsing them into one call site would push the ours=True/ours=False polarity into every caller, which is exactly the confusion the named pair exists to prevent — the whole point of splitting them is that 'our hook is in this entry' and 'someone else's command is in this entry' are different questions with different consequences for whether the matcher may be rewritten.",
       "reviewed_at": "2026-07-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c3ee4e9ab5c1a9b7",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "ROTATION of fe01f30ffdaaac99. `_load_floor_grammar()` importlib-spec loader shared by goal_artifact_operator_queue and goal_artifact_blocked_matrix -- the same find-the-substrate circularity as 8c41129333077c9f in the spec-based spelling. Neither member is new duplication; both predate this slice and re-fingerprinted only because the grandfathered-payload extraction shortened both files."
     },
     {
       "class": "intentional",

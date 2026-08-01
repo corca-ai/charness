@@ -39,6 +39,7 @@ _GRAMMAR = _load_floor_grammar()
 _mask_fences = _GRAMMAR.mask_fences
 parse_created_date = _GRAMMAR.parse_created_date
 is_floor_in_scope = _GRAMMAR.is_floor_in_scope
+grandfathered_report = _GRAMMAR.grandfathered_report
 
 RULE_DATE = date(2026, 6, 18)
 SECTION = "Remaining Boundary Matrix"
@@ -102,7 +103,11 @@ def check(text: str) -> dict[str, Any]:
     pass through unconditionally.
     """
     if not applies(text):
-        return {"applies": False, "ok": True, "reason": "pre-rule goal"}
+        # Was `{"applies": False, "ok": True, "reason": "pre-rule goal"}` — the
+        # literal payload S15 exists to kill, because it reads like a satisfied
+        # floor. Its four siblings were migrated onto the disclosing helper; this
+        # one was left behind until a bounded round noticed.
+        return grandfathered_report(text, RULE_DATE, "remaining-boundary-matrix")
     body = _section_body(text, SECTION)
     if body is None:
         return {
