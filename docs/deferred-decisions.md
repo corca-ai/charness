@@ -761,39 +761,45 @@ Reopen trigger:
 
 - Question: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py)
   reads every figure stated under a goal artifact's `## Final Verification` and reports
-  which ones carry neither a source (`<value> — <path/command/URL>`) nor an explicit
-  `<value> — unbacked: <why>`. Should it refuse the flip to `complete`, or only report?
-- Current choice: **Withdrawn, do not retry — the floor is ARMED.** Resolved the day it
-  was opened, by the bounded review round that read it.
-- Why now: the entry was opened on 2026-08-01 to defer arming, on the measurement that a
-  `2026-08-01` rule date refuses 2 of 23 in-scope checked-in artifacts — both FROZEN
-  same-day closeouts — and that greening them would mean editing finished records to
-  satisfy a rule written after them. That measurement was correct. **The conclusion drawn
-  from it was not.** The entry asserted "no rule date separates the goal that built this
-  from a goal completed this morning", which is true and irrelevant: grandfathering BOTH
-  is an acceptable outcome, because the floor exists for the goals that come after it.
-  Re-measured at `2026-08-02`: **20 in scope, 0 refused.** The floor arms with no frozen
-  artifact touched, and the deferral's central claim — "the only way to green them is to
-  edit finished records" — was false.
-- Why the withdrawal is right: the cheap lever (move the rule date one day) was available
-  the whole time and was not considered; the entry instead reached for "a finer
-  grandfather key than a date", a contract change across the whole `goal_artifact_*`
-  family, to solve a problem one day of grandfathering solves. Deferring would have
-  shipped a floor with no teeth on the strength of an argument that did not survive
-  being read.
-- Non-claims: arming does not make the floor decide honesty. It checks FORM — whether a
-  cited source actually says the number is not machine-decidable and stays author
-  judgment plus the fresh-eye round. This goal's OWN artifact is grandfathered by the
-  `2026-08-02` date, so the floor's effect on it was demonstrated by running it, not by
-  the gate refusing.
+  which cite no path/command/URL and carry no `— unbacked: <why>`. Should it refuse the
+  flip to `complete`?
+- Current choice: **Defer — the floor ships, unwired.** It answers the form question and
+  publishes `figure_lines` as its denominator; it never touches `report["ok"]`.
+- Why now: opened, withdrawn, and re-opened on 2026-08-01 across two bounded review
+  rounds, and only the third measurement means anything. **The history is the point.**
+  - The first cut deferred on: a `2026-08-01` rule date refuses 2 of 23 in-scope
+    artifacts, both frozen same-day closeouts.
+  - Round 1 refuted that and armed the floor at `2026-08-02`: **20 in scope, 0 refused.**
+  - Round 2 refuted THAT: all 20 of those artifacts have no parseable `Created:` line and
+    are in scope only because the grandfather predicate fails closed. **Zero dated
+    artifacts were in scope.** "0 refused" was a green over an empty denominator — the
+    exact class this floor exists to make visible, produced inside the floor, by the
+    round that was fixing the same class elsewhere.
+- Why deferral is right at the time, on the honest denominator: measured over all **127
+  dated** checked-in goal artifacts, the separator-mandatory form refuses **90**. The form
+  was then relaxed — a source cited anywhere on the line counts, because
+  ``- `bash scripts/run-quality.sh` full: 82 passed, 1 failed`` names the exact command
+  that produced the number and was being refused for lacking a punctuation mark. Relaxed,
+  it still refuses **41 of 127**. A floor that would refuse a third of every closeout this
+  repo has written is not describing a defect; it is describing a house style it disagrees
+  with. Arming it yields mass false refusals or mass artifact edits, and a false refusal
+  is the expensive direction: it teaches padding.
+- Non-claims: nothing refuses an unsourced figure today. The floor checks FORM only —
+  whether a cited source actually says the number is not machine-decidable and stays
+  author judgment plus the fresh-eye round. The 41 refusals are NOT claimed to be 41 real
+  defects; they are 41 artifacts whose prose does not match a form invented after them.
+  Moving the rule date does not "green" the refused artifacts, it removes them from the
+  question — which is what made round 1's arming unearned.
 - Impact surfaces: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py),
   [goal_artifact_closeout_evidence.py](../skills/public/achieve/scripts/goal_artifact_closeout_evidence.py),
-  [check_goal_artifact.py](../skills/public/achieve/scripts/check_goal_artifact.py),
+  [describe_goal_closeout_shape.py](../skills/public/achieve/scripts/describe_goal_closeout_shape.py),
   [goal-artifact lifecycle-after.md](../skills/public/achieve/references/lifecycle-after.md),
   [test_goal_closeout_record_floors.py](../tests/quality_gates/test_goal_closeout_record_floors.py).
-- Reopen trigger: a checked-in artifact refusing —
-  `test_arming_the_floor_refuses_no_checked_in_artifact` FAILS if one ever does, and the
-  answer then is to re-open the rule-date call, never to edit the artifact.
+- Reopen trigger: the refusal rate over DATED artifacts reaching zero — pinned by
+  `test_the_corpus_measurement_the_non_arming_rests_on`, which fails both when nothing
+  refuses (arm it) and when the dated denominator collapses (the measurement stopped
+  meaning anything). Any future arming must state its denominator in DATED artifacts;
+  a count that includes undatable ones is the defect this entry records.
 
 ## Next Action Contract
 

@@ -308,8 +308,10 @@ count, a number of rows — should carry a source or say they have none:
 - Roughly 40 affected sessions — unbacked: no host log retains that window
 ```
 
-The validator **refuses the flip to `complete`** when a figure satisfies neither
-form. It checks FORM only. Whether a cited source actually says the number is not machine-decidable,
+The validator **reports** which figures satisfy neither form; it does not refuse
+on them. That is a measured decision, not caution: the form refuses roughly a
+third of the closeouts this repo has already written, so arming it would produce
+mass false refusals rather than catch a defect. It checks FORM only. Whether a cited source actually says the number is not machine-decidable,
 so that judgment stays with the author and the fresh-eye round — a validator
 that pretended to decide it would ship as a Goodhart proxy.
 

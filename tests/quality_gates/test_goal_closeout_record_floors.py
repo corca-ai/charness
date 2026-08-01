@@ -10,12 +10,12 @@ Goodhart proxy this repo refuses.
 from __future__ import annotations
 
 import importlib.util
-from datetime import date, timedelta
+from datetime import date
 
 from .support import ROOT
 
 SCRIPT_DIR = ROOT / "skills" / "public" / "achieve" / "scripts"
-IN_SCOPE = "2026-08-02"
+IN_SCOPE = "2026-08-01"
 GRANDFATHERED = "2026-07-01"
 DISTINCTNESS_IN_SCOPE = "2026-08-01"
 
@@ -49,7 +49,7 @@ def test_a_bare_figure_is_refused() -> None:
     assert result["applies"] is True
     assert result["ok"] is False
     assert result["figure_lines"] == 1
-    assert "no ` — ` separator" in result["offenders"][0]["reason"]
+    assert "no source cited on the line" in result["offenders"][0]["reason"]
 
 
 def test_a_sourced_figure_passes() -> None:
@@ -84,7 +84,49 @@ def test_prose_after_the_separator_is_not_a_source() -> None:
     result = _figure_check(IN_SCOPE, "- Mutation score 94.9% — this was verified carefully")
 
     assert result["ok"] is False
-    assert "prose with no path, command, or URL" in result["offenders"][0]["reason"]
+    assert "cites no path, command, or URL" in result["offenders"][0]["reason"]
+
+
+def test_a_source_cited_before_the_separator_counts() -> None:
+    """The form must not demand a PUNCTUATION where a citation already exists.
+
+    Measured: the separator-mandatory form refused 90 of the 127 dated checked-in
+    artifacts, including lines that name the exact command that produced the
+    number. That is the form being wrong about the repo.
+    """
+    result = _figure_check(
+        IN_SCOPE, "- `bash scripts/run-quality.sh` full: 82 passed, 1 failed."
+    )
+
+    assert result["ok"] is True
+
+
+def test_a_short_unbacked_marker_does_not_hide_a_real_citation() -> None:
+    """The every-segment loop used to bail on the first short `unbacked:`."""
+    result = _figure_check(
+        IN_SCOPE, "- 6 mutants survived — unbacked: n/a — see `scripts/mutants.py`"
+    )
+
+    assert result["ok"] is True
+
+
+def test_an_ordered_list_item_is_its_own_figure_line() -> None:
+    """Soft-wrap joining used to absorb `2. <figure>` into the bullet above it, so
+    the figure silently inherited that line's citation."""
+    body = "1. Ran the suite — `pytest`\n2. 6515 tests passed"
+    result = _figure_check(IN_SCOPE, body)
+
+    assert result["ok"] is False, result
+    assert any("6515" in o["line"] for o in result["offenders"])
+
+
+def test_a_heading_cannot_swallow_the_figure_beneath_it() -> None:
+    """Joining then skipping `#` lines discarded the figure entirely."""
+    body = "### Bundle proof\n6515 tests passed"
+    result = _figure_check(IN_SCOPE, body)
+
+    assert result["figure_lines"] == 1
+    assert result["ok"] is False
 
 
 def test_tokens_that_are_digits_without_being_figures_do_not_trigger() -> None:
@@ -137,7 +179,7 @@ def test_figure_floor_grandfathers_a_prior_goal() -> None:
     assert result["applies"] is False
     assert result["ok"] is True
     assert result["evaluated"] is False
-    assert result["rule_date"] == "2026-08-02"
+    assert result["rule_date"] == "2026-08-01"
     # The scope verdict rests on a line the author wrote, with no corroborating
     # channel, and the reason has to say so rather than read as established fact.
     assert "self-declared" in result["reason"]
@@ -147,7 +189,10 @@ def test_figure_floor_rule_date_is_not_in_the_future() -> None:
     """A rule date after today would silently grandfather every goal forever."""
     module = _load("goal_artifact_figure_form")
 
-    assert module.FIGURE_FORM_RULE_DATE <= date.today() + timedelta(days=1)
+    # `<= today`, not `today + 1`. Round 2 caught the one-day slack permitting
+    # exactly the state the name forbids — and it was permitting it, because the
+    # rule date had been pushed to tomorrow to manufacture a clean corpus.
+    assert module.FIGURE_FORM_RULE_DATE <= date.today()
 
 
 # --- evidence distinctness --------------------------------------------------
@@ -228,38 +273,47 @@ def test_distinctness_floor_does_not_claim_to_check_authorship() -> None:
     assert "authorship PROXY" in source
 
 
-def test_the_figure_floor_refuses_the_flip() -> None:
-    """It is ARMED. The first cut shipped it non-blocking on the belief that no
-    rule date could avoid refusing frozen artifacts; a bounded round measured the
-    next day and found the corpus clean, so the teeth went in."""
+def test_the_figure_floor_reports_without_refusing() -> None:
+    """NON-BLOCKING, and the reason is a measurement — see the docstring on
+    `apply_figure_form_floor`. It still answers the form question and still
+    publishes its denominator; what it does not do is refuse."""
     module = _load("goal_artifact_figure_form")
     report = {"ok": True}
     module.apply_figure_form_floor(report, _artifact(IN_SCOPE, "- Score was 94.9% overall."))
 
-    assert report["ok"] is False
-    assert report["final_verification_figure_form"]["figure_lines"] == 1
+    fragment = report["final_verification_figure_form"]
+    assert fragment["ok"] is False
+    assert fragment["blocking"] is False
+    assert fragment["figure_lines"] == 1
+    assert report["ok"] is True
 
 
-def test_arming_the_floor_refuses_no_checked_in_artifact() -> None:
-    """The measurement the arming rests on, executed rather than asserted.
+def test_the_corpus_measurement_the_non_arming_rests_on() -> None:
+    """Executed, not asserted, and over a denominator that is not empty.
 
-    If a checked-in artifact ever refuses, this fails — and the answer is NOT to
-    edit that artifact, which is the Goodhart move the floor's own rule date
-    exists to avoid. It is to re-open the rule-date call.
+    Round 1 armed this floor on "0 refused" — a number measured over 20 artifacts
+    that carry no `Created:` line at all, with ZERO dated artifacts in scope. This
+    test exists so that mistake cannot be repeated silently: it measures over
+    DATED artifacts, and fails if the refusal rate ever drops to zero (arm it) or
+    if the denominator ever collapses (the measurement stopped meaning anything).
     """
     module = _load("goal_artifact_figure_form")
-    refused = []
-    in_scope = 0
+    grammar = _load("goal_artifact_floor_grammar")
+    refused = 0
+    dated = 0
     for path in sorted((ROOT / "charness-artifacts" / "goals").glob("*.md")):
-        result = module.check(path.read_text(encoding="utf-8"))
-        if not result["applies"]:
+        text = path.read_text(encoding="utf-8")
+        if grammar.parse_created_date(text) is None:
             continue
-        in_scope += 1
-        if not result["ok"]:
-            refused.append(path.name)
+        dated += 1
+        if not module.check(text)["ok"]:
+            refused += 1
 
-    assert in_scope > 0, "the floor is in scope for nothing; the rule date is too late"
-    assert refused == [], f"armed floor refuses checked-in artifact(s): {refused}"
+    assert dated > 100, f"denominator collapsed to {dated}; the measurement is empty"
+    assert refused > 0, (
+        "no dated checked-in artifact refuses any more; the corpus has moved to "
+        "the form, so re-open whether this floor should be ARMED"
+    )
 
 
 def test_an_unbalanced_fence_refuses_to_render_a_verdict() -> None:

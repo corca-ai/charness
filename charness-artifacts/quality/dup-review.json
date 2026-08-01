@@ -1283,6 +1283,13 @@
     },
     {
       "class": "intentional",
+      "id": "c8b86213462ee3e3",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "ROTATION of a82bba62dcfd4317 (itself a rotation of 8c41129333077c9f / c28c913feb04ce73) -- same two members, window shifted again when the round-2 repairs dropped `join_soft_wraps` from the import block. Per-module sys.path + import bootstrap shared by the two floors added this slice; unextractable by construction, since this block is the mechanism by which a module finds shared code. The real duplication these modules carried (the Created-gated grandfathered payload) was extracted into goal_artifact_floor_grammar.grandfathered_report, and both remaining inline copies -- operator_queue and blocked_matrix -- were migrated onto it."
+    },
+    {
+      "class": "intentional",
       "id": "c9a1067198c8bb00",
       "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature. Rotated dcf7602d59906e68 -> c9a1067198c8bb00 on 2026-08-01 when a second measurement script, measure_inventory_consumption_floor.py, joined the same bootstrap; same nature, one more member.",
       "reviewed_at": "2026-08-01",

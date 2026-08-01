@@ -245,12 +245,18 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "detail": distinct.get("reason")
                  or "point the disposition review at its own artifact, not the retro"})
     figures = ev.get("final_verification_figure_form", {})
+    # `evaluated` is consulted, not just `applies`/`ok`. Both of this floor's
+    # decline-to-answer branches return `applies: True, ok: True`, so a row keyed
+    # on the booleans alone rendered "triggered, satisfied" for a floor that
+    # explicitly refused to render a verdict — and the booleans are what a
+    # preflight reader scans. Round 2 caught it.
+    _figures_evaluated = figures.get("evaluated", True)
     rows.append({"floor": "final_verification_figure_form",
-                 "label": "`## Final Verification` figures carry a source or say `unbacked:`",
-                 "triggered": bool(figures.get("applies")),
-                 "satisfied": bool(figures.get("ok", True)),
+                 "label": "`## Final Verification` figures carry a source or say `unbacked:` (advisory)",
+                 "triggered": bool(figures.get("applies")) and bool(_figures_evaluated),
+                 "satisfied": bool(figures.get("ok", True)) if _figures_evaluated else None,
                  "detail": figures.get("reason")
-                 or "use `<value> — <source path or command>` or `<value> — unbacked: <why>`"})
+                 or "cite a path/command/URL on the line, or write `— unbacked: <why>`"})
     placeholders = ev.get("section_placeholders", [])
     rows.append({"floor": "section_placeholders", "label": "no seeded section placeholders remain (final-status floor)",
                  "triggered": bool(placeholders), "satisfied": not placeholders,
