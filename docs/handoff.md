@@ -2,12 +2,13 @@
 
 ## Workflow Trigger
 
-- **No open work.** The three-unarmed-refusals goal is COMPLETE — D46, D48, D47
-  each answered and recorded, though **all three remain open deferrals**; only the
-  goal's slices closed. See
-  [the goal](../charness-artifacts/goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md).
-  With no explicit task, run `charness:handoff` chunked routing over the live
-  backlog. No open irreversible boundary.
+- **A shaped goal is waiting.** Run
+  `/goal @charness-artifacts/goals/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md`.
+  It is shaped, plan-critiqued, and `pursue_ready`; four lanes (push / closeout
+  evidence record / #467 / sweep rows) each closing independently. The preceding
+  three-unarmed-refusals goal is COMPLETE, though D46/D47/D48 **all remain open
+  deferrals** — only its slices closed. Do NOT run chunked routing first: the
+  backlog was already routed into that goal.
 
 ## Continuation Capability
 
@@ -45,12 +46,12 @@ the new gate working, not a regression.
 
 ## Next Session
 
-1. **`charness:handoff` chunked routing** over the live backlog, then apply the
-   premise rule to what it SELECTS (not to every candidate it surfaces). Live
-   lanes: sweep high rows S15 (PARTIAL), S31 (OPEN), S36/S37 (LEAD — never
-   reproduced), S111; the untouched E-cluster (E1/E3/E6/E7 + E2's residual), the
-   most expensive lane; #467; #468.
-2. **A precondition on step 1, not a lane inside it: D45 carries #468's shape.**
+1. **Activate the waiting goal.** Its Lane A is the only irreversible action and
+   goes first; its plan critique already cut two unbuildable items and corrected a
+   zero-denominator acceptance criterion, so read `## Plan Critique Findings`
+   before the first slice. NOT in it, and still open: the E-cluster
+   (E1/E3/E6/E7 + E2's residual), the most expensive lane.
+2. **Inside the goal as Lane D's precondition: D45 carries #468's shape.**
    It names "moving the exemption to the adapter" as S31's correct repair — the
    same self-declaration channel D48 just found insufficient. Its premise is a
    FILE READ, not a command: check whether an adapter-declared exemption seam
@@ -58,8 +59,8 @@ the new gate working, not a regression.
    exemption only from the `# charness:gate-policy` marker inside the audited
    workflow. Do NOT "verify" it by running
    `inventory_ci_local_gate_parity.py --detail` — that reproduces the symptom D45
-   already records and says nothing about the remedy's channel. Settle this if
-   routing selects S31.
+   already records and says nothing about the remedy's channel. Note the recorded
+   direction is S31 -> D45; D45 calls itself S31's consequence.
 3. **`goal_artifact_floor_grammar.parse_created_date` is consumed by FIVE achieve
    floors with no corroboration** — carried untouched across two handoffs. NOT a
    drive-by: the helper takes only `text`, so corroborating from the filename the
