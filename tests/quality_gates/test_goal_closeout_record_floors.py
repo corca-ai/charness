@@ -10,6 +10,9 @@ Goodhart proxy this repo refuses.
 from __future__ import annotations
 
 import importlib.util
+import subprocess
+import sys
+import tempfile
 from datetime import date
 
 from .support import ROOT
@@ -369,3 +372,150 @@ def test_a_wrapped_command_argument_is_not_read_as_a_figure() -> None:
     )
 
     assert result["ok"] is True, result.get("offenders")
+
+
+# --- the floors' own wiring, which the direct-`check` tests do not reach --------
+
+# A report with every list-shaped key `_evidence_missing_bits` indexes, so these
+# tests exercise the two new branches without asserting the rest of its shape.
+_EMPTY_EVIDENCE_REPORT = {
+    "missing": [],
+    "missing_evidence_files": [],
+    "invalid_skips": [],
+    "unbound_evidence": [],
+    "binding_failures": [],
+    "stub_evidence": [],
+    "coordination_missing": [],
+    "section_placeholders": [],
+    "invalid_early_close_reports": [],
+}
+
+
+def test_the_distinctness_floor_flips_the_caller_verdict() -> None:
+    """`check` returning `ok: False` is not the same as the caller refusing.
+
+    The direct-`check` tests above prove the verdict; this proves the wiring that
+    turns it into a refusal. Authoring a proof surface is an irreversible
+    boundary, so its own arming path needs a test rather than an assumption.
+    """
+    module = _load("goal_artifact_evidence_distinctness")
+    same = "charness-artifacts/retro/2026-08-01-a-retro.md"
+    report = {
+        "ok": True,
+        "satisfied": [
+            {"name": "retro_artifact", "via": "evidence", "path": same},
+            {"name": "disposition_review", "via": "evidence", "path": same},
+        ],
+    }
+    module.apply_evidence_distinctness_floor(report, _artifact(DISTINCTNESS_IN_SCOPE, "x"))
+
+    assert report["ok"] is False
+    assert report["closeout_evidence_distinctness"]["ok"] is False
+
+
+def test_the_distinctness_floor_leaves_a_clean_verdict_alone() -> None:
+    module = _load("goal_artifact_evidence_distinctness")
+    report = {
+        "ok": True,
+        "satisfied": [
+            {"name": "retro_artifact", "via": "evidence", "path": "a/retro.md"},
+            {"name": "disposition_review", "via": "evidence", "path": "b/review.md"},
+        ],
+    }
+    module.apply_evidence_distinctness_floor(report, _artifact(DISTINCTNESS_IN_SCOPE, "x"))
+
+    assert report["ok"] is True
+
+
+def test_an_unreadable_path_falls_back_instead_of_passing(monkeypatch) -> None:
+    """`samefile` raising must not read as "proven distinct".
+
+    An OSError here means the comparison did not happen. Passing on it would let
+    an unreadable pair satisfy a floor that never compared them, so the code
+    falls through to the textual comparison — and this pins that it does.
+    """
+    module = _load("goal_artifact_evidence_distinctness")
+    from pathlib import Path as _Path
+
+    monkeypatch.setattr(_Path, "exists", lambda self: True)
+
+    def _raise(self, other):
+        raise OSError("stat failed")
+
+    monkeypatch.setattr(_Path, "samefile", _raise)
+
+    same = _Path("charness-artifacts/retro/a-retro.md")
+    other = _Path("charness-artifacts/critique/a-review.md")
+
+    assert module._same_file(same, same) is True, "identical paths still compare equal"
+    assert module._same_file(same, other) is False
+
+
+def test_both_new_floors_name_themselves_in_the_refusal_message() -> None:
+    """The round-1 blocker, pinned: a refusal must name the floor that refused.
+
+    Without these branches the message named a floor that had PASSED, which is
+    the shape `_evidence_missing_bits`' own docstring records as why it exists.
+    """
+    main_module = _load("check_goal_artifact")
+    report = {
+        **_EMPTY_EVIDENCE_REPORT,
+        "operator_decision_queue": {"applies": True, "ok": True, "reason": "queue disposition recorded"},
+        "closeout_evidence_distinctness": {"applies": True, "ok": False, "reason": "resolve to the same file"},
+        "final_verification_figure_form": {"applies": True, "ok": False, "reason": "2 figure line(s) state a number"},
+    }
+    bits = main_module._evidence_missing_bits(report)
+    joined = "; ".join(bits)
+
+    assert "closeout-evidence distinctness: resolve to the same file" in joined
+    assert "final-verification figure form: 2 figure line(s) state a number" in joined
+    # And the PASSING floor stays out of the refusal message.
+    assert "operator-decision-queue" not in joined
+
+
+def test_a_refusing_queue_floor_still_names_itself() -> None:
+    """The control for the line above: re-guarding must not silence a real
+    operator-queue refusal, only stop it narrating someone else's."""
+    main_module = _load("check_goal_artifact")
+    report = {
+        **_EMPTY_EVIDENCE_REPORT,
+        "operator_decision_queue": {"applies": True, "ok": False, "reason": "`## Operator Decision Queue` is blank"},
+    }
+    joined = "; ".join(main_module._evidence_missing_bits(report))
+
+    assert "operator-decision-queue floor: `## Operator Decision Queue` is blank" in joined
+
+
+def test_an_artifact_with_no_final_verification_declines_to_answer() -> None:
+    """Absent section is another floor's question. Reporting a satisfied form
+    over a section that does not exist would be a pass over nothing read."""
+    text = f"# Goal\n\nCreated: {IN_SCOPE}\nStatus: complete\n\n## Goal\n\nsomething\n"
+    result = _load("goal_artifact_figure_form").check(text)
+
+    assert result["evaluated"] is False
+    assert result["figure_lines"] == 0
+    assert "no `## Final Verification` section" in result["reason"]
+
+
+def test_each_floor_module_bootstraps_itself_in_a_fresh_interpreter() -> None:
+    """The `sys.path` insert is how each module finds its shared substrate.
+
+    In-process tests never execute it: the first module loaded inserts the
+    directory and every later one short-circuits, so the branch that makes the
+    module work standalone — the installed-plugin case — is exercised by no test
+    at all. A subprocess per module is the only way to reach it.
+    """
+    for name in ("goal_artifact_evidence_distinctness", "goal_artifact_figure_form"):
+        script = (
+            "import importlib.util, sys;"
+            f"spec = importlib.util.spec_from_file_location('{name}', r'{SCRIPT_DIR / (name + '.py')}');"
+            "m = importlib.util.module_from_spec(spec);"
+            "spec.loader.exec_module(m);"
+            "print(m.applies.__name__)"
+        )
+        result = subprocess.run(
+            [sys.executable, "-c", script], cwd=tempfile.gettempdir(),
+            capture_output=True, text=True, check=False,
+        )
+        assert result.returncode == 0, f"{name}: {result.stderr}"
+        assert result.stdout.strip() == "applies"
