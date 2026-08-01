@@ -597,3 +597,42 @@ def test_dup_ratchet_rebaseline_records_which_fact_the_flag_covered(tmp_path, mo
     report = REBASELINE.write_baseline(repo, {}, _Args(confirm=True))
 
     assert any("UNREADABLE" in message for message in report["messages"])
+
+
+# --- lines the armed changed-line gate named as uncovered ----------------------------
+
+
+def test_an_over_indented_line_outside_a_list_is_reported():
+    # `adapter_lib.py:285` — the `over-indented line` drop site in `_parse_block`. The
+    # sibling site inside a list had a test; this one did not, so the instrumentation
+    # that authorized the arming decision was itself half-unproven.
+    parsed, uninterpreted = ADAPTER_LIB.load_yaml_report("a: 1\nb: 2\n    stray: 3\n")
+
+    assert [entry["reason"] for entry in uninterpreted] == ["over-indented line"]
+
+
+def test_the_measurement_reports_a_file_it_cannot_decode(tmp_path, monkeypatch, capsys):
+    # `measure_adapter_yaml_uninterpreted.py:69-71` — the OSError/UnicodeDecodeError arm.
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "a.yaml").write_bytes(b"\xff\xfe not utf-8 \xff")
+    measure = _measure()
+    monkeypatch.setattr("sys.argv", ["measure", "--repo-root", str(tmp_path), "--roots", ".agents"])
+
+    assert measure.main() == 1
+    assert "UNREADABLE" in capsys.readouterr().out
+
+
+def test_the_measurement_raises_if_the_report_variant_ever_diverges(tmp_path, monkeypatch):
+    # `:81` — the AssertionError guard. It is the one thing standing between "the sink is
+    # observation-only" and a silent behavior change, so it needs a test of its own.
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "a.yaml").write_text("k: v\n", encoding="utf-8")
+    measure = _measure()
+    monkeypatch.setattr(measure.adapter_lib, "load_yaml", lambda text: {"different": True})
+
+    try:
+        measure.scan(tmp_path, (".agents",))
+    except AssertionError as exc:
+        assert "changed the parse result" in str(exc)
+    else:  # pragma: no cover - the guard must fire
+        raise AssertionError("the divergence guard did not fire")

@@ -215,3 +215,42 @@ def test_s2_the_unterminated_case_has_its_own_message():
         "Line one has `a real cross-line span\nthat closes here` on line two.\n"
     )
     assert [reason for _, _, reason in wrapped] == [INLINE.WRAPPED_REASON]
+
+
+# --- lines the armed changed-line gate named as uncovered ----------------------------
+
+
+def test_the_unterminated_finding_prints_its_own_cli_message(tmp_path, monkeypatch, capsys):
+    # `check_markdown_inline_code.py:150` — the unterminated branch of the CLI printer.
+    #
+    # Written into tmp_path, never the real repo: the first version of this test wrote a
+    # scratch file under `docs/` and deleted it, and `check_test_repo_copy_invariants`
+    # refused it. That is sweep row S112's class — transient worktree state another
+    # pytest worker can observe — caught by the gate that owns it.
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "unterminated.md").write_text("Use `foo to run.\n", encoding="utf-8")
+    monkeypatch.setattr("sys.argv", ["check", "--repo-root", str(tmp_path)])
+
+    code = INLINE.main()
+    err = capsys.readouterr().err
+
+    assert code == 1
+    assert "unterminated inline code span" in err
+    assert "inline code span issue(s) found" in err
+
+
+def test_the_preflight_renders_the_unterminated_class_under_its_own_label():
+    # `check_doc_authoring_preflight.py:404-405` — the render branch. Rendering it as
+    # `wrapped-inline-code` was round 2's blocker; this pins the split.
+    preflight = _load_script_module(
+        "check_doc_authoring_preflight_under_test",
+        ROOT / "scripts" / "check_doc_authoring_preflight.py",
+    )
+
+    lines = preflight._inline_code_lines(
+        [{"line": 1, "snippet": "Use `foo", "reason": "unterminated"}]
+    )
+
+    assert "wrapped-inline-code: clean" in lines
+    assert any("unterminated-inline-code: 1 finding(s)" in line for line in lines)
+    assert any("line 1" in line for line in lines)

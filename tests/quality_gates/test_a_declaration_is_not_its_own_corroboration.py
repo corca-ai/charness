@@ -10,6 +10,7 @@ Each test names the pre-repair verdict it pins against, observed in the parent o
 """
 from __future__ import annotations
 
+import json
 import subprocess
 import sys
 from pathlib import Path
@@ -456,3 +457,146 @@ def test_a_failed_git_status_does_not_read_as_a_clean_tree(monkeypatch, tmp_path
     monkeypatch.setattr(INVENTORY, "_git", _fake)
 
     assert INVENTORY.commit_state(repo, repo / "artifact.md") == ("unavailable", None)
+
+
+# --- lines the armed changed-line gate named as uncovered ----------------------------
+# Each of these was written because `prepush_focused_changed_line_coverage.py
+# --refuse-unestablished` over this goal's own committed range listed the exact
+# `path:line` below. That is the flag earning its cost: a green over an unestablished
+# range would have proved nothing about any of them.
+
+
+def test_commit_state_reports_unavailable_when_git_cannot_run(monkeypatch, tmp_path):
+    # `validate_inventory_consumption.py:179-180` — the OSError arm.
+    def _boom(*args, **kwargs):
+        raise OSError("no git binary")
+
+    monkeypatch.setattr(INVENTORY.subprocess, "run", _boom)
+
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("unavailable", None)
+
+
+def test_commit_state_survives_an_unparsable_head_date(monkeypatch, tmp_path):
+    # `:204-205` — git answered with something that is not a date.
+    calls = []
+
+    def _fake(root, *args):
+        calls.append(args)
+        if args[0] == "log" and "--" not in args:
+            return subprocess.CompletedProcess(args, 0, "not-a-date\n", "")
+        if args[0] == "status":
+            return subprocess.CompletedProcess(args, 0, "", "")
+        return subprocess.CompletedProcess(args, 0, "2020-01-02\n", "")
+
+    monkeypatch.setattr(INVENTORY, "_git", _fake)
+
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("dated", INVENTORY.date(2020, 1, 2))
+
+
+def test_commit_state_reports_unavailable_when_the_path_log_fails(monkeypatch, tmp_path):
+    # `:221` — git works for HEAD and refuses the pathspec (a submodule path, say).
+    def _fake(root, *args):
+        if args[0] == "status":
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if "--" in args:
+            return subprocess.CompletedProcess(args, 128, "", "fatal: bad pathspec")
+        return subprocess.CompletedProcess(args, 0, "2026-08-01\n", "")
+
+    monkeypatch.setattr(INVENTORY, "_git", _fake)
+
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("unavailable", None)
+
+
+def test_commit_state_reports_uncommitted_for_a_clean_but_never_committed_path(monkeypatch, tmp_path):
+    # `:225` — the arm round 1 found: git exits 0 with EMPTY stdout for a file it has
+    # never seen, which the first cut collapsed into "git cannot answer".
+    def _fake(root, *args):
+        if args[0] == "status":
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if "--" in args:
+            return subprocess.CompletedProcess(args, 0, "", "")
+        return subprocess.CompletedProcess(args, 0, "2026-08-01\n", "")
+
+    monkeypatch.setattr(INVENTORY, "_git", _fake)
+
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == (
+        "uncommitted", INVENTORY.date(2026, 8, 1),
+    )
+
+
+def test_commit_state_reports_unavailable_for_an_unparsable_path_date(monkeypatch, tmp_path):
+    # `:228-229`.
+    def _fake(root, *args):
+        if args[0] == "status":
+            return subprocess.CompletedProcess(args, 0, "", "")
+        if "--" in args:
+            return subprocess.CompletedProcess(args, 0, "garbage\n", "")
+        return subprocess.CompletedProcess(args, 0, "2026-08-01\n", "")
+
+    monkeypatch.setattr(INVENTORY, "_git", _fake)
+
+    assert INVENTORY.commit_state(tmp_path, tmp_path / "a.md") == ("unavailable", None)
+
+
+def test_a_whole_repository_predating_the_contract_is_not_called_corroborated(tmp_path):
+    # `:324, :331` — the arm round 2 rewrote: HEAD's date says nothing about a file git
+    # has not seen, so this may not print "Corroborated".
+    repo, artifact = _write_repo(
+        tmp_path, _artifact(_FAILING_BODY, date="2020-01-01"), git=True,
+        commit_date="2020-01-02T12:00:00 +0000",
+    )
+    fresh = repo / "fresh.md"
+    fresh.write_text(_artifact(_FAILING_BODY, date="2020-01-01"), encoding="utf-8")
+
+    result = _run(repo, fresh)
+
+    assert result.returncode == 0
+    assert "NOT CORROBORATED" in result.stdout
+    assert "Corroborated:" not in result.stdout
+
+
+def test_the_floor_measurement_human_output_and_exit_code(tmp_path, monkeypatch, capsys):
+    # `measure_inventory_consumption_floor.py:202-221` — the whole human-render path and
+    # the exit expression, none of which the earlier tests reached.
+    corpus = tmp_path / "quality"
+    corpus.mkdir()
+    (corpus / "a.md").write_text(
+        _artifact("- The inventory reported `scope_status=complete` across 41 skills."),
+        encoding="utf-8",
+    )
+    measure = _load_script_module(
+        "measure_inventory_consumption_floor_cli",
+        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+    )
+    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    monkeypatch.setattr("sys.argv", [
+        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
+        "--consumer-fields-path", str(fields),
+    ])
+
+    code = measure.main()
+    out = capsys.readouterr().out
+
+    assert code in (0, 1)
+    assert "exemption states:" in out
+    assert "label-value residuals:" in out
+    assert "citations the floor drops below their requirement:" in out
+
+
+def test_the_floor_measurement_emits_json(tmp_path, monkeypatch, capsys):
+    # `:203-204`.
+    corpus = tmp_path / "quality"
+    corpus.mkdir()
+    (corpus / "a.md").write_text(_artifact("- nothing cited."), encoding="utf-8")
+    measure = _load_script_module(
+        "measure_inventory_consumption_floor_json",
+        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+    )
+    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    monkeypatch.setattr("sys.argv", [
+        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
+        "--consumer-fields-path", str(fields), "--json",
+    ])
+
+    assert measure.main() == 0
+    assert json.loads(capsys.readouterr().out)["artifacts"] == 1
