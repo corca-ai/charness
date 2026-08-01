@@ -82,6 +82,10 @@ from scripts.changed_line_run_trust import (  # noqa: E402
 from scripts.changed_line_run_trust import (  # noqa: E402
     write_blocking_stderr as _write_blocking_stderr,
 )
+from scripts.changed_line_scope_counts import (  # noqa: E402
+    apply_file_limit as _apply_file_limit,
+)
+from scripts.changed_line_scope_counts import scope_counts, scope_counts_not_computed  # noqa: E402
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_numbers,
     changed_line_scope_gap_targets,
@@ -106,6 +110,7 @@ from scripts.subprocess_only_coverage_advisory import (  # noqa: E402
 #: behavior-preserving for those callers AND keeps a linter from reading the imports as
 #: unused: `ruff --fix` deleted them once and took eight tests with it.
 __all__ = [
+    "_apply_file_limit",
     "_git_lines",
     "_head_resolves_to_head",
     "_mark_untrusted",
@@ -296,24 +301,6 @@ def _surface_skip(skip: dict, changed_before_coverage: list[str]) -> dict:
     return skip
 
 
-def _apply_file_limit(args, changed_before_coverage: list[str]) -> tuple[list[str], list[str]]:
-    """Split the changed pool set into (analyzed, unanalyzed) per ``--limit-to-file``.
-
-    An EMPTY limit means "analyze everything", not "analyze nothing" — the flag is
-    absent on every existing caller and its absence must not silently empty the
-    blocking set. A limit naming a path that did not change in this range is not an
-    error: the caller derives its list from a mapping that may be broader than the
-    range, and intersecting is the honest read.
-    """
-    limit = [str(path).strip() for path in (getattr(args, "limit_to_file", None) or []) if str(path).strip()]
-    if not limit:
-        return changed_before_coverage, []
-    allowed = set(limit)
-    analyzed = [path for path in changed_before_coverage if path in allowed]
-    unanalyzed = [path for path in changed_before_coverage if path not in allowed]
-    return analyzed, unanalyzed
-
-
 def _emit_no_base_sha() -> int:
     """No-base-sha verdict, made loud (#358): the exit stays 0 (matching the gate,
     whose changed-line classifier is inert without a range), but the payload now
@@ -330,6 +317,9 @@ def _emit_no_base_sha() -> int:
     _emit({
         "ok": True,
         "blocking": [],
+        # No range, so no changed set was ever derived: the pair is null rather
+        # than `0 of 0`, which would claim an empty scope this run never read.
+        **scope_counts_not_computed("no base_sha: no range, so no changed set was derived"),
         "changed_line_proof": "not-provable",
         "reason": "no base_sha: the changed-line classifier is non-blocking by construction (matches workflow_dispatch, which computes no base_sha)",
     })
@@ -357,6 +347,10 @@ def _run_metadata(base_sha: str, head_sha: str, pinned: dict[str, str], contamin
         "base_sha": base_sha,
         "head_sha": head_sha,
         "resolved_head_sha": pinned["resolved_head_sha"],
+        # Startup default: the refusal paths that fire before the changed set is
+        # derived carry this, and `main` overwrites it with the real pair as soon
+        # as the set exists. Both are the same key, so no verdict lacks one.
+        **scope_counts_not_computed("startup refusal: the run ended before the changed set was derived"),
     }
     if contaminated:
         metadata["dirty_pool_unverified"] = True
@@ -476,6 +470,9 @@ def main() -> int:
 
     changed_before_coverage = [p for p in list_changed(repo_root, base_sha, analyzed_head) if p in all_eligible]
     changed_before_coverage, unanalyzed = _apply_file_limit(args, changed_before_coverage)
+    # The scope is now known, so every verdict emitted from here down states its
+    # denominator — not only the limited runs that also get the `unanalyzed` list.
+    metadata = {**metadata, **scope_counts(changed_before_coverage, unanalyzed)}
     if trust.unestablished_kind == SCOPE_MISMATCH and changed_before_coverage:
         # Deliberately AFTER the changed set is known. Exit 3's own contract scopes
         # it to a NON-EMPTY changed set -- "an empty changed set still exits 0" --

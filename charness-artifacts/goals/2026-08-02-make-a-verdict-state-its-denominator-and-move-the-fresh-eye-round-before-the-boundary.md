@@ -1,6 +1,6 @@
 # Achieve Goal: Make a verdict state its denominator, and move the fresh-eye round before the irreversible boundary
 
-Status: draft
+Status: active
 Created: 2026-08-02
 Activation: `/goal @charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`
 
@@ -9,14 +9,28 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
+- Current slice: Lane B — the resolution-critique floor reads the cited
+  artifact's own `Fresh-eye satisfaction:` value.
+- Current slice intent: make a self-authored resolution critique
+  DISTINGUISHABLE from a parent/nested-delegated one at the issue-close
+  boundary, and state explicitly whether the floor refuses on it. This names
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md` after confirming the draft is
-  still intended.
+- Next action: read `issue_resolution_critique.py` and
+  `validate_critique_artifacts.py` and verify the premise (that the floor
+  checks only for a `Critique #N: <path>` line and never reads the artifact's
+  own satisfaction field) BEFORE shaping the change.
+- Lane A: DONE, committed, reviewed (1 round, 1 blocker folded). Its
+  two-round question is settled below.
+- Round count for Lane A, recorded because the artifact contradicts itself:
+  `## Discuss Before Activation` item (2) says Lane A owes TWO rounds; the
+  plan critique's "Minors folded" paragraph then narrowed A to a payload-shape
+  change and explicitly MOVED the two-round obligation to Lane B. The fold is
+  the later shaping and it agrees with the repo contract, which triggers a
+  second round on VERDICT-LOGIC changes — Lane A changed no verdict, pinned by
+  a control test. Lane A ran ONE round; its blocker was a sync omission, not a
+  verdict defect. Recorded rather than silently resolved.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -177,7 +191,7 @@ below are the SECOND shaping, not the first.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Emit an analyzed/changed COUNT PAIR on every verdict-emitting path of `check_changed_line_mutation_coverage.py` | The field exists; the pair does not. A reader of a PASS gets a denominator list on some paths and no numerator on any, so "49 of 51" is reconstructable only by `len()`-ing two lists that are not both always present. This is the residual after the critique cut the rest of the lane | A fixture on a NON-blocking path whose payload states both counts; a control test proving PASS/FAIL behaviour is unchanged; the existing 5 `unanalyzed_changed_pool_files` assertions still green | pending |
+| A | Emit an analyzed/changed COUNT PAIR on every verdict-emitting path of `check_changed_line_mutation_coverage.py` | The field exists; the pair does not. A reader of a PASS gets a denominator list on some paths and no numerator on any, so "49 of 51" is reconstructable only by `len()`-ing two lists that are not both always present. This is the residual after the critique cut the rest of the lane | A fixture on a NON-blocking path whose payload states both counts; a control test proving PASS/FAIL behaviour is unchanged; the existing 5 `unanalyzed_changed_pool_files` assertions still green | done |
 | B | Make `issue_resolution_critique` read the cited artifact's `Fresh-eye satisfaction:` value, so a self-authored critique is distinguishable from a delegated one at the close boundary | The real #467 defect, found by the plan critique. The floor's presence check is satisfiable by an artifact the closing agent wrote, at an irreversible boundary, and `validate_critique_artifacts.py` ALREADY enforces the form of the field the floor is not reading. Verdict logic on a proof surface, so TWO bounded rounds | Three fixtures (delegated / self-authored / blocked); the floor's report carrying the distinction; an explicit, defended statement of whether it refuses, with the degradation path named | pending |
 | C | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `./scripts/run-quality.sh`; `check_goal_artifact.py` green; a closeout-claims critique artifact; retro dispositions each `applied:` or `issue #N` | pending |
 ## Operator Decision Queue
@@ -241,6 +255,20 @@ applies.
 - Discuss before activation: APPROVED by the operator on 2026-08-02, three items. (1) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` of work this goal creates plus the remote CI each push triggers, AND closing #469 / #470 if a lane actually resolves them. Approved explicitly and scoped to this goal; the previous goal's push approval was scoped to ITS Lane A and did not carry forward, and this one does not carry forward either. Confirmation will follow the north star's P4: a different observer AND a different evidence channel than the push command's exit code. Note the ordering constraint the approval creates: closing #469/#470 is exactly the boundary Lane B is repairing, so those closes must go through Lane B's NEW order — resolution critique and its fresh-eye round BEFORE the close call, not after. The previous run got that backwards on #467 and had to post a public correction. (2) PROOF-SURFACE AUTHORING — Lane A changes what a gate's verdict record says, which the north star classifies as an irreversible boundary in its own right ("a proof surface that fails open" propagates to every consuming repo and is silent by construction). Resolved by requiring TWO bounded rounds on Lane A rather than one, and by fencing the refusal question out of acceptance entirely. (3) PROOF-LEVEL NON-CLAIMS — no release, no tag, no version bump, no `cautilus evaluate`, and Lane A2 migrates ONE floor rather than all five, naming the rest as unmigrated. Resolved: stated rather than implied, so a reader does not infer a sweep that did not happen.
 
 ## Slice Log
+
+### Slice 1: Lane A — the denominator observable
+
+- Objective: Emit an analyzed/changed COUNT PAIR (`changed_pool_file_counts`) on every verdict-emitting path of the local changed-line mutation gate. Disclosure only: refusal behaviour unchanged.
+- Why this approach: The two lists the gate already emits are not both present on any single path, so "1 of 2" was reconstructable by len()-ing on some paths and not at all on others. New module `scripts/changed_line_scope_counts.py` rather than an append: the gate was at 476/480 code lines, and Change Discipline says start a module rather than spill. The scope SPLIT (`apply_file_limit`) moved there with the scope REPORT so the module is a cohesive owner of scope arithmetic and not a D33 length-dodging companion; the gate ended at 468/480, lower than it started.
+- Commits:
+- What changed: scripts/changed_line_scope_counts.py (new, 71 code lines); scripts/check_changed_line_mutation_coverage.py (import + alias, count pair in `_run_metadata` startup dict and `_emit_no_base_sha` as not-computed, real pair merged right after the limit split, `_apply_file_limit` added to `__all__`); tests/quality_gates/test_changed_line_scope_counts.py (new, 12 tests); one added assertion in tests/quality_gates/test_changed_line_mutation_coverage.py; regenerated plugins/charness/scripts/ mirror of both source files.
+- Alternatives rejected: Rejected: making a partial denominator REFUSE — that is D45's toll question and is fenced out of this goal's acceptance. Rejected: shrinking the pair on an --allow-dirty run so it never overstates — the pair's population is the RANGE's, which keeps it comparable across runs; the uncommitted gap is disclosed by the sibling `dirty_pool_unverified` / `uncommitted_pool_files` keys instead, and a test now pins that reading. Rejected: declaring `scripts/changed_line_scope_counts.py` in attention-state-visibility.json — the gate fired on the word "skipped" in a docstring for a module that has no skip state, so the wording was the defect, not the registry.
+- Targeted verification: pytest tests/quality_gates/test_changed_line_scope_counts.py tests/quality_gates/test_changed_line_mutation_coverage.py -> 54 passed. 227 passed across the 10 modules that reference this gate or prepush_focused (test_degradation_branch_coverage, test_new_proof_surface_advisory, test_mutation_coverage_consumer_execution, test_changed_line_coverage_gate, test_prepush_focused_changed_line_coverage, test_subprocess_only_coverage_advisory, test_a_declaration_is_not_its_own_corroboration, test_mutation_coverage_producer, test_scaffold_changed_line_coverage, test_slice_closeout_reporting). run_slice_closeout.py --skip-broad-pytest -> PASS on all 20 verify commands (pre-lock; broad pytest deliberately deferred to the locked bundle). Broad pytest NOT run at this slice — non-claim.
+- Test duplication pressure: 12 new tests in a new module. The seeding helpers are IMPORTED from the sibling test module rather than re-declared (precedent: test_dup_ratchet_unestablished_inputs.py), so no clone family was added; check_dup_ratchet.py --summary passed in closeout. One near-duplicate the reviewer flagged (M3) was resolved by giving the first test a distinct claim — that the stderr and JSON channels now agree — rather than by deleting it.
+- Critique: ONE bounded fresh-eye round, typed `bounded-reviewer` (Read/Grep/Glob only), parent-delegated, shared parent worktree. reviewer_boundary_fingerprint.py snapshot .charness/reviewer-boundary/lane-a-round1.json; verify --before result RECORDED: ok true, verdict "clean", no drift. ONE BLOCKER, parent-verified before folding: B1 — the packet's claim "no skill files, so no plugins/ mirror is involved" was FALSE; packaging_lib.py:248-250 mirrors the whole scripts/ tree, so the export would have shipped the un-repaired gate and a ModuleNotFoundError for the new module. Verified by parent (plugins/charness/scripts/changed_line_run_trust.py exists as the mirrored twin of the previous split; the new module did not) and folded by running the sync. Minors folded: M1 (the new module's own docstring claimed an equal pair means "nothing was left out", which is false on --allow-dirty — this goal's exact defect class in the code written to fix it) rewritten and pinned by a new test; M2 (the SCOPE_MISMATCH path's pair depends on the rebind landing before the check, untested) closed by an assertion in the existing mismatch test; M3 folded as above; M5 (`_apply_file_limit` re-export absent from `__all__`, the exact shape a recorded ruff --fix incident once deleted) added. M4 (the computed pair does not restate its population) folded into the docstring rather than the payload. Reviewer confirmed invariants 1-4 hold: all 8 emit sites carry the key, and main() differs from HEAD by exactly the one inserted rebind statement.
+- Off-goal findings:
+- Lessons carried forward: The packet I handed the reviewer asserted a non-claim I had not checked ("no plugins/ mirror is involved"), and that unchecked assertion was the round's only blocker. A slice packet's non-claims are claims; they need the same premise check as the plan's remedies.
+- Metrics:
 
 ## Context Sources
 

@@ -975,6 +975,11 @@ def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Pa
     payload = emitted[-1]
     assert payload["changed_line_proof"] == "unestablished-untrustworthy-input"
     assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
+    # This return sits between the limit split and the rest of the run, so it is the
+    # one path whose count pair depends on the scope rebind landing FIRST. A future
+    # edit that moves the rebind below this check would silently emit the startup
+    # not-computed pair here, and nothing else would notice.
+    assert payload["changed_pool_file_counts"] == {"analyzed": 1, "changed": 2}
 
 
 def test_a_refusal_is_reported_to_the_operator_as_a_refusal(tmp_path: Path) -> None:
