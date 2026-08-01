@@ -412,6 +412,19 @@
       ],
       "rationale": "Tool installation reports disabled adapter state as structured skipped output."
     },
+    "scripts/inventory_measurement_lib.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary"
+      ],
+      "evidence_terms": [
+        "pre-contract",
+        "corroborated"
+      ],
+      "rationale": "The shared exemption helper names which gate arm would skip an artifact, so a measurement that excludes it can say why instead of reporting a smaller corpus with no reason."
+    },
     "scripts/lifecycle_usage_capture.py": {
       "states": [
         "disabled",
@@ -427,6 +440,21 @@
         "errors"
       ],
       "rationale": "Verified issue/release lifecycle capture returns missing or disabled usage-adapter state as a structured best-effort telemetry disposition. Issue close JSON carries the nested lifecycle_capture payload and release closeout renders it in the durable Lifecycle Usage Capture artifact section; neither disposition means telemetry was appended or lifecycle closeout succeeded."
+    },
+    "scripts/measure_inventory_marker_rule.py": {
+      "states": [
+        "prose_review_status",
+        "skipped"
+      ],
+      "visibility": [
+        "metric_or_trace",
+        "explicit_skip_summary"
+      ],
+      "evidence_terms": [
+        "prose_review_status",
+        "pre_contract_citations_skipped"
+      ],
+      "rationale": "The measurement reports every pre-contract citation it skipped as a named list rather than dropping it silently, and states in its non-claims that the gate's prose_review_status arm is not modelled."
     },
     "scripts/new_proof_surface_advisory.py": {
       "states": [

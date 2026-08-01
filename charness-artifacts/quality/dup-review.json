@@ -100,6 +100,13 @@
     },
     {
       "class": "intentional",
+      "id": "0c807ead92e5865a",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "the five-line `sys.path.insert(Path(__file__).resolve().parent)` + sibling-import preamble shared by ten independently executable repo scripts and setup adapters. Same accepted class as 4d3ffbd0991be52a and 39fe3da80754d73c: each must run by direct `python3 scripts/x.py` from a consuming checkout, so a shared bootstrap shim would add the very import coupling the preamble exists to avoid. Surfaced as new because D47 slice 3 added scripts/inventory_measurement_lib.py and its two callers; the other seven members are untouched."
+    },
+    {
+      "class": "intentional",
       "id": "0df7f8c7a6119974",
       "note": "the repo-root sys.path bootstrap preamble every scripts/*.py carries -- `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `if str(REPO_ROOT) not in sys.path` guard, and the `# noqa: E402` imports that must follow it. Four members now, two of them added by the D40 lane (changed_line_run_trust.py, prepush_focused_changed_line_coverage.py). Extracting it is impossible by construction: a shared helper could only be imported AFTER sys.path already contained the repo root, which is exactly what the preamble establishes. Same standing class as the resolve_adapter.py portability copies.",
       "reviewed_at": "2026-07-29",
@@ -1504,6 +1511,13 @@
       "note": "a 14-member family of two-to-five-line `if <cond>: return <literal>` guard clauses spread over eight unrelated modules (a staged-reversion check, a mutation-testing proposer, a t-signal classifier, a prompt-sentinel scorer, a tool-recommendation table, a JS eval runtime, and this release qualifier). It has no shared concept to centralize: each member returns its own module's own message for its own condition. It surfaced as new because widening the `same-proxy-flagged` qualifier text (S93) changed this file's normalized shape, not because duplication was introduced; the same guard-clause chain is present at 920b05ab.",
       "reviewed_at": "2026-07-28",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f29315b20f943ced",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "the `print(<message>, file=sys.stderr); return <code>` refusal tail shared by nine spans across six independently-owned validators and measurement scripts. Same accepted class as 21cbc81495c292ff (a stderr-writing refusal preamble across three gates): idiom-sized, and extracting it would couple independently-owned refusal surfaces through a message formatter that obscures which gate owns the verdict. Surfaced as new because D47 slice 3 moved the empty-corpus refusal into inventory_measurement_lib.py; the other eight members are untouched."
     },
     {
       "class": "intentional",

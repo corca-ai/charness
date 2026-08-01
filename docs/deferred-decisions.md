@@ -584,30 +584,96 @@ Reopen trigger:
   `scope`, `status`, `notes`, `paths`, `ranking`, `advisory`, `command`, `families` — is
   engaged by incidental prose. Should a mention additionally require a value marker
   (`field=`, `field:`, or `` `field` ``)?
-- Current choice: **Defer — measure recorded, refusal not armed.**
+- Current choice: **Defer — measure recorded, refusal not armed.** **Operator call
+  2026-08-01: still not armed, and the repair this entry named is WITHDRAWN as
+  unbuildable. The hand counts are replaced by an executed measurement.**
 - Why now: found by round-1 bounded review while closing sweep row S10 on 2026-08-01, and
-  measured rather than argued: 51 of 169 field mentions across the 105 checked-in quality
-  artifacts carry no marker, and every sampled one is incidental prose rather than a
-  citation.
+  measured rather than argued. Those first numbers were 51 of 169 field mentions unmarked
+  across the 105 checked-in quality artifacts, hand-counted; see the executed measurement
+  bullet below, which supersedes them.
 - Why deferral is right at the time: arming the marker refuses **5 checked-in reviews** that cite
   `inventory_nose_clones` or `inventory_doc_duplicates` (2026-06 and 2026-07, not all
   2026-06 as a first draft of this entry said), all of which were only ever passing on incidental prose. The remedy is either
   rewriting frozen artifacts to satisfy a later gate — the Goodhart move this validator's
   own docstring exists to refuse — or accepting a standing red. Choosing that toll is the
   owner's, as in [D45](#d45-should-run-qualitysh-arm---require-evaluated-scope-on-the-cilocal-parity-gate).
-  There is also a better repair available: qualify the generic tokens in
+  The hand count put that at 5 reviews; the executed measurement below puts it at 5
+  refused CITATIONS across **4** artifacts, which is the same argument at a slightly lower
+  price. There is also a better repair available: qualify the generic tokens in
   [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json)
   so a field declares whether its name is distinctive, which is a contract change
   deserving its own slice.
+- **Withdrawn, do not retry — the named better repair cannot be built as described.**
+  "Qualify the generic tokens in inventory-consumer-fields.json so a field declares
+  whether its name is distinctive" cannot both impose a real marker rule and spare the
+  cited reviews, because the fields the corpus actually engages ARE the ordinary-English
+  ones: `inventory_nose_clones.py` declares `status, advisory, family_count, families,
+  excludes, ignore_file, paths, ranking, scope, notes`, and the citing reviews engage the
+  ordinary ones on incidental prose. Declaring them non-distinctive refuses those
+  reviews; declaring them distinctive makes the marker rule apply to no field the corpus
+  ever engages — a measured-zero no-op that would read here as a repair. It is also a
+  STRONGER self-declaration than the `required_release_surfaces` list [D48](#d48-should-an-absent-release-surface-be-drift-without-a-self-authored-declaration)
+  objects to: it would decide whether the gate may fire on a field at all, from inside
+  the audited repo. Found by the 2026-08-01 bounded plan critique before it was built.
+- **Executed measurement replacing the hand counts (2026-08-01).** New script
+  [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py), recorded
+  at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
+  and pinned against today's tree by
+  [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
+  Over this entry's own denominator (105 top-level artifacts, 28 citing a declared
+  inventory): the presence-only mention total reproduces **169** exactly, **161** of those
+  clear today's residual floor, **114** carry a value marker and **47** do not, and a
+  marker rule would refuse **5 citations across 4 artifacts**
+  (`2026-06-25-skill-ergonomics-yaml-summary`, `2026-06-25-test-speed-token-efficiency`,
+  `2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
+  overlap: 110 backticked, 74 `field=`, 4 `field:`. With `--recursive`, which reaches the
+  `history/` directory the sibling script's non-recursive glob silently excludes: 123
+  artifacts (252 presence-only), 244 floor-clearing mentions, 179 marked, 65 unmarked, 7
+  citations across 5 artifacts. Both variants are recorded in the probe and pinned by the
+  test, so neither number is an unrecorded assertion sitting beside recorded ones.
+- **The first executed number was WRONG, and how it was wrong is the point.** The initial
+  marker test used `` `[^`]*field[^`]*` ``, which matches the GAP BETWEEN two adjacent code
+  spans — so a bare English mention sitting between two unrelated spans scored as marked.
+  The bias ran one way: it inflated "marked" and deflated the cost, reporting 42 unmarked
+  and 4 citations across 3 artifacts, which supported a tidy conclusion that the toll was
+  smaller than this entry had recorded. It is not. Corrected, the refusal count lands on
+  5 refused citations across 4 artifacts, up from 3 artifacts. **Units matter here and an
+  earlier draft of this entry got them wrong:** the hand count's unit was REVIEWS (5);
+  the script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS. On the hand
+  count's own unit the executed answer is **4, not 5** — so the hand count was close and
+  slightly high, not vindicated, and the earlier claim that it was "substantially right"
+  rested on reading "5 reviews" as "5 citations". Caught by the round-1 bounded review
+  before the number was trusted, and the unit swap by round 2. Both runs are recorded in
+  the probe's `_provenance`.
 - Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
-  about an ordinary word. Nothing here narrows sweep row S11.
+  about an ordinary word. Nothing here narrows sweep row S11. The new measurement counts
+  mentions that clear TODAY's residual floor (161), while the presence-only population is
+  169 — both are reported, and the marker split is measured over the 161 only, so the 47
+  is NOT directly comparable to the hand count's 51 over 169; the 8 sub-floor mentions were
+  never marker-split. It does not
+  model the gate's `prose_review_status` skill-ergonomics arm; that arm looks inert here
+  (every corpus mention of that field is backticked or `=`-assigned) but it was not
+  measured. It measures this repo's corpus and says nothing about a consumer's. The
+  refused artifacts are not all ones the default runner reaches — the gate is normally
+  handed `latest.md` only — so "would refuse 5 citations" is not "would redden the next
+  quality run". Known and unrepaired, raised by the round-2 review and recorded because
+  round 2 is the review cap: a field name inside a backticked PATH or flag
+  (`advisory-interpretation-contract.md`, `--paths`) scores as marked — the same one-way
+  bias as the bug that was fixed, verified inert on today's corpus but able to flip a
+  refusal silently on the next artifact; lines with an odd number of backticks and fenced
+  code blocks are unmodelled; and marker attribution is per LINE, not per occurrence.
+  The gate's pre-contract skip is modelled but is measured-zero in both modes. Nothing was
+  armed, and no frozen artifact was rewritten.
 - Impact surfaces: [validate_inventory_consumption.py](../scripts/validate_inventory_consumption.py),
   [measure_inventory_consumption_floor.py](../scripts/measure_inventory_consumption_floor.py),
   [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
 - Reopen trigger: a quality artifact passing the floor on incidental prose and later found
   not to have consumed the inventory; or the declaration file gaining per-field
-  distinctiveness; or those five reviews being rewritten for another reason. Both numbers in this
-  entry are hand measurements, not output of the recorded probe command.
+  distinctiveness; or those five reviews being rewritten for another reason. **Both numbers
+  are now output of a recorded probe command** — the hand-measurement caveat this line used
+  to carry is retired; re-derive with
+  [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py) against
+  [the recorded probe](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json).
 
 ### D48. Should an absent release surface be drift without a self-authored declaration?
 

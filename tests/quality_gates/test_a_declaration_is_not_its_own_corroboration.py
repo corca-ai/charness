@@ -556,7 +556,7 @@ def test_a_whole_repository_predating_the_contract_is_not_called_corroborated(tm
 
 
 def test_the_floor_measurement_human_output_and_exit_code(tmp_path, monkeypatch, capsys):
-    # `measure_inventory_consumption_floor.py:202-221` — the whole human-render path and
+    # `measure_inventory_consumption_floor.py`'s human-render path and
     # the exit expression, none of which the earlier tests reached.
     corpus = tmp_path / "quality"
     corpus.mkdir()
@@ -603,7 +603,7 @@ def test_the_floor_measurement_emits_json(tmp_path, monkeypatch, capsys):
 
 
 def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch, capsys):
-    # `measure_inventory_consumption_floor.py:216` — the per-entry print inside the
+    # `measure_inventory_consumption_floor.py` — the per-entry print inside the
     # lowered-citations loop, which needs a corpus where the floor actually drops a
     # citation below its requirement.
     corpus = tmp_path / "quality"
@@ -631,7 +631,7 @@ def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch,
 
 
 def test_the_floor_measurement_runs_as_a_script(tmp_path):
-    # `:229` — the `__main__` guard, reachable only through a subprocess invocation.
+    # the `__main__` guard, reachable only through a subprocess invocation.
     corpus = tmp_path / "quality"
     corpus.mkdir()
     (corpus / "a.md").write_text(_artifact("- nothing cited."), encoding="utf-8")

@@ -91,11 +91,15 @@ STUB_PHRASE_RE = re.compile(
 #     declaration file gives `inventory_nose_clones.py` the fields `scope`, `status`,
 #     `notes`, `paths`, `ranking`, `advisory`, `excludes`, `families`; the real corpus line
 #     `- Runtime hotspot ranking excludes samples older than 14 days` engages `ranking`
-#     and `excludes` on incidental prose. Measured: 51 of 169
-#     corpus field mentions carry no value marker at all, and every sampled one is
-#     incidental. Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse the
-#     sampled incidental cases — not all of them, since a marker can appear in prose too —
-#     and was measured to refuse 5 checked-in reviews, so it is deferred as D47.
+#     and `excludes` on incidental prose. MEASURED, and re-derivable — run
+#     `scripts/measure_inventory_marker_rule.py` against
+#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 169 presence-only
+#     field mentions, 161 clear this floor, and 47 of those carry no value marker at all.
+#     Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse the sampled
+#     incidental cases — not all of them, since a marker can appear in prose too — costing
+#     5 refused citations across 4 checked-in artifacts. It is deferred as D47.
+#     (The 51-of-169 and "5 reviews" figures this comment used to carry were hand counts;
+#     the executed run lowers the artifact count to 4.)
 #
 # The first cut of this floor did not even refuse a stub: it counted every surviving
 # character, so `"n/a"` scored exactly the floor, and it stripped only the field under

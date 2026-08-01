@@ -33,23 +33,26 @@ while the gate applies the four label floors only when `inventory_skill_ergonomi
 cited — so `label_value_residuals.below_floor` is an upper bound on cost, not a
 gate-scoped count.
 
-Two numbers cited in `docs/deferred-decisions.md` D47 are NOT produced here and were
-measured by hand: 51 of 169 field mentions carry no value marker, and arming a
-value-marker rule would refuse 5 checked-in reviews. They are one-off measurements; the
-reopen trigger in D47 is where to re-derive them.
+Two numbers cited in `docs/deferred-decisions.md` D47 are not produced here: how many
+field mentions carry a value marker, and how many citations a marker rule would refuse.
+They now have their own script, `measure_inventory_marker_rule.py`, which also reproduces
+THIS script's `field_mention_residuals.count` as its presence-only total so the two
+measurements can be compared on one denominator. What this script's loose-mention count
+contributed to D47 -- the 169 -- was always machine-produced; only the marker split and
+the refusal count were hand measurements, and both are now executed.
 """
 from __future__ import annotations
 
-import argparse
 import json
 import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import inventory_measurement_lib as corpus_lib  # noqa: E402
 import validate_inventory_consumption as gate  # noqa: E402
 
-DEFAULT_CORPUS = "charness-artifacts/quality"
+DEFAULT_CORPUS = corpus_lib.DEFAULT_CORPUS
 
 
 LABEL_FLOORS = {
@@ -74,28 +77,22 @@ def _label_residuals(body: str) -> list[dict[str, object]]:
     return rows
 
 
-def _bodies(text: str) -> tuple[str, str]:
-    sections = gate._split_sections(text)
-    commands = sections.get(gate.COMMANDS_RUN_HEADER, "")
-    body = "\n".join(
-        block for header, block in sections.items() if header != gate.COMMANDS_RUN_HEADER
-    )
-    return commands, body
-
-
 def scan(repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = None) -> dict[str, object]:
     inventories = json.loads(fields_path.read_text(encoding="utf-8")).get("inventories", {})
     effective_floor = gate.MIN_ENGAGEMENT_RESIDUAL_CHARS if floor is None else floor
     rows: list[dict[str, object]] = []
     residuals: list[int] = []
     label_residuals: list[dict[str, object]] = []
-    for path in sorted(corpus.glob("*.md")):
+    for path in corpus_lib.corpus_paths(corpus):
         text = path.read_text(encoding="utf-8", errors="replace")
-        commands, body = _bodies(text)
+        commands, body = corpus_lib.split_bodies(text)
         declared = gate.ARTIFACT_DATE_RE.search(text)
         declared_date = declared.group(1) if declared else None
         state, committed = gate.commit_state(repo_root, path)
         claims_exemption = bool(declared_date) and declared_date < gate.ENFORCED_FROM_DATE.isoformat()
+        # Shared with the marker measurement so a later correction to the ladder cannot
+        # silently diverge the two scripts' exemption semantics.
+        exemption = corpus_lib.exemption_state(repo_root, path, text)
         label_residuals.extend(_label_residuals(body))
         row: dict[str, object] = {
             "path": gate._display_path(path, repo_root),
@@ -103,18 +100,10 @@ def scan(repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = N
             "last_commit_date": committed.isoformat() if committed else None,
             "claims_pre_contract_exemption": claims_exemption,
             "commit_state": state,
-            "exemption": (
-                "not-claimed" if not claims_exemption
-                else "not-corroborated" if committed is None or state == "unavailable"
-                else "corroborated" if committed < gate.ENFORCED_FROM_DATE
-                else "REFUSED-uncorroborated"
-            ),
+            "exemption": exemption,
             "citations": {},
         }
-        for inventory in sorted(set(gate.INVENTORY_FILE_RE.findall(commands))):
-            fields = (inventories.get(inventory) or {}).get("non_headline_fields") or []
-            if not fields:
-                continue
+        for inventory, fields in corpus_lib.cited_inventories(commands, inventories):
             others = tuple(fields)
             loose = [f for f in fields if re.search(rf"\b{re.escape(f)}\b", body)]
             strict = [
@@ -172,31 +161,16 @@ def scan(repo_root: Path, corpus: Path, fields_path: Path, floor: int | None = N
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(
-        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
-    )
-    parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument("--corpus", type=Path, default=None, help=f"Default: {DEFAULT_CORPUS}")
-    parser.add_argument("--consumer-fields-path", type=Path, default=None)
+    parser = corpus_lib.build_parser(__doc__)
     parser.add_argument(
         "--floor", type=int, default=None,
         help="Override the gate's MIN_ENGAGEMENT_RESIDUAL_CHARS so a counterfactual floor "
              "can be re-run without editing the gate constant.",
     )
-    parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
 
-    repo_root = args.repo_root.resolve()
-    corpus = (args.corpus or (repo_root / DEFAULT_CORPUS)).resolve()
-    fields_path = (
-        args.consumer_fields_path or (repo_root / gate.DEFAULT_CONSUMER_FIELDS_PATH)
-    ).resolve()
-    if not corpus.is_dir() or not any(corpus.glob("*.md")):
-        print(
-            f"no artifacts found under {corpus}; a clean result over an empty corpus is "
-            "not a measurement.",
-            file=sys.stderr,
-        )
+    repo_root, corpus, fields_path = corpus_lib.resolve_paths(args)
+    if corpus_lib.refuse_empty_corpus(corpus):
         return 2
 
     report = scan(repo_root, corpus, fields_path, args.floor)
