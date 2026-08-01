@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-01",
-  "source_artifact_count": 409,
-  "candidate_count": 1656,
+  "source_artifact_count": 410,
+  "candidate_count": 1660,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -152,6 +152,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6d1035458ce1",
+      "kind": "current_focus",
+      "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout.",
+      "normalized_key": "slice 1 of the sweep high rows goal reviewed on request mid run rather",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
       "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
@@ -200,6 +226,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d5a54127f8fc",
+      "kind": "next_improvement",
+      "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff.",
+      "normalized_key": "a self authored constraint in a goal artifact is not a check this session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5274cc395543",
+      "kind": "next_improvement",
+      "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded.",
+      "normalized_key": "applied scripts measure adapter yaml uninterpreted py refuses an empty corpus exit 2 and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded."
         }
       ]
     },
@@ -278,84 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:44defe3b9805",
-      "kind": "next_improvement",
-      "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here.",
-      "normalized_key": "the two round rule is four for four and the class arrives in the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**the two-round rule is four-for-four, and the class arrives in the direction the author was not looking** — written into the goal's slice log, the six critique artifacts, and the digest, not only here."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:4f50e4ce11c1",
-      "kind": "next_improvement",
-      "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation.",
-      "normalized_key": "use edit write for file mutation 158 heredoc edits against 15 tool edits cost",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**use Edit/Write for file mutation.** 158 heredoc edits against 15 tool edits cost one mangled artifact and repeated file-state reconciliation."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:2a3fa610f00d",
-      "kind": "current_focus",
-      "lesson": "One goal run: handoff chunked routing picked chunk 1 (the 2026-07-28 triage sweep's remaining high rows), `achieve` shaped it, and `/goal` ran it to completion.",
-      "normalized_key": "one goal run handoff chunked routing picked chunk 1 the 2026 07 28 triage",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-31-session-retro.md",
-      "latest_source_date": "2026-07-31",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-session-retro.md",
-          "date": "2026-07-31",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One goal run: handoff chunked routing picked chunk 1 (the 2026-07-28 triage sweep's remaining high rows), `achieve` shaped it, and `/goal` ran it to completion."
         }
       ]
     }
@@ -498,6 +498,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:6d1035458ce1",
+      "kind": "current_focus",
+      "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout.",
+      "normalized_key": "slice 1 of the sweep high rows goal reviewed on request mid run rather",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Slice 1 of the sweep-high-rows goal, reviewed on request mid-run rather than at closeout."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
       "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
@@ -546,6 +572,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d5a54127f8fc",
+      "kind": "next_improvement",
+      "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff.",
+      "normalized_key": "a self authored constraint in a goal artifact is not a check this session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5274cc395543",
+      "kind": "next_improvement",
+      "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded.",
+      "normalized_key": "applied scripts measure adapter yaml uninterpreted py refuses an empty corpus exit 2 and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded."
         }
       ]
     },
@@ -624,6 +702,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6593380150bf",
+      "kind": "next_improvement",
+      "lesson": "run the dup-ratchet at the first edit to a gated file, not only at the closeout aggregate. Four late blocks in this slice, four in the last session, and the lesson has now failed to prevent itself twice.",
+      "normalized_key": "run the dup ratchet at the first edit to a gated file not only",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the dup-ratchet at the first edit to a gated file, not only at the closeout aggregate. Four late blocks in this slice, four in the last session, and the lesson has now failed to prevent itself twice."
         }
       ]
     },

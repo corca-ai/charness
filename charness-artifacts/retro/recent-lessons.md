@@ -16,8 +16,8 @@
 
 - **a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
 - **a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
-- **batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
-- **`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third "carried forward" is not a plan. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
+- a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff. (source: `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`)
+- `applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded. (source: `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`)
 
 ## Selection Policy
 
@@ -33,3 +33,4 @@
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
 - `charness-artifacts/retro/2026-07-31-session-retro.md`
 - `charness-artifacts/retro/2026-08-01-session-retro.md`
+- `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`
