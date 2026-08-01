@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-01",
-  "source_artifact_count": 410,
-  "candidate_count": 1660,
+  "source_artifact_count": 411,
+  "candidate_count": 1664,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -178,6 +178,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:5514318fb6bf",
+      "kind": "current_focus",
+      "lesson": "The whole `achieve` run: chunked routing picked the sweep's high rows, the goal was shaped and plan-critiqued, four slices ran, and the closeout disposition review cleared it.",
+      "normalized_key": "the whole achieve run chunked routing picked the sweep s high rows the goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The whole `achieve` run: chunked routing picked the sweep's high rows, the goal was shaped and plan-critiqued, four slices ran, and the closeout disposition review cleared it."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
       "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
@@ -200,6 +226,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:411fd9ae37b1",
+      "kind": "next_improvement",
+      "lesson": "**a lesson learned on one file is not learned until the second file of its class passes without review.** The second measurement script repeated all three of the first one's defects, in the same session, with the first still in context.",
+      "normalized_key": "a lesson learned on one file is not learned until the second file of",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**a lesson learned on one file is not learned until the second file of its class passes without review.** The second measurement script repeated all three of the first one's defects, in the same session, with the first still in context."
         }
       ]
     },
@@ -256,6 +308,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:675d5f4a6814",
+      "kind": "next_improvement",
+      "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact.",
+      "normalized_key": "applied charness artifacts critique 2026 08 01 goal midpoint claims review md the midpoint",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5274cc395543",
       "kind": "next_improvement",
       "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded.",
@@ -278,84 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "`applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ae679da08a16",
-      "kind": "next_improvement",
-      "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent.",
-      "normalized_key": "batch independent review rounds across slices and do real work while they run 84",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**batch independent review rounds across slices, and do real work while they run.** 84.6 minutes of `sleep` against 50.5 minutes of review is the session's largest single lever, and slices 2-4 were mutually independent."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:007946a679fb",
-      "kind": "next_improvement",
-      "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan.",
-      "normalized_key": "blocking targets should name subprocess only coverage paths carried unapplied for three retros either",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**`blocking_targets` should name subprocess-only coverage paths** — carried unapplied for three retros. Either land it or record it as declined; a third \"carried forward\" is not a plan."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2b303a3072ec",
-      "kind": "next_improvement",
-      "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced.",
-      "normalized_key": "run retro after the disposition review returns not beside it concretely closeout evidence disposition",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-session-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**run `retro` after the disposition review returns, not beside it.** Concretely: closeout evidence → disposition review → fold → retro. This retro exists twice because that order was implicit rather than sequenced."
         }
       ]
     }
@@ -524,6 +524,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:5514318fb6bf",
+      "kind": "current_focus",
+      "lesson": "The whole `achieve` run: chunked routing picked the sweep's high rows, the goal was shaped and plan-critiqued, four slices ran, and the closeout disposition review cleared it.",
+      "normalized_key": "the whole achieve run chunked routing picked the sweep s high rows the goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The whole `achieve` run: chunked routing picked the sweep's high rows, the goal was shaped and plan-critiqued, four slices ran, and the closeout disposition review cleared it."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7cd33df66fa4",
       "kind": "next_improvement",
       "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue.",
@@ -546,6 +572,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:411fd9ae37b1",
+      "kind": "next_improvement",
+      "lesson": "**a lesson learned on one file is not learned until the second file of its class passes without review.** The second measurement script repeated all three of the first one's defects, in the same session, with the first still in context.",
+      "normalized_key": "a lesson learned on one file is not learned until the second file of",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**a lesson learned on one file is not learned until the second file of its class passes without review.** The second measurement script repeated all three of the first one's defects, in the same session, with the first still in context."
         }
       ]
     },
@@ -598,6 +650,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:675d5f4a6814",
+      "kind": "next_improvement",
+      "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact.",
+      "normalized_key": "applied charness artifacts critique 2026 08 01 goal midpoint claims review md the midpoint",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact."
         }
       ]
     },
@@ -728,6 +806,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "run the dup-ratchet at the first edit to a gated file, not only at the closeout aggregate. Four late blocks in this slice, four in the last session, and the lesson has now failed to prevent itself twice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6be91df473ba",
+      "kind": "next_improvement",
+      "lesson": "**run the dup-ratchet at the first edit to a gated file.** Third retro naming it, ten blocks this run against four last. It is no longer a suggestion; either wire it into `run_slice_closeout.py --predict-commit` or stop recording it.",
+      "normalized_key": "run the dup ratchet at the first edit to a gated file third retro",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**run the dup-ratchet at the first edit to a gated file.** Third retro naming it, ten blocks this run against four last. It is no longer a suggestion; either wire it into `run_slice_closeout.py --predict-commit` or stop recording it."
         }
       ]
     },

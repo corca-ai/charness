@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - **a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
+- **a lesson learned on one file is not learned until the second file of its class passes without review.** The second measurement script repeated all three of the first one's defects, in the same session, with the first still in context. (source: `charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md`)
 - **a refusal-category renderer detector**, per the Portable Candidate, once a second instance appears. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
 - a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff. (source: `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`)
-- `applied: scripts/measure_adapter_yaml_uninterpreted.py` refuses an empty corpus (exit 2) and bounds `--roots`, and its docstring states the population its number does not cover — the specialization-down sibling, fixed in this slice rather than recorded. (source: `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`)
 
 ## Selection Policy
 
@@ -34,3 +34,4 @@
 - `charness-artifacts/retro/2026-07-31-session-retro.md`
 - `charness-artifacts/retro/2026-08-01-session-retro.md`
 - `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`
+- `charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md`

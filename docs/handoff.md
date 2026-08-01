@@ -2,11 +2,13 @@
 
 ## Workflow Trigger
 
-- **The goal's four slices, both closeout reviews, and the bundle proof are all
-  DONE and committed; only `retro` and the status flip remain.** Finish
-  [the goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md),
-  then run `charness:handoff` chunked routing over the live backlog. No open
-  irreversible boundary; eight commits unpushed (`7efa0240..HEAD`).
+- **No open work. The sweep-high-rows goal is COMPLETE** — four slices, eight
+  review rounds, bundle proof and both closeout reviews recorded in
+  [the goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md).
+  With no explicit task, run `charness:handoff` chunked routing over the live
+  backlog. No open irreversible boundary; ten commits unpushed
+  (`7efa0240..HEAD`), which is why the armed changed-line gate below needs an
+  explicit `--base-sha`.
 
 ## Continuation Capability
 
@@ -34,16 +36,18 @@ git cannot date. No push, no CI dispatch, no cautilus run this session.
 
 ## Next Session
 
-1. **Finish the goal**: run `retro`, disposition its improvements, flip the
-   artifact to `complete`. Everything before that is done and committed.
-2. **Then `charness:handoff` chunked routing** over the live backlog. The
-   sweep's remaining high rows are S15, S31, S36, S37, S111; the hunt's
-   E-cluster (E1/E3/E6/E7 + E2's residual) is untouched and is the most
-   expensive lane.
-3. **Three unarmed refusals wait on an operator call**:
+1. **`charness:handoff` chunked routing** over the live backlog. The sweep's
+   remaining high rows are S15, S31, S36, S37, S111; the hunt's E-cluster
+   (E1/E3/E6/E7 + E2's residual) is untouched and is the most expensive lane;
+   issue #467's mutation regression on main is still open.
+2. **Three unarmed refusals wait on an operator call**:
    [D46](./deferred-decisions.md) adapter-YAML, [D47](./deferred-decisions.md)
    inventory value markers, [D48](./deferred-decisions.md) release surfaces.
-   Each records what arming would cost.
+   Each records its measured cost.
+3. **`measure_evidence_residual.py` is the third member of the
+   measurement-script class** and still exits 0 over an empty corpus while
+   reporting `corpus_established: false`. Its two siblings were repaired this
+   run; it was not.
 4. **Off-goal, found not fixed:** `goal_artifact_floor_grammar.parse_created_date`
    is consumed by FIVE achieve floors with no corroboration — S15's family, and
    a one-helper repair since goal artifacts carry a filename date that

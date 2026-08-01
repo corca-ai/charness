@@ -1,6 +1,6 @@
 # Achieve Goal: Reproduce and disposition 9 of the sweep's remaining high rows, batched by repair shape — S24/S28/S35, S9/S10, S12/S13, S23/S2.
 
-Status: active
+Status: complete
 Created: 2026-08-01
 Activation: `/goal @charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md`
 
@@ -9,15 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: ACTIVE. All four slices complete; the midpoint
-  goal-claims review ran and its findings are folded.
-- Current slice: none — closeout is next.
-- Next action: bundle proof (serial full pytest, `./scripts/run-quality.sh`,
-  the armed changed-line lane over this goal's own range), then the closeout
-  disposition review, then `retro` — in that order. Slice 4's round 2 RAN at
-  the operator's request and found four blockers; its repairs ship
-  accepted-unreviewed under the two-round cap
-  ([addendum](../critique/2026-08-01-slice-4-round-2-addendum.md)).
+- Current disposition: COMPLETE. Four slices, eight review rounds, bundle proof
+  recorded in `## Final Verification`, closeout disposition review folded.
+- Current slice: none.
+- Next action: nothing in this goal. The operator queue below carries two open
+  decisions, and `docs/handoff.md` routes the next pickup.
 - **Corrected 2026-08-01 by the midpoint review:** an earlier version of this
   frame claimed "a floor up to 20 costs 0 new refusals" and put the negation
   sentence at 31 against a corpus p5 of 19. The recorded probe refutes all
@@ -307,28 +303,32 @@ activation is not a silent inheritance:
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+Two decisions are open at closeout. The shaping-time item — whether a slice-2
+arming that refuses checked-in quality artifacts is paid for now — was answered
+by the measurement: it refuses zero, so nothing had to be paid and the question
+folded into D47's arming decision below.
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-Open at shaping time:
-
-- Decision: whether a slice-2 arming that would newly refuse checked-in quality
-  artifacts is paid for now (fix or exempt the artifacts) or stays deferred.
+- Decision: arm or keep deferred the three measured refusals — D46 (a malformed
+  adapter YAML line refuses the adapter), D47 (inventory engagement requires a
+  value marker), D48 (an absent release surface is drift without a self-authored
+  declaration).
 - Owner: operator.
-- Why deferred: the measurement that decides it does not exist yet.
-- Unblock action: read the slice-2 measurement output and answer arm / defer.
-  Per decision 3 above the run does NOT wait — it ships the repair unarmed and
-  continues.
-- Revisit trigger: slice 2's measuring script producing a refusal count.
+- Why deferred: each was measured rather than argued, and each would either turn
+  a consumer's lane red with no local remedy or refuse checked-in artifacts this
+  repo would then have to rewrite — the toll this repo does not pay unilaterally.
+- Unblock action: read each entry's measured cost in `docs/deferred-decisions.md`
+  and answer arm / keep deferred, per entry.
+- Revisit trigger: each entry names its own reopen trigger.
+
+- Decision: whether goal-artifact self-consistency becomes a gate, and whether
+  the dup-ratchet runs at the first edit to a gated file rather than at the
+  closeout aggregate.
+- Owner: operator.
+- Why deferred: both are one-instance-plus floors and this repo has withdrawn
+  one-instance floors twice; neither blocks anything today.
+- Unblock action: answer in `docs/handoff.md` `## Discuss`.
+- Revisit trigger: a third goal paying the same recording-gap or dup-rotation
+  cost.
 
 ## Slice Log
 
@@ -390,7 +390,7 @@ Open at shaping time:
 - Targeted verification: Reproduction controls before repair for both rows. 11 new tests; 4 of the first cut failed against HEAD in a detached worktree. Measured before adding S2's class: 0 files with an odd single-backtick count in the checker's own scope, 3 repo-wide all under the already-excluded charness-artifacts. run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review: completed.
 - Test duplication pressure: No new dup-ratchet family this slice — the first in three. The two repairs touch unrelated files and neither adds a boilerplate shape.
 - Critique: charness-artifacts/critique/2026-08-01-slice-4-a-refused-verdict-states-its-refusal.md (round 1, 2 reviewers) plus charness-artifacts/critique/2026-08-01-slice-4-round-2-addendum.md (round 2, 1 reviewer, run at operator request). Round 2 found four blockers, the sharpest being that THIS SLICE'S OWN TEST asserted a source substring — it would have stayed green through deletion of the call it pinned, in a file whose thesis is that a verdict must not outlive its check. Also: the back-compat shim handed the new finding class to a consumer that labelled it with the old name; the checker's summary line re-asserted the classification it had just split; and the misdirection was never confined to the new class. Round-3 not run; these repairs ship accepted-unreviewed under the cap. ORDERING NOTE: the producer step ran before round 2, inverting the plan's rule — harmless only because it ran with --skip-broad-pytest and produced no mutation-coverage fingerprint to invalidate. Non-claim, producer step: same substitution as slices 1 and 2. Non-claim, fingerprint channel: the round-2 window opened on a CLEAN committed tree, which is the one condition under which `verify` would have worked, and it still was not run.
-- Off-goal findings: none new; see `## Off-Goal Findings` for the rolled-up list, which round 2 did not add to.
+- Off-goal findings: none new; the rolled-up list is in the goal's own off-goal section, which round 2 did not add to.
 - Lessons carried forward: The plan's REFUTE prediction for S23 was wrong, and a round-1 reviewer reached the same wrong conclusion from the same evidence. Only the reproduction settled it. Round 1 also found the S23 class open one level up in the release carrier — the fix's own class, in a file the row never named.
 - Metrics:
 
@@ -525,6 +525,20 @@ mis-shaped invocation and its verify was refused for missing keys, so integrity
 here rests on the `git status` check above rather than on the fingerprint
 channel. The slice reviews will use the tool correctly.
 
+## Coordination Cues
+
+- Routing: impl owned each slice's repair, with prove at its stop gate.
+- Routing: quality owned the dup-ratchet and changed-line posture.
+- Routing: critique owned the eight review rounds; retro owned closeout.
+- Routing basis: installed skill metadata plus model judgment on what each slice was
+  doing. No catalog lookup was needed because no hidden support or integration surface
+  was ever in question.
+- Gather: n/a — no external source; every input is checked into this repo.
+- Release: n/a — explicitly a non-goal; no version bump, publish, or marketplace change.
+- Issue closeout: n/a — this goal resolves no tracked GitHub issue. Off-goal findings are
+  recorded below and carried to the handoff rather than filed, because filing is an
+  external write this run had no approval for.
+
 ## Off-Goal Findings
 
 - **`goal_artifact_floor_grammar.parse_created_date` is consumed by FIVE achieve floors
@@ -585,6 +599,10 @@ four slice rounds 1 (3 + 2 + 2), three slice rounds 2 (2 + 2 + 1), one midpoint
 goal-claims round (1), one closeout disposition round (1). Round 2 found defects created
 by round 1's own repairs in **every slice where it ran**.
 
+Retro: charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md
+Host log probe: charness-artifacts/probe/2026-08-01-close-the-sweeps-remaining-high-rows-by-class-host-log.json
+Disposition review: charness-artifacts/critique/2026-08-01-close-the-sweeps-remaining-high-rows-by-class-disposition-review.md
+
 **Non-claims.** No push, no CI dispatch, no live `cautilus evaluate`. The per-slice
 `--verification-lock --produce-mutation-coverage` producer step was substituted with
 `--skip-broad-pytest` in all four slices, so no mutation-coverage fingerprint was
@@ -615,6 +633,41 @@ establishes.
    and [D48](../../docs/deferred-decisions.md) when you want the three unarmed refusals
    armed; each records what arming would cost.
 
-## User Verification Instructions
-
 ## Auto-Retro
+
+Retro: charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md
+A mid-run slice-1 retro also exists at the operator's request:
+charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md
+
+- applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md — the
+  midpoint round had no checked-in record until the closeout disposition round found the
+  gap, in a goal whose acceptance criteria exist because the prior goal had none.
+  Structural follow-up: applied: every review round in this goal now has a checked-in
+  critique artifact, including the midpoint and the disposition round.
+- applied: scripts/measure_adapter_yaml_uninterpreted.py and
+  scripts/measure_inventory_consumption_floor.py both refuse an empty corpus, bound their
+  own scope, and are pinned by tests that re-run their recorded probes.
+  Structural follow-up: applied: two regression tests that re-run each recorded probe
+  against today's tree, so a drifted corpus fails the suite rather than the reader.
+- applied: scripts/repo_path_display.py — two surfaces had independently grown the same
+  relative_to guard; the dup gate found it and the extraction removed a false-RED class
+  from both.
+  Structural follow-up: applied: one definition of the guard plus its two consumers.
+- accepted-risk: the shared residual counter is ASCII-only, so a Korean or accented-Latin
+  observation scores 0 and is refused as declining to engage. Not changed here because the
+  same helper carries the S3 evidence floor, so moving it moves two floors at once.
+  Structural follow-up: none — recorded in `## Off-Goal Findings` and carried to the
+  handoff; changing the shared helper needs its own slice with the S3 corpus re-measured.
+- none — the dup-ratchet first-edit trigger is not filed as an issue this run because
+  filing is an external write this goal had no approval for; it is carried to
+  docs/handoff.md for the operator. Ten blocks this goal against four last session, and
+  three consecutive retros have named the remedy without it being implemented.
+  Structural follow-up: none — the remedy is a repo-local gate-scheduling change in
+  run_slice_closeout.py, deliberately not applied while four slices of repairs were in
+  flight, which is the shape this repo has withdrawn twice.
+- none — goal-artifact self-consistency as a check is not filed this run, for the same
+  external-write reason, and is carried to docs/handoff.md Discuss. Three of the closeout
+  disposition round's eight blockers were mechanically detectable from the artifact
+  check_goal_artifact.py already parses.
+  Structural follow-up: none — held for the operator's call; this is the second instance
+  across two goals, and a one-instance floor is what this repo has withdrawn twice.
