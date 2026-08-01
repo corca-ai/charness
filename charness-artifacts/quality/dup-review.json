@@ -2,6 +2,13 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "003780cc89f2ccfd",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "idiom-sized `if <payload>.get(<key>) == <literal>: return <message>` guard-clause shape shared by three unrelated blockers: the D48 release-surface corroboration refusal (publish_release_preflight), the seed-fixture shared-temp-root advisory (check_seed_fixture_budget), and the support-manifest state classifier (support_sync_lib). Same class already accepted as 349f5d577fe2588b -- different conditions, different strings, different subsystems; a shared formatter would couple three independently-owned refusal surfaces through a message helper and obscure which one owns the verdict. Surfaced as new because D48 slice 2 added release_surface_blocker; the other two members are untouched. ROTATED to 003780cc89f2ccfd on the same day when the round-2 review rewrote the refusal message text; same three members, same reasoning."
+    },
+    {
+      "class": "intentional",
       "id": "004895e66d5b4132",
       "note": "same-file near-duplicate inside skills/public/setup/references/agent-docs-policy.md (120-121 vs 143-144): two deliberately parallel host-mapping example blocks that document the same Codex subagent mapping in the live-AGENTS.md and generated-template sections; surfaced as 'new' by scan rotation, both members untouched this session (#441 rotation class)",
       "reviewed_at": "2026-07-17",
@@ -443,6 +450,13 @@
     },
     {
       "class": "intentional",
+      "id": "4ba1efd822d7a7be",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "two-line `list-of-str or []` coercion shared by the release skill's _declared_list (current_release.py, guarding a scalar YAML declaration from iterating as characters) and the quality reference's _string_list (find_inline_prompt_bulk.py). Idiom-sized and cross-package: extracting it would couple a PORTABLE public release skill to a quality reference script, which the portability contract forbids for a two-line stdlib coercion. Same class as 39fe3da80754d73c and 3b537fee705455a7. Surfaced as new because D48 slice 2 added the guard; the other member is untouched."
+    },
+    {
+      "class": "intentional",
       "id": "4c198e1388dbe0a8",
       "note": "repo-module bootstrap preamble (runtime_bootstrap import + REPO_ROOT) shared with an untouched sibling (record_quality_runtime.py); portability preamble class -- extracting it would replace an explicit import block with an indirection every script still has to spell out",
       "reviewed_at": "2026-07-27",
@@ -699,6 +713,13 @@
       "note": "the achieve goal-artifact `## <heading>` section-scan idiom, shared by goal_artifact_closeout_evidence.py, goal_artifact_section_placeholders.py and goal_artifact_operator_queue.py. The three scan for DIFFERENT section vocabularies with different emptiness rules; the operator-queue member is the only one this slice touched (it now slices the masked copy so a fenced example is not read as a real decision), and collapsing three verdict-specific readers into one is how a rule added for one silently fails to apply to the others.",
       "reviewed_at": "2026-07-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "710ba8de40a73793",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "idiom-sized `if <payload>.get(<key>) == <literal>: return <message>` guard-clause shape shared by three unrelated blockers: the D48 release-surface corroboration refusal (publish_release_preflight), the seed-fixture shared-temp-root advisory (check_seed_fixture_budget), and the support-manifest state classifier (support_sync_lib). Same class already accepted as 349f5d577fe2588b -- different conditions, different strings, different subsystems; a shared formatter would couple three independently-owned refusal surfaces through a message helper and obscure which one owns the verdict. Surfaced as new because D48 slice 2 added release_surface_blocker; the other two members are untouched. ROTATED to 003780cc89f2ccfd on the same day when the round-2 review rewrote the refusal message text; same three members, same reasoning."
     },
     {
       "class": "intentional",

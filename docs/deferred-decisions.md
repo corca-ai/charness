@@ -615,7 +615,59 @@ Reopen trigger:
   an ABSENT generated release surface into drift only for surfaces the repo's own
   `required_release_surfaces` names, and that field defaults to empty. Should absence be
   drift by default, or derived from a channel the audited repo does not author?
-- Current choice: **Defer — declared-only, default empty.**
+- Current choice: **Defer — declared-only, default empty.** **Operator call 2026-08-01:
+  drift-by-default still REFUSED; the disarm-by-deletion direction CLOSED.** The question
+  as posed ("should absence be drift by default?") is answered no. But the defect this
+  entry actually recorded — *deleting those four adapter lines disarms it with nothing
+  corroborating them* — is closed, in two parts:
+  - `current_release.py` reports `absence_corroboration` (`not-applicable` / `declared` /
+    `uncorroborated`) plus `undeclared_absent_surfaces`, and
+    `publish_release_preflight.release_surface_blocker` REFUSES a publish while it reads
+    `uncorroborated`. `drift` is deliberately unchanged, so the read-only status call
+    still reddens nobody's un-shipped lane; the teeth sit at the irreversible boundary.
+  - A surface that is PRESENT but `unreadable` / `no-version` is now drift without
+    `required_release_surfaces`. Those are the states a failed sync actually leaves (a
+    plugin.json truncated mid-write), they never entered `absent_surfaces`, and the
+    declared-only arm let them through whenever the declaration was deleted — the disarm
+    fully alive in its most likely state. It IS exemptable via
+    `unpublished_release_surfaces`, and the first cut of this arm was wrong to claim
+    otherwise ("a repo that does not ship the lane has no file at all"). Round 2 showed
+    that is false for the two MARKETPLACE surfaces, which are per-repo files rather than
+    per-package: a codex marketplace file ([.agents/plugins/marketplace.json](../.agents/plugins/marketplace.json)) listing some other product parses
+    fine and yields nothing for this package, i.e. `no-version`, with nothing corrupt.
+    Unexempted, those consumers would have been permanently red through `drift` — which
+    `plan_release_run_packets` has always routed on — with no adapter line able to clear
+    it. That is the toll this entry refuses, and the first cut reintroduced it through a
+    channel the planner revert had not closed.
+  The remedy is a SECOND adapter field, `unpublished_release_surfaces`, not an overload
+  of the first: `required_release_surfaces` means "these must exist", so naming a surface
+  you do not publish there makes it drift and cannot be the remedy for not publishing it.
+  The first cut of this repair got that wrong and shipped unpublishable advice — round 1
+  of the bounded review proved no declaration existed that let a claude-only repo publish.
+  Cost, stated rather than hidden: a consumer with a genuinely absent surface declares it
+  once, in one line, before it can publish. Pinned by nine tests in
+  [test_absent_input_is_not_a_matching_input.py](../tests/quality_gates/test_absent_input_is_not_a_matching_input.py).
+- **Not warned earlier, and it cannot be:** `plan_release_run` runs BEFORE the sync
+  command, so an absent generated surface at plan time is the ordinary fresh-checkout
+  state rather than evidence — routing the planner on it refused every pre-sync plan
+  (four planner tests). The gate therefore sits immediately after sync, where an absent
+  surface means the sync did not write it. Accepted cost: the refusal lands after the
+  version bump has already rewritten the worktree.
+- **Known gap, not closed:** `publish_release_resume.py` reaches `create_release` without
+  the release-surface check, so a surface deleted or corrupted between a failed attempt
+  and the resume still reaches publish unchecked. Pre-existing for `drift` too. Adding
+  the gate there was attempted and reverted: every resume fixture exercises a repo with
+  no generated tree, so it is a contract change with its own blast radius rather than a
+  line this slice was entitled to add.
+- **Withdrawn, do not retry:** the "derive the expected set from the repo's own sync
+  command output" repair named below is NOT buildable as described.
+  `sync_root_plugin_manifests.py` reports `written_paths` carrying the plugin root as a
+  *directory* (`plugins/charness`), so two of the four surfaces — `claude_plugin` and
+  `codex_plugin` — never appear in it; `current_release.py`'s vocabulary is symbolic keys
+  rather than paths, so a derivation would additionally need a path→key map with nowhere
+  portable to live; and the listing-mode variant puts the channel behind a NEW
+  self-declared adapter field, so it could not have broken the class it claimed to break.
+  Found by the 2026-08-01 bounded plan critique before any of it was built.
 - Why now: found while closing sweep row S35 on 2026-08-01. The repair is an instance of
   the class the sweep catalogues: a self-declared field inside the repo being judged
   decides whether the floor fires, and deleting those four adapter lines disarms it with

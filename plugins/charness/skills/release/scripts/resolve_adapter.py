@@ -35,6 +35,7 @@ LIST_FIELDS = (
     "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
     "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
     "cli_skill_surface_change_globs", "fresh_checkout_probes", "required_release_surfaces",
+    "unpublished_release_surfaces",
 )
 ARTIFACT_FILENAME = "latest.md"
 
@@ -86,6 +87,13 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         # drift. Empty by default: a consumer that publishes only some surfaces must not
         # be forced red by a list it never wrote.
         "required_release_surfaces": [],
+        # D48: the opt-out channel, deliberately NOT an overload of the field above.
+        # `required_release_surfaces` means "these must exist", so naming a surface you
+        # do not publish there makes it drift -- it cannot be the remedy for not
+        # publishing it. A repo states here, once, which generated surfaces it does not
+        # ship; their absence then reads as intent instead of as an unexplained pass that
+        # nothing corroborates. Empty by default, and absence alone is still never drift.
+        "unpublished_release_surfaces": [],
         "release_backend": default_release_backend(),
     }
 

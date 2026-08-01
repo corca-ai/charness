@@ -350,3 +350,32 @@ def run_release_adapter_preflight(
         payload,
         run_command=run_command,
     )
+
+
+def release_surface_blocker(release_payload: dict, expected_version: str) -> str | None:
+    """Why publishing this release surface must not proceed, or ``None``.
+
+    Lives with the other pre-publish blockers rather than in the CLI, and returns a
+    message instead of raising so the reason is testable without a SystemExit.
+    """
+    if release_payload["drift"]:
+        return f"release surface drift detected: {release_payload['drift']}"
+    # D48: an absent surface the declaration does not name is a pass nothing corroborates.
+    # `current_release` keeps it out of `drift` on purpose -- a read-only status call must
+    # not redden a lane a consumer never published -- so the refusal lives here, at the
+    # irreversible boundary, where a wrong answer actually escapes. Deleting the four
+    # declaration lines used to buy a silent green publish over a surface a failed sync
+    # had removed ("deleting those four adapter lines disarms it with nothing
+    # corroborating them").
+    if release_payload.get("absence_corroboration") == "uncorroborated":
+        return (
+            "release surface absence is uncorroborated: "
+            f"{release_payload['undeclared_absent_surfaces']} absent and named by neither "
+            "`required_release_surfaces` nor `unpublished_release_surfaces`. Restore the "
+            "surface(s), or -- if this repo does not ship them -- name them in "
+            "`unpublished_release_surfaces`. Naming them as REQUIRED is not the remedy: "
+            "that field means they must exist, so it turns this into drift."
+        )
+    if release_payload["surface_versions"]["packaging_manifest"] != expected_version:
+        return f"expected packaging manifest version `{expected_version}`"
+    return None

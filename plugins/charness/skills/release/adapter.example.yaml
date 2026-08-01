@@ -25,6 +25,13 @@ fresh_checkout_probes: []
 # Known names: claude_plugin, codex_plugin, claude_marketplace_version,
 # codex_marketplace_source_path.
 required_release_surfaces: []
+# Generated release surfaces this repo does NOT ship. This is the opt-out, and it is a
+# separate field on purpose: because the list above means "these must exist", naming an
+# absent surface there makes it drift, so it cannot be the remedy for not publishing it.
+# An absent surface named by NEITHER list does not redden this read-only check, but it
+# does refuse a publish -- nothing corroborates reading that absence as intended.
+# Same known names.
+unpublished_release_surfaces: []
 review_unavailable_patterns:
 - review unavailable
 - requested review unavailable

@@ -65,6 +65,7 @@ build_update_instructions_prep_payload = _preflight.build_update_instructions_pr
 safe_real_host_payload = _preflight.safe_real_host_payload
 release_adapter_preflight_payload = _preflight.release_adapter_preflight_payload
 run_release_adapter_preflight = _preflight.run_release_adapter_preflight
+release_surface_blocker = _preflight.release_surface_blocker
 fail_after_post_create_verification = _post_create.fail_after_post_create_verification
 verify_release_visible = _post_create.verify_release_visible
 confirm_release_via_distinct_channel = _post_create.confirm_release_via_distinct_channel
@@ -99,6 +100,7 @@ def _execution_context() -> SimpleNamespace:
         "run_release_adapter_preflight",
         "run_bump",
         "ensure_release_surface",
+        "release_surface_blocker",
         "changed_paths",
         "safe_real_host_payload",
         "build_real_host_payload",
@@ -200,11 +202,9 @@ def run_bump(args: argparse.Namespace, repo_root: Path) -> None:
 
 
 def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
-    release_payload = build_release_payload(repo_root)
-    if release_payload["drift"]:
-        raise SystemExit(f"release surface drift detected: {release_payload['drift']}")
-    if release_payload["surface_versions"]["packaging_manifest"] != expected_version:
-        raise SystemExit(f"expected packaging manifest version `{expected_version}`")
+    blocker = release_surface_blocker(build_release_payload(repo_root), expected_version)
+    if blocker:
+        raise SystemExit(blocker)
 
 
 def write_current_artifact(

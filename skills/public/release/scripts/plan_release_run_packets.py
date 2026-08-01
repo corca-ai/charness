@@ -195,6 +195,13 @@ def next_action(
         return action("repair_release_surface", "Current release state could not be built.")
     if release_payload.get("drift"):
         return action("sync_release_surface", "Generated release surfaces drift from the packaging manifest.")
+    # Deliberately NOT routed on `absence_corroboration` here. The planner runs BEFORE
+    # the sync command, so a generated surface being absent at plan time is the ordinary
+    # fresh-checkout state, not evidence of anything -- routing on it would refuse every
+    # pre-sync plan. The publish gate runs immediately AFTER sync, where an absent
+    # surface means the sync did not write it, which is the state D48 is about. Cost of
+    # that placement, accepted and recorded: the refusal lands after the version bump has
+    # already rewritten the worktree.
     if update_blocker:
         return action("prep_update_instructions", update_blocker)
     if release_payload.get("git_status") and target_version is not None:

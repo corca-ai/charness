@@ -190,6 +190,12 @@ def preflight_resume_state(
     current_version = cli.build_release_payload(repo_root)["surface_versions"]["packaging_manifest"]
     if not isinstance(current_version, str):
         raise SystemExit("current_release did not report a packaging manifest version")
+    # NOT gated on the release surface here, and that is a KNOWN GAP, not a decision this
+    # slice is entitled to make: resume is the other path to `create_release`, so a
+    # surface deleted or corrupted between the failed attempt and the resume reaches
+    # publish unchecked. Pre-existing for `drift` as well as for D48's corroboration
+    # arm. Adding the gate is a real contract change -- every resume fixture exercises a
+    # repo with no generated tree at all -- so it is recorded rather than half-shipped.
     tag_name = f"v{current_version}"
     state = resumable_state(
         repo_root,

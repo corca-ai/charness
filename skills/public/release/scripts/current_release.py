@@ -91,6 +91,79 @@ def _git_status(repo_root: Path) -> list[str]:
     return [line for line in result.stdout.splitlines() if line.strip()]
 
 
+def _declared_list(value: object) -> list[str]:
+    """A declared surface list, or `[]`. A scalar YAML value used to iterate as
+    characters, turning one typo into a garbled per-character warning."""
+    return [s for s in value if isinstance(s, str)] if isinstance(value, list) else []
+
+
+def _absence_verdict(
+    data: dict, absent: list[str], declarable: tuple[str, ...]
+) -> dict[str, object]:
+    """Read the two declaration fields and judge what an absent surface means.
+
+    `required_release_surfaces` means "these must exist", so declaring an absent surface
+    there makes it drift -- it cannot be the remedy for not publishing it.
+    `unpublished_release_surfaces` is the separate opt-out: the repo states once which
+    surfaces it does not ship, and their absence stops being an unexplained pass.
+
+    D48's recorded defect is disarm-by-deletion: "deleting those four adapter lines
+    disarms it with nothing corroborating them". This check cannot tell "this consumer
+    never publishes codex" from "a failed sync deleted the codex plugin.json" -- that is
+    D48's whole point -- so it does not guess. It states the epistemic status of the
+    pass, and the teeth go where a wrong answer escapes:
+    `publish_release_preflight.release_surface_blocker` refuses to publish while
+    corroboration is `uncorroborated`. `drift` is unchanged, so the read-only status call
+    still reddens nobody's un-shipped lane.
+
+    Scoped to DECLARABLE absences: `packaging_manifest` is prepended to `absent` and is
+    deliberately not declarable, so including it would report "declared" over an absence
+    nothing named and nothing could name.
+    """
+    declared = _declared_list(data.get("required_release_surfaces"))
+    declared_unpublished = _declared_list(data.get("unpublished_release_surfaces"))
+    required = [s for s in declared if s in declarable]
+    unpublished = [s for s in declared_unpublished if s in declarable]
+    absent_declarable = [s for s in absent if s in declarable]
+    undeclared_absent = [
+        s for s in absent_declarable if s not in required and s not in unpublished
+    ]
+    warnings: list[str] = []
+    # Both fields warn on an unreadable name. A silently discarded
+    # `unpublished_release_surfaces: [codex-plugin]` (hyphen) opts out of nothing and
+    # leaves the operator staring at a refusal with no hint that their line was dropped.
+    for field, names in (
+        ("required_release_surfaces", declared),
+        ("unpublished_release_surfaces", declared_unpublished),
+    ):
+        unknown = [s for s in names if s not in declarable]
+        if unknown:
+            warnings.append(
+                f"{field} names surface(s) this check does not read: {unknown}. "
+                f"Known surfaces: {list(declarable)}."
+            )
+    contradictory = [s for s in required if s in unpublished]
+    if contradictory:
+        warnings.append(
+            f"surface(s) named as BOTH required and unpublished: {contradictory}. "
+            "`required_release_surfaces` wins (fail-closed), but the adapter contradicts "
+            "itself: a surface cannot both have to exist and not be shipped."
+        )
+    return {
+        "payload": {
+            "required_release_surfaces": required,
+            "unpublished_release_surfaces": unpublished,
+            "undeclared_absent_surfaces": undeclared_absent,
+            "absence_corroboration": (
+                "not-applicable" if not absent_declarable
+                else "uncorroborated" if undeclared_absent
+                else "declared"
+            ),
+        },
+        "warnings": warnings,
+    }
+
+
 def build_payload(repo_root: Path) -> dict[str, object]:
     adapter = load_adapter(repo_root)
     data = adapter["data"]
@@ -166,11 +239,12 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     ]
     if expected is None and _state("packaging_manifest") == "absent":
         absent = ["packaging_manifest", *absent]
-    declared = data.get("required_release_surfaces") or []
-    required = [s for s in declared if s in declarable]
-    unknown_required = [s for s in declared if s not in declarable]
     payload["absent_surfaces"] = absent
-    payload["required_release_surfaces"] = required
+    verdict = _absence_verdict(data, absent, declarable)
+    payload.update(verdict["payload"])
+    required = verdict["payload"]["required_release_surfaces"]
+    unpublished = verdict["payload"]["unpublished_release_surfaces"]
+    payload["adapter"]["warnings"] = [*payload["adapter"]["warnings"], *verdict["warnings"]]
     drift: list[str] = []
     if expected is None:
         # The reference input is missing, so no surface can be compared. Reporting an
@@ -183,6 +257,24 @@ def build_payload(repo_root: Path) -> dict[str, object]:
     for surface in all_surfaces:
         actual = payload["surface_versions"].get(surface)
         if actual is None:
+            state = _state(surface)
+            if state in ("unreadable", "no-version") and surface not in unpublished:
+                # The state a failed sync actually leaves (a half-written `{"version": `),
+                # which never entered `absent_surfaces` and so escaped the declared-only
+                # arm whenever the declaration was deleted. It fires without
+                # `required_release_surfaces`, so deleting that list cannot disarm it.
+                #
+                # But it IS exemptable, and the first cut of this repair was wrong to say
+                # otherwise ("a repo that does not ship the lane has no file at all").
+                # The two marketplace surfaces are per-REPO files, not per-package: a
+                # `.agents/plugins/marketplace.json` that lists some other product parses
+                # fine and yields nothing for this package, i.e. `no-version`, with no
+                # corruption anywhere. `version` is also optional in an upstream
+                # plugin.json. Without this exemption those consumers were permanently
+                # red through `drift` -- which `plan_release_run_packets` has always
+                # routed on -- with no adapter line able to clear it.
+                drift.append(f"{surface}=<{state}>")
+                continue
             if surface in required:
                 suffix = f" != packaging_manifest={expected}" if expected is not None else ""
                 drift.append(f"{surface}=<{_state(surface)}>{suffix}")
@@ -190,12 +282,6 @@ def build_payload(repo_root: Path) -> dict[str, object]:
         if expected is not None and surface in versioned_surfaces and actual != expected:
             drift.append(f"{surface}={actual} != packaging_manifest={expected}")
     payload["drift"] = drift
-    if unknown_required:
-        payload["adapter"]["warnings"] = [
-            *payload["adapter"]["warnings"],
-            f"required_release_surfaces names surface(s) this check does not read: {unknown_required}. "
-            f"Known surfaces: {list(declarable)}.",
-        ]
     return payload
 
 

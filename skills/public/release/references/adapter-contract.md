@@ -52,6 +52,7 @@ Search order:
 - `cli_skill_surface_change_globs`
 - `fresh_checkout_probes`
 - `required_release_surfaces`
+- `unpublished_release_surfaces`
 - `release_backend`
 
 ## Defaults
@@ -84,8 +85,28 @@ Search order:
   repo asserts it publishes, so an ABSENT one becomes drift instead of reading like a
   matching one. Known names: `claude_plugin`, `codex_plugin`,
   `claude_marketplace_version`, `codex_marketplace_source_path`. The packaging
-  manifest is NOT declarable — its absence is drift whether or not anyone declares
-  it. The declaration is self-authored and unverified: deleting it disarms the check.
+  manifest is NOT declarable — its absence is drift whether or not anyone declares it.
+- `unpublished_release_surfaces`: empty list. The OPT-OUT channel, and deliberately not
+  an overload of the field above: because `required_release_surfaces` means "these must
+  exist", naming a surface you do not publish there makes it drift, so it cannot be the
+  remedy for not publishing it. Name here the generated surfaces this repo does not
+  ship. Same known names.
+- **Absence is still never drift on its own.** A read-only `current_release` run never
+  reddens a lane a consumer chose not to publish. What changed (D48) is that an absent
+  surface named by NEITHER field makes `absence_corroboration` read `uncorroborated`,
+  and `publish_release_preflight.release_surface_blocker` refuses the PUBLISH — the
+  irreversible boundary — rather than letting a deleted declaration buy a silent green.
+- A surface that is present but `unreadable` or missing its version IS drift without
+  `required_release_surfaces`, because that is the state a failed sync leaves and a
+  deleted declaration must not disarm it. It is still exemptable via
+  `unpublished_release_surfaces`, and that matters more than it looks: the two
+  marketplace surfaces are per-REPO files, not per-package, so a marketplace listing
+  some other product parses fine, yields nothing for this package, and reads as
+  `no-version` with nothing corrupt anywhere. `version` is likewise optional in an
+  upstream plugin manifest.
+- Honest residual: both fields are self-authored, and nothing checks that a declared
+  surface is one the sync command actually produces. Deriving that from the sync channel
+  was tried and withdrawn as unbuildable (the sync report names the plugin root as a directory, so two of the four surfaces never appear in it). The authoring repo's own D48 record of that is authoring-repo-internal and does not ship with this skill.
 
 ## Artifact Rule
 
