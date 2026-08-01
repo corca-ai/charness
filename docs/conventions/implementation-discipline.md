@@ -99,6 +99,23 @@ the root instruction file but still apply to Charness maintenance work.
 
 ## Change Discipline
 
+- **A remedy a durable record names is a hypothesis, not a plan.** Before shaping
+  a slice around "the better repair is X" — in a deferred decision, a sweep row,
+  or an issue — verify X's premise with one command or one file read. The remedy
+  was written at the moment of deferral, when its author had the most context and
+  the least obligation to check it. Measured on 2026-08-01: two of three entries
+  picked up in one goal named remedies that could not be built as described, both
+  killed by plan critique after slices had been shaped around them. Both premises
+  were answerable by READING, not by running: one from
+  `sync_root_plugin_manifests.py`'s `written_paths` (which names the plugin root as
+  a directory — and which must not be *run* to check, since running it rewrites the
+  generated tree), one from the field list in `inventory-consumer-fields.json`. A
+  premise check is a file read as often as a command, and reaching for a command
+  first is how a mutating script gets run mid-review. Tracked as
+  [#468](https://github.com/corca-ai/charness/issues/468).
+- The edit-time half of that discipline — assert a scripted replace landed, grep
+  for a superseded number — lives with the rest of claim fidelity in
+  [operating-contract.md](./operating-contract.md) *Critique Discipline*.
 - Before authoring into a gated surface, skim
   [authoring-preflight.md](./authoring-preflight.md): the attention-state banned
   vocabulary, the length-headroom check, and a string/regex edge checklist —

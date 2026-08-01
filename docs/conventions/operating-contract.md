@@ -141,6 +141,25 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     closeout costs re-writing every artifact the defect touched.
   - The closeout disposition review still runs. The midpoint round does not
     replace it, and a goal that stops early runs only the closeout one.
+- **Claim fidelity: the assertion is a surface too.** Measured on the 2026-08-01
+  three-unarmed-refusals goal: THREE of five bounded rounds found a defect in
+  something the author asserted rather than in code — a comment claiming a branch
+  was live beside a probe recording zero, a units swap that made two different
+  numbers read as agreement, and a "repair" that never applied. That class is the
+  residue left once the shallower defects are gone, and it is cheap to refuse
+  mechanically. Three checks, none of which needs a reviewer:
+  - After a non-interactive string edit (a scripted replace, a sed), assert the
+    SUPERSEDED text is absent. A replace that does not match fails SILENTLY, so
+    "I fixed it" and "the wrong text still ships" are indistinguishable without
+    the check. This is how a corrected number stayed in the gate comment that
+    exists to defend the threshold.
+  - When a number replaces a number in a durable record, grep the repo for the
+    OLD value before closing. Superseded figures linger in sibling docstrings,
+    generated mirrors, and dogfood records that no reader will cross-check.
+  - State the UNIT before the value when comparing measurements. "5 reviews" and
+    "5 citations across 4 artifacts" are not the same claim, and a measurement
+    that lands near an expected number invites narrating agreement that the units
+    do not support.
 - `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record

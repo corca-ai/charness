@@ -60,6 +60,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Before reviewing slow gates, local-vs-CI validation cost, evaluator-backed validation, or quality-contract changes, route through `quality`; it owns validation posture and repo-local quality gate design.
 - Before closing task-completing repo work, read [docs/conventions/operating-contract.md](./docs/conventions/operating-contract.md); it owns commit discipline, durable artifact inclusion, mandatory critique closeout, and session repair.
 - Before changing repo operating contracts, prompt or skill surfaces, exports, or artifact policy, read [charness-artifacts/retro/recent-lessons.md](./charness-artifacts/retro/recent-lessons.md); it owns recent repeat traps that should change the next move.
+- Before SHAPING a slice around a remedy some durable record already names (a deferred decision's "the better repair is X", a sweep row's proposed fix, an issue's suggested approach), verify that remedy's premise first — by reading, as often as by running. [docs/conventions/implementation-discipline.md](./docs/conventions/implementation-discipline.md) Change Discipline owns the rule; it fires at design time, one phase earlier than the rest of that file.
 - Before claiming a GitHub issue or operator-facing request is closable, map the requested outcome to executed proof and run the required critique; if the canonical bounded-review path is blocked, stop and report the host restriction.
 
 ## Policy Index
