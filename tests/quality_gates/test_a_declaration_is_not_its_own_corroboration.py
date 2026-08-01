@@ -600,3 +600,49 @@ def test_the_floor_measurement_emits_json(tmp_path, monkeypatch, capsys):
 
     assert measure.main() == 0
     assert json.loads(capsys.readouterr().out)["artifacts"] == 1
+
+
+def test_the_floor_measurement_names_a_citation_it_lowers(tmp_path, monkeypatch, capsys):
+    # `measure_inventory_consumption_floor.py:216` — the per-entry print inside the
+    # lowered-citations loop, which needs a corpus where the floor actually drops a
+    # citation below its requirement.
+    corpus = tmp_path / "quality"
+    corpus.mkdir()
+    (corpus / "a.md").write_text(
+        _artifact(
+            "- `scope_status=complete` and `finding_status=clean` across the run."
+        ),
+        encoding="utf-8",
+    )
+    measure = _load_script_module(
+        "measure_inventory_consumption_floor_lowered",
+        ROOT / "scripts" / "measure_inventory_consumption_floor.py",
+    )
+    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+    monkeypatch.setattr("sys.argv", [
+        "measure", "--repo-root", str(tmp_path), "--corpus", str(corpus),
+        "--consumer-fields-path", str(fields), "--floor", "400",
+    ])
+
+    assert measure.main() == 1
+    out = capsys.readouterr().out
+    assert "citations the floor drops below their requirement: 1" in out
+    assert "inventory_skill_ergonomics.py" in out
+
+
+def test_the_floor_measurement_runs_as_a_script(tmp_path):
+    # `:229` — the `__main__` guard, reachable only through a subprocess invocation.
+    corpus = tmp_path / "quality"
+    corpus.mkdir()
+    (corpus / "a.md").write_text(_artifact("- nothing cited."), encoding="utf-8")
+    fields = ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json"
+
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "measure_inventory_consumption_floor.py"),
+         "--repo-root", str(tmp_path), "--corpus", str(corpus),
+         "--consumer-fields-path", str(fields)],
+        capture_output=True, text=True,
+    )
+
+    assert result.returncode == 0
+    assert "1 artifact(s)" in result.stdout

@@ -636,3 +636,26 @@ def test_the_measurement_raises_if_the_report_variant_ever_diverges(tmp_path, mo
         assert "changed the parse result" in str(exc)
     else:  # pragma: no cover - the guard must fire
         raise AssertionError("the divergence guard did not fire")
+
+
+def test_the_measurement_runs_as_a_script(tmp_path):
+    # `measure_adapter_yaml_uninterpreted.py:138` — the `__main__` guard. Only a
+    # subprocess invocation reaches it, and the mutation coverage producer captures
+    # subprocess-invoked CLI scripts, so this is the one shape that covers the line the
+    # armed changed-line gate named.
+    import subprocess
+    import sys
+
+    (tmp_path / ".agents").mkdir(parents=True)
+    (tmp_path / ".agents" / "issue-adapter.yaml").write_text(
+        "version: 1\ndefault_org corca-typo\n", encoding="utf-8"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "measure_adapter_yaml_uninterpreted.py"),
+         "--repo-root", str(tmp_path), "--roots", ".agents"],
+        capture_output=True, text=True,
+    )
+
+    assert result.returncode == 1
+    assert "default_org corca-typo" in result.stdout
