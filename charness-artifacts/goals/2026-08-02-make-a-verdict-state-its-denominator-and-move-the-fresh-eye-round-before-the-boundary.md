@@ -1,6 +1,6 @@
 # Achieve Goal: Make a verdict state its denominator, and move the fresh-eye round before the irreversible boundary
 
-Status: active
+Status: complete
 Created: 2026-08-02
 Activation: `/goal @charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`
 
@@ -56,8 +56,12 @@ goal asserting three things the tree contradicts:
 2. **A resolution-critique floor stops accepting a critique nobody else read.**
    `issue_resolution_critique.py` checks that a `Critique #N: <path>` line exists.
    It does NOT read that artifact's own `Fresh-eye satisfaction:` value, so a
-   self-authored critique satisfies the floor at an irreversible boundary — which
-   is exactly what happened to #467.
+   self-authored critique satisfies the floor at an irreversible boundary.
+   **AMENDED 2026-08-02:** this item originally ended "— which is exactly what
+   happened to #467". It is not. See the amendment in `## User Acceptance`: #467's
+   critique was genuinely parent-delegated, and its failure was that the review ran
+   AFTER the close. The mechanism claim — that the floor never reads the field —
+   was verified and is true; only the worked example was wrong.
 
 Both are P4 applications: a claim confirmed by a distinct observer, not by
 re-reading the same proxy. Neither adds a gate.
@@ -137,8 +141,20 @@ re-reading the same proxy. Neither adds a gate.
   defend, because a hard refusal strands closes on a host that cannot spawn —
   and the existing `Critique: blocked <signal>` valve is the precedent for how
   that degrades. Pinned by three fixtures: delegated, self-authored, blocked.
-  **The #467 closure is the worked example**: its critique existed and validated
-  at close time, and was still a same-observer artifact.
+  **AMENDMENT (2026-08-02) — the #467 worked example is WITHDRAWN.** This criterion
+  originally read: "The #467 closure is the worked example: its critique existed and
+  validated at close time, and was still a same-observer artifact." That is FALSE,
+  and the run verified it before building on it.
+  `charness-artifacts/critique/2026-08-01-467-mutation-regression-resolution-critique.md:6`
+  records `Fresh-eye satisfaction: parent-delegated` with `Delivery state:
+  findings-received`, and the correction comment on the issue says the review was
+  "run after the close" (closed 14:25:16Z, corrected 14:35:22Z). #467 was an
+  ORDERING failure, not a self-authorship one, so **this floor would not have
+  prevented it** — the ordering rule that would is now prose in
+  `skills/public/achieve/references/coordination.md`. The self-authored fixture is
+  therefore SYNTHETIC, and the hole it closes was demonstrated independently: the
+  floor never opened the cited file at all. Recorded as an amendment rather than
+  silently rewritten, matching the precedent in `## Context Sources` item 2.
 - **Global:** every figure in `## Final Verification` carries `<value> — <source>`
   or `<value> — unbacked: <why>`, and every corpus measurement states its
   denominator in DATED artifacts. The figure-form floor reads this goal but is
@@ -191,22 +207,16 @@ below are the SECOND shaping, not the first.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Emit an analyzed/changed COUNT PAIR on every verdict-emitting path of `check_changed_line_mutation_coverage.py` | The field exists; the pair does not. A reader of a PASS gets a denominator list on some paths and no numerator on any, so "49 of 51" is reconstructable only by `len()`-ing two lists that are not both always present. This is the residual after the critique cut the rest of the lane | A fixture on a NON-blocking path whose payload states both counts; a control test proving PASS/FAIL behaviour is unchanged; the existing 5 `unanalyzed_changed_pool_files` assertions still green | done |
+| A | Emit an analyzed/changed COUNT PAIR on every verdict-emitting path of `check_changed_line_mutation_coverage.py` | The field exists; the pair does not. A reader of a PASS gets a denominator list on some paths and no numerator on any, so "49 of 51" is reconstructable only by `len()`-ing two lists that are not both always present. This is the residual after the critique cut the rest of the lane | A fixture on a NON-blocking path whose payload states both counts; a control test proving PASS/FAIL behaviour is unchanged; the existing `unanalyzed_changed_pool_files` assertions still green (4 asserts — not the 5 the plan critique's B1 stated; re-measured this run rather than inherited) | done |
 | B | Make `issue_resolution_critique` read the cited artifact's `Fresh-eye satisfaction:` value, so a self-authored critique is distinguishable from a delegated one at the close boundary | The real #467 defect, found by the plan critique. The floor's presence check is satisfiable by an artifact the closing agent wrote, at an irreversible boundary, and `validate_critique_artifacts.py` ALREADY enforces the form of the field the floor is not reading. Verdict logic on a proof surface, so TWO bounded rounds | Three fixtures (delegated / self-authored / blocked); the floor's report carrying the distinction; an explicit, defended statement of whether it refuses, with the degradation path named | done |
 | C | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `./scripts/run-quality.sh`; `check_goal_artifact.py` green; a closeout-claims critique artifact; retro dispositions each `applied:` or `issue #N` | pending |
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: whether #469 and #470 should be closed, narrowed, or left open. This run did NOT close either.
+- Owner: operator (repo owner)
+- Why deferred: closing them was approved *if a lane resolved them*, and neither lane resolves either issue's full requested outcome. #469 asks for the changed-line gate's partial-denominator behaviour to be settled; Lane A disclosed the pair and deliberately left the refusal question to D45. #470's two follow-ups are the two lanes, but its second follow-up is MIS-STATED (the resolution-critique precondition already fires before the close; what was missing is a distinct observer reading the critique) — closing it as written would ratify a false description. Local progress was never blocked by this.
+- Unblock action: either correct #470's second follow-up body and close both against this goal's two commits, or narrow each to the residual it still names and leave open.
+- Revisit trigger: the next goal that touches D45 (the changed-line refusal toll) or the issue-close boundary.
 
 ## Coordination Cues
 
@@ -241,10 +251,10 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: achieve — goal lifecycle owner for both lanes; issue owns the close-path floor Lane B changes, quality owns the validation posture consulted below, critique supplied the four bounded rounds (1 for Lane A, 2 for Lane B, 1 closeout-claims).`
-- `Gather: n/a — no external source; every input is checked into this repo or is this repo's own GitHub issue state, read read-only via gh.`
-- `Release: n/a — no version bump, no install-manifest edit, no publish. Explicit non-claim.`
-- `Issue closeout: n/a — #469 and #470 are CONTEXT for this goal's two lanes, not closed by it. Neither lane resolves either issue's full requested outcome, and closing them was approved-if-resolved, not approved-regardless. See ## Off-Goal Findings.`
+- Routing: impl — selected from installed skill metadata as the owner of the code-writing phase both lanes spent their time in; achieve operated the goal lifecycle around it, issue owns the close-path floor Lane B changes, quality owns the validation posture consulted before the closeout gate, critique supplied the four bounded rounds (1 on Lane A, 2 on Lane B, 1 closeout-claims), and retro produced the closeout review
+- Gather: n/a — no external source; every input is checked into this repo or is this repo's own GitHub issue state, read read-only via gh.
+- Release: n/a — no version bump, no install-manifest edit, no publish. Explicit non-claim.
+- Issue closeout: n/a — #469 and #470 are named in ## Context Sources as THIS GOAL'S SUBJECT (its two lanes, and Lane A's concrete subject), and closing them was pre-approved IF a lane resolved them. Neither was closed, because neither lane resolves either issue's full requested outcome. Calling them mere context would understate what they were; the reasons and the operator's unblock action are in ## Operator Decision Queue. One issue WAS filed this run: #471.
 
 Proof-surface dispositions (one line per added path, per the new-proof-surface advisory):
 
@@ -264,7 +274,7 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: APPROVED by the operator on 2026-08-02, three items. (1) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` of work this goal creates plus the remote CI each push triggers, AND closing #469 / #470 if a lane actually resolves them. Approved explicitly and scoped to this goal; the previous goal's push approval was scoped to ITS Lane A and did not carry forward, and this one does not carry forward either. Confirmation will follow the north star's P4: a different observer AND a different evidence channel than the push command's exit code. Note the ordering constraint the approval creates: closing #469/#470 is exactly the boundary Lane B is repairing, so those closes must go through Lane B's NEW order — resolution critique and its fresh-eye round BEFORE the close call, not after. The previous run got that backwards on #467 and had to post a public correction. (2) PROOF-SURFACE AUTHORING — Lane A changes what a gate's verdict record says, which the north star classifies as an irreversible boundary in its own right ("a proof surface that fails open" propagates to every consuming repo and is silent by construction). Resolved by requiring TWO bounded rounds on Lane A rather than one, and by fencing the refusal question out of acceptance entirely. (3) PROOF-LEVEL NON-CLAIMS — no release, no tag, no version bump, no `cautilus evaluate`, and Lane A2 migrates ONE floor rather than all five, naming the rest as unmigrated. Resolved: stated rather than implied, so a reader does not infer a sweep that did not happen.
+- Discuss before activation: APPROVED by the operator on 2026-08-02, three items. (1) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` of work this goal creates plus the remote CI each push triggers, AND closing #469 / #470 if a lane actually resolves them. Approved explicitly and scoped to this goal; the previous goal's push approval was scoped to ITS Lane A and did not carry forward, and this one does not carry forward either. Confirmation will follow the north star's P4: a different observer AND a different evidence channel than the push command's exit code. Note the ordering constraint the approval creates: closing #469/#470 is exactly the boundary Lane B is repairing, so those closes must go through Lane B's NEW order — resolution critique and its fresh-eye round BEFORE the close call, not after. The previous run got that backwards on #467 and had to post a public correction. (2) PROOF-SURFACE AUTHORING — Lane A changes what a gate's verdict record says, which the north star classifies as an irreversible boundary in its own right ("a proof surface that fails open" propagates to every consuming repo and is silent by construction). Resolved by requiring TWO bounded rounds on Lane A rather than one, and by fencing the refusal question out of acceptance entirely. **AMENDED 2026-08-02, in place so an operator reading this approved term is not misled:** the plan critique's own "Minors folded" paragraph subsequently narrowed Lane A to a payload-shape change and MOVED the two-round obligation to Lane B. Lane A ran ONE round. The closeout-claims reviewer checked that reading against `operating-contract.md` and found it contract-conformant — the second-round trigger is changing what a surface DECIDES, and Lane A's exit codes are pinned unchanged by a control test — but also found that recording the departure only in the transient `## Active Operating Frame` was not enough. (3) PROOF-LEVEL NON-CLAIMS — no release, no tag, no version bump, no `cautilus evaluate`, and Lane A2 migrates ONE floor rather than all five, naming the rest as unmigrated. Resolved: stated rather than implied, so a reader does not infer a sweep that did not happen.
 
 ## Slice Log
 
@@ -272,21 +282,21 @@ applies.
 
 - Objective: Emit an analyzed/changed COUNT PAIR (`changed_pool_file_counts`) on every verdict-emitting path of the local changed-line mutation gate. Disclosure only: refusal behaviour unchanged.
 - Why this approach: The two lists the gate already emits are not both present on any single path, so "1 of 2" was reconstructable by len()-ing on some paths and not at all on others. New module `scripts/changed_line_scope_counts.py` rather than an append: the gate was at 476/480 code lines, and Change Discipline says start a module rather than spill. The scope SPLIT (`apply_file_limit`) moved there with the scope REPORT so the module is a cohesive owner of scope arithmetic and not a D33 length-dodging companion; the gate ended at 468/480, lower than it started.
-- Commits:
+- Commits: `cf88b750` — Make every changed-line verdict state how many of how many it read. Critique artifact: `charness-artifacts/critique/2026-08-02-lane-a-changed-line-denominator-critique.md`.
 - What changed: scripts/changed_line_scope_counts.py (new, 71 code lines); scripts/check_changed_line_mutation_coverage.py (import + alias, count pair in `_run_metadata` startup dict and `_emit_no_base_sha` as not-computed, real pair merged right after the limit split, `_apply_file_limit` added to `__all__`); tests/quality_gates/test_changed_line_scope_counts.py (new, 12 tests); one added assertion in tests/quality_gates/test_changed_line_mutation_coverage.py; regenerated plugins/charness/scripts/ mirror of both source files.
 - Alternatives rejected: Rejected: making a partial denominator REFUSE — that is D45's toll question and is fenced out of this goal's acceptance. Rejected: shrinking the pair on an --allow-dirty run so it never overstates — the pair's population is the RANGE's, which keeps it comparable across runs; the uncommitted gap is disclosed by the sibling `dirty_pool_unverified` / `uncommitted_pool_files` keys instead, and a test now pins that reading. Rejected: declaring `scripts/changed_line_scope_counts.py` in attention-state-visibility.json — the gate fired on the word "skipped" in a docstring for a module that has no skip state, so the wording was the defect, not the registry.
 - Targeted verification: pytest tests/quality_gates/test_changed_line_scope_counts.py tests/quality_gates/test_changed_line_mutation_coverage.py -> 54 passed. 227 passed across the 10 modules that reference this gate or prepush_focused (test_degradation_branch_coverage, test_new_proof_surface_advisory, test_mutation_coverage_consumer_execution, test_changed_line_coverage_gate, test_prepush_focused_changed_line_coverage, test_subprocess_only_coverage_advisory, test_a_declaration_is_not_its_own_corroboration, test_mutation_coverage_producer, test_scaffold_changed_line_coverage, test_slice_closeout_reporting). run_slice_closeout.py --skip-broad-pytest -> PASS on all 20 verify commands (pre-lock; broad pytest deliberately deferred to the locked bundle). Broad pytest NOT run at this slice — non-claim.
 - Test duplication pressure: 12 new tests in a new module. The seeding helpers are IMPORTED from the sibling test module rather than re-declared (precedent: test_dup_ratchet_unestablished_inputs.py), so no clone family was added; check_dup_ratchet.py --summary passed in closeout. One near-duplicate the reviewer flagged (M3) was resolved by giving the first test a distinct claim — that the stderr and JSON channels now agree — rather than by deleting it.
 - Critique: ONE bounded fresh-eye round, typed `bounded-reviewer` (Read/Grep/Glob only), parent-delegated, shared parent worktree. reviewer_boundary_fingerprint.py snapshot .charness/reviewer-boundary/lane-a-round1.json; verify --before result RECORDED: ok true, verdict "clean", no drift. ONE BLOCKER, parent-verified before folding: B1 — the packet's claim "no skill files, so no plugins/ mirror is involved" was FALSE; packaging_lib.py:248-250 mirrors the whole scripts/ tree, so the export would have shipped the un-repaired gate and a ModuleNotFoundError for the new module. Verified by parent (plugins/charness/scripts/changed_line_run_trust.py exists as the mirrored twin of the previous split; the new module did not) and folded by running the sync. Minors folded: M1 (the new module's own docstring claimed an equal pair means "nothing was left out", which is false on --allow-dirty — this goal's exact defect class in the code written to fix it) rewritten and pinned by a new test; M2 (the SCOPE_MISMATCH path's pair depends on the rebind landing before the check, untested) closed by an assertion in the existing mismatch test; M3 folded as above; M5 (`_apply_file_limit` re-export absent from `__all__`, the exact shape a recorded ruff --fix incident once deleted) added. M4 (the computed pair does not restate its population) folded into the docstring rather than the payload. Reviewer confirmed invariants 1-4 hold: all 8 emit sites carry the key, and main() differs from HEAD by exactly the one inserted rebind statement.
-- Off-goal findings:
+- Off-goal findings: none from this lane — the lane's own reviewer findings were all in-scope and folded; #471 came out of Lane B.
 - Lessons carried forward: The packet I handed the reviewer asserted a non-claim I had not checked ("no plugins/ mirror is involved"), and that unchecked assertion was the round's only blocker. A slice packet's non-claims are claims; they need the same premise check as the plan's remedies.
-- Metrics:
+- Metrics: unbacked: the host exposes no per-turn token or wall-clock log to this agent; no efficiency figure is stated for this slice.
 
 ### Slice 2: Lane B — the close boundary reads who reviewed
 
 - Objective: Make the issue-close resolution-critique floor READ the cited artifact's own `Fresh-eye satisfaction:` value, so a record stating that no distinct observer read the resolution is distinguishable from one stating a delegated review — and decide, explicitly, whether it refuses.
 - Why this approach: The floor checked that a `Critique #N: <path>` line exists and binds; it never opened the file. New portable module `issue_critique_observer.py` classifies delegated / blocked / blocked-unsubstantiated / undelegated / absent; `issue_resolution_critique.py` records it on both report paths and ANDs `ok` with the refusals; the close carrier prints the specific reason and now surfaces the critique's advisories on a PASSING close too (previously the one carrier that writes to GitHub was the quietest). REFUSAL DECISION, stated and defended: refuses `undelegated` / `unreadable` / `blocked-unsubstantiated` / `absent`, but ONLY in a repo whose AGENTS.md carries the delegation contract, and NEVER for an artifact predating the typed contract (2026-07-05). Degradation path: `blocked <host-signal>` passes with a REVIEW advisory, so a subagent-blocked host is never stranded — stop condition (3) satisfied.
-- Commits:
+- Commits: `31303275` — Let the close boundary read who actually reviewed the resolution. Critique artifact (both rounds): `charness-artifacts/critique/2026-08-02-lane-b-close-boundary-observer-critique.md`.
 - What changed: skills/public/issue/scripts/issue_critique_observer.py (new); issue_resolution_critique.py; issue_close_comment_floor.py; issue_close.py; issue_markdown_lib.py (`~~~` fences, per-marker close tracking); skills/public/achieve/references/coordination.md (the ordering rule); tests/quality_gates/test_issue_critique_observer.py (new, 24 tests); one assertion in test_issue_close_comment_floor.py; regenerated plugins/charness/ mirror.
 - Alternatives rejected: Rejected: advisory-only. At an irreversible public boundary a record that positively states no distinct observer read the work should not close silently, and the honest escape costs one line. Rejected: refusing everywhere rather than gating on the delegation contract — that holds every consuming repo to a convention it never adopted. Rejected: letting `absent` pass under the contract, which was the FIRST design; round 1 proved the rationale false (the authoring validator runs at the COMMIT boundary and close-with-comment performs no commit), so omission was a live bypass. Rejected: prefix-matching the typed value — ten checked-in artifacts write `satisfied — parent-delegated ...`. Rejected: value-wide negation scanning, which demoted 11 honest post-cutoff artifacts on the words 'no blockers'. NOT fixed, recorded as off-goal: `validate_critique_artifacts.has_repo_delegation_contract` is broken the same way B1 was and is still inert in this repo.
 - Targeted verification: pytest tests/ -k 'issue or critique or closeout' -> 914 passed. pytest of the new module -> 24 passed. ruff clean. CORPUS MEASUREMENT WITH ITS DENOMINATOR, pinned by a test: of 133 citable issue-resolution critiques in charness-artifacts/critique/ (packets and plan critiques excluded — they are never cited as resolution evidence), 0 would be refused. Two earlier versions of the reader would have refused 11 and 6 respectively, both times honest records. Contract gate confirmed LIVE: repo_requires_delegated_observer(Path('.')) is True (it was False before the round-1 repair). Broad pytest NOT run at this slice — non-claim.
@@ -294,7 +304,7 @@ applies.
 - Critique: TWO bounded fresh-eye rounds, typed `bounded-reviewer`, parent-delegated, shared parent worktree; the second round is owed because this slice changes verdict logic on a proof surface. Both windows fingerprinted; both verify results RECORDED as `parent-attributed` / drift [] after declaring the parent's own repair paths. ROUND 1: five blockers, all parent-verified, all folded — B1 the refusal was INERT in this repo (the contract marker substring-matched an unbolded literal against an AGENTS.md that writes `**already delegated**`; measured False), B2 the reader missed the corpus's bold-bullet form so bolding the key was a two-asterisk bypass, B3 `blocked` was a magic word with no signal floor, B4 the `absent`-passes rationale was false, B5 prefix matching would have refused ten honest historical artifacts. ROUND 2 read the REPAIRS and found TWO blockers that round 1 could not have seen, both introduced BY the repairs: B-R1 matching delegated tokens by containment before testing `blocked` turned the valve's most natural phrasing into a completed delegation AND made the new signal floor bypassable in 24 characters — cheaper than the bare word B3 had just closed; B-R2 the section-body fix still refused six checked-in artifacts. Both parent-verified by direct execution before folding. Folding B-R1 introduced a THIRD over-block (value-wide negation markers demoting 'no blockers'), caught by re-measuring the corpus rather than by a third round; narrowed to a negation window and re-measured to 0/133. Round-2 minors folded: non-UTF-8 read now errors='replace' (it would have tracebacked out of the close command), deeper ATX headings, the false parity claim about has_repo_delegation_contract. Accepted-unreviewed per the two-round cap: the section-body empty-value label and the _refusal_reason else-branch.
 - Off-goal findings: scripts/validate_critique_artifacts.has_repo_delegation_contract has the SAME unbolded-literal defect round 1 found in the new module, so repo_has_delegation is False in this repo and whatever it gates (including _check_forbidden_blocker_phrases) is inert. Confirmed by both reviewers. Not fixed here: different gate, different boundary, and repairing it TIGHTENS an authoring gate across 400+ artifacts, which needs its own before/after measurement. To file at closeout.
 - Lessons carried forward: The goal's own worked example was wrong and I checked it before building: the #467 critique records parent-delegated with delivery evidence, and the correction comment says the review 'run after the close'. #467 was an ORDERING failure, not a self-authorship one — so this floor would NOT have prevented it. The hole is real and independently demonstrable; the motivation had to be re-derived from that fact rather than inherited. Second lesson, mechanical: I ran both boundary verifies AFTER making repairs, so each needed parent-path declarations and rests on my testimony rather than a clean no-write window. Verify immediately when the reviewer returns.
-- Metrics:
+- Metrics: unbacked: the host exposes no per-turn token or wall-clock log to this agent; no efficiency figure is stated for this slice.
 
 ## Context Sources
 
@@ -404,6 +414,25 @@ contract. The rule fired at design time and was skipped at design time.
 
 Issues or deferred findings discovered during the run.
 
+- **issue #471 (filed this run, readback-verified)** — `has_repo_delegation_contract`
+  in `scripts/validate_critique_artifacts.py:167-172` is INERT in this repo: it
+  substring-tests an unbolded marker literal against an `AGENTS.md` that writes
+  `**already delegated**`, so `repo_has_delegation` is `False` and
+  `_check_forbidden_blocker_phrases` has never fired here. Same defect the Lane B
+  reviewer found in the new module's copy of the markers. Filed rather than fixed:
+  repairing it makes a dormant authoring gate LIVE across 400+ checked-in critique
+  artifacts, which needs its own before/after measurement — arming on an unmeasured
+  population is the mistake this repo already made once. Both bounded reviewers
+  agreed leaving it was defensible for lane scope.
+- **Public-skill dogfood contract freeze, NOT actioned** — `plan_cautilus_proof.py`
+  emits follow-ups to freeze the current `achieve` and `issue` consumer contracts in
+  `docs/public-skill-dogfood.json`. Recorded here rather than silently satisfied:
+  this slice changed floor CODE and its tests, not the skill prose a dogfood case
+  exercises, so the freeze is a real follow-up and not a precondition this run met.
+- **Not audited, stated as a non-claim** — whether the nine other `*_RULE_DATE`-gated
+  floors in `skills/public/achieve/scripts` render verdicts with unstated
+  denominators. The sibling search names the axis; no sweep was run.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -411,13 +440,56 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md
+Host log probe: skipped: host-log-not-exposed: this Claude Code session exposes no per-turn token/time log to this agent, so any wall-clock or token figure here would be fabricated rather than measured; the goal window is recorded only as the commit range below.
+Disposition review: charness-artifacts/critique/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary-closeout-claims-review.md
+
+Every figure below carries `<value> — <source>` or `<value> — unbacked: <why>`.
+
+- Lanes shipped: 2 of 2 — commits `cf88b750` (Lane A) and `31303275` (Lane B), `git log --oneline`.
+- Bounded fresh-eye rounds: 4 — 1 on Lane A, 2 on Lane B (verdict logic on a proof surface), 1 closeout-claims; each is a checked-in critique artifact under `charness-artifacts/critique/2026-08-02-*`.
+- Blockers found by those rounds: 21 — 6 (Lane A) + 5 (Lane B r1) + 2 (Lane B r2, both INTRODUCED by r1's folds) + 8 blocker-binned findings from the closeout-claims round, enumerated as F-rows in `charness-artifacts/critique/2026-08-02-lane-a-changed-line-denominator-critique.md`, `charness-artifacts/critique/2026-08-02-lane-b-close-boundary-observer-critique.md`, and `charness-artifacts/critique/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary-closeout-claims-review.md`. **This figure was first written as "9" BEFORE the closeout-claims round returned, with terms summing to 8 — a count stated for an observer that had not reported, which is this goal's own defect class committed in its own closeout. That reviewer caught it; it is restated post-hoc and recorded rather than quietly corrected.**
+- Blockers found by a deterministic gate: 0 — unbacked: this is an absence, and no command can enumerate findings that no gate produced. It is an honest read of the run rather than a measurement: every F-row in the three `charness-artifacts/critique/2026-08-02-*` artifacts is attributed to a bounded reviewer, and no gate failure this run named one of them. `run_slice_closeout.py` did block twice (attention-state vocabulary, dup-ratchet), but on neither of the classes those rows describe.
+- Boundary fingerprint windows: 3 snapshotted, 3 `verify --before` results recorded — `.charness/reviewer-boundary/lane-a-round1.json`, `lane-b-round1.json`, `lane-b-round2.json`; Lane A `clean`, both Lane B windows `parent-attributed` after declaring the parent's own repair paths.
+- Critique artifacts the new refusal would block: 0 of 133 — the denominator is every `charness-artifacts/critique/*.md` whose FILENAME contains `resolution` or `issue`, minus `-packet.md`. That is a filename heuristic, not a semantic class: it also admits disposition reviews, code critiques and release critiques. Independently recounted by the closeout-claims reviewer as exactly 133. `test_the_corpus_this_refusal_would_actually_block_is_measured_with_its_denominator` asserts the ZERO and guards the denominator only against collapse (`len(citable) > 100`); it does not pin 133.
+- Three earlier versions of that reader would have blocked 10, 6 and 11 of that same population — the prefix version (10), the first-section-line version (6), and the value-wide negation version (11); every blocked artifact was an honest record. The first two were caught by bounded reviewers, the third only by re-measuring. Each was measured with the same one-command sweep now pinned by `tests/quality_gates/test_issue_critique_observer.py::test_the_corpus_this_refusal_would_actually_block_is_measured_with_its_denominator`, run against the intermediate reader before each fold; the F-rows are F5/F7 in `charness-artifacts/critique/2026-08-02-lane-b-close-boundary-observer-critique.md` and the third is recorded in that artifact's fold note. These numbers are why the contract gate and the date grandfather exist; the earlier "11 and 6" phrasing silently dropped the first of them.
+- Contract gate state before repair: `False`; after: `True` — `repo_requires_delegated_observer(Path('.'))`, run directly against the checked-in `AGENTS.md`.
+- Changed-line gate size: 476 -> 468 of 480 code lines — `check_python_lengths.py --headroom`; it ended smaller than it started because the scope split moved out with the scope report.
+- Focused tests green at closeout: 1043 — `pytest tests/ -k "issue or critique or closeout or changed_line"`.
+- Broad pytest: 6595 passed — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`, run once over the committed bundle at closeout. Recorded precisely because the locked `run_slice_closeout.py --verification-lock` run did NOT select broad pytest: by then the changed set was markdown-only, so the gate had nothing python-shaped to run and would have reported `completed` beside a broad proof that never happened. Both lane closeouts ran with `--skip-broad-pytest`, so this is the run's only broad proof.
+- Token/time efficiency figures: unbacked: the host exposes no usage log to this agent; none are stated.
 
 ## User Verification Instructions
 
+Every command is read-only unless noted.
+
+1. **The two lanes are on `main`.** `git log --oneline -3` shows `cf88b750`
+   (Lane A) and `31303275` (Lane B), plus this closeout commit.
+2. **Lane A's acceptance — the count pair on every verdict path.**
+   `python3 -m pytest tests/quality_gates/test_changed_line_scope_counts.py tests/quality_gates/test_changed_line_mutation_coverage.py -q`
+   → 54 passed. The control test
+   `test_disclosing_the_denominator_does_not_change_the_verdict` is the one that
+   proves the verdict did not change.
+3. **Lane B's acceptance — the three fixtures and the corpus measurement.**
+   `python3 -m pytest tests/quality_gates/test_issue_critique_observer.py -q`
+   → 24 passed.
+   `test_the_corpus_this_refusal_would_actually_block_is_measured_with_its_denominator`
+   is the one that fails if the refusal starts blocking honest artifacts again.
+4. **The refusal is live here, not inert.**
+   `python3 -c "import importlib.util,pathlib; s=importlib.util.spec_from_file_location('o','skills/public/issue/scripts/issue_critique_observer.py'); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); print(m.repo_requires_delegated_observer(pathlib.Path('.')))"`
+   → `True`. Before the Lane B round-1 repair this printed `False`, and every
+   refusal was dead.
+5. **Broad proof.** `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
+   → 6595 passed. Run explicitly rather than inferred from the locked closeout:
+   that gate reported `completed` without selecting broad pytest, because by then
+   the changed set was markdown-only. A `completed` there is not a broad-proof
+   claim, and reading it as one is the class this goal exists to close.
+6. **What was NOT done**, and should not be inferred: no release, tag, version
+   bump, or `cautilus evaluate` run; #469 and #470 are still OPEN and are the
+   operator's call (see `## Operator Decision Queue`).
+
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: `docs/conventions/operating-contract.md` — verify the reviewer boundary fingerprint IMMEDIATELY on the reviewer's return, before any parent write (the rule went into the contract that already owns fingerprint discipline, because the failure is ordering and the tool cannot detect it); applied: `tests/quality_gates/test_issue_critique_observer.py::test_the_corpus_this_refusal_would_actually_block_is_measured_with_its_denominator` — measure a changed refusal against the real checked-in corpus and pin the number with its denominator, the one place this run converted review judgment into a gate and the one that caught the over-block inspection missed; applied: `charness-artifacts/retro/recent-lessons.md` — a slice packet's non-claims are claims and need the same premise check as a plan's remedies, which was the only blocker in Lane A's review; issue #471 (novel: no prior instance in this repo's ledger of a gate keyed on matching repo prose being measured inert) — a guard whose own activation condition is never tested; out-of-scope: whether the other `*_RULE_DATE` floors in `skills/public/achieve/scripts` render verdicts with unstated denominators was NOT audited this run, and is recorded as an explicit non-claim in `## Off-Goal Findings` and carried to the handoff rather than implied clean
+Structural follow-up: applied: tests/quality_gates/test_issue_critique_observer.py — the corpus-measurement test is the transferable guard the retro's waste analysis names (three successive over-blocks, only the third caught by measuring rather than by inspection); the ordering and packet-non-claim lessons land in the operating contract and recent-lessons respectively.

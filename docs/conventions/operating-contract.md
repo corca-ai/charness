@@ -66,7 +66,20 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   bundle, and rerun it only when later edits introduce a new risk boundary.
 - Slice fresh-eye review consumes a bounded packet: intent, changed files and
   owning/generated surfaces, expected invariants, tests/proof, non-claims,
-  out-of-scope lines, and reviewer questions.
+  out-of-scope lines, and reviewer questions. **The packet's NON-CLAIMS are
+  claims** and need the same premise check as a plan's remedies: on 2026-08-02 a
+  packet asserted "no skill files, so no `plugins/` mirror is involved" when the
+  whole `scripts/` tree is mirrored, and that unchecked sentence was the round's
+  only blocker — the export would have shipped the un-repaired gate plus a
+  `ModuleNotFoundError`.
+- **Run `reviewer_boundary_fingerprint.py verify --before` the moment the
+  reviewer returns, BEFORE any parent write.** A verify run after the parent has
+  started folding findings reports `boundary-drift` and can only be resolved by
+  declaring the parent's own paths — which downgrades the attestation from "the
+  tree did not move" to "the parent says it moved these files". Measured
+  2026-08-02: two of three windows were verified late and both needed
+  `--parent-path` declarations. The tool cannot detect this; only the ordering
+  prevents it.
 - **A slice that changes VERDICT LOGIC on a proof surface runs a SECOND bounded
   review reading the repaired surface** — notwithstanding the once-per-slice
   clause above, which this class overrides on the REVIEW count only: the repairs
