@@ -757,6 +757,51 @@ Reopen trigger:
   cover; or the sync command gaining a machine-readable list of what it writes; or S31
   being worked, since moving a declaration out of the audited surface is the same question.
 
+### D49. Should the `## Final Verification` figure-form floor REFUSE, or stay a captured observable?
+
+- Question: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py)
+  reads every figure stated under a goal artifact's `## Final Verification` and reports
+  which ones carry neither a source (`<value> — <path/command/URL>`) nor an explicit
+  `<value> — unbacked: <why>`. It ships **non-blocking**: `apply_figure_form_floor`
+  records the report and never touches `report["ok"]`. Should it be armed, so an
+  unsourced figure refuses the flip to `complete`?
+- Current choice: **Defer — the floor ships, unwired.** The form question gets a real
+  answer (`ok` on the fragment, plus `figure_lines` as its published denominator); the
+  refusal does not.
+- Why now: found while building it on 2026-08-01. Armed with its rule date
+  (`2026-08-01`), it refuses **2 of the 23 in-scope checked-in goal artifacts** —
+  [the sweep-rows-by-class goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md)
+  (12 offending lines) and
+  [the three-unarmed-refusals goal](../charness-artifacts/goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md)
+  (5).
+  Both are FROZEN completed closeouts.
+- Why deferral is right at the time: grandfathering is by `Created:` DATE, and both
+  refused artifacts were created the same day as the floor, so no rule date separates
+  "the goal that built this" from "a goal completed this morning". The only way to green
+  them is to edit finished records to satisfy a rule written after them — the Goodhart
+  move this repo's validators exist to refuse, and a named non-goal of the goal that
+  built the floor. Narrowing the trigger does **not** rescue it: the refused lines are
+  real figures (`82 passed, 1 failed`, `9 of 9 rows dispositioned`, `CLOSED count moves
+  33 → 36`), not parser noise, so any predicate honest enough to catch a bare figure
+  catches theirs too. The lever that would work — a finer grandfather key than a date,
+  e.g. the artifact's first-commit identity — is a contract change for every
+  `goal_artifact_*` floor and deserves its own slice rather than a ride-along.
+- Non-claims: non-blocking means nothing refuses an unsourced figure today; the report is
+  one fragment in a large closeout payload, and this entry does not claim anyone reads
+  it. The floor checks FORM only — whether a cited source actually says the number is not
+  machine-decidable and stays author judgment plus the fresh-eye round. It does not
+  narrow the sibling distinctness floor, which IS armed (it is clean across all 23
+  in-scope artifacts).
+- Impact surfaces: [goal_artifact_figure_form.py](../skills/public/achieve/scripts/goal_artifact_figure_form.py),
+  [goal_artifact_closeout_evidence.py](../skills/public/achieve/scripts/goal_artifact_closeout_evidence.py),
+  [goal-artifact.md](../skills/public/achieve/references/goal-artifact.md),
+  [test_goal_closeout_record_floors.py](../tests/quality_gates/test_goal_closeout_record_floors.py).
+- Reopen trigger: the checked-in corpus ceasing to refuse — pinned by
+  `test_the_armed_figure_floor_would_refuse_frozen_artifacts`, which FAILS when that
+  happens, so the premise is re-measured rather than remembered; or a finer grandfather
+  key landing for the `goal_artifact_*` floor family; or an unsourced figure in a
+  closeout being planned against and turning out wrong.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

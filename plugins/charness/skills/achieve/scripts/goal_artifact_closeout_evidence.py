@@ -235,6 +235,8 @@ _closeout_delegation = _load_sibling_closeout_delegation()
 apply_closeout_delegation = _closeout_delegation.apply_closeout_delegation
 
 _section_placeholders = _load_local_module("goal_artifact_section_placeholders")
+_evidence_distinctness = _load_local_module("goal_artifact_evidence_distinctness")
+_figure_form = _load_local_module("goal_artifact_figure_form")
 _operator_queue = _load_local_module("goal_artifact_operator_queue")
 
 _metric_window = _load_sibling_metric_window()
@@ -367,6 +369,18 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # Final-status placeholder floor: a complete goal cannot carry a section
     # whose first real body line still says it is pending/TODO/TBD.
     _section_placeholders.apply_final_status_placeholder_floor(report, text)
+
+    # Closeout-evidence distinctness: `Retro:` and `Disposition review:` must not
+    # be the same file. Path identity only — authorship is not decidable from a
+    # checked-in file, and a proxy for it would rubber-stamp the defect it was
+    # built for. Own rule date, so prior goals are grandfathered.
+    _evidence_distinctness.apply_evidence_distinctness_floor(report, text)
+
+    # Figure-form floor: a number stated under `## Final Verification` carries a
+    # source or says `unbacked: <why>`. Form only — "is this number backed" is not
+    # machine-decidable, and the honesty judgment stays with the author and the
+    # fresh-eye round.
+    _figure_form.apply_figure_form_floor(report, text)
 
     # Created-gated queue floor: new goals must either render queued
     # operator-only decisions or record an explicit empty-queue reason.

@@ -930,6 +930,19 @@
       ],
       "rationale": "Early-close report evidence is required when the goal records an early-close reason; a skipped report line is converted into an invalid skip so the complete gate blocks instead of silently accepting missing user-facing rationale."
     },
+    "skills/public/achieve/scripts/goal_artifact_evidence_distinctness.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skip",
+        "reason"
+      ],
+      "rationale": "The floor compares `Retro:` and `Disposition review:` PATHS, so an evidence line recorded as `skipped:` (the documented host-blocked-subagent degradation) has no path to compare and is deliberately excluded from the comparison. That exclusion is never a silent clean pass: the emitted fragment carries `ok`, both `retro_path` and `disposition_review_path` (null for the skipped one, so the reader sees WHICH is absent), and an explicit `reason` of `not both bound as evidence files; nothing to compare` -- distinguishing it from `retro and disposition review resolve to different paths`. The skip's own required-evidence floor still owns whether the skip is admissible; refusing it here would double-refuse one defect and punish the documented degradation instead."
+    },
     "skills/public/achieve/scripts/goal_artifact_lib.py": {
       "states": [
         "skipped"

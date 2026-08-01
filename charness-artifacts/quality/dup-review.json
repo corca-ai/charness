@@ -793,6 +793,20 @@
     },
     {
       "class": "intentional",
+      "id": "7a9e7d9fedbac40f",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "The flat `## `-only `_section_body` variant plus surrounding constants, shared by goal_artifact_operator_queue and goal_artifact_blocked_matrix. Deliberately NOT migrated onto goal_artifact_floor_grammar.section_body, whose own docstring records the reason: that helper is level-aware (a `### Subsection` does not end the body) and these two floors keep the flat variant `unless a divergence-exposing proof migrates them`. Collapsing them here would silently change both floors' section boundaries against a recorded decision, with no proof that the level-aware semantics are correct for either. Fingerprinted as new for the same window-shift reason as fe01f30ffdaaac99, not because duplication was added."
+    },
+    {
+      "class": "intentional",
+      "id": "7b448820be023ba2",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "Per-module `sys.path`-insert + `from goal_artifact_floor_grammar import ...` bootstrap, shared by four `goal_artifact_*` floors. It exists so each floor resolves its substrate in BOTH the working tree and the installed plugin export, which is the portability requirement that forbids a shared importer -- the bootstrap is what would have to be imported. Extracting it would need a fifth module every floor must already have found, which is circular. Same class the repo's nose advisory names as `resolve_adapter.py copied for portability`. Surfaced as new because goal_artifact_figure_form.py joined the set."
+    },
+    {
+      "class": "intentional",
       "id": "7b70dbca58c87851",
       "note": "both members untouched this session (markdown-preview support scripts); pure scan rotation, not new duplication introduced here",
       "reviewed_at": "2026-07-27",
@@ -1161,6 +1175,13 @@
       "note": "the gate `run()` convention already accepted as 119fa9bcafbd3048: load the strict quality adapter, return a typed adapter-invalid report, read this gate's config block, dispatch. check_dup_ratchet and migrate_dup_fingerprints dispatch to different modes with different report shapes; a shared runner would take those as data and each script would still spell them out through an indirection",
       "reviewed_at": "2026-07-26",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c28c913feb04ce73",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "The same bootstrap as 7b448820be023ba2, matched pairwise between the two floors added on 2026-08-01 (goal_artifact_figure_form and goal_artifact_evidence_distinctness). Identical rationale: this block is the mechanism by which a module finds shared code, so it cannot itself be shared. The REAL duplication these two modules carried -- the Created-gated grandfathered-report payload -- was extracted into goal_artifact_floor_grammar.grandfathered_report in the same slice rather than classified here, and the operator-queue floor was migrated onto it too."
     },
     {
       "class": "intentional",
@@ -1581,6 +1602,13 @@
       "note": "HITL review-state item dictionaries share field names by contract; extraction would hide the explicit state payload shape more than it reduces duplication",
       "reviewed_at": "2026-06-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fe01f30ffdaaac99",
+      "reviewed_at": "2026-08-01",
+      "surface": "code",
+      "note": "`_load_floor_grammar()` importlib-spec loader, shared by goal_artifact_operator_queue and goal_artifact_blocked_matrix. Same circularity as 7b448820be023ba2 in the spec-based spelling: it is how these two find the substrate module. NEITHER member is new duplication -- both predate this slice; the family fingerprinted as new only because extracting the grandfather payload out of operator_queue shortened that file and shifted the window."
     },
     {
       "class": "intentional",

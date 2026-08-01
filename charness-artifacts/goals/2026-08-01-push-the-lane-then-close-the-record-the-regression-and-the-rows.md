@@ -274,7 +274,10 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- `Routing: achieve — owns the goal lifecycle this run executes; Lane B repairs achieve's own closeout-evidence validator, Lane C used issue for the tracked regression, and Lane E runs quality/critique/retro at closeout.`
+- `Gather: n/a — no external URL, Slack, Notion, Docs, or Drive source entered this run's working context; every input is a checked-in repo artifact or a GitHub API read of this repo's own issues and workflow runs.`
+- `Release: n/a — no version bump and no install-manifest edit; "Not a release" is a stated Non-Goal and quality-core.yml is the only push-triggered workflow, declaring permissions: contents: read.`
+- `Public-skill validation: plan_cautilus_proof.py --detail returned next_action: none. Both touched skills (achieve, quality) are hitl-recommended, and the Lane B change is additive AFTER-phase validator surface — it does not alter achieve's frozen dogfood consumer contract, which pins Before-phase routing, draft-artifact shape, and the inert-until-activation promise. Deterministic tests own this closeout; acked with --ack-cautilus-skill-review. No cautilus evaluate run: a stated non-claim.`
 
 ## Discuss Before Activation
 
@@ -288,6 +291,20 @@ applies.
 - Discuss before activation: Approved by the operator on 2026-08-01, three items. (1) IRREVERSIBLE SIDE EFFECT — one `git push` of the existing local backlog to `main`, plus the remote CI it triggers. Approved explicitly; the approval is scoped to Lane A and to commits that already exist locally, and does NOT extend to a publish, a tag, a version bump, or a second push of work this goal creates. Confirmation follows the north star's P4: a different observer AND a different evidence channel than the push command's own exit code. (2) ISSUE CLOSE — Lane C may close #467, which is irreversible in the sense the north star defines (a reopened issue was already read as done); resolved by requiring the re-based measurement to be quoted in the closing comment, so the close carries its evidence rather than pointing at it. (3) BROAD BUNDLED SCOPE and PROOF-LEVEL NON-CLAIMS — four lanes in one goal, explicitly expected to span more than one session, with each lane closing independently so a stop between lanes is clean; and no release, no tag, no cautilus run, so every non-push verdict stays local. Resolved: accepted and stated rather than implied.
 
 ## Slice Log
+
+### Slice 1: A — push the lane
+
+- Objective: Push the 30-commit local backlog to main, read the quality-core run it triggered, and confirm origin/main through a channel other than the push output.
+- Why this approach: First because the changed-line gate inherits other sessions' blocks until this lands, and it is the goal's only irreversible action.
+- Commits: 9ea738bb (push blockers), f40ff27c (CI fix-forward); pushed as 989a1134..9ea738bb then 9ea738bb..f40ff27c
+- What changed: tests/quality_gates/test_inventory_ci_local_gate_parity.py; charness-artifacts/retro/lesson-selection-index.json; charness-artifacts/retro/recent-lessons.md
+- Alternatives rejected: Reverting the push after the first red CI (rejected by operator: fix forward). Widening DOC_GLOBS or silencing the local warning (out of scope; filed as an issue instead).
+- Targeted verification: git ls-remote origin refs/heads/main = f40ff27c (channel distinct from push output); git log --oneline origin/main..HEAD empty; CI run 30702242447 both jobs success.
+- Test duplication pressure: check_dup_ratchet --summary PASS at each commit boundary; no new duplicate families.
+- Critique: Pending bounded round.
+- Off-goal findings: Issue #469: the local changed-line gate returns PASS over a partial denominator and cleared a push CI then blocked.
+- Lessons carried forward: A local gate that names its own unanalyzed files and still says PASS is not a weaker CI; it is a different denominator. Read the warning, not the verdict.
+- Metrics:
 
 ## Context Sources
 

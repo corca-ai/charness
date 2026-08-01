@@ -24,6 +24,7 @@ _GRAMMAR = _load_floor_grammar()
 _mask_fences = _GRAMMAR.mask_fences
 parse_created_date = _GRAMMAR.parse_created_date
 is_floor_in_scope = _GRAMMAR.is_floor_in_scope
+grandfathered_report = _GRAMMAR.grandfathered_report
 
 RULE_DATE = date(2026, 6, 17)
 SECTION = "Operator Decision Queue"
@@ -67,20 +68,11 @@ def check(text: str) -> dict[str, Any]:
         # a satisfied floor. Grandfathering itself stays — the checked-in corpus is
         # majority pre-rule and refusing it would be a mass false refusal — so
         # `ok` stays True and `applies: False` keeps the floor non-blocking.
-        created = parse_created_date(text)
-        return {
-            "applies": False,
-            "ok": True,
-            "evaluated": False,
-            "created": created.isoformat() if created else None,
-            "rule_date": RULE_DATE.isoformat(),
-            "reason": (
-                "not evaluated: self-declared `Created: "
-                + (created.isoformat() if created else "?")
-                + f"` precedes the floor rule date {RULE_DATE.isoformat()}, so the "
-                "complete-state queue floor is grandfathered off (not satisfied)"
-            ),
-        }
+        # Shared with every sibling Created-gated floor. The payload still
+        # discloses its basis (`evaluated: False`, the observed `created`, and the
+        # `rule_date` that excluded it) — which is the S15 repair, and the reason
+        # this must never collapse to a bare `ok`.
+        return grandfathered_report(text, RULE_DATE, "complete-state queue")
     # Describe-first rejections: every refusal names the target shape to author,
     # not just the violation, so the author fixes once instead of reverse-
     # engineering the parser. The satisfying forms are `none — <reason>` (a

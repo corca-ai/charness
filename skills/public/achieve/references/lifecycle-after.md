@@ -291,6 +291,29 @@ whole body):
   supported; if the agent can record an early-close reason, it can write the
   report.
 
+`Retro:` and `Disposition review:` must resolve to **different paths**. One file
+cannot be both the record and its own independent review, and a closeout that
+cites the same artifact for both is claiming a second observer it did not have.
+This is path identity only: it does **not** check that the two files have
+different authors, because no signal in a checked-in file determines authorship
+and a bounded reviewer never commits — a proxy for that question would
+rubber-stamp the exact defect it was built for. Grandfathered by its own rule
+date like every sibling floor.
+
+Figures stated under `## Final Verification` — a mutation score, a pass/fail
+count, a number of rows — should carry a source or say they have none:
+
+```text
+- Mutation score 94.9% — `cosmic-ray dump reports/mutation/session.sqlite`
+- Roughly 40 affected sessions — unbacked: no host log retains that window
+```
+
+The validator reports which figures satisfy neither form; it does **not** refuse
+on them today (see the deferred decision that owns that call). It checks FORM
+only. Whether a cited source actually says the number is not machine-decidable,
+so that judgment stays with the author and the fresh-eye round — a validator
+that pretended to decide it would ship as a Goodhart proxy.
+
 The `## Auto-Retro` blank check (rung 1a) and the `Disposition review:`
 requirement (rung 1b) fire only for goals **`Created:` on or after the rule
 landing date (inclusive)**. A goal shaped before the rule existed had no chance

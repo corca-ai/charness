@@ -97,6 +97,40 @@ def is_floor_in_scope(created: date | None, rule_date: date) -> bool:
     return created is None or created >= rule_date
 
 
+def grandfathered_report(text: str, rule_date: date, concept: str) -> dict:
+    """The out-of-scope payload every Created-gated floor returns identically.
+
+    Grandfathering must never read as a satisfied floor, so the payload discloses
+    its basis rather than reporting a bare ``ok``: ``evaluated: False`` plus the
+    observed ``created`` date and the ``rule_date`` that excluded it. ``ok`` stays
+    ``True`` because the floor is non-blocking out of scope, and ``applies``
+    ``False`` is what says the check never ran.
+
+    Extracted here rather than cloned again: the floors that share this shape are
+    the reason this substrate module exists, and a fourth verbatim copy is the
+    duplication the ratchet is right to refuse.
+    """
+    created = parse_created_date(text)
+    return {
+        "applies": False,
+        "ok": True,
+        "evaluated": False,
+        "created": created.isoformat() if created else None,
+        "rule_date": rule_date.isoformat(),
+        # `self-declared` is load-bearing, not decoration: the scope verdict comes
+        # from a line the artifact's own author wrote, with no corroborating
+        # channel, and a reason that hid that basis would read as an established
+        # fact. Carried by the shared helper so every floor keeps the disclosure
+        # instead of one floor having it and the rest quietly not.
+        "reason": (
+            "not evaluated: self-declared `Created: "
+            + (created.isoformat() if created else "?")
+            + f"` precedes the {concept} rule date {rule_date.isoformat()}, so the "
+            "floor is grandfathered off (not satisfied)"
+        ),
+    }
+
+
 def section_span(masked: str, heading: str) -> tuple[int, int] | None:
     """Return ``(body_start, body_end)`` offsets for the named section's body in
     ``masked`` (already fence-masked), from just after the heading line to the
