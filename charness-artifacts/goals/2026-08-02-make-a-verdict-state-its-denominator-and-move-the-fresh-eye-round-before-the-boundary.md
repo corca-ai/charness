@@ -456,6 +456,9 @@ Every figure below carries `<value> — <source>` or `<value> — unbacked: <why
 - Contract gate state before repair: `False`; after: `True` — `repo_requires_delegated_observer(Path('.'))`, run directly against the checked-in `AGENTS.md`.
 - Changed-line gate size: 476 -> 468 of 480 code lines — `check_python_lengths.py --headroom`; it ended smaller than it started because the scope split moved out with the scope report.
 - Focused tests green at closeout: 1043 — `pytest tests/ -k "issue or critique or closeout or changed_line"`.
+- Push to `main`: `5839df60..24bf8c6b` — confirmed per P4 by a DIFFERENT observer on a DIFFERENT channel than the push exit code: `gh api repos/corca-ai/charness/commits/main --jq .sha` returns `24bf8c6b81d716355cca20ac7b466cb284b2f3cc`.
+- Remote CI: `Quality Core` on `24bf8c6b` — `completed/success`, read from `gh run list` (GitHub's verdict, not the local gate's).
+- Local pre-push gate: 82 passed, 0 failed — the `git push` hook run. It REFUSED the first attempt on nine uncovered changed lines in this goal's own two new modules, all degrade branches; commit `24bf8c6b` walked them and changed-line coverage went to `clean`, 7 of 7 pool files analyzed.
 - Broad pytest: 6595 passed — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`, run once over the committed bundle at closeout. Recorded precisely because the locked `run_slice_closeout.py --verification-lock` run did NOT select broad pytest: by then the changed set was markdown-only, so the gate had nothing python-shaped to run and would have reported `completed` beside a broad proof that never happened. Both lane closeouts ran with `--skip-broad-pytest`, so this is the run's only broad proof.
 - Token/time efficiency figures: unbacked: the host exposes no usage log to this agent; none are stated.
 
