@@ -2,12 +2,11 @@
 
 ## Workflow Trigger
 
-- **An `achieve` goal is ACTIVE with a clean worktree.** Resume
+- **The goal's four slices, both closeout reviews, and the bundle proof are all
+  DONE and committed; only `retro` and the status flip remain.** Finish
   [the goal](../charness-artifacts/goals/2026-08-01-close-the-sweeps-remaining-high-rows-by-class.md),
-  do not start new work. Slices 1-3 are committed with both review rounds each.
-  The next move is the **MIDPOINT goal-claims review**, which the operating
-  contract owes at 3+ slices and which has not run. No open irreversible
-  boundary; nothing pushed.
+  then run `charness:handoff` chunked routing over the live backlog. No open
+  irreversible boundary; eight commits unpushed (`7efa0240..HEAD`).
 
 ## Continuation Capability
 
@@ -25,31 +24,31 @@ git cannot date. No push, no CI dispatch, no cautilus run this session.
 
 ## Current State
 
-- **7 of the 9 rows dispositioned. Only 2 CLOSED.** S28 and S13 CLOSED; S24,
-  S35, S9, S10, S12 NARROWED with their residuals written into the sweep rows.
-  **S12's ROW is corrected** — two of its three stated triggers never
-  reproduced.
-- **Round 2 caught defects created by round 1's own repairs in BOTH slices.**
-  Nine reviewers so far. Treat one round as insufficient here, not as a formality.
-- **Nine dup-ratchet hard-blocks across two slices**, all at the closeout
-  aggregate.
+- **9 of 9 rows dispositioned; only 3 CLOSED** (S28, S13, S23). Six NARROWED
+  with residuals on the rows. **S12's and S23's ROWS are corrected** — S12's
+  stated triggers mostly never reproduced, and S23's `surface:line` was wrong.
+- **Round 2 caught defects created by round 1's own repairs in EVERY slice
+  where it ran.** 15 reviewer spawns, 8 rounds. One round is insufficient here.
+- **The armed changed-line lane is clean** after naming 33 uncovered lines; the
+  serial suite is 6515 passed. Ten dup-ratchet hard-blocks across three slices.
 
 ## Next Session
 
-1. **The MIDPOINT goal-claims review**, before slice 4. Bounded, fresh-eye, and
-   it reads the goal's per-row claims against the sweep and the commits — a
-   different question from "is this repair correct".
-2. **Slice 4**: S23 and S2 — repaired, review round 1 folded. The REFUTE
-   prediction for S23 was FALSIFIED by the reproduction: the guard is real and
-   predates the sweep, but it runs before the fold that flips the verdict.
-3. **Then closeout**: serial full pytest, [run-quality.sh](../scripts/run-quality.sh),
-   the armed changed-line lane over this goal's own range with
-   `--refuse-unestablished`, the disposition review, then `retro` — in that
-   order.
+1. **Finish the goal**: run `retro`, disposition its improvements, flip the
+   artifact to `complete`. Everything before that is done and committed.
+2. **Then `charness:handoff` chunked routing** over the live backlog. The
+   sweep's remaining high rows are S15, S31, S36, S37, S111; the hunt's
+   E-cluster (E1/E3/E6/E7 + E2's residual) is untouched and is the most
+   expensive lane.
+3. **Three unarmed refusals wait on an operator call**:
+   [D46](./deferred-decisions.md) adapter-YAML, [D47](./deferred-decisions.md)
+   inventory value markers, [D48](./deferred-decisions.md) release surfaces.
+   Each records what arming would cost.
 4. **Off-goal, found not fixed:** `goal_artifact_floor_grammar.parse_created_date`
-   is consumed by FIVE floors with no corroboration — S15's family, and a
-   one-helper repair since goal artifacts carry a filename date that
-   `critique_enforcement_scope.observed_date` already reads.
+   is consumed by FIVE achieve floors with no corroboration — S15's family, and
+   a one-helper repair since goal artifacts carry a filename date that
+   `critique_enforcement_scope.observed_date` already reads. Two more in the
+   goal's `## Off-Goal Findings`.
 
 ## Discuss
 
@@ -58,8 +57,12 @@ git cannot date. No push, no CI dispatch, no cautilus run this session.
   caught it. Whether goal stop conditions become machine-read is an operator
   call.
 - **Run the dup-ratchet at the first edit to a gated file, not at the closeout
-  aggregate.** Four late hard-blocks this session, four last session; the
+  aggregate.** Ten late hard-blocks this session against four last session; the
   recorded lesson has now failed to prevent itself twice.
+- **A test that asserts a source substring is not a test.** Round 2 caught this
+  goal pinning its own repair with a string search that would survive the
+  repair's deletion — in the slice whose thesis is that a verdict must not
+  outlive its check.
 
 ## References
 

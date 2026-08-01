@@ -55,7 +55,11 @@ under the two-round cap.
   file byte-identical, while a genuinely absent baseline still bootstraps. It is a
   confirmation gate, not a refusal — and `--confirm-baseline-delta` still authorizes all
   three of its facts (empty scan, unreadable baseline, large delta) with one flag; only
-  the success message now records which one it covered.
+  the success message now records which one it covered. **Control:** `write_baseline` over
+  a truncated baseline with `--baseline-delta-threshold 5`, no `--confirm-baseline-delta`,
+  and 50 live families; pre-repair verdict `{ok: true, status: "baseline-written",
+  code_family_count: 50}` with the damaged baseline overwritten. **Pinned by**
+  `tests/quality_gates/test_absent_input_is_not_a_matching_input.py::test_s28_a_truncated_baseline_is_refused_not_overwritten`.
 - **S35 — NARROWED, not closed.** Absence is legible (`absent_surfaces`, and `<absent>` /
   `<unreadable>` / `<no-version>` distinguished), the packaging manifest's own absence is
   drift instead of `drift: []`, an unreadable `plugin.json` no longer crashes the check,
@@ -142,6 +146,13 @@ before repairing.
   behavior absorbed silently. And the measured zero is **not** a safety argument:
   `check-markdown.sh` treats this checker as ADVISORY and exits with markdownlint's status
   alone, so nothing here can block a commit — the zero means the new class adds no noise.
+  **Non-claim on that zero:** unlike S24's and S10's numbers it is a HAND measurement with
+  no checked-in script and no recorded probe, so it is not re-runnable; and the second
+  in-repo consumer of this checker, `check_doc_authoring_preflight`, applies no
+  `EXCLUDE_PARTS`, so the zero bounds the CLI's scope only. **Control:** a stray backtick
+  before a genuinely wrapped cross-line span; pre-repair verdict
+  `find_wrapped_inline_code` returned `[]`, i.e. exit 0 over a real wrap. **Pinned by**
+  `tests/quality_gates/test_a_refused_verdict_states_its_refusal.py::test_s2_a_stray_backtick_no_longer_masks_a_real_cross_line_span`.
 
 **What S11's floor does NOT prove, recorded because two review rounds kept finding the
 gap wider than the previous claim:** it proves the section names an unnegated English

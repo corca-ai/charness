@@ -14,8 +14,10 @@ runs the activation command.
 - Current slice: none — closeout is next.
 - Next action: bundle proof (serial full pytest, `./scripts/run-quality.sh`,
   the armed changed-line lane over this goal's own range), then the closeout
-  disposition review, then `retro` — in that order. **Slice 4's round 2 was
-  never run and is an open gap**, not a discharge.
+  disposition review, then `retro` — in that order. Slice 4's round 2 RAN at
+  the operator's request and found four blockers; its repairs ship
+  accepted-unreviewed under the two-round cap
+  ([addendum](../critique/2026-08-01-slice-4-round-2-addendum.md)).
 - **Corrected 2026-08-01 by the midpoint review:** an earlier version of this
   frame claimed "a floor up to 20 costs 0 new refusals" and put the negation
   sentence at 31 against a corpus p5 of 19. The recorded probe refutes all
@@ -350,7 +352,7 @@ Open at shaping time:
   run widened to the shared parse/report channel and its consumers; the per-slice
   `What changed` lists above are authoritative, and the midpoint review confirmed no
   Non-Goal was crossed.
-- What changed: scripts/adapter_lib.py, scripts/simple_skill_adapter_lib.py, scripts/measure_adapter_yaml_uninterpreted.py (new), skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/scripts/dup_ratchet_rebaseline.py, skills/public/release/scripts/{current_release,resolve_adapter}.py, skills/public/release/{references/adapter-contract.md,adapter.example.yaml}, .agents/release-adapter.yaml, docs/deferred-decisions.md (D46), docs/public-skill-dogfood.json, charness-artifacts/{audit/2026-07-28-evidence-surface-triage-sweep.md,probe/2026-08-01-adapter-yaml-uninterpreted.json,quality/dup-review.json,critique/2026-08-01-slice-1-absent-input-batch.md}, tests/quality_gates/test_absent_input_is_not_a_matching_input.py (new), plus the plugins/ mirrors.
+- What changed: scripts/adapter_lib.py, scripts/simple_skill_adapter_lib.py, scripts/measure_adapter_yaml_uninterpreted.py (new), skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/scripts/dup_ratchet_rebaseline.py, skills/public/release/scripts/{current_release,resolve_adapter}.py, skills/public/release/{references/adapter-contract.md,adapter.example.yaml}, .agents/release-adapter.yaml, docs/deferred-decisions.md (D46, D48), docs/public-skill-dogfood.json, charness-artifacts/{audit/2026-07-28-evidence-surface-triage-sweep.md,probe/2026-08-01-adapter-yaml-uninterpreted.json,quality/dup-review.json,critique/2026-08-01-slice-1-absent-input-batch.md}, tests/quality_gates/test_absent_input_is_not_a_matching_input.py (new), plus the plugins/ mirrors.
 - Alternatives rejected: Arming the S24 refusal (valid: false) was written, then WITHDRAWN: the goal's own stop condition routes a repair on a consumer-authored file to legible-plus-deferred, and refusing an adapter turns a consumer's whole issue lane red for a typo. A residual-length floor for engagement was NOT used here. Re-baselining the dup-ratchet was refused in favour of extracting three shared helpers and classifying two irreducible families.
 - Targeted verification: Reproduction controls recorded before repair for all three rows. 38 new tests; 13 of the first cut failed against HEAD in a detached worktree. 160 targeted regression tests green. Parser behavior proven identical to HEAD across the 74 files git ls-files lists, by loading both module versions side by side. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review: completed. Measurement recorded at charness-artifacts/probe/2026-08-01-adapter-yaml-uninterpreted.json with provenance.
 - Test duplication pressure: Predicted and hit: the dup-ratchet hard-blocked four times as the repairs rotated fingerprints — exactly the closeout-boundary treadmill the 2026-08-01 retro named. Resolved by extracting _line_shape, _is_ignorable, _mapping_value, uninterpreted_warnings, parse_failure_error and one unified adapter payload builder; two remaining families classified intentional with reasoning, none re-baselined.
@@ -381,13 +383,14 @@ Open at shaping time:
 
 - Objective: Reproduce S23 and S2, then repair: a verdict that gets refused after its sentence was rendered must drop the sentence, and a checker whose span pairing is shifted must not report clean.
 - Why this approach: Two singletons with no siblings and no cross-dependency; last because neither unlocks nor is unlocked by anything.
-- Commits: pending — committed with this slice
-- What changed: skills/public/issue/scripts/issue_verify_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py, scripts/check_markdown_inline_code.py, tests/quality_gates/test_a_refused_verdict_states_its_refusal.py (new), the sweep rows, plus mirrors.
+- Commits: `d8318b07` (the slice), `cb40eb14` (round-2 repairs), `72ff5628` and
+  `b7a52970` (covering the lines the armed changed-line gate named).
+- What changed: skills/public/issue/scripts/issue_verify_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py, scripts/check_markdown_inline_code.py, scripts/check_doc_authoring_preflight.py (round 2), skills/public/issue/references/closeout-discipline.md (round 2), tests/quality_gates/test_a_refused_verdict_states_its_refusal.py (new), the sweep rows, charness-artifacts/critique/2026-08-01-slice-4-round-2-addendum.md, plus mirrors.
 - Alternatives rejected: Closing S23 as REFUTED on the strength of the plan's prediction — falsified by the reproduction. Building a full CommonMark backtick stack for S2 so the reported line names the real span — declined as more machinery than the advisory check warrants, and recorded as the row's residual instead.
 - Targeted verification: Reproduction controls before repair for both rows. 11 new tests; 4 of the first cut failed against HEAD in a detached worktree. Measured before adding S2's class: 0 files with an odd single-backtick count in the checker's own scope, 3 repo-wide all under the already-excluded charness-artifacts. run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review: completed.
 - Test duplication pressure: No new dup-ratchet family this slice — the first in three. The two repairs touch unrelated files and neither adds a boilerplate shape.
-- Critique: charness-artifacts/critique/2026-08-01-slice-4-a-refused-verdict-states-its-refusal.md — 2 reviewers, ONE round. Round 2 was NOT run and that is a recorded gap, not a discharge: round 1 produced repairs, and the two earlier slices each had round 2 catch defects round 1's repairs created.
-- Off-goal findings: none beyond what slices 1-3 already recorded.
+- Critique: charness-artifacts/critique/2026-08-01-slice-4-a-refused-verdict-states-its-refusal.md (round 1, 2 reviewers) plus charness-artifacts/critique/2026-08-01-slice-4-round-2-addendum.md (round 2, 1 reviewer, run at operator request). Round 2 found four blockers, the sharpest being that THIS SLICE'S OWN TEST asserted a source substring — it would have stayed green through deletion of the call it pinned, in a file whose thesis is that a verdict must not outlive its check. Also: the back-compat shim handed the new finding class to a consumer that labelled it with the old name; the checker's summary line re-asserted the classification it had just split; and the misdirection was never confined to the new class. Round-3 not run; these repairs ship accepted-unreviewed under the cap. ORDERING NOTE: the producer step ran before round 2, inverting the plan's rule — harmless only because it ran with --skip-broad-pytest and produced no mutation-coverage fingerprint to invalidate. Non-claim, producer step: same substitution as slices 1 and 2. Non-claim, fingerprint channel: the round-2 window opened on a CLEAN committed tree, which is the one condition under which `verify` would have worked, and it still was not run.
+- Off-goal findings: none new; see `## Off-Goal Findings` for the rolled-up list, which round 2 did not add to.
 - Lessons carried forward: The plan's REFUTE prediction for S23 was wrong, and a round-1 reviewer reached the same wrong conclusion from the same evidence. Only the reproduction settled it. Round 1 also found the S23 class open one level up in the release carrier — the fix's own class, in a file the row never named.
 - Metrics:
 
@@ -524,7 +527,93 @@ channel. The slice reviews will use the tool correctly.
 
 ## Off-Goal Findings
 
+- **`goal_artifact_floor_grammar.parse_created_date` is consumed by FIVE achieve floors
+  with no corroboration at all** — `goal_artifact_operator_queue` (which sweep row S15
+  partially covers), `goal_artifact_blocked_matrix`, `goal_artifact_coordination_floors`,
+  `goal_artifact_phase_routing`, `goal_artifact_disposition_grammar`. Same class as S9,
+  and a one-helper repair, since goal artifacts carry a filename date that this repo's
+  existing `critique_enforcement_scope.observed_date` (later-of-body-and-filename)
+  already reads. OPEN, unrepaired, found by the slice-2 round-1 review. Carried to the
+  handoff.
+- **The handoff chunker's issue-source path reads `adapter["data"]` without checking
+  `valid` or `warnings`** (`chunked_routing_issue_source.py`), so a typo'd `default_org`
+  is never surfaced there. Conditional in effect — `resolve_target` only reaches
+  `default_org` when the target argument is empty AND the git remote yields nothing AND
+  `default_repo` is unset. OPEN, recorded in [D46](../../docs/deferred-decisions.md) as
+  a pre-existing defect that entry records rather than repairs.
+- **The shared residual counter is ASCII-only.** `_bound_residual_chars` counts
+  `[0-9A-Za-z]`, so a genuine observation written in Korean or with accented Latin scores
+  0 and is refused as "declining to engage". Acceptable inside this repo, a false RED for
+  the mirrored plugin, and it touches the S3 evidence floor as well as S10's engagement
+  floor. Raised by the slice-2 round-2 review and DECLINED in-slice rather than changed,
+  because changing the shared helper would move the S3 floor too. OPEN.
+- **`validate_inventory_consumption.py` crashed with a `relative_to` traceback at three
+  call sites** for any path outside the repo root — a false RED. Found while reproducing
+  S9 in slice 2; REPAIRED in the same slice, and the guard was then extracted to
+  `scripts/repo_path_display.py` when the dup gate found `control_plane_lib` had grown
+  the same three lines independently. CLOSED.
+
 ## Final Verification
+
+**Outcome: 9 of 9 rows dispositioned. N = 3 CLOSED** (S28, S13, S23); six NARROWED with
+their residuals written onto the rows (S24, S35, S9, S10, S12, S2). The sweep header's
+CLOSED count moves 33 → 36; the 33 is itself a correction of a header that asserted 29
+while its own table carried 33, and the four rows the enumeration had omitted are named.
+**S12's ROW is corrected, not just closed** — two of its three stated triggers never
+reproduced.
+
+Bundle proof, all run at `b7a52970` on a clean tree:
+
+- **Serial full pytest: 6515 passed** in a single run (9m46s). Never concurrent — sweep
+  row S112 recorded 17 false failures and 21 false errors from two simultaneous
+  invocations of the same tree.
+- **`./scripts/run-quality.sh`: 82 passed, 1 failed.** The failure was
+  `check-changed-line-mutation-coverage`, resolved below.
+- **`prepush_focused_changed_line_coverage.py --base-sha 7efa0240 --refuse-unestablished`:
+  CLEAN** — "every mapped changed pool file's changed lines are covered", with
+  `unmapped_changed_pool_files: []`. It took three runs to get there and the flag is what
+  made them mean anything: the first run warned that three mutation-pool files had
+  uncommitted worktree changes excluded from `base..HEAD`, so a clean verdict would have
+  been a FALSE GREEN for them. After committing, it named **33 uncovered changed lines by
+  exact path:line** across six files; covering those left 3; covering those left 0. One of
+  the 33 was `adapter_lib`'s `over-indented line` drop site, which had no test at all —
+  meaning the instrumentation that authorized the S24 arming decision was itself
+  half-unproven.
+
+Review record: **15 bounded reviewer spawns across 8 rounds** — one plan critique (3),
+four slice rounds 1 (3 + 2 + 2), three slice rounds 2 (2 + 2 + 1), one midpoint
+goal-claims round (1), one closeout disposition round (1). Round 2 found defects created
+by round 1's own repairs in **every slice where it ran**.
+
+**Non-claims.** No push, no CI dispatch, no live `cautilus evaluate`. The per-slice
+`--verification-lock --produce-mutation-coverage` producer step was substituted with
+`--skip-broad-pytest` in all four slices, so no mutation-coverage fingerprint was
+produced; the broad pytest proof is the serial run above rather than a locked one. The
+`reviewer_boundary_fingerprint.py` `verify` was not run for any of the ten review windows
+— snapshots opened them, `--parent-path` was never used because the parent edits in-tree
+between rounds, and integrity rests on `git status --porcelain`. Slice 4's round 2 ran
+only after the operator asked, and its producer step ran BEFORE it, inverting the plan's
+ordering rule — harmless only because that step produced no fingerprint to invalidate.
+Nothing here claims anything about consumer-repo behavior beyond what a local run
+establishes.
+
+## User Verification Instructions
+
+1. `git log --oneline 7efa0240..HEAD` — eight commits, each naming what it closed and
+   what it did not.
+2. Read the three 2026-08-01 batch paragraphs in
+   [the sweep](../audit/2026-07-28-evidence-surface-triage-sweep.md). Every row that is
+   NARROWED says what stays open; that is the load-bearing part, not the CLOSED count.
+3. `python3 -m pytest -q tests/quality_gates/test_absent_input_is_not_a_matching_input.py
+   tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py
+   tests/quality_gates/test_a_refused_verdict_states_its_refusal.py` — the three class
+   test files, 106 tests.
+4. `python3 scripts/measure_adapter_yaml_uninterpreted.py --repo-root .` and
+   `python3 scripts/measure_inventory_consumption_floor.py --repo-root .` — the two
+   arming measurements, re-runnable. S2's zero is NOT re-runnable and the row says so.
+5. Decide [D46](../../docs/deferred-decisions.md), [D47](../../docs/deferred-decisions.md)
+   and [D48](../../docs/deferred-decisions.md) when you want the three unarmed refusals
+   armed; each records what arming would cost.
 
 ## User Verification Instructions
 
