@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-01",
-  "source_artifact_count": 412,
-  "candidate_count": 1670,
+  "source_artifact_count": 413,
+  "candidate_count": 1674,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -122,6 +122,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "One session under the standing operator direction (bug fixes, friction/rework, test/code speed), taking the handoff's item 2 — the clause the previous session recorded as untouched."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:4b250149d889",
+      "kind": "current_focus",
+      "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D).",
+      "normalized_key": "four lane goal push the accumulated backlog to main and read the ci it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D)."
         }
       ]
     },
@@ -330,32 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:675d5f4a6814",
-      "kind": "next_improvement",
-      "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact.",
-      "normalized_key": "applied charness artifacts critique 2026 08 01 goal midpoint claims review md the midpoint",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md",
-          "date": "2026-08-01",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "`applied: charness-artifacts/critique/2026-08-01-goal-midpoint-claims-review.md` — the midpoint round had no checked-in record until the disposition round found that gap, in a goal whose acceptance criteria exist because the prior goal had none. Every review round in this goal now has an artifact."
         }
       ]
     }
@@ -472,6 +472,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:4b250149d889",
+      "kind": "current_focus",
+      "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D).",
+      "normalized_key": "four lane goal push the accumulated backlog to main and read the ci it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+          "date": "2026-08-01",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D)."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:8a11d03d2fe9",
       "kind": "current_focus",
       "lesson": "Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md).",
@@ -676,6 +702,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a self-authored constraint in a goal artifact is not a check. This session violated its own stop condition within two hours of writing it, and a reviewer, not the author, caught it. Either the constraint becomes machine-read or the slice's first move is to read its own goal's Boundaries against the planned diff."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c7e2afd1674b",
+      "kind": "next_improvement",
+      "lesson": "a shared assertion for Created-gated floors that a corpus measurement's denominator contains dated artifacts, so \"0 refused\" cannot be produced by grandfathering. Filed as #470.",
+      "normalized_key": "a shared assertion for created gated floors that a corpus measurement s denominator contains",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a shared assertion for Created-gated floors that a corpus measurement's denominator contains dated artifacts, so \"0 refused\" cannot be produced by grandfathering. Filed as #470."
         }
       ]
     },
@@ -910,6 +962,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**run the dup-ratchet at the first edit to a gated file.** Third retro naming it, ten blocks this run against four last. It is no longer a suggestion; either wire it into `run_slice_closeout.py --predict-commit` or stop recording it."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:95b5f5989f32",
+      "kind": "next_improvement",
+      "lesson": "run the resolution critique and its fresh-eye round BEFORE the issue close, not before the artifact validator. Filed as #470.",
+      "normalized_key": "run the resolution critique and its fresh eye round before the issue close not",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the resolution critique and its fresh-eye round BEFORE the issue close, not before the artifact validator. Filed as #470."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5427202301f8",
+      "kind": "next_improvement",
+      "lesson": "the transferable rule is **\"a clean measurement of my own work needs its denominator stated before it is believed\"**. Disposition is `applied:` — it is written into this run's Auto-Retro and into the goal's lessons, not filed to #470, which carries the two STRUCTURAL items only.",
+      "normalized_key": "the transferable rule is a clean measurement of my own work needs its denominator",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+      "latest_source_date": "2026-08-01",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
+          "date": "2026-08-01",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the transferable rule is **\"a clean measurement of my own work needs its denominator stated before it is believed\"**. Disposition is `applied:` — it is written into this run's Auto-Retro and into the goal's lessons, not filed to #470, which carries the two STRUCTURAL items only."
         }
       ]
     },

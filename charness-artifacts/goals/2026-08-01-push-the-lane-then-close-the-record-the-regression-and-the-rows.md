@@ -1,6 +1,6 @@
 # Achieve Goal: Push the lane, then close the closeout record, the mutation regression, and the sweep's remaining high rows
 
-Status: active
+Status: complete
 Created: 2026-08-01
 Activation: `/goal @charness-artifacts/goals/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md`
 
@@ -274,10 +274,16 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: achieve — owns the goal lifecycle this run executes; Lane B repairs achieve's own closeout-evidence validator, Lane C used issue for the tracked regression, and Lane E runs quality/critique/retro at closeout.`
-- `Gather: n/a — no external URL, Slack, Notion, Docs, or Drive source entered this run's working context; every input is a checked-in repo artifact or a GitHub API read of this repo's own issues and workflow runs.`
-- `Release: n/a — no version bump and no install-manifest edit; "Not a release" is a stated Non-Goal and quality-core.yml is the only push-triggered workflow, declaring permissions: contents: read.`
-- `Public-skill validation: plan_cautilus_proof.py --detail returned next_action: none. Both touched skills (achieve, quality) are hitl-recommended, and the Lane B change is additive AFTER-phase validator surface — it does not alter achieve's frozen dogfood consumer contract, which pins Before-phase routing, draft-artifact shape, and the inert-until-activation promise. Deterministic tests own this closeout; acked with --ack-cautilus-skill-review. No cautilus evaluate run: a stated non-claim.`
+- Routing: achieve — owns the goal lifecycle this run executes and the closeout floors Lane B repairs.
+- Routing: impl — selected from installed metadata for the code-bearing slices (Lane B's two floor modules and the regression tests in Lanes A and C); its `prove` stop gate is what `run_slice_closeout.py` runs at every commit boundary here.
+- Routing: quality — selected for the validation posture: the dup-ratchet classifications, the changed-line gate reading, and the public-skill validation call that returned `next_action: none`.
+- Routing: issue — selected for the tracked-regression work: #467's closeout draft validation and close, plus filing #469 and #470.
+- Routing: critique — selected for the four bounded review rounds and the two checked-in critique artifacts.
+- Routing: retro — selected for the closeout efficiency review and its dispositions.
+- Gather: n/a — no external URL, Slack, Notion, Docs, or Drive source entered this run's working context; every input is a checked-in repo artifact or a GitHub API read of this repo's own issues and workflow runs.
+- Release: n/a — no version bump and no install-manifest edit anywhere in this run; "Not a release" is a stated Non-Goal, and quality-core.yml is the only push-triggered workflow, declaring permissions contents read.
+- Issue closeout: #467 — carrier manual-fallback (operator-directed-manual-close), proved by `issue_tool.py validate-closeout-draft --classification bug --carrier manual-fallback` returning `status: draft_verified` before the close, and `gh issue view 467` returning `state: CLOSED, stateReason: COMPLETED` after it. Also FILED this run (creations, not closeouts): #469 and #470.
+- Public-skill validation: `plan_cautilus_proof.py --detail` returned `next_action: none`. Both touched skills (achieve, quality) are hitl-recommended, and the Lane B change is additive AFTER-phase validator surface that does not alter achieve's frozen dogfood consumer contract. Deterministic tests own this closeout; acked with `--ack-cautilus-skill-review`. No `cautilus evaluate` run — a stated non-claim.
 
 ## Discuss Before Activation
 
@@ -304,6 +310,48 @@ applies.
 - Critique: Pending bounded round.
 - Off-goal findings: Issue #469: the local changed-line gate returns PASS over a partial denominator and cleared a push CI then blocked.
 - Lessons carried forward: A local gate that names its own unanalyzed files and still says PASS is not a weaker CI; it is a different denominator. Read the warning, not the verdict.
+- Metrics:
+
+### Slice 2: B — the closeout evidence record
+
+- Objective: Repair the machinery every later closeout uses: a path-distinctness floor, a figure-form observable, and populated Commits: per slice.
+- Why this approach: The Engelbart move: repair the record first so lanes C and D are held to the repaired standard.
+- Commits: 836d5034 (first cut), d8800ae7 (round-1 repairs), 815d3eba (round-2 repairs)
+- What changed: NEW goal_artifact_evidence_distinctness.py and goal_artifact_figure_form.py; goal_artifact_floor_grammar.py (+grandfathered_report); operator_queue and blocked_matrix migrated onto it; check_goal_artifact.py + describe_goal_closeout_shape.py wiring; lifecycle-after.md; D49; test_goal_closeout_record_floors.py; dup-review.json; attention-state-visibility.json; plugins mirrors
+- Alternatives rejected: Refusing a same-AUTHOR disposition review (cut in plan critique: unimplementable). Arming the figure floor (tried in round 1, refuted in round 2 by its denominator). A finer grandfather key than a date (deferred: contract change across the floor family).
+- Targeted verification: 27 tests in the new file; 248 across the achieve families; distinctness over all 147 goal artifacts (23 in scope, 0 refused, of which only 2 dated-and-compared); figure floor over 127 DATED artifacts (strict 90, relaxed 41).
+- Test duplication pressure: check_dup_ratchet hard-blocked five times. The real duplication (the grandfathered payload) was EXTRACTED to the shared substrate and two inline copies migrated; the rest is module-bootstrap boilerplate and one recorded deliberate divergence, classified with reasons rather than shaved.
+- Critique: TWO bounded rounds, both changed the outcome. Round 1: a BLOCKER (a refusal naming a floor that had passed) plus a refutation of the deferral. Round 2: round 1's arming rested on a zero-denominator green, plus three silent passes from the soft-wrap join. Round-2 repairs accepted-unreviewed per the two-round cap.
+- Off-goal findings: None new in this lane.
+- Lessons carried forward: A fix for a verdict-logic defect carries the class it fixes. Any measurement over a grandfathered corpus must state its denominator in DATED artifacts.
+- Metrics:
+
+### Slice 3: C — the #467 mutants
+
+- Objective: Give each of the six survived mutants a per-mutant verdict, then settle #467 on those verdicts.
+- Why this approach: Verified in the plan critique not to depend on Lane A: check_chunk_contract.py was untouched since 989a1134 and mutation-tests.yml has no push trigger.
+- Commits: f3961290 (mutant verdicts), fe2785f9 (the correction and the real fix)
+- What changed: tests/quality_gates/test_hitl_chunk_contract.py; NEW tests/quality_gates/test_skill_gate_report_render.py; charness-artifacts/critique/2026-08-01-467-mutation-regression-resolution-critique.md
+- Alternatives rejected: Killing the L65 ensure_ascii mutant by making check_chunk_contract echo chunk text (rejected: writing a defect to satisfy a mutant). Reopening #467 after the correction (rejected: the signal is now settled by direct line coverage, and reopening would churn the cron dedupe marker without improving the evidence).
+- Targeted verification: Scoped cosmic-ray reproduced exactly the six; re-run after the new test went killed 65 to 66, survived 9 to 8. scripts/skill_gate_report_render.py measured 0 percent before and 100 percent after.
+- Test duplication pressure: Two tests added to an existing file plus one new file; dup ratchet clean on this lane.
+- Critique: One bounded round, run AFTER the close — the ordering error this run's retro names as its top waste. It caught the closing comment citing a CI run whose base was the second push, which pulled the real thread: the file had left the changed set, so blocking empty never meant the line was covered.
+- Off-goal findings: #469.
+- Lessons carried forward: Reading a gate's verdict is not reading its denominator. Run the resolution critique BEFORE the irreversible close.
+- Metrics:
+
+### Slice 4: D — the sweep rows
+
+- Objective: Disposition S15, S31, S36, S37, S111 on their own rows, with D45's named-remedy premise read before any S31 work.
+- Why this approach: Last and deliberately: volume work whose value depends on the record being trustworthy, which Lane B repaired.
+- Commits: fe2785f9
+- What changed: charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md (5 status cells, 3 in-cell correction markers, a dispositions section); docs/deferred-decisions.md (D45 premise answered)
+- Alternatives rejected: Arming D45's --require-evaluated-scope (out of scope: would redden the parity gate immediately). Repairing S36 with a runtime disclosure (named, not made: publish_release.py is a release surface and release work is a Non-Goal). Widening DOC_GLOBS for S111 (rejected: artifact links rot by design).
+- Targeted verification: S37 CLOSED via git show 3cc0b27d (the claimed shape present at the sweep date) plus a function-level execution proving the arm now runs. S36 reproduced by loading a vendored copy with no bootstrap ancestor: returns silently. D45's premise answered by reading read_gate_policy and evaluate_workflow signatures — no adapter parameter exists.
+- Test duplication pressure: n/a — this lane changed records, not code.
+- Critique: Covered by the closeout-claims review, which found two status cells asserting what their own narratives refuted; in-cell correction markers added.
+- Off-goal findings: None.
+- Lessons carried forward: A LEAD that will not reproduce may be FIXED rather than REFUTED, and those are different facts about whether the gates work. One git show separates them.
 - Metrics:
 
 ## Context Sources
@@ -430,22 +478,73 @@ push approval is honest.
 
 ## Off-Goal Findings
 
-Issues or deferred findings discovered during the run.
-
+- **#469** — the local changed-line mutation gate returns PASS while printing `analyzed only 49 of 51 changed mutation-pool file(s)`, and it cleared a push that CI then blocked on one of the two unanalyzed files. Filed on an explicit operator instruction to file rather than fix; `run-quality.sh` is deliberately out of this goal's scope.
+- **#470** — zero-denominator greens recurred three times in this one run, plus the two structural follow-ups: Created-gated floors can be armed on a corpus of undatable artifacts, and the issue resolution critique runs after the irreversible close.
+- **D49** — the figure-form floor's arming call, deferred with its measurement stated in dated artifacts.
+- **D45** — its named remedy's premise answered (a build, not a rewire); the deferral itself is unchanged.
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Every figure below carries its source in the form Lane B built
+(`<value> — <source>` or `<value> — unbacked: <why>`), because a closeout that
+asserts numbers with no way to check them is the defect this goal existed to
+repair. The floor that reads this section is advisory (D49), so this is the
+author holding the record to a standard the validator does not enforce.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+**Lane A — the push and its CI**
 
+- 33 commits pushed to `main` — `git log --oneline 989a1134..f40ff27c | wc -l`
+- 31 in the first push and 2 in the second — `git log --oneline 989a1134..9ea738bb | wc -l` and `git log --oneline 9ea738bb..f40ff27c | wc -l`
+- 0 commits left unpushed when Lane A closed — `git log --oneline origin/main..HEAD | wc -l`
+- `origin/main` is `f40ff27c5a7245caf8537534652004347888c578` — `git ls-remote origin refs/heads/main`, a channel distinct from the push output
+- First run RED, 1 of 2 jobs failed — <https://github.com/corca-ai/charness/actions/runs/30701478239>
+- Second run GREEN, 2 of 2 jobs success — <https://github.com/corca-ai/charness/actions/runs/30702242447>
+- Deliberately NOT cited as evidence: the post-push local changed-line lane, whose analyzed range is empty by construction
+
+**Lane B — the closeout evidence record**
+
+- 27 tests in the new floor file — `python3 -m pytest -q tests/quality_gates/test_goal_closeout_record_floors.py`
+- 248 tests across the achieve goal-artifact families — `python3 -m pytest -q tests/quality_gates/test_goal_*.py tests/quality_gates/test_describe_goal_closeout_shape.py`
+- Distinctness floor: 23 in scope of 147, 0 refused — `goal_artifact_evidence_distinctness.check` over `charness-artifacts/goals/*.md`
+- Of those 23: 20 undatable, 3 dated, 2 actually compared — `goal_artifact_evidence_distinctness.check` plus `goal_artifact_floor_grammar.parse_created_date` over the same corpus; stated because a bounded reviewer caught that "0 refused" is misleading without it
+- Figure floor, strict form: 90 refusals of 127 dated artifacts — `goal_artifact_figure_form.check` with the rule date lowered, over dated artifacts only
+- Figure floor, shipped relaxed form: 41 refusals of 127 — same command against the shipped module; an earlier draft said 44, measured before the heading-grouping repair, and that stale value was grepped out of `skills/` and `plugins/`
+- 2 bounded review rounds, both of which changed the outcome — `.charness/reviewer-boundary/lane-b-round1.json` and `lane-b-round2.json`
+
+**Lane C — #467**
+
+- 6 survived mutants reproduced, exactly matching the issue — `cosmic-ray exec /tmp/mut467/scoped.toml` then `cosmic-ray dump`
+- 1 killed and 5 refuted in writing — the per-mutant table in <https://github.com/corca-ai/charness/issues/467> and `charness-artifacts/critique/2026-08-01-467-mutation-regression-resolution-critique.md`
+- killed 65 to 66 and survived 9 to 8 after the new test — a second scoped `cosmic-ray` session over the same config
+- `scripts/skill_gate_report_render.py` 0 percent before and 100 percent after — `python3 -m coverage report --include "*skill_gate_report_render.py" -m`
+- 0 tests referenced that module before this run — `grep -rn skill_gate_report_render tests/`
+
+**Lane D — the sweep rows**
+
+- 5 rows dispositioned, 1 CLOSED and 3 NARROWED and 1 OPEN — [the sweep](../audit/2026-07-28-evidence-surface-triage-sweep.md) `## Dispositions 2026-08-01`
+- S37's claimed shape present at the sweep date — `git show 3cc0b27d:skills/public/release/scripts/publish_release_narrative_gate.py`
+- 0 adapter parameters on the two functions D45's remedy must reach — read of `read_gate_policy` and `evaluate_workflow` in `ci_local_gate_parity_lib.py`
+
+**Bundle gate**
+
+- `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review` completed at every slice boundary — the command's own `Closeout status: completed`
+- 6551 tests passed and 0 failed in the broad standing suite — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
+- The final `--verification-lock` bundle run did NOT schedule broad pytest — unbacked: its changed set was markdown and artifacts only, so the standing-suite surface did not match; the broad suite was therefore run explicitly, on the line above, rather than claimed from that bundle
+- Public-skill validation `next_action: none` — `python3 scripts/plan_cautilus_proof.py --repo-root . --detail`
+- No `cautilus evaluate` run — unbacked: a stated non-claim of this goal; no live evaluator proof was requested or performed
+
+**Non-claims**
+
+- No release, no version bump, no tag, no publish. `quality-core.yml` is the only push-triggered workflow and declares `permissions: contents: read`.
+- 4 bounded reviewer spawns, all `parent-delegated` with findings delivered inline. **No `verify --before` result is recorded for any window**, and 2 of the 4 reviews (Lane C's and the closeout-claims round) have no persisted fingerprint window at all — a shortfall against this goal's own High-Confidence Checks, recorded rather than implied satisfied.
+- Lane B's two rounds produced no separate critique artifact — unbacked: their findings survive only as the parent's summary in this artifact's Slice Log, so 3 of the 4 spawns are attested by the party being reviewed rather than by a checked-in reviewer record.
+- D46, D47, and D48 were not revisited and their refusals remain unarmed.
+
+Retro: charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md
+Host log probe: skipped: host-log-not-exposed: this Claude Code session exposes no token, timing, or tool-call log file a probe could read, so no goal-window metrics block was rendered and none is claimed anywhere in this artifact
+Disposition review: charness-artifacts/critique/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows-closeout-claims-review.md
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #470 (recurs: the review-ordering item — the resolution critique must run BEFORE the irreversible issue close, and this run closed #467 then discovered the closure was wrong); issue #470 (recurs: the capability item — a shared assertion that a Created-gated floor's corpus measurement states a non-empty DATED denominator, so "0 refused" cannot be produced by grandfathering); applied: the memory rule "a clean measurement of my own work needs its denominator stated before it is believed", written into `test_the_corpus_measurement_the_non_arming_rests_on` (which fails both when nothing refuses and when the dated denominator collapses) and into the corrected denominator statements in this artifact's `## Final Verification` and the retro's Evidence Summary
+Structural follow-up: issue #470 (recurs: the zero-denominator class recurred three times in this single run — a floor armed on an undatable corpus, an issue closed on a file that had left the changed set, and a local gate passing over a partial denominator — and #468 already records the sibling pattern of a deferred decision's remedy stored as unverified prose, so this is a repeat rather than a novel finding)

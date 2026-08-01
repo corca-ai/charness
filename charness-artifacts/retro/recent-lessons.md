@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`; sources: 2)
-- Goal under review: [2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md](../goals/2026-08-01-get-the-operator-call-on-the-three-unarmed-refusals-d46-adap.md). (source: `charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md`)
+- Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D). (source: `charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md`)
 
 ## Repeat Traps
 
@@ -32,7 +32,7 @@
 - `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
 - `charness-artifacts/retro/2026-07-31-session-retro.md`
+- `charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md`
 - `charness-artifacts/retro/2026-08-01-session-retro.md`
 - `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md`
 - `charness-artifacts/retro/2026-08-01-sweep-high-rows-goal-retro.md`
-- `charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md`

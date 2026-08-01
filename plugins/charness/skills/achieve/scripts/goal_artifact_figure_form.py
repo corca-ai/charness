@@ -268,7 +268,7 @@ def apply_figure_form_floor(report: dict[str, Any], text: str) -> None:
     because the grandfather predicate fails closed — so ZERO dated artifacts were
     measured and the green was over an empty denominator. Measured properly,
     against all 127 dated checked-in artifacts: the strict form refuses 90, and
-    the relaxed form this module now implements still refuses 44. A floor that
+    the relaxed form this module now implements still refuses 41. A floor that
     would refuse a third of every closeout this repo has ever written is not
     describing a defect; it is describing a house style it disagrees with, and
     arming it would produce mass false refusals or mass artifact edits.
