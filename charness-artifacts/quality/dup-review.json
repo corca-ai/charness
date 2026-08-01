@@ -1490,6 +1490,27 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "449b33b02d20b1fc",
+      "note": "the loop skeletons of adapter_lib's two parsers, _parse_list_items and _parse_block: read a line's shape, skip the ignorable ones, break on a dedent, dispatch on what is left. Everything genuinely shared was extracted while closing sweep row S24 — _line_shape, _is_ignorable, and _mapping_value (the three-way `key:` value dispatch) — and this is what did not shrink. What remains differs in the only way that matters: one accumulates a list and BREAKS on a non-item at its own indent, the other accumulates a mapping and RECORDS that same line as uninterpreted. Collapsing them would mean one loop branching on which node type it is parsing, which is the shape this file already avoids. Verified behavior-identical to HEAD's parser across the 74 files `git ls-files '*.yaml' '*.yml'` lists, by loading both module versions side by side from a detached HEAD worktree and diffing `load_yaml` output — a wider scope than the 44-file probe, and a different check from the in-module identity assertion, which only proves the sink is observation-only. Fingerprint rotated 9c85183d79665013 -> 449b33b02d20b1fc when the round-2 repairs edited both loops; same two members, same reasoning.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "dcf7602d59906e68",
+      "note": "the repo's standard sibling-module import bootstrap — `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by the sibling imports — shared by six untouched scripts (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality) that a seventh, measure_adapter_yaml_uninterpreted.py, joined on 2026-08-01. It is not extractable by construction: it IS the path setup that must run before any sibling import, so a helper module would have to be imported by the very mechanism it provides. Pre-existing family; the new file changed its membership, not its nature.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a52782e0aaebcff2",
+      "note": "a two-line list comprehension that formats one string per input item, shared by four untouched call sites (prompt_mutant_files_lib twice, run_skill_efficiency_ab, tool_recommendation_lib) that adapter_lib.uninterpreted_warnings joined on 2026-08-01 while closing sweep row S24. The shape is `[f\"...\" for x in xs]` and nothing but the format string differs; extracting it would mean a helper that takes a format string, which is what f-strings already are. Pre-existing family, new membership.",
+      "reviewed_at": "2026-08-01",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -79,6 +79,27 @@ def write_baseline(repo_root: Path, config: dict, args) -> dict:
     # --confirm-baseline-delta. This is the maintenance command refusing a silent
     # overwrite; it never touches the gate evaluate path, so it cannot false-block a push.
     existing_ids = _ratchet_baseline.load_gate_baseline_ids(_scan.load_json(out))
+    # An unreadable baseline and an absent one both arrive here as None, and the delta
+    # guard below is keyed on `existing_ids is not None` — so a truncated, malformed, or
+    # legacy-shaped baseline used to take the first-time-bootstrap path and get silently
+    # overwritten, no matter how large the delta (sweep row S28). The file's existence is
+    # the fact that separates the two, and the sibling `scoped_rebaseline` below already
+    # refuses this same state; this is that refusal, made consistent. A deliberate rewrite
+    # of a legacy or damaged baseline is legitimate, so it is a confirmation gate rather
+    # than a hard refusal.
+    existing_unreadable = existing_ids is None and out.is_file()
+    if existing_unreadable and not args.confirm_baseline_delta:
+        return {
+            "ok": False, "inert": False, "status": "existing-baseline-unreadable",
+            "code_family_count": len(ids), "gate_baseline_path": baseline_rel,
+            "messages": [
+                f"refusing to overwrite {baseline_rel}: the file exists but no accepted family set "
+                "could be read from it (truncated, malformed, or a legacy shape). Overwriting it "
+                "would discard a reviewed baseline through the first-time-bootstrap path, which "
+                "skips the large-delta guard entirely. Inspect the file, then re-run with "
+                "--confirm-baseline-delta if the rewrite is deliberate.",
+            ],
+        }
     delta_note = None
     if existing_ids is not None:
         added, removed = ids - existing_ids, existing_ids - ids
@@ -106,6 +127,15 @@ def write_baseline(repo_root: Path, config: dict, args) -> dict:
     message = f"wrote gate baseline ({len(ids)} code family fingerprints) -> {baseline_rel}"
     if delta_note:
         message += f" [{delta_note}]"
+    if existing_unreadable:
+        # One flag now attests three different facts (empty scan, unreadable existing
+        # baseline, large delta). Recording WHICH one it covered keeps a confirmation of
+        # a reviewed large delta from silently also covering the discard of a damaged
+        # baseline the operator never inspected.
+        message += (
+            f" [--confirm-baseline-delta also discarded an UNREADABLE existing baseline at "
+            f"{baseline_rel}; its previous accepted set was not recoverable and is gone]"
+        )
     messages = [message]
     if existing_ids is not None:  # overwrite, not first-time bootstrap
         messages.append(
@@ -143,9 +173,15 @@ def restamp_tool_version(repo_root: Path, config: dict, args) -> dict:
     raw_baseline = _scan.load_json(out)
     existing_members = _ratchet_baseline.load_gate_baseline_members(raw_baseline)
     if existing_members is None:
+        remedy = (
+            "run --write-baseline once to seed one before re-stamping."
+            if not out.is_file() else
+            "the file EXISTS but no accepted set could be read from it, so --write-baseline "
+            "will refuse it too; inspect it, then re-run --write-baseline "
+            "--confirm-baseline-delta if the rewrite is deliberate."
+        )
         return {"ok": False, "inert": False, "status": "restamp-failed",
-                "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
-                             "once to seed one before re-stamping."]}
+                "messages": [f"no readable gate baseline at {baseline_rel}; {remedy}"]}
     baseline_version = _ratchet_baseline.load_gate_baseline_tool_version(raw_baseline)
     added = sorted(set(live_members) - set(existing_members))
     removed = sorted(set(existing_members) - set(live_members))
@@ -191,9 +227,15 @@ def scoped_rebaseline(repo_root: Path, config: dict, args) -> dict:
     out = repo_root / baseline_rel
     existing_members = _ratchet_baseline.load_gate_baseline_members(_scan.load_json(out))
     if existing_members is None:
+        remedy = (
+            "run --write-baseline once to seed one before using scoped accepts."
+            if not out.is_file() else
+            "the file EXISTS but no accepted set could be read from it, so --write-baseline "
+            "will refuse it too; inspect it, then re-run --write-baseline "
+            "--confirm-baseline-delta if the rewrite is deliberate."
+        )
         return {"ok": False, "inert": False, "status": "scoped-rebaseline-failed",
-                "messages": [f"no readable gate baseline at {baseline_rel}; run --write-baseline "
-                             "once to seed one before using scoped accepts."]}
+                "messages": [f"no readable gate baseline at {baseline_rel}; {remedy}"]}
     existing_ids = set(existing_members)
     live_ids = set(live_members)
     accept_families = list(args.accept_family or [])

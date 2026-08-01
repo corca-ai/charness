@@ -505,6 +505,52 @@ Reopen trigger:
 - Impact surfaces: [run-quality.sh](../scripts/run-quality.sh), [inventory_ci_local_gate_parity.py](../skills/public/quality/scripts/inventory_ci_local_gate_parity.py), [ci_local_gate_parity_lib.py](../skills/public/quality/scripts/ci_local_gate_parity_lib.py), [maintainer-local-enforcement.md](../skills/public/quality/references/maintainer-local-enforcement.md), `.github/workflows/*.yml`.
 - Reopen trigger: a CI/local parity escape that this repo's own green did not catch; or S31 being worked, since moving the exemption to the adapter changes what "evaluated" can mean; or a third charness workflow landing.
 
+### D46. Should an uninterpreted adapter-YAML line REFUSE the adapter, or only warn?
+
+- Question: [adapter_lib](../scripts/adapter_lib.py) now reports the lines its mini
+  parser could not interpret, and both [the issue
+  adapter](../skills/public/issue/scripts/resolve_adapter.py) and the shared
+  [load_adapter_contract](../scripts/simple_skill_adapter_lib.py) surface them. They
+  surface as **warnings**. Should they be errors, so `valid: false` and the skill's CLI
+  exits 1?
+- Current choice: **Defer — warn, do not refuse.** The report ships; the refusal does
+  not.
+- Why now: found while closing sweep row S24 on 2026-08-01. The first cut of that slice
+  DID arm the refusal, and the round-1 bounded review caught that it violates the goal's
+  own stop condition: an adapter YAML is consumer-authored, so refusing it turns a
+  consumer's entire issue lane red — [issue_tool.py](../skills/public/issue/scripts/issue_tool.py)
+  and [issue_create.py](../skills/public/issue/scripts/issue_create.py) both exit 1 on
+  `valid: false` — for a missing colon.
+- Why deferral is right at the time: the measurement that would authorize arming does not
+  and cannot exist. [measure_adapter_yaml_uninterpreted.py](../scripts/measure_adapter_yaml_uninterpreted.py)
+  reports 0 uninterpreted lines over the 44 checked-in YAML files under this repo's
+  top level plus `.agents/`, `skills/`, and `integrations/`
+  ([recorded run](../charness-artifacts/probe/2026-08-01-adapter-yaml-uninterpreted.json)),
+  but the population a refusal would judge is consumer-authored `.agents/*-adapter.yaml`,
+  which this repo has never seen and cannot enumerate. A 0 here proves arming costs this
+  repo nothing and proves nothing about the population that matters. Round 1 also showed
+  the refusal firing on legal YAML the mini parser merely does not support — a document
+  marker was refused before that was fixed, and a 4-space indent step still records
+  `over-indented line` — so "malformed" and "unsupported-by-us" are not yet separable.
+- Non-claims: the warning is legibility, not teeth. Nothing reads it today: the handoff
+  chunker's issue-source path
+  ([chunked_routing_issue_source.py](../skills/public/handoff/scripts/chunked_routing_issue_source.py))
+  consumes `adapter["data"]` without checking `valid` OR `warnings`, so a typo'd
+  `default_org` is never surfaced there. The consequence is conditional, not certain:
+  `issue_runtime.resolve_target` only reaches `default_org` when the target argument is
+  empty AND the git remote yields nothing AND `default_repo` is unset, so in a repo with
+  an `origin` remote the typo has no effect on that path. A pre-existing defect this entry
+  records rather than repairs.
+- Impact surfaces: [adapter_lib.py](../scripts/adapter_lib.py),
+  [simple_skill_adapter_lib.py](../scripts/simple_skill_adapter_lib.py),
+  [issue resolve_adapter.py](../skills/public/issue/scripts/resolve_adapter.py), and the
+  nine skills sharing the contract loader (release, hotl, hitl, debug, retro, impl,
+  gather, handoff, setup).
+- Reopen trigger: a consumer repo reporting a silently-defaulted adapter field; or a rule
+  that separates "attempted assignment with a missing colon" from "legal YAML this parser
+  does not support", since that is what makes the refusal safe; or the mini parser gaining
+  real YAML coverage.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

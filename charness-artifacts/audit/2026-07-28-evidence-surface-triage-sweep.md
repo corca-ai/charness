@@ -4,10 +4,13 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**29 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
-S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then S4 and S11 on
-2026-07-31, then S3 on 2026-08-01, then S1/S26/S30/S32 on 2026-08-01 — reproduced in the
-parent, fixed, and regression-tested.
+**34 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then
+S3/S4/S5/S7/S11/S21/S22 on 2026-07-31, then S1/S26/S30/S32 on 2026-08-01, then S28 on
+2026-08-01 — reproduced in the parent, fixed, and regression-tested. **Count corrected
+2026-08-01:** the header asserted 29 while the table carried 33 rows whose status began
+CLOSED — the 2026-07-31 group listed only S4 and S11 where the table shows seven. The
+count is now derived from the table, not maintained beside it.
 **What the S1/S26/S30/S32 batch does NOT close.** All four were one class — a denominator
 that reached zero rendering a PASS — and all four were reproduced in the parent with a
 control before repair. **S31 is NARROWED, not closed**: this repo's own two workflows both
@@ -21,6 +24,46 @@ reusable-workflow call, and a comment that had declared that drop correct; round
 found the S1 repair keying on the input length, so an all-exempt or all-unmeasured
 population kept the same green one bucket over. Both are repaired; the round-2 repairs are
 accepted-unreviewed under the two-round cap.
+**What the 2026-08-01 S24/S28/S35 batch does and does NOT close.** All three were one
+class — an absent or unreadable input rendering the same verdict as a matching one — and
+all three were reproduced in the parent with a control before repair. Two review rounds
+ran, three reviewers then two; **the round that read the REPAIRS found five blockers the
+first round could not see, three of them created BY round 1's repairs**: a document-marker
+skip that merged a second YAML document's items into the first document's list (changing
+what `load_yaml` returns), an `absent_surfaces` field still built from the `None` test it
+was introduced to replace, and a typed-refusal guard added to one loader while the loader
+serving nine skills kept dying on a traceback. Round-2 repairs ship **accepted-unreviewed**
+under the two-round cap.
+
+- **S24 — NARROWED, not closed.** `adapter_lib` now REPORTS the lines its parser could not
+  interpret (four drop sites, `load_yaml_report`), the issue adapter and the shared
+  nine-skill `load_adapter_contract` surface them, and an unsupported construct returns a
+  typed `valid: false` instead of a traceback. The row's reproduced verdict is
+  **unchanged**: `valid: true`, `errors: []`, exit 0, `default_org` still silently serving
+  the inferred `corca-ai`. Arming the refusal is [D46](../../docs/deferred-decisions.md) —
+  the file is consumer-authored, so refusing it turns a consumer's issue lane red for a
+  typo, and the measurement that would authorize arming
+  ([0 over 44 files](../probe/2026-08-01-adapter-yaml-uninterpreted.json)) covers this
+  repo's corpus, not the consumer-authored population the refusal would judge. Nothing
+  consumes the new warning yet. A legal 4-space indent step still records
+  `over-indented line`, so "malformed" and "unsupported-by-this-parser" are not separated.
+- **S28 — CLOSED.** A present-but-unreadable baseline no longer takes the first-time
+  bootstrap path: `write_baseline` returns `existing-baseline-unreadable` and leaves the
+  file byte-identical, while a genuinely absent baseline still bootstraps. It is a
+  confirmation gate, not a refusal — and `--confirm-baseline-delta` still authorizes all
+  three of its facts (empty scan, unreadable baseline, large delta) with one flag; only
+  the success message now records which one it covered.
+- **S35 — NARROWED, not closed.** Absence is legible (`absent_surfaces`, and `<absent>` /
+  `<unreadable>` / `<no-version>` distinguished), the packaging manifest's own absence is
+  drift instead of `drift: []`, an unreadable `plugin.json` no longer crashes the check,
+  and a DECLARED absent surface becomes drift. But drift-on-absence is armed by a
+  self-authored `required_release_surfaces` that defaults to empty, so for any consumer the
+  row's verdict is unchanged — **the repair is an instance of the class this sweep
+  catalogues**, the same self-declaration shape S31 records as OPEN. Its one defense is
+  that the declaration lives in the adapter rather than in the audited file, which is the
+  channel D45 names as S31's correct repair. Deleting those four lines disarms it with
+  nothing corroborating them.
+
 **What S11's floor does NOT prove, recorded because two review rounds kept finding the
 gap wider than the previous claim:** it proves the section names an unnegated English
 review word or cites a path-shaped token — never that a reviewer ran. `executed —
@@ -229,18 +272,18 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S21 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/hitl/scripts/check_chunk_contract.py:44` | printf '' \| python3 skills/public/hitl/scripts/check_chunk_contract.py (also '   \n\n'). The underlying scripts/hitl_review_artifact_lib.py:169 short-circuits `if not asks_for_dec | {"status": "pass", "errors": []}, exit 0. An EMPTY chunk is certified as contract-satisfying. Worse in the normal case: any chunk that asks a human to decide without a '?' or the e |
 | S22 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/issue/scripts/audit_brief.py:80` | A transcript whose fix-unit records mutation and close events but no `classification` event: {"events":[{"kind":"mutation","issue":143,"tool":"Edit"},{"kind":"close","issue":143}]} | Ran it: `audit ok: 1 fix-unit(s) checked` exit 0. The brief-before-mutation contract is voided by omitting the one event that arms it — omission is rewarded over declaration. Same  |
 | S23 | high | SUBAGENT-CONFIRMED | d | `skills/public/issue/scripts/issue_verify_closeout.py:293` | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
-| S24 | high | SUBAGENT-CONFIRMED | d | `skills/public/issue/scripts/resolve_adapter.py:226` | /tmp/t2/.agents/issue-adapter.yaml containing `default_org corca-typo` (missing colon), or a top-level YAML list instead of a mapping. Ran: python3 skills/public/issue/scripts/reso | "valid": true, "errors": [], "warnings": [] and exit 0. The malformed line is silently dropped and default_org silently falls back to the hardcoded "corca-ai". The `Adapter file di |
+| S24 | high | NARROWED (2026-08-01, not closed) | d | `skills/public/issue/scripts/resolve_adapter.py:226` | /tmp/t2/.agents/issue-adapter.yaml containing `default_org corca-typo` (missing colon), or a top-level YAML list instead of a mapping. Ran: python3 skills/public/issue/scripts/reso | "valid": true, "errors": [], "warnings": [] and exit 0. The malformed line is silently dropped and default_org silently falls back to the hardcoded "corca-ai". The `Adapter file di |
 | S25 | high | CLOSED (parent-reproduced 2026-07-30) | d | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:145` | run_gate(Path('.'), {'eligible_globs':['**/*.py'],'coverage_json':'cov.json'}, base_sha='deadbeef...'(unknown sha), head_sha='HEAD', ...). _git_lines swallows the non-zero git exit | {'ok': True, 'reason': 'no eligible changed files in this range'} — the classify callback (which would have returned blocking rows) is never invoked. A git failure is reported as ' |
 | S26 | high | CLOSED (parent-reproduced 2026-08-01) | c | `skills/public/quality/scripts/ci_local_gate_parity_lib.py:244` | A workflow job whose steps are all `uses:` (e.g. `- uses: actions/checkout@v4` then `- uses: ./.github/actions/run-everything`). Guard: `if not steps or all(not isinstance(step.get | render_report → {'workflows_scanned': 1, 'parity_issues': [], 'jobs_without_canonical_gate': []}. The backstop that should have flagged 'this job never invokes the canonical local  |
 | S27 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/draft_dup_ratchet_triage.py:68` | A hard-blocked clone family whose inventory record carries no `sample_locations` (e.g. a nose payload where locations were truncated or the family came from a --summary view). _mem | ('intentional', 'portable per-skill adapter/bootstrap copies are expected') and draft_dup_review_entry class "intentional" — for a 9-member, 400-shared-line family. Applying the dr |
-| S28 | high | SUBAGENT-CONFIRMED | c | `skills/public/quality/scripts/dup_ratchet_rebaseline.py:63` | `--write-baseline` when `charness-artifacts/quality/dup-ratchet-baseline.json` EXISTS but is truncated/malformed/legacy-shaped. `load_gate_baseline_ids` returns None on unreadable- | Ran it with a truncated baseline, `--baseline-delta-threshold 5`, no `--confirm-baseline-delta`, 50 live families: returns `{ok: true, status: 'baseline-written', code_family_count |
+| S28 | high | CLOSED (parent-reproduced 2026-08-01) | c | `skills/public/quality/scripts/dup_ratchet_rebaseline.py:63` | `--write-baseline` when `charness-artifacts/quality/dup-ratchet-baseline.json` EXISTS but is truncated/malformed/legacy-shaped. `load_gate_baseline_ids` returns None on unreadable- | Ran it with a truncated baseline, `--baseline-delta-threshold 5`, no `--confirm-baseline-delta`, 50 live families: returns `{ok: true, status: 'baseline-written', code_family_count |
 | S29 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/dup_ratchet_scan.py:232` | A zero-byte / empty scan inventory (exactly what a crashed `nose query`, a truncated redirect, or a nonzero-exit `inventory_doc_duplicates` subprocess produces; run_doc_inventory a | status "clean", ok true, block false, degraded_reasons [], exit 0. families_from_text returns [] (not None) for empty text and doc_drift_signatures returns (set(), None) with NO de |
 | S30 | high | CLOSED (parent-reproduced 2026-08-01) | f | `skills/public/quality/scripts/inventory_ci_local_gate_parity.py:114` | A workflow file named `.github/workflows/ci.yaml` (GitHub Actions accepts .yaml) containing `npm run verify` followed by a required `npm run secret-scan` step. Run with --require-e | `1 workflow(s) scanned; 0 parity-issue step(s)`, exit 0. DEFAULT_WORKFLOW_GLOB is `.github/workflows/*.yml`, so every `.yaml` workflow is invisible to the parity gate — the denomin |
 | S31 | high | OPEN (narrowed 2026-08-01, NOT closed) | h | `skills/public/quality/scripts/inventory_ci_local_gate_parity.py:160` | Same workflow as above, saved as `.yml`, with `# charness:gate-policy local-gate-subset-mirror` prepended as the first line of the file being judged. | `0 parity-issue step(s)`, exit 0, plus an informational `exempt ...: gate-policy=local-gate-subset-mirror`. A self-declared comment inside the audited workflow exempts that whole w |
 | S32 | high | CLOSED (parent-reproduced 2026-08-01) | f | `skills/public/quality/scripts/inventory_ubiquitous_language.py:204` | A `domain_language_contract` whose `surface_globs` has a typo (`doc/**/*.md` instead of `docs/**/*.md`) while a real doc contains a deprecated alias three times. `_iter_files` matc | Ran it: `Ubiquitous-language inventory: ok (1 terms).` exit 0, with no signal that zero files were scanned. The denominator silently narrowed to zero and the verdict is PASS. Same  |
 | S33 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/migrate_dup_fingerprints.py:128` | A live nose scan that returns zero families (scope_paths matching nothing after a rename, or an empty scan with reason falsy). Verified against the pure lib: collision_report([]) → | build_report returns {'ok': True, 'status': 'planned'} and main() exits 0. Under --execute, apply_report then writes an EMPTY gate baseline and an EMPTY nose baseline, silently dro |
 | S34 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/nose_report_lib.py:344` | `extract_report({"schema_version": 4, "clone_families": [{"id": "a"}], "summary": {"families": 7}})` — a future/renamed nose JSON key. | `([], '', {}, {'total_families': 7, ...})` → `run_nose` sets `status = "clean"`. A schema the reader does not understand yields ZERO families and a clean verdict, indistinguishable |
-| S35 | high | SUBAGENT-CONFIRMED | c | `skills/public/release/scripts/current_release.py:114` | Repo with `packaging/charness.json` at 9.9.9, `plugins/charness/.claude-plugin/plugin.json` at 1.0.0, and NO codex plugin.json / marketplace.json (deleted or unwritten by a failed  | `drift` lists only the claude mismatch; `codex_plugin=None` and `claude_marketplace_version=None` produce NO drift entry — a missing release surface reads identically to a matching |
+| S35 | high | NARROWED (2026-08-01, not closed) | c | `skills/public/release/scripts/current_release.py:114` | Repo with `packaging/charness.json` at 9.9.9, `plugins/charness/.claude-plugin/plugin.json` at 1.0.0, and NO codex plugin.json / marketplace.json (deleted or unwritten by a failed  | `drift` lists only the claude mismatch; `codex_plugin=None` and `claude_marketplace_version=None` produce NO drift entry — a missing release surface reads identically to a matching |
 | S36 | high | LEAD | c | `skills/public/release/scripts/publish_release.py:36` | An installed/vendored release skill copy that does not carry `skill_runtime_bootstrap.py` in any ancestor directory (the drifted foreign copy the function exists to refuse). | `if bootstrap is None: return` — the provenance refusal is skipped and the full bump/sync/quality/tag/publish pipeline runs from the foreign copy. The backstop is suppressed by exa |
 | S37 | high | LEAD | c | `skills/public/release/scripts/publish_release_narrative_gate.py:61` | A publish that passes no `--notes-file`, i.e. `create_release` takes the `--generate-notes` branch (publish_release_helpers.py:168). | `run_notes_file_preflight` returns immediately (`if notes_file is None: return`), so the mutable-source-tree-pointer rule never runs before publish; the only remaining check is `au |
 | S38 | medium | SUBAGENT-CONFIRMED | d | `scripts/check_artifact_surface_preflight.py:415` | `--changed-artifacts` with no paths, or with paths that map to no commit_boundary surface — e.g. `charness-artifacts/quality/latest.md` (a real artifact with a real validator, but  | Ran both: `artifact-shape-preflight: ok` exit 0 in each case. The commit-boundary arm reports a green verdict when zero validators ran, and the report body lists no rows, so 'ok' o |

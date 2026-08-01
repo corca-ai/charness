@@ -13,6 +13,11 @@ post_publish_install_refresh: charness update
 post_publish_version_readback: charness version
 post_publish_doctor_readback: charness doctor
 post_publish_baton_path: docs/handoff.md
+required_release_surfaces:
+- claude_plugin
+- codex_plugin
+- claude_marketplace_version
+- codex_marketplace_source_path
 product_surfaces:
 - installable_cli
 - bundled_skill

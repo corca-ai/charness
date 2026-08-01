@@ -20,6 +20,9 @@ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 _adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib_module.load_yaml_file
+load_yaml_file_report = _adapter_lib_module.load_yaml_file_report
+uninterpreted_warnings = _adapter_lib_module.uninterpreted_warnings
+parse_failure_error = _adapter_lib_module.parse_failure_error
 
 ADAPTER_CANDIDATES = (
     Path(".agents/issue-adapter.yaml"),
@@ -218,13 +221,43 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             "searched_paths": searched_paths,
         }
 
-    raw = load_yaml_file(adapter_path)
-    raw_data = raw if isinstance(raw, dict) else {}
+    # `load_yaml_file_report` parses exactly as `load_yaml_file` does and additionally
+    # returns the lines the parser could not interpret. Reading them is what separates
+    # "the adapter did not set this field" from "the adapter tried to set it and the
+    # parser threw the line away" (sweep row S24): the second used to be indistinguishable
+    # from the first, so `default_org corca-typo` with a missing colon reported
+    # `valid: true, errors: [], warnings: []` while silently serving the inferred default.
+    # The old `isinstance(raw, dict)` guard below could never fire — `load_yaml` always
+    # returns a dict — so a top-level YAML list produced no warning either; it now
+    # surfaces as one uninterpreted line per item.
+    #
+    # These are WARNINGS, not errors, and that is a deliberate stop rather than a shrug.
+    # This file is consumer-authored, so refusing it would turn a consumer's whole issue
+    # lane red for a typo, and the only corpus that could justify arming the refusal —
+    # consumer `.agents/issue-adapter.yaml` files — is one this repo cannot enumerate.
+    # Whether to arm it is a numbered deferred decision, not a judgment this slice makes.
     data = dict(defaults)
     errors: list[str] = []
     warnings: list[str] = []
-    if not isinstance(raw, dict):
-        warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
+    try:
+        raw, uninterpreted = load_yaml_file_report(adapter_path)
+    except ValueError as exc:
+        # An unsupported construct used to escape as a traceback, which is neither a
+        # refusal nor a pass — callers branching on `valid` never saw it at all.
+        return {
+            "found": True,
+            "valid": False,
+            "path": str(adapter_path),
+            "data": data,
+            "errors": [parse_failure_error(exc)],
+            "warnings": [],
+            "searched_paths": searched_paths,
+        }
+    raw_data = raw if isinstance(raw, dict) else {}
+    warnings.extend(
+        f"{line} This is reported, not refused: see docs/deferred-decisions.md D46."
+        for line in uninterpreted_warnings(uninterpreted)
+    )
 
     version = raw_data.get("version")
     if version is not None:

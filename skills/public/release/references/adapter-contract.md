@@ -51,6 +51,7 @@ Search order:
 - `cli_skill_surface_skill_paths`
 - `cli_skill_surface_change_globs`
 - `fresh_checkout_probes`
+- `required_release_surfaces`
 - `release_backend`
 
 ## Defaults
@@ -79,6 +80,12 @@ Search order:
 - `product_surfaces`: empty list
 - `cli_skill_surface_*`: empty lists
 - `fresh_checkout_probes`: empty list
+- `required_release_surfaces`: empty list. Names the generated release surfaces the
+  repo asserts it publishes, so an ABSENT one becomes drift instead of reading like a
+  matching one. Known names: `claude_plugin`, `codex_plugin`,
+  `claude_marketplace_version`, `codex_marketplace_source_path`. The packaging
+  manifest is NOT declarable — its absence is drift whether or not anyone declares
+  it. The declaration is self-authored and unverified: deleting it disarms the check.
 
 ## Artifact Rule
 

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextvars
 import re
 from pathlib import Path
 from typing import Any
@@ -110,14 +111,77 @@ def _next_meaningful_line(lines: list[str], start: int) -> tuple[int, str] | Non
     return None
 
 
+# The parser drops a line it cannot interpret and keeps going, which is what lets a
+# malformed adapter read as a valid one (sweep row S24): `default_org corca-typo` with
+# no colon parses to a mapping that simply lacks `default_org`, and the caller's
+# inferred default fills the hole silently. The sink below records those drops WITHOUT
+# changing what the parser returns, so a caller can distinguish "the file did not say
+# this" from "the file said something the parser threw away". Collection is off unless
+# a `load_yaml_report` call is on the stack: existing `load_yaml` callers are
+# byte-identical.
+# A ContextVar rather than a module global: the sink is per-parse state, and a plain
+# global would let a future nested or threaded `load_yaml` leak one file's dropped lines
+# into another file's report — an unrelated input's evidence read as this input's, which
+# is the class this collector exists to close.
+_UNINTERPRETED_SINK: contextvars.ContextVar[list[dict[str, Any]] | None] = contextvars.ContextVar(
+    "adapter_lib_uninterpreted_sink", default=None
+)
+# YAML document markers carry no mapping content, so dropping them loses nothing. They
+# are skipped rather than recorded: reporting them would refuse legal YAML that many
+# editors and templates emit by default.
+_DOCUMENT_MARKERS = ("---", "...")
+
+
+def _record_uninterpreted(lines: list[str], index: int, reason: str) -> None:
+    sink = _UNINTERPRETED_SINK.get()
+    if sink is None:
+        return
+    sink.append({"line": index + 1, "reason": reason, "text": lines[index].rstrip()})
+
+
+def _line_shape(lines: list[str], index: int) -> tuple[str, str, int]:
+    """`(raw, stripped, indent)` for one line — the preamble both parser loops share."""
+    raw = lines[index]
+    return raw, raw.strip(), len(raw) - len(raw.lstrip(" "))
+
+
+def _is_ignorable(stripped: str) -> bool:
+    """Blank or comment: carries no content, so skipping it loses nothing.
+
+    Document markers are deliberately NOT included. Skipping them here would be safe in
+    the mapping loop and wrong in the list loop, where `---` ENDS the list: treating it as
+    ignorable merged a second document's items into the first document's list and changed
+    what `load_yaml` returns. The mapping loop tests for them at its own call site.
+    """
+    return not stripped or stripped.startswith("#")
+
+
+def _mapping_value(
+    lines: list[str], index: int, indent: int, value: str
+) -> tuple[Any, int, bool]:
+    """Parse the text after `key:` — the three-way dispatch both parser loops need.
+
+    Returns `(parsed, next_index, consumed_block)`; `consumed_block` is True when a block
+    scalar swallowed the following lines, which is the one case a caller must not treat
+    as a single-line advance.
+    """
+    if not value:
+        parsed, next_index = _parse_empty_value(lines, index, indent)
+        return parsed, next_index, False
+    if value == "[]":
+        return [], index + 1, False
+    if value.startswith(("|", ">")):
+        parsed, next_index = _parse_block_scalar(lines, index, indent, value)
+        return parsed, next_index, True
+    return _coerce_scalar(value), index + 1, False
+
+
 def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[Any], int]:
     items: list[Any] = []
     index = start
     while index < len(lines):
-        raw = lines[index]
-        stripped = raw.strip()
-        current_indent = len(raw) - len(raw.lstrip(" "))
-        if not stripped or stripped.startswith("#"):
+        raw, stripped, current_indent = _line_shape(lines, index)
+        if _is_ignorable(stripped):
             index += 1
             continue
         if current_indent < indent:
@@ -142,18 +206,10 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
             if mapping_entry is not None and has_mapping_separator and " " not in mapping_entry[0]:
                 key, value = mapping_entry
                 item: dict[str, Any] = {}
-                if value:
-                    if value == "[]":
-                        item[key] = []
-                    elif value.startswith(("|", ">")):
-                        item[key], index = _parse_block_scalar(lines, index, indent, value)
-                        items.append(item)
-                        continue
-                    else:
-                        item[key] = _coerce_scalar(value)
-                    index += 1
-                else:
-                    item[key], index = _parse_empty_value(lines, index, indent)
+                item[key], index, consumed_block = _mapping_value(lines, index, indent + 2, value)
+                if consumed_block:
+                    items.append(item)
+                    continue
                 nested, index = _parse_block(lines, index, indent + 2)
                 item.update(nested)
                 items.append(item)
@@ -161,6 +217,10 @@ def _parse_list_items(lines: list[str], start: int, indent: int) -> tuple[list[A
             items.append(_coerce_scalar(item_body))
             index += 1
             continue
+        # The fourth drop site, and the one the first instrumentation pass missed: a line
+        # more indented than the list it sits under is discarded here. That eats a nested
+        # `  - item` and a wrapped plain-scalar continuation alike.
+        _record_uninterpreted(lines, index, "over-indented line in list")
         index += 1
     return items, index
 
@@ -214,40 +274,29 @@ def _parse_block(lines: list[str], start: int, indent: int) -> tuple[dict[str, A
     index = start
 
     while index < len(lines):
-        raw = lines[index]
-        stripped = raw.strip()
-        current_indent = len(raw) - len(raw.lstrip(" "))
+        raw, stripped, current_indent = _line_shape(lines, index)
 
-        if not stripped or stripped.startswith("#"):
+        if _is_ignorable(stripped) or stripped in _DOCUMENT_MARKERS:
             index += 1
             continue
         if current_indent < indent:
             break
         if current_indent > indent:
+            _record_uninterpreted(lines, index, "over-indented line")
             index += 1
             continue
         if stripped.startswith("- "):
+            _record_uninterpreted(lines, index, "list item with no owning key")
             index += 1
             continue
 
         mapping_entry = _split_mapping_entry(stripped)
         if mapping_entry is None:
+            _record_uninterpreted(lines, index, "no mapping separator")
             index += 1
             continue
         key, value = mapping_entry
-
-        if value:
-            if value == "[]":
-                result[key] = []
-            elif value.startswith(("|", ">")):
-                result[key], index = _parse_block_scalar(lines, index, current_indent, value)
-                continue
-            else:
-                result[key] = _coerce_scalar(value)
-            index += 1
-            continue
-
-        result[key], index = _parse_empty_value(lines, index, current_indent)
+        result[key], index, _ = _mapping_value(lines, index, current_indent, value)
 
     return result, index
 
@@ -259,6 +308,40 @@ def load_yaml(text: str) -> dict[str, Any]:
 
 def load_yaml_file(path: Path) -> dict[str, Any]:
     return load_yaml(path.read_text(encoding="utf-8"))
+
+
+def load_yaml_report(text: str) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    """Parse ``text`` exactly as ``load_yaml`` does, and also return the lines the
+    parser could not interpret. The parsed value is identical to ``load_yaml(text)``;
+    the second element is the evidence a caller needs before reporting the file valid."""
+    sink: list[dict[str, Any]] = []
+    token = _UNINTERPRETED_SINK.set(sink)
+    try:
+        parsed, _ = _parse_block(text.splitlines(), 0, 0)
+    finally:
+        _UNINTERPRETED_SINK.reset(token)
+    return parsed, sink
+
+
+def load_yaml_file_report(path: Path) -> tuple[dict[str, Any], list[dict[str, Any]]]:
+    return load_yaml_report(path.read_text(encoding="utf-8"))
+
+
+def uninterpreted_warnings(uninterpreted: list[dict[str, Any]]) -> list[str]:
+    """One operator-facing line per line the parser could not interpret. Lives here, with
+    the producer of the facts, so every adapter resolver words the same finding the same
+    way instead of each inventing its own phrasing."""
+    return [
+        f"line {entry['line']} was not interpreted ({entry['reason']}): {entry['text'].strip()!r}. "
+        "Any field it meant to set is serving an inferred default instead."
+        for entry in uninterpreted
+    ]
+
+
+def parse_failure_error(exc: Exception) -> str:
+    """The message for a construct the parser refuses outright, as opposed to one it
+    silently drops. A refusal is not a drop and must not read like one."""
+    return f"adapter could not be parsed: {exc}"
 
 
 def optional_string(value: Any, field: str, errors: list[str]) -> str | None:

@@ -34,7 +34,7 @@ LIST_FIELDS = (
     "update_instructions", "real_host_required_surfaces", "real_host_required_path_globs", "real_host_checklist",
     "requested_review_commands", "review_unavailable_patterns", "review_waiver_phrases", "product_surfaces",
     "cli_skill_surface_probe_commands", "cli_skill_surface_command_docs", "cli_skill_surface_skill_paths",
-    "cli_skill_surface_change_globs", "fresh_checkout_probes",
+    "cli_skill_surface_change_globs", "fresh_checkout_probes", "required_release_surfaces",
 )
 ARTIFACT_FILENAME = "latest.md"
 
@@ -80,6 +80,12 @@ def infer_repo_defaults(repo_root: Path) -> dict[str, Any]:
         "cli_skill_surface_skill_paths": [],
         "cli_skill_surface_change_globs": [],
         "fresh_checkout_probes": [],
+        # Generated release surfaces this repo asserts it publishes. An ABSENT surface is
+        # otherwise indistinguishable from a matching one at the version-drift check
+        # (sweep row S35), so declaring them here is what turns "the file is gone" into
+        # drift. Empty by default: a consumer that publishes only some surfaces must not
+        # be forced red by a list it never wrote.
+        "required_release_surfaces": [],
         "release_backend": default_release_backend(),
     }
 

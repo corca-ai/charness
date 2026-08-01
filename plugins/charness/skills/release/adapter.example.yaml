@@ -18,6 +18,13 @@ real_host_checklist: []
 requested_review_commands: []
 requested_review_policy: warn-if-unconfigured
 fresh_checkout_probes: []
+# Generated release surfaces this repo asserts it publishes. An absent surface is
+# otherwise indistinguishable from a matching one in `current_release.py`'s drift
+# verdict; declaring it here is what turns "the file is gone" into drift. Empty by
+# default so a repo that publishes only some surfaces is never forced red.
+# Known names: claude_plugin, codex_plugin, claude_marketplace_version,
+# codex_marketplace_source_path.
+required_release_surfaces: []
 review_unavailable_patterns:
 - review unavailable
 - requested review unavailable

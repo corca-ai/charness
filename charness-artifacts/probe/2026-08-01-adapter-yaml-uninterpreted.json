@@ -1,0 +1,27 @@
+{
+  "_provenance": {
+    "command": "python3 scripts/measure_adapter_yaml_uninterpreted.py --repo-root . --json",
+    "date": "2026-08-01",
+    "does_not_license": "This is THIS repo's corpus. The refusal it would authorize governs consumer-authored adapters, which cannot be enumerated from here. See docs/deferred-decisions.md D46.",
+    "repo_head_at_run": "7de074c14603c97075fd6b696f982c663fdbf127",
+    "scope_note": "44 checked-in YAML files under the repo root's top level plus .agents/, skills/, and integrations/. presets/, profiles/, docs/, .claude/ and .codex/ are scanned and contribute zero YAML files. NOT scanned: .github/workflows/, packaging/, tests/, evals/, charness-artifacts/, plugins/ (generated mirror), node_modules/, mutants/.",
+    "worktree": "dirty (the slice's own uncommitted repair)"
+  },
+  "by_reason": {},
+  "files_with_uninterpreted_lines": 0,
+  "findings": [],
+  "roots": [
+    ".",
+    ".agents",
+    "presets",
+    "profiles",
+    "skills",
+    "docs",
+    ".claude",
+    ".codex",
+    "integrations"
+  ],
+  "scanned_files": 44,
+  "uninterpreted_line_count": 0,
+  "unreadable": []
+}

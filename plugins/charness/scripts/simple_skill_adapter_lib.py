@@ -3,7 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any, Callable
 
-from scripts.adapter_lib import load_yaml_file, optional_string
+from scripts.adapter_lib import (
+    load_yaml_file_report,
+    optional_string,
+    parse_failure_error,
+    uninterpreted_warnings,
+)
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
@@ -54,45 +59,72 @@ def load_adapter_contract(
 ) -> dict[str, Any]:
     searched_paths = searched_adapter_paths(repo_root, skill_id)
     adapter_path = find_adapter(repo_root, skill_id)
-    if adapter_path is None:
-        data = infer_defaults(repo_root)
+
+    def _payload(
+        *,
+        found: bool,
+        data: dict[str, Any],
+        errors: list[str],
+        warnings: list[str],
+        raw_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
+        """Every return from this function, built once. The three paths — no adapter on
+        disk, an adapter the parser refused outright, and a parsed one — differ only in
+        `found`, the resolved `data`, and which list carries the reason."""
         payload: dict[str, Any] = {
-            "found": False,
-            "valid": True,
-            "path": None,
+            "found": found,
+            "valid": not errors,
+            "path": str(adapter_path) if found else None,
             "data": data,
-            "errors": [],
-            "warnings": list(missing_warnings),
+            "errors": errors,
+            "warnings": warnings,
             "searched_paths": searched_paths,
         }
         _add_artifact_payload(payload, data, artifact_filename, artifact_class_key)
         if extra_payload is not None:
-            payload.update(extra_payload(data, {}, False))
+            payload.update(extra_payload(data, raw_data or {}, found))
         return payload
 
-    raw = load_yaml_file(adapter_path)
+    if adapter_path is None:
+        return _payload(
+            found=False, data=infer_defaults(repo_root), errors=[],
+            warnings=list(missing_warnings),
+        )
+
+    # Report the lines the parser could not interpret (sweep row S24). All NINE skills
+    # sharing this loader — release, hotl, hitl, debug, retro, impl, gather, handoff,
+    # setup — used to read
+    # a malformed adapter as a clean one: a missing colon on `packaging_manifest_path`
+    # or on `required_release_surfaces` produced the inferred default with
+    # `valid: true, errors: [], warnings: []`, which is how a typo silently disarms a
+    # release surface check. Warnings rather than errors, for the same consumer-authored
+    # reason recorded in `docs/deferred-decisions.md` D46.
+    try:
+        raw, uninterpreted = load_yaml_file_report(adapter_path)
+    except ValueError as exc:
+        # An unsupported construct (anchor, alias, an unsupported block-scalar header) used
+        # to escape here as an uncaught traceback — neither a refusal nor a pass, and
+        # invisible to every caller that branches on `valid`. `current_release.build_payload`
+        # calls this first thing, so the S35 drift check died instead of reporting drift.
+        return _payload(
+            found=True, data=infer_defaults(repo_root),
+            errors=[parse_failure_error(exc)], warnings=[],
+        )
     raw_data = raw if isinstance(raw, dict) else {}
-    warnings: list[str] = []
+    warnings = uninterpreted_warnings(uninterpreted)
     canonical_path = repo_root / ".agents" / f"{skill_id}-adapter.yaml"
+    # `load_yaml` always returns a dict, so this guard can never fire; the uninterpreted
+    # report above is what actually surfaces a non-mapping document now. Kept because
+    # removing it would be a behavior claim this slice has not proven for every caller.
     if not isinstance(raw, dict):
         warnings.append("Adapter file did not contain a mapping. Using inferred defaults.")
     if adapter_path.resolve() != canonical_path.resolve():
         warnings.append(f"Adapter path is a compatibility fallback. Prefer {canonical_path}.")
     data, errors, extra_warnings = validate_adapter_data(raw_data, repo_root)
     warnings.extend(extra_warnings)
-    payload = {
-        "found": True,
-        "valid": not errors,
-        "path": str(adapter_path),
-        "data": data,
-        "errors": errors,
-        "warnings": warnings,
-        "searched_paths": searched_paths,
-    }
-    _add_artifact_payload(payload, data, artifact_filename, artifact_class_key)
-    if extra_payload is not None:
-        payload.update(extra_payload(data, raw_data, True))
-    return payload
+    return _payload(
+        found=True, data=data, errors=errors, warnings=warnings, raw_data=raw_data,
+    )
 
 
 def _add_artifact_payload(
