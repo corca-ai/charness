@@ -179,6 +179,13 @@ def validate_release_closeout_commit_message(
     if unexpected:
         result["ok"] = False
         result["status"] = "failed"
+        # Sweep row S23, one level up: this is a SECOND post-hoc flip of a verdict whose
+        # confirmation sentence was already rendered by `verify_closeout`. Without this the
+        # release carrier shipped `ok: False, status: failed` alongside
+        # `carrier-checked: ...` — the exact line the closeout-discipline contract tells
+        # handoffs to quote instead of the status token.
+        if _ISSUE_VERIFY_CLOSEOUT is not None:
+            _ISSUE_VERIFY_CLOSEOUT.sync_confirmation_line(result)
     return result
 
 

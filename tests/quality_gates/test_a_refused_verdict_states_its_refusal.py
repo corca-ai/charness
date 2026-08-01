@@ -1,0 +1,190 @@
+"""Sweep rows S23 and S2: two singletons where a verdict outlived the check behind it.
+
+S23 — a confirmation sentence built under an `if ok` guard, then a later fold flipping
+`ok` to False without touching the sentence, so a refused verdict shipped a rendered
+confirmation. S2 — an odd number of single backticks leaving one span open at end of
+file, silently dropped, which shifts every pair after the stray one and lets a genuinely
+wrapped span report clean.
+
+They share no code. They are one file because they are one question: does the thing that
+SAYS the verdict still agree with the thing that DECIDED it?
+
+Each test names the pre-repair verdict it pins against, observed in the parent on
+2026-08-01 before any repair was written.
+"""
+from __future__ import annotations
+
+from .support import ROOT, _load_script_module
+
+VERIFY = _load_script_module(
+    "issue_verify_closeout_under_test",
+    ROOT / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout.py",
+)
+INLINE = _load_script_module(
+    "check_markdown_inline_code_under_test",
+    ROOT / "scripts" / "check_markdown_inline_code.py",
+)
+
+_LEDGER_GAP = """Close #123
+
+## Proof Ledger
+
+| Acceptance | Proof | Disposition |
+| --- | --- | --- |
+| the gate refuses a malformed adapter | not run |  |
+"""
+
+
+def _pre_fold_result() -> dict:
+    """A result exactly as `verify_closeout` builds it before the fold: every pre-fold
+    check passed, so the `if ok` guard rendered the confirmation line."""
+    return {
+        "ok": True,
+        "status": "carrier_verified",
+        "confirmation": {
+            "observer": "issue_verify_closeout@gh",
+            "channel": "carrier-body-checks",
+            "scope": "carrier-checks-only",
+            "line": "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)",
+        },
+    }
+
+
+def test_s23_a_refused_verdict_drops_its_confirmation_line(tmp_path):
+    # Pre-repair: ok=False, status='failed', and confirmation.line still read
+    # "carrier-checked: issue_verify_closeout@gh via carrier-body-checks
+    # (carrier-checks-only)". The `if ok` guard runs BEFORE the fold; the fold flips the
+    # verdict afterward. This is why the row's REFUTE prediction was wrong.
+    result = _pre_fold_result()
+
+    VERIFY._fold_proof_mismatch(result, tmp_path, _LEDGER_GAP)
+
+    assert result["ok"] is False
+    assert result["status"] == "failed"
+    assert result["confirmation"]["line"] is None
+
+
+def test_s23_a_body_with_no_proof_ledger_keeps_its_confirmation(tmp_path):
+    # The fold is inert without a ledger, so nothing may change here.
+    result = _pre_fold_result()
+
+    VERIFY._fold_proof_mismatch(result, tmp_path, "Close #123\n\nNo ledger in this body.\n")
+
+    assert result["ok"] is True
+    assert result["confirmation"]["line"].startswith("carrier-checked:")
+
+
+def test_s23_a_downward_flip_clears_the_line():
+    # One direction only, and the test says so: the helper clears on refusal and does not
+    # restore on a flip back to ok. The repair is a function rather than one more line
+    # inside the fold because the verdict and the sentence describing it were maintained
+    # in two places.
+    result = _pre_fold_result()
+    result["ok"] = False
+
+    VERIFY.sync_confirmation_line(result)
+
+    assert result["confirmation"]["line"] is None
+
+
+def test_s23_sync_is_inert_when_there_is_no_confirmation():
+    result = {"ok": False, "status": "failed"}
+
+    VERIFY.sync_confirmation_line(result)
+
+    assert "confirmation" not in result
+
+
+# --- S2 ------------------------------------------------------------------------------
+
+
+def test_s2_a_stray_backtick_no_longer_masks_a_real_cross_line_span():
+    # Pre-repair: `find_wrapped_inline_code` returned [] for this text — exit 0, "a real
+    # cross-line inline-code span is reported clean". The stray backtick in `don`t`
+    # paired with the real opener, leaving the real closer unmatched and dropped.
+    text = "A stray backtick don`t worry, then `python3 foo.py\n--bar` ends the span.\n"
+
+    assert INLINE.find_wrapped_inline_code(text) != []
+
+
+def test_s2_a_plain_cross_line_span_is_still_reported():
+    text = "Line one has `a real cross-line span\nthat closes here` on line two.\n"
+
+    assert [line for line, _ in INLINE.find_wrapped_inline_code(text)] == [1]
+
+
+def test_s2_a_well_formed_file_is_still_clean():
+    for text in (
+        "Plain `inline code` on one line.\n",
+        "Two `spans` on `one line`.\n",
+        "A fenced block:\n\n```\n`unbalanced inside a fence`\n`\n```\n\nAfter.\n",
+        "An escaped backtick \\` is not a span opener.\n",
+    ):
+        assert INLINE.find_wrapped_inline_code(text) == [], text
+
+
+def test_s2_the_checkers_own_scope_carries_no_odd_backtick_count():
+    # The measurement behind arming: of the files this checker actually governs, ZERO
+    # carry an odd single-backtick count, so reporting the leftover costs nothing. Three
+    # files repo-wide do, all under `charness-artifacts/`, which EXCLUDE_PARTS excludes.
+    offenders = []
+    for path in INLINE._candidate_files(ROOT):
+        if not path.is_file():
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        stripped = INLINE._strip_fences(text)
+        runs = 0
+        for line in stripped.split("\n"):
+            column = 0
+            while column < len(line):
+                if line[column] == "\\" and column + 1 < len(line):
+                    column += 2
+                    continue
+                if line[column] != "`":
+                    column += 1
+                    continue
+                start = column
+                while column < len(line) and line[column] == "`":
+                    column += 1
+                if column - start == 1:
+                    runs += 1
+        if runs % 2:
+            offenders.append(str(path.relative_to(ROOT)))
+
+    assert offenders == []
+
+
+def test_s2_charness_artifacts_stay_outside_the_checkers_scope():
+    # The zero above is only meaningful while the exclusion holds.
+    assert "charness-artifacts" in INLINE.EXCLUDE_PARTS
+    scoped = {p.relative_to(ROOT).parts[0] for p in INLINE._candidate_files(ROOT)}
+    assert "charness-artifacts" not in scoped
+
+
+def test_s2_the_release_carrier_also_clears_its_confirmation(tmp_path):
+    # The S23 class one level up: `release_issue_closeout_message` flips `ok` after
+    # `verify_closeout` has already rendered the confirmation sentence. Found by round 1.
+    release = _load_script_module(
+        "release_issue_closeout_message_under_test",
+        ROOT / "skills" / "public" / "release" / "scripts" / "release_issue_closeout_message.py",
+    )
+
+    assert "sync_confirmation_line" in (
+        (ROOT / "skills" / "public" / "release" / "scripts"
+         / "release_issue_closeout_message.py").read_text(encoding="utf-8")
+    )
+    assert release is not None
+
+
+def test_s2_the_unterminated_case_has_its_own_message():
+    # Reusing the "wraps across line" sentence pointed an operator at a line where nothing
+    # wraps: the leftover is the tail of a shifted pairing, not the wrapped span.
+    text = "A stray backtick don`t worry, then `python3 foo.py\n--bar` ends the span.\n"
+
+    violations = INLINE.find_inline_code_violations(text)
+
+    assert [reason for _, _, reason in violations] == [INLINE.UNTERMINATED_REASON]
+    wrapped = INLINE.find_inline_code_violations(
+        "Line one has `a real cross-line span\nthat closes here` on line two.\n"
+    )
+    assert [reason for _, _, reason in wrapped] == [INLINE.WRAPPED_REASON]

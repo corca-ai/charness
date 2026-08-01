@@ -39,8 +39,9 @@ git cannot date. No push, no CI dispatch, no cautilus run this session.
 1. **The MIDPOINT goal-claims review**, before slice 4. Bounded, fresh-eye, and
    it reads the goal's per-row claims against the sweep and the commits — a
    different question from "is this repair correct".
-2. **Slice 4**: S23 (carries a REFUTE prediction — the `if ok else None` guard
-   landed 2026-07-20, before the sweep) and S2's parser bug.
+2. **Slice 4**: S23 and S2 — repaired, review round 1 folded. The REFUTE
+   prediction for S23 was FALSIFIED by the reproduction: the guard is real and
+   predates the sweep, but it runs before the fold that flips the verdict.
 3. **Then closeout**: serial full pytest, [run-quality.sh](../scripts/run-quality.sh),
    the armed changed-line lane over this goal's own range with
    `--refuse-unestablished`, the disposition review, then `retro` — in that

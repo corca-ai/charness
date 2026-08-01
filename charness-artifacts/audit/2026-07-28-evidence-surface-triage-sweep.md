@@ -4,13 +4,16 @@ Status: first-look triage complete. **109 leads survived adversarial refutation*
 over 146 proof surfaces that no prior hunt had ever examined on this axis. A
 SAMPLE was parent-reproduced; the rest are recorded at the provenance the sweep
 actually produced. This is a hot list to work, not a closed defect ledger.
-**35 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
+**36 rows are now CLOSED** — S6, S19, S20, S93, then S27/S29/S33/S34 on 2026-07-28, then
 S14/S16/S17/S18/S25/S39/S40/S42/S43/S44/S46/S49/S53/S56 on 2026-07-30, then
-S3/S4/S5/S7/S11/S21/S22 on 2026-07-31, then S1/S26/S30/S32 on 2026-08-01, then S28 and S13 on
+S3/S4/S5/S7/S11/S21/S22 on 2026-07-31, then S1/S26/S30/S32 on 2026-08-01, then S28, S13 and S23 on
 2026-08-01 — reproduced in the parent, fixed, and regression-tested. **Count corrected
 2026-08-01:** the header asserted 29 while the table carried 33 rows whose status began
-CLOSED — the 2026-07-31 group listed only S4 and S11 where the table shows seven. The
-count is now derived from the table, not maintained beside it.
+CLOSED. The four the enumeration omitted are **S5, S7, S21 and S22**, all
+`CLOSED (parent-reproduced 2026-07-31)` in the table and absent from the 2026-07-31
+group, which listed only S4 and S11. (A first draft of this note said "seven where the
+table shows two", which does not reconcile: 29 + 4 = 33.) The count is now derived from
+the table, not maintained beside it.
 **What the S1/S26/S30/S32 batch does NOT close.** All four were one class — a denominator
 that reached zero rendering a PASS — and all four were reproduced in the parent with a
 control before repair. **S31 is NARROWED, not closed**: this repo's own two workflows both
@@ -62,7 +65,8 @@ under the two-round cap.
   catalogues**, the same self-declaration shape S31 records as OPEN. Its one defense is
   that the declaration lives in the adapter rather than in the audited file, which is the
   channel D45 names as S31's correct repair. Deleting those four lines disarms it with
-  nothing corroborating them.
+  nothing corroborating them. Arming question filed as
+  [D48](../../docs/deferred-decisions.md).
 
 **What the 2026-08-01 S9/S10/S12/S13 batch does and does NOT close.** One class — what the
 audited content says about itself is not proof — across two files, both reproduced in the
@@ -101,7 +105,41 @@ the slice's own recorded probe and its own test refute. Round-2 repairs ship
   standalone. Round 2 caught the first repair writing its reason to a key no consumer
   reads, which left `describe_goal_closeout_shape` rendering the refused floor as
   SATISFIED. Zero checked-in goal artifacts declare the section, so the floor costs
-  nothing here and is unexercised by real content.
+  nothing here and is unexercised by real content. **Control:** a `## Closeout Delegation`
+  section listing `- final push/CI green` and `- provider live proof` with no
+  `Closeout mode:` line; pre-repair verdict `mode='standalone'`, `declared=True`, `ok`
+  never set. **Pinned by**
+  `tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py::test_s13_a_declared_section_with_no_mode_line_is_refused`.
+
+**What the 2026-08-01 S23/S2 batch does and does NOT close.** Two singletons sharing no
+code. **The plan predicted S23 would be REFUTED and the prediction was wrong** — the
+reproduction refuted the refutation, which is the whole reason the rule is reproduce
+before repairing.
+
+- **S23 — CLOSED, and the ROW's surface:line was wrong while its verdict was right.** The
+  row points at the confirmation construction, which does carry an `if ok else None`
+  guard introduced 2026-07-20, before this sweep — the basis for the REFUTE prediction
+  that both the plan and a round-1 reviewer reached. But the guard runs BEFORE
+  `_fold_proof_mismatch`, which flips `ok` to False and `status` to `failed` afterward and
+  never touched the sentence. `sync_confirmation_line` now enforces that a refused verdict
+  carries no rendered line, one direction only. Round 1 found the same class open ONE
+  LEVEL UP: `release_issue_closeout_message` performs a second post-hoc flip on the same
+  payload, also repaired. **Control:** a pre-fold result with every check passed, folded
+  against a `## Proof Ledger` row with an unsatisfied acceptance and an empty disposition;
+  pre-repair verdict `ok: False, status: failed` with
+  `confirmation.line: "carrier-checked: issue_verify_closeout@gh via carrier-body-checks
+  (carrier-checks-only)"`. **Pinned by**
+  `tests/quality_gates/test_a_refused_verdict_states_its_refusal.py::test_s23_a_refused_verdict_drops_its_confirmation_line`.
+- **S2 — NARROWED, not closed.** A single-backtick span still open at end of input is now
+  reported instead of dropped, so a stray backtick can no longer shift the pairing and let
+  a genuinely wrapped span render clean. Must admit: **the reported line is the LEFTOVER
+  backtick, not the opener of the wrapped span**, so the finding says "audit the pairing"
+  rather than naming the real span — correct pairing needs a stack this repair does not
+  add. `_strip_fences` handles fenced blocks only, so a lone backtick inside a blockquote
+  or a 4-space indented block is a new false-positive vector the old drop-the-leftover
+  behavior absorbed silently. And the measured zero is **not** a safety argument:
+  `check-markdown.sh` treats this checker as ADVISORY and exits with markdownlint's status
+  alone, so nothing here can block a commit — the zero means the new class adds no noise.
 
 **What S11's floor does NOT prove, recorded because two review rounds kept finding the
 gap wider than the previous claim:** it proves the section names an unnegated English
@@ -212,7 +250,12 @@ calls, 24 minutes wall clock.
 The refutation pass killed **34 of 143** raw leads (24%), which is the number that
 makes the remainder worth reading.
 
-## Status vocabulary, and the honest scope
+## Status vocabulary
+
+- **`NARROWED (<date>)`** — reproduced in the parent and partially repaired, with the
+  residual written onto the row itself. It is **not done**: `CLOSED` remains the only
+  status that means a row needs nothing further. Introduced 2026-08-01, when five rows
+  turned out to have repairs that close part of the claim and leave a named part open., and the honest scope
 
 - `PARENT-CONFIRMED` — the parent re-ran it in this session and saw the wrong
   output. **Four surfaces.** Everything else is not this.
@@ -289,7 +332,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | id | sev | provenance | class | surface:line | trigger | wrong output |
 | --- | --- | --- | --- | --- | --- | --- |
 | S1 | high | CLOSED (parent-reproduced 2026-08-01) | f | `scripts/check_coverage_lib.py:78` | `build_per_file_floor_report([])` — an empty file list, i.e. a coverage JSON read with the wrong key, a scope filter that matched nothing, or a failed coverage run. | `{"status": "enforced", "violations": [], "warn_band": [], "exempt_below_floor": [], "unmeasured": []}` — a fully green, self-declared-'enforced' per-file floor report over a popul |
-| S2 | high | SUBAGENT-CONFIRMED | b | `scripts/check_markdown_inline_code.py:67` | A markdown line carrying one stray/unmatched backtick before a genuinely wrapped span, e.g. `A stray backtick don\`t worry, then \`python3 foo.py` / newline / `--bar\` ends the spa | Ran it: `Validated inline code spans in 1 markdown file(s).` exit 0 — a real cross-line inline-code span is reported clean. In a milder variant (/tmp/w2.md) the violation fires but |
+| S2 | high | NARROWED (2026-08-01, not closed) | b | `scripts/check_markdown_inline_code.py:67` | A markdown line carrying one stray/unmatched backtick before a genuinely wrapped span, e.g. `A stray backtick don\`t worry, then \`python3 foo.py` / newline / `--bar\` ends the spa | Ran it: `Validated inline code spans in 1 markdown file(s).` exit 0 — a real cross-line inline-code span is reported clean. In a milder variant (/tmp/w2.md) the violation fires but |
 | S3 | high | CLOSED (parent-reproduced 2026-07-31; stub half closed 2026-08-01) | b | `scripts/check_prescribed_skill_executed_lib.py:211` | printf 'x' > charness-artifacts/critique/one-byte.md; python3 scripts/check_prescribed_skill_executed.py --repo-root /tmp/t3 --require standalone_critique --evidence standalone_cri | ok:true, exit 0. The verdict is keyed on `resolved.stat().st_size == 0` — a coarse field. A 1-byte file, or a 2019 unrelated critique, satisfies the mandatory closeout critique gat |
 | S4 | high | CLOSED (parent-reproduced 2026-07-31) | e | `scripts/check_prescribed_skill_executed_lib.py:81` | `evidence_binds_to_context` (the #233 F1 backstop) is defined here but `check()` never calls it. grep shows only skills/public/issue/scripts/issue_resolution_critique.py:110 and sk | The binding check lives only in the copies the achieve/issue callers chose. The RELEASE publish gate and the generic CLI carry no binding check at all: a stale, unrelated charness- |
 | S5 | high | CLOSED (parent-reproduced 2026-07-31) | c | `scripts/check_skill_surface_preflight.py:152` | A SKILL.md containing TWO `## Closeout Vocabulary` H2 blocks. `_remove_pressure_exempt_sections` (line 109) exempts EVERY section with that heading from the core_nonempty density c | Ran it: 60 lines of multi-sentence prose under a second `## Closeout Vocabulary` gives `core_nonempty == 4` and `vocab findings == 0`. The exemption and its anti-abuse read differe |
@@ -299,7 +342,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S9 | high | NARROWED (2026-08-01, not closed) | h | `scripts/validate_inventory_consumption.py:117` | The same quality artifact, once with `Date: 2026-07-28` and once with `Date: 2020-01-01` (a self-declared line inside the artifact the validator is judging). | Backdated: exit 0, `predates contract start; skipped.` Same file dated today: exit 1 with SIX distinct floor violations (0-of-14 field engagement, missing prose_review_status, Targ |
 | S10 | high | NARROWED (2026-08-01, not closed) | b | `scripts/validate_inventory_consumption.py:146` | Artifact body containing `- I did not read scope_status or finding_status at all.` plus five stub lines `Target boundary: n/a`, `Ambient repo findings: n/a`, `prose review result:  | `Validated inventory consumption for 1 declared inventory citation(s)`, exit 0. 'Engagement' is `\b<field>\b` presence, so an explicit negation and five `n/a` stubs satisfy the con |
 | S11 | high | CLOSED (parent-reproduced 2026-07-31) | b | `scripts/validate_quality_artifact.py:232` | `## Delegated Review` section containing only the line `- status: executed (no reviewer, no findings, nothing ran)`. | validate_delegated_review_section PASSES. The verdict keys on the substring `executed` anywhere in the section; only `blocked` must cite a host/tool signal. The repo's fresh-eye-su |
-| S12 | high | NARROWED (2026-08-01, row CORRECTED) | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
+| S12 | high | NARROWED (2026-08-01, row CORRECTED — the trigger and wrong-output cells below are REFUTED; see the batch note) | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
 | S13 | high | CLOSED (parent-reproduced 2026-08-01) | h | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:159` | A goal artifact with a `## Closeout Delegation` section listing `Delegated proof:` items but with the `Closeout mode:` line absent, or present-and-blank. `mode_tokens` is empty so  | Ran both shapes: `ok=True`, `mode='standalone'`, `delegated_items=['final push/CI green','provider live proof']` with zero failures. A goal that visibly delegates external proof is |
 | S14 | high | CLOSED (parent-reproduced 2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_disposition.py:255` | A goal body that quotes another artifact's date line before its own, e.g. a blockquote `> Created: 2025-01-02` above the real `Created: 2026-07-01`. `parse_created_date` (goal_arti | Ran it: `parse_created_date` returns 2025-01-02 and `is_floor_in_scope(..., 2026-06-08)` returns False. Every Created-gated floor at once (disposition form 1c, recurrence lineage 1 |
 | S15 | high | PARTIAL (2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:40` | Goal artifact text with 'Created: 2020-01-01' and 'Status: complete' and no ## Operator Decision Queue section at all → check(text) | {'applies': False, 'ok': True, 'reason': 'pre-rule goal'}. A single author-written Created: line decides whether the complete-state floor runs. The grammar docstring claims 'a goal |
@@ -310,7 +353,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S20 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/handoff/scripts/draft_goal_from_chunk.py:158` | `--chunk` payload `{"entries": [], "label": "", "objective_summary": ""}` — a chunk with zero sources and no objective. | `{"ok": true, ..., "status": "draft"}`, exit 0, and a goal artifact written with the title `# Achieve Goal: ` and an empty `## Goal` section. `check_goal` — the gate the docstring  |
 | S21 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/hitl/scripts/check_chunk_contract.py:44` | printf '' \| python3 skills/public/hitl/scripts/check_chunk_contract.py (also '   \n\n'). The underlying scripts/hitl_review_artifact_lib.py:169 short-circuits `if not asks_for_dec | {"status": "pass", "errors": []}, exit 0. An EMPTY chunk is certified as contract-satisfying. Worse in the normal case: any chunk that asks a human to decide without a '?' or the e |
 | S22 | high | CLOSED (parent-reproduced 2026-07-31) | c | `skills/public/issue/scripts/audit_brief.py:80` | A transcript whose fix-unit records mutation and close events but no `classification` event: {"events":[{"kind":"mutation","issue":143,"tool":"Edit"},{"kind":"close","issue":143}]} | Ran it: `audit ok: 1 fix-unit(s) checked` exit 0. The brief-before-mutation contract is voided by omitting the one event that arms it — omission is rewarded over declaration. Same  |
-| S23 | high | SUBAGENT-CONFIRMED | d | `skills/public/issue/scripts/issue_verify_closeout.py:293` | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
+| S23 | high | CLOSED (parent-reproduced 2026-08-01; the row's `surface:line` was WRONG — see the batch note) | d | `skills/public/issue/scripts/issue_verify_closeout.py:293` | A carrier body that passes every pre-fold check but declares a `## Proof Ledger` row with an unsatisfied acceptance class and an empty disposition. `confirmation` is built at lines | Ran it: `ok: False, status: failed` while `confirmation.line == "carrier-checked: issue_verify_closeout@gh via carrier-body-checks (carrier-checks-only)"`. The code comment says do |
 | S24 | high | NARROWED (2026-08-01, not closed) | d | `skills/public/issue/scripts/resolve_adapter.py:226` | /tmp/t2/.agents/issue-adapter.yaml containing `default_org corca-typo` (missing colon), or a top-level YAML list instead of a mapping. Ran: python3 skills/public/issue/scripts/reso | "valid": true, "errors": [], "warnings": [] and exit 0. The malformed line is silently dropped and default_org silently falls back to the hardcoded "corca-ai". The `Adapter file di |
 | S25 | high | CLOSED (parent-reproduced 2026-07-30) | d | `skills/public/quality/scripts/changed_line_coverage_gate_lib.py:145` | run_gate(Path('.'), {'eligible_globs':['**/*.py'],'coverage_json':'cov.json'}, base_sha='deadbeef...'(unknown sha), head_sha='HEAD', ...). _git_lines swallows the non-zero git exit | {'ok': True, 'reason': 'no eligible changed files in this range'} — the classify callback (which would have returned blocking rows) is never invoked. A git failure is reported as ' |
 | S26 | high | CLOSED (parent-reproduced 2026-08-01) | c | `skills/public/quality/scripts/ci_local_gate_parity_lib.py:244` | A workflow job whose steps are all `uses:` (e.g. `- uses: actions/checkout@v4` then `- uses: ./.github/actions/run-everything`). Guard: `if not steps or all(not isinstance(step.get | render_report → {'workflows_scanned': 1, 'parity_issues': [], 'jobs_without_canonical_gate': []}. The backstop that should have flagged 'this job never invokes the canonical local  |

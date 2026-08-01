@@ -9,21 +9,21 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: ACTIVE. Slices 1-3 complete and committed.
-- Current slice: the MIDPOINT goal-claims review is next and is contract-owed
-  (3+ slices), reading this artifact's per-row claims against the sweep and the
-  commits. Then slice 4 — batch D, S23 and S2.
-- Next action: run the midpoint review before slice 4, not after.
-- Carried into slice 2, measured during slice 1: 0 of 105 checked-in quality
-  artifacts rely on the S9 date exemption, and an engagement residual floor up
-  to 20 chars costs 0 new refusals — but the floor does NOT kill S10's negation
-  sentence (it scores 31, above the corpus p5 of 19). The stub half is
-  closable; the negation half is S11's class and closes as NARROWED.
-- Carried into slice 3: S12 only HALF-reproduces. `#\d+` matches, so
-  `PR #412 — NOT DONE, still pending` reads RESOLVED; a runbook step number and
-  a heading anchor do NOT, and `unresolved_items` is not empty. The sweep row
-  overstates and must be corrected, not just closed. S13 reproduces exactly.
-  0 checked-in goal artifacts declare a `## Closeout Delegation` section.
+- Current disposition: ACTIVE. All four slices complete; the midpoint
+  goal-claims review ran and its findings are folded.
+- Current slice: none — closeout is next.
+- Next action: bundle proof (serial full pytest, `./scripts/run-quality.sh`,
+  the armed changed-line lane over this goal's own range), then the closeout
+  disposition review, then `retro` — in that order. **Slice 4's round 2 was
+  never run and is an open gap**, not a discharge.
+- **Corrected 2026-08-01 by the midpoint review:** an earlier version of this
+  frame claimed "a floor up to 20 costs 0 new refusals" and put the negation
+  sentence at 31 against a corpus p5 of 19. The recorded probe refutes all
+  three: at `--floor 20` ten citations drop below their requirement and 46
+  label values fall under the floor, the negation scores 18, and the corpus p5
+  is 5. That claim was repaired in the code by slice 2's round 2 and left
+  standing here — the same defect, in the artifact instead of the gate, which
+  is exactly what the midpoint round exists to catch.
 - Verification cadence: per commit, the installed git pre-commit hook lane plus
   the slice's own targeted pytest node ids. Per slice, reproduction control
   before repair, regression tests, one or two bounded fresh-eye review rounds,
@@ -242,7 +242,7 @@ per-row claims against the owning records and the commits.
    --produce-mutation-coverage` — last, because a round-2 repair after the
    producer invalidates the coverage fingerprint.
 
-**Midpoint** (after slice 2, contract-triggered by a goal with 3+ slices): one
+**Midpoint** (after the merged B/C slice, contract-triggered by a goal with 3+ slices): one
 bounded goal-claims review reading this artifact's per-row claims against the
 owning records and the commits — a different question from "is this repair
 correct", answered by a different packet.
@@ -279,8 +279,8 @@ whether new duplication is slice-local or accumulated suite debt.
 | --- | --- | --- | --- | --- |
 | 1 | DONE — Batch A — an absent or malformed input must not read as a matching one: S24, S28, S35 | Three independent files with the cheapest reproductions and no cross-file coupling; nothing else in the goal depends on it, so it is the safest place to establish the reproduce-control-first rhythm | Three reproduction controls; one shared helper distinguishing `absent`, `unparseable`, and `matching`; regression tests per row; mirror sync; critique artifact | done — S28 CLOSED, S24 and S35 NARROWED |
 | 2 | DONE — Batch B — S9 and S10 together in `validate_inventory_consumption.py` | **S9 strictly dominates S10**: the `artifact_date < ENFORCED_FROM_DATE` branch returns 0 at line ~117, before S10's engagement floor at ~146 ever runs. Repairing S10 alone leaves a floor that a backdated artifact never reaches, and repairing them in separate slices puts two edits on one `main()` after a review has already signed off on it | The backdated-vs-today control and the negation-plus-`n/a`-stub artifact; a measured count of checked-in quality artifacts that would newly fail, from a checked-in script; both repairs in one pass; critique artifact | done — S9 and S10 NARROWED |
-| 3 | DONE — Batch C — S12 and S13 together in `goal_artifact_closeout_delegation.py` | Same file, same `parse_closeout_delegation` function, two simultaneous edits otherwise. Runs after slice 2 so the midpoint goal-claims review lands between the two file-grouped batches | The `— NOT DONE, still pending` control; the absent/blank `Closeout mode:` control; a distinct undeclared mode rather than a default to `standalone`; an explicit statement of whether the repair changes behavior for goals with NO `## Closeout Delegation` section, plus a run of the repaired validator against this goal artifact; critique artifact | done — S13 CLOSED, S12 NARROWED and its ROW corrected |
-| 4 | Batch D — S23 and S2, two singletons | Last because neither unlocks nor is unlocked by anything. **S23 carries a REFUTE prediction:** `issue_verify_closeout.py:293` already reads `"line": ... if ok else None`, introduced 2026-07-20 in `18483dc9`, i.e. BEFORE the 2026-07-28 sweep — so a failed verdict yields `line: None` at HEAD. Reproduce first and expect to close it as REFUTED unless the control finds a second confirmation-construction path the row was actually describing | S23: the failed-verdict control with its observed output, and either the second path or a `REFUTED (design posture, 2026-08-01)` disposition. S2: the stray-backtick control, a corrected span-pairing rule, and a run over the repo's real markdown corpus showing no new false positives; critique artifact | pending |
+| 3 | DONE — Batch C — S12 and S13 together in `goal_artifact_closeout_delegation.py` | Same file, same `parse_closeout_delegation` function, two simultaneous edits otherwise. **Ran WITH slice 2 rather than after it** — they are one class, so one reproduction pass and one pair of review rounds covered both; the midpoint review therefore lands after the merged B/C slice, not between them | The `— NOT DONE, still pending` control; the absent/blank `Closeout mode:` control; a distinct undeclared mode rather than a default to `standalone`; an explicit statement of whether the repair changes behavior for goals with NO `## Closeout Delegation` section, plus a run of the repaired validator against this goal artifact; critique artifact | done — S13 CLOSED, S12 NARROWED and its ROW corrected |
+| 4 | DONE — Batch D — S23 and S2, two singletons | Last because neither unlocks nor is unlocked by anything. **S23 carried a REFUTE prediction that the reproduction FALSIFIED.** The `if ok else None` guard is real and predates the sweep, but it runs before `_fold_proof_mismatch`, which flips the verdict afterward. S23 reproduces and is CLOSED | S23: the failed-verdict control with its observed output, and either the second path or a `REFUTED (design posture, 2026-08-01)` disposition. S2: the stray-backtick control, a corrected span-pairing rule, and a run over the repo's real markdown corpus showing no new false positives; critique artifact | pending |
 
 ## Discuss before activation
 
@@ -334,7 +334,22 @@ Open at shaping time:
 
 - Objective: Reproduce S24/S28/S35 in the parent with controls, then write the shared repair once: an absent, unreadable, or unparsed input must not render the same verdict as a matching one.
 - Why this approach: Three independent files with the cheapest reproductions and no cross-file coupling, so it was the safest place to establish the reproduce-control-before-repair rhythm. All three reproduced; S24 reproduced STRONGER than the sweep claimed (the top-level-list case emitted no warning at all, because the isinstance(raw, dict) guard was unreachable — load_yaml always returns a dict).
-- Commits:
+- Commits: `faf355f5` (the slice), `5f99e842` (the operator-requested mid-run retro,
+  `charness-artifacts/retro/2026-08-01-slice-1-absent-input-batch-retro.md` — the
+  verification plan sequences `retro` last, so this one was out of order by request).
+- Non-claim, producer step: the plan's step 6 specifies
+  `run_slice_closeout.py --verification-lock --produce-mutation-coverage`. This slice ran
+  `--skip-broad-pytest --ack-cautilus-skill-review` instead, so no mutation-coverage
+  fingerprint was produced and the broad pytest proof is deferred to the bundle. The
+  substitution is recorded rather than implied.
+- Non-claim, fingerprint channel: `reviewer_boundary_fingerprint.py` snapshot opened each
+  review window; the matching `verify` was NOT run for any of them, because the parent
+  edits in-tree between rounds and `--parent-path` was not used. Integrity rests on
+  `git status --porcelain`. The approvals are accepted with that residual, not quarantined.
+- Boundaries reconciliation: the `## Boundaries` in-scope list named seven scripts. The
+  run widened to the shared parse/report channel and its consumers; the per-slice
+  `What changed` lists above are authoritative, and the midpoint review confirmed no
+  Non-Goal was crossed.
 - What changed: scripts/adapter_lib.py, scripts/simple_skill_adapter_lib.py, scripts/measure_adapter_yaml_uninterpreted.py (new), skills/public/issue/scripts/resolve_adapter.py, skills/public/quality/scripts/dup_ratchet_rebaseline.py, skills/public/release/scripts/{current_release,resolve_adapter}.py, skills/public/release/{references/adapter-contract.md,adapter.example.yaml}, .agents/release-adapter.yaml, docs/deferred-decisions.md (D46), docs/public-skill-dogfood.json, charness-artifacts/{audit/2026-07-28-evidence-surface-triage-sweep.md,probe/2026-08-01-adapter-yaml-uninterpreted.json,quality/dup-review.json,critique/2026-08-01-slice-1-absent-input-batch.md}, tests/quality_gates/test_absent_input_is_not_a_matching_input.py (new), plus the plugins/ mirrors.
 - Alternatives rejected: Arming the S24 refusal (valid: false) was written, then WITHDRAWN: the goal's own stop condition routes a repair on a consumer-authored file to legible-plus-deferred, and refusing an adapter turns a consumer's whole issue lane red for a typo. A residual-length floor for engagement was NOT used here. Re-baselining the dup-ratchet was refused in favour of extracting three shared helpers and classifying two irreducible families.
 - Targeted verification: Reproduction controls recorded before repair for all three rows. 38 new tests; 13 of the first cut failed against HEAD in a detached worktree. 160 targeted regression tests green. Parser behavior proven identical to HEAD across the 74 files git ls-files lists, by loading both module versions side by side. run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review: completed. Measurement recorded at charness-artifacts/probe/2026-08-01-adapter-yaml-uninterpreted.json with provenance.
@@ -348,7 +363,11 @@ Open at shaping time:
 
 - Objective: Reproduce S9/S10/S12/S13 with controls, then repair one class in two files: what the audited content says about itself is not proof.
 - Why this approach: Batches B and C were taken together because they are one class, and because their round-1 reviews could run concurrently while the parent worked the other batch. S9/S10 share a main(); S12/S13 share a parse function.
-- Commits:
+- Commits: `dac61db7`.
+- Non-claim, producer step: ran `--skip-broad-pytest --ack-cautilus-skill-review`, not the
+  plan's `--verification-lock --produce-mutation-coverage`. Same substitution as slice 1.
+- Non-claim, fingerprint channel: snapshot only, `verify` not run, integrity from
+  `git status --porcelain`. Accepted with the residual.
 - What changed: scripts/validate_inventory_consumption.py, scripts/measure_inventory_consumption_floor.py (new), scripts/repo_path_display.py (new), scripts/control_plane_lib.py, scripts/disposition_form.py, skills/public/achieve/scripts/{goal_artifact_closeout_delegation,describe_goal_closeout_shape}.py, skills/public/achieve/references/{goal-artifact,lifecycle-after}.md, docs/{deferred-decisions,prescribed-skill-closeout-contract}.md, charness-artifacts/{audit,probe,quality/dup-review.json,critique}, tests/quality_gates/{test_a_declaration_is_not_its_own_corroboration.py (new),test_inventory_consumption.py}, plus mirrors.
 - Alternatives rejected: Arming the value-marker rule for inventory engagement was measured (5 checked-in reviews refused) and DECLINED -> D47. Forking a fourth date channel rather than extending critique_enforcement_scope.observed_date was chosen because the default artifact is a rolling pointer with no filename date, and the reason is recorded in the critique rather than left implicit. Re-baselining the dup-ratchet was refused five times in favour of one real extraction (repo_path_display, which two surfaces had grown independently) plus four classifications.
 - Targeted verification: Reproduction controls for all four rows before repair. 30 new tests plus 13 existing; 9 of the first cut failed against HEAD in a detached worktree. Corpus measurements: 0 of 105 quality artifacts newly refused (compared against HEAD's validator from a detached worktree), 0 of 145 goal artifacts refused, label-value corpus minimum 7 against a floor of 5. run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review: completed.
@@ -356,6 +375,20 @@ Open at shaping time:
 - Critique: charness-artifacts/critique/2026-08-01-slice-2-3-declaration-corroboration.md — 4 reviewers, 2 rounds. Round 1 (10 blockers): S9's exploit survived on uncommitted files, the 'refuses a stub not a lie' comment was false for three shapes, a length floor cannot fix ordinary-word field names, and the measurement never measured the label floors. Round 2 (5 blockers, all on round 1's repairs, both reviewers independently finding the first): the comment defending the floor asserted a measurement the slice's own probe and test refute; a failed git status read as a clean tree; 'Corroborated by HEAD' was printed for bytes git never saw; the S13 refusal wrote to a key no consumer reads so the shape describer rendered the refused floor as SATISFIED; and the S12 negation guard refused items for words inside their own reason.
 - Off-goal findings: goal_artifact_floor_grammar.parse_created_date is consumed by FIVE achieve floors with no corroboration at all — S15's family, and a one-helper repair since goal artifacts carry a filename date critique_enforcement_scope.observed_date already reads. Recorded, not repaired.
 - Lessons carried forward: Only S13 CLOSED. S9, S10 and S12 are NARROWED, and S12's ROW is corrected: two of its three stated triggers never reproduced. The headline S12 class — a pointer is not the proof — is untouched, because a bare reference with no negation still resolves.
+- Metrics:
+
+### Slice 3: Slice 4 — batch D: a refused verdict states its refusal (S23, S2)
+
+- Objective: Reproduce S23 and S2, then repair: a verdict that gets refused after its sentence was rendered must drop the sentence, and a checker whose span pairing is shifted must not report clean.
+- Why this approach: Two singletons with no siblings and no cross-dependency; last because neither unlocks nor is unlocked by anything.
+- Commits: pending — committed with this slice
+- What changed: skills/public/issue/scripts/issue_verify_closeout.py, skills/public/release/scripts/release_issue_closeout_message.py, scripts/check_markdown_inline_code.py, tests/quality_gates/test_a_refused_verdict_states_its_refusal.py (new), the sweep rows, plus mirrors.
+- Alternatives rejected: Closing S23 as REFUTED on the strength of the plan's prediction — falsified by the reproduction. Building a full CommonMark backtick stack for S2 so the reported line names the real span — declined as more machinery than the advisory check warrants, and recorded as the row's residual instead.
+- Targeted verification: Reproduction controls before repair for both rows. 11 new tests; 4 of the first cut failed against HEAD in a detached worktree. Measured before adding S2's class: 0 files with an odd single-backtick count in the checker's own scope, 3 repo-wide all under the already-excluded charness-artifacts. run_slice_closeout --skip-broad-pytest --ack-cautilus-skill-review: completed.
+- Test duplication pressure: No new dup-ratchet family this slice — the first in three. The two repairs touch unrelated files and neither adds a boilerplate shape.
+- Critique: charness-artifacts/critique/2026-08-01-slice-4-a-refused-verdict-states-its-refusal.md — 2 reviewers, ONE round. Round 2 was NOT run and that is a recorded gap, not a discharge: round 1 produced repairs, and the two earlier slices each had round 2 catch defects round 1's repairs created.
+- Off-goal findings: none beyond what slices 1-3 already recorded.
+- Lessons carried forward: The plan's REFUTE prediction for S23 was wrong, and a round-1 reviewer reached the same wrong conclusion from the same evidence. Only the reproduction settled it. Round 1 also found the S23 class open one level up in the release carrier — the fix's own class, in a file the row never named.
 - Metrics:
 
 ## Context Sources

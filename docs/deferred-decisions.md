@@ -584,6 +584,36 @@ Reopen trigger:
   distinctiveness; or those five reviews being rewritten for another reason. Both numbers in this
   entry are hand measurements, not output of the recorded probe command.
 
+### D48. Should an absent release surface be drift without a self-authored declaration?
+
+- Question: [current_release.py](../skills/public/release/scripts/current_release.py) turns
+  an ABSENT generated release surface into drift only for surfaces the repo's own
+  `required_release_surfaces` names, and that field defaults to empty. Should absence be
+  drift by default, or derived from a channel the audited repo does not author?
+- Current choice: **Defer — declared-only, default empty.**
+- Why now: found while closing sweep row S35 on 2026-08-01. The repair is an instance of
+  the class the sweep catalogues: a self-declared field inside the repo being judged
+  decides whether the floor fires, and deleting those four adapter lines disarms it with
+  nothing corroborating them. Its one defense is that the declaration lives in the adapter
+  rather than in the audited file, which is the channel [D45](#d45-should-run-qualitysh-arm---require-evaluated-scope-on-the-cilocal-parity-gate)
+  names as S31's correct repair.
+- Why deferral is right at the time: defaulting to drift-on-absence would turn every
+  consumer that publishes only some surfaces permanently red for a surface it never
+  intended to publish, with no local remedy short of declaring an exemption — the same
+  toll D45 refuses to pay unilaterally. The better repair derives the expected set from
+  the repo's own sync command output rather than from a hand-written list, which is a
+  contract change deserving its own slice.
+- Non-claims: the declaration is unverified against reality; nothing checks that a
+  declared surface is one the sync command actually produces. This entry does not narrow
+  S31.
+- Impact surfaces: [current_release.py](../skills/public/release/scripts/current_release.py),
+  [release resolve_adapter.py](../skills/public/release/scripts/resolve_adapter.py),
+  [adapter-contract.md](../skills/public/release/references/adapter-contract.md),
+  [release-adapter.yaml](../.agents/release-adapter.yaml).
+- Reopen trigger: a release published with a surface missing that the declaration did not
+  cover; or the sync command gaining a machine-readable list of what it writes; or S31
+  being worked, since moving a declaration out of the audited surface is the same question.
+
 ## Next Action Contract
 
 After these closures, the next major workstream is `cautilus` integration and

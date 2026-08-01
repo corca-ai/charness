@@ -42,10 +42,19 @@ def _strip_fences(text: str) -> str:
     return "\n".join(out)
 
 
+UNTERMINATED_REASON = "unterminated"
+WRAPPED_REASON = "wrapped"
+
+
 def find_wrapped_inline_code(text: str) -> list[tuple[int, str]]:
+    """Back-compat shape: `(line, snippet)` pairs. See `find_inline_code_violations`."""
+    return [(line, snippet) for line, snippet, _ in find_inline_code_violations(text)]
+
+
+def find_inline_code_violations(text: str) -> list[tuple[int, str, str]]:
     stripped = _strip_fences(text)
     lines = stripped.split("\n")
-    violations: list[tuple[int, str]] = []
+    violations: list[tuple[int, str, str]] = []
     open_line: int | None = None
     open_snippet: str = ""
     for index, line in enumerate(lines, start=1):
@@ -69,9 +78,29 @@ def find_wrapped_inline_code(text: str) -> list[tuple[int, str]]:
                 open_snippet = line[max(0, run_start - 20): min(len(line), run_start + 60)]
             else:
                 if open_line != index:
-                    violations.append((open_line, open_snippet))
+                    violations.append((open_line, open_snippet, WRAPPED_REASON))
                 open_line = None
                 open_snippet = ""
+    if open_line is not None:
+        # Sweep row S2: an ODD number of single-backtick runs leaves one open at EOF, and
+        # the loop used to drop it. That is not a harmless leftover — it means every pair
+        # after the stray one is shifted, so a genuinely wrapped span gets paired with the
+        # stray and the file reports CLEAN. Reporting the leftover is what stops a file
+        # whose spans cannot be trusted from rendering a pass.
+        #
+        # Measured before adding this class: of the files in this checker's own scope,
+        # ZERO carry an odd count. Three files repo-wide do — `charness-artifacts/critique/
+        # 2026-07-26-documented-command-flag-gate.md`, `charness-artifacts/critique/
+        # latest.md`, and `charness-artifacts/quality/
+        # 2026-06-30-dup-portability-falsification-audit.md` — all under the
+        # `charness-artifacts` part `EXCLUDE_PARTS` already drops.
+        #
+        # That zero is NOT what keeps the lane green, and saying otherwise would be the
+        # class this file is being repaired for: `check-markdown.sh` catches this
+        # checker's non-zero exit and prints an ADVISORY warning, exiting with
+        # markdownlint's status alone. Nothing here can block a commit. The zero means
+        # the new class produces no new noise, not that a refusal was made safe.
+        violations.append((open_line, open_snippet, UNTERMINATED_REASON))
     return violations
 
 
@@ -105,9 +134,15 @@ def main() -> int:
         if not path.is_file():
             continue
         text = path.read_text(encoding="utf-8")
-        for line_num, snippet in find_wrapped_inline_code(text):
+        for line_num, snippet, reason in find_inline_code_violations(text):
             rel = path.relative_to(repo_root).as_posix() if path.is_relative_to(repo_root) else str(path)
-            print(f"{rel}:{line_num}: inline code span wraps across line; collapse so the literal text stays on one line: ...{snippet}...", file=sys.stderr)
+            if reason == UNTERMINATED_REASON:
+                # Reporting the WRAP message here would point an operator at a line where
+                # nothing wraps: the leftover is the tail of a shifted pairing, and the
+                # real defect is an odd backtick count somewhere earlier in the file.
+                print(f"{rel}:{line_num}: unterminated inline code span; an odd number of single backticks makes every later span in this file unreliable, so audit the pairing rather than this line: ...{snippet}...", file=sys.stderr)
+            else:
+                print(f"{rel}:{line_num}: inline code span wraps across line; collapse so the literal text stays on one line: ...{snippet}...", file=sys.stderr)
             violation_count += 1
 
     if violation_count:

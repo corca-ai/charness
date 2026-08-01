@@ -33,6 +33,33 @@ def _load_proof_mismatch():
     return _PROOF_MISMATCH
 
 
+def sync_confirmation_line(result: dict[str, Any]) -> None:
+    """Clear ``confirmation["line"]`` whenever the verdict is not ok.
+
+    One direction only, deliberately: nothing in this repo flips ``ok`` back to True after
+    the fact, and restoring a line would mean re-deriving the verb rule here, a second
+    place for it to drift from the one in ``verify_closeout``. A future caller that does
+    flip upward must render the line itself.
+
+    Sweep row S23: the line is built inside ``verify_closeout`` with an ``if ok`` guard,
+    and the proof-mismatch fold runs AFTER, flipping ``ok`` to False and ``status`` to
+    ``failed`` without touching it. The result then carried
+    ``ok: False, status: failed`` alongside
+    ``confirmation.line: "carrier-checked: ... (carrier-checks-only)"`` — a rendered
+    confirmation over a refused verdict, which is what downstream handoffs quote.
+
+    Making it a function rather than one more line inside the fold is deliberate: the
+    defect is that a post-hoc verdict flip and the sentence describing that verdict were
+    maintained in two places. Any future fold calls this and the invariant holds.
+    """
+    confirmation = result.get("confirmation")
+    if not isinstance(confirmation, dict):
+        return
+    if result.get("ok"):
+        return
+    confirmation["line"] = None
+
+
 def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> None:
     """Fold the portable proof-mismatch floor into a verify_closeout result: a
     ``## Proof Ledger`` gap left undispositioned flips ``ok`` False and ``status``
@@ -42,6 +69,7 @@ def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> 
     _load_proof_mismatch().apply_proof_mismatch_floor(result, repo_root, body)
     if result.get("proof_mismatch"):
         result["status"] = "failed"
+    sync_confirmation_line(result)
 
 
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
