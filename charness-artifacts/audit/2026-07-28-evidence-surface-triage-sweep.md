@@ -358,7 +358,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S12 | high | NARROWED (2026-08-01, row CORRECTED — the trigger and wrong-output cells below are REFUTED; see the batch note) | b | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:119` | An orchestrator goal whose `Delegated proof checklist:` items are `- push to CI and confirm green for PR #412 — NOT DONE, still pending` and `- instance apply/restart — see runbook | Ran it: `unresolved_items == []`, `report["ok"]` stays True. Any PR number, runbook step number, or heading anchor in the item text marks a delegated external proof as RESOLVED. Th |
 | S13 | high | CLOSED (parent-reproduced 2026-08-01) | h | `skills/public/achieve/scripts/goal_artifact_closeout_delegation.py:159` | A goal artifact with a `## Closeout Delegation` section listing `Delegated proof:` items but with the `Closeout mode:` line absent, or present-and-blank. `mode_tokens` is empty so  | Ran both shapes: `ok=True`, `mode='standalone'`, `delegated_items=['final push/CI green','provider live proof']` with zero failures. A goal that visibly delegates external proof is |
 | S14 | high | CLOSED (parent-reproduced 2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_disposition.py:255` | A goal body that quotes another artifact's date line before its own, e.g. a blockquote `> Created: 2025-01-02` above the real `Created: 2026-07-01`. `parse_created_date` (goal_arti | Ran it: `parse_created_date` returns 2025-01-02 and `is_floor_in_scope(..., 2026-06-08)` returns False. Every Created-gated floor at once (disposition form 1c, recurrence lineage 1 |
-| S15 | high | PARTIAL (2026-07-30) | h | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:40` | Goal artifact text with 'Created: 2020-01-01' and 'Status: complete' and no ## Operator Decision Queue section at all → check(text) | {'applies': False, 'ok': True, 'reason': 'pre-rule goal'}. A single author-written Created: line decides whether the complete-state floor runs. The grammar docstring claims 'a goal |
+| S15 | high | NARROWED (2026-08-01, residual named) | h | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:40` | Goal artifact text with 'Created: 2020-01-01' and 'Status: complete' and no ## Operator Decision Queue section at all → check(text) | {'applies': False, 'ok': True, 'reason': 'pre-rule goal'}. A single author-written Created: line decides whether the complete-state floor runs. The grammar docstring claims 'a goal |
 | S16 | high | CLOSED (parent-reproduced 2026-07-30) | g | `skills/public/achieve/scripts/goal_artifact_operator_queue.py:53` | Goal with Created: 2026-07-01 and a '## Operator Decision Queue' section whose only content is a fenced block containing '- Decision: this is only an EXAMPLE inside a fence'. _sect | {'applies': True, 'ok': True, 'reason': 'queue disposition recorded'}. A quoted/illustrative example inside a code fence is read as the author's real operator decision, satisfying  |
 | S17 | high | CLOSED (parent-reproduced 2026-07-30) | g | `skills/public/achieve/scripts/goal_artifact_phase_routing.py:50` | A goal artifact containing an earlier fenced template example with `Created: 2020-01-01`, plus any unbalanced/unclosed fence later in the file. `goal_artifact_markdown.mask_fences` | Ran it: `parse_created_date` returns 2020-01-01 instead of the real 2026-07-20; `in_scope=False`, `triggered=False`, `report['ok']` stays True even though `## Slice Log` records `W |
 | S18 | high | CLOSED (parent-reproduced 2026-07-30) | g | `skills/public/debug/scripts/plan_debug_run.py:59` | A debug artifact that quotes the template inside a fenced block (```\n- Risk Class: none\n- Generalization Pressure: none\n```) above its real `## Seam Risk` section declaring `- R | Ran it: risk_classes ['none'], generalization_pressure 'none', requires_interrupt False, mode `continue-existing-artifact`, ok True. The forced risk interrupt (document-seams.md +  |
@@ -374,13 +374,13 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S28 | high | CLOSED (parent-reproduced 2026-08-01) | c | `skills/public/quality/scripts/dup_ratchet_rebaseline.py:63` | `--write-baseline` when `charness-artifacts/quality/dup-ratchet-baseline.json` EXISTS but is truncated/malformed/legacy-shaped. `load_gate_baseline_ids` returns None on unreadable- | Ran it with a truncated baseline, `--baseline-delta-threshold 5`, no `--confirm-baseline-delta`, 50 live families: returns `{ok: true, status: 'baseline-written', code_family_count |
 | S29 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/dup_ratchet_scan.py:232` | A zero-byte / empty scan inventory (exactly what a crashed `nose query`, a truncated redirect, or a nonzero-exit `inventory_doc_duplicates` subprocess produces; run_doc_inventory a | status "clean", ok true, block false, degraded_reasons [], exit 0. families_from_text returns [] (not None) for empty text and doc_drift_signatures returns (set(), None) with NO de |
 | S30 | high | CLOSED (parent-reproduced 2026-08-01) | f | `skills/public/quality/scripts/inventory_ci_local_gate_parity.py:114` | A workflow file named `.github/workflows/ci.yaml` (GitHub Actions accepts .yaml) containing `npm run verify` followed by a required `npm run secret-scan` step. Run with --require-e | `1 workflow(s) scanned; 0 parity-issue step(s)`, exit 0. DEFAULT_WORKFLOW_GLOB is `.github/workflows/*.yml`, so every `.yaml` workflow is invisible to the parity gate — the denomin |
-| S31 | high | OPEN (narrowed 2026-08-01, NOT closed) | h | `skills/public/quality/scripts/inventory_ci_local_gate_parity.py:160` | Same workflow as above, saved as `.yml`, with `# charness:gate-policy local-gate-subset-mirror` prepended as the first line of the file being judged. | `0 parity-issue step(s)`, exit 0, plus an informational `exempt ...: gate-policy=local-gate-subset-mirror`. A self-declared comment inside the audited workflow exempts that whole w |
+| S31 | high | OPEN (narrowed 2026-08-01; D45 premise ANSWERED 2026-08-01, still NOT closed) | h | `skills/public/quality/scripts/inventory_ci_local_gate_parity.py:160` | Same workflow as above, saved as `.yml`, with `# charness:gate-policy local-gate-subset-mirror` prepended as the first line of the file being judged. | `0 parity-issue step(s)`, exit 0, plus an informational `exempt ...: gate-policy=local-gate-subset-mirror`. A self-declared comment inside the audited workflow exempts that whole w |
 | S32 | high | CLOSED (parent-reproduced 2026-08-01) | f | `skills/public/quality/scripts/inventory_ubiquitous_language.py:204` | A `domain_language_contract` whose `surface_globs` has a typo (`doc/**/*.md` instead of `docs/**/*.md`) while a real doc contains a deprecated alias three times. `_iter_files` matc | Ran it: `Ubiquitous-language inventory: ok (1 terms).` exit 0, with no signal that zero files were scanned. The denominator silently narrowed to zero and the verdict is PASS. Same  |
 | S33 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/migrate_dup_fingerprints.py:128` | A live nose scan that returns zero families (scope_paths matching nothing after a rename, or an empty scan with reason falsy). Verified against the pure lib: collision_report([]) → | build_report returns {'ok': True, 'status': 'planned'} and main() exits 0. Under --execute, apply_report then writes an EMPTY gate baseline and an EMPTY nose baseline, silently dro |
 | S34 | high | CLOSED (parent-reproduced 2026-07-28) | a | `skills/public/quality/scripts/nose_report_lib.py:344` | `extract_report({"schema_version": 4, "clone_families": [{"id": "a"}], "summary": {"families": 7}})` — a future/renamed nose JSON key. | `([], '', {}, {'total_families': 7, ...})` → `run_nose` sets `status = "clean"`. A schema the reader does not understand yields ZERO families and a clean verdict, indistinguishable |
 | S35 | high | NARROWED (2026-08-01, not closed) | c | `skills/public/release/scripts/current_release.py:114` | Repo with `packaging/charness.json` at 9.9.9, `plugins/charness/.claude-plugin/plugin.json` at 1.0.0, and NO codex plugin.json / marketplace.json (deleted or unwritten by a failed  | `drift` lists only the claude mismatch; `codex_plugin=None` and `claude_marketplace_version=None` produce NO drift entry — a missing release surface reads identically to a matching |
-| S36 | high | LEAD | c | `skills/public/release/scripts/publish_release.py:36` | An installed/vendored release skill copy that does not carry `skill_runtime_bootstrap.py` in any ancestor directory (the drifted foreign copy the function exists to refuse). | `if bootstrap is None: return` — the provenance refusal is skipped and the full bump/sync/quality/tag/publish pipeline runs from the foreign copy. The backstop is suppressed by exa |
-| S37 | high | LEAD | c | `skills/public/release/scripts/publish_release_narrative_gate.py:61` | A publish that passes no `--notes-file`, i.e. `create_release` takes the `--generate-notes` branch (publish_release_helpers.py:168). | `run_notes_file_preflight` returns immediately (`if notes_file is None: return`), so the mutable-source-tree-pointer rule never runs before publish; the only remaining check is `au |
+| S36 | high | CONFIRMED then NARROWED (reproduced at function level 2026-08-01) | c | `skills/public/release/scripts/publish_release.py:36` | An installed/vendored release skill copy that does not carry `skill_runtime_bootstrap.py` in any ancestor directory (the drifted foreign copy the function exists to refuse). | `if bootstrap is None: return` — the provenance refusal is skipped and the full bump/sync/quality/tag/publish pipeline runs from the foreign copy. The backstop is suppressed by exa |
+| S37 | high | CLOSED (2026-08-01 — was real at sweep time, fixed incidentally by 57b0481d) | c | `skills/public/release/scripts/publish_release_narrative_gate.py:61` | A publish that passes no `--notes-file`, i.e. `create_release` takes the `--generate-notes` branch (publish_release_helpers.py:168). | `run_notes_file_preflight` returns immediately (`if notes_file is None: return`), so the mutable-source-tree-pointer rule never runs before publish; the only remaining check is `au |
 | S38 | medium | SUBAGENT-CONFIRMED | d | `scripts/check_artifact_surface_preflight.py:415` | `--changed-artifacts` with no paths, or with paths that map to no commit_boundary surface — e.g. `charness-artifacts/quality/latest.md` (a real artifact with a real validator, but  | Ran both: `artifact-shape-preflight: ok` exit 0 in each case. The commit-boundary arm reports a green verdict when zero validators ran, and the report body lists no rows, so 'ok' o |
 | S39 | medium | CLOSED (parent-reproduced 2026-07-30) | a | `scripts/check_python_lengths.py:287` | `python3 scripts/check_python_lengths.py --headroom` (or `--headroom --json`) with no `--paths`. Line 287 passes `args.paths or []`, and `[]` is not None, so `select_targets` inter | Ran it: prints nothing at all, exit 0 (`--json` prints `{"headroom": []}`). The advisory whose own `--help` says it prints `limit - current` headroom 'per gated file' silently repo |
 | S40 | medium | CLOSED (parent-reproduced 2026-07-30) | a | `scripts/check_python_lengths.py:252` | `--paths` carrying only paths outside the gated glob universe — e.g. a pre-commit hook whose staged list is markdown/config, or paths expressed relative to a subdirectory so the `r | Ran `--paths README.md docs/handoff.md`: `Validated Python length limits for 0 file(s).` exit 0. A hard length gate reports a pass having measured nothing, with the count of zero b |
@@ -454,7 +454,7 @@ operator decision out of S8's refutation) and S111-S113 (found while working the
 | S108 | low | LEAD | c | `skills/public/release/scripts/publish_release_cli.py:178` | A release adapter whose `product_surfaces` key is absent, misspelled, or missing either `installable_cli` or `bundled_skill`. `run_cli_skill_surface_gate` is a plain `if` with no e | `check_cli_skill_surface.py --run-probes` never runs and the publish proceeds with no signal that the CLI/skill surface gate was skipped; the release payload carries no field disti |
 | S109 | low | LEAD | a | `skills/public/release/scripts/publish_release_retro.py:133` | `build_retro_trigger_evaluation` called with an empty `release_content_paths` list (a publish whose content commit produced no changed paths, or a `--resume` path). `check_auto_tri | `persist_retro_trigger_closeout` returns `{"status": "skipped", "reason": "retro trigger did not match the evaluated release paths"}` — asserting a non-match over zero evaluated pa |
 | S110 | medium | LEAD (opened 2026-07-31 by operator decision) | b | `scripts/validate_cautilus_proof.py:200` | An ALREADY-CHECKED-IN cautilus proof artifact that was validated against the prompt surfaces of an earlier commit, plus a later commit that changes one of those same prompt surfaces without touching the artifact. Every floor (`validate_prompt_surfaces`, `validate_behavior_source`, `validate_commands_run`, `validate_scenario_review`) runs only inside the `artifact_repo_path in changed_paths` branch. | Not run — reasoned from source. The predicted verdict is the S8-refuted exit-0 message, but the residual is a different claim from S8's: S8 was about a prompt change with NO artifact and was correctly refuted (deterministic validators own that case). This row is about an artifact that EXISTS and asserts coverage of a prompt surface that has since moved. The gate keys on 'was the artifact edited in this diff', which is coarse where currency is what matters, so the artifact's own `## Prompt Surfaces` list is never re-checked against the surfaces' current state. Reproduce before working it. |
-| S111 | high | PARENT-CONFIRMED (observed live 2026-08-01) | f | `scripts/check_doc_links.py:24` | Any commit whose changed paths are entirely under `charness-artifacts/`. The pre-commit hook schedules `check-doc-links` for it and the gate walks `DOC_GLOBS` = README/AGENTS/docs/presets/profiles/skills — which excludes `charness-artifacts/` — with no path override. | Observed on this session's OWN first commit: the hook printed `RUN`, `PASS`, and `charness pre-commit: ok` for `check-doc-links` over a commit it could not see a single changed file of. Green over a denominator that is empty by construction. The same class A3 names at index granularity, here at glob granularity; the A3 critique fenced per-gate denominators out of that row, so this is its own. |
+| S111 | high | NARROWED (2026-08-01 — restated; not an empty denominator, a scope the PASS does not disclose) | f | `scripts/check_doc_links.py:24` | Any commit whose changed paths are entirely under `charness-artifacts/`. The pre-commit hook schedules `check-doc-links` for it and the gate walks `DOC_GLOBS` = README/AGENTS/docs/presets/profiles/skills — which excludes `charness-artifacts/` — with no path override. | Observed on this session's OWN first commit: the hook printed `RUN`, `PASS`, and `charness pre-commit: ok` for `check-doc-links` over a commit it could not see a single changed file of. Green over a denominator that is empty by construction. The same class A3 names at index granularity, here at glob granularity; the A3 critique fenced per-gate denominators out of that row, so this is its own. |
 | S112 | medium | PARENT-CONFIRMED (observed live 2026-08-01) | d | `tests/test_usage_episodes_host_hooks.py:40` and every sibling that snapshots shared state | Two pytest runs over the same tree concurrently — a background full suite plus a second invocation. | 17 failures and 21 errors, none of them real: the shared-state snapshot tests saw each other's writes. A clean serial run of the identical tree is 6403 passed. This is sibling-scan Tier 2 D's flake class one level up: that row fenced the assertion against concurrent live WRITERS, and concurrent test RUNNERS are the same hazard from a different direction. A false red is cheaper than a false green, but it cost a full re-run to disprove. |
 | S113 | low | LEAD (2026-08-01) | b | `scripts/boundary_probe_lib.py:123` vs `scripts/critique_enforcement_scope.py:340` | Any repo where the injected `adapter_lib` and the module-level `_critique_adapter_lib` could resolve differently. | `resolve_cross_surface_scope` reads the adapter handed to it to decide `not-configured`, while `resolve_hit` re-reads its own module-level adapter for the probe config — two adapter reads deciding one verdict. In this repo both resolve to the same module so they cannot disagree today, and the 2026-08-01 slice made the matched-path witness consume the read `resolve_hit` actually used. Recorded because a future injection point makes "configured" and "hit" separable. |
 ## 2026-07-31 closeout non-claims
@@ -534,3 +534,146 @@ and R9 was dispositioned as an accepted residual by the operator on 2026-07-28.
 | R12 | med | REPAIRED (round 2) | `skills/public/quality/scripts/seed_dup_review.py:97` | The new overlay refusal caught only unparseable JSON, while its sibling written in the same round required a dict with an `entries` list. A list/scalar/renamed-key overlay still read as "no prior review" through a parse that succeeded, so `--write` wiped every classification. Two readers of one artifact must not disagree about what readable means. |
 | R13 | med | REPAIRED (round 2) | `skills/public/quality/scripts/draft_dup_ratchet_triage.py:62` | `_unsampled_member_count` returned 0 for an ABSENT `members` field, so "the record does not say" was indistinguishable from "fully sampled" and the permissive branch won — the S27 shape again, and the opposite of how the sibling field `shared_lines` is treated three lines down in the same function. |
 | R14 | med | REPAIRED (round 2) | `tests/test_doc_duplicates_inprocess_coverage.py:94` | A test-side instance: an assertion loosened from `== "boom"` to `"boom" in ...` to accommodate a longer message stopped discriminating, so the doc arm's empty-output naming was pinned by nothing and a revert would have stayed green. The same class in test form. |
+
+## Dispositions 2026-08-01 — S15, S31, S36, S37, S111
+
+Five rows dispositioned in one pass. One CLOSED, three NARROWED with residuals
+named, one left OPEN. **No row is marked closed on a repair whose premise was not
+checked**, and the two `LEAD` rows were reproduced-or-refuted at FUNCTION level
+rather than by performing a publish.
+
+### S37 — CLOSED, and the interesting part is how
+
+The row said `run_notes_file_preflight` returns immediately when `notes_file is
+None`, so the drafted-notes rule never runs on the `--generate-notes` branch.
+Read against the tree today, that shape does not exist — which would ordinarily
+mean REFUTED. It is not refuted. `git show 3cc0b27d:...` (the file's state at the
+sweep date) has it verbatim:
+
+```python
+60: def run_notes_file_preflight(repo_root: Path, *, target_tag: str, notes_file: Path | None) -> None:
+61:     if notes_file is None:
+62:         return
+```
+
+The row was exactly right when filed. Commit `57b0481d` ("Refuse to publish notes
+the release never carried") removed the early return while working on a different
+problem, and nobody knew it had closed a sweep row.
+
+Confirmed at function level, no publish performed: calling
+`run_notes_file_preflight(..., notes_file=None)` with the drafted-notes helpers
+stubbed now executes the drafted-notes arm and raises
+`SystemExit: public release notes preflight blocked publish: - drafted notes exist
+and were not shipped`. Call trace: `_drafted_notes_for` then
+`drafted_notes_blockers`, both reached with `notes_file=None`.
+
+**The lesson is about the sweep, not the code:** a LEAD can go stale in the
+closing direction. "Cannot reproduce" is not automatically REFUTED — it can mean
+FIXED, and the two are different facts about how much this repo's gates are
+working. Checking the sweep-date state costs one `git show` and is the difference
+between recording "we were wrong" and "a later commit fixed it".
+
+### S36 — CONFIRMED by reproduction, then NARROWED
+
+Reproduced at function level, no publish. A copy of `publish_release.py` placed in
+a directory with no `skill_runtime_bootstrap.py` in any ancestor — the drifted
+foreign copy the function exists to refuse — with `sys.argv` set to a mutating
+invocation:
+
+```
+S36 RESULT: returned silently -> None (no refusal, no message)
+```
+
+So the row's claim holds: the provenance backstop is suppressed by exactly the
+condition that indicates a drifted copy.
+
+NARROWED rather than repaired, and the reason is that the code already says this.
+`_refuse_foreign_copy`'s own docstring carries the non-claim in writing: "this
+cannot close that class. A copy old enough to write a bad artifact can be old
+enough to predate this function — which is exactly what happened, twice."
+
+**Residual, named:** the docstring discloses the limit to a READER of the source;
+the RUNTIME discloses nothing. The function returns `None` and the pipeline
+proceeds, so an operator watching a publish cannot tell "provenance checked and
+clean" from "provenance check did not run". That is the S15/S26 disclosure
+pattern one register down, and the honest repair is a stderr line naming that the
+check could not run — a captured observable, not a new refusal. NOT done here:
+`publish_release.py` is a release surface and the goal that dispositioned this row
+forbids release work.
+
+### S15 — NARROWED, and this run moved it
+
+The row's own reproduction output is `{'applies': False, 'ok': True, 'reason':
+'pre-rule goal'}` — an out-of-scope verdict that reads like a satisfied floor.
+Two things changed on 2026-08-01:
+
+1. The disclosure is now carried by the SHARED substrate, not by one floor.
+   `goal_artifact_floor_grammar.grandfathered_report` emits `evaluated: False`,
+   the observed `created`, the `rule_date`, and a reason that names the basis as
+   **self-declared** — and every Created-gated floor was migrated onto it.
+2. `goal_artifact_blocked_matrix.py` was still returning the literal
+   `{"applies": False, "ok": True, "reason": "pre-rule goal"}` quoted in this
+   row — the S15 defect, surviving in a sibling floor while the floor the row
+   names had been repaired. Found by a bounded review round and migrated.
+
+**Residual, unchanged and measured:** a single author-written `Created:` line
+still decides whether the floor runs, with no corroborating channel. Forcing it
+in scope was MEASURED to refuse 82 of 82 pre-rule goals, and the one in-text
+corroboration channel (the filename date) legitimately disagrees with `Created:`
+in a real checked-in goal. The candidate second channel not built here is the
+artifact's VCS add-date, which is a contract change across the whole
+`goal_artifact_*` family.
+
+### S111 — NARROWED, and the row's own statement needed correcting
+
+The row says the gate walks its globs "with no path override" and calls the
+result "green over a denominator that is empty by construction". The observation
+is real; the characterization is not quite right, and closing it on the stated
+form would have propagated an inaccuracy.
+
+`check_doc_links.py` is **not changed-file-scoped at all**. It walks `DOC_GLOBS`
+across the whole repo on every invocation. For a commit touching only
+`charness-artifacts/`, its denominator is not empty — it is every doc in the
+repo, all of which it really did check. The PASS is TRUE.
+
+**The defect, restated:** the gate prints exactly `Validated markdown links.` and
+nothing about scope, while the pre-commit hook schedules it *because this commit
+touched a `.md` file*. A reader watching `RUN check-doc-links` / `PASS` on a
+commit that edited an artifact full of links reasonably concludes those links
+were checked. They were not in the walked set. It is a true statement read as a
+different, false one — a disclosure defect, not a zero denominator.
+
+That distinction matters for the repair. Widening `DOC_GLOBS` to cover
+`charness-artifacts/` would be wrong (artifacts are frozen records; their links
+rot by design). The honest repair is for the gate to say what it scanned, and for
+the hook to stop scheduling it for commits with no in-scope `.md`. Neither is done
+here — both touch commit-gate scheduling, outside the dispositioning goal's scope.
+
+### S31 — still OPEN; what changed is that D45's premise now has an answer
+
+S31 is unchanged: a `# charness:gate-policy` comment INSIDE the audited workflow
+still exempts that whole workflow from the parity gate, and both of this repo's
+workflows carry one.
+
+The recorded direction is S31 → D45, and D45's named remedy is "move the
+exemption declaration out of the audited file into the adapter". That remedy's
+premise was never verified, and this run verified it by reading:
+
+- `read_gate_policy(raw_text, workflow_label)` takes **only the workflow's own
+  text**. Its sole input is the file being judged.
+- `evaluate_workflow(path, workflow, gate_patterns, ci_only_marker)` receives no
+  adapter, no external exemption source, and no seam for one.
+
+**Answer: no adapter-declared exemption channel exists.** The remedy is therefore
+not "move a declaration" — it requires BUILDING the seam: a new parameter
+threaded through `evaluate_workflow`, a declared-exemption source, and a
+precedence rule between the two channels for consumer repos that use neither.
+
+Two facts make it buildable rather than speculative, and both are recorded on D45:
+the quality adapter is a real resolvable surface that ALREADY carries
+`ci_workflow_glob` — a key for this very gate — and it already hosts an
+exemption-list pattern for a different gate (`exemption_list_path`). So the shape
+is precedented; the wiring is absent.
+
+S31 stays OPEN because nothing in it was repaired. What is closed is the question
+"is D45's remedy a rewire or a build", and the answer is: a build.

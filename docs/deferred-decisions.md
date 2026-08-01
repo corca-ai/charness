@@ -503,6 +503,21 @@ Reopen trigger:
 - Why deferral is right at the time: arming it makes this repo's broad quality lane permanently red with no honest remediation short of deleting a legitimate `scheduled-deeper-check` exemption, and the alternative repair — moving the exemption declaration out of the audited file into the adapter, which is the north-star "different channel" answer — is a contract change for every consumer repo and deserves its own slice, not a ride-along on a defect repair. Choosing which toll to pay is the same class of call as [D40](#d40-no-pre-landing-lane-blocks-an-unproven-changed-line), and it is the owner's.
 - Non-claims: the NOTE line is legibility, not teeth — it is one line in an ~82-gate run, and the slice does not claim anyone will read it. Nothing here narrows S31's self-declaration defect. A second new flag, `--require-established-gate-match`, is NOT part of this deferral: round 2 established it is a no-op on this repo today (every workflow is exempt, so the bucket is empty), so it was armed at the commit boundary in [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) rather than deferred. `run-quality.sh` still does not pass it, for the same reason it does not pass `--require-evaluated-scope`: the broad lane runs in consumer repos too, and a composite-action CI is an honest shape there.
 - Impact surfaces: [run-quality.sh](../scripts/run-quality.sh), [inventory_ci_local_gate_parity.py](../skills/public/quality/scripts/inventory_ci_local_gate_parity.py), [ci_local_gate_parity_lib.py](../skills/public/quality/scripts/ci_local_gate_parity_lib.py), [maintainer-local-enforcement.md](../skills/public/quality/references/maintainer-local-enforcement.md), `.github/workflows/*.yml`.
+- **Named remedy's premise, ANSWERED 2026-08-01 (by reading, before any S31 work).** This
+  entry calls the alternative repair "moving the exemption declaration out of the audited
+  file into the adapter", which reads as a rewire. It is not. Verified in
+  [ci_local_gate_parity_lib.py](../skills/public/quality/scripts/ci_local_gate_parity_lib.py):
+  `read_gate_policy(raw_text, workflow_label)` takes **only the workflow's own text**, and
+  `evaluate_workflow(path, workflow, gate_patterns, ci_only_marker)` receives no adapter,
+  no external exemption source, and no seam for one. **There is no adapter-declared
+  exemption channel to move the declaration INTO.** The remedy requires BUILDING that seam
+  — a new parameter threaded through `evaluate_workflow`, a declared-exemption source, and
+  a precedence rule between the two channels for consumer repos that use neither. Two facts
+  keep it buildable rather than speculative: the quality adapter is a real resolvable
+  surface that ALREADY carries `ci_workflow_glob`, a key for this very gate, and it already
+  hosts an exemption-list pattern for a different gate (`exemption_list_path`). The shape is
+  precedented; the wiring is absent. This does not change the deferral — it corrects what
+  the deferred work COSTS, which is the thing a future session would have mis-scoped.
 - Reopen trigger: a CI/local parity escape that this repo's own green did not catch; or S31 being worked, since moving the exemption to the adapter changes what "evaluated" can mean; or a third charness workflow landing.
 
 ### D46. Should an uninterpreted adapter-YAML line REFUSE the adapter, or only warn?
