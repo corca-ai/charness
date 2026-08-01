@@ -45,8 +45,12 @@ Get the operator call on the three unarmed refusals D46 (adapter-YAML), D47 (inv
 
 - Not a release: no plugin version bump, no publish, no tag.
 - **Do not arm any of the three refusals as originally posed.** The operator's
-  2026-08-01 call was: D46 stays deferred (warn, do not refuse), D47 and D48 take
-  the better repair each entry already named instead of the binary arming.
+  2026-08-01 call was: D46 stays deferred (warn, do not refuse); D47 and D48 were
+  routed to the better repair each entry named — and BOTH of those were then
+  WITHDRAWN as unbuildable by the plan critique, and reshaped by the operator's Q1
+  and Q2 answers. **Do not retry either named repair**: D47's per-field
+  distinctiveness and D48's sync-derived surface set are marked
+  `Withdrawn, do not retry` in their entries with the reasons.
 - Do not rewrite the five frozen quality reviews that cite `inventory_nose_clones`
   / `inventory_doc_duplicates` to satisfy a later gate. That is the Goodhart move
   `validate_inventory_consumption.py`'s own docstring exists to refuse.
@@ -247,7 +251,7 @@ and the release resume gap named in D48.
 - What changed: skills/public/handoff/scripts/chunked_routing_issue_source.py (LAST_ISSUE_ADAPTER_REPORT + _adapter_report/_report_lines); parse_handoff_entries.py (payload emission); propose_merges.py and prepare_chunk_packet.py (forwarding); chunked_routing_cli.py (new shared entries_from_pipeline_payload + forward_carried_keys); tests/test_handoff_chunker_issue_source.py and tests/test_handoff_chunker_parse.py (11 tests); docs/deferred-decisions.md D46; charness-artifacts/quality/dup-review.json (2 classifications); generated mirror under plugins/charness/ re-synced and proven byte-identical.
 - Alternatives rejected: Arming the refusal (rejected by the operator and by round-1 review of the prior slice: a colon-less line would turn a consumer's whole issue lane red). Branching on valid inside build_issue_entries (rejected: it would empty the issue backlog from pickup, indistinguishable from the documented trackerless fallback). Reporting warnings only (rejected after review: errors and warnings are disjoint in that loader, so valid:false would arrive with no diagnosis). Extracting a shared stage runner across all five pipeline CLIs (rejected: the per-stage skeleton is the pipeline's CLI contract, already accepted as intentional in the dup overlay; the genuinely extractable half was extracted instead).
 - Targeted verification: pytest tests/test_handoff_chunker_*.py -> 138 passed. Real-loader test drives resolve_adapter.load_adapter over D46's own colon-less default_org line and asserts the D46-stamped warning. check_dup_ratchet.py: FAIL(3 families) at first edit -> extracted the shared half -> FAIL(2) -> both classified intentional against existing precedent 6ff3e380d6a8fcaf/0bc23ea0000c6cf9 -> OK, fixable_ceiling=0. sync_root_plugin_manifests.py re-run; diff -q proves all four mirrored files byte-identical.
-- Test duplication pressure: 11 new tests in two existing modules; no new test file. The dup gate flagged the CLI-skeleton families as expected and was run at the FIRST edit to a gated file, not at the closeout aggregate (the recorded lesson that had failed to prevent itself twice).
+- Test duplication pressure: 17 tests across two existing modules AND one NEW module, `tests/test_handoff_chunker_adapter_report.py`, which the length cap forced out of `test_handoff_chunker_parse.py` at 840/800 lines. An earlier draft of this line said "no new test file"; that was false and the closeout-claims review caught it. The dup gate was run at the FIRST edit to a gated file, not at the closeout aggregate.
 - Critique: One bounded fresh-eye round (typed bounded-reviewer, read-only, fingerprint window w-20260801T070657Z, verdict clean). It found 7 defects, ALL folded: errors dropped from the report (the loader's only invalidity channel); the field dying at propose_merges, repeating recorded defect F3; the CLI emission untested; not-found boilerplate reported as signal; bool(valid) fabricating a false verdict and an errors-only shape reading as clean; a TypeError in reporting able to empty the backlog through the fallback except; and two over-claims in the D46 entry text. The unfaithful invalid-adapter fixture it caught (an errors-list message stubbed into warnings) was the reason the dropped-errors gap was invisible. Second round not owed: this surface reports, it does not render a verdict about other code.
 - Off-goal findings:
 - Lessons carried forward: A reviewer's finding that a FIXTURE is unfaithful to the real loader was worth more than any finding about the code: the fixture was what made the real gap invisible. And running the dup-ratchet at the first edit turned a would-be closeout hard-block into a mid-slice extraction that improved the design.
@@ -275,7 +279,7 @@ and the release resume gap named in D48.
 - What changed: scripts/measure_inventory_marker_rule.py (NEW); scripts/inventory_measurement_lib.py (NEW, extracted when the dup gate fired); scripts/measure_inventory_consumption_floor.py (uses the lib, docstring corrected); scripts/validate_inventory_consumption.py (arming comment corrected); charness-artifacts/probe/2026-08-01-inventory-marker-rule.json (NEW); tests/test_inventory_marker_rule_measurement.py (NEW, 14 tests); docs/deferred-decisions.md D47; two dup classifications; stale line refs in the sibling's test comments.
 - Alternatives rejected: Building the distinctiveness declaration (rejected before it was written, by the plan critique). Arming the marker rule (rejected by the operator: the standing-red toll is the owner's to levy). Adding the measurement to the sibling script (rejected: a different rule deserves its own script, and the sibling is near its length budget).
 - Targeted verification: Executed, recorded, and pinned: top level 105 artifacts / 169 presence-only mentions / 161 clearing the floor / 114 marked / 47 unmarked / 5 refused citations across 4 artifacts; recursive 123 / 252 / 244 / 179 / 65 / 7 citations across 5. Both variants recorded in the probe with _provenance and pinned against the live tree by the test suite. The presence-only total reproduces the sibling probe's 169 exactly, which is asserted as a test. 320 inventory/declaration tests pass; dup-ratchet OK; length gate clean.
-- Test duplication pressure: 14 tests in one new module plus a probe record. The first version of the real-corpus test asserted total == marked + unmarked, which is how unmarked is COMPUTED — it could not fail for any implementation. Round 1 caught it; it now pins the recorded probe, the citation count, and the recursive variant.
+- Test duplication pressure: 20 tests in `tests/test_inventory_marker_rule_measurement.py` plus 10 in a SECOND new module, `tests/test_inventory_measurement_lib.py` (added at closeout to cover the shared exemption ladder the armed gate named), plus a probe record. An earlier draft of this line omitted the second module. The first version of the real-corpus test asserted total == marked + unmarked, which is how unmarked is COMPUTED — it could not fail for any implementation. Round 1 caught it; it now pins the recorded probe, the citation count, and the recursive variant.
 - Critique: TWO bounded rounds, both fingerprint-clean. Round 1 found the measurement's central regex matched the GAP BETWEEN two code spans, so bare prose between two unrelated spans scored as marked — a one-way bias that inflated 'marked' and produced the tidy headline that the toll was smaller than D47 recorded. Correcting it moved unmarked 42 -> 47 and refusals 3 -> 4 artifacts. Round 1 also found that 169 was never a hand count (the sibling script produced it), so the comparison was apples-to-oranges, and that the tautological test pinned nothing. Round 2 read the repairs and found: my arming-comment 'repair' had silently not applied (the exact-string replace missed a line wrap) so the wrong numbers still shipped; my new claim that 'the hand count was substantially right' swapped units, since the hand count's 5 was REVIEWS and the executed 5 is CITATIONS across 4 ARTIFACTS — on the hand count's own unit the answer is 4; a comment asserted the exemption branch was 'live under --recursive' while the probe recorded beside it said measured-zero; and the gate skips on three exemption arms, not one. All folded. Round 2 is the cap: its repairs are accepted-unreviewed.
 - Off-goal findings: markers_for still counts a field name inside a backticked PATH or flag as a citation, and does not model odd-backtick lines or fenced blocks; all three carry the same one-way bias as the repaired bug and are verified inert on today's corpus. Recorded in the probe and in D47 rather than repaired.
 - Lessons carried forward: Two lessons, both about my own claims rather than the code. A string replace that does not match fails SILENTLY, so a 'repair' can be reported as done while the wrong number ships — round 2 caught exactly that. And when a corrected measurement lands near a number I expected, the temptation is to narrate agreement; here that meant swapping 'reviews' for 'citations' to make 5 equal 5, when the honest answer on the hand count's own unit was 4.
@@ -536,12 +540,17 @@ The three consequential activation items and their resolutions are recorded in t
 - Targeted suites: 6570 collected repo-wide; the touched families all green —
   handoff/chunker 138, release+absent-input 122, inventory/declaration 320, the
   new measurement-lib module 10.
-- `check_dup_ratchet.py`: OK, `fixable_ceiling=0`. It fired FOUR times during the
-  run, at the first edit to a gated file each time, and each firing produced a real
-  extraction (`forward_carried_keys`, `entries_from_pipeline_payload`,
-  `cited_inventories`, `inventory_measurement_lib`) rather than a late hard-block.
-  Five families were classified `intentional` against named precedent; one was
-  recorded as a fingerprint rotation.
+- `check_dup_ratchet.py`: OK, `fixable_ceiling=0`. It fired at the first edit to a
+  gated file in every slice rather than at the closeout aggregate. **Corrected by
+  the closeout-claims review:** an earlier draft claimed it "fired FOUR times and
+  each firing produced a real extraction", which counted extracted HELPERS as
+  firings and was false besides — slice 2's firing produced two classifications and
+  a rotation, no extraction at all. What is true: three firings, four helpers
+  extracted across slices 1 and 3 (`forward_carried_keys`,
+  `entries_from_pipeline_payload`, `cited_inventories`, `inventory_measurement_lib`),
+  and SEVEN families added to the overlay — six classified `intentional` against
+  named precedent, one a recorded fingerprint rotation. Verify with
+  `git diff 8c3b3446..HEAD -- charness-artifacts/quality/dup-review.json`.
 - Executed before/after proof for D48 on a scratch worktree, not asserted: with the
   codex `plugin.json` deleted AND the four declaration lines removed, the
   pre-slice script returned `drift: []` — a clean publish verdict over a missing
@@ -551,11 +560,25 @@ The three consequential activation items and their resolutions are recorded in t
 - Executed measurement for D47, recorded at
   [2026-08-01-inventory-marker-rule.json](../probe/2026-08-01-inventory-marker-rule.json)
   and pinned against the live tree.
-- Boundary integrity: five `reviewer_boundary_fingerprint` windows opened and
-  verified, all `clean`, no drift.
+- Boundary integrity: **SIX** bounded rounds ran during the goal, not five — plan
+  critique, slice 1, slice 2 x2, slice 3 x2 — plus two after it (the handoff
+  misunderstanding critique and the closeout-claims review that corrected this
+  section). Every one opened a `reviewer_boundary_fingerprint` window and verified
+  it `clean`: `w-20260801T065201Z-1242305`, `-070657Z-1246543`, `-072844Z-1305016`,
+  `-074707Z-1402544`, `-080341Z-1430667`, `-081226Z-1440848`, `-105250Z-1791929`,
+  `-110813Z-1798113`. **Limitation, recorded rather than glossed:** every snapshot
+  used the helper's default `--out`, so each overwrote the last and only the final
+  window survives on disk. The verify output for the others exists in the session
+  transcript only, which is a weaker record than a boundary check deserves.
 
 **Non-claims.** No `git push`, no remote CI dispatch, no `cautilus evaluate`, no
-release publish, no version bump. Every verdict here is local. None of the three
+release publish, no version bump. **One external write did happen and belongs in
+this block, not only elsewhere: GitHub issue #468 was created.** It was read back
+(`gh issue view 468 --json state,title,labels,body` → OPEN, 2913-byte body
+carrying its Structural pattern / Triggering instances / Destination sections),
+but the readback used the same tool and the same observer as the write, so by this
+repo's own P4 standard it is a re-read of the same proxy, not a distinct channel.
+Every other verdict here is local. None of the three
 refusals was armed. The D48 publish refusal has never run against a real publish —
 it is proven by tests and by a scratch-worktree reproduction, not by a release.
 `publish_release_resume.py` still reaches `create_release` with no surface check.
@@ -563,11 +586,14 @@ The D47 measurement's remaining false positives are verified inert on today's
 corpus, not repaired.
 
 Retro: charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md
-Host log probe: skipped: host-log-not-exposed: the Claude session log exposes
-thread-wide token snapshots, function calls and subagent spawns, but this goal
-carries no `Host metric window:` line, so no per-goal scoped total can be derived
-and the thread-wide figures are pressure, not this goal's cost.
-Disposition review: charness-artifacts/retro/2026-08-01-three-unarmed-refusals-retro.md
+Host log probe: skipped: host-log-not-exposed: the enum head is the closest
+available and is imprecise — the session JSONL WAS exposed and read, and the retro
+records its thread-wide figures. What is not exposed is a per-GOAL scope: this goal
+carries no `Host metric window:` line, so no scoped total can be derived and the
+thread-wide numbers are pressure, not this goal's cost. They also drift between
+readings (the retro's two probe runs differ, 443 vs 448 snapshots) because the
+thread kept growing between them.
+Disposition review: charness-artifacts/critique/2026-08-01-three-unarmed-refusals-closeout-claims-review.md
 
 ## User Verification Instructions
 
@@ -588,7 +614,13 @@ Disposition review: charness-artifacts/retro/2026-08-01-three-unarmed-refusals-r
 3. **Re-run D47's measurement:**
    `python3 scripts/measure_inventory_marker_rule.py --repo-root .` — expect 5
    refused citations across 4 artifacts, matching the recorded probe.
-4. **Check the review record:** the goal's `## Plan Critique Findings` and each
+4. **Expect the bundle gate to still show 1 failed.** `./scripts/run-quality.sh`
+   defaults its changed-line base to `merge-base origin/main HEAD`, and this
+   session does not push, so an operator running the documented bundle command
+   today inherits earlier sessions' uncovered lines. No green full-bundle run is
+   recorded, deliberately — the scoped re-run is the evidence, and it is a
+   different claim.
+5. **Check the review record:** the goal's `## Plan Critique Findings` and each
    slice's `Critique` field name what every round found, including the three
    findings that were about my claims rather than the code.
 

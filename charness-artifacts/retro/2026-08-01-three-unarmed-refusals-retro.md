@@ -22,9 +22,10 @@ sweep closeout, plus the goal artifact and one new probe.
 
 - The goal artifact's own Slice Log and Plan Critique Findings, written as the run
   went rather than reconstructed.
-- Five bounded fresh-eye reviews (one plan critique, two rounds on slice 2, two on
-  slice 3, one on slice 1), each with a `reviewer_boundary_fingerprint` window that
-  verified `clean`.
+- SIX bounded fresh-eye reviews during the goal (one plan critique, one on slice 1,
+  two on slice 2, two on slice 3), each with a `reviewer_boundary_fingerprint`
+  window that verified `clean`. An earlier draft said five; the closeout-claims
+  review — a seventh, and the eighth reviewed the handoff — caught the count.
 - Executed before/after comparisons on a scratch worktree for D48, and a recorded
   probe (`charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`) with
   both the buggy and corrected runs for D47.
@@ -50,9 +51,10 @@ as repaired, and round 2 found the superseded numbers still shipping in the gate
 that exists to defend the threshold. This is the only waste here that produced a
 false claim rather than a slow path.
 
-**Not waste, despite looking like it:** the five review rounds. Every round found
-at least one blocker, and three of them found defects in my *claims* rather than
-my code — which is exactly the class no same-agent pass catches.
+**Not waste, despite looking like it:** the review rounds. Every round found at
+least one blocker, and — counting the closeout-claims review that corrected this
+retro's own numbers — FOUR of eight found defects in my *claims* rather than my
+code, which is exactly the class no same-agent pass catches.
 
 ## Critical Decisions
 
@@ -119,6 +121,11 @@ premise before scheduling it, not while implementing it.
 
 ## Next Improvements
 
+- **workflow — a closeout needs a distinct observer too.** The `Disposition review:`
+  line pointed at this retro, which I wrote; a bounded closeout-claims review then
+  found four blockers in the goal's own numbers, including the dup-ratchet
+  win-rate this retro repeated. Applied: the line now points at
+  `charness-artifacts/critique/2026-08-01-three-unarmed-refusals-closeout-claims-review.md`.
 - **workflow — verify a string-replace landed.** After any exact-string edit to a
   file I do not immediately re-read, assert the superseded text is absent. The
   silent-no-op class produced the only false claim this session.
