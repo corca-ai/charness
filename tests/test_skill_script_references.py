@@ -313,6 +313,23 @@ def _package(root: Path, rel: str) -> Path:
     return target
 
 
+def test_a_file_sitting_in_plugins_is_skipped_not_treated_as_a_package(tmp_path: Path) -> None:
+    """`plugins/*` globs paths, not directories.
+
+    A stray file there (a README, a marketplace manifest, an editor artifact)
+    must be skipped rather than walked as a plugin root — otherwise every
+    `<authoring-repo>/` reference would resolve against a non-directory.
+    """
+    (tmp_path / "plugins").mkdir()
+    (tmp_path / "plugins" / "marketplace.json").write_text("{}\n", encoding="utf-8")
+    real = tmp_path / "plugins" / "demo" / "skills" / "one"
+    real.mkdir(parents=True)
+    (real / "DOC.md").write_text("# D\n", encoding="utf-8")
+
+    roots = {pkg.root for pkg in inventory_module.iter_skill_packages(tmp_path)}
+    assert roots == {real}
+
+
 def test_the_counted_defect_is_caught_across_packages_not_just_within_one(tmp_path: Path) -> None:
     """`skills/shared` prose naming another package's script is the common shape.
 
