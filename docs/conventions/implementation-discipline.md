@@ -244,6 +244,45 @@ shapes may escape it — a missed nudge beats a false one that trains token-thea
 A *blocking* enforcement gate for this rule is deliberately rejected: it would be
 the exact reflex the rule names.
 
+## Repair Discipline
+
+- **State the intended delta; prove the complement is unchanged.** A bounded
+  reviewer's finding is a POINT. The repair is a change to a FUNCTION, and the
+  blast radius is that function's entire prior behaviour. Tests written for the
+  original only cover properties someone already thought to name, so a repair can
+  silently NARROW a property nothing asserts while every gate stays green. This
+  is the mechanism behind the recurring "the fix carries the class it fixes"
+  signature, measured six times in this repo.
+- **The evidence is a same-session controlled comparison, not a theory.** In one
+  slice, three surfaces were repaired by the same agent on the same day:
+  `check_doc_links.validate_link` and `markdown_doc_scan.iter_doc_lines` were
+  differentially verified against their baseline and the next bounded round found
+  ZERO defects in them; `check_plugin_doc_links.iter_unfollowable_links` was not,
+  and the same round found THREE narrowings in it.
+- **The baseline is what the reviewer READ, not the last commit.** A function
+  created earlier in the same slice is simply new at commit granularity, so a
+  commit-ranged diff cannot see its repair at all — which is exactly the case the
+  three defects landed in. `reviewer_boundary_fingerprint.py snapshot` captures a
+  strict subset of what it certifies — the CHANGED and untracked `.py` files, not
+  symlinks, under 512 KiB — and
+  [parity_harness.py](../../scripts/parity_harness.py) recovers them
+  (`--against review-snapshot`). A file that was clean when the reviewer read it
+  has no captured baseline and is reported as `uncomparable`, never as a clean
+  zero; for that case, and for repairing a function that already shipped, a
+  committed ref is the right baseline.
+- **`run_slice_closeout.py` surfaces this as an advisory**, naming every function
+  (by qualified name, so `A.run` and `B.run` cannot collapse into one verdict)
+  whose signature is unchanged but whose body — including its decorators — changed
+  since the reviewer read it, plus a count of paths it could not compare.
+  It is advisory rather than blocking because the delta is often intended and only
+  the author can say so — the gate forces the question, it does not render the
+  verdict. The snapshot it reads is bound to `HEAD`, so a stale one from an
+  earlier slice cannot make it announce a review that never ran; it cannot
+  substitute for a review either way.
+- **Non-claim:** identical outcomes over a corpus is evidence about that corpus,
+  not a proof of equivalence. The harness narrows where a narrowing can hide; it
+  does not prove none is left.
+
 ## Generated And Installed Surfaces
 
 - **`parents[N]` in a skill script is correct in both trees only by a

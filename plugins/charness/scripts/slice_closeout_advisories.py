@@ -9,6 +9,7 @@ broad suite.
 """
 from __future__ import annotations
 
+import json
 import os
 import re
 import subprocess
@@ -498,5 +499,76 @@ def advise_over_slicing(repo_root: Path) -> None:
         "re-fire critique or broad proof within one unchanged slice intent "
         "(meaningful-slice-cadence). Update `Current slice intent:` in the goal "
         "frame when the intent actually changes, not per commit.",
+        file=sys.stderr,
+    )
+
+
+_PARITY_HARNESS = "scripts/parity_harness.py"
+
+
+def advise_repair_parity(repo_root: Path, changed_paths: list[str]) -> None:
+    """Name the functions this slice REPAIRED since a bounded reviewer read them.
+
+    A reviewer's finding is a point; the repair is a change to a function; the
+    blast radius is that function's whole prior behaviour. Tests written for the
+    original only cover properties someone already named, so a repair can narrow a
+    property nothing asserted and leave every gate green.
+
+    Measured in one slice of this repo: two repaired surfaces were differentially
+    verified against their baseline and a second bounded round found nothing in
+    them; the third was not, and the same round found three narrowings in it.
+
+    Fires only when a reviewer snapshot captured the pre-repair source, so it is
+    silent on slices that ran no bounded review and cannot substitute for one.
+    """
+    harness = repo_root / _PARITY_HARNESS
+    if not harness.is_file():
+        return
+    proc = subprocess.run(
+        [sys.executable, str(harness), "--repo-root", str(repo_root), "--against", "review-snapshot", "--json"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if proc.returncode != 0:
+        return
+    try:
+        report = json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return
+    repaired = report.get("files") or {}
+    uncomparable = report.get("uncomparable") or {}
+    if not repaired and not uncomparable:
+        return
+    # An all-uncomparable slice used to return here and print NOTHING, which is
+    # the silent zero this advisory exists to remove -- one step worse, because
+    # nothing distinguished "the snapshot was invalidated by a mid-slice commit"
+    # from "no bounded review ran". Both now say so, by name.
+    if not repaired:
+        reason = "no reviewer snapshot for this HEAD (none taken, or invalidated by a mid-slice commit)"
+        print(
+            f"ADVISORY: {len(uncomparable)} changed Python path(s) could NOT be compared against what a "
+            f"bounded reviewer read — {reason}. That is UNEXAMINED, not clean: any repair in them is "
+            f"unverified. `python3 {_PARITY_HARNESS} --against <base-ref>` is the fallback baseline for "
+            "a function that already shipped.",
+            file=sys.stderr,
+        )
+        return
+    rendered = "; ".join(f"{path}: {', '.join(names)}" for path, names in sorted(repaired.items()))
+    unexamined = (
+        f" {len(uncomparable)} further path(s) could NOT be compared and are unexamined, not clean."
+        if uncomparable
+        else ""
+    )
+    # stderr, like every sibling advisory: `run_slice_closeout.py --json` writes its
+    # payload to stdout, so an advisory printed there makes the documented
+    # `json.loads(result.stdout)` raise.
+    print(
+        f"ADVISORY: {report.get('repair_count', 0)} function(s) were REPAIRED after a bounded reviewer "
+        f"read them (same signature, changed body) — {rendered}.{unexamined} State the INTENDED delta "
+        "for each and prove the complement is unchanged; a repair verified only against the finding that "
+        "prompted it is how a narrowing ships green. Baseline source is recoverable: "
+        f"`python3 {_PARITY_HARNESS} --against review-snapshot` lists them, and its "
+        "`baseline_source`/`load_module_from_source`/`compare_callables` run the differential.",
         file=sys.stderr,
     )

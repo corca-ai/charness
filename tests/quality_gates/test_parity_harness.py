@@ -1,0 +1,531 @@
+from __future__ import annotations
+
+import json
+import subprocess
+import sys
+from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
+
+from .support import ROOT, run_script
+
+
+def seeded_repo(path: Path) -> Path:
+    """A git repo with a HEAD commit — `build_snapshot` resolves HEAD, so an empty repo is not a repo."""
+    path.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["git", "init"], cwd=path, check=True, capture_output=True)
+    (path / "seed.txt").write_text("seed\n", encoding="utf-8")
+    subprocess.run(["git", "add", "seed.txt"], cwd=path, check=True, capture_output=True)
+    subprocess.run(["git", "commit", "-m", "seed"], cwd=path, check=True, capture_output=True)
+    return path
+
+_parity = import_repo_module(ROOT / "scripts/parity_harness.py", "scripts.parity_harness")
+
+# The real narrowing this harness exists for, reduced to its two versions.
+# `LINK_RE`'s character classes match newlines, so scanning the joined text finds
+# a prose-wrapped link and scanning line-by-line does not. That one-line change
+# was the round-1 repair for a false positive, and it opened a false negative that
+# no existing test covered -- because nothing had ever named "wrapped links" as a
+# property. Built from the shipped defect, not from an invented one.
+BASELINE_SCAN = '''
+import re
+LINK_RE = re.compile(r"\\[[^\\]]+\\]\\(([^)]+)\\)")
+
+def scan(lines):
+    text = "\\n".join(lines)
+    return LINK_RE.findall(text)
+'''
+
+REPAIRED_SCAN = '''
+import re
+LINK_RE = re.compile(r"\\[[^\\]]+\\]\\(([^)]+)\\)")
+
+def scan(lines):
+    return [target for line in lines for target in LINK_RE.findall(line)]
+'''
+
+WRAPPED_LINK = ["See the [agent assessment", "invariant](../../../scripts/runtime_bootstrap.py) for the rule."]
+
+
+def test_the_real_narrowing_is_reported_as_repair_shaped() -> None:
+    """`scan`'s signature is identical; only its body changed. That pair is the whole signal."""
+    assert _parity.repair_shaped_functions(BASELINE_SCAN, REPAIRED_SCAN) == ["scan"]
+
+
+def test_the_real_narrowing_diverges_on_a_wrapped_link() -> None:
+    """Naming the function is not enough — the harness must show the behaviour that moved."""
+    baseline = _parity.load_module_from_source(BASELINE_SCAN, "parity_baseline_scan")
+    current = _parity.load_module_from_source(REPAIRED_SCAN, "parity_current_scan")
+
+    divergences = _parity.compare_callables(baseline.scan, current.scan, [(WRAPPED_LINK,)])
+
+    assert len(divergences) == 1
+    assert "runtime_bootstrap.py" in divergences[0]["baseline"][1]
+    assert divergences[0]["current"][1] == repr([])
+
+
+def test_an_unwrapped_link_does_not_diverge() -> None:
+    """Proves the harness reports a DIFFERENCE, not merely that two modules were loaded."""
+    baseline = _parity.load_module_from_source(BASELINE_SCAN, "parity_baseline_same")
+    current = _parity.load_module_from_source(REPAIRED_SCAN, "parity_current_same")
+
+    divergences = _parity.compare_callables(
+        baseline.scan, current.scan, [(["See [x](./a.md) here."],)]
+    )
+
+    assert divergences == []
+
+
+def test_a_new_function_is_not_repair_shaped() -> None:
+    """A function with no prior behaviour has no complement to preserve."""
+    assert _parity.repair_shaped_functions("def a():\n    return 1\n", "def a():\n    return 1\n\ndef b():\n    return 2\n") == []
+
+
+def test_a_changed_signature_is_not_repair_shaped() -> None:
+    """A changed signature is LOUD — every caller is forced to update, so the radius gets walked."""
+    assert _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x, y):\n    return x\n") == []
+
+
+def test_an_unchanged_function_is_not_repair_shaped() -> None:
+    assert _parity.repair_shaped_functions("def a(x):\n    return x\n", "def a(x):\n    return x\n") == []
+
+
+def test_a_nested_helper_is_reported_together_with_its_enclosing_function() -> None:
+    """A closure a repaired function delegates to is exactly where a narrowing hides.
+
+    Both names are reported, and that is correct rather than noisy: editing the
+    closure necessarily changes the enclosing function's body too, and the reader
+    needs the outer name to know which public surface moved.
+    """
+    before = "def outer(x):\n    def inner(y):\n        return y\n    return inner(x)\n"
+    after = "def outer(x):\n    def inner(y):\n        return y or 0\n    return inner(x)\n"
+
+    assert _parity.repair_shaped_functions(before, after) == ["outer", "outer.inner"]
+
+
+def test_a_raise_becoming_a_return_is_a_divergence_not_a_crash() -> None:
+    """An exception is an OUTCOME. A gate that stopped refusing is the narrowing that matters most."""
+    baseline = _parity.load_module_from_source(
+        "def check(v):\n    raise ValueError('refused')\n", "parity_baseline_raise"
+    )
+    current = _parity.load_module_from_source("def check(v):\n    return None\n", "parity_current_raise")
+
+    divergences = _parity.compare_callables(baseline.check, current.check, [(1,)])
+
+    assert len(divergences) == 1
+    assert divergences[0]["baseline"][0] == "raise"
+    assert divergences[0]["current"][0] == "return"
+
+
+def test_loading_a_baseline_does_not_leak_into_sys_modules() -> None:
+    """Both versions define the same names; a leak would let one silently shadow the other."""
+    name = "parity_leak_probe"
+    _parity.load_module_from_source("VALUE = 1\n", name)
+
+    assert name not in sys.modules
+
+
+def test_a_baseline_that_cannot_load_is_a_usage_error_not_a_silent_pass() -> None:
+    try:
+        _parity.load_module_from_source("def broken(:\n", "parity_broken")
+    except _parity.ParityError:
+        return
+    raise AssertionError("a syntactically broken baseline must refuse, not load empty")
+
+
+def test_uncomparable_paths_are_reported_rather_than_dropped(tmp_path: Path) -> None:
+    """A path with no baseline is not "no repairs" — conflating them is the silent-zero shape."""
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "fresh.py").write_text("def a():\n    return 1\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/parity_harness.py",
+        "--repo-root",
+        str(repo),
+        "--against",
+        "review-snapshot",
+        "--paths",
+        "scripts/fresh.py",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["files"] == {}
+    assert "scripts/fresh.py" in payload["uncomparable"]
+
+
+def test_the_snapshot_captures_python_source_so_a_repair_has_a_baseline(tmp_path: Path) -> None:
+    """End-to-end: the reviewer-boundary snapshot is what makes an in-slice baseline exist at all.
+
+    Commit-ranged tooling cannot supply this. A function created earlier in the
+    same slice is simply NEW at commit granularity, so the version the reviewer
+    read is the only honest baseline for its repair — and until this capture,
+    nothing in the repo recorded it.
+    """
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "gate.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+
+    snapshot = run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo)
+    )
+    assert snapshot.returncode == 0, snapshot.stderr
+
+    # The repair: same signature, narrowed body.
+    target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/parity_harness.py",
+        "--repo-root",
+        str(repo),
+        "--against",
+        "review-snapshot",
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["files"] == {"scripts/gate.py": ["verdict"]}
+
+
+def test_verify_does_not_overwrite_the_captured_baseline(tmp_path: Path) -> None:
+    """Capturing at verify time would record the REPAIRED source and destroy the baseline."""
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "gate.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+
+    target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "verify", "--repo-root", str(repo))
+
+    baseline = _parity.source_at_review_snapshot(repo, "scripts/gate.py")
+    assert baseline is not None
+    assert "return bool(x)" in baseline
+
+
+_advisories = import_repo_module(
+    ROOT / "scripts/slice_closeout_advisories.py", "scripts.slice_closeout_advisories"
+)
+
+
+def _canned_harness(payload: dict):
+    class _Proc:
+        returncode = 0
+        stdout = json.dumps(payload)
+
+    return lambda *a, **k: _Proc()
+
+
+def test_the_advisory_names_the_repaired_functions(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        _advisories.subprocess,
+        "run",
+        _canned_harness({"files": {"scripts/gate.py": ["verdict"]}, "repair_count": 1}),
+    )
+
+    _advisories.advise_repair_parity(ROOT, [])
+
+    captured = capsys.readouterr()
+    assert "scripts/gate.py: verdict" in captured.err
+    assert "INTENDED delta" in captured.err
+    # stdout carries the `--json` closeout payload; an advisory there breaks it.
+    assert captured.out == ""
+
+
+def test_the_advisory_is_silent_when_no_function_was_repaired(monkeypatch, capsys) -> None:
+    """It must not fire on every slice, or it becomes ceremony the reader learns to skip."""
+    monkeypatch.setattr(
+        _advisories.subprocess,
+        "run",
+        _canned_harness({"files": {}, "uncomparable": {}, "repair_count": 0}),
+    )
+
+    _advisories.advise_repair_parity(ROOT, [])
+
+    captured = capsys.readouterr()
+    assert captured.out == "" and captured.err == ""
+
+
+def test_the_advisory_degrades_silently_without_the_harness(tmp_path: Path, capsys) -> None:
+    """A consuming repo without the harness gets no gate, not a crash."""
+    _advisories.advise_repair_parity(tmp_path, [])
+
+    captured = capsys.readouterr()
+    assert captured.out == "" and captured.err == ""
+
+
+# --- Round-1 findings, each pinned by the case that produced it -------------------
+
+
+def test_same_named_methods_in_two_classes_do_not_collide() -> None:
+    """Flat `node.name` keys made repairing `A.run` INVISIBLE — `B.run` overwrote it."""
+    before = "class A:\n    def run(self, x):\n        return 1\nclass B:\n    def run(self, x):\n        return 2\n"
+    after = "class A:\n    def run(self, x):\n        return 99\nclass B:\n    def run(self, x):\n        return 2\n"
+
+    assert _parity.repair_shaped_functions(before, after) == ["A.run"]
+
+
+def test_adding_a_same_named_method_is_not_reported_as_a_repair() -> None:
+    """The other half of the collision: ADDING `B.helper` read as repairing `A.helper`."""
+    before = "class A:\n    def helper(self, x):\n        return 1\n"
+    after = before + "class B:\n    def helper(self, x):\n        return 2\n"
+
+    assert _parity.repair_shaped_functions(before, after) == []
+
+
+def test_a_decorator_change_with_an_untouched_body_is_repair_shaped() -> None:
+    """The quietest same-signature behaviour change there is, and it was invisible."""
+    before = "def f(x):\n    return x\n"
+    after = "import functools\n@functools.lru_cache\ndef f(x):\n    return x\n"
+
+    assert _parity.repair_shaped_functions(before, after) == ["f"]
+
+
+def test_two_different_generators_are_not_reported_as_identical() -> None:
+    """The harness's own FALSE GREEN: calling a generator function runs no body.
+
+    Both calls returned `<generator object ... at 0x...>`; CPython reused the
+    freed address often enough that two completely different generators compared
+    EQUAL and the harness reported "0 divergences" for a function it never ran —
+    intermittently, which is worse than always. `iter_doc_lines`, cited in this
+    module's own docstring as a verified surface, is a generator.
+    """
+    yields = _parity.load_module_from_source(
+        "def gen(n):\n    for i in range(n):\n        yield i\n", "parity_gen_yields"
+    )
+    empty = _parity.load_module_from_source("def gen(n):\n    return\n    yield\n", "parity_gen_empty")
+
+    assert len(_parity.compare_callables(yields.gen, empty.gen, [(3,)])) == 1
+    same = _parity.load_module_from_source(
+        "def gen(n):\n    for i in range(n):\n        yield i\n", "parity_gen_same"
+    )
+    assert _parity.compare_callables(yields.gen, same.gen, [(3,)]) == []
+
+
+def test_a_stale_snapshot_from_another_commit_is_not_read(tmp_path: Path) -> None:
+    """A durable snapshot kept answering for LATER slices, so the advisory could
+    announce a bounded review that never happened. Binding to HEAD discards it."""
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "gate.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    assert _parity.captured_paths(repo) == ["scripts/gate.py"]
+
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "land"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+
+    assert _parity.captured_paths(repo) == []
+    assert _parity.source_at_review_snapshot(repo, "scripts/gate.py") is None
+
+
+def test_a_file_clean_at_snapshot_time_is_reported_uncomparable_not_clean(tmp_path: Path) -> None:
+    """The common case: a reviewer reads COMMITTED code and the parent repairs it.
+
+    Such a file is never captured, so a captured-only default printed a reassuring
+    zero for exactly the repair class this tool exists to catch.
+    """
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "shipped.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    )
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+
+    target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
+    result = run_script("scripts/parity_harness.py", "--repo-root", str(repo), "--json")
+
+    payload = json.loads(result.stdout)
+    assert payload["files"] == {}
+    assert "scripts/shipped.py" in payload["uncomparable"]
+
+
+def test_the_snapshot_blobs_are_not_reported_as_reviewer_drift(tmp_path: Path) -> None:
+    """The capture made the boundary tool report a violation it caused itself.
+
+    In a repo without a `.gitignore` entry for `.charness/`, every written blob
+    appeared as `untracked-added` on the next verify — an unattributable
+    `ok: false`, which is how a parent learns to discount a real one.
+    """
+    repo = seeded_repo(tmp_path / "repo")
+    assert not (repo / ".gitignore").exists()
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "dirty.py").write_text("x = 1\n", encoding="utf-8")
+
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    verify = run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py", "verify", "--repo-root", str(repo)
+    )
+
+    payload = json.loads(verify.stdout)
+    assert payload["ok"] is True, payload["drift"]
+    assert payload["drift"] == []
+    assert verify.returncode == 0
+
+
+# --- Round-2 findings: the repairs for round 1 carried the class again ----------
+
+
+def test_the_advisory_speaks_when_everything_is_uncomparable(monkeypatch, capsys) -> None:
+    """Round-2 blocker: the round-1 repair traded a false claim for TOTAL SILENCE.
+
+    Binding the snapshot to HEAD meant a mid-slice commit made every path
+    uncomparable — and the advisory returned before printing anything, so a slice
+    with unverified repairs looked identical to a slice with none.
+    """
+    monkeypatch.setattr(
+        _advisories.subprocess,
+        "run",
+        _canned_harness({"files": {}, "uncomparable": {"scripts/a.py": "no baseline"}, "repair_count": 0}),
+    )
+
+    _advisories.advise_repair_parity(ROOT, [])
+
+    captured = capsys.readouterr()
+    assert "UNEXAMINED, not clean" in captured.err
+    assert "mid-slice commit" in captured.err
+    assert captured.out == ""
+
+
+def test_the_advisory_reports_uncomparable_alongside_repairs(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        _advisories.subprocess,
+        "run",
+        _canned_harness(
+            {"files": {"scripts/a.py": ["f"]}, "uncomparable": {"scripts/b.py": "x"}, "repair_count": 1}
+        ),
+    )
+
+    _advisories.advise_repair_parity(ROOT, [])
+
+    assert "further path(s) could NOT be compared" in capsys.readouterr().err
+
+
+def test_a_snapshot_written_at_the_repo_root_does_not_report_its_own_blobs(tmp_path: Path) -> None:
+    """`--out <repo-root>/snapshot.json` puts blobs at `<repo>/blobs/` — the most
+    visible place — and the round-1 repair's `directory == "."` guard skipped the
+    drop exactly there, leaving the original blocker reachable through a flag."""
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "dirty.py").write_text("x = 1\n", encoding="utf-8")
+    out = repo / "snapshot.json"
+
+    run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "snapshot", "--repo-root", str(repo), "--out", str(out),
+    )
+    verify = run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "verify", "--repo-root", str(repo), "--before", str(out),
+    )
+
+    payload = json.loads(verify.stdout)
+    assert payload["ok"] is True, payload["drift"]
+
+
+def test_a_destroyed_baseline_is_reported_as_lost_not_as_never_captured(tmp_path: Path) -> None:
+    """Evidence destruction must not read as "this path was simply not captured"."""
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "gate.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
+    for blob in (repo / ".charness" / "reviewer-boundary" / "blobs").glob("*"):
+        blob.unlink()
+    target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
+
+    payload = json.loads(run_script("scripts/parity_harness.py", "--repo-root", str(repo), "--json").stdout)
+
+    assert "LOST baseline" in payload["uncomparable"]["scripts/gate.py"]
+
+
+def test_a_returned_file_handle_is_not_consumed_or_collapsed() -> None:
+    """`hasattr(__next__)` also matches file handles; iterating one consumed it AND
+    erased the `name=` repr, so two DIFFERENT handles compared equal."""
+    baseline = _parity.load_module_from_source(
+        "def openit(p):\n    return open(p, 'w')\n", "parity_handle_a"
+    )
+    current = _parity.load_module_from_source(
+        "def openit(p):\n    return open(p + '.other', 'w')\n", "parity_handle_b"
+    )
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as tmp:
+        divergences = _parity.compare_callables(baseline.openit, current.openit, [(f"{tmp}/x",)])
+
+    assert len(divergences) == 1
+
+
+def test_hex_returning_functions_are_still_compared() -> None:
+    """Normalising every `0x…` token erased legitimate hex DATA, not just addresses."""
+    baseline = _parity.load_module_from_source("def fmt(n):\n    return hex(n)\n", "parity_hex_a")
+    current = _parity.load_module_from_source("def fmt(n):\n    return hex(n * 2)\n", "parity_hex_b")
+
+    assert len(_parity.compare_callables(baseline.fmt, current.fmt, [(42,)])) == 1
+
+
+def test_a_generator_that_raises_midway_keeps_its_prefix() -> None:
+    """Discarding the yielded prefix made "yields then raises" and "raises at once" equal."""
+    late = _parity.load_module_from_source(
+        "def gen(n):\n    yield 1\n    yield 2\n    raise ValueError('x')\n", "parity_gen_late"
+    )
+    early = _parity.load_module_from_source(
+        "def gen(n):\n    raise ValueError('x')\n    yield\n", "parity_gen_early"
+    )
+
+    assert len(_parity.compare_callables(late.gen, early.gen, [(1,)])) == 1
+
+
+def test_a_name_defined_twice_in_one_scope_does_not_collapse() -> None:
+    """Qualifying by scope was not enough: an import-fallback pair, `@property` +
+    `@x.setter`, and `@overload` stubs all define one name twice, legitimately."""
+    before = "try:\n    pass\nexcept ImportError:\n    def run(a):\n        return 1\ndef run(a):\n    return 2\n"
+    after = "try:\n    pass\nexcept ImportError:\n    def run(a):\n        return 99\ndef run(a):\n    return 2\n"
+
+    assert _parity.repair_shaped_functions(before, after) != []
+
+
+def test_a_renamed_file_keeps_both_sides_so_its_baseline_is_findable(tmp_path: Path) -> None:
+    """A rename-plus-repair reported two unexaminable paths and lost the baseline.
+
+    Keeping BOTH sides of the rename is what lets the moved file still resolve
+    against the blob the reviewer's snapshot captured under its old name.
+    """
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "old.py").write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
+        cwd=repo, check=True, capture_output=True,
+    )
+    subprocess.run(["git", "mv", "scripts/old.py", "scripts/new.py"], cwd=repo, check=True, capture_output=True)
+
+    paths = _parity.changed_python_paths(repo)
+
+    assert "scripts/new.py" in paths
+    assert "scripts/old.py" in paths
+
+
+def test_a_non_ascii_path_is_not_silently_dropped(tmp_path: Path) -> None:
+    """Line-oriented porcelain C-quotes non-ASCII paths, so they stopped ending in `.py`."""
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "caf\u00e9.py").write_text("x = 1\n", encoding="utf-8")
+
+    assert "scripts/caf\u00e9.py" in _parity.changed_python_paths(repo)

@@ -62,6 +62,14 @@ State capture lives in the sibling ``reviewer_boundary_state.py``.
 Scope note: gitignored files are intentionally invisible to this fingerprint --
 they cannot land in a closeout commit, so they are not a reviewer-boundary
 concern this script needs to cover.
+
+Non-claim about the captured source blobs: a reviewer that DELETES or rewrites
+them is not reported here. They are written after the status walk, so they are
+absent from the `before` untracked map, and their loss destroys no commit -- it
+destroys the baseline a later differential would have used. That loss is
+observable where it matters: `parity_harness.py` reports such a path as a LOST
+baseline, distinct from one that was never captured. Adding a blocking check here
+would be a new floor without a recorded recurrence.
 """
 
 from __future__ import annotations
@@ -191,20 +199,50 @@ def split_parent_attributed(
     return undeclared, attributed
 
 
-def _drop_self(snapshot: dict, repo_root: str, snapshot_path: str) -> None:
+def _drop_self(snapshot: dict, repo_root: str, snapshot_path: str, known_blobs: dict | None = None) -> None:
     """Writing the snapshot file necessarily creates it as a new untracked path
     (unless the caller's ``.gitignore`` already excludes it); without this, the
     tool's own bookkeeping file would fail every ``verify`` regardless of
     reviewer behavior. Drop it from the freshly-computed fingerprint before
-    comparison rather than relying on ``.gitignore`` state."""
+    comparison rather than relying on ``.gitignore`` state.
+
+    The whole snapshot DIRECTORY is dropped, not just the one file. Source-blob
+    capture writes siblings next to the snapshot, and those blobs are computed
+    after the status walk that produced ``untracked`` -- so a repo without a
+    ``.gitignore`` entry for them saw every blob appear as ``untracked-added``
+    drift on the next verify. That is the tool reporting a boundary violation it
+    caused itself, and an unattributable ``ok: false`` is precisely what teaches a
+    parent to discount the signal. Verified against a fresh ``git init`` repo with
+    no ``.gitignore``: red before this drop, clean after."""
     rel = os.path.relpath(snapshot_path, repo_root).replace(os.sep, "/")
     snapshot["untracked"].pop(rel, None)
+    directory = os.path.relpath(os.path.dirname(snapshot_path), repo_root).replace(os.sep, "/")
+    # `.` is NOT a no-op case: `--out <repo-root>/snapshot.json` puts the blob dir
+    # at `<repo-root>/blobs/`, which is where the blobs are MOST visible. Skipping
+    # the drop there left the original blocker reachable through a documented flag.
+    blob_prefix = "blobs/" if directory in ("", ".") else f"{directory}/blobs/"
+    # Dropped by IDENTITY, not by prefix: a blanket prefix drop also swallowed
+    # `untracked-removed` and `untracked-modified` under the snapshot dir, so a
+    # reviewer could delete or rewrite the captured baselines and still verify
+    # clean. Only the keys this snapshot actually wrote are excused.
+    # At VERIFY time this snapshot carries no `source_blobs` (capture is
+    # snapshot-only, by design), so the excused set must come from the BEFORE
+    # snapshot -- otherwise nothing is dropped at exactly the moment the blobs
+    # exist on disk, and the blocker returns.
+    source = known_blobs if known_blobs is not None else (snapshot.get("source_blobs") or {})
+    written = set(source.values())
+    for path in [key for key in snapshot["untracked"] if key.startswith(blob_prefix)]:
+        if os.path.basename(path) in written:
+            snapshot["untracked"].pop(path, None)
 
 
 def _cmd_snapshot(args: argparse.Namespace) -> int:
     repo_root = os.path.abspath(args.repo_root)
     out_path = os.path.abspath(args.out) if args.out else _default_snapshot_path(repo_root)
-    snapshot = build_snapshot(repo_root, new_window(args.window_id))
+    # The snapshot directory is passed only here, on the SNAPSHOT side: capturing
+    # source at verify time would record the repaired version and destroy the very
+    # baseline the capture exists to preserve.
+    snapshot = build_snapshot(repo_root, new_window(args.window_id), snapshot_dir=os.path.dirname(out_path))
     # A stale snapshot from a prior review round is itself untracked in repos
     # that do not gitignore it; without this drop, the documented re-snapshot
     # flow would report the tool's own file as untracked-removed drift.
@@ -260,7 +298,7 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         return 2
 
     after = build_snapshot(repo_root, window or None)
-    _drop_self(after, repo_root, before_path)
+    _drop_self(after, repo_root, before_path, known_blobs=before.get("source_blobs") or {})
     drift = compare_snapshots(before, after)
     parent_paths = list(args.parent_path or [])
     parent_staged = list(args.parent_staged or [])

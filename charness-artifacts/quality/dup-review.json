@@ -681,6 +681,13 @@
     },
     {
       "class": "intentional",
+      "id": "606ea765fb3c8ee8",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the repo-standard gate `main()` skeleton again (argparse `--repo-root`, `args.repo_root.resolve()`, run, then print a summary line or raise), now pairing parity_harness.py with check_plugin_doc_links.py. Same concept already accepted as 217bca482c08d1da / cf4daacbe7eaf226; the cluster boundary moves whenever a new member joins. A shared runner would own every gate's argument surface and its operator-facing summary text, coupling tools that answer unrelated questions."
+    },
+    {
+      "class": "intentional",
       "id": "6076d280587bc0e1",
       "note": "adjacent release artifact sections have distinct missing-state, evidence, and non-claim semantics; generic rendering would couple independently evolving irreversible-boundary verdicts",
       "reviewed_at": "2026-07-19",
@@ -755,6 +762,13 @@
       "note": "the runtime_bootstrap import idiom itself: `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`, and one or more `import_repo_module(__file__, \"scripts.<mod>\")` binds, across five unrelated scripts. Verified by reading all five: they bind DIFFERENT modules for different reasons and share no logic. The shared helper already exists and is exactly `runtime_bootstrap`; the only way to remove this span is to stop importing. Grouped now because a fifth member joined when check_artifact_surface_preflight.py gained a bind.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6a29dc4549b6f485",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of 606ea765fb3c8ee8 / 217bca482c08d1da / cf4daacbe7eaf226 after the round-1 repairs moved parity_harness.py's line numbers: the same repo-standard gate `main()` skeleton (argparse `--repo-root`, `args.repo_root.resolve()`, run, print a summary or raise), paired with check_plugin_doc_links.py. Third rotation of one concept in one slice, which is the fingerprint-instability the handoff already records; the judgment is unchanged."
     },
     {
       "class": "intentional",
@@ -839,6 +853,13 @@
       "note": "three-term `bool(a or b or c)` predicate shared by the cautilus-plan visible-work check and the skill-ergonomics failure check; the families are unrelated domains whose key sets evolve independently, so a generic any-truthy-key helper would couple them behind a name that describes neither. Surfaced only after a dead `required` term was deleted from the cautilus predicate",
       "reviewed_at": "2026-07-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7677ff735fdc1767",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the stdlib+runtime_bootstrap import preamble shared by check_issue_closeout_commit_msg.py (untouched) and parity_harness.py. Same portability-preamble family already accepted as d7021cae01c1a7b0 / 3547c7c6d66c1f10 / 8202a3238a3765a0 -- it is the block that makes a script runnable from either the authoring tree or the exported mirror, so it cannot itself be imported from somewhere."
     },
     {
       "class": "intentional",
@@ -1227,6 +1248,13 @@
     },
     {
       "class": "intentional",
+      "id": "ae2be6fde5341c64",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION/WIDENING of the accepted `__main__` entrypoint family (1d36956dff2fc82b / 69026ef11d8ee529 / 61d7a55b4688babd): `if __name__ == \"__main__\": try: sys.exit(main()) except <Error> as exc: print(str(exc), file=sys.stderr); sys.exit(1)`. Now 10+ members across bootstrap_runtime, build_debug_seam_risk_index, check_coverage, check_doc_links, check_export_safe_imports, check_plugin_doc_links, check_plugin_import_smoke, check_python_lengths, check_skill_contracts and more -- ALL untouched, so the family long predates this slice. It is the per-script entrypoint preamble that cannot be centralized without an import indirection every script would still have to spell out."
+    },
+    {
+      "class": "intentional",
       "id": "af879894e690c749",
       "reviewed_at": "2026-08-01",
       "surface": "code",
@@ -1591,6 +1619,13 @@
     },
     {
       "class": "intentional",
+      "id": "dee01e2ae27f76a8",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "a short argparse/resolve preamble shared by five unrelated inventory and check scripts (validate_inventory_consumption, check_references_link_inventory, inventory_measurement_lib, check_test_repo_copy_invariants, check_python_filenames) -- every member untouched by this slice, surfaced only because the clustering re-ran. Same repo-wide gate-skeleton idiom as the two families above."
+    },
+    {
+      "class": "intentional",
       "id": "df723a69adac4b8f",
       "note": "2-line fnmatch matches_any helper family rotated after prompt-bulk helper cleanup; keep portable skill scripts directly executable instead of adding shared import coupling for a trivial predicate",
       "reviewed_at": "2026-06-27",
@@ -1749,6 +1784,13 @@
       "reviewed_at": "2026-08-01",
       "surface": "code",
       "note": "the `print(<message>, file=sys.stderr); return <code>` refusal tail shared by nine spans across six independently-owned validators and measurement scripts. Same accepted class as 21cbc81495c292ff (a stderr-writing refusal preamble across three gates): idiom-sized, and extracting it would couple independently-owned refusal surfaces through a message formatter that obscures which gate owns the verdict. Surfaced as new because D47 slice 3 moved the empty-corpus refusal into inventory_measurement_lib.py; the other eight members are untouched."
+    },
+    {
+      "class": "intentional",
+      "id": "f3f45c02e8a649a9",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "two `-z` git parsers that keep both sides of a rename, over DIFFERENT wire formats: staged_commit_gate_plan_helpers reads `git diff --cached --name-status -z`, where fields are STATUS NUL PATH (and the status is its own field), while parity_harness reads `git status --porcelain=v1 -z`, where the XY pair and the path share one field and a rename's original follows. Sharing them needs a format discriminator flag threaded through both call sites -- an abstraction that costs more reading than the ~8 lines it saves, and that couples a staged-scope question to a changed-plus-untracked one. Rejected alternatives, recorded so this is a decision and not an omission: (a) switching parity_harness to `git diff --name-status` loses untracked files, which are exactly the in-slice files a reviewer reads; (b) importing reviewer_boundary_state's porcelain-v2 walk from skills/shared/scripts into scripts/ crosses a package boundary the harness otherwise does not depend on."
     },
     {
       "class": "intentional",

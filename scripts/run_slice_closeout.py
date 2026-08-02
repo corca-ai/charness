@@ -35,6 +35,7 @@ advise_prose_pin = _slice_closeout_advisories.advise_prose_pin
 advise_skill_surface_preflight = _slice_closeout_advisories.advise_skill_surface_preflight
 advise_doc_surface_preflight = _slice_closeout_advisories.advise_doc_surface_preflight
 advise_new_pool_module = _slice_closeout_advisories.advise_new_pool_module
+advise_repair_parity = _slice_closeout_advisories.advise_repair_parity
 advise_over_slicing = _slice_closeout_advisories.advise_over_slicing
 advise_floor_addition_restraint = _slice_closeout_advisories.advise_floor_addition_restraint
 _slice_closeout_commit_advisories = import_repo_module(__file__, "scripts.slice_closeout_commit_advisories")
@@ -342,6 +343,7 @@ def _run_preexecution_blocks(
     advise_skill_surface_preflight(repo_root, payload["changed_paths"])
     advise_doc_surface_preflight(repo_root, payload["changed_paths"])
     advise_new_pool_module(repo_root, payload["changed_paths"])
+    advise_repair_parity(repo_root, payload["changed_paths"])
     advise_over_slicing(repo_root)
     advise_floor_addition_restraint(repo_root, payload["changed_paths"])
     attach_new_proof_surface_advisory(payload, repo_root)

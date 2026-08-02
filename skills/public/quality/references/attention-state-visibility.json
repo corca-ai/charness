@@ -488,6 +488,21 @@
       ],
       "rationale": "A skipped fresh-eye pass over a NEWLY ADDED proof surface must not be silent. `Fresh-eye pass: <path> — skipped, <reason>` is an accepted answer and it silences the stderr nag, but the durable closeout payload still carries `new_surface_candidates`, `dispositioned`, `undispositioned` and a `scope` of evaluated|not-established, so both the skip and the could-not-look case stay readable after stderr scrolls past. Nothing here is a pass verdict: the advisory never blocks and never reports that a surface was reviewed, only whether a disposition was recorded for it."
     },
+    "scripts/parity_harness.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "uncomparable"
+      ],
+      "rationale": "A path with no recoverable baseline cannot be compared, and that is NOT the same answer as \"this repair changed nothing\". Conflating them would report a reassuring zero for a slice the harness never examined -- the silent-zero shape this tool exists to prevent one level down. So uncomparable paths are counted by path with the reason (no baseline at that ref, or not captured by the reviewer snapshot, which stores Python sources only), printed in the success line, and carried per-path in the --json payload under `uncomparable` so a consumer can tell an empty result from an unexamined one."
+    },
     "scripts/plan_cautilus_proof.py": {
       "states": [
         "disabled"

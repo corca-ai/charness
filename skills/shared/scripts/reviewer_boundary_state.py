@@ -117,6 +117,53 @@ def _hash_untracked(repo_root: str, entries: list[str]) -> dict[str, str]:
     return result
 
 
+SOURCE_BLOB_DIRNAME = "blobs"
+SOURCE_BLOB_SUFFIXES = (".py",)
+SOURCE_BLOB_MAX_BYTES = 512 * 1024
+
+
+def _capture_source_blobs(repo_root: str, snapshot_dir: str, entries: list[str]) -> dict[str, str]:
+    """Content-address the Python sources a reviewer is about to read.
+
+    The digests above answer "did this path change"; they cannot answer "change
+    from WHAT". That second question is the one a repair needs: the baseline for
+    a function created earlier in the same slice is not any committed ref -- at
+    commit granularity it is simply a new function -- it is the version the
+    reviewer read. Nothing else in the repo records that, so it is recorded here.
+
+    Python only, deliberately: the consumer is a callable-level parity harness,
+    and capturing every changed artifact would grow a machine-local cache for
+    files nothing can compare. A path absent from the returned map was not
+    captured; that is not the same as unchanged, and callers must not read it so.
+    """
+    blob_dir = os.path.join(snapshot_dir, SOURCE_BLOB_DIRNAME)
+    captured: dict[str, str] = {}
+    paths = set(_changed_paths(entries))
+    paths.update(entry[2:] for entry in entries if entry.startswith("? "))
+    for path in sorted(paths):
+        if not path.endswith(SOURCE_BLOB_SUFFIXES):
+            continue
+        full = os.path.join(repo_root, path)
+        try:
+            if os.path.islink(full) or os.path.getsize(full) > SOURCE_BLOB_MAX_BYTES:
+                continue
+            with open(full, "rb") as handle:
+                body = handle.read()
+        except OSError:
+            continue
+        key = hashlib.sha256(body).hexdigest()
+        try:
+            os.makedirs(blob_dir, exist_ok=True)
+            blob_path = os.path.join(blob_dir, key)
+            if not os.path.exists(blob_path):
+                with open(blob_path, "wb") as handle:
+                    handle.write(body)
+        except OSError:
+            continue
+        captured[path] = key
+    return captured
+
+
 def _now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
@@ -132,7 +179,7 @@ def new_window(window_id: str | None = None) -> dict:
     }
 
 
-def build_snapshot(repo_root: str, window: dict | None = None) -> dict:
+def build_snapshot(repo_root: str, window: dict | None = None, snapshot_dir: str | None = None) -> dict:
     entries = _status_entries(repo_root)
     return {
         "window": window if window is not None else new_window(),
@@ -146,4 +193,7 @@ def build_snapshot(repo_root: str, window: dict | None = None) -> dict:
         ).hexdigest(),
         "changed_content": _changed_content(repo_root, entries),
         "untracked": _hash_untracked(repo_root, entries),
+        "source_blobs": (
+            _capture_source_blobs(repo_root, snapshot_dir, entries) if snapshot_dir else {}
+        ),
     }
