@@ -150,7 +150,6 @@ The result should usually include:
 - `../../support/web-fetch/references/routing-table.md`
 - `../../shared/references/closeout-discipline.md`
 - `scripts/advise_google_workspace_path.py`
-- `<repo-root>/scripts/refresh_current_pointer.py`
 - `scripts/gather_plan.py`
 - `scripts/gather_public_url.py`
 - `scripts/write_record.py`

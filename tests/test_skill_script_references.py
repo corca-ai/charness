@@ -94,7 +94,11 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # Floor the two out-of-package forms TOGETHER: converting a reference from
     # `<repo-root>/` to `<authoring-repo>/` moves a row between them and must not
     # trip a floor, but the combined population going to zero still must.
-    assert forms["repo-root"] + forms["authoring-repo"] >= 15
+    #
+    # The combined number dropped from 15 to 11 when #478 was dispositioned:
+    # three sites moved to `<authoring-repo>/`, three moved onto shared shims
+    # (leaving the out-of-package forms entirely), and one bullet was dropped.
+    assert forms["repo-root"] + forms["authoring-repo"] >= 10
     assert forms["repo-root"] > 0 and forms["authoring-repo"] > 0
     # The 7 References bullets Lane A repaired, plus the pre-existing ones.
     assert forms["references-bullet"] >= 20
@@ -134,8 +138,14 @@ def test_no_shipped_reference_is_broken_because_its_file_is_in_the_package() -> 
     # floor THAT population. An aggregate floor would stay green while the
     # candidate set fell to zero, and this test would pass forever without ever
     # looking at the class it is named for.
+    # After #478, exactly ONE `<repo-root>/scripts/` reference remains repo-wide
+    # (`rca-ledger-append.md`, where the path is an existence predicate the
+    # reader evaluates and the spelling is correct). So this floor is now weak by
+    # construction, and says so: the real guard against the BROKEN class is
+    # `test_repo_root_prefix_is_reported_when_the_file_is_in_the_skill_package`,
+    # which builds the defect from a fixture instead of hoping one exists here.
     candidates = [row for row in shipped if row["form"] == "repo-root"]
-    assert len(candidates) >= 5, "no candidates left to classify; this test proves nothing"
+    assert len(candidates) >= 1, "no candidates left to classify; this test proves nothing"
 
     broken = [row for row in candidates if row["status"] == inventory_module.BROKEN]
     assert broken == [], _describe(broken)

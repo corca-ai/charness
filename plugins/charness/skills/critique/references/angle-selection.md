@@ -114,7 +114,7 @@ indexes, public skill prose, README-like surfaces, or source-of-truth
 narrative. For rename-heavy edits, the title-slug coherence lens belongs in
 the same angle so structural rewrites do not hide stale slugs, links, or
 duplicated concept-home pages behind a polished outline. Run
-`<repo-root>/scripts/check_title_slug_drift.py` against the affected spec or
+`$SKILL_DIR/../../shared/scripts/check_title_slug_drift.py` against the affected spec or
 docs roots as deterministic evidence for the title-slug lens before relying
 on prose judgment alone.
 
