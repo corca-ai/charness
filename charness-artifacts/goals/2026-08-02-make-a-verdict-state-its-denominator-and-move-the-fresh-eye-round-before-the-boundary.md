@@ -72,7 +72,7 @@ re-reading the same proxy. Neither adds a gate.
   exists. If a slice starts wanting a new validator that audits other validators,
   stop.
 - **Not arming a refusal on partial denominators.** Lane A discloses; whether the
-  gate should REFUSE is D45's toll question and stays the operator's.
+  gate should REFUSE is D40's toll question and stays the operator's (this artifact said D45 throughout; D45 is the CI/local parity gate, and the pre-close review of #469 caught the misattribution).
 - **Not re-implementing what HEAD already has.** The first draft of this goal
   proposed adding `unanalyzed_changed_pool_files` (already emitted, 5 tests), a
   precondition before `close_with_comment` (already refuses before any backend
@@ -120,7 +120,7 @@ re-reading the same proxy. Neither adds a gate.
   already answers.
 - Stop conditions: (1) if a repair would require editing a frozen artifact,
   record instead. (2) If making the changed-line gate refuse on a partial
-  denominator turns this repo's own lane permanently red, STOP — that is D45's
+  denominator turns this repo's own lane permanently red, STOP — that is D40's
   toll question and it is the operator's call, not a lane to work around.
   (3) If a hard precondition on issue close would strand closes on a
   subagent-blocked host, do NOT ship it as a hard precondition; ship the
@@ -216,7 +216,7 @@ below are the SECOND shaping, not the first.
 - Owner: operator (repo owner)
 - Why deferred: closing them was approved *if a lane resolved them*, and neither lane resolves either issue's full requested outcome. #469 asks for the changed-line gate's partial-denominator behaviour to be settled; Lane A disclosed the pair and deliberately left the refusal question to D45. #470's two follow-ups are the two lanes, but its second follow-up is MIS-STATED (the resolution-critique precondition already fires before the close; what was missing is a distinct observer reading the critique) — closing it as written would ratify a false description. Local progress was never blocked by this.
 - Unblock action: either correct #470's second follow-up body and close both against this goal's two commits, or narrow each to the residual it still names and leave open.
-- Revisit trigger: the next goal that touches D45 (the changed-line refusal toll) or the issue-close boundary.
+- Revisit trigger: the next goal that touches D40 (the changed-line refusal toll, which now carries #469's residual) or the issue-close boundary.
 
 ## Coordination Cues
 
@@ -284,7 +284,7 @@ applies.
 - Why this approach: The two lists the gate already emits are not both present on any single path, so "1 of 2" was reconstructable by len()-ing on some paths and not at all on others. New module `scripts/changed_line_scope_counts.py` rather than an append: the gate was at 476/480 code lines, and Change Discipline says start a module rather than spill. The scope SPLIT (`apply_file_limit`) moved there with the scope REPORT so the module is a cohesive owner of scope arithmetic and not a D33 length-dodging companion; the gate ended at 468/480, lower than it started.
 - Commits: `cf88b750` — Make every changed-line verdict state how many of how many it read. Critique artifact: `charness-artifacts/critique/2026-08-02-lane-a-changed-line-denominator-critique.md`.
 - What changed: scripts/changed_line_scope_counts.py (new, 71 code lines); scripts/check_changed_line_mutation_coverage.py (import + alias, count pair in `_run_metadata` startup dict and `_emit_no_base_sha` as not-computed, real pair merged right after the limit split, `_apply_file_limit` added to `__all__`); tests/quality_gates/test_changed_line_scope_counts.py (new, 12 tests); one added assertion in tests/quality_gates/test_changed_line_mutation_coverage.py; regenerated plugins/charness/scripts/ mirror of both source files.
-- Alternatives rejected: Rejected: making a partial denominator REFUSE — that is D45's toll question and is fenced out of this goal's acceptance. Rejected: shrinking the pair on an --allow-dirty run so it never overstates — the pair's population is the RANGE's, which keeps it comparable across runs; the uncommitted gap is disclosed by the sibling `dirty_pool_unverified` / `uncommitted_pool_files` keys instead, and a test now pins that reading. Rejected: declaring `scripts/changed_line_scope_counts.py` in attention-state-visibility.json — the gate fired on the word "skipped" in a docstring for a module that has no skip state, so the wording was the defect, not the registry.
+- Alternatives rejected: Rejected: making a partial denominator REFUSE — that is D40's toll question and is fenced out of this goal's acceptance. Rejected: shrinking the pair on an --allow-dirty run so it never overstates — the pair's population is the RANGE's, which keeps it comparable across runs; the uncommitted gap is disclosed by the sibling `dirty_pool_unverified` / `uncommitted_pool_files` keys instead, and a test now pins that reading. Rejected: declaring `scripts/changed_line_scope_counts.py` in attention-state-visibility.json — the gate fired on the word "skipped" in a docstring for a module that has no skip state, so the wording was the defect, not the registry.
 - Targeted verification: pytest tests/quality_gates/test_changed_line_scope_counts.py tests/quality_gates/test_changed_line_mutation_coverage.py -> 54 passed. 227 passed across the 10 modules that reference this gate or prepush_focused (test_degradation_branch_coverage, test_new_proof_surface_advisory, test_mutation_coverage_consumer_execution, test_changed_line_coverage_gate, test_prepush_focused_changed_line_coverage, test_subprocess_only_coverage_advisory, test_a_declaration_is_not_its_own_corroboration, test_mutation_coverage_producer, test_scaffold_changed_line_coverage, test_slice_closeout_reporting). run_slice_closeout.py --skip-broad-pytest -> PASS on all 20 verify commands (pre-lock; broad pytest deliberately deferred to the locked bundle). Broad pytest NOT run at this slice — non-claim.
 - Test duplication pressure: 12 new tests in a new module. The seeding helpers are IMPORTED from the sibling test module rather than re-declared (precedent: test_dup_ratchet_unestablished_inputs.py), so no clone family was added; check_dup_ratchet.py --summary passed in closeout. One near-duplicate the reviewer flagged (M3) was resolved by giving the first test a distinct claim — that the stderr and JSON channels now agree — rather than by deleting it.
 - Critique: ONE bounded fresh-eye round, typed `bounded-reviewer` (Read/Grep/Glob only), parent-delegated, shared parent worktree. reviewer_boundary_fingerprint.py snapshot .charness/reviewer-boundary/lane-a-round1.json; verify --before result RECORDED: ok true, verdict "clean", no drift. ONE BLOCKER, parent-verified before folding: B1 — the packet's claim "no skill files, so no plugins/ mirror is involved" was FALSE; packaging_lib.py:248-250 mirrors the whole scripts/ tree, so the export would have shipped the un-repaired gate and a ModuleNotFoundError for the new module. Verified by parent (plugins/charness/scripts/changed_line_run_trust.py exists as the mirrored twin of the previous split; the new module did not) and folded by running the sync. Minors folded: M1 (the new module's own docstring claimed an equal pair means "nothing was left out", which is false on --allow-dirty — this goal's exact defect class in the code written to fix it) rewritten and pinned by a new test; M2 (the SCOPE_MISMATCH path's pair depends on the rebind landing before the check, untested) closed by an assertion in the existing mismatch test; M3 folded as above; M5 (`_apply_file_limit` re-export absent from `__all__`, the exact shape a recorded ruff --fix incident once deleted) added. M4 (the computed pair does not restate its population) folded into the docstring rather than the payload. Reviewer confirmed invariants 1-4 hold: all 8 emit sites carry the key, and main() differs from HEAD by exactly the one inserted rebind statement.
@@ -344,13 +344,13 @@ the decisions below record the design space a fresh session should see.
    this class recurs across surfaces within a single session, so a single-surface
    fix would leave the pattern intact. Anti-anchoring: `axis: repair register` —
    the design varies on whether the fix is a refusal or a disclosure. Disclosure
-   is chosen deliberately; the refusal question is D45's toll and is fenced out
+   is chosen deliberately; the refusal question is D40's toll and is fenced out
    by stop condition (2).
 2. **Should Lane A arm a refusal on partial denominators?** Family considered:
    {refuse; disclose only; disclose now and defer the refusal}. **Chosen:
    disclose only, refusal explicitly out of acceptance.** Rejected: refusing,
    because files legitimately map to no standing test and a hard refusal would
-   block ordinary pushes — the same toll D45 refuses to pay unilaterally, and
+   block ordinary pushes — the same toll D40 refuses to pay unilaterally, and
    the same mistake D49 made by arming on a corpus that could not object.
    Anti-anchoring: `single-point: this repo's mapping coverage` — the refusal may
    well be right in a repo where every pool file maps; it is a property of this

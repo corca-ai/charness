@@ -31,7 +31,7 @@
   The 2026-08-02 goal is COMPLETE.
 - **The changed-line gate now states its scope on every verdict path**
   (`changed_pool_file_counts`, analyzed/changed). Refusal behaviour deliberately
-  unchanged — whether a partial denominator should refuse is still **D45**.
+  unchanged — the refusal question is **D40**'s toll, which now carries it explicitly.
 - **The issue-close floor now reads the cited critique's own
   `Fresh-eye satisfaction:`** and refuses a record stating no distinct observer
   read the resolution — gated on the `AGENTS.md` delegation contract and a

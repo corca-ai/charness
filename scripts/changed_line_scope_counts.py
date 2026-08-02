@@ -15,8 +15,10 @@ lives outside the gate because that file is at its length cap, and keeping the
 disclosure here gives it one tested definition instead of one inlined per path.
 
 Disclosure only: nothing here changes a verdict or an exit code. Whether a
-partial denominator should REFUSE is D45's toll question and stays the
-operator's.
+partial denominator should REFUSE is D40's toll question and stays the
+operator's. (Recorded because this pointer was wrong once: it said D45, which is
+the CI/local parity gate — a different gate. D40 is the entry that owns which
+pre-landing lane pays a toll, and it now carries the residual explicitly.)
 """
 
 from __future__ import annotations

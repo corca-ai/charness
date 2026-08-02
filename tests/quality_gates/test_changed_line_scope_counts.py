@@ -80,7 +80,7 @@ def test_disclosing_the_denominator_does_not_change_the_verdict(tmp_path: Path) 
 
     Without this, the fixture above would prove only that a key appeared. A CLEAN
     partial denominator still exits 0, and an uncovered changed line still exits 1
-    — whether a partial denominator should refuse is D45's toll question and stays
+    — whether a partial denominator should refuse is D40's toll question and stays
     the operator's, not this change's.
     """
     repo, base, head = _seed_two_changed_pool_files(tmp_path)
