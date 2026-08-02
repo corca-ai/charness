@@ -275,6 +275,13 @@
     },
     {
       "class": "intentional",
+      "id": "2b9ab26b7c51dcd5",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of dee01e2ae27f76a8 with removed_name_consumers.py joining: the short argparse/resolve preamble shared by six unrelated inventory and check scripts, five of them untouched. Repo-wide gate-skeleton idiom, same judgment as its predecessors."
+    },
+    {
+      "class": "intentional",
       "id": "2dd39753778c7cb1",
       "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
       "reviewed_at": "2026-07-02",
@@ -419,6 +426,13 @@
       "reviewed_at": "2026-08-02",
       "surface": "code",
       "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
+    },
+    {
+      "class": "intentional",
+      "id": "3eb918907263eb6b",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of 804b8f9cc0c609cb after the round-1 repairs shifted removed_name_consumers.py: the repo-standard gate main() skeleton across parity_harness, removed_name_consumers, and check_plugin_doc_links. Accepted repeatedly (217bca482c08d1da / cf4daacbe7eaf226 / 606ea765fb3c8ee8 / 6a29dc4549b6f485 / 804b8f9cc0c609cb); each new member or line shift re-forms the cluster. The three deliberately print DIFFERENT clean-tree sentences, which is the part an operator reads, so a shared runner would have to parameterize exactly what makes them useful."
     },
     {
       "class": "intentional",
@@ -965,6 +979,13 @@
       "reviewed_at": "2026-08-02",
       "surface": "code",
       "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
+    },
+    {
+      "class": "intentional",
+      "id": "804b8f9cc0c609cb",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the repo-standard gate `main()` skeleton once more (argparse --repo-root/--json, resolve, build a report, print a human summary or the JSON payload), now across parity_harness, removed_name_consumers, and check_plugin_doc_links. Accepted repeatedly as 217bca482c08d1da / cf4daacbe7eaf226 / 606ea765fb3c8ee8 / 6a29dc4549b6f485; the cluster re-forms on every new member. A shared runner would own each tool's argument surface AND its operator-facing summary wording, coupling tools that answer unrelated questions -- and these two deliberately print DIFFERENT clean-tree sentences, which is the part a reader relies on."
     },
     {
       "class": "intentional",

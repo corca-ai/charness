@@ -279,6 +279,16 @@ the exact reflex the rule names.
   verdict. The snapshot it reads is bound to `HEAD`, so a stale one from an
   earlier slice cannot make it announce a review that never ran; it cannot
   substitute for a review either way.
+- **Deleting a module-level name is allowed; shipping it without its readers is
+  not.** A dynamic `module.NAME` access — the shape `import_repo_module` produces
+  — is invisible to ruff and to the import graph, and no commit-boundary gate
+  runs the broad suite, so the readers surface only later. `run_slice_closeout.py`
+  lists them via
+  [removed_name_consumers.py](../../scripts/removed_name_consumers.py). Advisory,
+  never blocking: the missing thing was information, not permission. Measured
+  frequency over the 13 preceding commits: one commit, one name — the `LINK_RE`
+  case that shipped a red suite. Each hit is a textual candidate, not a proven
+  binding.
 - **Non-claim:** identical outcomes over a corpus is evidence about that corpus,
   not a proof of equivalence. The harness narrows where a narrowing can hide; it
   does not prove none is left.

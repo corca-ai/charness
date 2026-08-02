@@ -558,6 +558,21 @@
       ],
       "rationale": "Feedback recording requires an enabled usage_feedback adapter event. Missing or disabled configuration exits 2 and renders a structured status/errors payload (or the same terminal status in plain output), so the command blocks without appending and cannot read as successful feedback capture."
     },
+    "scripts/removed_name_consumers.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "explicit_skip_summary",
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "uncomparable"
+      ],
+      "rationale": "A path with no baseline at the compared ref cannot be examined, and that is NOT the same answer as \"no name was removed\". On a shallow clone, a fresh clone, or a consumer repo with no remote-tracking base ref, EVERY path lands there -- and a silent pass would read as a clean check that never ran. Uncomparable paths are counted per path with the reason, printed on the success line, and carried under `uncomparable` in the --json payload, so a consumer can distinguish an empty result from an unexamined one. The sibling parity harness lost exactly this distinction in its first draft and had it restored by a bounded review."
+    },
     "scripts/report_usage_episodes.py": {
       "states": [
         "disabled",
