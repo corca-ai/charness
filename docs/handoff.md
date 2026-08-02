@@ -2,12 +2,12 @@
 
 ## Workflow Trigger
 
-- **A shaped goal is WAITING, but it is NOT activation-ready by design.** Three
-  items need an operator decision first (external side effects are NOT carried
-  over from the last run; whether stopping early is an acceptable outcome; size).
-  Read `## Discuss Before Activation` in
-  [the goal](../charness-artifacts/goals/2026-08-03-prove-the-skills-fire-where-they-are-installed.md),
-  settle those three, then activate it.
+- **A shaped goal is WAITING, not activation-ready by design.** Two items need
+  an operator decision first: external side effects are NOT carried over from the
+  last run, and Lane C (gate vs advisory vs neither) is a real fork. Read
+  `## Discuss Before Activation` in
+  [the goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md),
+  settle those two, then activate.
 
 ## Continuation Capability
 
@@ -33,17 +33,21 @@
   armed, mutation-checked tripwire; the `setup` template now satisfies both
   readers of the contract.
 - **The 2026-08-02 sweep is checked in** — 197 units assigned, 172 read, 25
-  unread and counted, 1 confirmed `cannot-fire` repaired. Its `## Non-Claims`
-  names what it could not settle; that paragraph is the next goal's brief.
+  unread, 1 confirmed `cannot-fire` repaired. It HAD the 13 above and lost them:
+  verifiers refuted "inert" by exhibiting a DIFFERENT working path, which proves
+  nothing about the path the document told the agent to run.
 - Still open and untouched: the **E-cluster** (most expensive lane), D41–D49,
   `parse_created_date`'s uncorroborated consumers.
 
 ## Next Session
 
-1. **Settle the next goal's three activation items, then run it.** Its Lane A is
-   speculative until its first measurement — if almost nothing breaks in an
-   installed layout, stopping there and saying so is the RIGHT outcome, not a
-   failure. Confirm that before activating.
+1. **13 shipped commands cannot run.** A skill reference says
+   `<repo-root>/scripts/X.py` while the file is at
+   `skills/public/<skill>/scripts/X.py`; an agent following the instruction gets
+   "No such file". Measured 2026-08-02 over every shipped skill `.md`: 91
+   `$SKILL_DIR` refs resolve cleanly, 13 are broken here AND everywhere, 9 point
+   at charness scripts absent in a consuming repo, 0 reference a missing file.
+   That is the waiting goal.
 2. **#475's behavioural half is still an OPEN operator decision.** Nobody has
    observed an agent ask-and-spawn in a repo that never ran `setup`. The command
    is in the completed goal's `## User Verification Instructions`. Reopen #475 if
@@ -70,7 +74,7 @@
 
 ## References
 
-- [waiting goal](../charness-artifacts/goals/2026-08-03-prove-the-skills-fire-where-they-are-installed.md) · [completed goal](../charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [retro](../charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
+- [waiting goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [completed goal](../charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [retro](../charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
 - critiques: [Lane A ladder](../charness-artifacts/critique/2026-08-02-lane-a-the-delegation-authorization-ladder.md) · [Lanes B and C](../charness-artifacts/critique/2026-08-02-lanes-b-and-c-sweep-and-edit-time-advisory.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
