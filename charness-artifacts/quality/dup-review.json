@@ -198,6 +198,13 @@
     },
     {
       "class": "intentional",
+      "id": "1c86132e0253481d",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's."
+    },
+    {
+      "class": "intentional",
       "id": "1d36956dff2fc82b",
       "reviewed_at": "2026-08-04",
       "surface": "code",
@@ -247,6 +254,13 @@
     },
     {
       "class": "intentional",
+      "id": "23566b07b87eb5a0",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the portability import preamble (`from __future__`, stdlib imports, `runtime_bootstrap` import, `REPO_ROOT = repo_root_from_script(__file__)`, first `import_repo_module`) shared by check_markdown_inline_code (untouched) and check_plugin_dir_references. Same family accepted as d7021cae01c1a7b0 / 3547c7c6d66c1f10 / 8202a3238a3765a0 / 7677ff735fdc1767: it is the block that makes a script runnable from either the authoring tree or the exported mirror, so it cannot itself be imported from somewhere -- that is the bootstrap problem it exists to solve."
+    },
+    {
+      "class": "intentional",
       "id": "26933afae751e598",
       "note": "module docstring + sibling-loader preamble shared by the two chunker modules that both load siblings (chunked_routing_issue_source, chunked_routing_staleness); the loader is the same portability preamble class, and the docstring overlap is two modules documenting the same boundary set they deliberately share",
       "reviewed_at": "2026-07-27",
@@ -265,6 +279,13 @@
       "note": "one-line status delegate wrappers for two hook kinds; extracting the call would obscure the public names without reducing behavior duplication",
       "reviewed_at": "2026-07-13",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2a6b6aad62887b00",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the `--json` dump plus clean-branch print shared by parity_harness and removed_name_consumers, both untouched by this slice and surfaced only because the clustering re-ran. Same gate main()-skeleton concept accepted as 217bca482c08d1da / 606ea765fb3c8ee8 / 804b8f9cc0c609cb / 3eb918907263eb6b; the two deliberately print DIFFERENT clean-tree sentences, which is the part an operator reads to tell one tool's silence from the other's."
     },
     {
       "class": "intentional",
@@ -349,6 +370,13 @@
       "note": "two `if <condition>: return \"<literal>\"` guard clauses in unrelated operator-facing renderers -- check_changed_line_coverage's blocking-verdict line and check_standing_doc_provenance's inert line. Different conditions, different strings, different subsystems; the only shared thing is the two-line guard-and-return shape Python gives every such branch. Surfaced when a verdict-word renderer was split out of main() to make the word testable, i.e. by a reduction, not by new duplication.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "34ea3910e5c6cb5a",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's."
     },
     {
       "class": "intentional",
@@ -517,6 +545,13 @@
       "note": "nose subdag artifact inside check_coverage_lib.py: exercise_control_plane_scenarios grew new version_transition scenario calls (#424) and now shares a 2-node subdag with _basic_manifest in the same file; a scenario-call list and a manifest builder are unrelated units with no extractable shared helper",
       "reviewed_at": "2026-07-09",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "494825ffed247a86",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's."
     },
     {
       "class": "intentional",
@@ -1119,6 +1154,13 @@
       "note": "the `_load_sibling` / `_load_local_module` portable bootstrap shim, five members across the `achieve` and `handoff` public skills. This is the documented portable per-skill copy: a skill package must load its siblings without importing the repo, so the loader cannot itself be shared. Same class as the existing portable-copy entries in this file; rotated by slice 4's rename.",
       "reviewed_at": "2026-08-01",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9658646a2253de06",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's."
     },
     {
       "class": "intentional",

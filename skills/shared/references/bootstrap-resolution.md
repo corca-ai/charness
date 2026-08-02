@@ -88,6 +88,56 @@ charness catalog resolve-skill-path --repo-root . \
   --skill-id <id> --marketplace <m> --plugin <p> --reported-path <stale>
 ```
 
+## Resolve `<plugin-dir>/` (and why `$SKILL_DIR/../..` is not it)
+
+`<plugin-dir>/` names the **installed plugin package root** — the directory that
+holds `skills/`, `shared/`, `support/`, and `scripts/` in a consumer's tree. It is
+agent-resolved, like `$SKILL_DIR`: from a known `$SKILL_DIR` in an installed
+layout it is two levels up.
+
+```bash
+{
+  export PLUGIN_DIR="$(realpath "$SKILL_DIR/../..")"   # installed layout only
+  python3 "$PLUGIN_DIR/scripts/<name>.py" --repo-root .
+}
+```
+
+**Measured 2026-08-04, and this is the part that is easy to get wrong.**
+`$SKILL_DIR/../..` lands on a DIFFERENT directory in each tree, and only two
+entries exist at both positions:
+
+| tree | `$SKILL_DIR/../..` | entries there |
+| --- | --- | --- |
+| charness source | `skills/` | `public/`, `shared/`, `support/` |
+| installed plugin | `<plugin-dir>/` | `skills/`, `shared/`, `support/`, `scripts/`, `agents/`, … |
+
+So `$SKILL_DIR/../../shared/…` and `$SKILL_DIR/../../support/…` are correct in
+**both** trees — by the same exporter cancellation that makes a packaged
+`parents[3]` correct in both, since the flattened `<kind>` level and the added
+package level cancel. Everything else under that root exists only in the
+installed tree: `scripts/` is at the repo root in the source tree, and a skill is
+at `skills/<kind>/<skill>/` there rather than `skills/<skill>/`.
+
+That gives a rule with no judgement in it:
+
+- referencing `shared/` or `support/` → keep `$SKILL_DIR/../..`; it resolves in
+  both trees, and the invariant above is why.
+- referencing another skill, or a plugin-level `scripts/` helper → there is **no**
+  both-trees relative spelling. Say `<plugin-dir>/skills/<skill>/…` or
+  `<plugin-dir>/scripts/…` rather than guessing a `../` count. A charness
+  maintainer reads the corresponding source at `skills/<kind>/<skill>/`.
+
+Unlike `<repo-root>/`, this placeholder is **checkable**: each reference is
+resolved against the matching path under the generated `plugins/<pkg>/` package,
+and a dangling target is refused
+(`<authoring-repo>/scripts/check_plugin_dir_references.py`). `<repo-root>/` means
+the reader's own tree and is unverifiable from here by construction, which is what
+let a class of unreachable references accumulate.
+
+Non-claim: no host is known to substitute `<plugin-dir>/` textually. It is
+resolved by the agent following this section, and the checker proves only that the
+target exists in the package this repo generates.
+
 ## Enforced for write helpers inside the charness source tree
 
 The "use the repo's own copy" rule above is now enforced, not just documented.

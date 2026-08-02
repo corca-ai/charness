@@ -823,7 +823,7 @@ Reopen trigger:
 
 ## Next Action Contract
 
-### D50. Should `<plugin-dir>/` get a real user, or a bootstrap variable, or neither?
+### D50. Should `<plugin-dir>/` get a real user, or a bootstrap variable, or neither? — RESOLVED (2026-08-04)
 
 - Question: `<plugin-dir>/` is a recognised portable placeholder in
   [check_doc_links.py](../scripts/check_doc_links.py), and it has **zero usage** —
@@ -858,8 +858,43 @@ Reopen trigger:
   `<repo-root>/skills/public/...` family needing a spelling — those references
   need the installed LAYOUT, not just a different prefix, and that is the case
   `<plugin-dir>/` was invented for.
-- Non-claim: nobody has tested whether any host substitutes `<plugin-dir>/`. It is
-  assumed to be agent-resolved, and that assumption is unverified.
+- Non-claim (as recorded at deferral): nobody has tested whether any host
+  substitutes `<plugin-dir>/`. It is assumed to be agent-resolved, and that
+  assumption is unverified.
+- **RESOLUTION (2026-08-04): adopted, for the reopen trigger this entry named.**
+  The trigger fired exactly as written — [#479](https://github.com/corca-ai/charness/issues/479)'s
+  `<repo-root>/skills/public/...` family needed the installed LAYOUT, not a
+  different prefix. Three of those sites were worked around with prose in the same
+  goal, which was the third avoidance and the signal that the deferral had started
+  costing more than the decision.
+- **What changed the answer: a measurement this entry did not have.**
+  `$SKILL_DIR/../..` lands on a DIFFERENT directory in each tree and only two
+  entries exist at both positions — `shared/` and `support/`. So
+  `$SKILL_DIR/../../shared/...` is correct in both trees by the same exporter
+  cancellation that makes a packaged `parents[3]` correct in both, and for
+  ANYTHING else under that root there is no both-trees relative spelling at all.
+  That is the gap `<plugin-dir>/` fills, and it is narrower and more concrete than
+  "avoid writing one shim per script".
+- **The sharper objection is answered by resolution, not by a variable.** This
+  entry's strongest argument was "the ambiguity of a placeholder without the
+  resolution of a variable". `<authoring-repo>/scripts/check_plugin_dir_references.py`
+  now resolves every `<plugin-dir>/...` reference against the generated
+  `plugins/<pkg>/` package and refuses a dangling one — including the
+  kind-flattened `skills/public/...` spelling that is the #479 defect. That is a
+  property `<repo-root>/` can never have, since it means the READER's tree and is
+  unverifiable from here by construction, which is what let the class accumulate.
+  A `$PLUGIN_DIR` export is documented in the shared bootstrap reference for the
+  shell case; the checker is what makes the doc placeholder honest.
+- **Live probe, and its bounds.** Two `claude -p` runs against a temp tree holding
+  only the installed-layout package: a fresh agent resolved
+  `<plugin-dir>/skills/hitl/scripts/check_chunk_contract.py` to the correct
+  concrete path and confirmed it exists, and the negative control correctly
+  refused the `skills/public/...` spelling and diagnosed the stale kind segment.
+  Notably the agent did not need the documented procedure — it inferred the
+  plugin root from the tree shape. Bounds: one host (Claude Code 2.1.220), one
+  model, two prompts, whole tree visible. **No host was observed to substitute
+  `<plugin-dir>/` textually; the placeholder remains agent-resolved**, and that
+  original non-claim stands.
 
 After these closures, the next major workstream is `cautilus` integration and
 contract wiring, not further pre-`cautilus` product-boundary debate unless a

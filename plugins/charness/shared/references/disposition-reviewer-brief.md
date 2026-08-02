@@ -42,7 +42,7 @@ state — a provider/connector roundtrip, a behavior test, a fetch result, the
 actual Slack/Notion/artifact observation — **or** record an explicit
 non-`verified` disposition (the HOTL ledger statuses, plus
 `local-only-by-contract` for a surface that is local by the resolution
-contract; see `references/ledger-and-dispositions.md` in the `hotl` skill package).
+contract; see `<plugin-dir>/skills/hotl/references/ledger-and-dispositions.md`).
 A bundle readback (`restart_needed=false`, health `ok`) and a verified `CLOSED`
 state only prove the bundle *deployed* and the tracker *closed*; they do not
 prove a per-issue Slack / scheduled-workflow / public-artifact-URL /

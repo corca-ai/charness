@@ -334,7 +334,8 @@ def staged_commit_gate_plan(
         # proves only that the mirror is staged, not that its links survived the
         # export transform.
         #
-        # Known hole, shared with `check-doc-links` and recorded in
+        # Known hole, shared with `check-doc-links` and `check-plugin-dir-references`
+        # (all three sit behind the same staged-`.md` trigger), recorded in
         # `docs/conventions/validator-timing-layers.md`: a link verdict also flips when
         # the link TARGET is renamed, which stages no `.md` at all. Neither gate runs
         # on that commit; the broad gate and the `quality-core.yml` steps are what
@@ -343,6 +344,7 @@ def staged_commit_gate_plan(
         for label, script in (
             ("check-doc-links", "check_doc_links.py"),
             ("check-plugin-doc-links", "check_plugin_doc_links.py"),
+            ("check-plugin-dir-references", "check_plugin_dir_references.py"),
         ):
             plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
         if (repo_root / "scripts" / "check-markdown.sh").exists():

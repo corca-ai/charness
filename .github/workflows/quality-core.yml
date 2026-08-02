@@ -87,6 +87,9 @@ jobs:
       - name: Validate plugin-mirror doc links
         run: python3 scripts/check_plugin_doc_links.py --repo-root .
 
+      - name: Validate plugin-dir references
+        run: python3 scripts/check_plugin_dir_references.py --repo-root .
+
       - name: Validate markdown
         run: ./scripts/check-markdown.sh
 

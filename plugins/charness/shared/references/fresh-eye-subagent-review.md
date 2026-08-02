@@ -39,8 +39,8 @@ maps it to that host's strongest reviewer — for example a Codex host and a
 Claude Code host resolve `high-leverage` to their own top reasoning model and
 their own spawn fields — so the concrete values are host-specific and live in
 the consuming skill's adapter, never here. The mapping is recorded once, under
-`reviewer_tiers` in the `critique` skill package's
-`adapter.example.yaml`; other skills cite this
+`reviewer_tiers` in
+`<plugin-dir>/skills/critique/adapter.example.yaml`; other skills cite this
 policy and reuse the same tier names instead of repeating the mapping.
 
 ## Delegation Context
