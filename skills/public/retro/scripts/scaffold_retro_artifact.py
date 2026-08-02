@@ -44,6 +44,19 @@ def render_template(*, title: str, date_text: str) -> str:
     lines.extend(["## Evidence Summary", "", "- TODO concrete evidence (paths, line counts, command output).", ""])
     lines.extend(["## Waste", "", "TODO what created rework or wasted effort.", ""])
     lines.extend(["## Critical Decisions", "", "- TODO the decision that shaped the next move.", ""])
+    # Seeded, not left to memory: the validator requires this section, and two
+    # consecutive retros shipped without it while the skill prose already asked
+    # for it. An author meets the obligation where they write, not at the gate.
+    lines.extend(
+        [
+            "## North Star Alignment",
+            "",
+            "TODO read docs/design-north-star.md and record what it says about THIS work:",
+            "which facets held, which were mis-applied, and any named failure signature the",
+            "run walked into. Reviewing the work only against itself has no frame.",
+            "",
+        ]
+    )
     lines.extend(
         [
             "## Expert Counterfactuals",

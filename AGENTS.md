@@ -56,12 +56,25 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
   Recorded here after three consecutive goals re-granted the same permission —
   the repeat grant was the signal that it belonged in the contract, not in each
   goal's boundaries.
-- **Still per-goal, and NOT covered by the line above:** `git push`, closing or
-  reopening an issue, PR creation, a release publish, a tag, a version bump, and
-  any `cautilus evaluate` run. Each needs an explicit grant for the goal or
-  phase that wants it, and that grant does not carry forward. Issue creation is
-  carved out because it is the one item here that adds information without
-  changing state anyone depends on.
+- **`git push` to `main` is a STANDING approval CONDITIONAL ON THE GATES (user
+  standing request, recorded 2026-08-02): push when the pre-push gate passes,
+  and never bypass or weaken a gate to get there.** The condition is the whole
+  authorization — a refusing gate withdraws it. `--no-verify`, disarming a
+  check, loosening a floor, or shrinking a test's scope to reach a green push
+  all revoke this approval and need an explicit grant. Measured basis: the
+  pre-push changed-line mutation lane refused five times across three goals and
+  was correct every time, twice naming a real uncovered branch and once naming
+  DEAD code.
+- Pushing still owes the P4 confirmation: remote CI verified by a different
+  observer AND a different channel than the push exit code. A green push is not
+  a green build.
+- **Still per-goal, and NOT covered by the two standing approvals above:**
+  closing or reopening an issue, PR creation, a release publish, a tag, a
+  version bump, and any `cautilus evaluate` run. Each needs an explicit grant
+  for the goal or phase that wants it, and that grant does not carry forward.
+  Issue creation and gate-passing pushes are carved out because both are
+  reversible and already have teeth in front of them; the rest change state
+  other people depend on.
 - An issue filed under this standing approval still owes the `issue` skill's
   shape: the observed problem before any proposed solution, and a real
   reproduction or evidence path rather than a hunch.

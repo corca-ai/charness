@@ -125,3 +125,27 @@ nothing already written changes meaning.
 Do not invent a hidden machine-readable snapshot format. The retro's durable
 output is the artifact under `output_dir`; the closeout-telemetry stream it may
 read is written by the closeout emitter, never by the retro.
+
+## North Star Alignment
+
+Required in every retro, and enforced by the retro validator.
+
+Read the repo's governing design standard and record what it says about **this**
+work — do not recall it from memory. Three things belong here:
+
+- **Which facets held**, with the concrete evidence that they did.
+- **Which were mis-applied.** This is the valuable half and the one most often
+  skipped: naming a principle you followed is cheap, naming one you inverted is
+  what changes the next run. A real example: treating a reversible, low-cost
+  action as an irreversible boundary is a judgment-on-reversible-work failure,
+  and it cost three rounds of operator attention before anyone said so.
+- **Any named failure signature the run walked into**, if the standard
+  enumerates them.
+
+The floor is presence-only. It proves the question was asked; whether the answer
+is any good is the fresh-eye reviewer's call, and a validator that scored it
+would be pretending to a judgment it cannot make.
+
+Why a floor rather than prose: this skill's prose already pointed at the
+standard, and two consecutive retros still shipped with no mapping at all. A
+recurrence is the bar for teeth, and this cleared it.

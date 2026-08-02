@@ -46,6 +46,32 @@ DISPOSITION_FORM_REFERENCE = "skills/public/achieve/references/goal-artifact.md 
 # retros dated on/after it must carry a lineage marker on issue-form dispositions.
 RECURRENCE_LINEAGE_RULE_DATE = date(2026, 6, 9)
 PERSISTED_FORM_RULE_DATE = date(2026, 6, 25)
+# Every retro must consult the north star and say what it found (user standing
+# request, 2026-08-02). Recorded as a floor rather than prose because prose is
+# what it already was: `SKILL.md` has always pointed at the design standard, two
+# consecutive retros still shipped without a facet mapping, and the operator had
+# to ask twice. That is a recorded recurrence, not a first finding.
+#
+# Presence-only, never a content classifier: the floor proves the question was
+# ASKED, and the answer's quality is the fresh-eye reviewer's call.
+#
+# Grandfathered by observable date, and fail-OPEN on an undatable artifact --
+# deliberately the `validate_persisted_form` convention rather than
+# `validate_recurrence_lineage`'s fail-CLOSED one. The two differ for a reason:
+# lineage guards a claim a retro MAKES, where an undatable file dodging the check
+# is a live escape, while this guards a section a retro must CONTAIN, where the
+# only undatable files are legacy artifacts that predate the rule by months
+# (`weekly-2026-04-14.md` has no `Date:` line at all). Fail-closed here would
+# refuse history rather than catch anything. New retros are always datable: both
+# the scaffold and `persist_retro_artifact.py` write the date.
+# Lands 2026-08-02; enforcement begins the NEXT day so every retro frozen on or
+# before the landing day is grandfathered -- the established
+# RESIDUAL_LEDGER_RULE_DATE / STRUCTURAL_FOLLOWUP_RULE_DATE precedent. Three
+# same-day retros from earlier goals this session would otherwise be refused
+# retroactively for a decision taken after they were written.
+NORTH_STAR_RULE_DATE = date(2026, 8, 3)
+NORTH_STAR_HEADING = "North Star Alignment"
+NORTH_STAR_REFERENCE = "docs/design-north-star.md"
 _PERSISTED_LINE = re.compile(r"^Persisted:\s+(yes|no):\s+\S.+$")
 RETRO_PREPARE_PACKET_KIND = "charness.retro_prepare_packet"
 RETRO_PREPARE_PACKET_TITLE_RE = re.compile(r"^# Retro Prepare Packet(?:\s+—\s+\S.*)?$")
@@ -249,6 +275,36 @@ def validate_persisted_form(lines: list[str], observed_date: date | None) -> Non
         )
 
 
+def validate_north_star_alignment(lines: list[str], observed_date: date | None) -> None:
+    """Fail a retro that never asked what the north star says about this work.
+
+    The design standard is the repo's governing frame, so a retrospective that
+    does not consult it is reviewing the work against nothing but itself. This
+    is the cheapest possible floor -- a section with content -- and it
+    deliberately does not judge the content: naming which facets held, which
+    were mis-applied, and which failure signature the run walked into is
+    judgment work, and a validator that scored it would be pretending.
+    """
+    enforced = observed_date is not None and observed_date >= NORTH_STAR_RULE_DATE
+    if not enforced:
+        return
+    section = [
+        line.strip()
+        for line in _skill_markdown_lib.extract_h2_section_lines(
+            "\n".join(lines), NORTH_STAR_HEADING
+        )
+        if line.strip()
+    ]
+    substantive = [line for line in section if not line.startswith(("<!--", "TODO", "TBD"))]
+    if not substantive:
+        raise ValidationError(
+            f"retro artifact has no `## {NORTH_STAR_HEADING}` section with content; every retro "
+            f"consults {NORTH_STAR_REFERENCE} and records what it found — which facets held, "
+            "which were mis-applied, and any failure signature the run walked into. Prose in "
+            "the skill was not enough: two consecutive retros shipped without it."
+        )
+
+
 def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
     lines = path.read_text(encoding="utf-8").splitlines()
     observed_date = _retro_observed_date(path, lines)
@@ -262,6 +318,7 @@ def validate_retro_artifact(path: Path, *, collect_all: bool = False) -> None:
         lambda: validate_recurrence_lineage(lines, observed_date),
         lambda: validate_persisted_form(lines, observed_date),
         lambda: validate_recurrence_class_slugs(lines),
+        lambda: validate_north_star_alignment(lines, observed_date),
     )
     # collect_all surfaces every violation in one pass (the CLI default) so a
     # multi-rule retro draft is fixed in one edit instead of one rule per gate

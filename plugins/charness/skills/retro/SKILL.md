@@ -74,6 +74,7 @@ Adapter policy:
    - `Waste`: where time, clarity, or trust was lost
    - `Critical Decisions`: which decisions changed outcome or constrained later work
    - `Trends vs Last Retro`: compare against the last durable retro when one exists
+   - `North Star Alignment`: required; see `references/section-guide.md`
    - `Expert Counterfactuals`: what 1-2 counterfactual lenses, named experts
      when useful, would likely have done differently
    - `Next Improvements`: concrete changes for the next session
@@ -121,6 +122,7 @@ The result should usually include:
 - `Evidence Summary`
 - `Waste`
 - `Critical Decisions`
+- `North Star Alignment`
 - `Trends vs Last Retro` when prior evidence exists
 - `Expert Counterfactuals`
 - `Next Improvements`
