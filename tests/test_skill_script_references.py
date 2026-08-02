@@ -13,7 +13,10 @@ the matcher wants is precisely how this class hides.
 from __future__ import annotations
 
 import collections
+import json
 import os
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -215,6 +218,35 @@ def test_a_reference_escaping_the_repo_does_not_raise(tmp_path: Path) -> None:
     rows = inventory_module.classify_references(tmp_path / "repo")
     assert [row["status"] for row in rows] == [inventory_module.IN_PACKAGE]
     assert rows[0]["found_at"] == outside.as_posix()
+
+
+def test_the_documented_command_actually_runs_as_a_command(tmp_path: Path) -> None:
+    """Invoke the advisory the way its own docs tell a reader to invoke it.
+
+    Every other test here calls `main()` in-process, which never executes the
+    `if __name__ == "__main__"` entrypoint — so the *documented* invocation
+    would be the one thing this file never proved. For a goal about commands
+    that cannot run, that gap is the wrong one to leave open, and it is why this
+    is a subprocess test rather than a `# pragma: no cover`.
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    (package / "scripts").mkdir(parents=True)
+    (package / "scripts" / "demo_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n## References\n\n- `scripts/demo_helper.py`\n", encoding="utf-8"
+    )
+
+    result = subprocess.run(
+        [sys.executable, str(SCRIPT_PATH), "--repo-root", str(tmp_path), "--json"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["denominator"]["references_scanned"] == 1
+    assert payload["findings"] == []
 
 
 def test_a_reference_resolving_nowhere_is_reported_for_both_forms(tmp_path: Path) -> None:
