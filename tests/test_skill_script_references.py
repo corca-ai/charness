@@ -99,12 +99,14 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # three sites moved to `<authoring-repo>/`, three moved onto shared shims
     # (leaving the out-of-package forms entirely), and one bullet was dropped.
     assert forms["repo-root"] + forms["authoring-repo"] >= 10
-    # `repo-root` is exactly 1 now (`shared/references/rca-ledger-append.md`,
-    # where the path is an existence predicate the reader evaluates). A correct
-    # edit to that single line trips this with a message about floors rather
-    # than about the edit — accepted deliberately, so the classifier arm is
-    # proven to still fire at all.
-    assert forms["repo-root"] > 0 and forms["authoring-repo"] > 0
+    # Deliberately NOT `forms["repo-root"] > 0`. That pinned at least one live
+    # `<repo-root>/scripts/` reference in real prose FOREVER, so correctly
+    # converting the last one would fail the suite with a message about floors
+    # rather than about the edit — a test coupling the repo's own cleanup to a
+    # red build. The classifier arm is already proven to fire by the synthetic
+    # fixtures below, which exercise it on a tmp tree where the population is
+    # controlled instead of incidental.
+    assert forms["authoring-repo"] > 0
     # The 7 References bullets Lane A repaired, plus the pre-existing ones.
     assert forms["references-bullet"] >= 20
 

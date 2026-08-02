@@ -53,14 +53,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_doc_links import PORTABLE_SKILL_KINDS  # noqa: E402
 
-# `<repo-root>/scripts/<name>.py` -- the CONSUMER's tree. Unverifiable here.
-REPO_ROOT_SCRIPT_RE = re.compile(r"<repo-root>/scripts/([A-Za-z0-9_][A-Za-z0-9_./-]*\.py)")
+# ANY extension, not just `.py`. A `.py`-only regex cannot report that it is
+# `.py`-only -- it reports "0 remaining" with full confidence, which is exactly
+# how `check-links-internal.sh` survived every enumeration pass of #478 until an
+# adversarial reader found it by eye. The gate shipped in that same session was
+# still `.py`-anchored, so it carried the class it was fixing.
+_SCRIPT_NAME = r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+"
+# `<repo-root>/scripts/<name>` -- the CONSUMER's tree. Unverifiable here.
+REPO_ROOT_SCRIPT_RE = re.compile(rf"<repo-root>/scripts/({_SCRIPT_NAME})")
 # `<authoring-repo>/scripts/<name>.py` -- charness's OWN tree. Verifiable here,
 # and the whole point of the split: a consumer reads it as "not mine", and this
 # check resolves it instead of waving it through as an unverifiable placeholder.
-AUTHORING_REPO_SCRIPT_RE = re.compile(
-    r"<authoring-repo>/scripts/([A-Za-z0-9_][A-Za-z0-9_./-]*\.py)"
-)
+AUTHORING_REPO_SCRIPT_RE = re.compile(rf"<authoring-repo>/scripts/({_SCRIPT_NAME})")
 # `$SKILL_DIR/<path>` -- the in-package form the working references use.
 SKILL_DIR_RE = re.compile(r"\$SKILL_DIR/([A-Za-z0-9_.][A-Za-z0-9_./-]*)")
 # A `## References` list bullet naming a package-local script. Deliberately
@@ -75,7 +79,7 @@ SKILL_DIR_RE = re.compile(r"\$SKILL_DIR/([A-Za-z0-9_.][A-Za-z0-9_./-]*)")
 # the check narrower than its own stated rationale. What matters is that the
 # script path OPENS the bullet, which is what makes it a named affordance rather
 # than an illustrative mention.
-REFERENCES_BULLET_RE = re.compile(r"^\s*-\s+`(scripts/[A-Za-z0-9_][A-Za-z0-9_./-]*\.py)`")
+REFERENCES_BULLET_RE = re.compile(rf"^\s*-\s+`(scripts/{_SCRIPT_NAME})`")
 
 # Classification tokens, most-actionable first.
 BROKEN = "package_file_wrong_prefix"
