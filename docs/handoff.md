@@ -2,8 +2,10 @@
 
 ## Workflow Trigger
 
-- No goal is waiting. Pick the next lane from `## Next Session` and shape it with
-  `/achieve <outcome>`, or take an open issue directly with `charness:issue`.
+- **A shaped goal is waiting and needs THREE approvals before `/goal`.** Run
+  `/achieve @charness-artifacts/goals/2026-08-03-count-the-rest-of-the-class-this-run-kept-finding-by-accident.md`
+  to review its `## Discuss Before Activation`, settle it, then activate. It is
+  deliberately NOT `pursue_ready`: item (2) is a toll only the operator can pay.
 
 ## Continuation Capability
 
@@ -36,25 +38,24 @@
   `in_scope_dated` + `in_scope_undatable`, each undatable goal is named, and
   intake splits exactly three ways. Recount any figure with
   `python3 skills/public/achieve/scripts/audit_disposition_corpus.py --repo-root .`
-- **The changed-line gate states its scope on every verdict path**. Refusal
-  deliberately unchanged — that toll is **D40**'s, which carries #469's residual.
-- **The issue-close floor reads the cited critique's own `Fresh-eye
-  satisfaction:`** and refuses a record claiming no distinct observer read the
-  resolution; gated on the `AGENTS.md` contract and a 2026-07-05 grandfather.
+- **The changed-line gate states its scope on every verdict path**; refusal is
+  still **D40**'s toll. **The issue-close floor reads the cited critique's own
+  `Fresh-eye satisfaction:`**, gated on the `AGENTS.md` contract.
 - Still open and untouched: the **E-cluster** (most expensive lane), D41–D49, and
   `parse_created_date`'s uncorroborated consumers.
 
 ## Next Session
 
-1. **#472 — the forbidden-phrase list under-fires.** The gate now runs and
-   refuses nothing, but that measures how narrowly the list is spelled: artifacts
-   saying `active`/`host-level delegation policy` slip past. Widening it would
-   refuse checked-in artifacts, so it needs its own measured disposition first.
-2. **#473 — a guard that cannot fire.** `--fail-on-pre-rule-refusal` is 0 by
-   construction: `apply_disposition_rungs` returns at `if not in_scope` before any
-   `disposition_blank` is set. Annotated, not repaired. Build the forced-scope
-   probe or delete the flag.
-3. **A `completed` closeout gate is not broad proof.** Run
+1. **Settle the waiting goal's three activation items, then run it.** Lane A
+   sweeps the class this run found three times by accident and states its size;
+   the population is already counted (19 `*_RULE_DATE` floors, 93 `validate_*` /
+   `check_*` scripts). #473 is resolved inside it as the worked example.
+2. **Lane B is #474** — surface dup-ratchet pressure at the first edit. Three
+   consecutive runs wrote "run it early" into a plan and hit it at the closeout
+   aggregate anyway; a prose checklist fires when nobody is reading the prose.
+3. **#472 stays filed unless the operator pulls it in.** Widening the phrase list
+   refuses checked-in artifacts — arming teeth on a corpus that cannot object.
+4. **A `completed` closeout gate is not broad proof.** Run
    `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
    explicitly and record the number.
 
@@ -64,13 +65,16 @@
   near-miss artifacts are from May 2026, so an enforce-from-date floor mirroring
   `FRESH_EYE_PRESENCE_RULE_DATE` is the cheap answer — but that is arming teeth on
   a corpus that cannot object, which this repo has got wrong twice (D49).
+- **How hard should the sweep look?** Its population is counted but its predicate
+  is unwritten, so the reading cost is unknown until Lane A defines it. The goal
+  stops and re-scopes rather than silently sampling; confirm that is wanted.
 - **A read-only check and an irreversible boundary deserve different teeth** — D48
   left `drift` alone and refused at publish; whether other gates adopt that split
   is still open.
 
 ## References
 
-- [completed goal](../charness-artifacts/goals/2026-08-03-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [retro](../charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [prior goal](../charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md)
+- [waiting goal](../charness-artifacts/goals/2026-08-03-count-the-rest-of-the-class-this-run-kept-finding-by-accident.md) · [completed goal](../charness-artifacts/goals/2026-08-03-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [retro](../charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [prior goal](../charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md)
 - critiques: [#471 resolution](../charness-artifacts/critique/2026-08-02-issue-471-resolution-critique.md) · [closeout claims](../charness-artifacts/critique/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator-closeout-claims-review.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [the sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
