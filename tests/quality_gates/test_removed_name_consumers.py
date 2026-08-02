@@ -293,3 +293,96 @@ def test_a_name_bound_by_tuple_unpacking_is_seen(tmp_path: Path) -> None:
 
     assert report["removed"]["scripts/pair.py"] == ["A", "B"]
     assert report["consumers"]["scripts/pair.py"] == {"scripts/reader.py": ["A"]}
+
+
+# --- Branch coverage the changed-line mutation lane named -----------------------
+
+
+def test_unparsable_source_yields_no_names_rather_than_crashing() -> None:
+    """A half-written file mid-slice must not take the closeout down."""
+    assert _removed.module_level_names("def broken(:\n") == set()
+
+
+def test_an_annotated_assignment_is_a_module_level_name(tmp_path: Path) -> None:
+    repo = seeded_repo(
+        tmp_path / "repo",
+        {
+            "scripts/typed.py": "COUNT: int = 1\n",
+            "scripts/reader.py": "import typed\n\n\ndef f():\n    return typed.COUNT\n",
+        },
+    )
+    (repo / "scripts" / "typed.py").write_text("", encoding="utf-8")
+
+    report = _removed.build_report(repo, ["scripts/typed.py"], "HEAD")
+
+    assert report["removed"] == {"scripts/typed.py": ["COUNT"]}
+
+
+def test_a_deleted_file_reports_every_name_it_defined(tmp_path: Path) -> None:
+    """Deleting the file removes every name, which is the useful answer, not an error."""
+    repo = seeded_repo(
+        tmp_path / "repo",
+        {
+            "scripts/gone.py": "A = 1\nB = 2\n",
+            "scripts/reader.py": "import gone\n\n\ndef f():\n    return gone.A\n",
+        },
+    )
+    (repo / "scripts" / "gone.py").unlink()
+
+    report = _removed.build_report(repo, ["scripts/gone.py"], "HEAD")
+
+    assert report["removed"] == {"scripts/gone.py": ["A", "B"]}
+    assert report["consumers"]["scripts/gone.py"] == {"scripts/reader.py": ["A"]}
+
+
+def test_an_unreadable_scan_candidate_is_skipped_not_fatal(tmp_path: Path) -> None:
+    """A binary or permission-denied file in the scan set must not stop the sweep."""
+    repo = seeded_repo(tmp_path / "repo", {"scripts/owner.py": "TOKEN = 1\n"})
+    broken = repo / "scripts" / "broken.py"
+    broken.write_bytes(b"\xff\xfe\x00owner TOKEN")
+    (repo / "scripts" / "owner.py").write_text("", encoding="utf-8")
+
+    report = _removed.build_report(repo, ["scripts/owner.py"], "HEAD")
+
+    assert report["removed"] == {"scripts/owner.py": ["TOKEN"]}
+
+
+def test_the_cli_prints_both_branches(tmp_path: Path, capsys, monkeypatch) -> None:
+    """Clean and found both carry the skipped count; a silent success reads as unrun."""
+    import sys as _sys
+
+    repo = seeded_repo(
+        tmp_path / "repo",
+        {
+            "scripts/owner.py": "TOKEN = 1\n",
+            "scripts/reader.py": "import owner\n\n\ndef f():\n    return owner.TOKEN\n",
+        },
+    )
+
+    monkeypatch.setattr(
+        _sys, "argv", ["removed_name_consumers.py", "--repo-root", str(repo), "--paths", "scripts/owner.py"]
+    )
+    assert _removed.main() == 0
+    assert "No module-level names removed" in capsys.readouterr().out
+
+    (repo / "scripts" / "owner.py").write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        _sys, "argv", ["removed_name_consumers.py", "--repo-root", str(repo), "--paths", "scripts/owner.py"]
+    )
+    assert _removed.main() == 0
+    found = capsys.readouterr().out
+    assert "removed TOKEN" in found
+    assert "scripts/reader.py reads TOKEN" in found
+
+
+def test_the_cli_says_so_when_a_removal_has_no_reader(tmp_path: Path, capsys, monkeypatch) -> None:
+    import sys as _sys
+
+    repo = seeded_repo(tmp_path / "repo", {"scripts/lonely.py": "VALUE = 1\n"})
+    (repo / "scripts" / "lonely.py").write_text("", encoding="utf-8")
+    monkeypatch.setattr(
+        _sys, "argv", ["removed_name_consumers.py", "--repo-root", str(repo), "--paths", "scripts/lonely.py"]
+    )
+
+    assert _removed.main() == 0
+    assert "no candidate reader found" in capsys.readouterr().out

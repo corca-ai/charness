@@ -529,3 +529,134 @@ def test_a_non_ascii_path_is_not_silently_dropped(tmp_path: Path) -> None:
     (repo / "scripts" / "caf\u00e9.py").write_text("x = 1\n", encoding="utf-8")
 
     assert "scripts/caf\u00e9.py" in _parity.changed_python_paths(repo)
+
+
+# --- Branch coverage the changed-line mutation lane named -----------------------
+
+
+def _run_cli(monkeypatch, capsys, *args: str) -> tuple[int, str]:
+    monkeypatch.setattr(sys, "argv", ["parity_harness.py", *args])
+    code = _parity.main()
+    return code, capsys.readouterr().out
+
+
+def test_a_snapshot_recording_another_head_is_discarded(tmp_path: Path) -> None:
+    snapshot_dir = tmp_path / ".charness" / "reviewer-boundary"
+    snapshot_dir.mkdir(parents=True)
+    (snapshot_dir / "snapshot.json").write_text(
+        json.dumps({"head": "0" * 40, "source_blobs": {"scripts/x.py": "abc"}}), encoding="utf-8"
+    )
+    subprocess.run(["git", "init"], cwd=tmp_path, check=True, capture_output=True)
+    (tmp_path / "seed.txt").write_text("s\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=tmp_path, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "s"],
+        cwd=tmp_path, check=True, capture_output=True,
+    )
+
+    assert _parity.snapshot_payload(tmp_path) == {}
+
+
+def test_unparsable_source_refuses_rather_than_reporting_no_repairs() -> None:
+    """A parse failure must not read as "nothing was repaired"."""
+    try:
+        _parity.repair_shaped_functions("def ok():\n    return 1\n", "def broken(:\n")
+    except _parity.ParityError as exc:
+        assert "cannot parse" in str(exc)
+        return
+    raise AssertionError("a broken current source must refuse")
+
+
+def test_three_definitions_of_one_name_each_get_their_own_key() -> None:
+    """The ordinal loop: two collisions need `#2` AND `#3`, not one shared suffix."""
+    body = "def f(x):\n    return {}\n"
+    before = body.format(1) + body.format(2) + body.format(3)
+    after = body.format(1) + body.format(2) + body.format(99)
+
+    assert _parity.repair_shaped_functions(before, after) == ["f#3"]
+
+
+def test_a_module_spec_that_cannot_be_built_refuses(monkeypatch) -> None:
+    monkeypatch.setattr(_parity.importlib.util, "spec_from_loader", lambda *a, **k: None)
+    try:
+        _parity.load_module_from_source("VALUE = 1\n", "parity_no_spec")
+    except _parity.ParityError as exc:
+        assert "module spec" in str(exc)
+        return
+    raise AssertionError("a missing spec must refuse")
+
+
+def test_an_endless_generator_is_truncated_at_the_cap(monkeypatch) -> None:
+    """The cap bounds ITEMS, which is what stops an infinite generator hanging the run."""
+    monkeypatch.setattr(_parity, "ITERATOR_MATERIALISE_CAP", 5)
+    endless = _parity.load_module_from_source(
+        "def gen():\n    n = 0\n    while True:\n        yield n\n        n += 1\n", "parity_endless"
+    )
+
+    rendered = _parity.outcome(endless.gen, ())
+
+    assert "truncated at 5" in rendered[1]
+
+
+def test_changed_python_paths_degrades_to_empty_outside_a_repo(tmp_path: Path) -> None:
+    assert _parity.changed_python_paths(tmp_path / "not-a-repo") == []
+
+
+def test_an_unreadable_worktree_path_is_uncomparable_not_clean(tmp_path: Path) -> None:
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "gone.py").write_text("def f():\n    return 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "add"],
+        cwd=repo, check=True, capture_output=True,
+    )
+    (repo / "scripts" / "gone.py").unlink()
+
+    report = _parity._render_repairs(repo, ["scripts/gone.py"], "HEAD")
+
+    assert "scripts/gone.py" in report["uncomparable"]
+
+
+def test_the_cli_prints_both_branches_against_a_committed_ref(tmp_path: Path, monkeypatch, capsys) -> None:
+    """Human mode has a clean branch and a repairs branch; both carry the skipped count."""
+    repo = seeded_repo(tmp_path / "repo")
+    target = repo / "scripts" / "gate.py"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text("def verdict(x):\n    return bool(x)\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
+        cwd=repo, check=True, capture_output=True,
+    )
+
+    code, clean = _run_cli(monkeypatch, capsys, "--repo-root", str(repo), "--against", "HEAD")
+    assert code == 0 and "No repair-shaped function changes" in clean and "skipped:" in clean
+
+    target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
+    code, repairs = _run_cli(monkeypatch, capsys, "--repo-root", str(repo), "--against", "HEAD")
+
+    assert code == 0
+    assert "scripts/gate.py: verdict" in repairs
+    assert "skipped:" in repairs
+    assert "INTENDED delta" in repairs
+
+
+def test_the_advisory_degrades_on_a_failing_or_unparsable_harness(monkeypatch, capsys) -> None:
+    """Both degrade paths must be SILENT, not a traceback inside the closeout."""
+
+    class _Failing:
+        returncode = 1
+        stdout = ""
+
+    monkeypatch.setattr(_advisories.subprocess, "run", lambda *a, **k: _Failing())
+    _advisories.advise_repair_parity(ROOT, [])
+    assert capsys.readouterr().err == ""
+
+    class _Garbage:
+        returncode = 0
+        stdout = "not json"
+
+    monkeypatch.setattr(_advisories.subprocess, "run", lambda *a, **k: _Garbage())
+    _advisories.advise_repair_parity(ROOT, [])
+    assert capsys.readouterr().err == ""
