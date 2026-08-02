@@ -1,6 +1,6 @@
 # Achieve Goal: Fix the rule that cannot fire where it was written to, then count the rest
 
-Status: active
+Status: complete
 Created: 2026-08-03
 Activation: `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
 
@@ -302,7 +302,7 @@ below. Fill during the run:
 - Routing: impl — selected from installed skill metadata for the code-and-contract slices in all three lanes (the ladder and its record store, the two widened readers, the edit-time advisory); `impl` owns the smallest-meaningful-slice loop and hands its stop gate to `prove`, which is where the bounded rounds and the slice closeout ledger came from.
 - Gather: n/a — every `## Context Sources` URL is a GitHub issue in this repo's own tracker, read through `gh issue view` against the repo's own backend rather than fetched as external web content; no external source became working context.
 - Release: n/a — this run touches no version, install manifest, or release surface; no publish, tag, or version bump was performed or claimed.
-- Issue closeout: #473 and #474 resolved by this goal and staged for close; #475 resolved in Lane A and staged; #476 filed this run and left OPEN by design. Carrier: direct-commit (`7e452912`, `39a2768a`). See `## User Verification Instructions` for the close-path proof.
+- Issue closeout: #475, #473, #474 CLOSED through `issue_tool.py close-with-comment` after a DELEGATED resolution critique ran first and refused #473 until its probe was made capable of failing. Carrier: close-comment (not commit keywords), so `verify-closeout --carrier direct-commit` reports the ledger lines missing from the COMMIT message — that is a carrier mismatch in the verification call, not a failed close. Confirmed on a different channel: `gh issue view` reads back CLOSED (COMPLETED) for all three, and each posted comment carries its `Behavior:` / `Critique:` / `AI-provenance:` lines (3/3 each). #476 filed this run and left OPEN by design.
 
 
 The four lines above are this run's recorded routes, each on ONE physical line so
@@ -463,7 +463,7 @@ Disposition review: charness-artifacts/critique/2026-08-02-lanes-b-and-c-sweep-a
 
 Every figure carries its source or is marked unbacked.
 
-- Broad pytest: **1 failed, 6675 passed** on the first explicit run — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`. The one failure was a test pinning the refusal message this run widened; repaired, and the suite is green after. Recorded rather than smoothed: the closeout gate had reported `completed` while that test was failing, which is exactly why the handoff says a `completed` gate is not broad proof.
+- Broad pytest: **1 failed, 6675 passed** on the first explicit run, then **6676 passed, 0 failed** on the final run over the shipped tree — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`. The one failure was a test pinning the refusal message this run widened; repaired. Recorded rather than smoothed: the closeout gate had reported `completed` while that test was failing, which is exactly why the handoff says a `completed` gate is not broad proof.
 - Critique-artifact corpus: **688 validated, exit 0** — `python3 scripts/validate_critique_artifacts.py --repo-root . --all`, measured 2026-08-02 AFTER this run's own artifacts landed in it. Denominator: 988 `.md` files in `charness-artifacts/critique/` = 688 artifacts + 300 prepare packets, the latter excluded by content kind in both selection modes (re-derived with `candidate_paths(all_artifacts=True)`).
 - Sweep: **197 units assigned, 172 read (87%), 25 unread**, 201 rules classified, 14 `cannot-fire` claims, **11 refuted**, **1 confirmed and repaired** — source `charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md`, which states each stratum's own denominator.
 - Reviewer boundary: **3 windows, every verify exit 0**, `{"ok": true, "verdict": "clean", "drift": []}`, nothing parent-declared — `skills/shared/scripts/reviewer_boundary_fingerprint.py verify`.
