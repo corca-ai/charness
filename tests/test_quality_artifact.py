@@ -705,7 +705,7 @@ def test_validate_quality_artifact_requires_blocked_delegated_review_signal(tmp_
     )
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "concrete host signal or tool signal" in result.stderr
+    assert "concrete host signal, tool signal, or delegation signal" in result.stderr
 
 
 def test_validate_quality_artifact_rejects_missed_delegated_review(tmp_path: Path) -> None:

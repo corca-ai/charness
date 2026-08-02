@@ -3,6 +3,8 @@ Date: 2026-08-02
 
 ## Decision Under Review
 
+Goal: `fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest`.
+
 Lane B: measure the "a rule that cannot fire where it was written to" class with a
 predicate written down BEFORE the population was read, repair the unambiguous,
 file the rest, and resolve #473. Lane C: give the duplicate-ratchet trap the same

@@ -173,11 +173,24 @@ def summarize(rows: list[dict]) -> dict:
             "be parsed (in_scope == in_scope_dated + in_scope_undatable)"
         ),
         "pre_rule_rung1a_refusals": len(pre_rule_refused),
+        # COMPUTED, not a constant. As a constant this field asserted "this count
+        # CANNOT be non-zero" in the one run where it IS non-zero -- the JSON would
+        # have told the reader the tripwire's only signal was not evidence, at the
+        # exact moment it fired. A field that denies the thing it accompanies is
+        # the class this audit surface exists to report.
         "pre_rule_refusal_detectability": (
             "structurally 0: apply_disposition_rungs returns at `if not in_scope` "
             "before any disposition_blank is set, so pre-rule and rung-1a-refused "
             "are mutually exclusive for every corpus -- this count CANNOT be "
             "non-zero, and is therefore not evidence about the grandfather"
+            if not pre_rule_refused
+            else (
+                "ORDERING ASSUMPTION VIOLATED: a pre-rule goal was refused by rung 1a, "
+                "which control flow is supposed to make impossible -- the grandfather "
+                "leaked. This count IS evidence and the tripwire is the reason you are "
+                "reading it; inspect the rungs above the in-scope check. Goals: "
+                + ", ".join(r["goal"] for r in pre_rule_refused)
+            )
         ),
         "in_scope_blank_refusals": len(in_scope_blank),
         "in_scope_missing_disposition_review_line": [r["goal"] for r in in_scope_missing_review],

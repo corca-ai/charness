@@ -89,26 +89,48 @@ def test_the_tripwire_fires_when_the_grandfather_leaks(audit) -> None:
     assert summary["pre_rule_rung1a_refusals"] == 1, (
         "the tripwire cannot see the leak it exists to catch"
     )
+    # And the reported detectability must STOP denying the signal once it fires.
+    # As a constant it said "this count CANNOT be non-zero" in the one run where
+    # it was -- steering a reader away from the only evidence the guard produces.
+    detectability = summary["pre_rule_refusal_detectability"]
+    assert "ORDERING ASSUMPTION VIOLATED" in detectability
+    assert "structurally 0" not in detectability
+    assert "2026-01-01-leaked.md" in detectability
 
 
-def test_the_flags_exit_path_turns_that_detection_into_a_failure(audit) -> None:
-    """Detection is not refusal. Pin the exit code the flag actually returns.
+def test_the_flags_exit_path_turns_that_detection_into_a_failure(
+    audit, monkeypatch, tmp_path, capsys
+) -> None:
+    """Detection is not refusal. Drive the REAL `main`, not a copy of its one line.
 
-    `main` returns 1 on `args.fail_on_pre_rule_refusal and summary[...]`, so the
-    count reaching 1 must be what flips the exit. Asserting the count alone would
-    leave the flag itself unproven -- a verdict computed and discarded.
+    The first version of this test defined a local `exit_code` helper mirroring
+    `main`'s `if args.fail_on_pre_rule_refusal and summary[...]` and asserted
+    against that. It would have stayed green with the flag deleted, the condition
+    inverted, or `main` returning 0 unconditionally -- a check that cannot fail in
+    the situation it was written for, which is the very defect #473 reports.
     """
-    leaked_summary = audit.summarize([_row(in_scope=False, rung1a_block_the_blank=True)])
-    clean_summary = audit.summarize([_row()])
+    leaked = _row(goal="2026-01-01-leaked.md", in_scope=False, rung1a_block_the_blank=True)
+    monkeypatch.setattr(audit, "audit_goal", lambda repo_root, path: leaked)
+    goals = tmp_path / audit.GOAL_DIR
+    goals.mkdir(parents=True)
+    (goals / "2026-01-01-leaked.md").write_text("# leaked\n", encoding="utf-8")
 
-    def exit_code(summary: dict, *, flag: bool) -> int:
-        return 1 if flag and summary["pre_rule_rung1a_refusals"] else 0
+    monkeypatch.setattr(
+        sys, "argv", ["audit", "--repo-root", str(tmp_path), "--fail-on-pre-rule-refusal"]
+    )
+    assert audit.main() == 1, "the flag did not refuse on a leak it detected"
+    assert '"pre_rule_rung1a_refusals": 1' in capsys.readouterr().out
 
-    assert exit_code(leaked_summary, flag=True) == 1
-    assert exit_code(clean_summary, flag=True) == 0
-    # Without the flag a leak is reported but never gates -- the runner is a
-    # read-only audit surface by design.
-    assert exit_code(leaked_summary, flag=False) == 0
+    # Same leak, no flag: the runner is a read-only audit surface and must not gate.
+    monkeypatch.setattr(sys, "argv", ["audit", "--repo-root", str(tmp_path)])
+    assert audit.main() == 0
+
+    # Clean corpus with the flag: no refusal.
+    monkeypatch.setattr(audit, "audit_goal", lambda repo_root, path: _row())
+    monkeypatch.setattr(
+        sys, "argv", ["audit", "--repo-root", str(tmp_path), "--fail-on-pre-rule-refusal"]
+    )
+    assert audit.main() == 0
 
 
 def test_the_real_corpus_still_reports_a_clean_grandfather(audit) -> None:

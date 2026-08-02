@@ -18,7 +18,7 @@ reports/
 .charness/tasks/
 .charness/hitl/runtime/
 .charness/reviewer-boundary/
-.charness/dup-ratchet/
+.charness/dup-ratchet*
 .charness/t-events/
 .charness/usage-episodes/
 integrations/locks/*.json

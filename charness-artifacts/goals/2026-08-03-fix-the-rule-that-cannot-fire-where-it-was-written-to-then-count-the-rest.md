@@ -260,17 +260,17 @@ closable, so stopping between lanes is clean; the cut order is in `## Boundaries
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+- Decision: confirm Lane A's BEHAVIOURAL half — re-run a task-completing `critique` or `quality` run in the repo where the refusal was observed, and confirm a bounded reviewer actually spawns
+- Owner: operator
+- Why deferred: not obtainable from this session. The decision under test is made by an agent reading its OWN repo root, and every agent this session can reach is rooted in charness, which carries the `AGENTS.md` block — so the ladder resolves at rung 1 here and rungs 2 and 3 are never exercised by a real agent.
+- Unblock action: run the command in `## User Verification Instructions` in that repo and report whether the reviewer spawned, and at which rung
+- Revisit trigger: the operator's next session in a repo that has never run `setup`
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: whether to reconcile the two spellings of the delegation contract (issue #476)
+- Owner: operator
+- Why deferred: both repair directions newly APPLY floors to repos previously outside them, so it needs a measured count and a recorded disposition first (D49). Filing preserved the finding without arming anything.
+- Unblock action: decide whether the template gains the marker sentence or the markers widen to accept the standing-request spelling, then measure what each would newly hold to the contract
+- Revisit trigger: the next `setup`-surface slice, or a consuming repo reporting an inert bounded-review floor
 
 ## Coordination Cues
 
@@ -298,14 +298,15 @@ below. Fill during the run:
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
 
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
+- Routing: achieve — selected from installed skill metadata as the owner of the goal lifecycle, slice cadence, and closeout floors for this three-lane run; `critique` supplied the bounded review rounds Lane A's proof-surface changes owe, `quality` owns the dup-ratchet contract Lane C extends, and `issue` filed #476 and stages the closes.
+- Routing: impl — selected from installed skill metadata for the code-and-contract slices in all three lanes (the ladder and its record store, the two widened readers, the edit-time advisory); `impl` owns the smallest-meaningful-slice loop and hands its stop gate to `prove`, which is where the bounded rounds and the slice closeout ledger came from.
+- Gather: n/a — every `## Context Sources` URL is a GitHub issue in this repo's own tracker, read through `gh issue view` against the repo's own backend rather than fetched as external web content; no external source became working context.
+- Release: n/a — this run touches no version, install manifest, or release surface; no publish, tag, or version bump was performed or claimed.
+- Issue closeout: #473 and #474 resolved by this goal and staged for close; #475 resolved in Lane A and staged; #476 filed this run and left OPEN by design. Carrier: direct-commit (`7e452912`, `39a2768a`). See `## User Verification Instructions` for the close-path proof.
 
-- `Routing: achieve — owns the goal lifecycle, slice cadence, and the closeout floors for this multi-lane run; critique supplied the bounded review rounds Lane A's proof-surface changes owe, and issue filed #476.`
+
+The four lines above are this run's recorded routes, each on ONE physical line so
+the floor reads the whole value.
 
 ## Discuss Before Activation
 
@@ -456,13 +457,57 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md
+Host log probe: skipped: host-log-not-exposed: this Claude Code session exposes no per-turn token/time/tool-call log to the agent, so any figure here would be fabricated; the reviewer/workflow token counts quoted below come from the host's own spawn summaries, not from a probe.
+Disposition review: charness-artifacts/critique/2026-08-02-lanes-b-and-c-sweep-and-edit-time-advisory.md
+
+Every figure carries its source or is marked unbacked.
+
+- Broad pytest: **1 failed, 6675 passed** on the first explicit run — `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`. The one failure was a test pinning the refusal message this run widened; repaired, and the suite is green after. Recorded rather than smoothed: the closeout gate had reported `completed` while that test was failing, which is exactly why the handoff says a `completed` gate is not broad proof.
+- Critique-artifact corpus: **688 validated, exit 0** — `python3 scripts/validate_critique_artifacts.py --repo-root . --all`, measured 2026-08-02 AFTER this run's own artifacts landed in it. Denominator: 988 `.md` files in `charness-artifacts/critique/` = 688 artifacts + 300 prepare packets, the latter excluded by content kind in both selection modes (re-derived with `candidate_paths(all_artifacts=True)`).
+- Sweep: **197 units assigned, 172 read (87%), 25 unread**, 201 rules classified, 14 `cannot-fire` claims, **11 refuted**, **1 confirmed and repaired** — source `charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md`, which states each stratum's own denominator.
+- Reviewer boundary: **3 windows, every verify exit 0**, `{"ok": true, "verdict": "clean", "drift": []}`, nothing parent-declared — `skills/shared/scripts/reviewer_boundary_fingerprint.py verify`.
+- Focused tests added this run: **44** (ladder) + **16** (advisory) + **4** (#473 probe) = **64**, all green.
+- Bounded reviewers: **6** (2 Lane A round 1, 2 Lane A round 2, 1 Lane C, plus 12 sweep survey/verify agents in a dynamic workflow). All findings received in the parent context; no delivery failure.
+- Duplicate-ratchet families classified `intentional` this run: **8** — 6 portable-vs-repo reader duplication, 2 idioms; source `charness-artifacts/quality/dup-review.json`.
+- Token/time cost per lane: **unbacked: this host exposes no per-turn accounting to the agent.** The workflow's own summary reported 1,347,297 subagent tokens over 18 agents for the sweep; that is a host-reported figure for that workflow only, not a goal total.
 
 ## User Verification Instructions
 
+**Lane A's behavioural half — the one thing this session cannot prove.** In the
+repo where you saw the refusal (one that has never run `setup`, so it carries no
+`AGENTS.md` `Subagent Delegation` block), first check what the ladder now
+resolves:
+
+```bash
+python3 ~/.agents/src/charness/plugins/charness/shared/scripts/resolve_subagent_delegation.py resolve --repo-root .
+```
+
+Expect `"delegation": "ask"`, `"rung": 3` — the repo has not refused, it has not
+been asked. Then run a task-completing `/charness:critique` (or `quality`) there
+and confirm the agent ASKS once, naming the bounded reviewer scopes, and that on
+approval a bounded reviewer actually spawns and its findings come back. The
+answer persists, so it should not ask again:
+
+```bash
+cat .agents/subagent-delegation.json
+```
+
+Recorded as an explicit non-claim until you confirm: the rule now permits it is
+NOT evidence that it happens, and that gap is exactly how #471 stayed dormant.
+
+**Lane C, if you want to see it fire:** add ~30 lines to any file under
+`scripts/` or `skills/public/` and the advisory appears in the agent's context at
+the edit, once per file per HEAD.
+
+**Lane B's measurement** is
+`charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md`; its counts are
+re-derivable from the stated denominators.
+
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the edit-time dup-ratchet advisory (`scripts/dup_ratchet_edit_advisory.py`, wired to the PostToolUse hook, 16 tests) turns the "run the ratchet early" plan bullet into a workflow signal
+Retro dispositions: applied: test inputs are built from the source constant rather than retyped (`_decline_status_line` reads `_DECLINE_ACTION`), after the hand-typed version passed against a form nothing prescribes
+Retro dispositions: applied: the second bounded round on a proof-surface repair is now evidenced twice over in this goal's critique artifacts, both times finding the class reappearing in the repair
+Structural follow-up: applied: `scripts/dup_ratchet_edit_advisory.py` plus its hook wiring and `skills/public/quality/references/dup-ratchet.md` *Two Arms* — the transferable waste named in `## Sibling Search` (a recurring trap living in prose) now has a deterministic non-blocking signal, and the consuming-repo-inertness and fixture-shape items are carried to the handoff as named anchors
