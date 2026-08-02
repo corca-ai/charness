@@ -2,10 +2,9 @@
 
 ## Workflow Trigger
 
-- **A shaped goal is waiting, led by an OPERATOR-REPORTED defect (#475).** Run
-  `/achieve @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
-  to settle its `## Discuss Before Activation`, then activate. Deliberately NOT
-  `pursue_ready`: item (1) is a trust-posture decision only the operator can make.
+- **A shaped goal is READY TO RUN, led by an OPERATOR-REPORTED defect (#475).**
+  All activation items are settled, so activate it directly:
+  `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
 
 ## Continuation Capability
 
@@ -45,8 +44,9 @@
 
 1. **Lane A is #475.** Bounded review is MANDATED by several skills and is inert
    in any repo that never ran `setup`, because the authorization rule names only
-   `AGENTS.md` as the source of the standing request. Acceptance is behavioural:
-   a real spawn in a scratch repo with no block.
+   `AGENTS.md`. Build the settled three-rung ladder. The agent proves the
+   MECHANISM only; the behavioural proof is the operator re-running in the repo
+   that refused — this session cannot produce it, and must not claim it.
 2. **Lane B counts the rest of the class** (#471/#473/#475 are one shape: a rule
    that cannot fire where it was written to). #475 widens the population the
    earlier sweep draft had wrong — it enumerated only code, and #475 lives in a
@@ -65,10 +65,10 @@
   near-miss artifacts are from May 2026, so an enforce-from-date floor mirroring
   `FRESH_EYE_PRESENCE_RULE_DATE` is the cheap answer — but that is arming teeth on
   a corpus that cannot object, which this repo has got wrong twice (D49).
-- **Who may grant the standing delegation request (#475)?** Today it is the repo
-  owner, via their own `AGENTS.md`. Letting a skill invocation authorize the
-  reviewers it mandates fixes the never-ran-setup case but lets the plugin grant
-  itself spawn rights. That choice is the goal's blocking activation item.
+- **Settled (#475): who grants the standing delegation request.** A three-rung
+  ladder — `AGENTS.md`, else a structured repo-owned opt-in, else ask once and
+  persist. The plugin never self-grants. Reopen only if the per-repo question
+  proves more friction than the never-ran-`setup` refusal it replaces.
 - **A read-only check and an irreversible boundary deserve different teeth** — D48
   left `drift` alone and refused at publish; still open for other gates.
 
