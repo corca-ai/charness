@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 _check = import_repo_module(ROOT / "scripts/check_plugin_dir_references.py", "scripts.check_plugin_dir_references")
 
@@ -205,3 +205,24 @@ def test_the_live_tree_resolves(monkeypatch, capsys) -> None:
     result = run_check(monkeypatch, capsys, "--repo-root", str(ROOT))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_the_script_entrypoint_reports_both_outcomes_as_a_subprocess(tmp_path: Path) -> None:
+    """Covers the `__main__` block, which an in-process `main()` call never reaches.
+
+    The exit codes ARE the contract with run-quality.sh, the pre-commit plan, and
+    quality-core.yml — none of which import `main()`.
+    """
+    repo = tmp_path / "repo"
+    write(repo, "plugins/charness/scripts/x.py", "# shipped\n")
+    write(repo, "skills/shared/references/a.md", "See `<plugin-dir>/scripts/x.py`.\n")
+
+    clean = run_script("scripts/check_plugin_dir_references.py", "--repo-root", str(repo))
+    assert clean.returncode == 0, clean.stderr
+    assert "Validated" in clean.stdout
+
+    write(repo, "skills/shared/references/b.md", "See `<plugin-dir>/scripts/gone.py`.\n")
+    refused = run_script("scripts/check_plugin_dir_references.py", "--repo-root", str(repo))
+
+    assert refused.returncode == 1
+    assert "scripts/gone.py" in refused.stderr
