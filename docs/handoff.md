@@ -2,77 +2,77 @@
 
 ## Workflow Trigger
 
-- **A shaped goal is READY TO RUN.** Both activation items are settled — external
-  side effects approved for that goal, and Lane C decided as a non-blocking
-  advisory. Activate it directly:
-  `/goal @charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md`
+- **No goal is waiting.** Pick from `## Next Session`, or shape one with
+  `/achieve <outcome>`.
 
 ## Continuation Capability
 
-- **The round that reads the REPAIRS is where the class comes back.** Twice last
-  run a round-1 repair on a proof surface shipped the defect it was repairing.
-  Round 1 could not see either — it was reviewing code that did not exist yet.
-- **Build test inputs from the source constant, never by retyping.** A fixture
-  spelled the way the matcher wants is how this whole class hides. Three
-  instances so far: #471's synthetic `AGENTS.md`, a decline-record test, and a
-  probe that re-implemented the exit line it was supposed to prove.
-- **Adversarial verification, defaulting to refuted, killed 11 of 14 findings.**
-  Surveyors asked to find inert rules will find them.
-- **Cover new failure branches as you write them.** The pre-push mutation lane
-  refused four times last run, always correctly.
+- **The round that reads the REPAIRS is where the class comes back — third
+  measured instance.** Last run's round-1 repair wired a new advisory into
+  `run-quality.sh` and satisfied neither of that surface's two registration
+  contracts, shipping a gate failure of the class it was fixing.
+- **A claims reviewer finds a different class than a code reviewer.** Three
+  code-reading rounds passed over a promised verification step that had never
+  run, a Slice Log contradicting its own retro in the flattering direction, and
+  an unreconciled headline number. A distinct observer auditing what the
+  artifact ASSERTS found all three in one pass.
+- **A test can assert a proxy instead of the thing.** `assert "--strict" not in
+  source` matched the docstring explaining that flag's absence. Read the real
+  parser. Same family as "build fixtures from the source constant".
+- **The dup ratchet re-fires after a refactor** — running it at the first edit
+  is necessary, not sufficient; restructuring rotates the fingerprints.
 
 ## Current State
 
-- `main` is at the commit below, local backlog empty. Re-check remote CI rather
-  than trusting this line: `gh run list --limit 3`.
-- **#471 / #473 / #474 / #475 / #476 all CLOSED.** The delegation authorization
-  ladder is live (`AGENTS.md`, else `.agents/subagent-delegation.json`, else ask
-  once); the dup ratchet warns at the edit; `--fail-on-pre-rule-refusal` is an
-  armed, mutation-checked tripwire; the `setup` template now satisfies both
-  readers of the contract.
-- **The 2026-08-02 sweep is checked in** — 197 units assigned, 172 read, 25
-  unread, 1 confirmed `cannot-fire` repaired. It HAD the 13 above and lost them:
-  verifiers refuted "inert" by exhibiting a DIFFERENT working path, which proves
-  nothing about the path the document told the agent to run.
-- Still open and untouched: the **E-cluster** (most expensive lane), D41–D49,
+- `main` is at `ac39c9f5`, remote CI green. Re-check: `gh run list --limit 3`.
+  The combined-status API reports `pending`/`total_count: 0` for every commit
+  here — this repo publishes check-runs, not legacy statuses. Not a real pending.
+- **The 13 broken shipped commands are repaired and pinned.** Recount any time
+  with `python3 scripts/inventory_skill_script_references.py --repo-root .`; the
+  teeth are [test_skill_script_references.py](../tests/test_skill_script_references.py).
+  It resolves against BOTH
+  the authoring tree and the shipped `plugins/` mirror, because those are
+  different trees and the inherited measurement had only seen one.
+- **The accumulation mechanism is the durable finding**, not the count:
+  `<repo-root>/` is `check_doc_links.py`'s own documented portable placeholder,
+  so the escape hatch and the typo are the same token. Argue any future gate
+  promotion from that, not from "13".
+- Still open and untouched: the **E-cluster**, D41–D49,
   `parse_created_date`'s uncorroborated consumers.
 
 ## Next Session
 
-1. **13 shipped commands cannot run.** A skill reference says
-   `<repo-root>/scripts/X.py` while the file is at
-   `skills/public/<skill>/scripts/X.py`; an agent following the instruction gets
-   "No such file". Measured 2026-08-02 over every shipped skill `.md`: 91
-   `$SKILL_DIR` refs resolve cleanly, 13 are broken here AND everywhere, 9 point
-   at charness scripts absent in a consuming repo, 0 reference a missing file.
-   That is the waiting goal.
-2. **#475's behavioural half is still an OPEN operator decision.** Nobody has
-   observed an agent ask-and-spawn in a repo that never ran `setup`. The command
-   is in the completed goal's `## User Verification Instructions`. Reopen #475 if
-   the re-run does not ask.
-3. **#476 was fixed non-retroactively.** Consuming repos already set up from the
-   old template still read as not-adopted. That is the deliberate cost; the
-   marker-widening option is the follow-up if one reports an inert floor.
-4. **A `completed` closeout gate is not broad proof.** Last run's gate said
-   `completed` while a test was failing. Run
-   `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` and
-   record the number.
+1. **#477 — an operator decision one character wide.**
+   `$SKILL_DIR/../../../scripts/plan_risk_interrupt.py` in `impl`/`spec` reaches
+   the repo root in the authoring tree and overshoots the plugin root in the
+   shipped one, silently, behind `2>/dev/null || true` — so it has never run in
+   any installed plugin. Repointing would make a never-running command start
+   running. Decide: repoint, or delete the call.
+2. **#478 — skill prose telling a consumer to run charness authoring-repo
+   scripts.** They ARE exported to the plugin, so `<plugin-dir>/` would resolve;
+   whether public skill prose may invoke plugin-level scripts is the call. One
+   site is a `.sh` no `.py`-only measurement ever counted.
+3. **The highest-leverage item surfaced and NOT taken**: give the consumer-only
+   escape its own distinguishable spelling, so a checker can tell a deliberate
+   escape from a typo. See the retro's `## Portable Candidate`.
+4. **#475's behavioural half is still an OPEN operator decision.** Nobody has
+   observed an agent ask-and-spawn in a repo that never ran `setup`.
 
 ## Discuss
 
-- **Settled for the waiting goal only**: push, issue-filing, and issue-closing
-  are approved there, and Lane C ships an advisory rather than a gate. Neither
-  decision carries past that goal.
-- **Open: which spelling of the delegation contract wins for EXISTING consumers.**
-  Widening the markers would flip every already-set-up repo at once, against a
-  population that cannot be counted from this tree — which is what D49 forbids.
-  Reopen only with a real observation to measure against.
-- **A read-only check and an irreversible boundary deserve different teeth** — D48
-  left `drift` alone and refused at publish; still open for other gates.
+- **The external-side-effect approval was scoped to the completed goal and does
+  NOT carry forward.** Push, issue-filing, and issue-closing need a fresh grant.
+- **Open: which spelling of the delegation contract wins for EXISTING
+  consumers.** Widening the markers flips every already-set-up repo at once,
+  against a population this tree cannot count — what D49 forbids.
+- **A read-only check and an irreversible boundary deserve different teeth** —
+  D48 left `drift` alone and refused at publish; still open for other gates.
+- **Advisory-vs-gate for the new path check.** It ships advisory by the
+  operator's Floor-Addition Restraint call; the recurrence evidence a promotion
+  needs is now recorded, so the next occurrence is the trigger, not a fresh count.
 
 ## References
 
-- [waiting goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [completed goal](../charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [retro](../charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
-- critiques: [Lane A ladder](../charness-artifacts/critique/2026-08-02-lane-a-the-delegation-authorization-ladder.md) · [Lanes B and C](../charness-artifacts/critique/2026-08-02-lanes-b-and-c-sweep-and-edit-time-advisory.md)
+- [completed goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [prior goal](../charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)

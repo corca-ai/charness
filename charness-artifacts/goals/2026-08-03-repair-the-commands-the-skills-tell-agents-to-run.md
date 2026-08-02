@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Lanes A/B/C complete and reviewed; Lane D closeout in progress.
+- Current slice: all four lanes complete, pushed as `ac39c9f5`, remote CI green.
 - Current slice intent: repair the counted 13 broken command references,
   disposition the charness-script references, and ship the resolution check as
   a non-blocking advisory. One unchanged intent across all three lanes, so
   critique fired once per lane boundary rather than per commit
   (meaningful-slice-cadence).
-- Next action: Lane D — bundle gate, broad pytest with its number, closeout
-  claims review by a distinct observer, retro, commit, push.
+- Next action: none — goal complete. Follow-ups live in #477 / #478 and in
+  `## Operator Decision Queue`.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -184,7 +184,7 @@ error this goal repairs.
 | A | DONE — Repoint the 13 broken command references and pin them with a regression test over ALL shipped skill surfaces | 13 counted commands an agent is told to run and cannot; unambiguous, refuses nothing new, and the file already exists at the right place | Before/after count 13 → 0 from the same query, the test, synced mirrors | complete |
 | B | DONE — Disposition the 9 charness-script references: repoint, document as authoring-repo-only, or file | They resolve here and not in a consuming repo, which is the #475 shape — but unlike the 13 they may be deliberate, so each needs a judgement recorded | A per-reference disposition table with reasons; issues for what is not resolved | complete |
 | C | DONE — Wire the static path-resolution check as a NON-BLOCKING advisory (operator-decided 2026-08-02), count how the 13 accumulated, and record the recurrence evidence a later gate decision would need | An advisory is the restraint checklist's default on a first finding; the recurrence count is what a blocking promotion requires and nobody has taken it | The advisory firing on a broken reference, a test pinning it cannot change an exit code, the accumulation count with its method, and the deferred gate call written down | complete |
-| D | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | pending |
+| D | DONE — Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | complete |
 
 ## Operator Decision Queue
 
@@ -596,6 +596,29 @@ Executed proof, with its date:
 - Two bounded fresh-eye rounds by distinct `bounded-reviewer` agents, each
   bracketed by `reviewer_boundary_fingerprint.py` snapshot/verify — both
   `clean`, no drift, no parent-attributed drift.
+
+External proof (approved in `## Boundaries` for this goal):
+
+- `git push origin main` → `9f405a28..ac39c9f5`. The pre-push gate refused
+  TWICE before it succeeded, both times correctly, both times from the
+  changed-line mutation lane: first naming 5 uncovered changed lines (one of
+  which turned out to be DEAD code, deleted rather than tested), then the
+  `__main__` entrypoint (covered by a subprocess test rather than a
+  `# pragma: no cover`, because "the documented command actually runs" is this
+  goal's whole subject). Final pre-push: **83 passed, 0 failed**.
+- **Remote CI confirmed per P4 by a different observer AND a different channel
+  than the push exit code.** Channel 1, `gh run watch 30741697583 --exit-status`
+  → 0. Channel 2, the commit check-runs API, independently:
+  `Core deterministic gates: completed/success` and
+  `Changed-line mutation coverage (push/PR mirror): completed/success`.
+  Channel 3, `git ls-remote origin main` → `ac39c9f5`, matching the pushed SHA.
+- Honest reading of one signal that looks bad: the combined-status API returns
+  `state: pending` for this commit. That is NOT a pending check — it reports
+  `total_count: 0`, and the same call returns `pending`/`0` for the previously
+  green `9f405a28`. This repo publishes check-runs, not legacy commit statuses,
+  so the combined-status endpoint has nothing to aggregate. Recorded rather than
+  quietly dropped, because a green claim resting on an unexplained `pending` is
+  exactly the shape this goal exists to distrust.
 
 Non-claims, carried in writing:
 
