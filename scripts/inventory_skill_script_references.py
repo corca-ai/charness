@@ -19,16 +19,26 @@ The escape hatch is therefore indistinguishable from a typo. This inventory
 tells the two apart the only way that is decidable without a consuming repo: by
 asking where the referenced file actually is.
 
-Advisory by design (operator decision, 2026-08-02): one finding is not a recorded
-recurrence, and this repo's recorded reflex is adding floors on first sight. This
-command has deliberately no ``--strict`` flag and no code path that returns
-non-zero, and ``run-quality.sh`` surfaces its ``WARN:`` output non-blocking.
+PROMOTED TO A BLOCKING GATE (operator decision, 2026-08-02), after shipping one
+run as an advisory. The Floor-Addition Restraint checklist asks for a recorded
+RECURRENCE rather than one finding; what promoted it instead is the three-silence
+MECHANISM above, which shows the class is invisible by construction rather than
+by luck.
 
-Stated precisely, because "advisory" is easy to overclaim: the COMMAND cannot
-fail a run. ``tests/test_skill_script_references.py`` is a different surface, and
-it *is* a gate -- it fails when an authoring-layout reference stops resolving.
-That regression test is the teeth this repair was asked to carry; the exit code
-of this script is not.
+The promotion was first justified with "a false positive is structurally
+impossible -- the file is on disk or it is not". That was WRONG, and the first
+bounded review of the promotion proved it with two live refusals: the risk is
+never disk existence, it is (a) resolving against the wrong root, and (b)
+treating absence as a defect for a form where absence is correct. Both shipped
+in the promoting slice and both are repaired here -- ``SkillPackage`` carries each
+package's authoring root instead of counting ``../`` backwards, and
+``<repo-root>/`` (the READER's tree) can only be refused when the file is sitting
+in the skill's own package. What makes the gate safe is those two invariants and
+the tests pinning them, not an appeal to determinism.
+
+``--strict`` is the blocking mode and is what ``run-quality.sh`` runs; it refuses
+on findings AND on unreadable docs, in text and ``--json`` alike. The default
+stays exit-0 so the same command is still usable as a read-only inventory.
 """
 from __future__ import annotations
 
@@ -37,13 +47,20 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import NamedTuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from check_doc_links import PORTABLE_SKILL_KINDS  # noqa: E402
 
-# `<repo-root>/scripts/<name>.py` -- the placeholder form.
+# `<repo-root>/scripts/<name>.py` -- the CONSUMER's tree. Unverifiable here.
 REPO_ROOT_SCRIPT_RE = re.compile(r"<repo-root>/scripts/([A-Za-z0-9_][A-Za-z0-9_./-]*\.py)")
+# `<authoring-repo>/scripts/<name>.py` -- charness's OWN tree. Verifiable here,
+# and the whole point of the split: a consumer reads it as "not mine", and this
+# check resolves it instead of waving it through as an unverifiable placeholder.
+AUTHORING_REPO_SCRIPT_RE = re.compile(
+    r"<authoring-repo>/scripts/([A-Za-z0-9_][A-Za-z0-9_./-]*\.py)"
+)
 # `$SKILL_DIR/<path>` -- the in-package form the working references use.
 SKILL_DIR_RE = re.compile(r"\$SKILL_DIR/([A-Za-z0-9_.][A-Za-z0-9_./-]*)")
 # A `## References` list bullet naming a package-local script. Deliberately
@@ -64,6 +81,8 @@ REFERENCES_BULLET_RE = re.compile(r"^\s*-\s+`(scripts/[A-Za-z0-9_][A-Za-z0-9_./-
 BROKEN = "package_file_wrong_prefix"
 UNRESOLVED = "unresolved"
 AUTHORING_REPO = "authoring_repo_script"
+# Resolved against this repo because the prose says so explicitly.
+AUTHORING_MARKED = "authoring_repo_marked"
 CONSUMER_PLACEHOLDER = "consumer_repo_placeholder"
 IN_PACKAGE = "in_package"
 
@@ -122,10 +141,30 @@ def _is_generic_placeholder(target: str) -> bool:
     return "<" in target or ">" in target or not Path(target).suffix
 
 
-def iter_skill_packages(repo_root: Path) -> list[tuple[Path, str, bool]]:
+class SkillPackage(NamedTuple):
+    """One skill package root plus how paths resolve relative to it.
+
+    ``authoring_root`` is what ``<authoring-repo>/`` resolves against, and it is
+    CARRIED rather than derived from a fixed ``../`` count off ``root``. The
+    shipped shapes are not the same depth -- ``plugins/<pkg>/skills/<skill>`` and
+    ``plugins/<pkg>/support/<skill>`` are three deep, ``plugins/<pkg>/shared`` is
+    two -- so a single ``.parent.parent`` is right for two of them and silently
+    wrong for the third. That is the same "no single ``../``-count fixes that"
+    trap the shim's docstring names, reproduced inside the checker meant to catch
+    it: it made every `<authoring-repo>/` reference in `skills/shared` an
+    unfixable refusal, i.e. following this tool's own printed advice broke it.
+    """
+
+    root: Path
+    layout: str
+    resolves_skill_dir: bool
+    authoring_root: Path
+
+
+def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
     """Every skill package root, in both the authoring and the shipped layout.
 
-    Returns ``(package_root, layout, resolves_skill_dir)``. Authoring resolution
+    Authoring resolution
     defers to ``check_doc_links``'s own ``PORTABLE_SKILL_KINDS`` rather than
     re-deriving the layout: a second spelling of the same rule is how this class
     hides in the first place. The shipped layout has no equivalent helper because
@@ -139,48 +178,87 @@ def iter_skill_packages(repo_root: Path) -> list[tuple[Path, str, bool]]:
     the wrong-denominator mistake this goal exists to stop repeating.
     """
     repo_root = repo_root.resolve()
-    packages: list[tuple[Path, str, bool]] = []
+    packages: list[SkillPackage] = []
 
     skills_root = repo_root / "skills"
     if skills_root.is_dir():
         for kind in sorted(PORTABLE_SKILL_KINDS):
             for package in sorted((skills_root / kind).glob("*")):
                 if package.is_dir():
-                    packages.append((package, AUTHORING, True))
+                    packages.append(SkillPackage(package, AUTHORING, True, repo_root))
         if (skills_root / "shared").is_dir():
-            packages.append((skills_root / "shared", AUTHORING, False))
+            packages.append(SkillPackage(skills_root / "shared", AUTHORING, False, repo_root))
 
-    for package_dir in sorted(repo_root.glob("plugins/*/skills/*")) + sorted(
-        repo_root.glob("plugins/*/support/*")
-    ):
-        if package_dir.is_dir():
-            packages.append((package_dir, SHIPPED, True))
-    for shared_dir in sorted(repo_root.glob("plugins/*/shared")):
+    # Each shipped package carries its OWN plugin root, taken from the
+    # `plugins/<pkg>` path that produced it rather than counted backwards.
+    for plugin_root in sorted(repo_root.glob("plugins/*")):
+        if not plugin_root.is_dir():
+            continue
+        for kind, resolves in (("skills", True), ("support", True)):
+            for package_dir in sorted((plugin_root / kind).glob("*")):
+                if package_dir.is_dir():
+                    packages.append(SkillPackage(package_dir, SHIPPED, resolves, plugin_root))
+        shared_dir = plugin_root / "shared"
         if shared_dir.is_dir():
-            packages.append((shared_dir, SHIPPED, False))
+            packages.append(SkillPackage(shared_dir, SHIPPED, False, plugin_root))
 
     return packages
 
 
-def _classify_repo_root_form(
-    repo_root: Path, package_root: Path, layout: str, name: str
-) -> tuple[str, str | None]:
-    """Where `<repo-root>/scripts/<name>` actually points, per layout."""
-    in_package = (package_root / "scripts" / name).is_file()
-    found_at = (
-        _repo_relative(repo_root, package_root / "scripts" / name) if in_package else None
-    )
-    if layout == SHIPPED:
-        # `<repo-root>` names the CONSUMING repo's root once the plugin is
-        # installed. Nothing in this tree can decide whether that file is there,
-        # so the only decidable half is the file being in the package instead.
-        return (BROKEN if in_package else CONSUMER_PLACEHOLDER), found_at
+def _package_script_index(packages: list["SkillPackage"]) -> dict[str, set[str]]:
+    """``layout -> {script basename found in ANY scanned package}``.
 
-    if (repo_root / "scripts" / name).is_file():
-        return AUTHORING_REPO, found_at or f"scripts/{name}"
-    if in_package:
-        return BROKEN, found_at
-    return UNRESOLVED, None
+    The counted defect is "the file is in a skill package, so the consumer-tree
+    prefix is wrong". Checking only the REFERRING package misses it whenever the
+    doc and the file live in different packages -- `skills/shared` prose naming a
+    `skills/public/<x>/scripts/` helper is the common shape, and it has no owning
+    package at all. Round 1 removed a false positive here and re-opened that
+    false negative; the index closes both.
+    """
+    index: dict[str, set[str]] = {}
+    for package in packages:
+        bucket = index.setdefault(package.layout, set())
+        scripts_dir = package.root / "scripts"
+        if scripts_dir.is_dir():
+            bucket.update(entry.name for entry in scripts_dir.iterdir() if entry.is_file())
+    return index
+
+
+def _classify_repo_root_form(
+    package: "SkillPackage", name: str, packaged_names: set[str]
+) -> tuple[str, str | None]:
+    """Where `<repo-root>/scripts/<name>` actually points.
+
+    `<repo-root>` names the tree the READER is operating on, which is
+    unverifiable from here BY DESIGN (`authoring-preflight.md` calls it exempt).
+    So absence is NOT a defect for this form -- a skill legitimately writes
+    "point your gate at `<repo-root>/scripts/run_pre_push.py`" about a file only
+    the consumer has, and refusing that armed the gate against its own escape
+    hatch.
+
+    The one decidable defect is the opposite: the named script is sitting in a
+    skill package of THIS tree, which makes the consumer-tree prefix wrong no
+    matter whose tree it is.
+
+    The `at_root` escape matters: when the basename ALSO exists at the authoring
+    root, the reference is genuinely ambiguous -- `plan_risk_interrupt.py` is
+    both `scripts/plan_risk_interrupt.py` and the `skills/shared/scripts/` shim,
+    so a true sentence about the repo-level planner would otherwise be refused
+    with advice pointing at the shim. Ambiguous is not blockable.
+    """
+    in_own_package = (package.root / "scripts" / name).is_file()
+    at_root = (package.authoring_root / "scripts" / name).is_file()
+
+    if not at_root and (in_own_package or name in packaged_names):
+        found = (
+            _repo_relative(package.authoring_root, package.root / "scripts" / name)
+            if in_own_package
+            else f"a skill package's scripts/{name}"
+        )
+        return BROKEN, found
+    if at_root and package.layout == AUTHORING:
+        return AUTHORING_REPO, f"scripts/{name}"
+    return CONSUMER_PLACEHOLDER, None
 
 
 def _classify_package_relative_form(
@@ -209,19 +287,28 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
     rows: list[dict[str, object]] = []
     UNREADABLE_DOCS.clear()
 
+    packages = iter_skill_packages(repo_root)
+    script_index = _package_script_index(packages)
     docs = [
-        (doc, package_root, layout, resolves_skill_dir)
-        for package_root, layout, resolves_skill_dir in iter_skill_packages(repo_root)
-        for doc in sorted(package_root.rglob("*.md"))
+        (doc, package)
+        for package in packages
+        for doc in sorted(package.root.rglob("*.md"))
     ]
 
-    for doc, package_root, layout, resolves_skill_dir in docs:
+    for doc, package in docs:
+        package_root, layout, resolves_skill_dir = (
+            package.root,
+            package.layout,
+            package.resolves_skill_dir,
+        )
         rel_doc = _repo_relative(repo_root, doc)
 
         for lineno, line in _iter_doc_lines(doc):
             for match in REPO_ROOT_SCRIPT_RE.finditer(line):
                 name = match.group(1)
-                status, found_at = _classify_repo_root_form(repo_root, package_root, layout, name)
+                status, found_at = _classify_repo_root_form(
+                    package, name, script_index.get(layout, set())
+                )
                 rows.append(
                     {
                         "doc": rel_doc,
@@ -231,6 +318,25 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
                         "form": "repo-root",
                         "status": status,
                         "found_at": found_at,
+                    }
+                )
+
+            for match in AUTHORING_REPO_SCRIPT_RE.finditer(line):
+                name = match.group(1)
+                # The prose asserts this lives in the charness authoring repo, so
+                # the assertion is checkable rather than exempt. The root is
+                # carried per package (see SkillPackage), never counted backwards.
+                target_path = package.authoring_root / "scripts" / name
+                resolved = target_path.is_file()
+                rows.append(
+                    {
+                        "doc": rel_doc,
+                        "line": lineno,
+                        "layout": layout,
+                        "reference": f"<authoring-repo>/scripts/{name}",
+                        "form": "authoring-repo",
+                        "status": AUTHORING_MARKED if resolved else UNRESOLVED,
+                        "found_at": _repo_relative(repo_root, target_path) if resolved else None,
                     }
                 )
 
@@ -301,18 +407,31 @@ def inventory(repo_root: Path) -> dict[str, object]:
         },
         "counts": counts,
         "findings": [row for row in rows if row["status"] in ACTIONABLE],
+        "authoring_marker_candidates": [
+            row
+            for row in rows
+            if row["layout"] == AUTHORING
+            and row["form"] == "repo-root"
+            and row["status"] == AUTHORING_REPO
+        ],
     }
 
 
 def build_parser() -> argparse.ArgumentParser:
-    """The whole option surface, exposed so a test can assert what is NOT here.
+    """The whole option surface, read by a test rather than grepped from source.
 
-    Deliberately carries no escalation flag; `test_skill_script_references.py`
-    reads this parser rather than grepping the source for `--strict`.
+    `--strict` is the gate mode added when the operator promoted this check
+    (2026-08-02). The default stays exit-0 so the same command remains a
+    read-only inventory.
     """
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--json", action="store_true")
+    parser.add_argument(
+        "--strict",
+        action="store_true",
+        help="Exit 1 when any reference cannot resolve (the blocking gate mode).",
+    )
     return parser
 
 
@@ -320,44 +439,64 @@ def main() -> int:
     args = build_parser().parse_args()
 
     payload = inventory(args.repo_root)
+    blind = bool(payload["denominator"]["docs_unreadable"])
+    # `--strict` refuses on findings AND on "I could not look": an unreadable doc
+    # hides its references, so a green over it is the clean-verdict-over-nothing
+    # this tool exists to refuse. Computed before the `--json` return so the
+    # machine-readable mode cannot silently disarm the gate.
+    refuse = bool(args.strict and (payload["findings"] or blind))
     if args.json:
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
-        return 0
+        return 1 if refuse else 0
 
     findings = payload["findings"]
     denominator = payload["denominator"]
     scanned = denominator["references_scanned"]
     split = "/".join(f"{count} {layout}" for layout, count in denominator["by_layout"].items())
 
-    if not scanned:
-        # A clean verdict over nothing is the one failure an advisory can hide
-        # behind. Gate on REFERENCES, not packages: a repo can carry skill
-        # packages whose prose this scanner matches none of, and "all 0
-        # references resolve" would be the same false all-clear one level down.
-        packages = denominator["skill_packages_scanned"]
-        detail = (
-            f"no skill packages found under {payload['repo_root']}"
-            if not packages
-            else f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
-        )
-        print(
-            f"ADVISORY: {detail}; nothing was checked. Point --repo-root at a "
-            "repo that carries `skills/` or `plugins/*/skills/`."
-        )
-        return 0
-
-    if denominator["docs_unreadable"]:
+    if blind:
         # An unreadable doc hides its references; without this it is
-        # indistinguishable from a scanned-and-clean one.
+        # indistinguishable from a scanned-and-clean one. Printed BEFORE the
+        # zero-reference return below, or the one path that returns green would
+        # be the only path that never mentions the blind spot.
         print(
             f"ADVISORY: {len(denominator['docs_unreadable'])} doc(s) could not be read "
             "and were not scanned: " + ", ".join(denominator["docs_unreadable"][:5])
         )
 
+    if not scanned:
+        # A clean verdict over nothing is the one failure an advisory can hide
+        # behind. Gate on REFERENCES, not packages: a repo can carry skill
+        # packages whose prose this scanner matches none of, and "all 0
+        # references resolve" would be the same false all-clear one level down.
+        #
+        # `refuse` is honoured here too. An unreadable doc that was a package's
+        # ONLY doc lands in exactly this branch, and an unconditional `return 0`
+        # made `--strict` green while `--strict --json` refused the same tree.
+        packages = denominator["skill_packages_scanned"]
+        if blind:
+            detail = f"{payload['repo_root']} had no readable doc naming a script path"
+        elif not packages:
+            detail = f"no skill packages found under {payload['repo_root']}"
+        else:
+            detail = (
+                f"{packages} skill package(s) under {payload['repo_root']} name no script paths"
+            )
+        print(
+            f"ADVISORY: {detail}; nothing was checked. Point --repo-root at a "
+            "repo that carries `skills/` or `plugins/*/skills/`."
+        )
+        return 1 if refuse else 0
+
     if findings:
-        # WARN: is the prefix run-quality.sh surfaces non-blocking. This helper
-        # has no strict mode on purpose -- see the module docstring.
-        print(f"WARN: {len(findings)} of {scanned} ({split}) skill script references do not resolve:")
+        # FAIL under --strict (the gate mode); WARN otherwise, which run-quality.sh
+        # surfaces non-blocking. Same finding set either way -- only the exit
+        # code differs, so the read-only inventory and the gate cannot disagree.
+        prefix = "FAIL" if args.strict else "WARN"
+        print(
+            f"{prefix}: {len(findings)} of {scanned} ({split}) "
+            "skill script references do not resolve:"
+        )
         for row in findings:
             hint = (
                 f" (file is at {row['found_at']})"
@@ -368,6 +507,24 @@ def main() -> int:
     else:
         print(f"all {scanned} ({split}) skill script references resolve")
 
+    candidates = payload["authoring_marker_candidates"]
+    if candidates:
+        # NOT a finding: `<repo-root>/scripts/X.py` naming a real charness script
+        # is the pre-split spelling, and whether public skill prose should point
+        # a consumer at an authoring-repo script is an open operator decision
+        # (#478). Surfaced so the remaining set stays visible instead of reading
+        # as settled.
+        print(
+            f"note: {len(candidates)} reference(s) use `<repo-root>/scripts/` for a file that "
+            "is also a charness authoring-repo script. Some are correct as-is -- "
+            "`rca-ledger-append.md` uses the path as an existence predicate the READER "
+            "evaluates, which is exactly what `<repo-root>/` should mean. A human decides "
+            "each; `<authoring-repo>/scripts/` is the spelling when the subject is "
+            "charness's own tree:"
+        )
+        for row in candidates[:10]:
+            print(f"  - {row['doc']}:{row['line']}: `{row['reference']}`")
+
     placeholders = payload["counts"].get(SHIPPED, {}).get(CONSUMER_PLACEHOLDER, 0)
     if placeholders:
         # Not a finding, and deliberately not silent: `<repo-root>/scripts/X.py`
@@ -377,7 +534,7 @@ def main() -> int:
             f"note: {placeholders} shipped reference(s) resolve only against a consuming "
             "repo's own `scripts/` and are unverifiable from here."
         )
-    return 0
+    return 1 if refuse else 0
 
 
 if __name__ == "__main__":

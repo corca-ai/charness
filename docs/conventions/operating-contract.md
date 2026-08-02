@@ -72,6 +72,31 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   whole `scripts/` tree is mirrored, and that unchecked sentence was the round's
   only blocker — the export would have shipped the un-repaired gate plus a
   `ModuleNotFoundError`.
+- **Task-completing work runs a CLOSEOUT-CLAIMS review by a distinct observer
+  before the completion flip** — a bounded reviewer whose subject is what the
+  ARTIFACT ASSERTS, not whether the code is correct. Give it the acceptance bar
+  and ask it to re-derive each figure, check each disposition reason against the
+  text it cites, and name anything claimed as proven that was only reasoned
+  about. It is a different question from the code rounds, so it is not satisfied
+  by running more of them.
+  - **Measured 2026-08-02, and this is why it is standing rather than
+    advisory.** Three code-reading rounds passed over: a verification step the
+    plan required (an adversarial pass over every disposition) that had never
+    run and would have shipped recorded as satisfied; a Slice Log that
+    contradicted its own retro in the flattering direction; an unreconciled
+    headline count (13 vs 14) that WAS the acceptance bar; and a disposition
+    whose stated reason was false at every site it cited. The claims round found
+    all four in one pass, and its own single reading refuted a disposition the
+    code rounds had approved.
+  - The failure mode it catches is structural, not sloppiness: a code reviewer
+    is asked "is this right?", so it reads the diff. Nobody reading the diff is
+    asked "does the artifact's own summary survive contact with it?" — and the
+    author, who wrote both, is the last one who can tell.
+  - Scale it to the work: one bounded reviewer, given the acceptance criteria
+    and the closeout sections. When the host blocks subagent spawning, record
+    the concrete signal and leave the review unproven — never substitute a
+    same-agent reread, which is precisely the observer this floor exists to
+    exclude.
 - **Run `reviewer_boundary_fingerprint.py verify --before` the moment the
   reviewer returns, BEFORE any parent write.** A verify run after the parent has
   started folding findings reports `boundary-drift` and can only be resolved by

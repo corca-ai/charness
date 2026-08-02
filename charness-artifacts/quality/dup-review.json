@@ -1528,6 +1528,13 @@
     },
     {
       "class": "intentional",
+      "id": "de4ecc062765a5eb",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "ROTATED from 5f672b193b2f3c05 (itself rotated from 5505a8794c55f12d) — same two members, same reasoning, third re-fingerprint. Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py, sharing `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Re-fingerprinted this time by adding `--strict` when the operator promoted the check from advisory to gate. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so a shared builder would blind the documented-flag gate. The repeated rotation is itself evidence the family is boilerplate rather than debt — its membership never grows, only its hash."
+    },
+    {
+      "class": "intentional",
       "id": "de8e920be17d0d8b",
       "note": "the character-preserving line-blank loop (`\"\".join(\"\\n\" if char == \"\\n\" else \" \" ...)`) in goal_artifact_markdown.mask_fences, disposition_form.py and proof_mismatch.py. Offset-preserving masking is the shared TECHNIQUE, but each has its own notion of what to blank and each is reached by a different vendored package; the achieve copy ships inside skills/public/achieve and cannot import a repo-root helper.",
       "reviewed_at": "2026-07-30",

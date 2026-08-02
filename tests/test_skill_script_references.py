@@ -3,8 +3,9 @@
 Thirteen references said `<repo-root>/scripts/<name>.py` while `<name>.py` lived
 in the skill's own package, so the documented command failed in this repo and in
 any consuming repo alike. Three overlapping silences in `check_doc_links.py` let
-them accumulate (see the advisory's module docstring). This pins the repaired
-state and pins the advisory's non-blocking posture.
+them accumulate (see the checker's module docstring). This pins the repaired
+state, and pins the gate posture: the DEFAULT mode never fails a run, `--strict`
+(what `run-quality.sh` runs) does.
 
 Fixtures here are built from the advisory's own shipped constants and are
 cross-checked against its shipped regex before use: a fixture spelled the way
@@ -62,25 +63,18 @@ def _describe(rows) -> str:
     )
 
 
-# Known shipped-layout findings, NOT repaired by the goal that added this test,
-# mapped to the exact number of sites each is allowed. Counting rather than
-# merely naming them means a SECOND occurrence in the same file cannot slip in
-# under an existing key.
+# Known shipped-layout findings, mapped to the exact number of sites each is
+# allowed. Counting rather than merely naming them means a SECOND occurrence in
+# the same file cannot slip in under an existing key.
 #
-# `$SKILL_DIR/../../../scripts` reaches the repo root from `skills/public/<skill>`
-# but overshoots the plugin root from `plugins/<pkg>/skills/<skill>`, where the
-# exported scripts sit two levels up. Both call sites end in `2>/dev/null || true`,
-# so the command fails silently in every installed plugin. Repointing them would
-# make a currently-never-running planner start running in installed hosts -- a
-# behaviour change, not a path typo, so it is filed rather than fixed here.
+# EMPTY, and that is the point: it held the two `plan_risk_interrupt.py` sites
+# until #477 was decided, and shrank to nothing when they were repaired via the
+# `$SKILL_DIR/../../shared/scripts/` shim. A ratchet may shrink, never grow.
 #
-# This map is a ratchet: entries may shrink, never grow. Every entry must be the
-# SAME defect class -- do not park a `package_file_wrong_prefix` finding here
-# under this rationale, which is about a silently-skipped optional command.
-KNOWN_SHIPPED_FINDINGS = {
-    ("plugins/charness/skills/impl/SKILL.md", "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py"): 1,
-    ("plugins/charness/skills/spec/SKILL.md", "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py"): 1,
-}
+# Every entry must be the SAME defect class as its rationale -- do not park a
+# `package_file_wrong_prefix` finding here, which is the class the goal exists
+# to keep at zero (see the dedicated test below).
+KNOWN_SHIPPED_FINDINGS: dict[tuple[str, str], int] = {}
 
 
 def test_no_authoring_layout_reference_fails_to_resolve() -> None:
@@ -97,7 +91,11 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # satisfied while another form's population silently fell to zero.
     forms = collections.Counter(row["form"] for row in authoring)
     assert forms["skill-dir"] > 100
-    assert forms["repo-root"] >= 15
+    # Floor the two out-of-package forms TOGETHER: converting a reference from
+    # `<repo-root>/` to `<authoring-repo>/` moves a row between them and must not
+    # trip a floor, but the combined population going to zero still must.
+    assert forms["repo-root"] + forms["authoring-repo"] >= 15
+    assert forms["repo-root"] > 0 and forms["authoring-repo"] > 0
     # The 7 References bullets Lane A repaired, plus the pre-existing ones.
     assert forms["references-bullet"] >= 20
 
@@ -137,7 +135,7 @@ def test_no_shipped_reference_is_broken_because_its_file_is_in_the_package() -> 
     # candidate set fell to zero, and this test would pass forever without ever
     # looking at the class it is named for.
     candidates = [row for row in shipped if row["form"] == "repo-root"]
-    assert len(candidates) >= 15, "no candidates left to classify; this test proves nothing"
+    assert len(candidates) >= 5, "no candidates left to classify; this test proves nothing"
 
     broken = [row for row in candidates if row["status"] == inventory_module.BROKEN]
     assert broken == [], _describe(broken)
@@ -249,29 +247,214 @@ def test_the_documented_command_actually_runs_as_a_command(tmp_path: Path) -> No
     assert payload["findings"] == []
 
 
-def test_a_reference_resolving_nowhere_is_reported_for_both_forms(tmp_path: Path) -> None:
-    """The `unresolved` arm of each classifier — a genuinely dangling reference.
+def test_a_repo_root_reference_to_a_consumer_file_is_never_a_finding(tmp_path: Path) -> None:
+    """`<repo-root>/` is the reader's tree, so absence here is not a defect.
 
-    Distinct from `package_file_wrong_prefix`: there the file exists and the
-    prefix is wrong; here nothing is at the named path in either tree.
+    A skill legitimately says "point your standing gate at
+    `<repo-root>/scripts/run_pre_push.py`" about a file only the consumer has.
+    An earlier version called that `unresolved`, which armed the gate against
+    the very escape hatch `authoring-preflight.md` documents as exempt.
     """
     tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
     package = tmp_path / "skills" / tier / "demo"
     package.mkdir(parents=True)
     (tmp_path / "scripts").mkdir()
     (package / "SKILL.md").write_text(
-        "# Demo\n\n"
-        "Run `<repo-root>/scripts/ghost.py`.\n\n"
-        "## References\n\n"
-        "- `scripts/phantom.py`\n",
+        "# Demo\n\nPoint your gate at `<repo-root>/scripts/run_pre_push.py`.\n",
         encoding="utf-8",
     )
 
     rows = inventory_module.classify_references(tmp_path)
-    by_form = {row["form"]: row for row in rows}
-    assert by_form["repo-root"]["status"] == inventory_module.UNRESOLVED
-    assert by_form["references-bullet"]["status"] == inventory_module.UNRESOLVED
-    assert all(row["found_at"] is None for row in rows)
+    assert [row["status"] for row in rows] == [inventory_module.CONSUMER_PLACEHOLDER]
+    assert not [row for row in rows if row["status"] in inventory_module.ACTIONABLE]
+
+
+def test_a_references_bullet_resolving_nowhere_is_still_a_finding(tmp_path: Path) -> None:
+    """A `## References` bullet IS package-relative, so absence is decidable."""
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    package.mkdir(parents=True)
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n## References\n\n- `scripts/phantom.py`\n", encoding="utf-8"
+    )
+
+    rows = inventory_module.classify_references(tmp_path)
+    assert [row["status"] for row in rows] == [inventory_module.UNRESOLVED]
+
+
+def test_the_authoring_marker_resolves_for_every_shipped_package_shape(tmp_path: Path) -> None:
+    """`plugins/<pkg>/shared` is two deep where `skills/<x>` is three.
+
+    A fixed `.parent.parent` is right for two shapes and silently wrong for the
+    third, which made every `<authoring-repo>/` reference under `skills/shared`
+    an unfixable refusal — i.e. following the tool's own printed advice broke
+    the gate. The root is carried per package instead of counted backwards.
+    """
+    plugin = tmp_path / "plugins" / "demo"
+    (plugin / "scripts").mkdir(parents=True)
+    (plugin / "scripts" / "real.py").write_text("print('ok')\n", encoding="utf-8")
+    line = "`charness` ships `<authoring-repo>/scripts/real.py`.\n"
+    for rel in ("skills/one", "support/two", "shared"):
+        target = plugin / rel
+        target.mkdir(parents=True)
+        (target / "DOC.md").write_text(f"# D\n\n{line}", encoding="utf-8")
+
+    shapes = {pkg.root.name: pkg.authoring_root for pkg in inventory_module.iter_skill_packages(tmp_path)}
+    assert shapes == {"one": plugin, "two": plugin, "shared": plugin}
+
+    rows = inventory_module.classify_references(tmp_path)
+    assert len(rows) == 3
+    assert {row["status"] for row in rows} == {inventory_module.AUTHORING_MARKED}
+
+
+def _package(root: Path, rel: str) -> Path:
+    target = root / rel
+    target.mkdir(parents=True, exist_ok=True)
+    return target
+
+
+def test_the_counted_defect_is_caught_across_packages_not_just_within_one(tmp_path: Path) -> None:
+    """`skills/shared` prose naming another package's script is the common shape.
+
+    Checking only the REFERRING package's `scripts/` missed it entirely — the
+    doc has no owning package for that file. Fixing a false positive re-opened
+    this false negative in the counted class, so it is pinned separately.
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    owner = _package(tmp_path, f"skills/{tier}/quality")
+    (owner / "scripts").mkdir()
+    (owner / "scripts" / "only_in_a_package.py").write_text("print('ok')\n", encoding="utf-8")
+    (tmp_path / "scripts").mkdir()
+    shared = _package(tmp_path, "skills/shared/references")
+    (shared / "d.md").write_text(
+        "# D\n\nRun `<repo-root>/scripts/only_in_a_package.py`.\n", encoding="utf-8"
+    )
+
+    findings = [
+        row
+        for row in inventory_module.classify_references(tmp_path)
+        if row["status"] in inventory_module.ACTIONABLE
+    ]
+    assert len(findings) == 1
+    assert findings[0]["status"] == inventory_module.BROKEN
+
+
+def test_a_basename_in_both_a_package_and_the_root_is_not_refused(tmp_path: Path) -> None:
+    """Ambiguous is not blockable.
+
+    `plan_risk_interrupt.py` is BOTH `scripts/plan_risk_interrupt.py` and the
+    `skills/shared/scripts/` shim, so a true sentence about the repo-level
+    planner would otherwise be refused — with advice pointing at the shim, i.e.
+    a refusal no correct edit can clear.
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    owner = _package(tmp_path, f"skills/{tier}/quality")
+    (owner / "scripts").mkdir()
+    (owner / "scripts" / "twin.py").write_text("print('ok')\n", encoding="utf-8")
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "twin.py").write_text("print('ok')\n", encoding="utf-8")
+    shared = _package(tmp_path, "skills/shared/references")
+    (shared / "d.md").write_text("# D\n\nRun `<repo-root>/scripts/twin.py`.\n", encoding="utf-8")
+
+    rows = inventory_module.classify_references(tmp_path)
+    assert [row["status"] for row in rows] == [inventory_module.AUTHORING_REPO]
+
+
+@pytest.mark.parametrize("extra", [(), ("--json",)])
+def test_text_and_json_modes_always_agree_on_the_exit_code(tmp_path: Path, extra) -> None:
+    """The invariant behind the `--json` hole, pinned as an invariant.
+
+    A point test on one fixture would not have caught the second divergence,
+    which lived in the zero-references branch rather than the findings branch.
+    """
+    repo = _broken_reference_repo(tmp_path)
+    result = run_loaded_script_main(
+        "inventory_skill_script_references",
+        inventory_module,
+        "--repo-root",
+        str(repo),
+        "--strict",
+        *extra,
+    )
+    assert result.returncode == 1
+
+
+def test_strict_refuses_a_blind_scan_that_found_no_references_at_all(tmp_path: Path) -> None:
+    """The blind case that lands in the zero-references branch.
+
+    An unreadable doc that was a package's ONLY doc took the early
+    `nothing was checked` return, which was an unconditional 0 — so `--strict`
+    went green while `--strict --json` refused the same tree.
+    """
+    if os.geteuid() == 0:
+        pytest.skip("root can read a chmod-000 file")
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = _package(tmp_path, f"skills/{tier}/demo")
+    locked = package / "only.md"
+    locked.write_text("nothing readable\n", encoding="utf-8")
+    locked.chmod(0o000)
+    try:
+        codes = [
+            run_loaded_script_main(
+                "inventory_skill_script_references",
+                inventory_module,
+                "--repo-root",
+                str(tmp_path),
+                "--strict",
+                *extra,
+            ).returncode
+            for extra in ((), ("--json",))
+        ]
+    finally:
+        locked.chmod(0o644)
+    assert codes == [1, 1]
+
+
+def test_strict_refuses_when_a_doc_could_not_be_read(tmp_path: Path) -> None:
+    """`--strict` must refuse on "I could not look", not only on findings."""
+    if os.geteuid() == 0:
+        pytest.skip("root can read a chmod-000 file")
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    (package / "scripts").mkdir(parents=True)
+    (package / "scripts" / "demo_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n## References\n\n- `scripts/demo_helper.py`\n", encoding="utf-8"
+    )
+    locked = package / "locked.md"
+    locked.write_text("nothing to see\n", encoding="utf-8")
+    locked.chmod(0o000)
+    try:
+        result = run_loaded_script_main(
+            "inventory_skill_script_references",
+            inventory_module,
+            "--repo-root",
+            str(tmp_path),
+            "--strict",
+        )
+    finally:
+        locked.chmod(0o644)
+    assert result.returncode == 1
+    assert "could not be read" in result.stdout
+
+
+def test_json_mode_cannot_disarm_strict(tmp_path: Path) -> None:
+    """The machine-readable mode is the natural one to wire into CI.
+
+    It used to print the findings and exit 0, so the gate's own structured
+    output was the one shape that could not refuse.
+    """
+    repo = _broken_reference_repo(tmp_path)
+    result = run_loaded_script_main(
+        "inventory_skill_script_references",
+        inventory_module,
+        "--repo-root",
+        str(repo),
+        "--strict",
+        "--json",
+    )
+    assert result.returncode == 1
+    assert json.loads(result.stdout)["findings"]
 
 
 def test_clean_output_reports_the_layout_split_and_the_unverifiable_count(tmp_path: Path) -> None:
@@ -370,11 +553,12 @@ def test_advisory_says_so_when_it_scanned_nothing(tmp_path: Path) -> None:
 
 @pytest.mark.parametrize("extra_args", [(), ("--json",)])
 def test_advisory_cannot_change_an_exit_code(tmp_path: Path, extra_args: tuple[str, ...]) -> None:
-    """Operator decision 2026-08-02: the COMMAND never fails a run.
+    """The DEFAULT mode never fails a run; `--strict` does.
 
-    The regression tests above are a gate; this script's exit code is not. Run
-    against a repo that DOES have a broken reference -- a zero exit on a clean
-    repo would prove nothing about the posture.
+    Kept after the promotion because the read-only inventory is still a
+    supported way to run this, and its exit code must stay 0 even while holding
+    findings. Run against a repo that DOES have a broken reference -- a zero
+    exit on a clean repo would prove nothing about the posture.
     """
     repo = _broken_reference_repo(tmp_path)
     result = run_loaded_script_main(
@@ -388,18 +572,88 @@ def test_advisory_cannot_change_an_exit_code(tmp_path: Path, extra_args: tuple[s
     assert "demo_helper.py" in result.stdout
 
 
-def test_advisory_declares_no_flag_that_could_fail_the_run() -> None:
-    """No `--strict`-style escalation exists to be wired into a gate by habit.
+def test_the_option_surface_is_exactly_what_the_gate_wiring_expects() -> None:
+    """Reads the real parser rather than grepping source text.
 
-    Reads the real parser rather than grepping source text, which would match
-    the module docstring explaining why the flag is absent.
+    `--strict` arrived when the operator PROMOTED this check from advisory to
+    gate; before that, this test asserted the flag's absence. Pinning the whole
+    surface (rather than just `--strict`'s presence) keeps a third mode from
+    being added without a decision.
     """
     declared = {
         option
         for action in inventory_module.build_parser()._actions
         for option in action.option_strings
     }
-    assert declared == {"-h", "--help", "--repo-root", "--json"}
+    assert declared == {"-h", "--help", "--repo-root", "--json", "--strict"}
+
+
+def test_strict_refuses_on_a_broken_reference_and_default_does_not(tmp_path: Path) -> None:
+    """The promotion, pinned from both sides.
+
+    Same finding set in both modes -- only the exit code differs -- so the
+    read-only inventory and the gate can never disagree about what is broken.
+    """
+    repo = _broken_reference_repo(tmp_path)
+
+    lenient = run_loaded_script_main(
+        "inventory_skill_script_references", inventory_module, "--repo-root", str(repo)
+    )
+    strict = run_loaded_script_main(
+        "inventory_skill_script_references", inventory_module, "--repo-root", str(repo), "--strict"
+    )
+
+    assert lenient.returncode == 0
+    assert strict.returncode == 1
+    assert "WARN:" in lenient.stdout
+    assert "FAIL:" in strict.stdout
+    assert "demo_helper.py" in strict.stdout
+
+
+def test_strict_passes_when_nothing_is_broken(tmp_path: Path) -> None:
+    """A gate that refuses unconditionally is not a gate."""
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    (package / "scripts").mkdir(parents=True)
+    (package / "scripts" / "demo_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n## References\n\n- `scripts/demo_helper.py`\n", encoding="utf-8"
+    )
+
+    result = run_loaded_script_main(
+        "inventory_skill_script_references", inventory_module, "--repo-root", str(tmp_path), "--strict"
+    )
+    assert result.returncode == 0
+
+
+def test_the_authoring_repo_marker_is_resolved_not_waved_through(tmp_path: Path) -> None:
+    """The point of splitting `<authoring-repo>/` out of `<repo-root>/`.
+
+    `<repo-root>/` means the READER's tree, so it is unverifiable here and
+    exempt — which is precisely what hid 13 broken commands.
+    `<authoring-repo>/` asserts the file is in THIS repo, so the assertion is
+    checkable, and a wrong one is a finding rather than a silent placeholder.
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    package.mkdir(parents=True)
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "real_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n"
+        "`charness` ships `<authoring-repo>/scripts/real_helper.py`.\n\n"
+        "`charness` also ships `<authoring-repo>/scripts/vanished.py`.\n",
+        encoding="utf-8",
+    )
+
+    rows = {row["reference"]: row for row in inventory_module.classify_references(tmp_path)}
+    assert rows["<authoring-repo>/scripts/real_helper.py"]["status"] == (
+        inventory_module.AUTHORING_MARKED
+    )
+    # The one that matters: a marker claiming this repo, pointing at nothing.
+    vanished = rows["<authoring-repo>/scripts/vanished.py"]
+    assert vanished["status"] == inventory_module.UNRESOLVED
+    assert vanished["status"] in inventory_module.ACTIONABLE
 
 
 def test_advisory_exits_zero_on_a_clean_repo_too(tmp_path: Path) -> None:

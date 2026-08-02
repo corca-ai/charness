@@ -200,12 +200,12 @@ PACKAGE_CONTRACTS: dict[str, tuple[str, ...]] = {
     "skills/public/spec/SKILL.md": (
         "public executable contract",
         "maintenance lint / implementation guard",
-        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --detail 2>/dev/null || true',
+        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail',
         "risk interrupt planner reports a forced debug interrupt",
         "`Interrupt Source`, `Seam Summary`, `Chosen Next Step`, `Impl Status`",
     ),
     "skills/public/impl/SKILL.md": (
-        'python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --detail 2>/dev/null || true',
+        'python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail',
     ),
     "skills/public/prove/SKILL.md": (
         "$SKILL_DIR/../retro/scripts/check_auto_trigger.py",

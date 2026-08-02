@@ -152,6 +152,27 @@ handoff updates, and proof artifacts are `audit-doc-only`. Any uncertain commit 
 post-checkpoint commits require re-apply consideration and which only explain
 why the repository `HEAD` differs from the live instance.
 
+### Closeout-claims review (distinct observer)
+
+Before the `complete` flip, one bounded reviewer audits **what the goal artifact
+asserts** — not whether the code is correct. `../../prove/references/review-gate.md`
+*Claims Review* owns the question set; the After-phase obligation is that it runs
+against the goal's own `## User Acceptance` bar and its closeout sections.
+
+This is deliberately separate from the slice fresh-eye rounds. Those ask "is the
+code right?" and read the diff. Nothing in that loop asks whether the artifact's
+own summary survives contact with the diff, and the author wrote both, so the
+author is the last one able to tell.
+
+Measured 2026-08-02: three code-reading rounds passed over a plan-required
+verification step that had never run (and would have closed recorded as
+satisfied), a Slice Log contradicting its own retro in the flattering direction,
+an unreconciled headline count that WAS the acceptance bar, and a disposition
+reason false at every site it cited. One claims round found all four.
+
+When the host cannot provide a distinct observer, record the concrete signal and
+leave it unproven rather than substituting a same-agent reread.
+
 ### Improvement disposition
 
 The retro's value is realized only if its improvements change something. The

@@ -38,7 +38,7 @@ python3 "$SKILL_DIR/scripts/survey_verification.py" --repo-root .
 
 # 3. locate the canonical spec/design artifact
 rg -n "Current Slice|Success Criteria|Acceptance Checks|Fixed Decisions|Probe Questions|Deferred Decisions|requirements|acceptance" .
-python3 "$SKILL_DIR/../../../scripts/plan_risk_interrupt.py" --repo-root . --detail 2>/dev/null || true
+python3 "$SKILL_DIR/../../shared/scripts/plan_risk_interrupt.py" --repo-root . --detail
 
 # 4. repo patterns and current target area
 rg -n "test|spec|fixture|eval|smoke|integration" .

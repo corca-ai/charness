@@ -36,6 +36,27 @@ It is not a decorative reread.
 Fresh-eye review is the default. The stronger gate adds depth, not the existence
 of review itself.
 
+## Claims Review
+
+Before a completion flip, one bounded reviewer audits **what the closeout
+artifact asserts**, not whether the code is correct. Hand it the acceptance
+criteria and the closeout sections and ask it to:
+
+- re-derive every figure it can, and name the ones it cannot verify rather than
+  assuming them;
+- check each recorded reason against the text or code it cites;
+- name anything claimed as proven that was only reasoned about;
+- check each promised verification step against recorded evidence that it ran.
+
+This is a different question from the code review above, so running more code
+rounds does not satisfy it. A code reviewer is asked "is this right?" and reads
+the diff; nobody reading the diff is asked whether the summary survives contact
+with it — and the author, who wrote both, is the last one able to tell.
+
+Use a distinct observer. When the host cannot provide one, record the concrete
+signal and leave the review unproven; a same-agent reread is exactly the
+observer this exists to exclude.
+
 ## Contract Re-read
 
 When a canonical artifact or inline current-slice contract exists:

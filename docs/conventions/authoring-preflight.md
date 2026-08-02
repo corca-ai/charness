@@ -202,8 +202,49 @@ Two escapes, for the case where a command deliberately names something this repo
 does not own — most often a portable skill documenting the *consuming* repo's
 command:
 
-- a `<repo-root>/`, `<plugin-dir>/`, or `<skill-dir>/` prefix;
+- a `<repo-root>/`, `<plugin-dir>/`, `<skill-dir>/`, or `<authoring-repo>/` prefix;
 - any `<…>` placeholder inside the path, e.g. `scripts/<name>.py`.
+
+### `<repo-root>/` vs `<authoring-repo>/`
+
+These are **not** synonyms, and the distinction is load-bearing.
+
+- `<repo-root>/` means *the tree the reader is operating on*. It is unverifiable
+  from here by definition, so it is exempt from resolution — **with one
+  decidable exception**: when the named script is sitting in a skill package of
+  *this* tree, the consumer-tree prefix is wrong no matter whose tree it is, and
+  [inventory_skill_script_references.py](../../scripts/inventory_skill_script_references.py)
+  refuses it. That is the counted defect this whole convention exists to stop,
+  and it is the only shape of `<repo-root>/` that can fail a gate. Absence alone
+  never fails — a skill may correctly say "point your gate at
+  `<repo-root>/scripts/run_pre_push.py`" about a file only the consumer has.
+  When the basename exists BOTH in a package and at the authoring root the
+  reference is genuinely ambiguous, and ambiguous is not blockable.
+- `<authoring-repo>/` means *the charness repo itself* — "this is mine, not
+  yours". It IS verifiable here, and
+  [inventory_skill_script_references.py](../../scripts/inventory_skill_script_references.py)
+  resolves it rather than waving it through.
+
+Why the split exists: 13 shipped commands accumulated undetected because a
+reference to charness's own script wearing the consumer's placeholder is
+indistinguishable from a typo — to this gate, and to a human reading the line.
+The escape hatch and the defect were the same token. Giving the authoring-repo
+case its own spelling makes the class diagnosable by eye instead of only by a
+bespoke scanner.
+
+Choosing between them, in one question: **who evaluates this path?**
+
+- The reader, against their own tree → `<repo-root>/`. Example:
+  [rca-ledger-append.md](../../skills/shared/references/rca-ledger-append.md) gates a step on whether
+  `<repo-root>/scripts/record_rca_event.py` exists; for a consumer that
+  correctly evaluates false and the step is a documented no-op.
+- Nobody — the sentence is describing what charness ships → `<authoring-repo>/`.
+  Example: "`charness` wraps that path explicitly in
+  `<authoring-repo>/scripts/check_supply_chain_online.py`".
+
+A path the reader is told to RUN, that only exists in the authoring repo, is
+neither: it is a bug, and belongs in the skill's own package or behind
+`<plugin-dir>/`.
 
 A command documented inside a portable skill package resolves against the package
 root as well as the repo root, so a skill's own `scripts/` helper is found from

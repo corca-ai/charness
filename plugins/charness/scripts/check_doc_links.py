@@ -47,7 +47,21 @@ PATHY_TOKEN_RE = re.compile(r"^(?:[A-Za-z0-9._-]+/)+[A-Za-z0-9_-]+\.[A-Za-z0-9._
 EXTENSION_TOKEN_RE = re.compile(r"^[A-Za-z0-9_.-]+\.[A-Za-z][A-Za-z0-9]{0,5}$")
 SKIP_DIR_NAMES = {".git", "node_modules", ".pytest_cache", "__pycache__"}
 PORTABLE_SKILL_KINDS = {"public", "support"}
-PORTABLE_PLACEHOLDER_PREFIXES = ("<repo-root>/", "<plugin-dir>/", "<skill-dir>/")
+# `<authoring-repo>/` is deliberately SEPARATE from `<repo-root>/`, not a synonym.
+# `<repo-root>/` means "the tree the reader is operating on", so it is
+# unverifiable from here and exempt by design. That exemption is what let 13
+# broken commands accumulate: a reference to charness's OWN script wearing the
+# consumer's placeholder is indistinguishable from a typo, to this gate and to a
+# human. `<authoring-repo>/` says "this resolves in the charness repo, not
+# yours" — which a consumer can read at a glance, and which
+# `inventory_skill_script_references.py` can actually RESOLVE here instead of
+# waving through.
+PORTABLE_PLACEHOLDER_PREFIXES = (
+    "<repo-root>/",
+    "<plugin-dir>/",
+    "<skill-dir>/",
+    "<authoring-repo>/",
+)
 REPO_REFERENCE_PREFIXES = (
     ".agents/",
     "charness-artifacts/",
