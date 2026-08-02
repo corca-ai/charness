@@ -1,0 +1,375 @@
+# Achieve Goal: Fix the rule that cannot fire where it was written to, then count the rest
+
+Status: draft
+Created: 2026-08-03
+Activation: `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: real draft/backlog awaiting activation.
+- Current slice intent: real draft/backlog awaiting activation; reshape before
+  activating if the acceptance boundary has changed. Once active, this names
+  the reviewable-intent unit in progress and the commits it spans; critique
+  and broad proof do not re-fire within one unchanged intent — update it when
+  the intent changes, not per commit (meaningful-slice-cadence).
+- Next action: activate with `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md` after confirming the draft is
+  still intended.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final/bundle proof records the verification lock and uses `--verification-lock`.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`,
+  and `## Auto-Retro`.
+
+## Goal
+
+One class, four known instances, and the operator hit the worst one directly:
+**a rule that cannot fire in the situation it was written for.** It emits no
+failure, no log line, no ticket — the north star's hardest-to-see shape.
+
+- **#471** — `has_repo_delegation_contract` compared a literal against prose this
+  repo writes bolded, so it returned False in the repo that authored the
+  contract, and the check it gated had never executed. *(repaired 2026-08-02)*
+- **#473** — `--fail-on-pre-rule-refusal` reports 0 for every possible corpus,
+  because the predicates it compares are mutually exclusive by control flow.
+  *(annotated, not repaired)*
+- **#475** — bounded fresh-eye review is MANDATED by several skills and is inert
+  in any repo that never ran `setup`, because
+  [fresh-eye-subagent-review.md](../../skills/shared/references/fresh-eye-subagent-review.md)
+  line 86 names exactly ONE source of the standing delegation request. The skill
+  that mandates the review cannot authorize it. **Operator-reported.**
+- A fourth, unnumbered: that same run's own repair shipped a population statement
+  that hid a third intake bucket until a second review round read it.
+
+Every one was found by a person, never by a gate. Four accidents is not a
+measurement.
+
+**Lane A fixes #475**, because it is the one costing the operator work right now
+and because it is the class's clearest worked example. **Lane B then counts the
+rest**, using #475 to widen the population the earlier draft of this sweep had
+wrong: it enumerated only code (19 `*_RULE_DATE` constants across 14 files, 93
+`validate_*` / `check_*` scripts), and #475 lives in a CONTRACT SURFACE an agent
+reads. A sweep that only reads code cannot find the instance that started it.
+
+**Lane C** is the affordance half of "make the next run better" (#474): surface
+duplicate-ratchet pressure at the FIRST edit to a gated file, the way the
+length-headroom advisory already does for its sibling trap. Three consecutive
+runs wrote "run it early" into a plan and hit it at the closeout aggregate
+anyway — a prose checklist fires exactly when nobody is reading the prose, which
+is this goal's own thesis pointed at itself.
+
+## Non-Goals
+
+- **Not a validator that audits validators.** The north star names this as the
+  anti-pattern applied to itself. Lane B's output is a one-off MEASUREMENT plus
+  targeted repairs and dispositions, never a permanent meta-gate in CI.
+- **Not arming anything on a corpus that cannot object.** No floor is widened and
+  no rule date moves without a measured count of what it would newly refuse AND a
+  recorded disposition. This repo has got that wrong twice (D49).
+- **Not #472.** Widening `FORBIDDEN_SUBAGENT_BLOCKER_PHRASES` refuses checked-in
+  artifacts, which is an operator toll. Already measured (see `## Interview
+  Decisions`); surfaced in `## Discuss Before Activation`, not taken.
+- **Not removing `AGENTS.md` as a delegation source.** Lane A ADDS sources; repos
+  carrying the block keep working unchanged.
+- **Not loosening what counts as PROOF that a review ran.** Lane A changes where
+  AUTHORIZATION may come from. A genuine tool refusal stays a blocker and a
+  same-agent substitute stays forbidden.
+- **Not the E-cluster**, not D40–D49, not `parse_created_date`'s remaining
+  uncorroborated consumers.
+
+## Boundaries
+
+- **External side-effect scope, enumerated in full.** (1) `git push` to `main` of
+  work this goal creates, plus the `quality-core` runs those pushes trigger.
+  (2) Closing [#475](https://github.com/corca-ai/charness/issues/475),
+  [#473](https://github.com/corca-ai/charness/issues/473) and
+  [#474](https://github.com/corca-ai/charness/issues/474) if their lanes resolve
+  them, each through the close path's floor with a DELEGATED resolution critique
+  running BEFORE the close call. (3) Filing new issues for anything the sweep
+  surfaces and does not fix — expected to be Lane B's main output.
+  (4) Creating a throwaway scratch repo under a temp path for Lane A's proof.
+  NOT approved and NOT carrying forward: a publish, a tag, a version bump, or any
+  `cautilus evaluate` run. The 2026-08-02 approval was scoped to that goal.
+- **Phase-scoped approval.** Push approval covers the phase that requests it and
+  does not carry to a later phase; batch local proof, run remote CI once over the
+  bundled state.
+- In scope (Lane A): the shared fresh-eye authorization rule, the public SKILL.md
+  surfaces that mandate bounded review (`critique`, `quality`, `prove`, `setup`),
+  and what `setup` writes or inspects for the delegation contract.
+- In scope (Lane B): the `*_RULE_DATE` constants, the `validate_*` / `check_*`
+  scripts, **and the contract/reference surfaces an agent reads to decide what it
+  may do** — read for one question only: can this rule fire where it was written
+  to fire?
+- In scope (Lane B, repairs): only findings whose repair is unambiguous AND
+  refuses nothing new. Everything else is filed, not fixed.
+- In scope (Lane C): the closeout runner's advisory surface for #474.
+- Also in scope: regression tests for each change and the generated
+  `plugins/charness/` mirror of every touched exported file. Sync mirrors before
+  validators (`mutate -> sync -> verify`).
+- Stop conditions: (1) if Lane A's fix needs a trust posture the operator has not
+  approved, STOP and bring the choice back. (2) If Lane B's population turns out
+  materially larger than counted once the predicate is written, STOP and re-scope
+  rather than silently sampling. (3) If any repair would newly refuse a
+  checked-in artifact, it becomes an operator decision, not a fix. (4) If Lane B
+  starts growing a permanent meta-validator, cut it back to the measurement.
+- **Cut order if the session runs short: C, then B's repairs (keep B's
+  measurement), never A.** Lane A is the operator's reported defect.
+
+## User Acceptance
+
+- **Lane A (behavioural, not textual):** a scratch repo with charness installed
+  and NO delegation block gets a bounded fresh-eye review from a REAL spawn that
+  returns findings, reproduced as failing before the fix and passing after. The
+  authorization rule names more than one source and states why each is
+  legitimate. Repos that DO carry the block are unchanged, pinned by a test. A
+  host that genuinely cannot spawn still degrades to `blocked <host-signal>`,
+  pinned by a test.
+- **Lane B:** a checked-in sweep artifact stating, with its denominator, how many
+  rules in the enumerated population were READ, how many can fire where they were
+  written to, how many cannot, and what happened to each one that cannot
+  (`repaired` / `issue #N` / `accepted: <reason>`). A reader must be able to tell
+  "checked and live" from "not checked" — the absence of that distinction is what
+  made four findings look like bad luck. #473 is resolved: either the
+  forced-scope probe exists and the flag can now fail, or the flag is deleted as
+  a guard that cannot guard, with a test pinning the choice.
+- **Lane C:** editing a dup-ratchet-gated file surfaces the pressure BEFORE the
+  closeout aggregate, pinned by a test, and #474 closes.
+- **Global:** every figure in `## Final Verification` carries
+  `<value> — <source>` or `<value> — unbacked: <why>`, and every corpus
+  measurement states its denominator, what population that denominator selects,
+  AND when it was taken (the 2026-08-02 run shipped a denominator measured before
+  its own artifacts landed in the corpus it was measuring).
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- **Verify the premise before shaping each slice, and ask what the operator
+  actually observed before trusting a previous run's reviewer list.** The session
+  that shaped this goal spent a lane on a phrase list that had nothing to do with
+  the reported symptom; the root cause was one line in a reference.
+- Re-read Lane A's two code consumers before touching them — both already degrade
+  open, so "fixing" them would be a change with no defect behind it.
+- **Write Lane B's predicate down BEFORE reading the population**, so "can this
+  rule fire?" is answered the same way every time and the count means something.
+- Run each measurement before the fold and again after, and record WHEN it was
+  taken; a corpus containing this run's own artifacts moves under it.
+- The dup-ratchet at the FIRST edit to a gated file. This is the fourth run to
+  write this line; if Lane C lands it stops being a line and becomes a signal.
+- `check_python_lengths.py --headroom` before a large addition; SPLIT the concept
+  rather than shaving lines when it refuses.
+- Targeted `pytest` AND `ruff check` in the same breath.
+- File the issue first, then write its number into prose.
+- Run `validate_handoff_artifact.py` before composing a commit message that
+  touches the handoff, and preserve key order when editing a checked-in JSON
+  policy file (diff the line count against the expected insert size).
+
+### High-Confidence Checks
+
+- One bounded fresh-eye round per slice; **TWO for Lane A** (it changes when an
+  agent may spawn) and **TWO for any Lane B repair that changes what a rule
+  refuses**, with round 2 reading the repairs.
+- `reviewer_boundary_fingerprint.py snapshot` around each review, and
+  `verify --before` run the MOMENT the reviewer returns, before any parent write.
+- A closeout-claims review by a DISTINCT observer before the complete flip. It
+  found 4 overstated claims last run, including a denominator stale for the tree
+  that shipped.
+- A slice packet's NON-CLAIMS get the same premise check as its claims.
+- **The sweep artifact is itself a verdict surface**: its counts are claims and
+  get re-derived by the reviewer, not read back.
+- **Do not accept "the rule now permits it" as evidence that an agent did it.**
+  A contract that reads correct and changes no behaviour is this goal's own
+  failure mode, and is exactly how #471 stayed dormant.
+
+### External Or Live Proof
+
+- A scratch repo with charness installed and no delegation block, where a
+  task-completing run actually spawns and receives a bounded review. This is
+  Lane A's central evidence, not a nice-to-have.
+- `git push` to `main` and the remote CI it triggers, confirmed per P4 by a
+  different observer AND a different evidence channel than the push exit code.
+- Closing #475 / #473 / #474 if their lanes resolve them, through the close
+  path's floor, with a DELEGATED resolution critique whose round runs BEFORE the
+  close call.
+- Explicitly NOT in this plan, and therefore non-claims: any release publish,
+  tag, version bump, or `cautilus evaluate` run.
+
+## Slice Plan
+
+Three lanes plus closeout, ordered by operator cost. Each is independently
+closable, so stopping between lanes is clean; the cut order is in `## Boundaries`.
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| A | Reproduce #475 on a scratch repo with no delegation block, give the standing request more than one legitimate source, and prove the review now happens | It is costing the operator work right now, it is the class's clearest worked example, and it defines the axis Lane B's earlier draft was missing — a rule inert in a CONTRACT surface, not in code | A failing reproduction, the amended authorization rule, a passing reproduction from a real spawn returning findings, tests pinning block-carrying repos unchanged and genuine host blocks still degrading; two bounded rounds | pending |
+| B | Write the can-this-fire predicate, enumerate the population INCLUDING contract surfaces, measure, repair the unambiguous, file the rest — resolving #473 as the known member | Four instances of this class surfaced by accident, all found by people rather than gates. A fifth accident is not a plan; a stated count is. Lane A supplies both the widened population and the worked example | A sweep artifact with read / can-fire / cannot-fire counts and their denominators, a disposition per finding, #473 resolved with a test pinning the choice | pending |
+| C | Surface duplicate-ratchet pressure at the first edit to a gated file (#474) | Four consecutive runs have written "run the dup ratchet early" into a plan and hit it at the aggregate anyway. The length-headroom advisory already proves the affordance shape works | The advisory firing on a changed gated file, a test pinning it, #474 closed through the close path's floor | pending |
+| D | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green; a closeout-claims critique artifact; retro dispositions each `applied:` or `issue #N` | pending |
+
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, chosen from installed skill metadata and
+model judgment — never a hard-coded phase-to-skill list here. Use the catalog
+only for hidden availability facts. `achieve` owns this slot and the floors
+below. Fill during the run:
+
+- **Routing** — choose the skill for the current phase or boundary from installed
+  metadata/model judgment, and record the route. At completion, recorded
+  boundary, and record the route it returns. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
+- **Gather step** — when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a — <reason>` when no external context
+  applies.
+- **Release step** — when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
+
+Routing step line — record it on ONE physical line so the floor reads the whole
+value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
+form below and replace `<skill>` with the selected installed skill; the
+placeholder is intentionally non-satisfying (the Gather / Release / Issue
+closeout floors are presence-only, so no stub is seeded for them — add their line
+per the bullets above when that boundary is crossed):
+
+- `Routing: <skill> — <why this phase needs it>`
+
+## Discuss Before Activation
+
+A Before-phase summary of any consequential activation decision — surfaced from
+the Non-Goals / Boundaries / Verification / Interview / Critique sections — that
+must be resolved before `/goal`. Required only when a trigger fires (live/prod
+proof, issue close/split, broad scope, irreversible side effect, or a
+proof-level non-claim); replace the `fill` line below, or delete it when none
+applies.
+
+- Discuss before activation: THREE items. (1) THE TRUST POSTURE FOR LANE A, and it is the whole design decision. Today the standing delegation request is the REPO OWNER's, checked into their own `AGENTS.md`. Every alternative source shifts who grants it: (a) invoking the skill counts as the user's act, so `/charness:critique` authorizes the bounded reviewers that skill mandates — most direct, and the plugin effectively grants itself spawn rights in any repo that installs it; (b) a structured opt-in `setup` writes, which keeps the grant repo-owned and removes the prose-matching fragility #471 proved, but still needs a file in the repo so it does NOT fix the never-ran-setup case alone; (c) both, with `AGENTS.md` kept as a third. Recommendation: (c), with (a) scoped narrowly to the named bounded-reviewer scopes and never a general spawn licence. Operator's call, because it changes who authorizes work that costs tokens. (2) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` plus the CI each push triggers, closing #475 / #473 / #474 if their lanes resolve them, filing new issues, and creating a throwaway scratch repo under a temp path. The 2026-08-02 approval was scoped to that goal and does NOT carry. (3) SIZE — three lanes plus closeout is larger than the last two-lane run, which consumed a full session with four reviewers. The cut order is written into `## Boundaries` (C, then B's repairs, never A); confirm that is the wanted trade rather than splitting this into two goals.
+
+## Slice Log
+
+## Context Sources
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+1. [docs/design-north-star.md](../../docs/design-north-star.md) — "The boundary
+   (load-bearing)". Every instance here is a fail-open proof surface, and the
+   north star also names the anti-pattern Lane B must not become.
+2. [issue #475](https://github.com/corca-ai/charness/issues/475) — Lane A, with
+   the root cause traced to one line and the two code readers cleared as NOT the
+   cause. Operator-reported.
+3. [fresh-eye-subagent-review.md](../../skills/shared/references/fresh-eye-subagent-review.md)
+   — line 86 is Lane A's defect. Read the surrounding contract for what it is
+   protecting before changing where authorization may come from.
+4. [issue #473](https://github.com/corca-ai/charness/issues/473) and
+   [issue #474](https://github.com/corca-ai/charness/issues/474) — Lane B's known
+   member and Lane C's subject.
+5. [The 2026-08-03 goal](./2026-08-03-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md)
+   and [its closeout-claims review](../critique/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator-closeout-claims-review.md)
+   — where the class was repeatedly found, and what that run's own claims got
+   wrong. Read before writing any figure here.
+6. [That run's retro](../retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md)
+   — `## Sibling Search` names the class; `## What Created Waste` is this plan's
+   Low-Cost Checks.
+7. [issue #472](https://github.com/corca-ai/charness/issues/472) — the toll this
+   goal surfaces and does not take. Read it; do not act without the operator.
+
+## Interview Decisions
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+1. **One goal or two?** This goal supersedes two separate drafts — a sweep-only
+   goal and a #475-only goal. Family considered: {sweep alone; #475 alone; both,
+   sequenced in one goal; both, as two goals run back to back}. **Chosen: one
+   goal, #475 first.** They are the same class, and each improves the other:
+   #475 is the sweep's clearest worked example, and it WIDENS the population the
+   sweep draft had wrong (that draft enumerated only code, and #475 lives in a
+   contract surface an agent reads — a sweep that only reads code could not have
+   found the instance that prompted it). Rejected: #475 alone, as too small for
+   the session and leaving four accidental findings uncounted. Rejected: the
+   sweep alone, because it defers the operator's live cost.
+   Anti-anchoring: `axis: size register` — combining lanes is normally how a goal
+   overruns; the defence is the explicit cut order, not optimism.
+2. **What is #475's actual defect?** Family considered: {the phrase list is too
+   narrow; the validators refuse repos without the block; `setup` fails to write
+   the block; the authorization rule names only one source}. **Chosen: the
+   authorization rule.** The operator reported the symptom directly — a repo that
+   never ran `setup` refuses to spawn automatically — and reading the two code
+   consumers showed both already degrade open, so no validator refuses anything.
+   Rejected: the phrase list, which is a critique-artifact RECORDING rule and was
+   a full lane's detour before the symptom was stated.
+   Anti-anchoring: `axis: layer` — this read as a code defect for a whole session
+   and is a contract-text defect.
+3. **How is Lane A proven?** Family considered: {read the contract and argue; a
+   unit test over the rule text; a real scratch repo with a real spawn}.
+   **Chosen: the scratch repo, reproduced failing before and passing after.**
+   Rejected: the text test alone — "the rule now permits it" is exactly the
+   evidence that let a guard sit dormant for months.
+4. **Is #472 in?** Family considered: {fold it in; leave it filed; take it only
+   if Lane B finishes early}. **Chosen: leave it filed and surface the toll.**
+   It is already measured: widening to the `delegation policy` stem refuses
+   exactly 2 artifacts of 589 with a readable value, both dated 2026-05-21, so an
+   enforce-from-date floor would refuse 0 today — the same shape as #471's
+   repair. A broader `delegat* + policy` rule refuses 4, but 2 of those are
+   honest `parent-delegated` records that merely mention policy, so that variant
+   is rejected on measurement. The remaining decision — introduce a new refusal
+   for future authors at all — is a toll, not an implementation detail.
+
+## Plan Critique Findings
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
+
+## Off-Goal Findings
+
+Issues or deferred findings discovered during the run.
+
+## Final Verification
+
+Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
+retro / host-log probe / disposition-review artifact) or an explicit
+`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
+`TODO` / `<path>` / `TBD` until you do.
+
+Retro: TODO — create or explicitly skip with an allowed reason before complete
+Host log probe: TODO — create or explicitly skip with an allowed reason before complete
+Disposition review: TODO — create or explicitly skip only when policy allows before complete
+
+## User Verification Instructions
+
+## Auto-Retro
+
+Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named

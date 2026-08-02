@@ -2,17 +2,18 @@
 
 ## Workflow Trigger
 
-- **A shaped goal is waiting on an OPERATOR-REPORTED defect (#475).** Run
-  `/achieve @charness-artifacts/goals/2026-08-03-make-subagent-delegation-work-without-an-agents-md-block.md`
+- **A shaped goal is waiting, led by an OPERATOR-REPORTED defect (#475).** Run
+  `/achieve @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
   to settle its `## Discuss Before Activation`, then activate. Deliberately NOT
   `pursue_ready`: item (1) is a trust-posture decision only the operator can make.
 
 ## Continuation Capability
 
-- **A remedy a durable record names is a hypothesis** — verify its premise first
+- **A remedy a durable record names is a hypothesis, and so is a previous
+  reviewer's finding list** — verify the premise first
   ([implementation-discipline](./conventions/implementation-discipline.md), Change
-  Discipline). Both lanes this run were reviewer-named; re-reading each surface
-  first is what turned "fix a typo" into the measurement that was the deliverable.
+  Discipline). #475 was found by ASKING the operator what they observed, after a
+  lane had already been spent on a surface that was not the symptom.
 - **A slice packet's NON-CLAIMS are claims**, and **verify the reviewer boundary
   the moment the reviewer returns** — both in
   [operating-contract.md](./conventions/operating-contract.md).
@@ -37,20 +38,19 @@
   three ways. Recount with
   `python3 skills/public/achieve/scripts/audit_disposition_corpus.py --repo-root .`
 - **The changed-line gate states its scope on every verdict path**; refusal is
-  still **D40**'s toll. **The issue-close floor reads the cited critique's own
-  `Fresh-eye satisfaction:`**, gated on the `AGENTS.md` contract.
-- Still open and untouched: the **E-cluster** (most expensive lane), D41–D49, and
-  `parse_created_date`'s uncorroborated consumers.
+  still **D40**'s toll. Still open and untouched: the **E-cluster** (most
+  expensive lane), D41–D49, `parse_created_date`'s uncorroborated consumers.
 
 ## Next Session
 
-1. **#475 — the waiting goal.** Bounded review is MANDATED by several skills and
-   is inert in any repo that never ran `setup`, because the authorization rule
-   names only `AGENTS.md` as the source of the standing request. Acceptance is
-   behavioural: a real spawn in a scratch repo with no block.
-2. **Parked, still shaped**: the dormant-gate sweep draft
-   (`2026-08-03-count-the-rest-of-the-class-...`), with #473 and #474 inside it.
-   Legitimate work, not the operator's current target.
+1. **Lane A is #475.** Bounded review is MANDATED by several skills and is inert
+   in any repo that never ran `setup`, because the authorization rule names only
+   `AGENTS.md` as the source of the standing request. Acceptance is behavioural:
+   a real spawn in a scratch repo with no block.
+2. **Lane B counts the rest of the class** (#471/#473/#475 are one shape: a rule
+   that cannot fire where it was written to). #475 widens the population the
+   earlier sweep draft had wrong — it enumerated only code, and #475 lives in a
+   contract surface. **Lane C is #474.** Cut order: C, then B's repairs, never A.
 3. **#472 stays filed unless the operator pulls it in.** Widening the phrase list
    refuses checked-in artifacts — arming teeth on a corpus that cannot object.
    Measured: widening to the `delegation policy` stem refuses exactly 2, both
@@ -74,7 +74,7 @@
 
 ## References
 
-- [waiting goal (#475)](../charness-artifacts/goals/2026-08-03-make-subagent-delegation-work-without-an-agents-md-block.md) · [parked sweep draft](../charness-artifacts/goals/2026-08-03-count-the-rest-of-the-class-this-run-kept-finding-by-accident.md) · [completed goal](../charness-artifacts/goals/2026-08-03-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [retro](../charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [prior goal](../charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md)
+- [waiting goal](../charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md) · [completed goal](../charness-artifacts/goals/2026-08-03-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [retro](../charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md) · [prior goal](../charness-artifacts/goals/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md)
 - critiques: [#471 resolution](../charness-artifacts/critique/2026-08-02-issue-471-resolution-critique.md) · [closeout claims](../charness-artifacts/critique/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator-closeout-claims-review.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [the sweep](../charness-artifacts/audit/2026-07-28-evidence-surface-triage-sweep.md) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
