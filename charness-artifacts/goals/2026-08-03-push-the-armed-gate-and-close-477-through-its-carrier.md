@@ -249,6 +249,67 @@ applies.
   this goal only.
 - **This goal is ready to run.**
 
+## Lane C — #478 Site Analysis
+
+All 7 sites, against the separating principle the adversarial reviewer derived:
+**a reference is safe when the reader's executable instruction is satisfiable
+without resolving the path; it is broken when the path IS the deliverable the
+reader is sent to fetch or run.** All 7 fail that test — each sends the reader
+to a file only charness has.
+
+Verified 2026-08-02: all six scripts DO ship in the exported plugin
+(`export_plugin.py` into `/tmp`; all six present under the package's `scripts/`).
+So the affordance is recoverable; the question is how to spell it.
+
+| # | site | reference | what the prose asks |
+| --- | --- | --- | --- |
+| 1 | `critique/references/angle-selection.md:117` | `check_title_slug_drift.py` | "Run … as deterministic evidence for the title-slug lens" |
+| 2 | `critique/references/rename-critique.md:85` | `check_title_slug_drift.py` | "Run … before relying on prose judgment alone" |
+| 3 | `gather/SKILL.md:153` | `refresh_current_pointer.py` | a `## References` bullet among package-relative siblings |
+| 4 | `shared/references/binary-preflight.md:173` | `validate_skills.py` | "5. Run … to confirm the new gate accepts the change" |
+| 5 | `setup/references/default-surfaces.md:125` | `check_doc_links.py` | "See … for the shipped reference implementation" |
+| 6 | `setup/references/default-surfaces.md:126` | `check-links-internal.sh` | same sentence (the `.sh` no `.py`-only count ever saw) |
+| 7 | `setup/references/default-surfaces.md:127` | `migrate_backtick_file_refs.py` | same sentence, "one-shot migrator" |
+
+### The four options, with the cost each actually carries
+
+- **(a) `<plugin-dir>/scripts/X.py`.** Resolvable in principle and already a
+  recognised placeholder. **But it has ZERO usage precedent** — it appears only
+  in the placeholder list in `authoring-preflight.md`, never in a skill — and
+  unlike `$SKILL_DIR` there is no bootstrap variable behind it, so the agent
+  must work out the plugin directory itself. Adopting it here makes this the
+  convention's first real user.
+- **(b) A `skills/shared/scripts/` shim per script**, the pattern just proven
+  for `plan_risk_interrupt`. Resolves in both layouts with no new convention and
+  no agent-side resolution. Cost: one shim file per script, and it moves
+  repo-level tools onto the shipped skill surface.
+- **(c) Reword to `<authoring-repo>/`.** Honest, and already the convention for
+  the 8 sites converted this run — but the consumer loses the affordance: the
+  sentence becomes "charness has a thing you cannot run".
+- **(d) Drop the reference.** Right only where the affordance is not really the
+  skill's, which is arguably true for site 3: `gather`'s own
+  `scripts/write_record.py` is what its prose actually tells the reader to use,
+  and `asset-refresh.md:40` already carries the descriptive mention under
+  `<authoring-repo>/`.
+
+### Agent recommendation, per site
+
+- **Sites 1, 2, 4 → (b) shim.** These are imperatives inside skills a consuming
+  repo genuinely runs (`critique`, and skill-authoring guidance cited by
+  `create-skill` / `create-cli`). The shim pattern is proven in this repo as of
+  today and needs no new convention.
+- **Sites 5, 6, 7 → (c) `<authoring-repo>/`.** "See X for the shipped reference
+  implementation" is a pointer to an example, not a command; the honest fix is
+  to say whose example it is. Site 6 is a `.sh` and must move with its two
+  neighbours or the sentence stays half-repaired.
+- **Site 3 → (d) drop the bullet.** It advertises an affordance `gather` does
+  not portably have, and the descriptive mention already exists elsewhere.
+
+**NOT APPLIED — awaiting the operator.** Prose conversion and any GitHub write
+on #478 are case-by-case under this goal's grant. The analysis needed no grant;
+the edits do.
+
+
 ## Slice Log
 
 ### Slice 1: A — push the armed gate
