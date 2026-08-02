@@ -512,6 +512,17 @@ Every figure, with its source:
 - **83 tests across the three touched test files** — `python3 -m pytest
   tests/test_critique_artifact_validation.py tests/quality_gates/test_goal_disposition_gate.py
   tests/quality_gates/test_critique_skill.py -q`.
+- **Push and remote CI: confirmed, P4-style** — the push's own exit code is NOT
+  the evidence. Server-side ref read back with `git ls-remote origin main`
+  (a different observer than the local client), and the run it triggered —
+  `gh run view 30730812074` — reports `completed / success` for `Quality Core` on
+  `main`. The pre-push local suite (`82 passed, 0 failed`) is a third, separate
+  channel and is not what this line claims.
+- **#471 closed by the carrier, verified remotely** — `gh issue view 471` reports
+  `CLOSED`; #472, #473 and #474 report `OPEN`, which is the intended end state.
+  The close was carried by this commit's `Resolves #471` ledger, rehearsed before
+  the commit with `issue_tool.py validate-closeout-draft` (`draft_verified`), and
+  the delegated resolution critique ran BEFORE the close call.
 - **Slice closeout gate: `completed`** — `python3 scripts/run_slice_closeout.py
   --repo-root . --skip-broad-pytest --ack-cautilus-skill-review`, after the two
   duplicate families were classified. Recorded as a gate result, not as broad
