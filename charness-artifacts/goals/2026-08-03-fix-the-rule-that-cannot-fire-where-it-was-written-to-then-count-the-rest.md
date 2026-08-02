@@ -74,9 +74,12 @@ is this goal's own thesis pointed at itself.
 - **Not arming anything on a corpus that cannot object.** No floor is widened and
   no rule date moves without a measured count of what it would newly refuse AND a
   recorded disposition. This repo has got that wrong twice (D49).
-- **Not #472.** Widening `FORBIDDEN_SUBAGENT_BLOCKER_PHRASES` refuses checked-in
-  artifacts, which is an operator toll. Already measured (see `## Interview
-  Decisions`); surfaced in `## Discuss Before Activation`, not taken.
+- **Not #472 — CLOSED as not planned 2026-08-02, before this goal was
+  activated.** Widening `FORBIDDEN_SUBAGENT_BLOCKER_PHRASES` polices an agent's
+  self-report about why it skipped a review: it cannot make the review happen,
+  and it is evaded by rewording, which is literally the defect that was reported.
+  Its cause is #475, and once Lane A's ladder lands, "the user declined" becomes
+  a legitimate record this rule must NOT refuse. Do not reopen it as a lane here.
 - **Not removing `AGENTS.md` as a delegation source.** Lane A ADDS sources; repos
   carrying the block keep working unchanged.
 - **Not loosening what counts as PROOF that a review ran.** Lane A changes where
@@ -338,8 +341,10 @@ the originating context by following them in order.
 6. [That run's retro](../retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md)
    — `## Sibling Search` names the class; `## What Created Waste` is this plan's
    Low-Cost Checks.
-7. [issue #472](https://github.com/corca-ai/charness/issues/472) — the toll this
-   goal surfaces and does not take. Read it; do not act without the operator.
+7. [issue #472](https://github.com/corca-ai/charness/issues/472) — CLOSED as not
+   planned. Its close comment carries the full measurement and the reasoning for
+   why a self-report word filter was the wrong instrument; read it before
+   proposing any phrase-list work, so the analysis is not re-derived.
 
 ## Interview Decisions
 
@@ -383,15 +388,25 @@ itself so a fresh session sees the design space, not only the closed point.
    guard sit dormant for months. Anti-anchoring: `axis: who observes` — the
    strongest available observer here is the person who hit the bug, not a
    fixture this session builds for itself.
-4. **Is #472 in?** Family considered: {fold it in; leave it filed; take it only
-   if Lane B finishes early}. **Chosen: leave it filed and surface the toll.**
-   It is already measured: widening to the `delegation policy` stem refuses
-   exactly 2 artifacts of 589 with a readable value, both dated 2026-05-21, so an
-   enforce-from-date floor would refuse 0 today — the same shape as #471's
-   repair. A broader `delegat* + policy` rule refuses 4, but 2 of those are
-   honest `parent-delegated` records that merely mention policy, so that variant
-   is rejected on measurement. The remaining decision — introduce a new refusal
-   for future authors at all — is a toll, not an implementation detail.
+4. **Is #472 in?** Family considered: {fold it in; leave it filed and surface the
+   toll; take it only if Lane B finishes early; close it}. **Chosen: CLOSE it**,
+   after the operator asked what it actually buys — a question nobody had asked
+   in the three sessions that carried it.
+   The measurement is preserved in the close comment: widening to the
+   `delegation policy` stem refuses exactly 2 artifacts of 589 with a readable
+   value, both dated 2026-05-21, so an enforce-from-date floor would refuse 0
+   today; a broader `delegat* + policy` rule refuses 4, but 2 of those are honest
+   `parent-delegated` records that merely mention policy, so that variant is
+   rejected on measurement rather than on taste.
+   The closing reason went past the toll: the rule inspects an agent's own
+   statement about why it skipped a review, so it neither causes the review nor
+   resists rewording — and this repo had already written the general objection,
+   that teeth over a self-report land on honest authors rather than on liars.
+   Its cause is #475, and after Lane A "the user declined" is a legitimate record
+   the rule must not refuse. Keeping it open implied planned work nobody
+   recommended.
+   Anti-anchoring: `axis: worth doing at all` — three sessions optimised HOW to
+   widen the list before anyone asked WHETHER to.
 
 ## Plan Critique Findings
 

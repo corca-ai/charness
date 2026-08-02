@@ -51,20 +51,16 @@
    that cannot fire where it was written to). #475 widens the population the
    earlier sweep draft had wrong — it enumerated only code, and #475 lives in a
    contract surface. **Lane C is #474.** Cut order: C, then B's repairs, never A.
-3. **#472 stays filed unless the operator pulls it in.** Widening the phrase list
-   refuses checked-in artifacts — arming teeth on a corpus that cannot object.
-   Measured: widening to the `delegation policy` stem refuses exactly 2, both
-   dated 2026-05-21, so an enforce-from-date floor would refuse 0 today.
-4. **A `completed` closeout gate is not broad proof.** Run
+3. **A `completed` closeout gate is not broad proof.** Run
    `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only`
    explicitly and record the number.
 
 ## Discuss
 
-- **Should the phrase-list widening (#472) be dated or retroactive?** The
-  near-miss artifacts are from May 2026, so an enforce-from-date floor mirroring
-  `FRESH_EYE_PRESENCE_RULE_DATE` is the cheap answer — but that is arming teeth on
-  a corpus that cannot object, which this repo has got wrong twice (D49).
+- **Closed (#472), not fixed:** widening `FORBIDDEN_SUBAGENT_BLOCKER_PHRASES`
+  polices an agent's self-report about why it skipped a review — it cannot make
+  the review happen and is evaded by rewording. Its cause is #475. Reopen only if
+  the rule refuses a real artifact after the ladder lands.
 - **Settled (#475): who grants the standing delegation request.** A three-rung
   ladder — `AGENTS.md`, else a structured repo-owned opt-in, else ask once and
   persist. The plugin never self-grants. Reopen only if the per-repo question
