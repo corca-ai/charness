@@ -26,7 +26,12 @@ Real blockers, folded: the three-mechanism root cause; the unproven behavioural
 claim; two overstated sentences in the fix's own docstring. Over-worry, raised
 and NOT folded: the shim's unbounded upward walk (bounded in practice — the
 correct planner is always one level up in both real layouts, so the walk
-terminates immediately; recorded as a limit, not repaired) and a missing
+terminates immediately; recorded as a limit, not repaired). **AMENDED
+2026-08-02: since repaired.** A later round on the #478 shims judged the
+unbounded walk worth closing rather than tolerating, and
+`authoring_script_shim._MAX_ANCESTORS` now caps it. Amended here because a
+durable record naming a deferred remedy is read at slice-shaping time, and
+leaving it saying "deferred" invites re-opening a closed item. and a missing
 `ValidationError` handler on the shim path (no reachable raise found).
 
 ## Structured Findings
@@ -34,7 +39,7 @@ terminates immediately; recorded as a limit, not repaired) and a missing
 - F1 | bin: act-before-ship | evidence: strong | ref: scripts/check_skill_contracts.py:203 | action: document | note: a source guard pinned the BROKEN string as REQUIRED, so fixing the path would have failed a gate — permanence, not just missed detection; folded into the ledger root_cause
 - F2 | bin: act-before-ship | evidence: strong | ref: charness-artifacts/probe/2026-08-02-477-installed-layout-plan-risk-interrupt.md | action: fix | note: the behavioural claim was unproven until run from an exported package outside this tree; the probe was produced before the close
 - F3 | bin: valid-but-defer | evidence: strong | ref: skills/shared/scripts/run_plan_envelope.py:32 | action: defer | note: ten packaged-Python sites resolve in both layouts only by an exporter-flattening coincidence; recorded with a revisit trigger rather than repaired
-- F4 | bin: over-worry | evidence: moderate | ref: skills/shared/scripts/plan_risk_interrupt.py:42 | action: defer | note: the shim's ancestor walk is unbounded upward, but terminates one level up in both real layouts
+- F4 | bin: over-worry | evidence: moderate | ref: skills/shared/scripts/authoring_script_shim.py:44 | action: fix | note: the shim's ancestor walk was unbounded upward; deferred at the time, then capped when the shared module landed (ref updated — the logic moved out of plan_risk_interrupt.py)
 
 ## Reviewer Tier Evidence
 

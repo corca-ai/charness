@@ -26,6 +26,12 @@ SHARED_SCRIPTS = REPO_ROOT / "skills" / "shared" / "scripts"
 MIRROR_SCRIPTS = REPO_ROOT / "plugins" / "charness" / "shared" / "scripts"
 
 shim_lib = load_script_module("authoring_script_shim", SHARED_SCRIPTS / "authoring_script_shim.py")
+# The MIRROR's own copy, loaded separately. Running the authoring module against
+# a mirror path would not notice the two diverging (a different `_MAX_ANCESTORS`,
+# say) — and "the shipped copy behaves like the source" is the claim.
+mirror_shim_lib = load_script_module(
+    "mirror_authoring_script_shim", MIRROR_SCRIPTS / "authoring_script_shim.py"
+)
 
 # Every shim, and the call site whose prose must name it.
 SHIMS = {
@@ -68,7 +74,9 @@ def test_each_shim_resolves_to_its_OWN_tree(
     until the interpreter dies — which is what the first version did.
     """
     caller = scripts_dir / name
-    located = shim_lib.locate(name, caller)
+    lib = shim_lib if scripts_dir == SHARED_SCRIPTS else mirror_shim_lib
+    assert lib._MAX_ANCESTORS == shim_lib._MAX_ANCESTORS, "mirror shim logic drifted from source"
+    located = lib.locate(name, caller)
     assert located.resolve() != caller.resolve()
     assert located.resolve() == (expected_target_dir / name).resolve()
 
@@ -82,10 +90,16 @@ def test_the_walk_is_bounded_and_cannot_reach_an_unrelated_scripts_dir(tmp_path:
     outsider = tmp_path / "scripts"
     outsider.mkdir()
     (outsider / "validate_skills.py").write_text("print('not ours')\n", encoding="utf-8")
-    deep = tmp_path / "a" / "b" / "c" / "d" / "e" / "shared" / "scripts"
+    # Depth chosen to PIN the bound, not merely to prove one exists: the outsider
+    # sits at ancestor index 5, so this refuses at the shipped cap and would find
+    # it at 6. An earlier fixture buried it at index 7 and stayed green for any
+    # cap up to 7 — it could not see a 5→7 loosening, which is the regression the
+    # cap exists to stop.
+    deep = tmp_path / "x1" / "x2" / "x3" / "shared" / "scripts"
     deep.mkdir(parents=True)
     caller = deep / "validate_skills.py"
     caller.write_text("", encoding="utf-8")
+    assert list(caller.resolve().parents).index(tmp_path.resolve()) == 5
 
     with pytest.raises(FileNotFoundError):
         shim_lib.locate("validate_skills.py", caller)
@@ -181,3 +195,11 @@ def test_the_call_sites_name_a_path_that_resolves_in_both_layouts(name: str) -> 
             assert "$SKILL_DIR/../../shared/scripts/" in line, line
             assert "../../../" not in line, line
             assert "|| true" not in line, f"{call_site}: swallow hides a real verdict"
+            # BOTH halves of the #477 swallow. `2>/dev/null` alone still hides
+            # the file-not-found, and three of these call sites are `references/`
+            # prose that `validate_skills`' Bootstrap-fence guard never reaches —
+            # so this assertion is their only guard.
+            assert "2>/dev/null" not in line, f"{call_site}: stderr swallow hides a missing file"
+            # The shims ship mode 100644, so a bare path is `permission denied`.
+            # Naming a command that cannot run is the very class #477 filed.
+            assert "python3 " in line, f"{call_site}: names a non-executable path with no interpreter"

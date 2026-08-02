@@ -67,6 +67,14 @@ def run(name: str, caller: str) -> int:
     directory goes on `sys.path` first because repo scripts use bare
     `from yaml_output import ...` imports that only resolve from there -- running
     one directly gets that for free; reaching it from here does not.
+
+    SINGLE-SHOT PER PROCESS. `runpy` itself is re-entrant, but the targets are
+    not: their module-level `import_repo_module` caches libraries in `sys.modules`
+    under tree-independent keys (`scripts.risk_interrupt_lib`, ...). A second call
+    for the same target from the OTHER tree would re-run the entrypoint while
+    silently reusing the first tree's libraries -- the resolved-to-the-wrong-tree
+    class this shim exists to kill, one layer down. Every call site is
+    `python3 <shim>`, i.e. a fresh process, which is what keeps that unreachable.
     """
     script_path = locate(name, Path(caller))
     script_dir = str(script_path.parent)
