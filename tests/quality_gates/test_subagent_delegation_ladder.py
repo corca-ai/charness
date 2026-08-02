@@ -550,3 +550,81 @@ def test_ladder_does_not_loosen_what_counts_as_proof() -> None:
     assert "same-agent pass is still forbidden" in flat
     assert "Only a real tool refusal, missing spawn surface, exhausted host" in flat
     assert "Do not silently collapse into a same-agent review" in REFERENCE.read_text(encoding="utf-8")
+
+
+# --------------------------------------------------------------------------
+# Rung-2 record shapes, exercised through BOTH shipped readers
+#
+# Added when the pre-push mutation gate reported these branches as
+# changed-and-uncovered. Each one is a way a record can fail to be a decision,
+# and every one of them must land on "not authorized" rather than on a grant.
+# --------------------------------------------------------------------------
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        pytest.param([1, 2, 3], id="not-an-object"),
+        pytest.param({"bounded_review_delegation": 7}, id="decision-not-a-string"),
+        pytest.param({"bounded_review_delegation": "maybe"}, id="unrecognized-decision"),
+        pytest.param({"bounded_review_delegation": "granted", "scopes": []}, id="empty-scopes"),
+        pytest.param({"bounded_review_delegation": "granted", "scopes": [1]}, id="non-string-scopes"),
+        pytest.param({"bounded_review_delegation": "granted", "scopes": {"a": 1}}, id="scopes-not-a-list"),
+    ],
+)
+def test_an_unusable_record_authorizes_nothing_in_either_shipped_reader(
+    tmp_path: Path, validator, observer, payload
+) -> None:
+    _write_record(tmp_path, payload)
+    assert validator.has_repo_delegation_contract(tmp_path, scope="critique") is False
+    assert observer.repo_requires_delegated_observer(tmp_path, scope="issue") is False
+
+
+def test_a_record_granting_no_scopes_key_covers_every_scope(tmp_path: Path, validator, observer) -> None:
+    """An ABSENT `scopes` key is a grant with no narrowing -- distinct from a
+    present-but-unusable one, which is refused above."""
+    _write_record(tmp_path, {"bounded_review_delegation": "granted"})
+    for scope in ("critique", "issue", "release"):
+        assert validator.has_repo_delegation_contract(tmp_path, scope=scope) is True
+        assert observer.repo_requires_delegated_observer(tmp_path, scope=scope) is True
+
+
+def test_scope_matching_is_case_and_whitespace_insensitive(tmp_path: Path, validator, observer) -> None:
+    """A capitalization must not decide whether a rule fires -- the whole reason
+    rung 2 is structured rather than prose."""
+    _write_record(tmp_path, {"bounded_review_delegation": "GRANTED ", "scopes": ["  Critique "]})
+    assert validator.has_repo_delegation_contract(tmp_path, scope="critique") is True
+    assert observer.repo_requires_delegated_observer(tmp_path, scope="CRITIQUE") is True
+    assert validator.has_repo_delegation_contract(tmp_path, scope="release") is False
+
+
+def test_an_unreadable_record_file_authorizes_nothing_in_either_reader(
+    tmp_path: Path, validator, observer
+) -> None:
+    _write_record(tmp_path, {"bounded_review_delegation": "granted"})
+    record = tmp_path / RECORD_RELPATH
+    record.chmod(0o000)
+    try:
+        if os.access(record, os.R_OK):  # running as root: the mode is not enforced
+            pytest.skip("cannot make a file unreadable for this user")
+        assert validator.has_repo_delegation_contract(tmp_path) is False
+        assert observer.repo_requires_delegated_observer(tmp_path) is False
+    finally:
+        record.chmod(0o644)
+
+
+def test_a_non_utf8_agents_md_is_not_adopted_and_does_not_traceback(
+    tmp_path: Path, resolver, validator, observer
+) -> None:
+    """A consuming repo can commit `AGENTS.md` in cp1252. Every reader must treat
+    that as "not adopted" rather than letting a UnicodeDecodeError escape -- it is
+    not an OSError, so a handler catching only OSError would surface a traceback
+    instead of a verdict."""
+    (tmp_path / "AGENTS.md").write_bytes(b"# Repo\n\n## Subagent Delegation\n\n- caf\xe9 \x93quoted\x94\n")
+    assert resolver.has_agents_md_delegation_contract(tmp_path) is False
+    assert validator.has_repo_delegation_contract(tmp_path) is False
+    assert observer.repo_requires_delegated_observer(tmp_path) is False
+    # And rung 2 still answers underneath it.
+    _write_record(tmp_path, {"bounded_review_delegation": "granted"})
+    assert validator.has_repo_delegation_contract(tmp_path) is True
+    assert observer.repo_requires_delegated_observer(tmp_path) is True

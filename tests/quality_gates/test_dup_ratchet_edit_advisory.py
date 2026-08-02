@@ -269,3 +269,109 @@ def test_an_advisory_failure_never_breaks_an_edit(git_repo: Path, monkeypatch, c
     payload = json.dumps({"tool_input": {"file_path": str(target)}})
 
     assert guard.main(["--repo-root", str(git_repo)], stdin=io.StringIO(payload)) == 0
+
+
+# --------------------------------------------------------------------------
+# Degenerate and failure paths
+#
+# Every branch below exists because this advisory rides an EDIT-TIME hook: it
+# must reach a decision or stay silent for any input, and never raise. They were
+# added when the pre-push mutation gate reported them as changed-and-uncovered
+# -- an error path nothing exercises is an error path nobody knows the shape of.
+# --------------------------------------------------------------------------
+
+
+def test_a_malformed_or_absent_adapter_falls_back_rather_than_raising(tmp_path: Path, advisory) -> None:
+    repo = tmp_path / "r"
+    (repo / ".agents").mkdir(parents=True)
+    # No adapter file at all -> the pinned default, so the advisory still works
+    # in a checkout where the adapter has not been written yet.
+    assert advisory.scope_paths(repo) == advisory.DEFAULT_SCOPE_PATHS
+    # Adapter that parses to a non-mapping.
+    (repo / ".agents/quality-adapter.yaml").write_text("- just\n- a\n- list\n", encoding="utf-8")
+    assert advisory.scope_paths(repo) == advisory.DEFAULT_SCOPE_PATHS
+    # Enabled section whose `scope_paths` is unusable: fall back rather than
+    # silently scoping to nothing, which would look identical to "not gated".
+    (repo / ".agents/quality-adapter.yaml").write_text(
+        "dup_ratchet:\n  enabled: true\n  scope_paths: not-a-list\n", encoding="utf-8"
+    )
+    assert advisory.scope_paths(repo) == advisory.DEFAULT_SCOPE_PATHS
+    (repo / ".agents/quality-adapter.yaml").write_text(
+        "dup_ratchet:\n  enabled: true\n  scope_paths: []\n", encoding="utf-8"
+    )
+    assert advisory.scope_paths(repo) == advisory.DEFAULT_SCOPE_PATHS
+    # Non-string entries are dropped, not stringified into nonsense roots.
+    (repo / ".agents/quality-adapter.yaml").write_text(
+        "dup_ratchet:\n  enabled: true\n  scope_paths:\n    - scripts\n    - 7\n", encoding="utf-8"
+    )
+    assert advisory.scope_paths(repo) == ("scripts",)
+
+
+def test_git_failures_resolve_to_no_answer_rather_than_a_wrong_one(tmp_path: Path, advisory) -> None:
+    """A directory that is not a git repo, and a git binary that cannot run."""
+    not_a_repo = tmp_path / "plain"
+    (not_a_repo / "scripts").mkdir(parents=True)
+    (not_a_repo / "scripts/x.py").write_text("\n".join(f"a{i} = {i}" for i in range(80)), encoding="utf-8")
+    assert advisory.added_lines_vs_head(not_a_repo, "scripts/x.py") is None
+    assert advisory.advise_for_edited_file(not_a_repo, "scripts/x.py") is None
+
+
+def test_git_binary_missing_is_not_an_exception(git_repo: Path, advisory, monkeypatch) -> None:
+    def boom(*_a, **_k):
+        raise OSError("git not found")
+
+    monkeypatch.setattr(advisory.subprocess, "run", boom)
+    assert advisory._git(git_repo, "status") is None
+    assert advisory.added_lines_vs_head(git_repo, "scripts/seed.py") is None
+
+
+def test_an_untracked_unreadable_file_reports_no_answer(git_repo: Path, advisory) -> None:
+    """The byte-count fallback is only reached for an untracked file; if that read
+    fails there is no honest number to report."""
+    target = git_repo / "scripts/binaryish.py"
+    target.write_bytes(b"\xff\xfe\x00" * 4000)
+    assert advisory.added_lines_vs_head(git_repo, "scripts/binaryish.py") is None
+
+
+def test_a_deleted_file_is_not_advised_about(git_repo: Path, advisory) -> None:
+    """The hook fires on Write/Edit tools, but a path can be gone by the time the
+    advisory runs (a rename or delete right after)."""
+    assert advisory.added_lines_vs_head(git_repo, "scripts/never_existed.py") is None
+    assert advisory.advise_for_edited_file(git_repo, "scripts/never_existed.py") is None
+
+
+def test_a_corrupt_suppression_state_file_re_advises(git_repo: Path, advisory) -> None:
+    """Unreadable state means re-advise, never go silent: a repeated advisory is
+    noise, a missed one is the trap this exists to catch."""
+    state = git_repo / advisory._SEEN_RELPATH
+    state.parent.mkdir(parents=True, exist_ok=True)
+    for corrupt in ("{ not json", "[]", '{"head": "abc", "paths": "nope"}'):
+        state.write_text(corrupt, encoding="utf-8")
+        (git_repo / "scripts/seed.py").write_text(
+            "\n".join(f"s{i} = {i}" for i in range(80)), encoding="utf-8"
+        )
+        assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None
+        state.write_text(corrupt, encoding="utf-8")
+
+
+def test_an_unknown_head_never_suppresses(git_repo: Path, advisory) -> None:
+    assert advisory._already_advised(git_repo, "scripts/seed.py", None) is False
+
+
+def test_the_cli_prints_the_advisory_and_the_structured_decision(git_repo: Path, advisory, capsys) -> None:
+    (git_repo / "scripts/seed.py").write_text("\n".join(f"c{i} = {i}" for i in range(80)), encoding="utf-8")
+    assert advisory.main(["--repo-root", str(git_repo), "--path", "scripts/seed.py", "--json"]) == 0
+    state = json.loads(capsys.readouterr().out)
+    assert state["fires"] is True and state["in_scope"] is True
+
+    assert advisory.main(["--repo-root", str(git_repo), "--path", "scripts/seed.py"]) == 0
+    assert "ADVISORY (dup ratchet)" in capsys.readouterr().out
+
+    # Silent path still exits 0 and prints nothing: the CLI is never a gate.
+    assert advisory.main(["--repo-root", str(git_repo), "--path", "docs/x.md"]) == 0
+    assert capsys.readouterr().out.strip() == ""
+
+
+def test_the_threshold_is_a_knob_not_a_constant(git_repo: Path, advisory) -> None:
+    (git_repo / "scripts/seed.py").write_text("x = 1\ny = 2\nz = 3\n", encoding="utf-8")
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py", threshold=1) is not None
