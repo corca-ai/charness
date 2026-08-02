@@ -2,77 +2,74 @@
 
 ## Workflow Trigger
 
-- **A goal is SHAPED and pursue-ready** — no activation question, because the
-  standing approvals in `AGENTS.md` now cover it. Activate directly:
-  `/goal @charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md`
+- **No goal is waiting.** Start from `## Next Session`, or take a fresh request.
+  To re-chunk the backlog into one, run `charness:handoff`.
 
 ## Continuation Capability
 
-- **The round that reads the REPAIRS is where the class comes back — four times
-  measured, and the last is the sharpest.** The fix for "a documented command
-  that cannot run" shipped three NEW documented commands that cannot run: bare
-  paths to shims that ship mode 100644. A whole session on that class, and it
-  still recurred inside its own repair.
-- **A claims reviewer finds a different class than a code reviewer — now a
-  standing contract step, and it proved itself on its first outing.** It found
-  five record blockers four code rounds had not: an evidence line bound to its
-  own record, a section saying NOT APPLIED after the edits shipped, CI
-  attribution naming no SHA, every slice row still `pending`, and a
-  "all reviewers clean" sentence written before the last reviewer returned.
-- **A test can assert a proxy instead of the thing.** `assert "--strict" not in
-  source` matched the docstring explaining that flag's absence. Read the real
-  parser. Same family as "build fixtures from the source constant".
-- **The dup ratchet re-fires after a refactor** — running it at the first edit
-  is necessary, not sufficient; restructuring rotates the fingerprints.
+- **The round that reads the REPAIRS is where the class comes back — six times
+  measured, and the last is the sharpest.** The repair for a false-POSITIVE hole
+  (a blocking gate refusing fenced examples) opened three false-NEGATIVE ones:
+  prose-wrapped links, a fence toggle inverting on mismatched `~~~`/backtick
+  markers, and live text after a mid-line `-->`. All latent, all caught by round 2.
+- **A claims reviewer reads the RECORD and finds what code reviewers cannot.**
+  Second outing, three more record blockers — including this goal's own
+  measurement artifact still saying axis A2 was NOT ARMED after it had been. That
+  table had been ADDED to correct the opposite overclaim, then went stale the
+  other way.
+- **A completion summary is a proxy; read the OUTPUT.** Two background runs
+  reported `exit code 0` over runs carrying 10 and 4 failures.
+- **Never sync a generated surface while a background suite reads the tree** —
+  four phantom packaging failures, all passing in isolation.
+- **Fingerprints rotate three ways**: on a refactor, on removing one unused
+  import, and on the commit itself.
 
 ## Current State
 
-- `main` is at `727cbf40`, pushed, CI green on every pushed SHA. The path check
-  is an ARMED blocking gate (`--strict` in run-quality), `<authoring-repo>/` is
-  split out of `<repo-root>/`, and the closeout-claims review is a standing
-  contract step. Re-check with `gh run list --limit 3`.
-- The combined-status API reports `pending` / `total_count: 0` for every commit
-  here because this repo publishes check-runs, not legacy statuses. Not a real
-  pending; do not read it as one.
-- **#477 and #478 are CLOSED**; their sites are repaired in both trees. Recount
-  with `python3 scripts/inventory_skill_script_references.py --repo-root .`
-- **Every retro must now carry `## North Star Alignment`** — validator-enforced,
-  scaffold-seeded, grandfathered from 2026-08-03.
-- **The accumulation mechanism is the durable finding**, not the count:
-  `<repo-root>/` was the link gate's own documented escape, so the escape hatch
-  and the typo were the same token. `<authoring-repo>/` now splits them.
-- Still open and untouched: the **E-cluster**, D41–D49,
-  `parse_created_date`'s uncorroborated consumers.
+- `main` is at `d0d63eed`, pushed, **CI green on the pushed SHA, verified on two
+  channels** (`gh api .../check-runs`, `gh run list`). The combined-status API
+  says `pending`/`total_count: 0` for every commit here; not a real pending.
+- **Two link gates now, deliberately.** `check_doc_links.py` judges a link where
+  it is AUTHORED; `check_plugin_doc_links.py` judges it where a consumer READS
+  it, after the exporter flattened `skills/<kind>/<skill>/`. A link can be green
+  in one and broken in the other — that asymmetry IS the class. Both blocking.
+- **The new gate reports what it SKIPPED**, on the pass and the refusal path. A
+  green run silent about its skips reads as full coverage; that is how this class
+  accumulated three honest zeroes.
+- **The `parents[N]` cancellation is an executable invariant** with a revisit
+  trigger in [implementation-discipline.md](./conventions/implementation-discipline.md). If it reddens and the fix is "bump
+  the number", the class is recurring and the call sites need a shared helper.
+- Still open: the **E-cluster**, D41–D50, `parse_created_date`'s consumers.
 
 ## Next Session
 
-1. **The waiting goal owns #479 and the claims-round widening.** Read it rather
-   than re-deriving its slices here.
-2. **#479 is the enclosing class #477/#478 were sub-forms of** — eleven-plus
-   confirmed live instances, including broken links in the shipped mirror that
-   `check_doc_links` never scans. Every prior pass reported an honest zero with
-   a ruler narrower than the class.
-3. **#475's behavioural half is still an OPEN operator decision.** Nobody has
-   observed an agent ask-and-spawn in a repo that never ran `setup`.
+1. **#479 is repaired but OPEN; closing needs a grant.** All four axes carry a
+   per-instance disposition: A1 12→0 and A2 6→0 gated, A3 3-of-4, A4's 29
+   deliberately ungated.
+2. **[#480](https://github.com/corca-ai/charness/issues/480) is fresh and cheap** —
+   `<authoring-repo>/` is resolved only for `scripts/` targets, so the `docs/`
+   and `charness-artifacts/` forms this run created are verified by nothing.
+3. **D50 blocks one A3 site** (`bootstrap-resolution.md:175`) — needs the
+   `<plugin-dir>/` call.
+4. **#475's behavioural half is still an OPEN operator decision.**
 
 ## Discuss
 
-- **Issue creation is STANDING and push is standing CONDITIONAL ON THE GATES**
-  (`AGENTS.md` `## External Side Effects`). Do not re-ask either. Issue close,
-  PR, release, tag, version bump, and cautilus stay per-goal. Weakening a gate
-  to reach a green push revokes the push approval.
-- **The path check is now a BLOCKING gate.** Its own two review rounds shipped
-  four false-positive/false-negative classes before it was safe, and the
-  "false positives are structurally impossible" argument was wrong and is
-  retracted. If CI refuses on it, read the refusal; do not disarm it.
-- **Open: which spelling of the delegation contract wins for EXISTING
-  consumers.** Widening the markers flips every already-set-up repo at once,
-  against a population this tree cannot count — what D49 forbids.
+- **Both link gates share a staged-`.md` trigger that does NOT scope them** — a
+  verdict also flips when the link TARGET is renamed, staging no `.md`. Recorded
+  in [validator-timing-layers.md](./conventions/validator-timing-layers.md), compensated by the broad gate and CI, and not
+  widened for one gate alone; widening must move both.
+- **Issue creation is STANDING, push is standing CONDITIONAL ON THE GATES, issue
+  close is standing conditional on the closeout floor** (`AGENTS.md`). PR,
+  release, tag, version bump, cautilus stay per-goal.
+- **A count that grows when the ruler widens is evidence about the ruler.** A1
+  went 11→12 and A2 5→6 once the denominator was stated. Neither means exhausted.
 - **A read-only check and an irreversible boundary deserve different teeth** —
-  D48 left `drift` alone and refused at publish; still open for other gates.
+  D48 left `drift` alone and refused at publish; still open elsewhere.
 
 ## References
 
-- [waiting goal](../charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md) · [completed goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [its retro](../charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md) · [prior goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
-- [deferred decisions](./deferred-decisions.md) (D45–D49) · [north star](./design-north-star.md)
+- [completed goal](../charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md) · [its retro](../charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md) · [its claims review](../charness-artifacts/critique/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round-claims-review.md) · [the denominator sweep](../charness-artifacts/audit/2026-08-04-unreachable-file-denominator-sweep.md)
+- [prior goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [the can-this-rule-fire sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
+- [deferred decisions](./deferred-decisions.md) (D45–D50) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)

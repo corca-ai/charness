@@ -1,6 +1,6 @@
 # Achieve Goal: Close the unreachable-file class and widen the claims round
 
-Status: active
+Status: complete
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md`
 
@@ -9,13 +9,29 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: F — closeout (bundle gate, claims review, retro, commit).
+- Current slice: DONE — all slices complete, pushed, CI green on the pushed SHA.
 - Current slice intent: **Arm the decidable axes of the unreachable-file class
   and repair their members.** A–D are complete under this one intent (E landed
   before activation), which is why one two-round bounded critique covers them
   rather than one per slice. The intent changes at F, which is closeout.
-- Next action: run the verification-locked closeout, get a claims review by a
-  distinct observer, write the retro, commit, push under the gate condition.
+- Next action: none for this goal. Two operator decisions wait in
+  `## Operator Decision Queue` (close #479? is `bootstrap-resolution.md:175` a
+  defect?); neither blocks anything shipped.
+- Commits (slices A—D landed as one reviewable bundle, then three closeout
+  commits): `39b6139b` (the gates, the 12+6 repairs, the `parents[N]` invariant,
+  the sweep, the retro, the claims review), `5aade9b4` (dup-ratchet rotations),
+  `6c22cedc` (recent-lessons digest regen), `d0d63eed` (the three branches the
+  changed-line lane named, plus its boundary exemption). Pushed
+  `d52582db..d0d63eed`.
+- **Remote CI verified on `d0d63eed` by a different observer AND a different
+  channel than the push exit code** (P4): `gh api
+  repos/corca-ai/charness/commits/<sha>/check-runs` reports
+  `Core deterministic gates: completed/success` and
+  `Changed-line mutation coverage (push/PR mirror): completed/success`;
+  `gh run list` independently reports the same run `completed success` (15m5s).
+  Note the combined-status API is not the channel to use here — it returns
+  `pending`/`total_count: 0` for every commit in this repo because it publishes
+  check-runs, and that is not a pending check.
 - Landed so far: A1 12→0 (gated by `check_plugin_doc_links.py`), A2 6→0 (gated
   inside `check_doc_links.py`), A3 3 of 4 repaired + 1 deferred with a trigger,
   A4 29 dispositioned as deliberately-not-gated, `parents[N]` invariant pinned
@@ -272,7 +288,7 @@ applies.
 
 - Objective: Re-run the sweep before building anything, and state the denominator beside every count.
 - Why this approach: Three prior passes reported an honest '0 remaining' with a ruler narrower than the class; starting from #479's stale list would repeat that exactly.
-- Commits:
+- Commits: 39b6139b
 - What changed: charness-artifacts/audit/2026-08-04-unreachable-file-denominator-sweep.md (new)
 - Alternatives rejected: Hand-repairing #479's listed instances first — feels faster and rebuilds the same false zero.
 - Targeted verification: Four axes swept over 510 markdown files, dated 2026-08-04. A1 12 (vs #479's 11); A2 6 source + 6 mirror (vs 5 — #479's ruler was line-anchored and 4 of 6 wrap between the phrase and the prefix); A3 4 (agreement); A4 30 candidates, judgment-bearing. check_doc_links.py's DOC_GLOBS excludes plugins/** entirely: 236 of 510 files (46%) scanned by no link gate.
@@ -286,7 +302,7 @@ applies.
 
 - Objective: A blocking checker that refuses a relative link a consumer cannot follow, fixture-built from the real defects, plus repair of all 12 instances.
 - Why this approach: One check, no judgment calls, covering the majority of #479's confirmed set — and check_doc_links does not scan plugins/** at all.
-- Commits:
+- Commits: 39b6139b
 - What changed: NEW scripts/check_plugin_doc_links.py; NEW tests/quality_gates/test_check_plugin_doc_links.py (16 tests — 14 at the time of the bounded rounds, plus 2 added afterwards when the gate was made to report what it skipped); shared link vocabulary extracted into scripts/markdown_doc_scan.py; check_doc_links.py rewired onto it; run-quality.sh, staged_commit_gate_plan.py, .github/workflows/quality-core.yml, docs/conventions/validator-timing-layers.md; 12 repairs in skills/shared/references/* and skills/support/README.md; dup-review.json (5 families classified intentional); plugins/ mirror
 - Alternatives rejected: Widening check_doc_links's DOC_GLOBS to plugins/** — rejected: its other three checks would fire en masse on the mirror. Extending the portable-package link rule to skills/shared — rejected: it measures at the authoring position and cannot see exporter layout transforms like kind-flattening.
 - Targeted verification: Gate names all 12 live instances; 12 -> 0 after repair. Bite proven on the LIVE tree by reintroducing plugins/charness/support/README.md's real defect (exit 1) and restoring (exit 0). Parity of the check_doc_links rewire: 27 hand-built edge inputs + every link in the live corpus = 873 links, 0 divergences vs git show HEAD. iter_doc_lines parity: 2802 repo-owned docs, 0 walk changes. run_slice_closeout --skip-broad-pytest completed; dup ratchet clean.
@@ -300,7 +316,7 @@ applies.
 
 - Objective: Catch the authoring-repo-internal + <repo-root>/ contradiction mechanically, and give #479 a per-instance disposition.
 - Why this approach: A sentence asserting both is self-contradicting whichever half is right, so the verdict needs no judgment — and five live sites proved it fires.
-- Commits:
+- Commits: 39b6139b
 - What changed: iter_authoring_repo_contradictions + iter_prose_blocks + split_block_into_sentences in scripts/check_doc_links.py; 6 tests appended to tests/quality_gates/test_check_doc_links.py; 6 A2 repairs across achieve/critique/handoff/issue references; 2 A3 repairs in skills/shared/references/; #479 disposition comment; plugins/ mirror
 - Alternatives rejected: Line-scoped — rejected, it reported 2 of 6. Paragraph-scoped — rejected, it glued two independent bullets in spill-targets.md into a fabricated contradiction. Settled on sentence-within-block: blank lines and list markers end a block.
 - Targeted verification: Rule fires on exactly 6 sites, matching the sweep, zero false positives over 510 files. 6 -> 0 after repair. Bite proven on the LIVE tree by reintroducing rename-critique.md:96 (refused, naming line 96) and restoring. A3: 3 of 4 repaired (one was also an A2 instance); the 4th deferred with a named revisit trigger (needs the open D50 call on <plugin-dir>/). A4: 29 sites, all naming a real repo script, deliberately NOT gated — a bare scripts/... in a portable doc may legitimately mean the consumer's own tree, and gating it would ship the false positive the previous run had to retract.
@@ -314,7 +330,7 @@ applies.
 
 - Objective: State the cancellation invariant executably and resolve the already-wrong eleventh site.
 - Why this approach: Ten sites correct only by an arithmetic coincidence are one exporter change from eleven #477 instances at once, and nothing at any call site says so.
-- Commits:
+- Commits: 39b6139b
 - What changed: scripts/skill_runtime_bootstrap.py (parents[4] fallback removed, explicit RuntimeError); NEW tests/quality_gates/test_parents_index_layout_invariant.py (6 tests); docs/conventions/implementation-discipline.md revisit trigger; plugins/ mirror
 - Alternatives rejected: A shared plugin_or_repo_root() helper touching ten call sites — rejected as its own slice, per the goal's interview decision. Documentation alone — rejected: a comment does not go red when the exporter's layout changes.
 - Targeted verification: Measured that the fallback is DEAD (ancestor walk succeeds for every skill script in both trees, 0 failures) and WRONG (in the mirror parents[4] is plugins/, one level above the plugins/charness the walk correctly returns). Tests bite: reintroducing the fallback fails 2 of 6. Population guard included so the sweep cannot pass on an empty set.
