@@ -217,6 +217,61 @@ def test_a_reference_escaping_the_repo_does_not_raise(tmp_path: Path) -> None:
     assert rows[0]["found_at"] == outside.as_posix()
 
 
+def test_a_reference_resolving_nowhere_is_reported_for_both_forms(tmp_path: Path) -> None:
+    """The `unresolved` arm of each classifier — a genuinely dangling reference.
+
+    Distinct from `package_file_wrong_prefix`: there the file exists and the
+    prefix is wrong; here nothing is at the named path in either tree.
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    package.mkdir(parents=True)
+    (tmp_path / "scripts").mkdir()
+    (package / "SKILL.md").write_text(
+        "# Demo\n\n"
+        "Run `<repo-root>/scripts/ghost.py`.\n\n"
+        "## References\n\n"
+        "- `scripts/phantom.py`\n",
+        encoding="utf-8",
+    )
+
+    rows = inventory_module.classify_references(tmp_path)
+    by_form = {row["form"]: row for row in rows}
+    assert by_form["repo-root"]["status"] == inventory_module.UNRESOLVED
+    assert by_form["references-bullet"]["status"] == inventory_module.UNRESOLVED
+    assert all(row["found_at"] is None for row in rows)
+
+
+def test_clean_output_reports_the_layout_split_and_the_unverifiable_count(tmp_path: Path) -> None:
+    """The all-clear path must still disclose what it could NOT decide.
+
+    `<repo-root>/scripts/X.py` naming a real repo script resolves against the
+    CONSUMING repo once shipped, which this tree cannot inspect. Without the
+    `note:`, "0 findings" would read as "every reference is fine".
+    """
+    tier = sorted(inventory_module.PORTABLE_SKILL_KINDS)[0]
+    package = tmp_path / "skills" / tier / "demo"
+    package.mkdir(parents=True)
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "repo_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\nRun `<repo-root>/scripts/repo_helper.py`.\n", encoding="utf-8"
+    )
+    shipped = tmp_path / "plugins" / "pkg" / "skills" / "demo"
+    shipped.mkdir(parents=True)
+    (shipped / "SKILL.md").write_text(
+        "# Demo\n\nRun `<repo-root>/scripts/repo_helper.py`.\n", encoding="utf-8"
+    )
+
+    result = run_loaded_script_main(
+        "inventory_skill_script_references", inventory_module, "--repo-root", str(tmp_path)
+    )
+    assert result.returncode == 0
+    assert "skill script references resolve" in result.stdout
+    assert "(1 authoring/1 shipped)" in result.stdout
+    assert "1 shipped reference(s) resolve only against a consuming" in result.stdout
+
+
 def test_advisory_says_so_when_packages_exist_but_name_no_scripts(tmp_path: Path) -> None:
     """The vacuity that survives a package-count guard.
 

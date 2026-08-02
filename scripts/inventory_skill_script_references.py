@@ -163,10 +163,10 @@ def iter_skill_packages(repo_root: Path) -> list[tuple[Path, str, bool]]:
 
 
 def _classify_repo_root_form(
-    repo_root: Path, package_root: Path | None, layout: str, name: str
+    repo_root: Path, package_root: Path, layout: str, name: str
 ) -> tuple[str, str | None]:
     """Where `<repo-root>/scripts/<name>` actually points, per layout."""
-    in_package = package_root is not None and (package_root / "scripts" / name).is_file()
+    in_package = (package_root / "scripts" / name).is_file()
     found_at = (
         _repo_relative(repo_root, package_root / "scripts" / name) if in_package else None
     )
@@ -233,9 +233,6 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
                         "found_at": found_at,
                     }
                 )
-
-            if package_root is None:
-                continue
 
             bullet = REFERENCES_BULLET_RE.match(line)
             if bullet is not None:
