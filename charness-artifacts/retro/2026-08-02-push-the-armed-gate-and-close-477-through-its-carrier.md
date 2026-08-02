@@ -58,6 +58,17 @@ reviewer contexts, one issue closed, four pushes.
   fixture builds no `plugins/` tree, and no fixture anywhere produced a
   shipped-layout `BROKEN` row. The floor and its stated justification were both
   weaker than they read.
+- **Three consecutive goals re-granted the same issue-filing permission, and I
+  never proposed recording it.** The operator had to point out that issue
+  creation is always approved. Nothing in `AGENTS.md` or the operating contract
+  said so, so I was technically right to ask each time — and that is exactly the
+  failure: I treated a repeating question as a per-goal formality instead of
+  reading the repetition as a signal that it belonged in the contract. The
+  standing requests for subagent delegation and dynamic workflows already live
+  in `AGENTS.md`; this one simply never got written down. Cost: three
+  round-trips of operator attention, and the standing risk that a future session
+  observes something worth filing and does not file it because the approval was
+  not restated.
 - **The closeout-claims round found five blockers in the RECORD, on its own
   first outing.** Every one was about what the artifact asserted, not about the
   code: `Disposition review:` bound to the same file as `Retro:` (one file
@@ -139,6 +150,35 @@ answerable in seconds was `git ls-files -s`. The generalisable move is to make
 the precondition *checkable* rather than memorable: the assertion now in the
 test is worth more than any rule I could write about it.
 
+## North Star Alignment
+
+Neither this run's retro nor the previous one carried an explicit facet mapping,
+which the operator asked for twice. Recorded here rather than left implicit:
+
+- **P1 (judgment on reversible work)** — applied to the 13 repairs, the shims,
+  and the #478 conversions, all of which are one revert away. **Mis-applied to
+  issue filing**: an issue is reversible and low-cost, and I treated it as a
+  boundary needing a grant for three goals running. That is a P1 failure, and
+  it is now fixed in `AGENTS.md` rather than in a goal's boundaries.
+- **P4 (irreversible boundaries: success is provisional)** — held. Push and the
+  #477 close were each confirmed by a different observer AND a different
+  channel: `gh run watch`, then the check-runs API, then `git ls-remote`; and
+  `verify-closeout` reading GitHub state back through the adapter rather than
+  inferring it from the push. The `pending`/`total_count: 0` combined-status
+  misread was explicitly recorded so it is not repeated.
+- **P4 (proof-surface authoring is an irreversible boundary)** — held, and it
+  is what caught the worst defect. Two bounded rounds on the shim slice; round
+  2 found that the repair named three commands that cannot run.
+- **P5 (teeth only for irreversibility and form)** — the path check was promoted
+  to a blocking gate with the operator's decision, and its justification was
+  RETRACTED when two review rounds produced live false positives. The honest
+  form of P5 here is that the gate is safe because of two invariants and their
+  tests, not because refusal is impossible.
+- **Failure signature we walked into**: "a gate whose greenness was conditional
+  on the defect persisting" — `check_skill_contracts` pinned the broken path as
+  a REQUIRED snippet, so fixing it would have failed a gate. That is teeth
+  pointed at the wrong thing, which P5 exists to prevent.
+
 ## Next Improvements
 
 - **workflow** — When authoring an invocation, copy the full invocation
@@ -148,6 +188,8 @@ test is worth more than any rule I could write about it.
   boundary, not comfortably past it. Verified this one by running the function
   at three caps rather than reasoning about the fixture.
 - **memory** — This retro plus the recent-lessons digest.
+- **contract** — `AGENTS.md` now carries a standing issue-creation approval,
+  with push / issue-close / release explicitly still per-goal. Applied this run.
 
 ## Sibling Search
 

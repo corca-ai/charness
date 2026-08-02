@@ -46,6 +46,26 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Guardrail: scale to the task — scout inline first to find the work-list, then fan out; do not spin up dozens of agents for trivial or single-fact work. A wrong workflow result that ships is still a wrong answer that escaped, so keep the irreversible-boundary safeguards.
 - If the host blocks orchestration at the runtime level (Workflow/Agent tool absent, API-level rejection), report the concrete signal explicitly; do not claim that orchestration ran.
 
+## External Side Effects
+
+- **Filing a GitHub issue is a STANDING approval (user standing request,
+  recorded 2026-08-02).** Do not ask, and do not make an operator re-grant it
+  per goal. Observing something worth filing and not filing it because the
+  approval was not restated is the failure this removes: an unfiled finding is
+  lost, while an issue is a reversible, low-cost record that can be closed.
+  Recorded here after three consecutive goals re-granted the same permission —
+  the repeat grant was the signal that it belonged in the contract, not in each
+  goal's boundaries.
+- **Still per-goal, and NOT covered by the line above:** `git push`, closing or
+  reopening an issue, PR creation, a release publish, a tag, a version bump, and
+  any `cautilus evaluate` run. Each needs an explicit grant for the goal or
+  phase that wants it, and that grant does not carry forward. Issue creation is
+  carved out because it is the one item here that adds information without
+  changing state anyone depends on.
+- An issue filed under this standing approval still owes the `issue` skill's
+  shape: the observed problem before any proposed solution, and a real
+  reproduction or evidence path rather than a hunch.
+
 ## Phase Rules
 
 - Treat `mutate -> sync -> verify -> publish` as hard phase barriers; sync generated, plugin, and export surfaces before validators.
