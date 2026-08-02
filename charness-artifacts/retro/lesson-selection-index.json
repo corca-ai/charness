@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-02",
   "source_artifact_count": 418,
-  "candidate_count": 1717,
+  "candidate_count": 1719,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -800,6 +800,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:27f98adeed9d",
+      "kind": "next_improvement",
+      "lesson": "**contract** — `AGENTS.md` now carries a standing issue-creation approval, with push / issue-close / release explicitly still per-goal. Applied this run.",
+      "normalized_key": "contract agents md now carries a standing issue creation approval with push issue close",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**contract** — `AGENTS.md` now carries a standing issue-creation approval, with push / issue-close / release explicitly still per-goal. Applied this run."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5dc377885ee1",
       "kind": "next_improvement",
       "lesson": "File the issue first, then write its number into prose.",
@@ -1550,6 +1576,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The slice packet I handed Lane A's reviewer asserted a non-claim I had not checked** — \"no skill files, so no `plugins/` mirror is involved\". The whole `scripts/` tree is mirrored. That unchecked assertion was the round's only blocker, and the export would have shipped the un-repaired gate plus a `ModuleNotFoundError`. A packet's non-claims are claims."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e3b473775ef7",
+      "kind": "repeat_trap",
+      "lesson": "**Three consecutive goals re-granted the same issue-filing permission, and I never proposed recording it.** The operator had to point out that issue creation is always approved. Nothing in `AGENTS.md` or the operating contract said so, so I was technically right to ask each time — and that is exactly the failure: I treated a repeating question as a per-goal formality instead of reading the repetition as a signal that it belonged in the contract. The standing requests for subagent delegation and dynamic workflows already live in `AGENTS.md`; this one simply never got written down. Cost: three round-trips of operator attention, and the standing risk that a future session observes something worth filing and does not file it because the approval was not restated.",
+      "normalized_key": "three consecutive goals re granted the same issue filing permission and i never proposed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three consecutive goals re-granted the same issue-filing permission, and I never proposed recording it.** The operator had to point out that issue creation is always approved. Nothing in `AGENTS.md` or the operating contract said so, so I was technically right to ask each time — and that is exactly the failure: I treated a repeating question as a per-goal formality instead of reading the repetition as a signal that it belonged in the contract. The standing requests for subagent delegation and dynamic workflows already live in `AGENTS.md`; this one simply never got written down. Cost: three round-trips of operator attention, and the standing risk that a future session observes something worth filing and does not file it because the approval was not restated."
         }
       ]
     },

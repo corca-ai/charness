@@ -139,6 +139,72 @@ def test_retro_persisted_form_accepts_future_canonical_shape(tmp_path: Path) -> 
     assert result.returncode == 0, result.stderr
 
 
+_NORTH_STAR_TAIL = (
+    "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-08-05-demo.md\n"
+)
+
+
+def test_retro_north_star_section_is_required_after_the_rule_date(tmp_path: Path) -> None:
+    """Every retro consults the design standard and records what it found.
+
+    Prose asking for it was not enough: two consecutive retros shipped without a
+    facet mapping and the operator asked twice, which is the recurrence that
+    earned a floor.
+    """
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-08-05\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
+    )
+    _seed(repo, body, name="2026-08-05-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "`## North Star Alignment`" in result.stderr
+
+
+def test_retro_north_star_section_rejects_an_untouched_placeholder(tmp_path: Path) -> None:
+    """The scaffold seeds a TODO; leaving it is the same as omitting the section."""
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-08-05\nMode: session\n\n"
+        "## North Star Alignment\n\nTODO read the standard and record what it says.\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
+    )
+    _seed(repo, body, name="2026-08-05-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 1
+    assert "`## North Star Alignment`" in result.stderr
+
+
+def test_retro_north_star_section_accepts_real_content(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-08-05\nMode: session\n\n"
+        "## North Star Alignment\n\n- P1 held: the slice was reversible throughout.\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n" + _NORTH_STAR_TAIL
+    )
+    _seed(repo, body, name="2026-08-05-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr
+
+
+def test_retro_north_star_section_grandfathers_earlier_retros(tmp_path: Path) -> None:
+    """Landing day plus one, so artifacts frozen before the decision are not refused.
+
+    Three same-day retros predate this rule; refusing them retroactively would
+    punish authors for a decision taken after they wrote.
+    """
+    repo = tmp_path / "repo"
+    body = (
+        "# Session Retro: Demo\nDate: 2026-08-02\nMode: session\n\n"
+        "## Next Improvements\n\n- workflow: do better\n\n"
+        "## Persisted\n\nPersisted: yes: charness-artifacts/retro/2026-08-02-demo.md\n"
+    )
+    _seed(repo, body, name="2026-08-02-demo.md")
+    result = run_script("scripts/validate_retro_artifact.py", "--repo-root", str(repo), "--all")
+    assert result.returncode == 0, result.stderr
+
+
 def test_retro_validator_uses_changed_path_discovery(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
