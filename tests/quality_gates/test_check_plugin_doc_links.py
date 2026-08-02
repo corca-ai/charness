@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 from runtime_bootstrap import import_repo_module
 
-from .support import ROOT
+from .support import ROOT, run_script
 
 _check_plugin_doc_links = import_repo_module(
     ROOT / "scripts/check_plugin_doc_links.py", "scripts.check_plugin_doc_links"
@@ -299,3 +299,48 @@ def test_the_refusal_also_states_what_it_did_not_judge(tmp_path: Path, monkeypat
     assert result.returncode == 1
     assert "1 unfollowable link(s)" in result.stderr
     assert "1 fenced-or-commented-link" in result.stderr
+
+
+def test_a_doc_outside_the_repo_root_has_no_plugin_root(tmp_path: Path) -> None:
+    """`plugin_root_for` must not raise when handed a path outside the tree it was given.
+
+    `Path.relative_to` raises `ValueError` there, and the honest answer is "no
+    plugin root", not a crash — a caller resolving a symlinked or absolute doc
+    would otherwise take down the whole gate.
+    """
+    outside = tmp_path / "elsewhere" / "plugins" / "charness" / "notes.md"
+    outside.parent.mkdir(parents=True)
+    outside.write_text("# notes\n", encoding="utf-8")
+
+    assert _check_plugin_doc_links.plugin_root_for(tmp_path / "repo", outside) is None
+
+
+def test_a_mirror_doc_with_no_live_prose_is_counted_not_crashed(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """A file that is entirely fenced has no line to judge, and the skip is counted."""
+    repo = tmp_path / "repo"
+    write_doc(repo, "plugins/charness/shared/references/all-fence.md", "```\n[x](../../../a.md)\n```\n")
+
+    result = run_check(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0
+    assert "1 no-live-prose" in result.stdout
+
+
+def test_the_script_entrypoint_reports_both_outcomes_as_a_subprocess(tmp_path: Path) -> None:
+    """Covers the `__main__` block, which an in-process `main()` call never reaches.
+
+    The exit codes are the gate's actual contract with `run-quality.sh`, the
+    pre-commit plan, and CI — none of which import `main()`.
+    """
+    repo = tmp_path / "repo"
+    write_doc(repo, "plugins/charness/shared/references/ok.md", "no links here\n")
+    clean = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
+    assert clean.returncode == 0, clean.stderr
+    assert "Validated plugin-mirror relative links." in clean.stdout
+
+    write_doc(repo, "plugins/charness/shared/references/bad.md", "[x](../../../scripts/a.py)\n")
+    refused = run_script("scripts/check_plugin_doc_links.py", "--repo-root", str(repo))
+    assert refused.returncode == 1
+    assert "escape" in refused.stderr
