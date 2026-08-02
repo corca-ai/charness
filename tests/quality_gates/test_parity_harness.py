@@ -660,3 +660,45 @@ def test_the_advisory_degrades_on_a_failing_or_unparsable_harness(monkeypatch, c
     monkeypatch.setattr(_advisories.subprocess, "run", lambda *a, **k: _Garbage())
     _advisories.advise_repair_parity(ROOT, [])
     assert capsys.readouterr().err == ""
+
+
+def test_a_snapshot_that_is_not_an_object_is_discarded(tmp_path: Path) -> None:
+    """A truncated or hand-edited snapshot must not be read as a valid baseline."""
+    snapshot_dir = tmp_path / ".charness" / "reviewer-boundary"
+    snapshot_dir.mkdir(parents=True)
+    (snapshot_dir / "snapshot.json").write_text("[]", encoding="utf-8")
+
+    assert _parity.snapshot_payload(tmp_path) == {}
+
+
+def test_a_truncated_status_field_is_skipped(tmp_path: Path, monkeypatch) -> None:
+    """`git status -z` fields shorter than `XY path` carry no path to keep."""
+
+    class _Proc:
+        returncode = 0
+        stdout = "??\0 M scripts/real.py\0"
+
+    monkeypatch.setattr(_parity.subprocess, "run", lambda *a, **k: _Proc())
+
+    assert _parity.changed_python_paths(tmp_path) == ["scripts/real.py"]
+
+
+def test_the_entrypoint_reports_a_parity_error_on_stderr(tmp_path: Path) -> None:
+    """Covers the `__main__` block: a ParityError must exit 1 with a message, not a traceback."""
+    repo = seeded_repo(tmp_path / "repo")
+    (repo / "scripts").mkdir(parents=True, exist_ok=True)
+    (repo / "scripts" / "broken.py").write_text("def ok():\n    return 1\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=a@b", "-c", "user.name=a", "commit", "-m", "ship"],
+        cwd=repo, check=True, capture_output=True,
+    )
+    (repo / "scripts" / "broken.py").write_text("def broken(:\n", encoding="utf-8")
+
+    result = run_script(
+        "scripts/parity_harness.py", "--repo-root", str(repo), "--against", "HEAD",
+        "--paths", "scripts/broken.py",
+    )
+
+    assert result.returncode == 1
+    assert "cannot parse" in result.stderr

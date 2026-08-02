@@ -386,3 +386,39 @@ def test_the_cli_says_so_when_a_removal_has_no_reader(tmp_path: Path, capsys, mo
 
     assert _removed.main() == 0
     assert "no candidate reader found" in capsys.readouterr().out
+
+
+def test_a_permission_denied_scan_candidate_is_skipped(tmp_path: Path) -> None:
+    """An unreadable file in the scan set must not stop the sweep."""
+    repo = seeded_repo(
+        tmp_path / "repo",
+        {
+            "scripts/owner.py": "TOKEN = 1\n",
+            "scripts/locked.py": "import owner\n\n\ndef f():\n    return owner.TOKEN\n",
+        },
+    )
+    (repo / "scripts" / "owner.py").write_text("", encoding="utf-8")
+    locked = repo / "scripts" / "locked.py"
+    locked.chmod(0o000)
+    try:
+        report = _removed.build_report(repo, ["scripts/owner.py"], "HEAD")
+    finally:
+        locked.chmod(0o644)
+
+    assert report["removed"] == {"scripts/owner.py": ["TOKEN"]}
+    assert report["consumers"] == {}
+
+
+def test_an_unreadable_module_is_uncomparable_not_a_removal(tmp_path: Path) -> None:
+    """A file that exists but cannot be read is UNEXAMINED — reporting every name
+    as removed would be a fabricated finding."""
+    repo = seeded_repo(tmp_path / "repo", {"scripts/owner.py": "TOKEN = 1\n"})
+    owner = repo / "scripts" / "owner.py"
+    owner.chmod(0o000)
+    try:
+        report = _removed.build_report(repo, ["scripts/owner.py"], "HEAD")
+    finally:
+        owner.chmod(0o644)
+
+    assert report["removed"] == {}
+    assert report["uncomparable"]["scripts/owner.py"] == "unreadable in the worktree"
