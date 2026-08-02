@@ -702,6 +702,13 @@
     },
     {
       "class": "intentional",
+      "id": "61d7a55b4688babd",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the already-accepted 69026ef11d8ee529 / 1d36956dff2fc82b: the same `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError ...` entrypoint block, re-fingerprinted once check_plugin_doc_links.py was committed (every member now reads as untouched, which changes the cluster boundary). Five members across five unrelated gates: check_doc_links, check_export_safe_imports, check_plugin_doc_links, validate_adapters, validate_presets. Same reasoning as its predecessors -- centralizing it would put every gate's exit code and stderr contract behind one runner while each script still spells out the indirection."
+    },
+    {
+      "class": "intentional",
       "id": "62e19bb7ee0fbe0a",
       "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
@@ -1441,6 +1448,13 @@
       "note": "argparse `main()` preamble across five independently runnable CLI entrypoints (cautilus plan, risk interrupt, release review gate, fresh-checkout probes, skill-routing render); each owns a different flag set and output contract, and a shared runner would add an indirection with no domain owner. Same class as the already-accepted import-preamble family 7fe0804ab17f93c9",
       "reviewed_at": "2026-07-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cf4daacbe7eaf226",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the already-accepted 217bca482c08d1da: the repo-standard gate `main()` skeleton (argparse --repo-root/--require-git-file-listing, args.repo_root.resolve(), run the check, raise or print a success line), shared by check_plugin_doc_links and prepush_focused_changed_line_coverage. Re-fingerprinted post-commit for the same reason as 61d7a55b4688babd. A shared runner would own every gate's argument surface and refusal text, so one gate's flag change would silently alter another's CLI."
     },
     {
       "class": "intentional",
