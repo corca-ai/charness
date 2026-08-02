@@ -68,13 +68,27 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Pushing still owes the P4 confirmation: remote CI verified by a different
   observer AND a different channel than the push exit code. A green push is not
   a green build.
-- **Still per-goal, and NOT covered by the two standing approvals above:**
-  closing or reopening an issue, PR creation, a release publish, a tag, a
-  version bump, and any `cautilus evaluate` run. Each needs an explicit grant
-  for the goal or phase that wants it, and that grant does not carry forward.
-  Issue creation and gate-passing pushes are carved out because both are
-  reversible and already have teeth in front of them; the rest change state
-  other people depend on.
+- **Closing an issue is a STANDING approval CONDITIONAL ON THE CLOSEOUT FLOOR
+  (user standing request, recorded 2026-08-02): close it when the work is
+  genuinely finished, and the floor is what defines "finished".** Concretely:
+  `issue_tool.py validate-closeout-draft` reports `draft_verified`, a DELEGATED
+  resolution critique ran BEFORE the close call, the classification's full
+  ledger is carried by the carrier (for `bug`: `jtbd`, `root_cause`,
+  `debug_artifact`, `siblings` with a decision AND proof, `prevention`), the
+  `Behavior #N:` verdict names a channel distinct from the one that produced the
+  fix, and `verify-closeout --expect-state CLOSED` reads the state back through
+  the adapter. A close that cannot satisfy those is not finished, and the
+  approval does not reach it.
+  Do not ask when the floor is met; do not close when it is not.
+- **The floor is the authorization, not a checklist to route around.** Weakening
+  a ledger field to a placeholder, skipping the delegated critique, or reusing
+  the fix's own channel for the behavioural verdict all revoke this approval.
+- **Still per-goal, and NOT covered by the three standing approvals above:**
+  reopening an issue, PR creation, a release publish, a tag, a version bump, and
+  any `cautilus evaluate` run. Each needs an explicit grant for the goal or
+  phase that wants it, and that grant does not carry forward. The three standing
+  ones are carved out because each is reversible AND already has teeth in front
+  of it; the rest change state other people depend on with no such gate.
 - An issue filed under this standing approval still owes the `issue` skill's
   shape: the observed problem before any proposed solution, and a real
   reproduction or evidence path rather than a hunch.

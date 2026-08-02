@@ -823,6 +823,44 @@ Reopen trigger:
 
 ## Next Action Contract
 
+### D50. Should `<plugin-dir>/` get a real user, or a bootstrap variable, or neither?
+
+- Question: `<plugin-dir>/` is a recognised portable placeholder in
+  [check_doc_links.py](../scripts/check_doc_links.py), and it has **zero usage** —
+  it appears only in the placeholder list in
+  [authoring-preflight.md](./conventions/authoring-preflight.md), never in a skill.
+  #478 considered it for seven sites and rejected it. Should it be adopted, upgraded,
+  or removed?
+- Current choice: **Defer — and the honest reason is that nobody has shown what it
+  buys.** The operator asked directly on 2026-08-02 and the agent could not name a
+  clear benefit, which is itself the finding.
+- What it WOULD buy, stated so a later session does not re-derive it: it is the only
+  spelling that means "the installed plugin's own tree", which is where exported
+  scripts actually live for a consumer. Without it, a charness script a consumer
+  COULD run has no correct spelling — `<repo-root>/` means their tree (wrong),
+  `<authoring-repo>/` means ours (correct but unusable), and
+  `$SKILL_DIR/../../shared/<name>` works only via a per-script shim. So its value is
+  exactly: **avoid writing one shim per script.**
+- Why that is not yet worth it: three shims exist
+  ([authoring_script_shim.py](../skills/shared/scripts/authoring_script_shim.py) plus
+  its two consumers), and the shared module made the third nearly free. The
+  break-even is somewhere above that, and nobody has hit it.
+- **The sharper reading, and the reason adopting it as-is would be a mistake.**
+  `$SKILL_DIR` is a RESOLVED bootstrap variable an agent can expand;
+  `<plugin-dir>/` is a doc placeholder with nothing behind it, so a reader must
+  work out the plugin directory themselves. That is the worst of both — the
+  ambiguity of a placeholder without the resolution of a variable. If this is
+  ever worth doing, the thing to add is a `$PLUGIN_DIR` bootstrap variable
+  alongside `$SKILL_DIR`, and `<plugin-dir>/` becomes its documentation rather
+  than a substitute for it.
+- Reopen trigger: the shim count passing roughly five, OR
+  [#479](https://github.com/corca-ai/charness/issues/479)'s
+  `<repo-root>/skills/public/...` family needing a spelling — those references
+  need the installed LAYOUT, not just a different prefix, and that is the case
+  `<plugin-dir>/` was invented for.
+- Non-claim: nobody has tested whether any host substitutes `<plugin-dir>/`. It is
+  assumed to be agent-resolved, and that assumption is unverified.
+
 After these closures, the next major workstream is `cautilus` integration and
 contract wiring, not further pre-`cautilus` product-boundary debate unless a
 reopen trigger fires.

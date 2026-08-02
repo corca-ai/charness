@@ -51,11 +51,12 @@ each call site — and an eleventh (`scripts/skill_runtime_bootstrap.py:103`,
 One change to `export_plugin.py`'s skill-tier layout turns all of them into #477
 at once.
 
-**B. Widen the closeout-claims round beyond goal closeout.** It is a standing
-contract step for `achieve` goals, and on its first outing it found five record
-blockers four code-reading rounds had missed. The same question — does the
-artifact's summary survive contact with the work? — is unasked at PR and release
-closeout, where the record is what an outside reader gets.
+**B. Widen the closeout-claims round beyond goal closeout — SETTLED BEFORE
+ACTIVATION, and already applied.** The operator chose RELEASE (2026-08-02), and
+the trigger is now in `release/references/critique-boundary.md` *Claims Review*
+plus the operating contract's surface list. Slice E is complete on arrival; what
+remains for this goal is only to prove it fires when a release closeout next
+runs, which no slice here forces.
 
 The outcome is that a future enumeration of this class starts from a real zero
 rather than a measured-with-the-wrong-ruler zero, and that the claims question
@@ -90,7 +91,7 @@ fires wherever a closeout record is produced.
   (2) if widening the claims round would fire it per-commit rather than per
   closeout record, cut back to the record; (3) if resolving `parents[N]` starts
   changing what the exporter DOES, stop and treat it as a design change.
-- **Cut order if short: E, then D, then C.** B is the one that closes the most
+- **Cut order if short: D, then C.** (E landed before activation.) B is the one that closes the most
   of the class for the least judgment.
 - Legacy note on the seeded rule below: external side-effect scope: name which
   phase or bundle any approved publish / push / remote-CI / apply applies to. That approval is phase-scoped
@@ -169,7 +170,7 @@ fires wherever a closeout record is produced.
 | B | A checker that refuses a relative link escaping the plugin root, fixture-built from the real `support/README.md` defect | One check, no judgment calls, covers the majority of #479's confirmed instances — and `check_doc_links` does not scan `plugins/**` at all today | The checker refusing the real defect, a test proving it bites, and the confirmed instances named | pending |
 | C | Catch the `authoring-repo-internal` + `<repo-root>/` contradiction, and disposition the remaining #479 instances | A line that says a file is authoring-repo-internal while using the consumer prefix is zero-false-positive; five live sites prove it | The rule firing on all five, plus a per-instance disposition table for what it does not cover | pending |
 | D | Resolve the `parents[N]` invariant: state it in code or document it with its revisit trigger, and fix the already-wrong eleventh site | Ten sites correct by coincidence is one exporter change from eleven instances of #477 at once | The helper or the documented invariant, and `skill_runtime_bootstrap.py:103` resolved | pending |
-| E | Widen the claims round to one closeout surface beyond `achieve` goals | It found five record blockers four code rounds missed, on its first outing; PR and release closeouts ask nobody that question | The trigger recorded in that surface's own contract, not in prose | pending |
+| E | DONE BEFORE ACTIVATION — the operator chose RELEASE, and it is recorded in `release/references/critique-boundary.md` *Claims Review* plus the operating contract's surface list | It found five record blockers four code rounds missed, on its first outing; a release record reaches readers outside the session with the least chance of later correction | The trigger in that surface's own contract, not in prose | complete |
 | F | Closeout: bundle gate, final verification, claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | pending |
 
 ## Operator Decision Queue

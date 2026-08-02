@@ -111,6 +111,13 @@ applies.
 Durable references this goal was shaped from. A fresh session can reconstruct
 the originating context by following them in order.
 
+1. TODO the repo's governing design standard, and what it says about THIS goal —
+   which facets bear on its boundaries, where its teeth belong, and which
+   irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
+   the standard is what tells you where a wrong answer escapes, and that is a
+   Before-phase question. (The retro's `## North Star Alignment` asks the
+   backward-looking half; this is the forward-looking one.)
+
 ## Interview Decisions
 
 For each Before-phase question: family of options considered, chosen value, and

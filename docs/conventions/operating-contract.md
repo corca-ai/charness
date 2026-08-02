@@ -97,6 +97,14 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     the concrete signal and leave the review unproven — never substitute a
     same-agent reread, which is precisely the observer this floor exists to
     exclude.
+  - **Surfaces: goal closeout AND release closeout** (2026-08-02). A release
+    publishes a record — notes, a version claim, an announcement — to readers
+    outside the session, with less context and the least chance of correction
+    after the fact. `release`'s own
+    [critique-boundary](../../skills/public/release/references/critique-boundary.md)
+    *Claims Review* owns the release form. Not per-commit: the unit is a
+    closeout RECORD, not a diff, and firing it per-diff is how a floor becomes
+    ceremony.
 - **Run `reviewer_boundary_fingerprint.py verify --before` the moment the
   reviewer returns, BEFORE any parent write.** A verify run after the parent has
   started folding findings reports `boundary-drift` and can only be resolved by

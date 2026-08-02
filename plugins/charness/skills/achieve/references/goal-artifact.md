@@ -97,6 +97,11 @@ Queue item form:
 Durable references this goal was shaped from. A fresh session can reconstruct
 the originating context by following them in order.
 
+The FIRST entry is the repo's governing design standard, always. A goal is
+shaped by deciding where teeth belong and which boundaries are irreversible,
+and those are exactly the standard's questions — consulting it at closeout
+instead is consulting it after the decisions it governs were already taken.
+
 ## Interview Decisions
 
 For each Before-phase question: family of options considered, chosen value, and
