@@ -2,23 +2,23 @@
 
 ## Workflow Trigger
 
-- **A goal is SHAPED but deliberately NOT pursue-ready.** Its one open item is
-  an operator grant: settle `## Discuss Before Activation` in
-  [the waiting goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md)
-  — push to `main`, close #477 via the commit carrier, comment on #478 — mark it
-  resolved, then activate. `/goal` refuses until then; that refusal is the
-  phase-scoped-approval contract working, not a bug.
+- **No goal is waiting.** The last one completed: pushed, #477 closed, all seven
+  #478 sites dispositioned. Pick from `## Next Session`, or shape one with
+  `/achieve <outcome>`.
 
 ## Continuation Capability
 
-- **The round that reads the REPAIRS is where the class comes back.** Measured
-  three times now. Last run a round-1 repair armed a gate whose own round 2 then
-  found it had re-opened a false negative in the class it was fixing.
-- **A claims reviewer finds a different class than a code reviewer.** Three
-  code rounds missed a promised verification step that never ran, a Slice Log
-  contradicting its own retro, and an unreconciled headline count. One distinct
-  observer auditing what the artifact ASSERTS caught all three. Now a standing
-  contract step.
+- **The round that reads the REPAIRS is where the class comes back — four times
+  measured, and the last is the sharpest.** The fix for "a documented command
+  that cannot run" shipped three NEW documented commands that cannot run: bare
+  paths to shims that ship mode 100644. A whole session on that class, and it
+  still recurred inside its own repair.
+- **A claims reviewer finds a different class than a code reviewer — now a
+  standing contract step, and it proved itself on its first outing.** It found
+  five record blockers four code rounds had not: an evidence line bound to its
+  own record, a section saying NOT APPLIED after the edits shipped, CI
+  attribution naming no SHA, every slice row still `pending`, and a
+  "all reviewers clean" sentence written before the last reviewer returned.
 - **A test can assert a proxy instead of the thing.** `assert "--strict" not in
   source` matched the docstring explaining that flag's absence. Read the real
   parser. Same family as "build fixtures from the source constant".
@@ -27,11 +27,10 @@
 
 ## Current State
 
-- `main` is at `ac39c9f5` remotely, and **one proven commit is UNPUSHED**
-  (`58960639`). It arms the path check as a blocking gate, repairs #477, splits
-  `<authoring-repo>/` out of `<repo-root>/`, and makes the closeout-claims
-  review standing. Locally proven — broad suite green, two review rounds — so
-  only the boundary crossing is missing. Re-check with `gh run list --limit 3`.
+- `main` is at `727cbf40`, pushed, CI green on every pushed SHA. The path check
+  is an ARMED blocking gate (`--strict` in run-quality), `<authoring-repo>/` is
+  split out of `<repo-root>/`, and the closeout-claims review is a standing
+  contract step. Re-check with `gh run list --limit 3`.
 - The combined-status API reports `pending` / `total_count: 0` for every commit
   here because this repo publishes check-runs, not legacy statuses. Not a real
   pending; do not read it as one.
@@ -47,17 +46,22 @@
 
 ## Next Session
 
-1. **The waiting goal owns the work** — push, close #477 through the commit
-   carrier with its full ledger, decide the 7 #478 sites. Read it rather than
-   re-deriving its slices here.
-2. **#475's behavioural half is still an OPEN operator decision.** Nobody has
+1. **#478 is closable and not closed.** All seven sites are dispositioned and
+   applied; the grant covered conversions, never the close. It needs its own
+   carrier and ledger, exactly as #477 got.
+2. **The `parents[3]` family is correct by coincidence.** Ten occurrences resolve
+   in both layouts only because the exporter's flattening cancels the
+   `plugins/<pkg>` prefix, and an eleventh (`skill_runtime_bootstrap.py:103`,
+   `parents[4]`) is already wrong but unreachable. Revisit trigger: **any change
+   to `export_plugin.py`'s skill-tier layout** turns all of them into #477 at
+   once.
+3. **#475's behavioural half is still an OPEN operator decision.** Nobody has
    observed an agent ask-and-spawn in a repo that never ran `setup`.
 
 ## Discuss
 
-- **External side-effect approval expired with the last goal.** Push,
-  issue-filing, and issue-closing each need a fresh grant. That grant is exactly
-  what blocks the waiting goal.
+- **External side-effect approval expired with the completed goal.** Push,
+  issue-filing, and issue-closing each need a fresh grant.
 - **The path check is now a BLOCKING gate.** Its own two review rounds shipped
   four false-positive/false-negative classes before it was safe, and the
   "false positives are structurally impossible" argument was wrong and is
@@ -70,6 +74,6 @@
 
 ## References
 
-- [waiting goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [completed goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
+- [completed goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [its retro](../charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md) · [prior goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)

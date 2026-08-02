@@ -1,6 +1,6 @@
 # Achieve Goal: Push the armed gate and close #477 through its carrier
 
-Status: active
+Status: complete
 Created: 2026-08-03
 Activation: `/goal @charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md`
 
@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md` after confirming the draft is
-  still intended.
+- Current slice: all four slices complete; pushed, #477 CLOSED, claims review folded.
+- Current slice intent: cross the boundary the previous goal could not — push
+  the proven bundle, close #477 through its carrier with a real ledger, and
+  disposition the #478 sites. One unchanged intent across all four slices, so
+  critique fired at slice boundaries rather than per commit
+  (meaningful-slice-cadence).
+- Next action: none — goal complete. Open follow-ups live in
+  `## Operator Decision Queue` (closing #478, and the `parents[3]` family).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -175,24 +175,24 @@ Three outcomes:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Push `58960639` and confirm remote CI through a different observer AND channel | The armed gate has never run outside this working tree; until CI runs it, "safe promotion" is a local claim | Pushed SHA at `origin/main`, both check-runs `success`, the `inventory-skill-script-references` step green in the CI log | pending |
-| B | Close #477 through the commit-message carrier with the full closeout ledger and a delegated resolution critique | The work is done and the issue is open; the carrier is the repo's designed path and the ledger is what makes the close evidence rather than assertion | `validate-closeout-draft` + `verify-closeout` pass, GitHub state read back as CLOSED, critique artifact | pending |
-| C | Get the #478 convention decided and record it for all 7 sites | The split made them visible and a visible-but-undecided set rots back into invisibility | A per-site disposition with reasons; conversions applied or an explicit deferral with a revisit trigger | pending |
-| D | Closeout: bundle gate, final verification, claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | pending |
+| A | Push `58960639` and confirm remote CI through a different observer AND channel | The armed gate has never run outside this working tree; until CI runs it, "safe promotion" is a local claim | Pushed SHA at `origin/main`, both check-runs `success`, the `inventory-skill-script-references` step green in the CI log | complete |
+| B | Close #477 through the commit-message carrier with the full closeout ledger and a delegated resolution critique | The work is done and the issue is open; the carrier is the repo's designed path and the ledger is what makes the close evidence rather than assertion | `validate-closeout-draft` + `verify-closeout` pass, GitHub state read back as CLOSED, critique artifact | complete |
+| C | Get the #478 convention decided and record it for all 7 sites | The split made them visible and a visible-but-undecided set rots back into invisibility | A per-site disposition with reasons; conversions applied or an explicit deferral with a revisit trigger | complete |
+| D | Closeout: bundle gate, final verification, claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | complete |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+- Decision: should #478 be closed? All 7 sites are dispositioned and applied, so it is resolvable — but closing it was outside this goal's grant, which covered #478 comments and conversions case-by-case and said nothing about the close.
+- Owner: operator
+- Why deferred: the work is done and the issue is accurate as an open record of what was decided; closing needs its own carrier and ledger, which is a slice rather than a footnote.
+- Unblock action: grant the close, and it goes through the same commit-carrier path #477 used.
+- Revisit trigger: the next goal that touches skill script references.
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: should the ten `parents[3]` / `parents[2]` sites be given a named helper? They are correct today ONLY because the exporter's kind-flattening cancels the `plugins/<pkg>` prefix — an arithmetic coincidence invisible at each call site.
+- Owner: operator
+- Why deferred: nothing is broken, and repairing ten call sites is a slice of its own rather than a closeout footnote.
+- Unblock action: decide between a shared `plugin_or_repo_root(__file__)` helper and leaving the coincidence documented.
+- Revisit trigger: **any change to `export_plugin.py`'s skill-tier layout** — that single change turns all ten into #477 at once.
 
 ## Coordination Cues
 
@@ -203,7 +203,6 @@ below. Fill during the run:
 
 - **Routing** — choose the skill for the current phase or boundary from installed
   metadata/model judgment, and record the route. At completion, recorded
-  boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
 - **Gather step** — when `## Context Sources` names an external source
@@ -227,7 +226,21 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+Routing: issue — selected from installed skill metadata for #477's resolve path; its planner classified the fix-unit as `bug`, which routed the causal review before the close and selected the ledger fields the carrier had to carry.
+
+Routing: impl — selected for the code slices (the shared shim module, three shims, the seven #478 site edits) and their tests; `prove` owns the closeout ledger it loads at the stop gate.
+
+Routing: quality — selected for validation posture: the dup-ratchet edit advisory obeyed at the edit, the newly armed `--strict` gate's first external runs, and the broad-suite number recorded rather than inferred from a green closeout.
+
+Routing: debug — selected when the pre-push mutation lane refused: the uncovered line was read as a signal (one was DEAD code, deleted rather than tested) instead of retried.
+
+Routing: critique — selected for four bounded fresh-eye contexts: a causal review before the close, two rounds on the shim slice, and the standing closeout-claims round.
+
+Gather: n/a — the URLs in `## Context Sources` are GitHub issue links to this repo's own tracker plus in-repo relative paths, all read through `gh` or the local tree; no external page became working context.
+
+Release: n/a — no version bump and no install-manifest edit. The `/tmp` export was a throwaway proof channel, not a release surface.
+
+Issue closeout: #477 — carrier `direct-commit` (commit `98f2e749`), classification `bug`. `issue_tool.py validate-closeout-draft` → `draft_verified` / `ready_to_commit_push`; `verify-closeout --expect-state CLOSED` → `CLOSED` via `backend-state-readback`, `ok: true`. #478 remains OPEN by design: its 7 sites are dispositioned and applied, but closing it was not in this goal's grant.
 
 ## Discuss Before Activation
 
@@ -305,9 +318,23 @@ So the affordance is recoverable; the question is how to spell it.
 - **Site 3 → (d) drop the bullet.** It advertises an affordance `gather` does
   not portably have, and the descriptive mention already exists elsewhere.
 
-**NOT APPLIED — awaiting the operator.** Prose conversion and any GitHub write
-on #478 are case-by-case under this goal's grant. The analysis needed no grant;
-the edits do.
+### Outcome — APPLIED
+
+The analysis above was written and recorded FIRST, with the edits withheld,
+because prose conversion is case-by-case under this goal's grant. The operator
+then read the per-site recommendation and answered "추천대로" (as recommended),
+which is the grant for these seven conversions and is recorded here because a
+grant that lives only in a transcript is indistinguishable from an assumption.
+
+All seven were then applied exactly as recommended — 3 to shims, 3 to
+`<authoring-repo>/`, 1 bullet dropped — in commits `8de5d168`, `eb283497`, and
+`727cbf40`. An earlier version of this section still read "NOT APPLIED —
+awaiting the operator" after the edits had shipped; the closeout-claims round
+caught the contradiction, in the one section that carries the per-site reasons.
+
+**#478 itself remains OPEN.** All seven sites are resolved, so it is closable,
+but the grant covered comments and conversions and never mentioned the close.
+Recorded in `## Operator Decision Queue` rather than taken.
 
 
 ## Slice Log
@@ -317,7 +344,7 @@ the edits do.
 - Objective: Cross the boundary the previous goal could not: push the proven bundle and prove the newly armed path gate survives outside this working tree.
 - Why this approach: The gate had only ever run here. Until CI ran it, 'safe promotion' was a local claim.
 - Commits: 58960639, f5c84f3c, cd223b3a, c31a6eca
-- What changed:
+- What changed: `58960639` carried the proven bundle inherited from the previous goal (the armed gate, the #477 repair, the `<authoring-repo>/` split, the standing claims-review contract). `f5c84f3c` shaped this goal and repointed the handoff at it; `cd223b3a` recorded the operator grant and flipped the goal active; `c31a6eca` covered the `plugins/*` non-directory guard the pre-push mutation lane refused on. The plan's "confirm the bundle is still exactly `58960639`" precheck was therefore NOT satisfiable as written — three commits were added before the push, all of them this goal's own work, and the honest form of that bullet is a diff review of the range rather than a fixed-SHA equality.
 - Alternatives rejected:
 - Targeted verification: Pre-push refused ONCE, correctly: the changed-line mutation lane named the plugins/* non-directory guard, a branch round 1 had asked about in prose and I had answered without a test. Covered, then 83 passed / 0 failed. Pushed c31a6eca. inventory-skill-script-references PASSED in pre-push (303ms) and in CI. Confirmed per P4 on three channels: gh run watch --exit-status = 0; the commit check-runs API independently (both success); git ls-remote matching the pushed SHA.
 - Test duplication pressure:
@@ -338,6 +365,20 @@ the edits do.
 - Critique: Delegated bounded causal review before the close (window issue-477-causal, snapshot/verify clean). It supplied the three-mechanism root cause, swept four sibling axes, and REFUTED two claims the fix made about itself — that it 'resolves the layout ambiguity' (it removes one instance of a class live at ~10 other sites) and that a two-candidate probe would have confused check_doc_links (that gate structurally cannot read the form).
 - Off-goal findings: Ten packaged-Python sites use hard-coded parents[3]/parents[2] and are correct ONLY because the exporter's kind-flattening cancels the plugins/<pkg> prefix. Recorded with a revisit trigger (any export_plugin.py skill-tier layout change), not repaired.
 - Lessons carried forward: The behavioural verdict is the field most likely to be asserted rather than proven. Exporting to /tmp and running the documented command there cost minutes and reproduced BOTH halves of the report — the wrong path, and the swallow that hid it.
+- Metrics:
+
+### Slice 3: C — disposition all 7 #478 sites
+
+- Objective: Give every #478 site a recorded, applied disposition rather than leaving a visible-but-undecided set.
+- Why this approach: The <authoring-repo>/ split made them visible; visible-and-undecided is how the original 13 became invisible.
+- Commits: 8de5d168, eb283497, 727cbf40
+- What changed: NEW skills/shared/scripts/authoring_script_shim.py + two shims; plan_risk_interrupt shim refitted onto it; 7 sites dispositioned (3 to shims, 3 to <authoring-repo>/, 1 bullet dropped); tests/test_shared_authoring_script_shims.py; two floors in tests/test_skill_script_references.py lowered with reasons.
+- Alternatives rejected: Rejected <plugin-dir>/ despite being the obvious answer: zero usage precedent, no bootstrap variable behind it, so the agent would have to resolve the plugin dir itself and these sites would be the convention's first users. Rejected three copies of the resolution logic: the dup ratchet would have caught it at closeout, so the shared module came first.
+- Targeted verification: Both repaired invocations run verbatim from an export outside the repo. inventory --strict clean: 402 refs (201/201), the only surviving <repo-root>/scripts/ reference is rca-ledger-append.md, which is correct as an existence predicate. Broad suite 6752.
+- Test duplication pressure: check_dup_ratchet clean throughout — the shared module is why three shims produced no new family.
+- Critique: TWO bounded rounds, both productive. Round 1: run() discarded the targets' __main__ error handling so a failing validation surfaced as a traceback (fixed with runpy); the unbounded ancestor walk (capped); and a test comment that cited an authoring-only fixture as the guard for a SHIPPED-layout floor, where no fixture produced a shipped BROKEN row at all. Round 2, reading those repairs: THE REPAIR NAMED A COMMAND THAT CANNOT RUN — the three call sites I authored used a bare path while the shims ship mode 100644, i.e. permission denied. Also a swallow guard asserting only half the swallow, a bounded-walk fixture that tolerated a 5-to-7 loosening, and a shipped parametrization running the authoring module.
+- Off-goal findings:
+- Lessons carried forward: Fourth measured instance of the round-2 class, and the sharpest: the fix for 'a documented command that cannot run' shipped three new documented commands that cannot run. Copying an invocation's SHAPE without its interpreter prefix is the same defect wearing different clothes.
 - Metrics:
 
 ## Context Sources
@@ -408,6 +449,37 @@ re-verifies the folded revisions without re-running critique.
 
 Issues or deferred findings discovered during the run.
 
+- **`scripts/skill_runtime_bootstrap.py:103`** returns `parents[4]`, wrong for a
+  shipped skill script. Latent (the ancestor walk finds `scripts/adapter_lib.py`
+  first in every real tree), so recorded rather than repaired. See the
+  `## Final Verification` non-claims.
+- **Markdown links of the form `../../../scripts/...` in `skills/shared`
+  references** resolve to `plugins/scripts/...` from the shipped mirror. Raised
+  by the claims round and NOT folded: these are markdown links that
+  `check_doc_links` resolves (and it passes), not commands an agent runs, and the
+  critique's "none live" sibling row was explicitly scoped to `$SKILL_DIR`
+  commands. Recorded so a later sweep can decide rather than rediscover.
+
+### Verification-plan bullets NOT evidenced, stated rather than quietly dropped
+
+The claims round checked each `## Agent Verification Plan` bullet against the
+record. Three were performed without leaving evidence, and are recorded as
+unproven rather than claimed:
+
+- `git log --oneline origin/main..HEAD` before anything — not recorded, and its
+  premise (a bundle of exactly `58960639`) had already changed; see Slice 1.
+- `issue_tool.py preflight` / `plan` before touching GitHub — `plan` WAS run and
+  its classification (`bug`) drove the causal-review routing, but no output was
+  captured in the artifact.
+- The close-keyword-in-prose check — performed reactively rather than
+  proactively: the commit-msg gate refused two drafts, which is how the trap was
+  found, not a pre-check that prevented it.
+- "Build test inputs from source constants, never by retyping" — mixed and
+  unrecorded. `test_skill_script_references.py` derives its tier from
+  `PORTABLE_SKILL_KINDS`, while the new fixtures retype the reference literals.
+  Some retyping is correct (an assertion that imports its expected value proves
+  nothing), but the practice was neither claimed nor disclaimed at the time.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
@@ -415,13 +487,81 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md
+Host log probe: charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md
+Disposition review: charness-artifacts/critique/2026-08-02-goal-closeout-claims-push-and-close-477.md
+
+Executed proof, with its date (all 2026-08-02):
+
+- **FOUR separate pushes**, not one, advancing `origin/main`
+  `2a9d2aff → c31a6eca → 98f2e749 → 20dedbe8 → 727cbf40` (ten commits total;
+  `git log --oneline 2a9d2aff..727cbf40`). The pre-push gate refused TWICE across
+  the run, both times from the changed-line mutation lane and both times
+  correctly — once in slice A (the `plugins/*` non-directory guard) and once
+  before slice A's first successful push (the `__main__` entrypoint line). Final
+  pre-push on `727cbf40`: **83 passed, 0 failed**.
+- **Remote CI ran on EVERY pushed SHA and passed on every one**, named rather
+  than implied — `gh run list` 2026-08-02: `727cbf40`, `20dedbe8`, `98f2e749`,
+  `c31a6eca` all `Quality Core: success`. Confirmed per P4 by a different
+  observer AND a different channel than the push exit code: `gh run watch
+  --exit-status` → 0, then the commit check-runs API independently (`Core
+  deterministic gates: success`, `Changed-line mutation coverage: success`), then
+  `git ls-remote origin main` matching the pushed SHA. The combined-status API
+  returns `pending`/`total_count: 0` for every commit here because this repo
+  publishes check-runs, not legacy statuses — recorded so the misread is not
+  repeated.
+- **#477 CLOSED**, verified by `issue_tool.py verify-closeout` →
+  `backend-state-readback`, `ok: true`, no state mismatches — read back through
+  the adapter rather than inferred from the push.
+- Behavioural verdict for #477 from a channel distinct from the fix and its
+  tests: `export_plugin.py` into `/tmp`, then the documented command run from
+  `<plugin>/skills/impl` against a consumer repo holding only `.agents/`. The
+  OLD path reproduced both halves of the report; the NEW path ran.
+- `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` →
+  **6752 passed, 0 failed**.
+- `inventory_skill_script_references.py --strict` → `all 402 (201 authoring /
+  201 shipped) resolve`, exit 0. The newly armed gate passed in pre-push (303ms)
+  and in CI — its first runs outside this working tree.
+- **FIVE** bounded fresh-eye reviewer contexts, each bracketed by
+  `reviewer_boundary_fingerprint.py` snapshot/verify, every one `clean` with no
+  drift: the #477 causal review, two rounds on the #478 shim slice, and the
+  closeout-claims round — whose own `verify` ran the moment it returned, before
+  this line was written. An earlier draft of this bullet said "four … all clean"
+  while the fourth had not returned; the claims round caught its own count, which
+  is the shape the verification plan warns about.
+
+Non-claims, carried in writing:
+
+- The #477 probe is an EXPORT, not a host install. It proves the exported
+  package is self-sufficient for that command; it does not exercise a host's
+  installer, marketplace resolution, or plugin discovery.
+- A green CI proves the armed gate did not FALSELY refuse on this tree's current
+  content. It does not prove it refuses correctly on content nobody has written.
+- The ten `parents[3]`/`parents[2]` occurrences are correct today and were NOT
+  repaired. They resolve in both layouts only because the exporter's flattening
+  cancels the `plugins/<pkg>` prefix — recorded with a revisit trigger, not
+  proven safe against a layout change.
+- **An ELEVENTH site is already WRONG, not merely fragile**, and an earlier draft
+  of this non-claim dropped it: `scripts/skill_runtime_bootstrap.py:103` returns
+  `parents[4]` as the fallback of `repo_root_from_skill_script`, which yields
+  `plugins/` from a shipped skill script. Unreachable today because every tree
+  carries `scripts/adapter_lib.py` and the ancestor walk finds it first, so it is
+  a latent wrong constant behind a correct walk. Not repaired, and named here
+  because a "correct today" headline that quietly excludes the one item a
+  reviewer flagged as incorrect is the record-stronger-than-evidence class.
+- No release publish, tag, version bump, or `cautilus evaluate` run.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: all FIVE shim call sites now assert `python3 `, both halves of the swallow (`|| true` AND `2>/dev/null`), and no `../../../` — the interpreter-prefix miss is enforced rather than remembered
+Retro dispositions: applied: the bounded-walk fixture sits AT the boundary (ancestor index 5) and asserts that depth in place, after the previous one tolerated any cap up to 7 and was verified by running `locate` at caps 5/7/8
+Retro dispositions: applied: a shipped-layout `BROKEN` fixture exists at last, and the comment that cited an authoring-only fixture as its guard is corrected
+Retro dispositions: applied: `run()` executes targets via `runpy` as `__main__`, so a failing validation reports its own verdict instead of a traceback, and the shim inherits each target's entry contract rather than re-implementing one
+Retro dispositions: applied: `authoring_script_shim.py` carries the resolution logic once, so three shims produced no new duplicate family — the previous retro's dup-ratchet lesson applied BEFORE the block rather than after it
+Retro dispositions: applied: the #477 critique artifact is amended where it still recorded the unbounded walk as deferred-not-repaired, because a durable record naming a deferred remedy is read at slice-shaping time
+Retro dispositions: accepted-risk: the ten `parents[3]` sites stay as they are, correct by an exporter-flattening coincidence, with an explicit revisit trigger in the Operator Decision Queue rather than a silent assumption
+Retro dispositions: out-of-scope: a repo-wide "every documented invocation is executable as written" check, which would subsume both this run's path gate and its interpreter-prefix lesson — named in the retro's `## Portable Candidate` rather than built at closeout
+
+Structural follow-up: applied: `tests/test_shared_authoring_script_shims.py` — the `## Sibling Search` names "prose naming an invocation that cannot execute as written" as the transferable class, and the call-site assertions turn its three failure modes (unresolvable path, missing interpreter, swallowed error) into a test rather than a rule someone has to remember.
