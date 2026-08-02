@@ -409,3 +409,39 @@ def test_a_suppression_state_file_that_cannot_be_written_re_advises(
     assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None, (
         "an unwritable state file must re-advise, never go silent"
     )
+
+
+def test_a_failing_ls_files_reports_no_answer(git_repo: Path, advisory, monkeypatch) -> None:
+    """`git diff` can succeed with no numstat row while `ls-files` then fails.
+
+    That pair is the only way to reach the tracked-check's own failure path, and
+    it must report "no answer" rather than fall through to the byte count, which
+    would report a whole file as added for a file that is merely unchanged.
+    """
+    real_git = advisory._git
+
+    def fail_ls_files(repo_root, *args):
+        if args and args[0] == "ls-files":
+            return None
+        return real_git(repo_root, *args)
+
+    monkeypatch.setattr(advisory, "_git", fail_ls_files)
+    assert advisory.added_lines_vs_head(git_repo, "scripts/seed.py") is None
+
+
+def test_a_state_file_for_this_head_with_an_unusable_paths_key_still_suppresses_correctly(
+    git_repo: Path, advisory
+) -> None:
+    """The corrupt-`paths` branch is only reachable when `head` MATCHES.
+
+    A head mismatch resets the whole record before `paths` is ever read, so a
+    fixture with a stale head exercises the reset, not this branch.
+    """
+    head = advisory._git(git_repo, "rev-parse", "HEAD").stdout.strip()
+    state = git_repo / advisory._SEEN_RELPATH
+    state.parent.mkdir(parents=True, exist_ok=True)
+    state.write_text(json.dumps({"head": head, "paths": "not-a-list"}), encoding="utf-8")
+
+    assert advisory._already_advised(git_repo, "scripts/seed.py", head) is False
+    # The unusable value was replaced by a real list, so the second call suppresses.
+    assert advisory._already_advised(git_repo, "scripts/seed.py", head) is True
