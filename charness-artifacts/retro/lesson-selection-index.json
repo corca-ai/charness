@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-02",
-  "source_artifact_count": 414,
-  "candidate_count": 1682,
+  "source_artifact_count": 415,
+  "candidate_count": 1688,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -152,6 +152,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:69c908ababf8",
+      "kind": "current_focus",
+      "lesson": "Two proof surfaces whose wrong pass was silent by construction, both found by the previous run's reviewers and deliberately left unfixed.",
+      "normalized_key": "two proof surfaces whose wrong pass was silent by construction both found by the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Two proof surfaces whose wrong pass was silent by construction, both found by the previous run's reviewers and deliberately left unfixed."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9b6b605b60da",
       "kind": "next_improvement",
       "lesson": "a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked.",
@@ -174,6 +200,110 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e98874698d6b",
+      "kind": "next_improvement",
+      "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched.",
+      "normalized_key": "check validate handoff artifact py before composing a commit message when the handoff was",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5dc377885ee1",
+      "kind": "next_improvement",
+      "lesson": "File the issue first, then write its number into prose.",
+      "normalized_key": "file the issue first then write its number into prose",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "File the issue first, then write its number into prose."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ac8730662158",
+      "kind": "next_improvement",
+      "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not.",
+      "normalized_key": "run check dup ratchet py at the first edit to a gated file not",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b7711cc3b442",
+      "kind": "next_improvement",
+      "lesson": "Treat \"explain why this number is 0\" as a claim needing the same premise check as any other claim.",
+      "normalized_key": "treat explain why this number is 0 as a claim needing the same premise",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Treat \"explain why this number is 0\" as a claim needing the same premise check as any other claim."
         }
       ]
     },
@@ -226,136 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "when a slice changes what a floor REFUSES, measure the refusal against the real checked-in corpus and pin the number with its denominator in a test, before the fold and after — this run's only structural defence, and it caught the one over-block inspection missed."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b28054fabb76",
-      "kind": "repeat_trap",
-      "lesson": "**A dup-ratchet hard-block at closeout on my own code** (two clone families in `_refusal_reason`'s repeated message blocks). The low-cost check says to run the ratchet at the FIRST edit to a gated file, not at the closeout aggregate; I ran it at the aggregate. Cost was small only because the fix was a genuine refactor rather than an accept.",
-      "normalized_key": "a dup ratchet hard block at closeout on my own code two clone families",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-          "date": "2026-08-02",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A dup-ratchet hard-block at closeout on my own code** (two clone families in `_refusal_reason`'s repeated message blocks). The low-cost check says to run the ratchet at the FIRST edit to a gated file, not at the closeout aggregate; I ran it at the aggregate. Cost was small only because the fix was a genuine refactor rather than an accept."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:948f8706b233",
-      "kind": "repeat_trap",
-      "lesson": "**Round 1's repair of Lane B introduced two new blockers, and folding those introduced a third.** Matching delegated tokens by containment (to stop over-blocking ten honest artifacts) made the `blocked` valve bypassable in 24 characters — cheaper than the bare word the previous repair had just closed. Narrowing that with value-wide negation markers then demoted eleven honest artifacts on the words \"no blockers\". Each fix was locally correct and globally wrong, and only re-measuring the corpus caught the third.",
-      "normalized_key": "round 1 s repair of lane b introduced two new blockers and folding those",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-          "date": "2026-08-02",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Round 1's repair of Lane B introduced two new blockers, and folding those introduced a third.** Matching delegated tokens by containment (to stop over-blocking ten honest artifacts) made the `blocked` valve bypassable in 24 characters — cheaper than the bare word the previous repair had just closed. Narrowing that with value-wide negation markers then demoted eleven honest artifacts on the words \"no blockers\". Each fix was locally correct and globally wrong, and only re-measuring the corpus caught the third."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4a940d8b0619",
-      "kind": "repeat_trap",
-      "lesson": "**The slice packet I handed Lane A's reviewer asserted a non-claim I had not checked** — \"no skill files, so no `plugins/` mirror is involved\". The whole `scripts/` tree is mirrored. That unchecked assertion was the round's only blocker, and the export would have shipped the un-repaired gate plus a `ModuleNotFoundError`. A packet's non-claims are claims.",
-      "normalized_key": "the slice packet i handed lane a s reviewer asserted a non claim i",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-          "date": "2026-08-02",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The slice packet I handed Lane A's reviewer asserted a non-claim I had not checked** — \"no skill files, so no `plugins/` mirror is involved\". The whole `scripts/` tree is mirrored. That unchecked assertion was the round's only blocker, and the export would have shipped the un-repaired gate plus a `ModuleNotFoundError`. A packet's non-claims are claims."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:7c4e377ecbdd",
-      "kind": "repeat_trap",
-      "lesson": "**Two of three boundary verifies ran AFTER the parent had already made repairs**, so each returned `boundary-drift` and needed explicit `--parent-path` declarations to resolve to `parent-attributed`. Cost: two extra verify cycles, and — more expensively — the attestation now rests on my own testimony about which paths I touched rather than on a clean no-write window. The fix is ordering, not tooling: verify the moment the reviewer returns, before touching anything.",
-      "normalized_key": "two of three boundary verifies ran after the parent had already made repairs so",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md",
-          "date": "2026-08-02",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Two of three boundary verifies ran AFTER the parent had already made repairs**, so each returned `boundary-drift` and needed explicit `--parent-path` declarations to resolve to `parent-attributed`. Cost: two extra verify cycles, and — more expensively — the attestation now rests on my own testimony about which paths I touched rather than on a clean no-write window. The fix is ordering, not tooling: verify the moment the reviewer returns, before touching anything."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:4b250149d889",
-      "kind": "current_focus",
-      "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D).",
-      "normalized_key": "four lane goal push the accumulated backlog to main and read the ci it",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
-      "latest_source_date": "2026-08-01",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-01-push-the-lane-then-close-the-record-the-regression-and-the-rows.md",
-          "date": "2026-08-01",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Four-lane goal: push the accumulated backlog to `main` and read the CI it triggers (A); repair the goal-artifact closeout evidence record (B); settle #467's six survived mutants and close it (C); disposition five sweep rows and answer D45's premise (D)."
         }
       ]
     }
@@ -498,6 +498,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:69c908ababf8",
+      "kind": "current_focus",
+      "lesson": "Two proof surfaces whose wrong pass was silent by construction, both found by the previous run's reviewers and deliberately left unfixed.",
+      "normalized_key": "two proof surfaces whose wrong pass was silent by construction both found by the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Two proof surfaces whose wrong pass was silent by construction, both found by the previous run's reviewers and deliberately left unfixed."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:9b6b605b60da",
       "kind": "next_improvement",
       "lesson": "a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked.",
@@ -520,6 +546,110 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e98874698d6b",
+      "kind": "next_improvement",
+      "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched.",
+      "normalized_key": "check validate handoff artifact py before composing a commit message when the handoff was",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5dc377885ee1",
+      "kind": "next_improvement",
+      "lesson": "File the issue first, then write its number into prose.",
+      "normalized_key": "file the issue first then write its number into prose",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "File the issue first, then write its number into prose."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ac8730662158",
+      "kind": "next_improvement",
+      "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not.",
+      "normalized_key": "run check dup ratchet py at the first edit to a gated file not",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b7711cc3b442",
+      "kind": "next_improvement",
+      "lesson": "Treat \"explain why this number is 0\" as a claim needing the same premise check as any other claim.",
+      "normalized_key": "treat explain why this number is 0 as a claim needing the same premise",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Treat \"explain why this number is 0\" as a claim needing the same premise check as any other claim."
         }
       ]
     },
@@ -572,6 +702,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "when a slice changes what a floor REFUSES, measure the refusal against the real checked-in corpus and pin the number with its denominator in a test, before the fold and after — this run's only structural defence, and it caught the one over-block inspection missed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:277575556fcd",
+      "kind": "next_improvement",
+      "lesson": "When editing a checked-in JSON policy file, preserve key order and diff the line count against the expected insert size before staging.",
+      "normalized_key": "when editing a checked in json policy file preserve key order and diff the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "When editing a checked-in JSON policy file, preserve key order and diff the line count against the expected insert size before staging."
         }
       ]
     },

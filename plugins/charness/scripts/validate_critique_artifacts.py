@@ -134,6 +134,10 @@ TIER_EVIDENCE_RULE_DATE = FRESH_EYE_PRESENCE_RULE_DATE
 # backtick-wrapped or bulleted value (`` `parent-delegated`. `` — the observed
 # in-corpus convention) still matches; mirrors `disposition_form._MARKDOWN_LEAD`.
 _LEADING_MARKUP_RE = re.compile(r"^[\s`*_\"'>\-]+")
+# Inline emphasis stripped ANYWHERE in a line before a contract marker is matched
+# (#471), not just at the leading edge. Same character class and same spelling as
+# `issue_critique_observer`'s flattening step.
+_MARKUP_FLATTEN_RE = re.compile(r"[`*_]+")
 
 
 def changed_paths(repo_root: Path) -> list[str]:
@@ -166,10 +170,28 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
 
 def has_repo_delegation_contract(repo_root: Path) -> bool:
     agents_path = repo_root / "AGENTS.md"
-    return agents_path.is_file() and all(
-        marker in agents_path.read_text(encoding="utf-8").lower()
-        for marker in DELEGATION_CONTRACT_MARKERS
-    )
+    if not agents_path.is_file():
+        return False
+    try:
+        text = agents_path.read_text(encoding="utf-8").lower()
+    except OSError:
+        # Unreadable is NOT adopted. Without this the two readers of one contract
+        # disagree on an unreadable `AGENTS.md` (the sibling returns False here),
+        # and the OSError escapes as an uncaught traceback rather than a
+        # ValidationError, so `main`'s handler never renders it as a validation
+        # failure. Same shape as the SurfaceError worry this module already has.
+        return False
+    # Markup is REMOVED before matching, not tolerated inside the literal (#471).
+    # This repo's own AGENTS.md writes `**already delegated**`, so the plain
+    # substring test this replaced returned False HERE — the gate below
+    # (`_check_forbidden_blocker_phrases`) had never fired in the repo it was
+    # written for, and nothing said so, because no test read the real file. The
+    # rule matched the emphasis, not the sentence. Kept character-identical to
+    # `issue_critique_observer.repo_requires_delegated_observer`, which already
+    # carried this repair, so the two readers of one contract cannot disagree
+    # about whether a repo adopted it.
+    flattened = _MARKUP_FLATTEN_RE.sub("", text)
+    return all(marker in flattened for marker in DELEGATION_CONTRACT_MARKERS)
 
 
 # Claim-reading lives with the enforcement-scope concept: "which claim does this
@@ -375,7 +397,8 @@ def validate_critique_artifact(
         for phrase in FORBIDDEN_SUBAGENT_BLOCKER_PHRASES:
             if phrase in status_lowered:
                 raise ValidationError(
-                    f"{path}: critique artifact must not treat missing explicit subagent delegation "
+                    f"{path}: `Fresh-eye satisfaction` matched the forbidden phrase `{phrase}`; "
+                    "critique artifact must not treat missing explicit subagent delegation "
                     "as the canonical blocker; honor repo `Subagent Delegation` instructions, then cite "
                     "the concrete spawn-tool refusal, missing tool surface, or exhausted host budget if "
                     "delegation is still blocked"

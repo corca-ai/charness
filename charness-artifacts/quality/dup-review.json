@@ -79,6 +79,13 @@
     },
     {
       "class": "intentional",
+      "id": "09af11c87038f373",
+      "reviewed_at": "2026-08-03",
+      "surface": "code",
+      "note": "The two readers of ONE delegation contract: validate_critique_artifacts.has_repo_delegation_contract and issue_critique_observer.repo_requires_delegated_observer. The restatement is deliberate and load-bearing -- issue_critique_observer ships as a portable public skill, and importing the harness repo's scripts/ would make the guard ABSENT (not merely inert) in every consuming repo, which that module's own docstring records. Surfaced as new because the #471 repair gave the validator the markup-flattening step the observer already carried, making the two bodies converge; before this slice they DIVERGED, and that divergence is precisely the defect #471 fixed (one reader said this repo had adopted the contract, the other said it had not). Convergence is the correct end state, so the right control is not deduplication but the parity pin: tests/test_critique_artifact_validation.py::test_both_readers_of_the_delegation_contract_agree_on_this_repo asserts both the shared marker tuple and equal verdicts against the real AGENTS.md."
+    },
+    {
+      "class": "intentional",
       "id": "0aa7e9da71528d8d",
       "note": "support/web-fetch scripts keep module-local SCRIPT_DIR sys.path bootstrap so each helper stays directly executable in source and exported plugin layouts",
       "reviewed_at": "2026-06-26",
@@ -1035,6 +1042,13 @@
       "note": "five-line main-flow tail shared when validator and reporter print a terminal payload and return around missing or invalid records; each command owns a distinct payload builder, so a shared control-flow wrapper would obscure command semantics",
       "reviewed_at": "2026-07-10",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9f2acd76a3a85b84",
+      "reviewed_at": "2026-08-03",
+      "surface": "code",
+      "note": "Idiom-sized two-line `if <value> is None: return None` fail-soft guard clause. 31 members across 20+ independently-owned modules (adapter_lib, quality_policy_defaults, adapter_validators, resolve_adapter, release_backend, surfaces_lib, ...); exactly ONE member is in the current diff (audit_disposition_corpus.normalized_status), every other is untouched. Same class already accepted for other guard-clause shapes in this file. A shared helper for a two-line None-guard would couple unrelated subsystems through a trivial utility and obscure which module owns the None contract; the tokens are identical only because Python spells this idiom one way."
     },
     {
       "class": "intentional",

@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked. (source: `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`)
-- verify the reviewer boundary fingerprint IMMEDIATELY on the reviewer's return, before any parent write — two of three windows this run were verified late and resolved only by parent testimony. (source: `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`)
-- when a slice changes what a floor REFUSES, measure the refusal against the real checked-in corpus and pin the number with its denominator in a test, before the fold and after — this run's only structural defence, and it caught the one over-block inspection missed. (source: `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`)
-- **a goal's own claims are a verdict surface and got one review round, at the end, which found two blockers.** The slice-level discipline has no goal-level analogue. (source: `charness-artifacts/retro/2026-08-01-session-retro.md`)
+- Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched. (source: `charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md`)
+- File the issue first, then write its number into prose. (source: `charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md`)
+- Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not. (source: `charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md`)
 
 ## Selection Policy
 
@@ -31,5 +31,5 @@
 - `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`
 - `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
-- `charness-artifacts/retro/2026-08-01-session-retro.md`
+- `charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md`
 - `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`

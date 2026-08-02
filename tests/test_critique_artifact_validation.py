@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import importlib.util
+import os
 import subprocess
 from pathlib import Path
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -58,6 +62,109 @@ def _multi_violation_artifact() -> str:
         )
         + "\n"
     )
+
+
+def _load_module(relpath: str, name: str):
+    spec = importlib.util.spec_from_file_location(name, ROOT / relpath)
+    module = importlib.util.module_from_spec(spec)
+    assert spec.loader is not None
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_delegation_contract_is_live_against_this_repos_real_agents_md() -> None:
+    """The gate must fire in the repo that wrote it -- read the REAL file (#471).
+
+    Every existing test around this contract built a synthetic AGENTS.md, and a
+    synthetic fixture writes the marker the way the CODE spells it. The real file
+    writes `**already delegated**`, so the plain substring test returned False
+    here and `_check_forbidden_blocker_phrases` had never run once against the
+    600+ checked-in critique artifacts. A fixture cannot catch that class by
+    construction: it re-asks whether the matcher matches itself. This test asks
+    the only question that was ever load-bearing -- is the contract live HERE --
+    and it fails if AGENTS.md is later reworded out from under the markers.
+    """
+    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_real")
+    assert validator.has_repo_delegation_contract(ROOT) is True
+
+
+def test_both_readers_of_the_delegation_contract_agree_on_this_repo() -> None:
+    """One contract, two readers, deliberately duplicated text -- pin the parity.
+
+    `issue_critique_observer` restates the markers instead of importing them (it
+    is a portable public skill and must not reach into this repo's `scripts/`).
+    That duplication is intentional, but it is exactly how the two drifted: the
+    observer carried the markup-flattening repair while the validator did not,
+    and for that window one reader said this repo had adopted the contract and
+    the other said it had not.
+    """
+    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_parity")
+    observer = _load_module("skills/public/issue/scripts/issue_critique_observer.py", "_ico_parity")
+    assert validator.DELEGATION_CONTRACT_MARKERS == observer.DELEGATION_CONTRACT_MARKERS
+    assert validator.has_repo_delegation_contract(ROOT) == observer.repo_requires_delegated_observer(ROOT)
+
+
+def test_delegation_contract_absent_repo_is_not_held_to_it(tmp_path: Path) -> None:
+    """The flattening widens MATCHING, not the POPULATION.
+
+    The near-miss case is the one worth pinning, and it is the one that actually
+    exercises the flattening path against a non-adopting repo: a repo whose
+    AGENTS.md carries the `## Subagent Delegation` heading (marker 1) but never
+    the contract sentence (marker 2) must still read False. A repo with no
+    AGENTS.md at all returns at the `is_file()` guard without reaching the
+    matcher, so on its own it pins nothing about this change.
+    """
+    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_absent")
+    agents = tmp_path / "AGENTS.md"
+    assert validator.has_repo_delegation_contract(tmp_path) is False  # no file at all
+    agents.write_text("# Some repo\n\nNo delegation contract here.\n", encoding="utf-8")
+    assert validator.has_repo_delegation_contract(tmp_path) is False  # neither marker
+    # Marker 1 present and bolded, marker 2 absent -- `all()` must still refuse.
+    # This case pins `all()`, NOT the flattening: the assertion is negative, so it
+    # also holds for an implementation that never flattens at all.
+    agents.write_text(
+        "# Some repo\n\n## **Subagent** _Delegation_\n\nWe spawn reviewers ad hoc.\n",
+        encoding="utf-8",
+    )
+    assert validator.has_repo_delegation_contract(tmp_path) is False
+
+
+def test_delegation_contract_matches_through_inline_markup(tmp_path: Path) -> None:
+    """The POSITIVE case that actually witnesses the flattening.
+
+    A synthetic repo carrying BOTH markers wrapped in emphasis must read True.
+    This is the assertion that discriminates: it fails if the flattening is
+    removed (the markup blocks the match) and it fails if the flattening is too
+    aggressive and also collapses whitespace (`subagentdelegation` no longer
+    contains `subagent delegation`). The negative cases above can do neither.
+    """
+    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_markup")
+    (tmp_path / "AGENTS.md").write_text(
+        "# Repo\n\n## **Subagent** _Delegation_\n\n"
+        "- Repo-mandated bounded fresh-eye subagent reviews are **already delegated** by contract.\n",
+        encoding="utf-8",
+    )
+    assert validator.has_repo_delegation_contract(tmp_path) is True
+
+
+def test_delegation_contract_unreadable_agents_md_is_not_adopted(tmp_path: Path) -> None:
+    """Unreadable is not adopted, and must not escape as a bare OSError.
+
+    `is_file()` can pass on a file the process cannot read. The sibling reader
+    already returned False here; without the matching guard the validator raised
+    OSError instead -- which is not a ValidationError, so the run's handler would
+    not render it as a validation failure at all.
+    """
+    validator = _load_module("scripts/validate_critique_artifacts.py", "_vca_unreadable")
+    agents = tmp_path / "AGENTS.md"
+    agents.write_text("## Subagent Delegation\n", encoding="utf-8")
+    agents.chmod(0o000)
+    try:
+        if os.access(agents, os.R_OK):  # running as root: the mode is not enforced
+            pytest.skip("cannot make a file unreadable for this user")
+        assert validator.has_repo_delegation_contract(tmp_path) is False
+    finally:
+        agents.chmod(0o644)
 
 
 def test_validate_critique_artifact_fail_fast_stops_at_first_violation(tmp_path: Path) -> None:

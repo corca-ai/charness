@@ -63,10 +63,13 @@ FRESH_EYE_HEADING = "## fresh-eye satisfaction"
 #: The same marker TEXT as `validate_critique_artifacts.DELEGATION_CONTRACT_MARKERS`,
 #: restated rather than imported: this is a portable public skill, and reaching
 #: into the harness repo's `scripts/` would make the guard absent — not merely
-#: inert — in every consuming repo. The MATCHING no longer agrees, deliberately:
-#: that function compares the raw literal and so returns False against a bolded
-#: `**already delegated**`, which is how this repo writes it. Its own repair is
-#: tracked separately; do not assume behavioural parity when reading this.
+#: inert — in every consuming repo. The MATCHING now agrees again: that function
+#: compared the raw literal and so returned False against a bolded
+#: `**already delegated**` (which is how the AUTHORING repo writes it) until its own
+#: repair gave it this same flattening step. The duplication stays deliberate,
+#: and so does the drift risk it carries — which is why the authoring repo now
+#: pins the parity with a test over its own real `AGENTS.md` rather than leaving
+#: it to this comment.
 DELEGATION_CONTRACT_MARKERS = (
     "subagent delegation",
     "repo-mandated bounded fresh-eye subagent reviews are already delegated",

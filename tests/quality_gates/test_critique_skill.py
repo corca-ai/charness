@@ -192,6 +192,10 @@ def test_critique_artifact_validator_rejects_missing_explicit_allowance_blocker(
 
     assert result.returncode == 1
     assert "must not treat missing explicit subagent delegation" in result.stderr
+    # The message names WHICH of the six phrases matched. Now that this gate can
+    # actually fire, a policy paragraph with no pointer to the offending text
+    # leaves the author to diff the list by hand.
+    assert "matched the forbidden phrase `only permits spawning subagents when`" in result.stderr
 
 
 def test_critique_artifact_validator_allows_parent_delegated_artifact_with_blocked_domain_content(

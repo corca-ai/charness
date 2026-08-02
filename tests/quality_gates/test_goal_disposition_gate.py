@@ -9,6 +9,7 @@ budget").
 from __future__ import annotations
 
 import importlib.util
+import json
 import re
 import subprocess
 import sys
@@ -559,17 +560,217 @@ def test_block_the_blank_fires_when_auto_retro_holds_only_the_placeholder(tmp_pa
 
 
 def test_live_corpus_pre_rule_goals_are_never_rung1a_refused() -> None:
-    """Stable invariant regardless of how the goal corpus grows: no pre-rule
-    (Created < rule date) completed goal is ever block-the-blank refused."""
+    """No pre-rule (Created < rule date) completed goal is block-the-blank refused.
+
+    Honest about its own strength: this holds for ANY corpus, because
+    `apply_disposition_rungs` returns at `if not in_scope` before setting
+    `disposition_blank` -- so the two predicates are mutually exclusive by
+    control flow, not by corpus content. It therefore guards the CONTROL FLOW
+    (a future rung that set `disposition_blank` before the scope check would
+    turn it red), not the grandfather's behaviour on real goals. Its previous
+    docstring called it a stable corpus invariant, which read as the stronger
+    claim it cannot make.
+    """
     runner = _load("audit_disposition_corpus")
     repo_root = Path(__file__).resolve().parents[2]
     rows = [
         runner.audit_goal(repo_root, p)
         for p in sorted((repo_root / "charness-artifacts/goals").glob("*.md"))
     ]
-    pre_rule = [r for r in rows if r["status"] == "complete" and r["in_scope"] is False]
+    pre_rule = [r for r in rows if r["status_normalized"] == "complete" and r["in_scope"] is False]
     assert pre_rule, "expected at least one pre-rule completed goal in the corpus"
     assert all(r["rung1a_block_the_blank"] is False for r in pre_rule)
+
+
+# --- corpus measurement states its own denominator --------------------------
+
+
+def _live_corpus_summary() -> tuple[dict, list[dict]]:
+    runner = _load("audit_disposition_corpus")
+    repo_root = Path(__file__).resolve().parents[2]
+    rows = [
+        runner.audit_goal(repo_root, p)
+        for p in sorted((repo_root / "charness-artifacts/goals").glob("*.md"))
+    ]
+    return runner.summarize(rows), rows
+
+
+def test_live_corpus_summary_states_the_dated_denominator() -> None:
+    """`in_scope` alone does not say what population it selected.
+
+    It is the FAIL-CLOSED count: goals dated into the floor's window PLUS every
+    goal whose `Created:` could not be parsed. Reported bare, a reader cannot
+    tell those apart, and the undatable share can grow without the headline
+    number moving in a way anyone can see. This pins the split over the REAL
+    corpus -- a synthetic fixture would only re-ask whether the arithmetic adds
+    up, which was never the defect.
+    """
+    summary, rows = _live_corpus_summary()
+    assert summary["in_scope"] == summary["in_scope_dated"] + summary["in_scope_undatable"]
+    assert summary["disposition_rule_date"] == disp.DISPOSITION_RULE_DATE.isoformat()
+    assert "fail-closed" in summary["in_scope_population"]
+    # The population statement names the status filter (the largest one, and
+    # previously unstated) and the exact three-way split of the intake.
+    assert "`Status:` is `complete`" in summary["in_scope_population"]
+    assert "rows_without_status + rows_with_other_status + completed_goals" in summary["in_scope_population"]
+    # Intake is reported, so the files the glob picks up and then drops are
+    # visible rather than absorbed.
+    assert summary["audited_files"] == len(rows)
+    assert summary["rows_without_status"] == len([r for r in rows if not r["status_normalized"]])
+    # Intake splits EXACTLY three ways, with no unnamed remainder. `<=` here would
+    # pass while any number of files fell out of every reported bucket -- which is
+    # how a completed goal spelled `Status: COMPLETE` went unexamined.
+    assert (
+        summary["rows_without_status"] + summary["rows_with_other_status"] + summary["completed_goals"]
+        == summary["audited_files"]
+    )
+    # Every undatable in-scope goal is NAMED, never just counted. Checked against
+    # the ROWS, not against its own count -- comparing the list's length to the
+    # number derived from that same list holds for any implementation, including
+    # one that names the wrong goals.
+    named = set(summary["in_scope_undatable_goals"])
+    actually_undatable = {
+        r["goal"] for r in rows if r["status_normalized"] == "complete" and r["in_scope"] is True and not r["created"]
+    }
+    assert named == actually_undatable
+
+
+def test_live_corpus_dated_denominator_does_not_collapse() -> None:
+    """Fails if the dated population collapses into the undatable remainder.
+
+    The failure this guards is silent by construction: goals losing their
+    `Created:` line stay in `in_scope` (fail-closed), so the gate keeps firing
+    and the headline count keeps looking healthy while the share of it backed by
+    an actual date drains away.
+
+    STRICT zero, not a majority threshold. The realistic regression is one goal
+    at a time -- `parse_created_date` returns None for a whole file on an
+    unbalanced fence or two conflicting `Created:` lines, both single-file
+    editing accidents on long markdown artifacts. A majority bar would have
+    tolerated 56 of them. And the audit's own docstring calls any non-zero
+    `in_scope_undatable` a corpus defect to repair, so the assertable pin is the
+    one that matches that claim. Ordinary work WILL touch this test -- the corpus
+    grows every session -- but every red it produces is a real defect with a
+    one-character repair, which is the trade being made.
+    """
+    summary, _ = _live_corpus_summary()
+    assert summary["in_scope"] > 0, "expected a non-empty in-scope population"
+    assert summary["in_scope_undatable_goals"] == [], (
+        "a completed goal is in scope only because its `Created:` could not be parsed, so the "
+        "dated denominator no longer backs the whole in-scope population: "
+        f"{summary['in_scope_dated']} dated of {summary['in_scope']} in scope; "
+        f"undatable: {summary['in_scope_undatable_goals']}"
+    )
+    assert summary["in_scope_dated"] == summary["in_scope"]
+
+
+def test_summarize_splits_a_synthetic_undatable_row_out_of_the_dated_count() -> None:
+    """The split must actually move when an undatable goal exists.
+
+    The live corpus currently carries zero undatable completed goals, so the
+    two tests above would also pass against a `summarize` that hard-coded
+    `in_scope_undatable` to 0. This drives the branch they cannot.
+    """
+    runner = _load("audit_disposition_corpus")
+    # Deliberately the CONSUMED SUBSET of an `audit_goal` row, not a full-fidelity
+    # fixture: `summarize` indexes with `[]`, so a future field it starts reading
+    # raises KeyError here loudly rather than passing on a stale stub.
+    base = {
+        "status": "complete",
+        "status_normalized": "complete",
+        "in_scope": True,
+        "rung1a_block_the_blank": False,
+        "has_disposition_review_line": True,
+    }
+    summary = runner.summarize(
+        [
+            {**base, "goal": "dated.md", "created": "2026-07-01"},
+            {**base, "goal": "undatable.md", "created": None},
+        ]
+    )
+    assert summary["in_scope"] == 2
+    assert summary["in_scope_dated"] == 1
+    assert summary["in_scope_undatable"] == 1
+    # The naming assertion lives HERE, where it can discriminate. On the live
+    # corpus the undatable set is empty (and a sibling test pins it empty), so
+    # the same assertion there compares two empty sets and cannot fail.
+    assert summary["in_scope_undatable_goals"] == ["undatable.md"]
+
+
+def test_normalized_status_recovers_spelling_variants_of_complete() -> None:
+    """`Status: COMPLETE (2026-06-07)` is a completed goal, not a third category.
+
+    `_STATUS` captures the first whitespace-delimited token, so a trailing
+    parenthetical or period rides along. Compared case-sensitively against
+    `"complete"`, such a goal fell out of `completed_goals` AND out of
+    `rows_without_status` (its status is truthy) -- present in the corpus,
+    absent from every reported bucket. This is the live corpus's real spelling,
+    not a hypothetical.
+    """
+    runner = _load("audit_disposition_corpus")
+    assert runner.normalized_status("COMPLETE") == "complete"
+    assert runner.normalized_status("complete.") == "complete"
+    assert runner.normalized_status("Complete;") == "complete"
+    assert runner.normalized_status("active") == "active"
+    assert runner.normalized_status(None) is None
+    assert runner.normalized_status("...") is None
+
+
+def test_summarize_on_an_empty_corpus_still_states_a_string_rule_date() -> None:
+    """The branch that motivated reading the constant instead of the rows.
+
+    Derived from rows, `disposition_rule_date` rendered `[]` for a corpus with
+    no goals -- a denominator statement pointing at an empty list, with a type
+    that varied str-vs-list between runs. This is the shipped surface in every
+    consuming repo, where an empty `charness-artifacts/goals/` is normal.
+    """
+    runner = _load("audit_disposition_corpus")
+    summary = runner.summarize([])
+    assert summary["disposition_rule_date"] == disp.DISPOSITION_RULE_DATE.isoformat()
+    assert isinstance(summary["disposition_rule_date"], str)
+    assert summary["audited_files"] == 0
+    assert summary["in_scope"] == 0
+
+
+def test_completed_only_trims_printed_rows_without_moving_the_summary(tmp_path: Path) -> None:
+    """The invariant the `main()` restructure exists to create.
+
+    `--completed-only` is a DISPLAY flag. Summarizing the filtered list instead
+    of the full audited set would make `audited_files` / `rows_without_status`
+    report the filter's output as if it were the intake -- a denominator that
+    moves with a display flag. Nothing pinned that, so a future author
+    re-inlining the filter would reintroduce it with a green suite.
+    """
+    goals = tmp_path / "charness-artifacts/goals"
+    goals.mkdir(parents=True)
+    (goals / "2026-07-01-done.md").write_text(
+        "# G\n\nStatus: complete\nCreated: 2026-07-01\n", encoding="utf-8"
+    )
+    (goals / "2026-07-02-running.md").write_text(
+        "# G\n\nStatus: active\nCreated: 2026-07-02\n", encoding="utf-8"
+    )
+    (goals / "2026-07-03-not-a-goal.md").write_text("# Early close report\n\nno status line\n", encoding="utf-8")
+
+    def _run(*extra: str) -> dict:
+        result = subprocess.run(
+            [sys.executable, str(_SCRIPTS / "audit_disposition_corpus.py"), "--repo-root", str(tmp_path), *extra],
+            cwd=_ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        assert result.returncode == 0, result.stderr
+        return json.loads(result.stdout)
+
+    full = _run()
+    trimmed = _run("--completed-only")
+    assert full["summary"] == trimmed["summary"]
+    assert full["summary"]["audited_files"] == 3
+    assert full["summary"]["rows_without_status"] == 1
+    assert full["summary"]["rows_with_other_status"] == 1
+    assert full["summary"]["completed_goals"] == 1
+    assert len(full["rows"]) == 3
+    assert [r["goal"] for r in trimmed["rows"]] == ["2026-07-01-done.md"]
 
 
 # --- sibling-leaf loader fail-closed (the module-split glue) ----------------
