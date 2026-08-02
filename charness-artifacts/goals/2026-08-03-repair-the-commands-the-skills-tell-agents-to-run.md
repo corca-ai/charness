@@ -81,12 +81,17 @@ error this goal repairs.
 
 ## Boundaries
 
-- **External side-effect scope. NOTHING IS PRE-APPROVED** — the 2026-08-02
-  approval was scoped to that goal and does not carry. Needs a fresh decision
-  before the first one: (1) `git push` to `main` plus the `quality-core` runs it
-  triggers, (2) filing issues for what Lane B cannot resolve, (3) closing an
-  issue only if a lane fully resolves it, through the close path's floor with a
-  DELEGATED resolution critique BEFORE the close call.
+- **External side-effect scope — APPROVED BY THE OPERATOR 2026-08-02, all three
+  items, for this goal.** (1) `git push` to `main` plus the `quality-core` runs
+  it triggers. (2) Filing issues for what Lane B cannot resolve. (3) Closing an
+  issue a lane fully resolves — still through the close path's floor, with a
+  DELEGATED resolution critique running BEFORE the close call; the approval
+  covers the decision to close, never the evidence floor.
+  The agent had recommended a narrower grant (push blanket, issues case-by-case,
+  no closing this goal) on the grounds that issue creation is the one action
+  GitHub cannot undo. The operator chose the wider grant; recorded so a later
+  session reads this as a deliberate call rather than an unexamined default.
+  **This approval is scoped to THIS goal and does not carry to the next one.**
   NOT in scope at all: a release publish, a tag, a version bump, or any
   `cautilus evaluate` run.
 - In scope: the 13 broken command references, the 9 charness-script references,
@@ -222,11 +227,12 @@ per the bullets above when that boundary is crossed):
 
 ## Discuss Before Activation
 
-- Discuss before activation: **TWO items.** (1) **EXTERNAL SIDE EFFECTS ARE NOT
-  CARRIED OVER.** The 2026-08-02 approval covered that goal only. This goal needs
-  a fresh decision on `git push` to `main` plus the CI it triggers, on filing new
-  issues, and on closing any issue a lane resolves. Confirm before the first
-  push. (2) **LANE C IS A REAL FORK, not a formality**: wiring a static check
+- Discuss before activation: **ONE item open.** (1) **RESOLVED / APPROVED
+  2026-08-02** — external side effects: `git push` to `main` plus the CI it
+  triggers, filing new issues, and closing an issue a lane resolves are all
+  approved for this goal by the operator, who chose a wider grant than the agent
+  recommended. Closes still run through the close path's floor with a delegated
+  resolution critique first. Scoped to this goal; does not carry forward. (2) **LANE C IS A REAL FORK, not a formality**: wiring a static check
   that refuses a commit is the exact reflex the Floor-Addition Restraint
   checklist exists to slow down, and an advisory that never blocks may be
   enough. The goal deliberately leaves it open rather than pre-deciding; confirm
