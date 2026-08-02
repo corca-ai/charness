@@ -202,11 +202,25 @@ def _observer_advisories(checks: list[dict[str, Any]]) -> list[str]:
         if observer.get("disposition") != "blocked":
             continue
         refs = ", ".join(f"#{number}" for number in entry["numbers"])
+        # The valve carries two different facts and they need different advice.
+        # Telling an operator to "confirm the host genuinely could not spawn one"
+        # when the USER declined the standing delegation request asks them to
+        # verify a machine failure that never happened — a deliberate "no"
+        # laundered into an incapacity, at an irreversible public boundary.
+        if observer.get("blocked_kind") == "delegation-declined":
+            tail = (
+                "the user DECLINED the standing bounded-review delegation request, so no fresh eye "
+                "was authorized. This is a recorded user decision, not a host failure: confirm the "
+                "decision still stands before treating this issue as resolved"
+            )
+        else:
+            tail = (
+                "Confirm the host genuinely could not spawn one before treating this issue as resolved"
+            )
         lines.append(
             f"REVIEW: the resolution critique cited for {refs} records "
             f"`Fresh-eye satisfaction: {observer.get('value')}` — the artifact itself says no "
-            "distinct observer read this resolution. Confirm the host genuinely could not "
-            "spawn one before treating this issue as resolved (advisory only, never blocks)."
+            f"distinct observer read this resolution. {tail} (advisory only, never blocks)."
         )
     return lines
 

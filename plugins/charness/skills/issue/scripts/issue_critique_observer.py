@@ -48,6 +48,7 @@ adopted the contract is not held to it.
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import date
 from pathlib import Path
@@ -92,6 +93,15 @@ _HEADING_RE = re.compile(r"^#{2,}\s")
 #: exactly this reason, and the refusal message tells authors to name the host
 #: signal — so the cheapest way to comply must not be the bare word.
 DEFAULT_MIN_BLOCKED_SIGNAL = 20
+#: A `blocked` value that names a DECLINED standing delegation request rather
+#: than a host incapacity. Matched narrowly, and narrower than it first looked:
+#: only the hyphenated token the ladder's own `next_action` prescribes, or the
+#: `delegation signal:` heading. The space form and a bare record-path mention
+#: were both dropped because a GENUINE host refusal reads exactly that way —
+#: "the spawn API returned 403, delegation declined by the workspace policy" —
+#: and misreading a machine incapacity as a user's deliberate "no" is the more
+#: damaging direction of the two.
+_DECLINED_SIGNAL_RE = re.compile(r"delegation-declined|delegation signal:")
 #: Words that DENY the delegated token they precede. Matched ONLY in the short
 #: window immediately before the token, never anywhere in the value: the corpus's
 #: real records are prose sentences that routinely say "no blockers" and "not
@@ -226,7 +236,16 @@ def observer_disposition(
         signal = normalized[len(BLOCKED_VALUE) :].strip(" :-*_`")
         if len(signal) < min_blocked_signal:
             return {"value": value, "disposition": "blocked-unsubstantiated"}
-        return {"value": value, "disposition": "blocked"}
+        # The valve's documented meaning is "a host that genuinely cannot spawn a
+        # reviewer". The authorization ladder added a fourth state that is NOT
+        # that: a user who declined the standing delegation request. It
+        # reaches this branch as `blocked delegation-declined ...` and would
+        # otherwise be reported at an irreversible public boundary as a host
+        # incapacity — a user's deliberate "no" laundered into "the machine could
+        # not". `blocked_kind` keeps the disposition stable for existing
+        # consumers while naming which of the two this actually is.
+        kind = "delegation-declined" if _DECLINED_SIGNAL_RE.search(signal) else "host"
+        return {"value": value, "disposition": "blocked", "blocked_kind": kind}
     if any(claim in normalized for claim in DELEGATED_VALUES):
         # A value that DENIES or defers the delegation it names is not a record of
         # one. Containment cannot tell "parent-delegated review returned findings"
@@ -279,22 +298,120 @@ def predates_typed_contract(path: Path, text: str) -> bool:
     return observed is not None and observed < OBSERVER_RULE_DATE
 
 
-def repo_requires_delegated_observer(repo_root: Path) -> bool:
-    """Whether the consuming repo adopted the bounded-review delegation contract.
+def _normalize_contract_text(text: str) -> str:
+    """Drop fenced blocks, flatten inline markup, collapse whitespace.
+
+    Three normalizations, each closing a way the SAME sentence stopped matching:
+    markup is REMOVED not tolerated (this repo writes `**already delegated**`,
+    and the plain substring test returned False in the repo that authored the
+    contract); whitespace is collapsed because the 58-character marker only fits
+    on one line at the template's current wrap width, so a reflow would drop an
+    adopting repo out of the contract; and fenced blocks are dropped because a
+    fence is documentation, not the repo's own assertion — `setup` ships the
+    delegation template inside one for operators to copy.
+    """
+
+    kept: list[str] = []
+    pending: list[str] = []
+    opener: str | None = None
+    for line in text.splitlines():
+        match = re.match(r"^\s*(`{3,}|~{3,})", line)
+        if match:
+            marker = match.group(1)
+            if opener is None:
+                opener = marker
+                pending = []
+                continue
+            if marker[0] == opener[0] and len(marker) >= len(opener):
+                opener = None
+                pending = []
+                continue
+        if opener is None:
+            kept.append(line)
+        else:
+            pending.append(line)
+    # An UNCLOSED fence must not swallow the rest of the file. Dropping everything
+    # after a stray ``` would silently un-adopt a repo whose contract sits below
+    # it -- no failure, no log line, no ticket, which is the class this ladder was
+    # built to close. Markdown renderers auto-close at EOF, so the file looks fine
+    # to every human. Treat the unterminated tail as content: the error direction
+    # is toward matching, which refuses strictly less.
+    kept.extend(pending)
+    flattened = re.sub(r"[`*_]+", "", "\n".join(kept).lower())
+    return re.sub(r"\s+", " ", flattened)
+
+
+def _delegation_record_state(repo_root: Path) -> tuple[str | None, list[str] | None]:
+    """Rung 2 of the authorization ladder: the recorded decision and its scopes.
+
+    A repo may grant the standing delegation request in
+    `.agents/subagent-delegation.json` instead of `AGENTS.md` — and that is the
+    exact repo class the ladder exists to serve, the one that never ran `setup`.
+    Mirrors the record module shipped beside the ladder resolver: a `scopes` key
+    that is present but not a non-empty list of strings makes the record
+    unreadable rather than widening the grant to every scope.
+    """
+
+    path = Path(repo_root) / ".agents/subagent-delegation.json"
+    if not path.is_file():
+        return None, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None, None
+    if not isinstance(data, dict):
+        return None, None
+    value = data.get("bounded_review_delegation")
+    if not isinstance(value, str):
+        return None, None
+    decision = value.strip().lower()
+    if decision not in ("granted", "declined"):
+        return None, None
+    scopes: list[str] | None = None
+    if "scopes" in data:
+        raw_scopes = data.get("scopes")
+        if not isinstance(raw_scopes, list) or not raw_scopes or not all(isinstance(s, str) for s in raw_scopes):
+            return None, None
+        scopes = [s.strip().lower() for s in raw_scopes]
+    return decision, scopes
+
+
+def _record_grants_scope(decision: str | None, scopes: list[str] | None, scope: str) -> bool:
+    """A rung-2 grant authorizes `scope` only when it names it (or names none)."""
+
+    if decision != "granted":
+        return False
+    return scopes is None or scope.strip().lower() in scopes
+
+
+def repo_requires_delegated_observer(repo_root: Path, *, scope: str = "issue") -> bool:
+    """Whether bounded review is AUTHORIZED in this repo for `scope`.
+
+    Walks the same ladder as the shipped `resolve_subagent_delegation.py`,
+    because a reader that knows only `AGENTS.md` goes inert in exactly the repo
+    class the ladder exists to serve. Three states are modelled rather than
+    collapsed into "adopted": a recorded `declined` is NOT authorization even
+    under an `AGENTS.md` block (`setup` writes that block, so rung-1-is-final
+    would let it override the user's only recorded "no", and then refuse closes
+    in a repo whose user said no); a grant narrowed to a scope set excluding
+    `scope` is not authorization for `scope`, or the repo is wedged — refused
+    for not spawning a reviewer it has just been told it may not spawn; and an
+    unreadable record is not a grant.
 
     A repo that never adopted it still gets the recorded disposition in the
     payload; it just is not refused for a field its conventions never defined.
     """
+    record_decision, record_scopes = _delegation_record_state(repo_root)
+    if record_decision == "declined":
+        return False
     agents_path = Path(repo_root) / "AGENTS.md"
     if not agents_path.is_file():
-        return False
+        return _record_grants_scope(record_decision, record_scopes, scope)
     try:
         text = agents_path.read_text(encoding="utf-8").lower()
-    except OSError:
-        return False
-    # Markup is REMOVED before matching, not tolerated inside the literal. This
-    # repo's own AGENTS.md writes `**already delegated**`, so a plain substring
-    # test against the unbolded sentence returned False here — the refusal was
-    # inert in the repo it was written for, and nothing said so.
-    flattened = re.sub(r"[`*_]+", "", text)
-    return all(marker in flattened for marker in DELEGATION_CONTRACT_MARKERS)
+    except (OSError, UnicodeDecodeError):
+        return _record_grants_scope(record_decision, record_scopes, scope)
+    if all(marker in _normalize_contract_text(text) for marker in DELEGATION_CONTRACT_MARKERS):
+        return True
+    # An `AGENTS.md` without the block does not end the ladder — rung 2 still can.
+    return _record_grants_scope(record_decision, record_scopes, scope)

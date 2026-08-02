@@ -1,6 +1,6 @@
 # Achieve Goal: Fix the rule that cannot fire where it was written to, then count the rest
 
-Status: draft
+Status: active
 Created: 2026-08-03
 Activation: `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
 
@@ -9,14 +9,17 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
+- Current slice: Lane A COMPLETE (#475 ladder shipped, two bounded rounds). Next: Lane B — write the can-this-fire predicate, then measure.
+- Current slice intent: Lane B — count the rest of the class with a written-down
+  predicate and a stated denominator. Lane A's intent (the #475 ladder) is closed.
+  This names
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-03-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md` after confirming the draft is
-  still intended.
+- Next action: Lane B. Write the predicate BEFORE reading the population,
+  then enumerate `*_RULE_DATE` constants, `validate_*` / `check_*` scripts,
+  AND the contract/reference surfaces an agent reads. #473 is a known member;
+  #476 (filed this run) is a measured member already.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -250,7 +253,7 @@ closable, so stopping between lanes is clean; the cut order is in `## Boundaries
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Implement the operator-chosen three-rung authorization ladder (AGENTS.md, else structured opt-in, else ask-once-and-persist), propagate it to every surface a consuming repo reads, and hand the operator a one-command behavioural check | It is costing the operator work right now, it is the class's clearest worked example, and it defines the axis Lane B's earlier draft was missing — a rule inert in a CONTRACT surface, not in code | The amended authorization rule with each source's legitimacy stated; propagation to the `setup` template / generated block / compact-contract snippets; tests pinning block-carrying repos unchanged and genuine host blocks still degrading; the operator's verification command; two bounded rounds | pending |
+| A | Implement the operator-chosen three-rung authorization ladder (AGENTS.md, else structured opt-in, else ask-once-and-persist), propagate it to every surface a consuming repo reads, and hand the operator a one-command behavioural check | It is costing the operator work right now, it is the class's clearest worked example, and it defines the axis Lane B's earlier draft was missing — a rule inert in a CONTRACT surface, not in code | The amended authorization rule with each source's legitimacy stated; propagation to the `setup` template / generated block / compact-contract snippets; tests pinning block-carrying repos unchanged and genuine host blocks still degrading; the operator's verification command; two bounded rounds | done |
 | B | Write the can-this-fire predicate, enumerate the population INCLUDING contract surfaces, measure, repair the unambiguous, file the rest — resolving #473 as the known member | Four instances of this class surfaced by accident, all found by people rather than gates. A fifth accident is not a plan; a stated count is. Lane A supplies both the widened population and the worked example | A sweep artifact with read / can-fire / cannot-fire counts and their denominators, a disposition per finding, #473 resolved with a test pinning the choice | pending |
 | C | Surface duplicate-ratchet pressure at the first edit to a gated file (#474) | Four consecutive runs have written "run the dup ratchet early" into a plan and hit it at the aggregate anyway. The length-headroom advisory already proves the affordance shape works | The advisory firing on a changed gated file, a test pinning it, #474 closed through the close path's floor | pending |
 | D | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green; a closeout-claims critique artifact; retro dispositions each `applied:` or `issue #N` | pending |
@@ -302,7 +305,7 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- `Routing: achieve — owns the goal lifecycle, slice cadence, and the closeout floors for this multi-lane run; critique supplied the bounded review rounds Lane A's proof-surface changes owe, and issue filed #476.`
 
 ## Discuss Before Activation
 
@@ -316,6 +319,20 @@ applies.
 - Discuss before activation: RESOLVED / APPROVED 2026-08-02 — all three items settled by the operator in-transcript. Item (2) APPROVED and item (3) SETTLED — `git push` to `main` plus the CI it triggers and filing new issues are approved for this run; closing #475 / #473 / #474 still runs through the close path's floor; the throwaway scratch repo was WITHDRAWN as over-specified (see `## Boundaries`), so no temp repo is created; and this stays ONE goal with three lanes under the written cut order (C, then B's repairs, never A). Item (1) RESOLVED 2026-08-02: the operator chose the three-source ladder with an ask-once rung — `AGENTS.md` block, else a structured repo-owned opt-out/opt-in, else ASK ONCE and persist the answer. The plugin never self-grants silently. Design detail is folded into `## User Acceptance` and Lane A. Original framing preserved below. (1) THE TRUST POSTURE FOR LANE A, and it is the whole design decision. Today the standing delegation request is the REPO OWNER's, checked into their own `AGENTS.md`. Every alternative source shifts who grants it: (a) invoking the skill counts as the user's act, so `/charness:critique` authorizes the bounded reviewers that skill mandates — most direct, and the plugin effectively grants itself spawn rights in any repo that installs it; (b) a structured opt-in `setup` writes, which keeps the grant repo-owned and removes the prose-matching fragility #471 proved, but still needs a file in the repo so it does NOT fix the never-ran-setup case alone; (c) both, with `AGENTS.md` kept as a third. Recommendation: (c), with (a) scoped narrowly to the named bounded-reviewer scopes and never a general spawn licence. Operator's call, because it changes who authorizes work that costs tokens. (2) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` plus the CI each push triggers, closing #475 / #473 / #474 if their lanes resolve them, filing new issues, and creating a throwaway scratch repo under a temp path. The 2026-08-02 approval was scoped to that goal and does NOT carry. (3) SIZE — three lanes plus closeout is larger than the last two-lane run, which consumed a full session with four reviewers. The cut order is written into `## Boundaries` (C, then B's repairs, never A); confirm that is the wanted trade rather than splitting this into two goals.
 
 ## Slice Log
+
+### Slice 1: Lane A — the three-rung delegation authorization ladder (#475)
+
+- Objective: Make the standing bounded-review delegation request reachable in a repo that never ran `setup`: AGENTS.md, else a structured .agents/subagent-delegation.json record, else ask once and persist. No silent self-grant.
+- Why this approach: The operator reported the symptom directly, and both code consumers were verified to already degrade open before any edit — so this is a contract-and-mechanism change, not a validator fix. Rung 2 is structured rather than prose because #471 proved a bolded word must never decide whether a rule fires.
+- Commits:
+- What changed: skills/shared/references/fresh-eye-subagent-review.md (new `## Where The Delegation Request Comes From`, step 0, Do Not bullets); NEW skills/shared/scripts/resolve_subagent_delegation.py + subagent_delegation_record.py; scripts/validate_critique_artifacts.py and skills/public/issue/scripts/issue_critique_observer.py (both now walk the ladder and model the declined / narrowed-scope / unreadable states); scripts/validate_quality_artifact.py and the critique blocked-signal floor (accept `delegation signal:`); issue_resolution_critique.py (operator advisory distinguishes a decline from a host incapacity); setup + critique SKILL.md and setup references; NEW tests/quality_gates/test_subagent_delegation_ladder.py (44 tests); plugins/charness mirrors; dup-review.json (6 families classified intentional).
+- Alternatives rejected: Letting a skill invocation self-authorize (the plugin grants itself spawn rights in every installing repo, with no per-repo record) — rejected by the operator's chosen design. A scope-aware rung 1 — rejected: rung 1 reads prose, so parsing a hand-narrowed block would re-create the fragility rung 2 removes; the limitation is stated in the payload instead. Proving human authorship of a rung-2 grant — impossible for any file-based mechanism; auditability replaces it.
+- Targeted verification: 44 focused tests green; ruff clean; validate_critique_artifacts --all green over 688 critique artifacts (988 files = 688 artifacts + 300 prepare packets, excluded by content kind); all three readers still report this repo adopted at rung 1 and no rung-2 record exists here, so nothing is newly refused in-repo; run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review = completed.
+- Test duplication pressure: check_dup_ratchet.py hard-blocked with 6 new code families, ALL of them the deliberate portable-vs-repo reader duplication the repo already documents; classified `intentional` in dup-review.json with the parity test named as the guard. Ratchet now clean. Note: this is the FOURTH consecutive run to hit the ratchet at the closeout aggregate rather than at first edit — live evidence for Lane C (#474).
+- Critique: charness-artifacts/critique/2026-08-02-lane-a-the-delegation-authorization-ladder.md — four bounded reviewers over two rounds, all findings received, both boundary fingerprints exit 0 clean. Round 2 confirmed the fix REPRODUCED the class it fixes: the round-1 `delegation signal` widening could not fire on the one-line record the contract prescribes, and blocked_kind was computed while the operator advisory still called a decline a host incapacity. Both repaired; round-2 repairs recorded as accepted-unreviewed per the two-round cap.
+- Off-goal findings: https://github.com/corca-ai/charness/issues/476 — the shipped compact AGENTS.md template carries marker 1 but not marker 2, so a setup-created repo reads as never-adopted by all three readers. Verified by measurement. Not repaired in place: both repair directions newly APPLY floors to repos previously outside them, which needs a measured count and a recorded disposition (D49).
+- Lessons carried forward: A reviewer fixture that spells a string the way the matcher wants is how the whole class hides — build test inputs from the source constant, not by retyping. And a repair on a proof surface earns its second round: round 2 found blockers round 1 structurally could not see, because it was reviewing code that no longer existed.
+- Metrics:
 
 ## Context Sources
 

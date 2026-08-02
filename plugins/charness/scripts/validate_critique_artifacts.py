@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import date
 from pathlib import Path
@@ -72,7 +73,12 @@ FORBIDDEN_SUBAGENT_BLOCKER_PHRASES = (
     "current developer instruction only permits",
 )
 DELEGATION_CONTRACT_MARKERS = ("subagent delegation", "repo-mandated bounded fresh-eye subagent reviews are already delegated")
-SIGNAL_HEADINGS = ("host signal", "tool signal")
+# `delegation signal` added with the authorization ladder (#475). A user who
+# DECLINES the standing delegation request at rung 3 is a real, recorded reason
+# the review did not run, but it is not a host or tool signal — and the only
+# way to satisfy this floor without it was to write a `host signal:` line that
+# would be a lie. Widening what this floor ACCEPTS refuses strictly less.
+SIGNAL_HEADINGS = ("host signal", "tool signal", "delegation signal")
 PLACEHOLDER_VALUES = {"", "todo", "tbd", "missing", "n/a", "na", "blocked"}
 
 # Distinct-observer presence floor (counterweight-verified: an artifact with no
@@ -138,6 +144,30 @@ _LEADING_MARKUP_RE = re.compile(r"^[\s`*_\"'>\-]+")
 # (#471), not just at the leading edge. Same character class and same spelling as
 # `issue_critique_observer`'s flattening step.
 _MARKUP_FLATTEN_RE = re.compile(r"[`*_]+")
+# Fenced blocks are dropped and whitespace collapsed before matching (#475).
+# A fence is documentation, not the repo's own assertion — `setup` ships the
+# delegation template inside one for operators to copy — and the 58-character
+# marker only fits on one line at the template's current wrap width, so a
+# reflow would otherwise drop an adopting repo out of the contract. Same
+# spelling as `resolve_subagent_delegation.normalize_contract_text` and
+# `issue_critique_observer`; the three are pinned by a shared-fixture parity test.
+_FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
+_WHITESPACE_COLLAPSE_RE = re.compile(r"\s+")
+# Rung 2 of the authorization ladder. A repo may grant the standing delegation
+# request here instead of in `AGENTS.md`; see the `Subagent Delegation` block
+# and `skills/shared/references/fresh-eye-subagent-review.md`.
+DELEGATION_RECORD_RELPATH = ".agents/subagent-delegation.json"
+DELEGATION_RECORD_FIELD = "bounded_review_delegation"
+DELEGATION_RECORD_GRANTED = "granted"
+DELEGATION_RECORD_DECLINED = "declined"
+
+
+def _record_grants_scope(decision: str | None, scopes: list[str] | None, scope: str) -> bool:
+    """A rung-2 grant authorizes `scope` only when it names it (or names none)."""
+
+    if decision != DELEGATION_RECORD_GRANTED:
+        return False
+    return scopes is None or scope.strip().lower() in scopes
 
 
 def changed_paths(repo_root: Path) -> list[str]:
@@ -168,30 +198,118 @@ def candidate_paths(repo_root: Path, paths: list[str], *, all_artifacts: bool) -
     return sorted(candidates)
 
 
-def has_repo_delegation_contract(repo_root: Path) -> bool:
+def _normalize_contract_text(text: str) -> str:
+    """Drop fenced blocks, flatten inline markup, collapse whitespace."""
+
+    kept: list[str] = []
+    pending: list[str] = []
+    opener: str | None = None
+    for line in text.splitlines():
+        match = _FENCE_RE.match(line)
+        if match:
+            marker = match.group(1)
+            if opener is None:
+                opener = marker
+                pending = []
+                continue
+            if marker[0] == opener[0] and len(marker) >= len(opener):
+                opener = None
+                pending = []
+                continue
+        if opener is None:
+            kept.append(line)
+        else:
+            pending.append(line)
+    # An UNCLOSED fence must not swallow the rest of the file. Dropping everything
+    # after a stray ``` would silently un-adopt a repo whose contract sits below
+    # it -- no failure, no log line, no ticket, which is the class this ladder was
+    # built to close. Markdown renderers auto-close at EOF, so the file looks fine
+    # to every human. Treat the unterminated tail as content: the error direction
+    # is toward matching, which refuses strictly less.
+    kept.extend(pending)
+    flattened = _MARKUP_FLATTEN_RE.sub("", "\n".join(kept).lower())
+    return _WHITESPACE_COLLAPSE_RE.sub(" ", flattened)
+
+
+def _delegation_record_state(repo_root: Path) -> tuple[str | None, list[str] | None]:
+    """Rung 2: the recorded decision and the scopes it covers, or `(None, None)`.
+
+    Mirrors `skills/shared/scripts/subagent_delegation_record.py`: a `scopes` key
+    that is present but not a non-empty list of strings makes the record
+    unreadable rather than widening the grant to every scope.
+    """
+
+    path = repo_root / DELEGATION_RECORD_RELPATH
+    if not path.is_file():
+        return None, None
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None, None
+    if not isinstance(data, dict):
+        return None, None
+    value = data.get(DELEGATION_RECORD_FIELD)
+    if not isinstance(value, str):
+        return None, None
+    decision = value.strip().lower()
+    if decision not in (DELEGATION_RECORD_GRANTED, DELEGATION_RECORD_DECLINED):
+        return None, None
+    scopes: list[str] | None = None
+    if "scopes" in data:
+        raw_scopes = data.get("scopes")
+        if not isinstance(raw_scopes, list) or not raw_scopes or not all(isinstance(s, str) for s in raw_scopes):
+            return None, None
+        scopes = [s.strip().lower() for s in raw_scopes]
+    return decision, scopes
+
+
+def has_repo_delegation_contract(repo_root: Path, *, scope: str = "critique") -> bool:
+    """Whether bounded review is AUTHORIZED here for `scope`.
+
+    This walks the same ladder as
+    `skills/shared/scripts/resolve_subagent_delegation.py`, because a reader that
+    knows only rung 1 goes inert in exactly the repo class the ladder exists to
+    serve — the one that never ran `setup` and granted at rung 2. Three states
+    the ladder invented are modelled here rather than collapsed to "adopted":
+
+    * a recorded `declined` means NOT authorized, even under an `AGENTS.md`
+      block — `setup` WRITES that block, so treating rung 1 as final would let
+      it override the user's only recorded "no" and then refuse artifacts in a
+      repo whose user said no;
+    * a grant narrowed to a scope set that excludes `scope` is not authorization
+      for `scope`, or the repo is wedged: refused for not spawning a reviewer
+      the ladder told it it may not spawn;
+    * an unreadable record is not a grant.
+    """
+
+    record_decision, record_scopes = _delegation_record_state(repo_root)
+    if record_decision == DELEGATION_RECORD_DECLINED:
+        return False
     agents_path = repo_root / "AGENTS.md"
     if not agents_path.is_file():
-        return False
+        return _record_grants_scope(record_decision, record_scopes, scope)
     try:
         text = agents_path.read_text(encoding="utf-8").lower()
-    except OSError:
+    except (OSError, UnicodeDecodeError):
         # Unreadable is NOT adopted. Without this the two readers of one contract
         # disagree on an unreadable `AGENTS.md` (the sibling returns False here),
         # and the OSError escapes as an uncaught traceback rather than a
         # ValidationError, so `main`'s handler never renders it as a validation
         # failure. Same shape as the SurfaceError worry this module already has.
-        return False
+        return _record_grants_scope(record_decision, record_scopes, scope)
     # Markup is REMOVED before matching, not tolerated inside the literal (#471).
     # This repo's own AGENTS.md writes `**already delegated**`, so the plain
     # substring test this replaced returned False HERE — the gate below
     # (`_check_forbidden_blocker_phrases`) had never fired in the repo it was
     # written for, and nothing said so, because no test read the real file. The
     # rule matched the emphasis, not the sentence. Kept character-identical to
-    # `issue_critique_observer.repo_requires_delegated_observer`, which already
-    # carried this repair, so the two readers of one contract cannot disagree
-    # about whether a repo adopted it.
-    flattened = _MARKUP_FLATTEN_RE.sub("", text)
-    return all(marker in flattened for marker in DELEGATION_CONTRACT_MARKERS)
+    # `issue_critique_observer.repo_requires_delegated_observer` and to
+    # `resolve_subagent_delegation.normalize_contract_text`, so the three readers
+    # of one contract cannot disagree about whether a repo adopted it.
+    if all(marker in _normalize_contract_text(text) for marker in DELEGATION_CONTRACT_MARKERS):
+        return True
+    # An `AGENTS.md` without the block does not end the ladder — rung 2 still can.
+    return _record_grants_scope(record_decision, record_scopes, scope)
 
 
 # Claim-reading lives with the enforcement-scope concept: "which claim does this
@@ -218,6 +336,15 @@ def has_blocked_signal_detail(text: str) -> bool:
         for heading in SIGNAL_HEADINGS:
             marker = f"{heading}:"
             if lowered.startswith(marker) and _substantive_signal(lowered.removeprefix(marker)):
+                return True
+            # A signal heading also counts INSIDE the line, not only at its start.
+            # The typed record is written as one line — `Fresh-eye satisfaction:
+            # blocked <value> — <heading>: <signal>` — so a prefix-only match
+            # refused every record that follows the contract's own prescribed
+            # form while accepting only a form nothing prescribes. That is the
+            # inert-rule class: the floor could not fire where it was written to.
+            offset = lowered.find(f" {marker}")
+            if offset != -1 and _substantive_signal(lowered[offset + len(marker) + 1 :]):
                 return True
     for index, raw in enumerate(lines):
         lowered = raw.strip().lower().rstrip(":")
@@ -408,7 +535,9 @@ def validate_critique_artifact(
         if status_lowered and "blocked" in status_lowered and "parent-delegated" not in status_lowered:
             if not has_blocked_signal_detail(text):
                 raise ValidationError(
-                    f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:` or `tool signal:`"
+                    f"{path}: blocked critique fresh-eye satisfaction must cite `host signal:`, "
+                    "`tool signal:`, or — when the user declined the standing delegation request — "
+                    "`delegation signal:`. Do not write a host signal that did not occur."
                 )
 
     def _check_reviewer_tier_evidence() -> None:

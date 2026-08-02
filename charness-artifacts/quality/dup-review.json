@@ -303,6 +303,13 @@
     },
     {
       "class": "intentional",
+      "id": "33bb1736e07c0033",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
+    },
+    {
+      "class": "intentional",
       "id": "34408a7c1ad1e68c",
       "note": "small idiom-sized argparse/bootstrap span shared by top-level checker scripts (check_markdown_inline_code, validate_handoff_artifact, validate_quality_artifact); pre-existing idiom surfaced under a rotated family fingerprint by the #432 scan-scope change, a shared helper would add coupling for 5 lines",
       "reviewed_at": "2026-07-10",
@@ -377,6 +384,13 @@
       "note": "the `if __name__ == \"__main__\": try: sys.exit(main()) except <Error> as exc: print(..., file=sys.stderr); sys.exit(1)` CLI entrypoint epilogue shared by 15 repo validator/export scripts; 14 of the 15 members are untouched and this file already carried the epilogue before the change that surfaced the family -- splitting test_quality_runner.py rotated the scan fingerprints (five sibling families reported reductions in the same run, the #441 rotation class). Not extractable: the `__main__` guard is a language-level idiom and each member names its own exception type, so a shared helper would replace six explicit lines with an indirection every script still has to spell out.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3e83120668576e01",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
     },
     {
       "class": "intentional",
@@ -870,6 +884,13 @@
     },
     {
       "class": "intentional",
+      "id": "7ffb6c4ccd2283a8",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
+    },
+    {
+      "class": "intentional",
       "id": "8063cae3315dd267",
       "note": "git config subprocess helper family rotated after setup worktree template extraction; root worktree doctor and portable setup seed script keep local helper ownership to preserve direct execution boundaries",
       "reviewed_at": "2026-06-27",
@@ -1045,6 +1066,13 @@
     },
     {
       "class": "intentional",
+      "id": "9dad44e71295f197",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
+    },
+    {
+      "class": "intentional",
       "id": "9f2acd76a3a85b84",
       "reviewed_at": "2026-08-03",
       "surface": "code",
@@ -1217,6 +1245,13 @@
       "note": "skill-runtime bootstrap + local-module load preamble shared by two chunker CLI stages; same portability preamble class as the other loader families here",
       "reviewed_at": "2026-07-27",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "bffade4892f4681d",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
     },
     {
       "class": "intentional",
@@ -1546,6 +1581,13 @@
       "note": "the two-line tail of the same repo-root bootstrap preamble (the sys.path guard plus its insert), shared by changed_line_run_trust.py and sample_mutation_files.py. Idiom-sized and unextractable for the same reason as 0df7f8c7a6119974: the helper that would hold it cannot be imported until it has run.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e9f06b764859ef84",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary."
     },
     {
       "class": "intentional",

@@ -17,6 +17,14 @@
 - when adapter-declared policy sources imply delegated review but
   `<repo-root>/AGENTS.md` lacks the explicit host-spawn rule, emit a reviewable
   recommendation instead of treating phrase matching as a hard fact
+- the `AGENTS.md` section is rung 1 of an authorization ladder, not its only
+  rung. A repo may instead carry a structured grant in
+  `<repo-root>/.agents/subagent-delegation.json` (rung 2), or be asked once
+  (rung 3) — see `../../../shared/references/fresh-eye-subagent-review.md`,
+  *Where The Delegation Request Comes From*. Do not report a repo that granted
+  at rung 2 as lacking the delegation surface, and do not write the `AGENTS.md`
+  block over a recorded `declined` without surfacing the conflict: writing rung 1
+  silently overrides the user's recorded answer
 - when the dedicated `## Subagent Delegation` section acknowledges that a
   higher-priority system, developer, or host policy may prohibit spawning,
   accept that boundary as truthful; emit an advisory only when the wording

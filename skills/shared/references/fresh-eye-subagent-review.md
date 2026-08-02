@@ -83,13 +83,88 @@ Parent sessions that never spawned a fresh-eye reviewer cannot claim
 `parent-delegated`. They must run the capability check below before calling the
 canonical path blocked.
 
-If `<repo-root>/AGENTS.md` contains a dedicated `Subagent Delegation` contract
-that says repo-mandated bounded fresh-eye reviews are already delegated, treat
-that as the explicit delegation request for those named bounded reviewer
-scopes. Do not block merely because the live user message did not repeat the
-word "subagent"; first try the host spawn tool under the repo contract. Only a
-real tool refusal, missing spawn surface, exhausted host budget, or higher
-priority instruction that forbids honoring repo delegation is a blocker.
+## Where The Delegation Request Comes From
+
+A skill that MANDATES bounded fresh-eye review cannot also AUTHORIZE it. The
+mandate says the review must happen; the authorization says who is allowed to
+spend tokens spawning it, and that grant is the user's to give. Naming only one
+place the grant may live is how this rule went inert: for repos that carry
+`AGENTS.md` it fired, and in every repo that had never run `setup` the mandate
+stood with no reachable source of authorization, refusing silently with no
+failure, no log line, and no ticket.
+
+Resolve the authorization as a ladder, **in this order**, and stop at the first
+rung that answers:
+
+1. **`<repo-root>/AGENTS.md` carries a dedicated `Subagent Delegation`
+   contract** saying repo-mandated bounded fresh-eye reviews are already
+   delegated. Legitimate because the repo owner checked that sentence in
+   themselves. Delegate immediately for the named bounded reviewer scopes.
+2. **Else `<repo-root>/.agents/subagent-delegation.json` records a decision.**
+   Legitimate for the same reason as rung 1 — it is repo-owned state a human
+   put there — and it is a STRUCTURED field rather than prose, so no wording,
+   emphasis, or line wrap decides whether the rule fires. A recorded
+   `granted` delegates; a recorded `declined` is honoured (see below).
+3. **Else ask the user once.** Name the bounded reviewer scopes being
+   requested and what they cost, and on an answer PERSIST it into rung 2 so the
+   question is asked at most once per repo. Legitimate because the grant stays
+   the user's explicit act.
+
+Resolve the ladder with
+`python3 "$SKILL_DIR/../../shared/scripts/resolve_subagent_delegation.py" resolve --repo-root <repo-root>`
+rather than re-deriving it, and persist a rung-3 answer with the same script's
+`record --decision granted|declined`. Anything the resolver cannot read as a
+decision — a missing file, malformed JSON, an unrecognized value — resolves to
+`ask`, never to `granted`. **A skill invocation is not a rung.** Invoking
+`critique` or `quality` does not authorize the reviewers those skills mandate;
+that would let the plugin grant itself spawn rights in every repo that installs
+it, with no per-repo record of what was authorized.
+
+A recorded `declined` is a real answer and is honoured: the review does not run
+and is not re-asked on the next slice. Record it as
+
+```text
+Fresh-eye satisfaction: blocked delegation-declined — delegation signal: the user
+declined the standing bounded-review delegation request, recorded in
+.agents/subagent-delegation.json
+```
+
+`delegation signal:` is a distinct heading from `host signal:` / `tool signal:`
+on purpose. A user's deliberate "no" is not a host incapacity, and writing it as
+one would both require a false `host signal:` line to satisfy the authoring
+floor and report a user decision as a machine limitation at an irreversible
+public boundary. A decline is not a defect to route around and not grounds for a
+same-agent substitute.
+
+**Rung 2 is read even when rung 1 answers.** `setup` is the skill that WRITES
+the `AGENTS.md` block, so `decline at rung 3, then run setup` is a sequence this
+harness manufactures — and resolving rung 1 without looking would erase the only
+"no" the user ever gave. A recorded `declined` under a present `AGENTS.md` block
+is a CONFLICT: it resolves to `ask` naming both sources, never to `granted` and
+never to a silently dropped refusal.
+
+A grant may name a narrower scope set than the canonical five. Pass
+`resolve --scope <name>` when you know which scope you are about to spawn for; a
+grant that does not cover it resolves to `ask` rather than reading as `granted`
+to a caller it never covered.
+
+The record is repo-owned testimony, not proof of who answered — no file-based
+mechanism can prove human authorship. What it buys is an auditable, diffable,
+per-repo record: `resolve` surfaces the recorded provenance at the point of use,
+and `record` refuses a `granted` with no `--note`. It is JSON rather than the
+`.agents/*.yaml` adapter idiom because it is machine-written by the rung-3
+persist step, not hand-maintained.
+
+Do not block merely because the live user message did not repeat the word
+"subagent"; once a rung answers `granted`, first try the host spawn tool under
+that grant. Only a real tool refusal, missing spawn surface, exhausted host
+budget, or higher priority instruction that forbids honoring the grant is a
+blocker.
+
+The ladder changes where AUTHORIZATION may come from. It does not loosen what
+counts as PROOF that a review ran: a genuine tool refusal is still a blocker, a
+spawn is still not a received review (*Result Delivery*), and a same-agent pass
+is still forbidden.
 
 ## Distinct Named Lenses
 
@@ -319,6 +394,11 @@ failure.
 
 ## Required Before Declaring The Canonical Path Blocked
 
+0. Resolve the authorization ladder in *Where The Delegation Request Comes
+   From* first. "No standing delegation request in this repo" is not a blocker
+   until rung 3 has actually been asked; an unasked question is a step you
+   skipped, not a host restriction. A recorded `declined` IS a legitimate stop,
+   recorded as such and not re-asked.
 1. Attempt the bounded setup the skill calls for.
    - Try to open one fresh-eye or critique subagent with a tight scope and
      time box. A single probe is enough; you are not required to spawn the full
@@ -382,3 +462,9 @@ failed.
 - Do not report "the user did not explicitly allow subagents" when repo
   `Subagent Delegation` instructions already delegated bounded fresh-eye review
   scopes.
+- Do not treat a missing `AGENTS.md` delegation block as the end of the ladder.
+  Rungs 2 and 3 exist precisely for that repo; skipping to `blocked` there is
+  the inert-rule failure this section was rewritten to stop.
+- Do not let a skill invocation stand in for a rung. Mandating a review is not
+  authorizing it, and a self-grant leaves no per-repo record of what the user
+  actually allowed.

@@ -24,14 +24,21 @@ Keep the concept narrow. `setup` is not the whole product-definition skill, not 
 Resolve the adapter first, then read the smallest context that reveals the repo
 state.
 
-Before any host-capability question, honor the repo's
-`<repo-root>/AGENTS.md` `Subagent Delegation` clause: required bounded review is already
-delegated.
-
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
+```
+
+Before any host-capability question, resolve who authorized this repo's bounded
+review. `setup` frequently runs in a repo that has no `AGENTS.md` yet, so the
+`Subagent Delegation` clause alone cannot answer — walk the ladder in
+`../../shared/references/fresh-eye-subagent-review.md` (*Where The Delegation
+Request Comes From*): `AGENTS.md`, else the structured record, else ask once and
+persist. Resolve it, do not assume it:
+
+```bash
+python3 "$SKILL_DIR/../../shared/scripts/resolve_subagent_delegation.py" resolve --repo-root .
 ```
 
 By default, `setup` writes any durable normalization note to

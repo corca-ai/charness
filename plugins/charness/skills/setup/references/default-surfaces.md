@@ -59,6 +59,10 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   is already delegated by the repo contract, agents should not wait for a
   second user message asking for delegation, and host spawn restrictions should
   be reported explicitly instead of replaced with a same-agent pass
+- that section is rung 1 of the authorization ladder; a repo may grant instead
+  in `<repo-root>/.agents/subagent-delegation.json` (rung 2) or be asked once
+  (rung 3). Treat a rung-2 grant as an adopted delegation surface, not a missing
+  one — `../../../shared/references/fresh-eye-subagent-review.md`
 - compact AGENTS profiles may use the shorter standing-request form from
   `agent-docs-policy.md` instead of the expanded copy-paste wording, as long as
   they preserve the same host-read-time safety invariant: standing delegation,

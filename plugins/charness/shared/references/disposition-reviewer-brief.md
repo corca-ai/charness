@@ -61,4 +61,4 @@ reviewer, or fresh-eye reviewer spawned by a parent, perform that assigned lens
 directly and return the requested triage.
 Do not run host capability checks or require nested spawn access.
 Do not report blocked for missing nested subagents unless the parent asked for recursion.
-Honor `<repo-root>/AGENTS.md` `Subagent Delegation` — required bounded review is already delegated — and consult `fresh-eye-subagent-review.md` before treating the canonical path as blocked.
+Honor the repo's standing delegation grant — `<repo-root>/AGENTS.md` `Subagent Delegation`, else the structured record, else ask once (`fresh-eye-subagent-review.md`, *Where The Delegation Request Comes From*) — and consult that same reference before treating the canonical path as blocked. A repo with no `AGENTS.md` block has not refused; it has not been asked.

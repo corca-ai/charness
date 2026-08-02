@@ -65,7 +65,12 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert "model self-report" in capability_text
     assert "only observed tool is shell execution" in capability_text
     assert "Subagent Delegation" in capability_text
-    assert "repo-mandated bounded fresh-eye reviews are already delegated" in capability_text
+    # #475: the grant is a three-rung ladder, not one source. Pinning the old
+    # single-source sentence would re-pin the defect -- a repo without the
+    # `AGENTS.md` block had no reachable authorization at all.
+    assert "## Where The Delegation Request Comes From" in capability_text
+    assert ".agents/subagent-delegation.json" in capability_text
+    assert "A skill invocation is not a rung." in capability_text
     assert "`host signal:` or `tool signal:`" in capability_text
     assert "wrong next action" in handoff_text
     assert "likely implementer misread" in SPEC_SKILL
@@ -426,7 +431,8 @@ def test_critique_artifact_validator_rejects_empty_signal_section(tmp_path: Path
     )
 
     assert result.returncode == 1
-    assert "must cite `host signal:` or `tool signal:`" in result.stderr
+    assert "must cite `host signal:`, `tool signal:`, or" in result.stderr
+    assert "`delegation signal:`" in result.stderr
 
 
 def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path: Path) -> None:
@@ -455,7 +461,8 @@ def test_critique_artifact_validator_rejects_marker_only_signal_section(tmp_path
     )
 
     assert result.returncode == 1
-    assert "must cite `host signal:` or `tool signal:`" in result.stderr
+    assert "must cite `host signal:`, `tool signal:`, or" in result.stderr
+    assert "`delegation signal:`" in result.stderr
 
 
 def test_critique_artifact_validator_fails_closed_when_changed_path_discovery_fails(

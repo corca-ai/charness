@@ -377,8 +377,21 @@ def validate_delegated_review_section(lines: list[str]) -> None:
         raise ValidationError("`## Delegated Review` must include executed, blocked, or not_applicable status")
     # Trigger on the authored claim, but let the signal itself satisfy it from anywhere
     # in the section, so a host signal written inside a comment still counts.
-    if "blocked" in lowered and "host signal:" not in raw_lowered and "tool signal:" not in raw_lowered:
-        raise ValidationError("blocked delegated review must cite a concrete host signal or tool signal")
+    # `delegation signal:` is the third accepted heading. A user who DECLINES the
+    # standing delegation request is a real, recorded reason the review did not
+    # run, but it is not a host or tool signal — and without this the only way to
+    # satisfy the floor was to write a `host signal:` line that would be a lie.
+    # Sibling of the same widening in `validate_critique_artifacts.SIGNAL_HEADINGS`;
+    # widening what this floor ACCEPTS refuses strictly less.
+    if (
+        "blocked" in lowered
+        and "host signal:" not in raw_lowered
+        and "tool signal:" not in raw_lowered
+        and "delegation signal:" not in raw_lowered
+    ):
+        raise ValidationError(
+            "blocked delegated review must cite a concrete host signal, tool signal, or delegation signal"
+        )
     if declared_delegated_review_status(section_lines) == "executed":
         validate_executed_delegated_review_substance(section_lines)
     # Comments stripped here too: the scaffold's own delegated-review guard mentions
