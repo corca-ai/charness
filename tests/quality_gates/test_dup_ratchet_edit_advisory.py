@@ -375,3 +375,37 @@ def test_the_cli_prints_the_advisory_and_the_structured_decision(git_repo: Path,
 def test_the_threshold_is_a_knob_not_a_constant(git_repo: Path, advisory) -> None:
     (git_repo / "scripts/seed.py").write_text("x = 1\ny = 2\nz = 3\n", encoding="utf-8")
     assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py", threshold=1) is not None
+
+
+def test_a_tracked_unchanged_file_reports_zero_not_no_answer(git_repo: Path, advisory) -> None:
+    """`git diff --numstat` prints nothing for an unchanged tracked file, which is
+    indistinguishable from "no answer" unless the tracked check runs. Reporting
+    None there would make the advisory silent for a reason it never established."""
+    assert advisory.added_lines_vs_head(git_repo, "scripts/seed.py") == 0
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is None
+
+
+def test_a_suppression_state_file_that_cannot_be_written_re_advises(
+    git_repo: Path, advisory, monkeypatch
+) -> None:
+    """A read-only or full disk must not silently disable the signal.
+
+    A repeated advisory is noise; a missed one is the trap this exists to catch,
+    so the unwritable path deliberately errs toward advising again rather than
+    recording a suppression it never persisted.
+    """
+    (git_repo / "scripts/seed.py").write_text(
+        "\n".join(f"u{i} = {i}" for i in range(80)), encoding="utf-8"
+    )
+    real_write = Path.write_text
+
+    def only_the_state_file_fails(self, *args, **kwargs):
+        if self.name == "advised.json":
+            raise OSError("read-only file system")
+        return real_write(self, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "write_text", only_the_state_file_fails)
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None
+    assert advisory.advise_for_edited_file(git_repo, "scripts/seed.py") is not None, (
+        "an unwritable state file must re-advise, never go silent"
+    )
