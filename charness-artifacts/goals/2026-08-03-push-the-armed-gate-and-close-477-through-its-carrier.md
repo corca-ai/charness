@@ -1,6 +1,6 @@
 # Achieve Goal: Push the armed gate and close #477 through its carrier
 
-Status: draft
+Status: active
 Created: 2026-08-03
 Activation: `/goal @charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md`
 
@@ -74,15 +74,19 @@ Three outcomes:
 - Not the E-cluster, not D41–D48.
 ## Boundaries
 
-- **External side-effect scope — NOT YET APPROVED. This is the activation
-  question.** Three items, each needing an explicit grant for THIS goal:
-  (1) `git push` to `main` plus the `quality-core` runs it triggers;
-  (2) closing #477 via the commit-message carrier — GitHub cannot un-create the
-  close comment, though a close itself is reversible;
-  (3) any comment or conversion on #478.
-  The prior goal's approval covered all three and expired with it. Recorded here
-  rather than assumed, because assuming it is the exact failure this repo's
-  phase-scoping rule exists to stop.
+- **External side-effect scope — SETTLED BY THE OPERATOR 2026-08-02, agreeing
+  with the agent's recommended split.** (1) `git push` to `main` plus the
+  `quality-core` runs it triggers: **APPROVED**. (2) Closing #477 via the
+  commit-message carrier: **APPROVED**, still through the close path's full
+  ledger with a DELEGATED resolution critique BEFORE the close call — the grant
+  covers the decision to close, never the evidence floor. (3) Comments or
+  conversions on #478: **CASE-BY-CASE** — recording per-site decisions in this
+  artifact needs no grant, but writing to GitHub or converting shipped prose is
+  asked for individually, because #478 is a convention decision rather than a
+  repair.
+  **Scoped to THIS goal; does not carry to the next one.**
+  NOT in scope at all: a release publish, a tag, a version bump, or any
+  `cautilus evaluate` run.
 - In scope: the unpushed commit `58960639`, #477's closeout ledger and critique,
   the 7 #478 sites, and the `plugins/` mirror of anything touched.
 - Stop conditions: (1) if CI refuses on the newly armed path gate, read the
@@ -234,17 +238,16 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: **OPEN — needs the operator, and it is the only
-  thing blocking activation.** The prior goal's external side-effect approval
-  expired with that goal, so this run needs a fresh grant covering (1) `git push`
-  to `main` plus its CI, (2) closing #477 through the commit-message carrier,
-  and (3) commenting on or converting the #478 sites. Everything else in this
-  goal is shaped and locally proven; slice A is a boundary crossing for work
-  that is already verified, which is why the grant is the whole question. The
-  agent's recommendation: grant (1) and (2) — the commit is proven and #477's
-  work is complete — and leave (3) case-by-case, since #478 is a convention
-  decision rather than a repair. Recorded so a later session reads a chosen
-  scope rather than an inherited default.
+- Discuss before activation: RESOLVED 2026-08-02 — the operator agreed with
+  the agent's recommended split rather than granting a blanket scope: push to
+  `main` plus its CI is APPROVED, closing #477 through the commit-message
+  carrier is APPROVED (evidence floor unchanged — full ledger plus a delegated
+  resolution critique first), and #478 GitHub writes / prose conversions stay
+  CASE-BY-CASE. Recorded as a deliberate narrower grant, not an inherited
+  default: the prior goal's operator chose a WIDER scope than recommended, so a
+  later session should read this as a different call made on purpose. Scoped to
+  this goal only.
+- **This goal is ready to run.**
 
 ## Slice Log
 
