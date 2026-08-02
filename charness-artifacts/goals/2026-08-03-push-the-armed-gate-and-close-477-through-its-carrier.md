@@ -251,6 +251,34 @@ applies.
 
 ## Slice Log
 
+### Slice 1: A — push the armed gate
+
+- Objective: Cross the boundary the previous goal could not: push the proven bundle and prove the newly armed path gate survives outside this working tree.
+- Why this approach: The gate had only ever run here. Until CI ran it, 'safe promotion' was a local claim.
+- Commits: 58960639, f5c84f3c, cd223b3a, c31a6eca
+- What changed:
+- Alternatives rejected:
+- Targeted verification: Pre-push refused ONCE, correctly: the changed-line mutation lane named the plugins/* non-directory guard, a branch round 1 had asked about in prose and I had answered without a test. Covered, then 83 passed / 0 failed. Pushed c31a6eca. inventory-skill-script-references PASSED in pre-push (303ms) and in CI. Confirmed per P4 on three channels: gh run watch --exit-status = 0; the commit check-runs API independently (both success); git ls-remote matching the pushed SHA.
+- Test duplication pressure:
+- Critique:
+- Off-goal findings:
+- Lessons carried forward: The armed gate's first external run is the evidence, not the local run. It passed both.
+- Metrics:
+
+### Slice 2: B — close #477 through the commit carrier
+
+- Objective: Close #477 with evidence rather than assertion: the full bug ledger, a delegated causal review before the close call, and a behavioural verdict from a channel distinct from the fix.
+- Why this approach: The carrier was never in question — the commit message is the repo's designed path. What the ledger demands (root_cause, siblings with decision AND proof, prevention, a distinct-channel behaviour verdict) is what turns a close into evidence.
+- Commits: 98f2e749
+- What changed: charness-artifacts/critique/2026-08-02-issue-477-resolution.md, charness-artifacts/probe/2026-08-02-477-installed-layout-plan-risk-interrupt.md, RCA ledger append.
+- Alternatives rejected: Rejected issue_tool.py close-with-comment: it skips exactly the ledger fields that make the close auditable. Rejected asserting the behaviour from the in-repo mirror: the reviewer showed that cannot distinguish a self-sufficient package from a nearby authoring tree.
+- Targeted verification: validate-closeout-draft went draft_failed FOUR times before draft_verified, each for a real gap: missing root_cause/debug_artifact parsing, a siblings value lacking the required decision-AND-proof shape, an unrecognised critique line form, and a critique artifact with no Fresh-eye satisfaction line. Then the artifact's own validator refused it for a missing Boundary Ownership verdict and reviewer tier evidence. All fixed rather than routed around. verify-closeout: state CLOSED via backend-state-readback, ok true, no state mismatches.
+- Test duplication pressure:
+- Critique: Delegated bounded causal review before the close (window issue-477-causal, snapshot/verify clean). It supplied the three-mechanism root cause, swept four sibling axes, and REFUTED two claims the fix made about itself — that it 'resolves the layout ambiguity' (it removes one instance of a class live at ~10 other sites) and that a two-candidate probe would have confused check_doc_links (that gate structurally cannot read the form).
+- Off-goal findings: Ten packaged-Python sites use hard-coded parents[3]/parents[2] and are correct ONLY because the exporter's kind-flattening cancels the plugins/<pkg> prefix. Recorded with a revisit trigger (any export_plugin.py skill-tier layout change), not repaired.
+- Lessons carried forward: The behavioural verdict is the field most likely to be asserted rather than proven. Exporting to /tmp and running the documented command there cost minutes and reproduced BOTH halves of the report — the wrong path, and the swallow that hid it.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
