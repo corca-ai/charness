@@ -2,9 +2,9 @@
 
 ## Workflow Trigger
 
-- **No goal is waiting.** The last one completed: pushed, #477 closed, all seven
-  #478 sites dispositioned. Pick from `## Next Session`, or shape one with
-  `/achieve <outcome>`.
+- **A goal is SHAPED and pursue-ready** — no activation question, because the
+  standing approvals in `AGENTS.md` now cover it. Activate directly:
+  `/goal @charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md`
 
 ## Continuation Capability
 
@@ -34,10 +34,10 @@
 - The combined-status API reports `pending` / `total_count: 0` for every commit
   here because this repo publishes check-runs, not legacy statuses. Not a real
   pending; do not read it as one.
-- **The 13 broken shipped commands are repaired and pinned**, in BOTH the
-  authoring tree and the shipped mirror — different trees, and the inherited
-  measurement had only seen one. Recount with
-  `python3 scripts/inventory_skill_script_references.py --repo-root .`
+- **#477 and #478 are CLOSED**; their sites are repaired in both trees. Recount
+  with `python3 scripts/inventory_skill_script_references.py --repo-root .`
+- **Every retro must now carry `## North Star Alignment`** — validator-enforced,
+  scaffold-seeded, grandfathered from 2026-08-03.
 - **The accumulation mechanism is the durable finding**, not the count:
   `<repo-root>/` was the link gate's own documented escape, so the escape hatch
   and the typo were the same token. `<authoring-repo>/` now splits them.
@@ -46,22 +46,21 @@
 
 ## Next Session
 
-1. **#478 is closable and not closed.** All seven sites are dispositioned and
-   applied; the grant covered conversions, never the close. It needs its own
-   carrier and ledger, exactly as #477 got.
-2. **The `parents[3]` family is correct by coincidence.** Ten occurrences resolve
-   in both layouts only because the exporter's flattening cancels the
-   `plugins/<pkg>` prefix, and an eleventh (`skill_runtime_bootstrap.py:103`,
-   `parents[4]`) is already wrong but unreachable. Revisit trigger: **any change
-   to `export_plugin.py`'s skill-tier layout** turns all of them into #477 at
-   once.
+1. **The waiting goal owns #479 and the claims-round widening.** Read it rather
+   than re-deriving its slices here.
+2. **#479 is the enclosing class #477/#478 were sub-forms of** — eleven-plus
+   confirmed live instances, including broken links in the shipped mirror that
+   `check_doc_links` never scans. Every prior pass reported an honest zero with
+   a ruler narrower than the class.
 3. **#475's behavioural half is still an OPEN operator decision.** Nobody has
    observed an agent ask-and-spawn in a repo that never ran `setup`.
 
 ## Discuss
 
-- **External side-effect approval expired with the completed goal.** Push,
-  issue-filing, and issue-closing each need a fresh grant.
+- **Issue creation is STANDING and push is standing CONDITIONAL ON THE GATES**
+  (`AGENTS.md` `## External Side Effects`). Do not re-ask either. Issue close,
+  PR, release, tag, version bump, and cautilus stay per-goal. Weakening a gate
+  to reach a green push revokes the push approval.
 - **The path check is now a BLOCKING gate.** Its own two review rounds shipped
   four false-positive/false-negative classes before it was safe, and the
   "false positives are structurally impossible" argument was wrong and is
@@ -74,6 +73,6 @@
 
 ## References
 
-- [completed goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [its retro](../charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md) · [prior goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
+- [waiting goal](../charness-artifacts/goals/2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round.md) · [completed goal](../charness-artifacts/goals/2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier.md) · [its retro](../charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md) · [prior goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md) · [retro](../charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md) · [the sweep](../charness-artifacts/audit/2026-08-02-can-this-rule-fire-sweep.md)
 - [deferred decisions](./deferred-decisions.md) (D45–D49) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
