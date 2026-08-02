@@ -1,8 +1,10 @@
 ## Subagent Delegation
 
-- Repo-mandated bounded fresh-eye subagent reviews are a standing delegation
-  request. Canonical scopes: task-completing `setup`, `quality`, `critique`,
-  `release`, and GitHub `issue` resolution/closeout review runs. Report a host
+- Repo-mandated bounded fresh-eye subagent reviews are already delegated by this
+  contract, so treat it as the standing delegation
+  request rather than something to ask for again. Canonical scopes:
+  task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue`
+  resolution/closeout review runs. Report a host
   block explicitly; same-agent substitutes are forbidden.
 - Spawn shape, for every spawn and not only reviews: spawn one-shot subagents
   without a host addressing or team name. On at least one host a name silently

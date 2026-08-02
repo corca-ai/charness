@@ -628,3 +628,43 @@ def test_a_non_utf8_agents_md_is_not_adopted_and_does_not_traceback(
     _write_record(tmp_path, {"bounded_review_delegation": "granted"})
     assert validator.has_repo_delegation_contract(tmp_path) is True
     assert observer.repo_requires_delegated_observer(tmp_path) is True
+
+
+def test_the_shipped_setup_template_satisfies_BOTH_readers_of_the_contract() -> None:
+    """#476: the block `setup` writes must be recognized by everything that reads it.
+
+    Two spellings of one contract had grown apart. The marker readers require
+    `... are already delegated`; the compact-contract inspector requires
+    `standing delegation request` (plus canonical scopes, host block, reviewer
+    tier, spawn shape). The shipped template carried only the second, so a repo
+    that ran `setup` and accepted the block read as NEVER HAVING ADOPTED it in
+    all three marker readers -- the same rule-cannot-fire class as #471 and #475,
+    sitting in the path `setup` actually writes.
+
+    Pinned against the REAL template, not a fixture: a fixture would spell it the
+    way whichever matcher the author had in mind wants, which is how this hid.
+    """
+    resolver = _load_module("skills/shared/scripts/resolve_subagent_delegation.py", "_rsd_tmpl")
+    inspector = _load_module("scripts/setup_agent_docs_fresh_eye_lib.py", "_fe_tmpl")
+    template = (ROOT / "scripts/templates/agents_subagent_delegation.txt").read_text(encoding="utf-8")
+
+    normalized = resolver.normalize_contract_text(template)
+    for marker in resolver.DELEGATION_CONTRACT_MARKERS:
+        assert marker in normalized, f"marker readers would not adopt a repo set up from this template: {marker!r}"
+    assert inspector._missing_snippets(template, inspector.FRESH_EYE_COMPACT_REQUIRED_SNIPPETS) == []
+    assert inspector.fresh_eye_compact_contract_present(template) is True
+
+
+def test_a_repo_set_up_from_the_shipped_template_reads_as_adopted(
+    tmp_path: Path, resolver, validator, observer
+) -> None:
+    """The end-to-end shape of #476, through every reader that acts on adoption."""
+    (tmp_path / "AGENTS.md").write_text(
+        "# Consumer repo\n\n"
+        + (ROOT / "scripts/templates/agents_subagent_delegation.txt").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    assert resolver.resolve(tmp_path)["delegation"] == resolver.GRANTED
+    assert resolver.resolve(tmp_path)["rung"] == 1
+    assert validator.has_repo_delegation_contract(tmp_path) is True
+    assert observer.repo_requires_delegated_observer(tmp_path) is True
