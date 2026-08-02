@@ -95,7 +95,8 @@ is this goal's own thesis pointed at itself.
   them, each through the close path's floor with a DELEGATED resolution critique
   running BEFORE the close call. (3) Filing new issues for anything the sweep
   surfaces and does not fix — expected to be Lane B's main output.
-  (4) Creating a throwaway scratch repo under a temp path for Lane A's proof.
+  **(1) and (3) are APPROVED by the operator for this run (2026-08-02); (2) is
+  approved in principle and still runs through the close path's floor.**
   NOT approved and NOT carrying forward: a publish, a tag, a version bump, or any
   `cautilus evaluate` run. The 2026-08-02 approval was scoped to that goal.
 - **Phase-scoped approval.** Push approval covers the phase that requests it and
@@ -114,6 +115,15 @@ is this goal's own thesis pointed at itself.
 - Also in scope: regression tests for each change and the generated
   `plugins/charness/` mirror of every touched exported file. Sync mirrors before
   validators (`mutate -> sync -> verify`).
+- **No scratch repo.** An earlier draft asked for a throwaway repo as Lane A's
+  behavioural proof. That was over-specified: the decision under test is made by
+  an AGENT reading its own repo root's contract, so a subagent spawned from this
+  session — whose repo root is charness, block and all — cannot reproduce it.
+  Telling a subagent to pretend a temp directory is its repo root yields testimony
+  about instructions the parent wrote, not behaviour. The honest split is in
+  `## User Acceptance`: the agent proves the MECHANISM, and the BEHAVIOURAL proof
+  is the operator re-running in the repo where they observed the refusal — a
+  different observer and a different channel, and stronger than any synthetic repo.
 - Stop conditions: (1) if Lane A's fix needs a trust posture the operator has not
   approved, STOP and bring the choice back. (2) If Lane B's population turns out
   materially larger than counted once the predicate is written, STOP and re-scope
@@ -125,13 +135,21 @@ is this goal's own thesis pointed at itself.
 
 ## User Acceptance
 
-- **Lane A (behavioural, not textual):** a scratch repo with charness installed
-  and NO delegation block gets a bounded fresh-eye review from a REAL spawn that
-  returns findings, reproduced as failing before the fix and passing after. The
-  authorization rule names more than one source and states why each is
-  legitimate. Repos that DO carry the block are unchanged, pinned by a test. A
-  host that genuinely cannot spawn still degrades to `blocked <host-signal>`,
-  pinned by a test.
+- **Lane A, agent-provable half (the MECHANISM):** the authorization rule names
+  more than one source and states why each is legitimate; the grant reaches every
+  surface a consuming repo actually reads (the shared reference, the `setup`
+  template, the generated block, and the compact-contract snippets — #458's
+  propagation gap is the worked example of a fix that stopped at the authoring
+  repo); repos that DO carry the block are unchanged, pinned by a test; a host
+  that genuinely cannot spawn still degrades to `blocked <host-signal>`, pinned by
+  a test.
+- **Lane A, operator-provable half (the BEHAVIOUR):** the operator re-runs a
+  task-completing `critique` / `quality` run in the repo where they observed the
+  refusal, and a bounded reviewer actually spawns. **This session cannot prove
+  it** — the decision is made by an agent reading its own repo root, and every
+  agent this session can reach is rooted in charness, which carries the block.
+  Recorded as an explicit non-claim until the operator confirms, never as
+  "the rule now permits it, therefore it happens".
 - **Lane B:** a checked-in sweep artifact stating, with its denominator, how many
   rules in the enumerated population were READ, how many can fire where they were
   written to, how many cannot, and what happened to each one that cannot
@@ -191,9 +209,10 @@ is this goal's own thesis pointed at itself.
 
 ### External Or Live Proof
 
-- A scratch repo with charness installed and no delegation block, where a
-  task-completing run actually spawns and receives a bounded review. This is
-  Lane A's central evidence, not a nice-to-have.
+- **The operator's own re-run** in the repo that showed the refusal is Lane A's
+  central behavioural evidence, and it is NOT obtainable from this session. Write
+  it into `## User Verification Instructions` with the exact command, and record
+  the Lane A behaviour claim as unproven-in-session until it comes back.
 - `git push` to `main` and the remote CI it triggers, confirmed per P4 by a
   different observer AND a different evidence channel than the push exit code.
 - Closing #475 / #473 / #474 if their lanes resolve them, through the close
@@ -209,7 +228,7 @@ closable, so stopping between lanes is clean; the cut order is in `## Boundaries
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Reproduce #475 on a scratch repo with no delegation block, give the standing request more than one legitimate source, and prove the review now happens | It is costing the operator work right now, it is the class's clearest worked example, and it defines the axis Lane B's earlier draft was missing — a rule inert in a CONTRACT surface, not in code | A failing reproduction, the amended authorization rule, a passing reproduction from a real spawn returning findings, tests pinning block-carrying repos unchanged and genuine host blocks still degrading; two bounded rounds | pending |
+| A | Give the standing delegation request more than one legitimate source, propagate it to every surface a consuming repo reads, and hand the operator a one-command behavioural check | It is costing the operator work right now, it is the class's clearest worked example, and it defines the axis Lane B's earlier draft was missing — a rule inert in a CONTRACT surface, not in code | The amended authorization rule with each source's legitimacy stated; propagation to the `setup` template / generated block / compact-contract snippets; tests pinning block-carrying repos unchanged and genuine host blocks still degrading; the operator's verification command; two bounded rounds | pending |
 | B | Write the can-this-fire predicate, enumerate the population INCLUDING contract surfaces, measure, repair the unambiguous, file the rest — resolving #473 as the known member | Four instances of this class surfaced by accident, all found by people rather than gates. A fifth accident is not a plan; a stated count is. Lane A supplies both the widened population and the worked example | A sweep artifact with read / can-fire / cannot-fire counts and their denominators, a disposition per finding, #473 resolved with a test pinning the choice | pending |
 | C | Surface duplicate-ratchet pressure at the first edit to a gated file (#474) | Four consecutive runs have written "run the dup ratchet early" into a plan and hit it at the aggregate anyway. The length-headroom advisory already proves the affordance shape works | The advisory firing on a changed gated file, a test pinning it, #474 closed through the close path's floor | pending |
 | D | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green; a closeout-claims critique artifact; retro dispositions each `applied:` or `issue #N` | pending |
@@ -272,7 +291,7 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: THREE items. (1) THE TRUST POSTURE FOR LANE A, and it is the whole design decision. Today the standing delegation request is the REPO OWNER's, checked into their own `AGENTS.md`. Every alternative source shifts who grants it: (a) invoking the skill counts as the user's act, so `/charness:critique` authorizes the bounded reviewers that skill mandates — most direct, and the plugin effectively grants itself spawn rights in any repo that installs it; (b) a structured opt-in `setup` writes, which keeps the grant repo-owned and removes the prose-matching fragility #471 proved, but still needs a file in the repo so it does NOT fix the never-ran-setup case alone; (c) both, with `AGENTS.md` kept as a third. Recommendation: (c), with (a) scoped narrowly to the named bounded-reviewer scopes and never a general spawn licence. Operator's call, because it changes who authorizes work that costs tokens. (2) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` plus the CI each push triggers, closing #475 / #473 / #474 if their lanes resolve them, filing new issues, and creating a throwaway scratch repo under a temp path. The 2026-08-02 approval was scoped to that goal and does NOT carry. (3) SIZE — three lanes plus closeout is larger than the last two-lane run, which consumed a full session with four reviewers. The cut order is written into `## Boundaries` (C, then B's repairs, never A); confirm that is the wanted trade rather than splitting this into two goals.
+- Discuss before activation: item (2) APPROVED and item (3) SETTLED by the operator 2026-08-02 — `git push` to `main` plus the CI it triggers and filing new issues are approved for this run; closing #475 / #473 / #474 still runs through the close path's floor; the throwaway scratch repo was WITHDRAWN as over-specified (see `## Boundaries`), so no temp repo is created; and this stays ONE goal with three lanes under the written cut order (C, then B's repairs, never A). Item (1) REMAINS OPEN and is the only blocker. (1) THE TRUST POSTURE FOR LANE A, and it is the whole design decision. Today the standing delegation request is the REPO OWNER's, checked into their own `AGENTS.md`. Every alternative source shifts who grants it: (a) invoking the skill counts as the user's act, so `/charness:critique` authorizes the bounded reviewers that skill mandates — most direct, and the plugin effectively grants itself spawn rights in any repo that installs it; (b) a structured opt-in `setup` writes, which keeps the grant repo-owned and removes the prose-matching fragility #471 proved, but still needs a file in the repo so it does NOT fix the never-ran-setup case alone; (c) both, with `AGENTS.md` kept as a third. Recommendation: (c), with (a) scoped narrowly to the named bounded-reviewer scopes and never a general spawn licence. Operator's call, because it changes who authorizes work that costs tokens. (2) IRREVERSIBLE SIDE EFFECTS — `git push` to `main` plus the CI each push triggers, closing #475 / #473 / #474 if their lanes resolve them, filing new issues, and creating a throwaway scratch repo under a temp path. The 2026-08-02 approval was scoped to that goal and does NOT carry. (3) SIZE — three lanes plus closeout is larger than the last two-lane run, which consumed a full session with four reviewers. The cut order is written into `## Boundaries` (C, then B's repairs, never A); confirm that is the wanted trade rather than splitting this into two goals.
 
 ## Slice Log
 
@@ -332,10 +351,19 @@ itself so a fresh session sees the design space, not only the closed point.
    Anti-anchoring: `axis: layer` — this read as a code defect for a whole session
    and is a contract-text defect.
 3. **How is Lane A proven?** Family considered: {read the contract and argue; a
-   unit test over the rule text; a real scratch repo with a real spawn}.
-   **Chosen: the scratch repo, reproduced failing before and passing after.**
-   Rejected: the text test alone — "the rule now permits it" is exactly the
-   evidence that let a guard sit dormant for months.
+   unit test over the rule text; a scratch repo with a real spawn; the operator
+   re-running in the repo where they SAW the refusal}. **Chosen: the operator's
+   re-run, with the agent proving only the mechanism.** The scratch repo was
+   chosen first and then WITHDRAWN on the operator's challenge, which was
+   correct: the decision under test is made by an agent reading its OWN repo
+   root, and every agent this session can reach is rooted in charness, which
+   carries the block. A subagent told to treat a temp directory as its repo root
+   reports on instructions the parent wrote — testimony, not behaviour — and
+   would have been a synthetic proof of a real defect. Rejected: the text test
+   alone, since "the rule now permits it" is exactly the evidence that let a
+   guard sit dormant for months. Anti-anchoring: `axis: who observes` — the
+   strongest available observer here is the person who hit the bug, not a
+   fixture this session builds for itself.
 4. **Is #472 in?** Family considered: {fold it in; leave it filed; take it only
    if Lane B finishes early}. **Chosen: leave it filed and surface the toll.**
    It is already measured: widening to the `delegation policy` stem refuses
