@@ -547,6 +547,10 @@ queue_selected "validate-attention-state-visibility" python3 scripts/validate_at
 queue_selected "validate-inventory-consumption" python3 scripts/validate_inventory_consumption.py --repo-root "$REPO_ROOT"
 queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
 queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
+# Non-blocking by operator decision (2026-08-02): the script has no non-zero exit
+# path, so this surfaces WARN: only. The blocking half is the regression test in
+# tests/test_skill_script_references.py.
+queue_selected "inventory-skill-script-references" python3 scripts/inventory_skill_script_references.py --repo-root "$REPO_ROOT"
 queue_selected "validate-quality-closeout-contract" python3 scripts/validate_quality_closeout_contract.py --repo-root "$REPO_ROOT"
 # Base for the changed-path probes below — the merge-base with origin/main (the
 # unpushed range). An empty base leaves the changed-line mutation gate below

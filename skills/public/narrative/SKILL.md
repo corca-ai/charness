@@ -177,5 +177,5 @@ The result should usually include `Source Map`, `Narrative Drift`, `Capability C
 - `../../shared/references/agent-assessment-invariant.md`
 - `../../shared/references/closeout-discipline.md`
 - `../../shared/references/success-criteria-review.md`
-- `<repo-root>/scripts/map_sources.py`
-- `<repo-root>/scripts/review_adapter.py`
+- `scripts/map_sources.py`
+- `scripts/review_adapter.py`

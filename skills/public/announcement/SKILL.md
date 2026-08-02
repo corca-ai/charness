@@ -176,7 +176,7 @@ The result should usually include:
 - `references/audience-policy.md`
 - `references/large-window-fanout.md`
 - `../../shared/references/closeout-discipline.md`
-- `<repo-root>/scripts/collect_commits.py`
-- `<repo-root>/scripts/infer_audience_tags.py`
-- `<repo-root>/scripts/preflight_sources.py`
-- `<repo-root>/scripts/record_announcement.py`
+- `scripts/collect_commits.py`
+- `scripts/infer_audience_tags.py`
+- `scripts/preflight_sources.py`
+- `scripts/record_announcement.py`

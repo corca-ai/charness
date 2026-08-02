@@ -35,7 +35,7 @@ only the next move, or whether they are accreting into competing manuals.
 
 ## Advisory Inventory
 
-Use `<repo-root>/scripts/inventory_entrypoint_docs_ergonomics.py` when operator, developer,
+Use `$SKILL_DIR/scripts/inventory_entrypoint_docs_ergonomics.py` when operator, developer,
 or agent-facing entry docs are in scope.
 
 The helper stays advisory on purpose. It does not claim to prove good writing.

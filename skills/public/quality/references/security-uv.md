@@ -22,5 +22,5 @@ This reference covers the `uv` lockfile and audit moves that matter to
   needs human judgment
 - if a downstream repo wants a standing online audit command, make it explicit
   which binary or service owns that check and where maintainers will read it;
-  `<repo-root>/scripts/check_supply_chain_online.py` now wraps that path explicitly with
-  `uv audit --frozen`
+  `charness` wraps that path explicitly in
+  `<repo-root>/scripts/check_supply_chain_online.py` with `uv audit --frozen`

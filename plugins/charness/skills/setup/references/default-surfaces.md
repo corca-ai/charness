@@ -127,7 +127,7 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   `<repo-root>/scripts/migrate_backtick_file_refs.py`
   for the shipped reference implementation and one-shot migrator
 
-Use `<repo-root>/scripts/render_skill_routing.py` to render the block. Keep it short and
+Use `$SKILL_DIR/scripts/render_skill_routing.py` to render the block. Keep it short and
 bootstrap-heavy. On a mature repo whose `<repo-root>/AGENTS.md` lacks it, propose
 adding the block instead of rewriting the whole instruction file.
 

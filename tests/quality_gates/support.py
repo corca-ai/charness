@@ -207,6 +207,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-current-pointer-freshness", "validate_current_pointer_freshness.py"),
     ("check-current-pointer-writes", "check_current_pointer_writes.py"),
     ("inventory-quality-handoff", "inventory_quality_handoff.py"),
+    ("inventory-skill-script-references", "inventory_skill_script_references.py"),
     ("validate-maintainer-setup", "validate_maintainer_setup.py"),
     ("check-python-lengths", "check_python_lengths.py"),
     ("check-python-filenames", "check_python_filenames.py"),

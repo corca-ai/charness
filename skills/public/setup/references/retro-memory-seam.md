@@ -15,7 +15,7 @@ forcing a full retro every time.
 
 ## Preferred Path
 
-Use `<repo-root>/scripts/seed_retro_memory.py` to create the initial seam:
+Use `$SKILL_DIR/scripts/seed_retro_memory.py` to create the initial seam:
 
 ```bash
 python3 "$SKILL_DIR/scripts/seed_retro_memory.py" --repo-root .

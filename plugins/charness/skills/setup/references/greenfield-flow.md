@@ -33,7 +33,7 @@ an installable plugin, package, or operator-facing install contract.
 
 Add retro memory only when the repo wants that seam from day one. When it does,
 seed `<repo-root>/.agents/retro-adapter.yaml` and `<repo-root>/charness-artifacts/retro/recent-lessons.md`
-with `<repo-root>/scripts/seed_retro_memory.py` rather than hand-writing them.
+with `$SKILL_DIR/scripts/seed_retro_memory.py` rather than hand-writing them.
 
 If those docs are needed, seed a small explicit probe surface early so future
 wrappers or operators do not have to reverse-engineer:

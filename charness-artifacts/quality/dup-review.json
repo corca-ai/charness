@@ -275,6 +275,13 @@
     },
     {
       "class": "intentional",
+      "id": "2e5ed4e478b3bcfd",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "A four-line stdlib idiom: `try: return path.relative_to(root).as_posix() / except ValueError: return path.as_posix()`. Shared by the new advisory's _repo_relative and scripts/mutation_manifest_lib.py's display_path, which are behaviourally identical. Deliberately NOT collapsed: mutation_manifest_lib imports mutation_sampling_lib and the wider mutation subsystem, so importing display_path would couple a skill-reference advisory (which is also exported into plugins/charness/scripts/) to the mutation tooling's whole import graph for four lines. Same class already accepted as 0077076d77f6ae1b, a single shared stderr write. Only the advisory member is in this diff."
+    },
+    {
+      "class": "intentional",
       "id": "2f8e4eee7183a670",
       "note": "two independent JSONL validators sharing the read-lines/skip-blank/json.loads/jsonschema.validate loop shape (usage_episode_records.read_schema_valid_records, rca_ledger_lib.validate_ledger); they return different error record shapes (list[str] with path-qualified messages vs list[dict] keyed by line) and apply different timestamp rules, so a shared helper would need a per-caller formatter callback and would couple the usage-episode and RCA-ledger schemas without centralizing any behavior. Surfaced as new when a deferred `import jsonschema` was added to the first (41ms of run_slice_closeout.py startup), matching the lazy import rca_ledger_lib already had",
       "reviewed_at": "2026-07-26",
@@ -569,6 +576,13 @@
     },
     {
       "class": "intentional",
+      "id": "5505a8794c55f12d",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "CLI-surface boilerplate: `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option, shared by the new scripts/inventory_skill_script_references.py advisory and skills/public/handoff/scripts/prepare_chunk_packet.py. Not extractable: a portable skill package must not import repo-level `scripts/`, so a shared parser builder would cross the portability boundary the export contract exists to keep. It is also the surface check_documented_command_flags/argparse_surface_lib read back off each script's own parser -- hiding option declarations behind a helper would make the documented-flag gate blind to them. Only the advisory member is in this diff."
+    },
+    {
+      "class": "intentional",
       "id": "569bab80d07bc5d7",
       "note": "portable path-provenance helper family rotated after HITL scratchpad template extraction; small local helpers preserve directly executable skill scripts",
       "reviewed_at": "2026-06-27",
@@ -629,6 +643,13 @@
       "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
       "reviewed_at": "2026-07-13",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5f672b193b2f3c05",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "ROTATED from 5505a8794c55f12d (same reasoning, same pair) when round-2 review restructured the advisory's main() into build_parser()+main(). Members: scripts/inventory_skill_script_references.py and skills/public/handoff/scripts/prepare_chunk_packet.py -- `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option. Not extractable: a portable skill package must not import repo-level scripts/, and check_documented_command_flags/argparse_surface_lib read the option surface back off each script's own parser, so hiding declarations behind a builder would blind the documented-flag gate."
     },
     {
       "class": "intentional",
@@ -951,6 +972,13 @@
       "note": "repo-script bootstrap header (stdlib imports + `REPO_ROOT = repo_root_from_script(__file__)` + an import_repo_module call) across check_command_docs / check_artifact_surface_preflight / check_cli_skill_surface / validate_quality_reference_catalog; an import preamble cannot be extracted without an indirection that hides which module each script actually loads. Surfaced on 2026-07-31 as a membership rotation when check_skill_surface_preflight.py's own header changed and left the family, not as new duplication: no member is in that slice's diff",
       "reviewed_at": "2026-07-31",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8b788ea5965aeef7",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Same `--repo-root` argparse boilerplate class across skills/public/quality/scripts/inventory_ci_local_gate_parity.py, skills/public/gather/scripts/write_record.py, and skills/public/quality/scripts/inventory_ci_recoverable_gates.py. ALL THREE members are untouched by this session; the family surfaced as new purely by scan rotation when the advisory was added (#441 rotation class, same shape as 004895e66d5b4132). Each parser declares a different option set after the shared first two lines, so there is nothing to centralize that is not per-script surface."
     },
     {
       "class": "intentional",
@@ -1329,6 +1357,13 @@
       "note": "standalone JS mutation runner keeps a local stable hash helper to avoid script/package import bootstrap churn for a two-line deterministic sampler primitive",
       "reviewed_at": "2026-06-25",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c68b46f3e359c8fe",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "The repo-wide sibling-import bootstrap idiom -- `import sys` / `from pathlib import Path` / `sys.path.insert(0, str(Path(__file__).resolve().parent))` / a guarded sibling import. ELEVEN members across scripts/ and three separate skill packages (seed_t_events_adapter, seed_usage_episodes_adapter, seed_worktree_adapter, inventory_measurement_lib, measure_adapter_yaml_uninterpreted, measure_inventory_consumption_floor, measure_inventory_marker_rule, inventory_adapter_gate_design, inventory_dual_implementation, inventory_public_spec_quality, and the new advisory). It is the mechanism BY WHICH a file becomes able to import a shared helper, so it is the one block that cannot itself be extracted into a shared helper without a chicken-and-egg. Only the advisory member is in this diff."
     },
     {
       "class": "intentional",

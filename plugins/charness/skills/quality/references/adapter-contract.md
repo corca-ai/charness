@@ -150,7 +150,7 @@ class that should be selected without an environment override.
 `runtime_budgets` is the backward-compatible default-profile mapping of
 standing-gate label → max elapsed milliseconds. Labels must match the labels
 recorded in `.charness/quality/runtime-signals.json` by the standing gate
-runner. Add `<repo-root>/scripts/check_runtime_budget.py` to the standing gate to fail the
+runner. Add `$SKILL_DIR/scripts/check_runtime_budget.py` to the standing gate to fail the
 run when the recent median exceeds the budget. A single latest sample above
 budget is reported as a spike when the recent median is still inside budget.
 Labels with no recorded sample yet are warnings, not failures, so a budget can
@@ -493,7 +493,8 @@ Valid opt-in review rules:
   Fail when checked-in `references/` files are not discoverable from `SKILL.md`.
 
 The canonical quality path runs these rules through
-`<repo-root>/scripts/validate_skill_ergonomics.py`. Bootstrap also treats invalid explicit
+`$SKILL_DIR/scripts/validate_skill_ergonomics.py`; a repo may wire that helper
+behind its own `<repo-root>/scripts/` entrypoint. Bootstrap also treats invalid explicit
 rule values as an error instead of silently rewriting them to `[]`. When rules
 are configured, an empty checked-skill set is a failure; use
 `skill_ergonomics_skill_paths` or `cli_skill_surface_skill_paths` for bundled

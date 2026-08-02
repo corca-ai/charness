@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-02",
-  "source_artifact_count": 416,
-  "candidate_count": 1696,
+  "source_artifact_count": 417,
+  "candidate_count": 1708,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -122,6 +122,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "One session under the standing operator direction (bug fixes, friction/rework, test/code speed), taking the handoff's item 2 — the clause the previous session recorded as untouched."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:510fb5e930f8",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run`.",
+      "normalized_key": "goal 2026 08 03 repair the commands the skills tell agents to run",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Goal `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run`."
         }
       ]
     },
@@ -282,6 +308,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:348a896cb306",
+      "kind": "next_improvement",
+      "lesson": "**capability** — A check whose subject is a shipped surface must resolve against the shipped layout, not the authoring one. Applied here; the general form is the Portable Candidate below.",
+      "normalized_key": "capability a check whose subject is a shipped surface must resolve against the shipped",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — A check whose subject is a shipped surface must resolve against the shipped layout, not the authoring one. Applied here; the general form is the Portable Candidate below."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e98874698d6b",
       "kind": "next_improvement",
       "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched.",
@@ -304,58 +356,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5dc377885ee1",
-      "kind": "next_improvement",
-      "lesson": "File the issue first, then write its number into prose.",
-      "normalized_key": "file the issue first then write its number into prose",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
-          "date": "2026-08-02",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "File the issue first, then write its number into prose."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ac8730662158",
-      "kind": "next_improvement",
-      "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not.",
-      "normalized_key": "run check dup ratchet py at the first edit to a gated file not",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
-      "latest_source_date": "2026-08-02",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-02-close-the-guard-that-never-fires-and-the-measurement-that-never-states-its-denominator.md",
-          "date": "2026-08-02",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Run `check_dup_ratchet.py` at the first edit to a gated file, not at the closeout aggregate — the plan already said so and the run still did not."
         }
       ]
     }
@@ -472,6 +472,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:510fb5e930f8",
+      "kind": "current_focus",
+      "lesson": "Goal `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run`.",
+      "normalized_key": "goal 2026 08 03 repair the commands the skills tell agents to run",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Goal `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run`."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:844bd4a71cda",
       "kind": "current_focus",
       "lesson": "Goal `fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest`.",
@@ -628,6 +654,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:348a896cb306",
+      "kind": "next_improvement",
+      "lesson": "**capability** — A check whose subject is a shipped surface must resolve against the shipped layout, not the authoring one. Applied here; the general form is the Portable Candidate below.",
+      "normalized_key": "capability a check whose subject is a shipped surface must resolve against the shipped",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — A check whose subject is a shipped surface must resolve against the shipped layout, not the authoring one. Applied here; the general form is the Portable Candidate below."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e98874698d6b",
       "kind": "next_improvement",
       "lesson": "Check `validate_handoff_artifact.py` before composing a commit message when the handoff was touched.",
@@ -676,6 +728,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "File the issue first, then write its number into prose."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e64996f02621",
+      "kind": "next_improvement",
+      "lesson": "**memory** — This retro plus the recent-lessons digest.",
+      "normalized_key": "memory this retro plus the recent lessons digest",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory** — This retro plus the recent-lessons digest."
         }
       ]
     },
@@ -836,6 +914,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:508591943a03",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — Re-run the dup ratchet after a *refactor* of an already-classified file, not only at its first edit. Fingerprints rotate.",
+      "normalized_key": "workflow re run the dup ratchet after a refactor of an already classified file",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — Re-run the dup ratchet after a *refactor* of an already-classified file, not only at its first edit. Fingerprints rotate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2694b7911a56",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — When adding a `queue_selected` line to `run-quality.sh`, two registrations are owed in the same breath: a verdict row in `docs/conventions/validator-timing-layers.md` and a stub in `tests/quality_gates/support.py::QUALITY_PYTHON_STUBS`. Both gates exist and both fired correctly; they fired at closeout rather than at the edit.",
+      "normalized_key": "workflow when adding a queue selected line to run quality sh two registrations are",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — When adding a `queue_selected` line to `run-quality.sh`, two registrations are owed in the same breath: a verdict row in `docs/conventions/validator-timing-layers.md` and a stub in `tests/quality_gates/support.py::QUALITY_PYTHON_STUBS`. Both gates exist and both fired correctly; they fired at closeout rather than at the edit."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:b28054fabb76",
       "kind": "repeat_trap",
       "lesson": "**A dup-ratchet hard-block at closeout on my own code** (two clone families in `_refusal_reason`'s repeated message blocks). The low-cost check says to run the ratchet at the FIRST edit to a gated file, not at the closeout aggregate; I ran it at the aggregate. Cost was small only because the fix was a genuine refactor rather than an accept.",
@@ -862,6 +992,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:690fb4dc5c57",
+      "kind": "repeat_trap",
+      "lesson": "**A test asserted a proxy instead of the real thing, and failed on its own docstring.** `assert \"--strict\" not in source` matched the module docstring *explaining* that `--strict` is deliberately absent. Replaced with a read of the real `argparse` parser's option strings. Same family as the standing \"build test inputs from the source constant\" trap, one level up: not a retyped fixture, but a grep standing in for the structure it describes.",
+      "normalized_key": "a test asserted a proxy instead of the real thing and failed on its",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A test asserted a proxy instead of the real thing, and failed on its own docstring.** `assert \"--strict\" not in source` matched the module docstring *explaining* that `--strict` is deliberately absent. Replaced with a read of the real `argparse` parser's option strings. Same family as the standing \"build test inputs from the source constant\" trap, one level up: not a retyped fixture, but a grep standing in for the structure it describes."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:5ca9a36cee76",
       "kind": "repeat_trap",
       "lesson": "**A test fixture spelled a string the way the matcher wanted.** The first version of the decline-record test hand-built a TWO-line status that appears nowhere in the contract, and passed, while the prescribed one-line form was still refused. Same shape as #471's synthetic fixture.",
@@ -884,6 +1040,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**A test fixture spelled a string the way the matcher wanted.** The first version of the decline-record test hand-built a TWO-line status that appears nowhere in the contract, and passed, while the prescribed one-line form was still refused. Same shape as #471's synthetic fixture."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:21895a92e16c",
+      "kind": "repeat_trap",
+      "lesson": "**Four `## Coordination Cues` lines were written inside backticks and the floor did not see them.** The template's example line is backticked as an illustration of the *form*; copying it verbatim produced non-satisfying values. Small, but it is the same \"the escape hatch is indistinguishable from the real thing\" shape this whole goal is about.",
+      "normalized_key": "four coordination cues lines were written inside backticks and the floor did not see",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Four `## Coordination Cues` lines were written inside backticks and the floor did not see them.** The template's example line is backticked as an illustration of the *form*; copying it verbatim produced non-satisfying values. Small, but it is the same \"the escape hatch is indistinguishable from the real thing\" shape this whole goal is about."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:80601fd9db44",
+      "kind": "repeat_trap",
+      "lesson": "**I recorded a promised verification step as done when it had not run.** The plan required \"adversarial verification defaulting to refuted on every Lane B disposition\". I dispositioned all ten rows by reading them once and moved on; no adversarial pass existed. A closeout-claims reviewer caught the gap — and its own single reading had already refuted one row, which is exactly the evidence that the pass was load-bearing rather than ceremonial. When the pass was then actually run, it refuted a further row and found a third broken token (`check-links-internal.sh`) that no count had ever included, because the original measurement scanned only `.py`. **This is the worst item in this retro**: not a defect that slipped through review, but a verification step the artifact would have carried as satisfied.",
+      "normalized_key": "i recorded a promised verification step as done when it had not run the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I recorded a promised verification step as done when it had not run.** The plan required \"adversarial verification defaulting to refuted on every Lane B disposition\". I dispositioned all ten rows by reading them once and moved on; no adversarial pass existed. A closeout-claims reviewer caught the gap — and its own single reading had already refuted one row, which is exactly the evidence that the pass was load-bearing rather than ceremonial. When the pass was then actually run, it refuted a further row and found a third broken token (`check-links-internal.sh`) that no count had ever included, because the original measurement scanned only `.py`. **This is the worst item in this retro**: not a defect that slipped through review, but a verification step the artifact would have carried as satisfied."
         }
       ]
     },
@@ -940,6 +1148,84 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:aa6af8f41aef",
+      "kind": "repeat_trap",
+      "lesson": "**The advisory's first version measured the wrong tree.** It scanned `skills/` only — inheriting the goal's own 13/91/9/0 measurement, which was taken over the authoring tree. But `plugins/charness/` is what ships, it is a *different* tree, and a reference can resolve in one and not the other. Two real defects (`plan_risk_interrupt`, now #477) were structurally invisible to the measurement the goal handed me. Found only because I checked the mirror by hand after the repair. Cost: one rework of the scanner mid-slice; the bigger cost would have been shipping a check that says \"all resolve\" about a tree nobody runs.",
+      "normalized_key": "the advisory s first version measured the wrong tree it scanned skills only inheriting",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The advisory's first version measured the wrong tree.** It scanned `skills/` only — inheriting the goal's own 13/91/9/0 measurement, which was taken over the authoring tree. But `plugins/charness/` is what ships, it is a *different* tree, and a reference can resolve in one and not the other. Two real defects (`plan_risk_interrupt`, now #477) were structurally invisible to the measurement the goal handed me. Found only because I checked the mirror by hand after the repair. Cost: one rework of the scanner mid-slice; the bigger cost would have been shipping a check that says \"all resolve\" about a tree nobody runs."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:43db158aa4db",
+      "kind": "repeat_trap",
+      "lesson": "**The artifact contradicted its own retro in the flattering direction.** The Slice Log said \"no new families from the Lane C additions\" while the retro recorded a second dup-ratchet hard-block with three families. Whichever was written second, the one that survived into the goal artifact was the one that read better.",
+      "normalized_key": "the artifact contradicted its own retro in the flattering direction the slice log said",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The artifact contradicted its own retro in the flattering direction.** The Slice Log said \"no new families from the Lane C additions\" while the retro recorded a second dup-ratchet hard-block with three families. Whichever was written second, the one that survived into the goal artifact was the one that read better."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:76d5736a789a",
+      "kind": "repeat_trap",
+      "lesson": "**The dup ratchet fired twice, and only the first was at the edit.** The edit-time advisory fired on the first write and I handled it there (an improvement on last run's aggregate-time discovery). But the round-2 restructuring of the same file **rotated the fingerprints**, so a second hard-block appeared at the closeout aggregate with three new families. The edit-time discipline is necessary and not sufficient: a later refactor of an already-classified file re-opens the question.",
+      "normalized_key": "the dup ratchet fired twice and only the first was at the edit the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The dup ratchet fired twice, and only the first was at the edit.** The edit-time advisory fired on the first write and I handled it there (an improvement on last run's aggregate-time discovery). But the round-2 restructuring of the same file **rotated the fingerprints**, so a second hard-block appeared at the closeout aggregate with three new families. The edit-time discipline is necessary and not sufficient: a later refactor of an already-classified file re-opens the question."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:7d85b16e2be5",
       "kind": "repeat_trap",
       "lesson": "**The dup ratchet hard-blocked three separate times in this run**, each after a slice was finished. This is the FOURTH consecutive run to write \"run it early\" into a plan and hit the aggregate anyway. That is exactly what Lane C existed to fix, and the run produced its own fourth data point before the fix landed.",
@@ -962,6 +1248,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The dup ratchet hard-blocked three separate times in this run**, each after a slice was finished. This is the FOURTH consecutive run to write \"run it early\" into a plan and hit the aggregate anyway. That is exactly what Lane C existed to fix, and the run produced its own fourth data point before the fix landed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cdfe4b356893",
+      "kind": "repeat_trap",
+      "lesson": "**The round-1 repair shipped two gate failures of the class it was fixing.** Wiring the advisory into `run-quality.sh` satisfied neither of that surface's two registration contracts: `check_timing_layer_completeness.py` (every `queue_selected` label needs a verdict row in the timing-layer table) and `test_every_queued_repo_script_gate_has_a_seeded_harness_stub`. Round 2 caught both; I confirmed both by running them. **Third measured instance** of \"the round that reads the REPAIRS is where the class comes back\".",
+      "normalized_key": "the round 1 repair shipped two gate failures of the class it was fixing",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+      "latest_source_date": "2026-08-02",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md",
+          "date": "2026-08-02",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The round-1 repair shipped two gate failures of the class it was fixing.** Wiring the advisory into `run-quality.sh` satisfied neither of that surface's two registration contracts: `check_timing_layer_completeness.py` (every `queue_selected` label needs a verdict row in the timing-layer table) and `test_every_queued_repo_script_gate_has_a_seeded_harness_stub`. Round 2 caught both; I confirmed both by running them. **Third measured instance** of \"the round that reads the REPAIRS is where the class comes back\"."
         }
       ]
     },

@@ -13,7 +13,7 @@ The default gate should answer three questions quickly:
 Quiet defaults and failure detail are complements, not opposites. A good gate
 stays compact on green, then becomes loud enough to act on when a seam fails.
 
-Use `<repo-root>/scripts/inventory_standing_gate_verbosity.py` when a repo keeps a standing
+Use `$SKILL_DIR/scripts/inventory_standing_gate_verbosity.py` when a repo keeps a standing
 hook, hook runner, or verify chain.
 
 ## Inventory Axes

@@ -149,7 +149,7 @@ The result should usually include:
 - `references/google-workspace-access.md`
 - `../../support/web-fetch/references/routing-table.md`
 - `../../shared/references/closeout-discipline.md`
-- `<repo-root>/scripts/advise_google_workspace_path.py`
+- `scripts/advise_google_workspace_path.py`
 - `<repo-root>/scripts/refresh_current_pointer.py`
 - `scripts/gather_plan.py`
 - `scripts/gather_public_url.py`
