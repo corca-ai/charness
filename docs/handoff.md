@@ -2,12 +2,10 @@
 
 ## Workflow Trigger
 
-- **A shaped goal is WAITING, not activation-ready by design.** Two items need
-  an operator decision first: external side effects are NOT carried over from the
-  last run, and Lane C (gate vs advisory vs neither) is a real fork. Read
-  `## Discuss Before Activation` in
-  [the goal](../charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md),
-  settle those two, then activate.
+- **A shaped goal is READY TO RUN.** Both activation items are settled — external
+  side effects approved for that goal, and Lane C decided as a non-blocking
+  advisory. Activate it directly:
+  `/goal @charness-artifacts/goals/2026-08-03-repair-the-commands-the-skills-tell-agents-to-run.md`
 
 ## Continuation Capability
 
@@ -62,9 +60,9 @@
 
 ## Discuss
 
-- **External side-effect approval does NOT carry into the next goal.** The
-  2026-08-02 approval was scoped to that goal. Push, issue-filing, and
-  issue-closing each need a fresh decision.
+- **Settled for the waiting goal only**: push, issue-filing, and issue-closing
+  are approved there, and Lane C ships an advisory rather than a gate. Neither
+  decision carries past that goal.
 - **Open: which spelling of the delegation contract wins for EXISTING consumers.**
   Widening the markers would flip every already-set-up repo at once, against a
   population that cannot be counted from this tree — which is what D49 forbids.

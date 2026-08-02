@@ -119,9 +119,10 @@ error this goal repairs.
   disposition — `repointed` / `documented as authoring-repo-only` /
   `issue #N` — and the artifact says which, with the reason. A reader can tell
   a deliberate authoring-repo reference from an unnoticed one.
-- **Lane C**: the static check is either wired as an advisory/gate with the
-  Floor-Addition Restraint call recorded, or explicitly NOT wired with the
-  reason. Silence is not an option.
+- **Lane C**: the advisory fires on a broken reference and is pinned by a test
+  proving it can never change an exit code, plus a counted answer to "how did 13
+  accumulate" — that count is the evidence a future blocking promotion needs,
+  and its absence is why the gate was not taken now.
 - **Every figure carries `<value> — <source>`**, and every count states its
   denominator AND when it was taken.
 - **Non-claim carried in writing**: this proves the referenced paths RESOLVE. It
@@ -173,7 +174,7 @@ error this goal repairs.
 | --- | --- | --- | --- | --- |
 | A | Repoint the 13 broken command references and pin them with a regression test over ALL shipped skill surfaces | 13 counted commands an agent is told to run and cannot; unambiguous, refuses nothing new, and the file already exists at the right place | Before/after count 13 → 0 from the same query, the test, synced mirrors | pending |
 | B | Disposition the 9 charness-script references: repoint, document as authoring-repo-only, or file | They resolve here and not in a consuming repo, which is the #475 shape — but unlike the 13 they may be deliberate, so each needs a judgement recorded | A per-reference disposition table with reasons; issues for what is not resolved | pending |
-| C | Decide and record whether the static check becomes an advisory, a gate, or neither — with the Floor-Addition Restraint call written down | The check is cheap and static, which is exactly when this repo's recorded reflex is to add a floor without asking whether prose was enough | The wired check plus its restraint call, or an explicit not-wired decision with the reason | pending |
+| C | Wire the static path-resolution check as a NON-BLOCKING advisory (operator-decided 2026-08-02), count how the 13 accumulated, and record the recurrence evidence a later gate decision would need | An advisory is the restraint checklist's default on a first finding; the recurrence count is what a blocking promotion requires and nobody has taken it | The advisory firing on a broken reference, a test pinning it cannot change an exit code, the accumulation count with its method, and the deferred gate call written down | pending |
 | D | Closeout: bundle gate, final verification, closeout-claims review by a distinct observer, retro, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest run with its number; `check_goal_artifact.py` green | pending |
 
 ## Operator Decision Queue
@@ -227,18 +228,25 @@ per the bullets above when that boundary is crossed):
 
 ## Discuss Before Activation
 
-- Discuss before activation: **ONE item open.** (1) **RESOLVED / APPROVED
-  2026-08-02** — external side effects: `git push` to `main` plus the CI it
+- Discuss before activation: RESOLVED — both activation items settled by the
+  operator in-transcript on 2026-08-02, and this goal is ready to run.
+  (1) APPROVED — external side effects: `git push` to `main` plus the CI it
   triggers, filing new issues, and closing an issue a lane resolves are all
   approved for this goal by the operator, who chose a wider grant than the agent
   recommended. Closes still run through the close path's floor with a delegated
-  resolution critique first. Scoped to this goal; does not carry forward. (2) **LANE C IS A REAL FORK, not a formality**: wiring a static check
-  that refuses a commit is the exact reflex the Floor-Addition Restraint
-  checklist exists to slow down, and an advisory that never blocks may be
-  enough. The goal deliberately leaves it open rather than pre-deciding; confirm
-  that is wanted, or pre-decide it now. **Size is NOT an open item** — this goal
+  resolution critique first. Scoped to this goal; does not carry forward. (2) **RESOLVED / DECIDED 2026-08-02** — Lane C ships a
+  NON-BLOCKING advisory, not a gate. The operator took the restraint
+  checklist's own default: what exists today is one FINDING (13 references), not
+  a recorded RECURRENCE, and promotion to a blocking floor waits for the
+  recurrence count Lane A produces. Recorded honestly: the usual argument for
+  advisory-first — that a floor false-fires and trains token-theater — is WEAK
+  here, because this check is fully deterministic and a false positive is
+  structurally impossible. The gate was defensible; the restraint rule was
+  followed anyway, because this repo's recorded failure is adding floors on
+  first sight rather than missing them. **Size is NOT an open item** — this goal
   is materially smaller than the last one: one counted repair set, one
   disposition table, one recorded decision.
+- **Both activation items are settled. This goal is ready to run.**
 ## Slice Log
 
 ## Context Sources
@@ -281,11 +289,17 @@ the originating context by following them in order.
    authoring-repo references. Merging them would let a judgement call ride in on
    a typo fix's certainty. Anti-anchoring: `axis: certainty is not uniform`.
 3. **Gate the check now?** Family considered: {blocking gate; advisory; prose
-   only; decide in-goal}. **Chosen: decide in-goal, in Lane C, with the
-   restraint checklist written down.** A cheap static check that catches a real
-   defect is the most tempting possible floor, and this repo has a recorded
-   reflex to add one on first sight. The honest answer needs the recurrence
-   evidence Lane A produces. Anti-anchoring: `axis: teeth timing`.
+   only; decide in-goal}. **Chosen (operator, 2026-08-02): a non-blocking
+   advisory**, with a gate reconsidered only after Lane A counts the recurrence.
+   A cheap deterministic check that catches a real defect is the most tempting
+   possible floor, and this repo's recorded reflex is to add one on first sight.
+   Rejected: the gate — defensible here, and unusually so, because the standard
+   objection (a floor that false-fires trains token-theater) does not apply to a
+   check whose false positives are structurally impossible; it was still declined
+   because one finding is not a recurrence. Rejected: prose only, which is what
+   let 13 accumulate unnoticed. Anti-anchoring: `axis: teeth timing` — the
+   strongest case for teeth is right after the defect embarrasses you, which is
+   also when the evidence for permanence is thinnest.
 
 ## Plan Critique Findings
 
