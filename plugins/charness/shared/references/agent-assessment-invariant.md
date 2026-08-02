@@ -27,7 +27,6 @@ This invariant applies to:
 
 Suggestions never auto-record as approval; the human still owns the decision.
 
-The HITL self-check helper
-[check_chunk_contract.py](../../public/hitl/scripts/check_chunk_contract.py)
-validates this contract on chunk text and is the canonical runtime probe
+The HITL self-check helper `check_chunk_contract.py`, in the `hitl` skill's
+`scripts/` directory, validates this contract on chunk text and is the canonical runtime probe
 for surfaces that can stage a chunk before presentation.

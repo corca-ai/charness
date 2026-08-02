@@ -77,6 +77,16 @@ jobs:
       - name: Validate doc links
         run: python3 scripts/check_doc_links.py --repo-root .
 
+      # Its sibling above scans the authoring tree and deliberately not
+      # `plugins/**`, so a link broken only by the export transform is invisible
+      # to it. Both gates share a staged-`.md` commit trigger that does NOT scope
+      # either of them — a link verdict also flips when the TARGET is renamed,
+      # which stages no `.md` at all — so this remote step is the layer that
+      # catches that case on a push. In the local gate graph via run-quality.sh
+      # and the commit-time plan, so the subset-mirror marker above holds.
+      - name: Validate plugin-mirror doc links
+        run: python3 scripts/check_plugin_doc_links.py --repo-root .
+
       - name: Validate markdown
         run: ./scripts/check-markdown.sh
 

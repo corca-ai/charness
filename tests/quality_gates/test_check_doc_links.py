@@ -464,3 +464,100 @@ def test_check_doc_links_ignores_gitignored_markdown(tmp_path: Path) -> None:
 
     result = run_script("scripts/check_doc_links.py", "--repo-root", str(repo), "--require-git-file-listing")
     assert result.returncode == 0, result.stderr
+
+
+# The `authoring-repo-internal` + `<repo-root>/` contradiction rule (#479 axis A2).
+# Fixtures transcribed from the real live sites on 2026-08-04.
+REAL_CONTRADICTION = (
+    "So per *P4* of the authoring-repo-internal\n"
+    "`<repo-root>/docs/design-north-star.md`, a passing slug-drift run and\n"
+    '"I updated the cites" are *claims*.\n'
+)
+
+
+def test_refuses_the_real_authoring_repo_internal_contradiction(tmp_path: Path, monkeypatch, capsys) -> None:
+    """`rename-critique.md:96` and four siblings say authoring-repo-INTERNAL, then use the consumer prefix."""
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "guide.md").write_text(REAL_CONTRADICTION, encoding="utf-8")
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "contradicts itself" in result.stderr
+    assert "<authoring-repo>/" in result.stderr
+
+
+def test_the_contradiction_rule_spans_a_wrapped_sentence(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A line-anchored ruler reported 2 of 6; the other 4 wrap between the phrase and the prefix.
+
+    This is the denominator lesson as a test: the fixture puts the phrase on one
+    line and the prefix on the next, which is the shape that hid four instances.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "guide.md").write_text(
+        "The contract lives at the authoring-repo-internal\n`<repo-root>/docs/x.md`.\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+
+
+def test_the_contradiction_rule_accepts_the_repaired_spelling(tmp_path: Path, monkeypatch, capsys) -> None:
+    """Proves the rule bites on the contradiction, not on the phrase."""
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "guide.md").write_text(
+        "The contract lives at the authoring-repo-internal\n`<authoring-repo>/docs/x.md`.\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0
+
+
+def test_the_contradiction_rule_does_not_couple_separate_list_items(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """The false positive a paragraph-scoped ruler would invent.
+
+    Two independent bullets: one legitimately points at the reader's own tree,
+    the other legitimately calls a different file authoring-repo-internal. No
+    single sentence asserts both, so there is no contradiction to report.
+    """
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "guide.md").write_text(
+        "- Quality numbers live in `<repo-root>/charness-artifacts/quality/latest.md`.\n"
+        "- The rule is authoring-repo-internal and lives elsewhere.\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_the_contradiction_rule_ignores_fenced_examples(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A doc teaching the broken shape must be able to show it."""
+    repo = tmp_path / "repo"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "docs" / "guide.md").write_text(
+        "Wrong:\n\n```markdown\nthe authoring-repo-internal `<repo-root>/docs/x.md`\n```\n",
+        encoding="utf-8",
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_the_contradiction_rule_finds_every_live_site_in_the_real_tree(monkeypatch, capsys) -> None:
+    """Pins the six repairs. Runs against the checked-in tree, not a fixture."""
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(ROOT))
+
+    assert result.returncode == 0, result.stderr

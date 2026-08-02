@@ -599,6 +599,12 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+# Separate from `check-doc-links` because it judges from a different reader
+# position: `check_doc_links.py` validates links where they are AUTHORED, and this
+# one validates them where they are READ, after the exporter has moved the file
+# and flattened the skill-tier layout. A link can be correct in one and broken in
+# the other, which is why 12 of them shipped green (#479).
+queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing

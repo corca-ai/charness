@@ -34,7 +34,7 @@ Confirm each closed issue's behavior at an issue-bundle closeout (the
 irreversible-boundary mandate). When the goal closes a tracked GitHub issue
 bundle that touches HOTL/live behavior, closing the issues is an irreversible
 boundary (others read "done"), so — per *P4* of the authoring-repo-internal
-[docs/design-north-star.md](../../../docs/design-north-star.md) — a passing `CLOSED` state and a deployment
+`<authoring-repo>/docs/design-north-star.md` — a passing `CLOSED` state and a deployment
 readback are *claims*, not behavior proof. For **each** closed issue, the
 reviewer must confirm the issue's user-facing behavior through an evidence
 channel **distinct from** the bundle-level deployment readback and `CLOSED`
@@ -42,7 +42,7 @@ state — a provider/connector roundtrip, a behavior test, a fetch result, the
 actual Slack/Notion/artifact observation — **or** record an explicit
 non-`verified` disposition (the HOTL ledger statuses, plus
 `local-only-by-contract` for a surface that is local by the resolution
-contract; see `<repo-root>/skills/public/hotl/references/ledger-and-dispositions.md`).
+contract; see `references/ledger-and-dispositions.md` in the `hotl` skill package).
 A bundle readback (`restart_needed=false`, health `ok`) and a verified `CLOSED`
 state only prove the bundle *deployed* and the tracker *closed*; they do not
 prove a per-issue Slack / scheduled-workflow / public-artifact-URL /

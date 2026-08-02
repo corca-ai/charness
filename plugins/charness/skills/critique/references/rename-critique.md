@@ -93,7 +93,7 @@ part of the output.
 
 Deleting a cited concept is irreversible: consumers that depended on it lose it,
 and the removal enters shared history others build on. So per *P4* of the
-authoring-repo-internal `<repo-root>/docs/design-north-star.md`, a passing
+authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`, a passing
 slug-drift run and "I updated the cites" are *claims* the cite sites were found —
 not proof each consumer still behaves without the removed concept.
 

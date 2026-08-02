@@ -26,4 +26,4 @@ When spilling detail, leave a single action-oriented pointer such as:
 - "Quality posture and recent gate numbers live in
   `<repo-root>/charness-artifacts/quality/latest.md`; next cleanup target is `<path>`."
 - "Gather/web-fetch acquisition invariants live in the authoring-repo-internal
-  `<repo-root>/skills/support/web-fetch/references/runtime-contract.md`; reload them before touching that support seam."
+  `<authoring-repo>/skills/support/web-fetch/references/runtime-contract.md`; reload them before touching that support seam."

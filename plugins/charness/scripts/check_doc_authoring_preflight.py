@@ -210,7 +210,7 @@ def collect_doc_links(repo_root: Path, doc: Path) -> list[dict[str, Any]]:
 
     findings: list[dict[str, Any]] = []
     text = doc.read_text(encoding="utf-8")
-    for target in _doc_links.LINK_RE.findall(text):
+    for target in _doc_links.iter_link_targets(text):
         try:
             _doc_links.validate_link(root, doc, target)
         except _doc_links.ValidationError as exc:

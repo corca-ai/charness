@@ -246,6 +246,21 @@ the exact reflex the rule names.
 
 ## Generated And Installed Surfaces
 
+- **`parents[N]` in a skill script is correct in both trees only by a
+  cancellation, and the invariant is pinned by a test, not a comment.** The
+  exporter flattens `skills/<kind>/<skill>/` to `skills/<skill>/` and adds a
+  `plugins/<pkg>/` level; those two cancel, which is why the same index resolves
+  correctly in the authoring tree and the mirror. No call site says so, so one
+  layout change would turn every such site into an unreachable-file instance at
+  once. [test_parents_index_layout_invariant.py](../../tests/quality_gates/test_parents_index_layout_invariant.py)
+  states the invariant executably and owns its revisit trigger: any change to
+  `export_plugin.py`'s skill-tier layout, or a new `parents[N]` site in a skill
+  script, arrives with that test updated in the same commit. If it goes red and
+  the repair is "bump the number", that is the class recurring and the call sites
+  need a shared helper instead. Prefer a marker-based ancestor walk over level
+  counting in new code — `repo_root_from_skill_script` is the worked example, and
+  the `parents[4]` fallback removed from it was both dead and wrong in the mirror.
+
 - **Portability classification is a closeout checkpoint, not an optional
   nicety.** It fires for two scopes, not one:
   - a *new reusable mechanism* — a repo-root `scripts/*.py`, a new gate, or a

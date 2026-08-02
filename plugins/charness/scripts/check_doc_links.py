@@ -20,6 +20,12 @@ _quality_adapter_module = import_repo_module(__file__, "scripts.quality_adapter_
 load_quality_adapter = _quality_adapter_module.load_quality_adapter
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
+classify_link_shape = _markdown_doc_scan.classify_link_shape
+iter_link_targets = _markdown_doc_scan.iter_link_targets
+resolve_relative_link = _markdown_doc_scan.resolve_relative_link
+ABSOLUTE_LINK = _markdown_doc_scan.ABSOLUTE_LINK
+BARE_LINK = _markdown_doc_scan.BARE_LINK
+INERT_LINK = _markdown_doc_scan.INERT_LINK
 
 DOC_GLOBS = (
     "README.md",
@@ -31,7 +37,6 @@ DOC_GLOBS = (
     "skills/support/**/*.md",
     "skills/shared/**/*.md",
 )
-LINK_RE = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 INLINE_CODE_RE = re.compile(r"`[^`\n]+`")
 # Command-shaped references: `python3 scripts/x.py`, `bash scripts/x.sh`,
@@ -56,6 +61,15 @@ PORTABLE_SKILL_KINDS = {"public", "support"}
 # yours" — which a consumer can read at a glance, and which
 # `inventory_skill_script_references.py` can actually RESOLVE here instead of
 # waving through.
+# Honest bound on that last clause: the resolver's `AUTHORING_REPO_SCRIPT_RE` is
+# `scripts/`-anchored, so only `<authoring-repo>/scripts/<name>` is resolved. The
+# `docs/` and `charness-artifacts/` forms are checked by nothing — converting a
+# markdown link to one of those trades a verified reference for an unverified
+# string. Accepted deliberately (the link was UNFOLLOWABLE for a consumer, so the
+# trade is from wrong-and-checked to right-and-unchecked), but it is a trade, not
+# a free repair. Widening the resolver past `scripts/` is tracked as
+# https://github.com/corca-ai/charness/issues/480 — a comment is a disclosure, not
+# a record, and an unfiled finding is a lost one.
 PORTABLE_PLACEHOLDER_PREFIXES = (
     "<repo-root>/",
     "<plugin-dir>/",
@@ -340,24 +354,96 @@ def iter_unresolved_command_targets(
     return matches
 
 
+AUTHORING_REPO_PHRASE = "authoring-repo-internal"
+CONSUMER_PREFIX = "<repo-root>/"
+SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s")
+LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+\.)\s")
+
+
+def iter_authoring_repo_contradictions(doc: Path) -> list[tuple[int, str]]:
+    """Sentences that call a file authoring-repo-internal and then spell it for the consumer.
+
+    `<repo-root>/` means "the tree the reader is operating on". A sentence that says
+    a file is authoring-repo-INTERNAL and reaches for that prefix contradicts itself
+    in one breath: it tells the reader the file is not in their tree, then hands them
+    a path rooted in their tree. Whichever half is right, the sentence is wrong, and
+    `<authoring-repo>/` is the spelling that makes it true.
+
+    Decidable without judgment, which is why it is a gate while the neighbouring axes
+    from the same sweep are not: no legitimate sentence asserts both.
+
+    Scoped to the SENTENCE, not the line and not the paragraph. The line is too narrow
+    -- this prose wraps, and 4 of the 6 live instances at 2026-08-04 put the phrase on
+    one line and the prefix on the next, so a line-anchored ruler reported 2. The
+    paragraph is too wide: it would couple an unrelated `<repo-root>/` mention two
+    sentences away and manufacture the false positive this rule exists to avoid.
+    """
+    findings: list[tuple[int, str]] = []
+    for block in iter_prose_blocks(doc):
+        offset_to_lineno: list[int] = []
+        for lineno, line in block:
+            offset_to_lineno.extend([lineno] * (len(line) + 1))
+        for start, sentence in split_block_into_sentences(block):
+            if AUTHORING_REPO_PHRASE not in sentence or CONSUMER_PREFIX not in sentence:
+                continue
+            # Report where the PHRASE sits, not where its sentence began: the
+            # contradiction is what the reader has to go fix.
+            phrase_at = min(start + sentence.index(AUTHORING_REPO_PHRASE), len(offset_to_lineno) - 1)
+            findings.append((offset_to_lineno[phrase_at], " ".join(sentence.split())))
+    return findings
+
+
+def iter_prose_blocks(doc: Path) -> list[list[tuple[int, str]]]:
+    """Group live lines into blocks that a sentence can legitimately span.
+
+    A blank line or a new list item ends a block. Without that, one bullet's
+    `<repo-root>/` gets glued to a neighbouring bullet's `authoring-repo-internal`
+    and the rule invents a contradiction across two independent statements --
+    the false-positive shape a blocking gate must not have.
+    """
+    blocks: list[list[tuple[int, str]]] = []
+    current: list[tuple[int, str]] = []
+    for lineno, line, in_fence in iter_doc_lines(doc):
+        if in_fence:
+            continue
+        if not line.strip() or LIST_ITEM_RE.match(line):
+            if current:
+                blocks.append(current)
+            current = [] if not line.strip() else [(lineno, line)]
+            continue
+        current.append((lineno, line))
+    if current:
+        blocks.append(current)
+    return blocks
+
+
+def split_block_into_sentences(block: list[tuple[int, str]]) -> list[tuple[int, str]]:
+    """Split one block into `(start_offset_within_block, sentence_text)` pairs."""
+    text = "\n".join(line for _lineno, line in block)
+    sentences: list[tuple[int, str]] = []
+    cursor = 0
+    for sentence in SENTENCE_SPLIT_RE.split(text):
+        start = text.index(sentence, cursor)
+        cursor = start + len(sentence)
+        if sentence.strip():
+            sentences.append((start, sentence))
+    return sentences
+
+
 def validate_link(root: Path, doc: Path, raw_target: str) -> None:
     target = raw_target.strip()
-    if not target or target.startswith("#"):
+    shape = classify_link_shape(target)
+    if shape == INERT_LINK:
         return
-    if "://" in target or target.startswith("mailto:"):
-        return
-
-    if target.startswith("/"):
+    if shape == ABSOLUTE_LINK:
         raise ValidationError(f"{doc}: absolute link `{target}`; use relative links")
-
-    if not (target.startswith("./") or target.startswith("../")):
+    if shape == BARE_LINK:
         raise ValidationError(
             f"{doc}: relative link `{target}` must start with `./` or `../` so file references "
             "are distinguishable from concept tokens at a glance"
         )
 
-    relative_target = target.split("#", 1)[0]
-    candidate = (doc.parent / relative_target).resolve()
+    candidate = resolve_relative_link(doc, target)
     try:
         candidate.relative_to(root)
     except ValueError as exc:
@@ -397,7 +483,7 @@ def main() -> int:
     canonical_markdown_surfaces = load_canonical_markdown_surfaces(root)
     for doc in iter_docs(root, require_git=args.require_git_file_listing):
         contents = doc.read_text(encoding="utf-8")
-        for target in LINK_RE.findall(contents):
+        for target in iter_link_targets(contents):
             validate_link(root, doc, target)
         bare_refs = iter_bare_internal_doc_refs(root, doc, known_markdown_paths, canonical_markdown_surfaces)
         if bare_refs:
@@ -421,6 +507,16 @@ def main() -> int:
                 refs += ", ..."
             raise ValidationError(
                 f"{doc}: backticked file reference(s) {refs}; use markdown links so renames do not rot"
+            )
+        contradictions = iter_authoring_repo_contradictions(doc)
+        if contradictions:
+            lineno, sentence = contradictions[0]
+            more = f" (+{len(contradictions) - 1} more)" if len(contradictions) > 1 else ""
+            raise ValidationError(
+                f"{doc}:{lineno}: this sentence calls a file `{AUTHORING_REPO_PHRASE}` and then spells it "
+                f"with the consumer prefix `{CONSUMER_PREFIX}`{more}; `{CONSUMER_PREFIX}` means the "
+                "reader's own tree, so the sentence contradicts itself — use `<authoring-repo>/` to say "
+                f"the file lives in charness and not in theirs. Sentence: {sentence}"
             )
         unresolved = iter_unresolved_command_targets(root, doc, known_repo_paths)
         if unresolved:

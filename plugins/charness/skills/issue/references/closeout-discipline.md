@@ -145,7 +145,7 @@ are grandfathered as-written; do not reinterpret or rewrite them.
 Closing a GitHub issue — and merging a PR that closes it — is an **irreversible
 boundary**: others read the issue as "done", and a merge enters shared history
 others build on (a reopen does not undo that it was already read as resolved). So
-per *P4* of the authoring-repo-internal `<repo-root>/docs/design-north-star.md`, a
+per *P4* of the authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`, a
 `status: verified` / `CLOSED` state and a passing carrier are *claims* — the
 tracker flipped, the close keyword carried — **not** proof the reporter's
 job-to-be-done behavior actually happened. `status: verified` is **necessary but
@@ -233,7 +233,7 @@ existing ledger checks (`missing_close_keywords`, `missing_fields`,
 `state_mismatches`, `manual_comment_missing`) and the existing
 `_classification_requirements` field set is **not** extended. The full
 contract lives at the authoring-repo-internal
-`<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+`<authoring-repo>/docs/prescribed-skill-closeout-contract.md`.
 
 Release-driven direct-to-default work follows the same linkage. If the
 repo-owned release helper is used, pass resolved issue numbers with

@@ -96,11 +96,33 @@ def refuse_foreign_entrypoint(script_file: str | Path, repo_root: str | Path | N
 
 
 def repo_root_from_skill_script(script_file: str | Path) -> Path:
+    """Resolve the tree root that owns a skill script, by ancestor walk only.
+
+    The walk is layout-independent: it looks for a real marker
+    (`scripts/adapter_lib.py`) rather than counting directory levels, so it
+    returns the repo root in the authoring tree and `plugins/<pkg>` in an
+    installed one without knowing which it is in.
+
+    There used to be a `parents[4]` fallback here. It was BOTH dead and wrong:
+    dead because the walk succeeds for every skill script in either tree
+    (measured 2026-08-04 over all of `skills/**/scripts/*.py` and
+    `plugins/*/skills/**/scripts/*.py`, 0 failures), and wrong because in an
+    installed tree `plugins/<pkg>/skills/<skill>/scripts/x.py` has `parents[4]`
+    == `plugins/`, one level ABOVE the package root the walk correctly returns.
+    A fallback that cannot be reached cannot be observed to be wrong, so it would
+    have stayed wrong until the day the walk first failed -- which is the day you
+    least want a silently-off-by-one root. An explicit refusal is the honest
+    replacement: a caller with no resolvable root cannot proceed anyway.
+    """
     script_path = Path(script_file).resolve()
     for ancestor in script_path.parents:
         if (ancestor / "scripts" / "adapter_lib.py").is_file():
             return ancestor
-    return script_path.parents[4]
+    raise RuntimeError(
+        f"cannot resolve a tree root for skill script {script_path}: no ancestor directory "
+        "contains `scripts/adapter_lib.py`. Expected the charness repo root (authoring tree) "
+        "or a `plugins/<package>` directory (installed tree)."
+    )
 
 
 def _ensure_repo_root_on_syspath(repo_root: Path) -> None:

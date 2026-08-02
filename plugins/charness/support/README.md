@@ -23,4 +23,4 @@ checked-in plugin tree; they are materialized into the installed plugin under
 - prefer upstream consumption plus manifests when the external repo already
   ships a usable support surface
 - generated wrappers or references should be regenerated through
-  [`scripts/sync_support.py`](../../scripts/sync_support.py) instead of edited by hand
+  `<authoring-repo>/scripts/sync_support.py` instead of edited by hand

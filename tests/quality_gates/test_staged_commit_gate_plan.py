@@ -502,6 +502,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "staged-worktree-consistency",
         "staged-plugin-mirror-drift",
         "check-doc-links",
+        "check-plugin-doc-links",
         "check-markdown",
         "check-title-slug-drift",
     ]

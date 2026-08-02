@@ -352,7 +352,7 @@ date is in-scope and shows a rung-1b diagnostic on re-check, but is never
 *re-refused*: the flip-guard only fires on a non-`complete` → `complete`
 transition.) The
 contract lives at the authoring-repo-internal
-`<repo-root>/docs/prescribed-skill-closeout-contract.md`.
+`<authoring-repo>/docs/prescribed-skill-closeout-contract.md`.
 
 A cited evidence file must also **bind** to this goal: file
 presence is necessary but not sufficient, so each evidence path's

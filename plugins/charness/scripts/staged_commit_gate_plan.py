@@ -328,10 +328,23 @@ def staged_commit_gate_plan(
     plan.extend(_mirror_drift_gates(repo_root, paths))
 
     if any(path.endswith(".md") for path in paths):
-        if (repo_root / "scripts" / "check_doc_links.py").exists():
-            plan.append(
-                GateCommand("check-doc-links", ("python3", "scripts/check_doc_links.py", "--repo-root", str(repo_root)))
-            )
+        # `check-plugin-doc-links` takes the same `.md` trigger as `check-doc-links`
+        # rather than a `plugins/`-scoped one: a source-only `.md` commit that FORGETS
+        # the mirror regeneration is worth catching, and the mirror-drift gate above
+        # proves only that the mirror is staged, not that its links survived the
+        # export transform.
+        #
+        # Known hole, shared with `check-doc-links` and recorded in
+        # `docs/conventions/validator-timing-layers.md`: a link verdict also flips when
+        # the link TARGET is renamed, which stages no `.md` at all. Neither gate runs
+        # on that commit; the broad gate and the `quality-core.yml` steps are what
+        # catch it. Widening the trigger would have to move both gates together, so it
+        # is not done here unilaterally.
+        for label, script in (
+            ("check-doc-links", "check_doc_links.py"),
+            ("check-plugin-doc-links", "check_plugin_doc_links.py"),
+        ):
+            plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
         if (repo_root / "scripts" / "check-markdown.sh").exists():
             plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
 

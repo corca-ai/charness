@@ -198,6 +198,20 @@
     },
     {
       "class": "intentional",
+      "id": "1d36956dff2fc82b",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the repo-standard gate entrypoint block: `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError as exc: print(str(exc), file=sys.stderr); sys.exit(1)`. NINE members across nine unrelated gates, EIGHT of them untouched (validate_public_skill_validation, check_skill_contracts, check_supply_chain, validate_cautilus_scenarios, validate_claim_fidelity_specs, validate_presets, validate_public_skill_dogfood, validate_scenario_conditional_reads) -- the family predates this slice and surfaced as new only because check_plugin_doc_links joined it. Centralizing it would put every gate's exit code and stderr contract behind one shared runner, and each script would still have to spell out the indirection; same reasoning as the accepted runtime_bootstrap preamble family 02923daf7e01c82e."
+    },
+    {
+      "class": "intentional",
+      "id": "217bca482c08d1da",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the repo-standard gate `main()` skeleton -- argparse `--repo-root` / `--require-git-file-listing`, `args.repo_root.resolve()`, run the check, then raise or print a success line. Members: check_plugin_doc_links (new this slice) and prepush_focused_changed_line_coverage (untouched). A shared runner would own every gate's argument surface and refusal text, so one gate's flag change would silently alter another's CLI. Surfaced alongside the wider-slice spelling of the same block accepted as 3547c7c6d66c1f10 / d7021cae01c1a7b0; the clustering picks one boundary or the other depending on which families are already accepted, and the judgment is the same for both."
+    },
+    {
+      "class": "intentional",
       "id": "21cbc81495c292ff",
       "note": "a 4-5 line stderr-writing refusal preamble shared by `changed_line_run_trust`, `check_changed_line_mutation_coverage`, and `check_staged_worktree_consistency`. Idiom-sized; extracting it would couple three independently-owned gates through a message formatter for no behavioral gain.",
       "reviewed_at": "2026-08-01",
@@ -328,6 +342,13 @@
       "note": "two `if <condition>: return \"<literal>\"` guard clauses in unrelated operator-facing renderers -- check_changed_line_coverage's blocking-verdict line and check_standing_doc_provenance's inert line. Different conditions, different strings, different subsystems; the only shared thing is the two-line guard-and-return shape Python gives every such branch. Surfaced when a verdict-word renderer was split out of main() to make the word testable, i.e. by a reduction, not by new duplication.",
       "reviewed_at": "2026-07-29",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3547c7c6d66c1f10",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "a wider slice of the same portability preamble as d7021cae01c1a7b0, this time paired only with validate_presets.py:3-16 because that script's import list happens to extend one line further. Same block, same reasoning, one extra member line; splitting the judgment across the two fingerprints would say two different things about one preamble."
     },
     {
       "class": "intentional",
@@ -713,6 +734,13 @@
       "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
       "reviewed_at": "2026-07-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "69026ef11d8ee529",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError ...` entrypoint block, at a narrower cluster boundary than the nine-member spelling accepted as 1d36956dff2fc82b. Five members across five unrelated gates (check_doc_links, check_export_safe_imports, check_plugin_doc_links, validate_adapters, validate_presets), three untouched. Same block, same reasoning: centralizing it puts every gate's exit code and stderr contract behind one runner while each script still spells out the indirection."
     },
     {
       "class": "intentional",
@@ -1462,6 +1490,13 @@
       "note": "runtime_bootstrap import/alias preamble shared by four unrelated repo-root scripts (build_debug_seam_risk_index.py, check_skill_cut_safety.py, post_edit_skill_anchor_guard.py, validate_cautilus_diagnostics.py); same class as 02923daf7e01c82e -- the per-script portability preamble the nose advisory names as its own known blind spot. Re-fingerprinted when the seam-index builder added require_repo_local_helper to that import line",
       "reviewed_at": "2026-07-26",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d7021cae01c1a7b0",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "the portability preamble every repo-owned script carries: `from __future__ import annotations`, stdlib imports, `from runtime_bootstrap import import_repo_module, repo_root_from_script`, `REPO_ROOT = repo_root_from_script(__file__)`. FOURTEEN members, THIRTEEN untouched (check_supply_chain, validate_*, worktree_*). This is the block that makes a script runnable from either the authoring tree or the exported mirror, so it cannot itself be imported from somewhere -- that is the bootstrap problem it exists to solve. The dup gate's own nose advisory names this preamble as its known blind spot."
     },
     {
       "class": "intentional",
