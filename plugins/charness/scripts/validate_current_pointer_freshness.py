@@ -185,13 +185,6 @@ def _load_json(path: Path) -> dict:
         return {}
 
 
-def validate_quality_runtime_signal_claims(repo_root: Path) -> None:
-    # Runtime samples are written by the same quality runner that calls this
-    # freshness gate, so committed current pointers must not chase exact
-    # per-run timings. Artifact shape is checked by validate_quality_artifact.
-    _ = repo_root
-
-
 def _json_version(repo_root: Path, relative_path: Path) -> str | None:
     payload = _load_json(repo_root / relative_path)
     version = payload.get("version")
@@ -355,7 +348,14 @@ def validate_current_pointer_freshness(repo_root: Path) -> None:
     validate_no_stale_claims(repo_root)
     validate_quality_command_claims(repo_root)
     validate_runtime_smoothing_claim(repo_root)
-    validate_quality_runtime_signal_claims(repo_root)
+    # `validate_quality_runtime_signal_claims` used to be called here. Its entire
+    # body was `_ = repo_root` — a registered check that rendered no verdict, so a
+    # reader of this list saw seven checks and believed seven things were checked.
+    # Its own comment said why it was empty (runtime samples are written by the
+    # same runner that calls this gate, and artifact shape is checked by
+    # `validate_quality_artifact`), which makes the emptiness deliberate and the
+    # registration the mistake. Deleted rather than kept: a name that claims a
+    # verdict it does not render is the fail-open shape this sweep measured.
     validate_release_version_claim(repo_root)
     validate_capability_catalog_integration_claims(repo_root)
 

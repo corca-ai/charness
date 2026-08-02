@@ -36,6 +36,28 @@ escalates to a one-time block, which resets when the overlay edit advances the g
 anchor. At or below the floor `F`, the boy-scout arm is fully advisory; the hard
 arm still fires.
 
+**Edit-time advisory (never blocks).** The hard arm runs in the closeout
+aggregate, so a new family is discovered after the slice is finished and the
+commit message is written. Four consecutive runs in the authoring repo wrote
+"run the ratchet early" into a plan and hit the aggregate anyway — a prose
+checklist fires exactly when nobody is reading the prose. A third, purely
+advisory signal therefore fires at the EDIT: when a substantial addition lands in
+a file inside the declared `scope_paths`, the author is told to run the ratchet
+now, once per file per HEAD so a later one-word edit does not re-emit it. It answers the cheap question (is this file in scope) rather than the
+expensive one (is it already in a family), because the gate baseline stores
+family fingerprints and not member paths, so membership cannot be resolved
+without re-running the scanner. It fires only above an added-line threshold: a
+new fixable family correlates with a large addition — it does not BOUND one, and
+a small copy-paste can still reach the aggregate — while an advisory that
+false-fires trains token-theater. This adds an early signal, not a new floor: the
+hard arm is unchanged, and the advisory can never change an exit code.
+
+This arm is host-conditional in a way the other two are not. It rides an
+edit-time hook, so it exists only where that hook is installed; a host with no
+equivalent edit-time surface gets the two arms above and the closeout aggregate,
+unchanged. A repo whose adapter declares no `dup_ratchet` section is never
+advised at all.
+
 ## Code / Doc Identity
 
 Both surfaces key newness on a position-independent identity — deliberately,

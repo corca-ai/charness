@@ -982,6 +982,13 @@
     },
     {
       "class": "intentional",
+      "id": "9088c69759ec67b6",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "Two-line `if <relpath>.startswith(\"plugins/\"): return False` mirror-exclusion guard, shared with scripts/skill_portability_lib.py. Both say the same true thing about this repo -- a generated mirror is not independently authored -- and the shared form is two lines with no extractable behaviour. A helper for it would cost an import in a portable script to save one conditional."
+    },
+    {
+      "class": "intentional",
       "id": "90cebad1d0bdb633",
       "note": "nine-line top-level import and usage-stream constant overlap between the standalone validator and reporter after both consume the shared records module; it is script bootstrap shape, not duplicated behavior",
       "reviewed_at": "2026-07-10",
@@ -1532,6 +1539,13 @@
       "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
       "reviewed_at": "2026-07-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e5197e11fc4864db",
+      "reviewed_at": "2026-08-02",
+      "surface": "code",
+      "note": "The `subprocess.run([...], cwd, capture_output, text, timeout) except (OSError, SubprocessError) -> None` git-invocation idiom. This repo already carries SEVEN independent copies (check_prose_pin, check_symbol_residue, check_staged_reversion, slice_closeout_command_executor, validate_maintainer_setup, validate_packaging_committed, validate_inventory_consumption); the ratchet grouped this one because it is the eighth. It is deliberately local here: the advisory rides an edit-time hook and must never raise, so its failure disposition (silence) is the part that differs, exactly the split path_portability_lib.resolve_within_repo documents -- share the resolution, keep the disposition with the caller. Collapsing all eight is a separate cleanup with its own blast radius across portable and repo-internal scripts, not this slice's work."
     },
     {
       "class": "intentional",

@@ -86,19 +86,90 @@ rather than silently sampled:
 - the S3 predicate is narrow — a reference is in scope only when it states a
   rule an agent must OBEY (a mandate, a precondition, a refusal), not when it
   merely describes or explains;
-- the reduced S3 set and its own denominator are recorded below;
+- the mandate filter (>=5 occurrences of must / never / do not / forbidden /
+  required / refuse / blocked / mandat) reduces the 202 to **71**;
+- of those, **79 units were assigned** across the two S3 slices (all 24 shared
+  references and convention docs, plus 55 public-skill references) and **54 were
+  read** — the 25 unread are counted in `## Counts`, never dropped;
 - the 202 stays stated as the unfiltered stratum, so the reduction is visible as
   a reduction and not as the original population.
 
 ## Findings
 
-<!-- populated by the sweep; each row carries its classification, the criterion
-     when `cannot-fire`, and its disposition -->
+### Confirmed `cannot-fire` (survived adversarial verification)
+
+| rule | file:line | criterion | disposition |
+| --- | --- | --- | --- |
+| `validate_quality_runtime_signal_claims` | `scripts/validate_current_pointer_freshness.py:187` (pre-repair) | 1 + 5 — the entire body was `_ = repo_root`; a registered check rendering no verdict | **repaired** — deleted from the check list, with the reason recorded at the call site |
+
+One confirmed instance, and it is the class exactly: seven checks were registered
+in `validate_current_pointer_freshness`, a reader saw seven, and six ran. Its own
+comment explained why it was empty, which makes the emptiness deliberate and the
+REGISTRATION the defect.
+
+### Known members carried into the sweep
+
+| rule | disposition |
+| --- | --- |
+| #471 `has_repo_delegation_contract` | **repaired** before this sweep; re-read here and now also walks the authorization ladder |
+| #475 the delegation authorization rule | **repaired** in Lane A of this goal |
+| #473 `--fail-on-pre-rule-refusal` | **repaired** — resolved as a TRIPWIRE with a forced-scope probe, not deleted (below) |
+| #476 the compact `AGENTS.md` template markers | **issue #476** — filed this run, measured, not repaired: both repair directions newly APPLY floors to repos previously outside them |
+
+**#473 resolved.** `pre_rule_rung1a_refusals` is 0 for every possible corpus
+because pre-rule and rung-1a-refused are mutually exclusive by control flow, so
+`--fail-on-pre-rule-refusal` had never returned 1. The predicate's own wording
+decided the disposition: the situation the flag was written for is **the
+grandfather leaking**, not the current corpus, and in that situation it does
+fire. Deleting it would remove a guard for a real regression because the
+regression has not happened yet. the forced-scope probe
+([test_pre_rule_refusal_tripwire.py](../../tests/quality_gates/test_pre_rule_refusal_tripwire.py))
+forces the mutually-exclusive pair through `summarize` — reachable because
+`summarize` is a pure function of the audited rows — and pins that the count
+reaches 1 AND that the flag's exit path returns 1. The module docstring now says
+the flag cannot return 1 *while that ordering holds*, and names the probe.
+
+### Refuted `cannot-fire` claims
+
+**11 of 14 `cannot-fire` claims were refuted by adversarial verification.** That
+is the headline result of the verify stage and it is reported as such rather than
+buried: a sweep whose surveyors' claims were taken at face value would have
+reported roughly 14 findings, and 11 of them would have been wrong.
+
+The refutations cluster into one shape worth recording. Most were rules in
+shipped skill references citing `<repo-root>/scripts/<name>.py` paths that exist
+only in the authoring repo, claimed `cannot-fire` (criterion 4) *in a consuming
+repo*. Each verifier refuted by exhibiting a firing input **in the authoring
+repo**. Both readings are defensible, and the verify stage was deliberately tuned
+to refute on uncertainty, so the count resolves toward `can-fire`. **This is a
+stated limitation of the measurement, not a hidden one** — see `## Non-Claims`.
 
 ## Counts
 
-<!-- read / can-fire / cannot-fire / not-a-rule / unread, per stratum, each
-     against the denominator above -->
+Denominator: the population table above, measured 2026-08-02 after Lane A's fold.
+Assignment differs from the raw stratum counts because S2 was sliced by family
+and S3 was reduced by the mandate filter recorded in `## Scope Call On S3`.
+
+| stratum | assigned | read | unread | rules classified | `can-fire` | `not-a-rule` | `cannot-fire` claimed | confirmed after verify |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| S1 rule-date constants | 12 files (17 constants) | 12 | 0 | 19 | 17 | 2 | 0 | 0 |
+| S2a artifact validators | 37 | 37 | 0 | 32 | 28 | 1 | 3 | 1 |
+| S2b `check_*` scripts | 53 | 53 | 0 | 58 | 55 | 2 | 1 | 0 |
+| S2c skill-package scripts | 16 | 16 | 0 | 16 | 16 | 0 | 0 | 0 |
+| S3a shared refs + conventions | 24 | 24 | 0 | 51 | 46 | 3 | 2 | 0 |
+| S3b public-skill references | 55 | 30 | **25** | 25 | 13 | 4 | 8 | 0 |
+| **total** | **197** | **172** | **25** | **201** | **175** | **12** | **14** | **1** |
+
+- **172 of 197 assigned units were read (87%).** The 25 unread are all in S3b and
+  are counted, never dropped — a reader can tell "checked and live" from "not
+  checked", which is the distinction whose absence made four findings look like
+  bad luck.
+- "rules classified" exceeds "read" in several strata because one file carries
+  several rules, and falls below it in S3b because unread files yield no rules.
+- **`cannot-fire` after verification: 1 of 201 classified rules.** The honest
+  reading is not "the codebase is clean" — it is that this predicate, applied at
+  this depth, finds roughly one instance per two hundred rules, and that four
+  previously-known instances were all found by people rather than by this method.
 
 ## Non-Claims
 
@@ -109,3 +180,13 @@ rather than silently sampled:
   a validator that audits validators as the anti-pattern applied to itself.
 - A `can-fire` verdict says a firing input exists. It does not say the rule is
   correct, well-scoped, or worth keeping.
+- **The consuming-repo reading is under-measured.** The verify stage was tuned to
+  refute on uncertainty, and most refuted claims were "inert in a consuming repo"
+  claims refuted by a firing input in the AUTHORING repo. Those rules may still
+  be inert where the skill is installed. This sweep does not settle them, and the
+  count leans toward `can-fire` because of that tuning. Measuring it properly
+  needs a consuming repo, which is not reachable from this tree.
+- 25 S3b files are `unread`. Nothing is claimed about them.
+- The counts come from surveyor agents plus adversarial verifiers, not from a
+  deterministic tool. The one CONFIRMED finding was independently re-read by the
+  parent before it was repaired; the refutations were not each re-read.

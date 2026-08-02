@@ -10,11 +10,16 @@ it would do, so a human can confirm:
   returns at ``if not in_scope: return`` before any ``disposition_blank`` can be
   set, so "pre-rule" and "rung-1a refused" are mutually exclusive by control
   flow: ``pre_rule_rung1a_refusals`` is 0 for every possible corpus, and
-  ``--fail-on-pre-rule-refusal`` cannot return 1. It trips on ANY writer of the
-  ``disposition_blank`` key reachable for a pre-rule goal — a rung reordered
-  above the scope check is one such shape, not the only one. Reported with
-  ``pre_rule_refusal_detectability`` so the number states what produced it
-  rather than reading as confirmation the grandfather was exercised;
+  ``--fail-on-pre-rule-refusal`` cannot return 1 *while that ordering holds*. It
+  trips on ANY writer of the ``disposition_blank`` key reachable for a pre-rule
+  goal — a rung reordered above the scope check is one such shape, not the only
+  one. Reported with ``pre_rule_refusal_detectability`` so the number states what
+  produced it rather than reading as confirmation the grandfather was exercised.
+  The flag is a TRIPWIRE, and the situation it was written for is the LEAK, not
+  the current corpus: ``tests/quality_gates/test_pre_rule_refusal_tripwire.py``
+  forces the mutually-exclusive pair through ``summarize`` and pins that the
+  count reaches 1 and the flag's exit path returns 1. That probe is why this is
+  an armed guard rather than one nobody has ever seen work;
 - the floor is **not inert** — in-scope goals that lack a bound
   ``Disposition review:`` line or carry a blank ``## Auto-Retro`` are surfaced
   (these are the cases a post-rule closeout must now satisfy).

@@ -55,6 +55,56 @@ def skill_package_relpath(repo_root: Path, raw: str) -> str | None:
     return None
 
 
+def repo_relpath(repo_root: Path, raw: str) -> str | None:
+    """The repo-relative path for any edited file inside this repo, else None.
+
+    Resolution is the shared `path_portability_lib.resolve_within_repo`; only the
+    disposition is local. That module exists precisely because three callers had
+    each grown their own copy of this core.
+    """
+
+    portability = import_repo_module(__file__, "scripts.path_portability_lib")
+    return portability.resolve_within_repo(repo_root, raw)
+
+
+def _emit_dup_ratchet_advisory(repo_root: Path, raw_path: str) -> None:
+    """Print the dup-ratchet edit-time advisory, and never do anything else.
+
+    Fail-open and fail-quiet in every direction: this rides on an edit-time hook,
+    so an advisory that raised would break ordinary editing over a signal that is
+    explicitly non-blocking.
+    """
+
+    try:
+        rel = repo_relpath(repo_root, raw_path)
+        if rel is None:
+            return
+        advisory = import_repo_module(__file__, "scripts.dup_ratchet_edit_advisory")
+        message = advisory.advise_for_edited_file(repo_root, rel)
+        if not message:
+            return
+        # `hookSpecificOutput.additionalContext` on STDOUT, not stderr. This
+        # guard's contract is that the host branches on exit 0 (silent) vs 2
+        # (surface findings), and the advisory is exit 0 by construction — so
+        # stderr would compute the message correctly and then throw it away,
+        # which is the exact "rule that cannot fire where it was written" class
+        # this advisory was built during. `session_start_routing.py` already uses
+        # this channel to put text in front of the agent while exiting 0.
+        print(
+            json.dumps(
+                {
+                    "hookSpecificOutput": {
+                        "hookEventName": "PostToolUse",
+                        "additionalContext": message,
+                    }
+                },
+                ensure_ascii=False,
+            )
+        )
+    except Exception:  # noqa: BLE001 - an advisory must never break an edit
+        return
+
+
 def main(argv: list[str] | None = None, stdin: Any = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--host", default="claude", help="Installing host (parity with the hook command; unused).")
@@ -69,6 +119,13 @@ def main(argv: list[str] | None = None, stdin: Any = None) -> int:
     raw_path = edited_file_path(payload)
     if raw_path is None:
         return 0
+    # Edit-time dup-ratchet advisory (#474), carried on this already-installed
+    # PostToolUse hook rather than a second intent: it needs exactly the same
+    # firing (any Edit/Write, the path just edited) and a parallel hook would be
+    # more machinery for the same event. Strictly advisory — it never changes
+    # this guard's exit code, so a dup-ratchet signal can never block an edit
+    # that the anchor scan would have allowed.
+    _emit_dup_ratchet_advisory(repo_root, raw_path)
     rel = skill_package_relpath(repo_root, raw_path)
     if rel is None:
         return 0

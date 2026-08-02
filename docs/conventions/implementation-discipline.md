@@ -131,6 +131,17 @@ the root instruction file but still apply to Charness maintenance work.
   The advisory never blocks on near-limit status; the existing length gate is
   the hard floor. Function limits remain AST-span based because `tokei` does not
   report function-level counts.
+- The sibling trap has the same shape of affordance (#474):
+  [dup_ratchet_edit_advisory.py](../../scripts/dup_ratchet_edit_advisory.py),
+  carried on the already-installed PostToolUse edit hook, warns once per file
+  per HEAD at the first substantial addition to a file inside the dup ratchet's
+  declared `scope_paths` — rather than at the closeout aggregate, where a new family is a
+  hard block found after the slice is finished and the commit message is
+  written. Four consecutive runs wrote "run the ratchet early" into a plan and
+  hit the aggregate anyway. It is strictly advisory and never changes an exit
+  code; [dup-ratchet.md](../../skills/public/quality/references/dup-ratchet.md)
+  *Two Arms* owns the mechanism and the reason it checks scope rather than
+  membership.
 - The per-surface aggregate preflights below —
   [check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
   for skills,

@@ -1,0 +1,247 @@
+#!/usr/bin/env python3
+"""Edit-time advisory for the duplicate-ratchet trap (#474).
+
+The length-headroom advisory already exists so the "append until the hard gate
+fires" trap is a workflow affordance rather than agent memory. Its sibling trap
+had no such affordance: `check_dup_ratchet.py` runs only in the closeout
+aggregate, where a new duplicate family is a HARD BLOCK discovered after the
+slice is finished and the commit message is written.
+
+Four consecutive runs wrote "run the dup ratchet early" into a plan and hit it
+at the aggregate anyway. A prose checklist fires exactly when nobody is reading
+the prose, which is the whole point: this moves the signal to the moment the
+duplication is being written.
+
+Two deliberate scoping choices, both about NOT training token-theater:
+
+* **Scope, not membership.** The gate baseline stores family fingerprints, not
+  member paths, so "is this file already in a family" cannot be answered without
+  re-running the scanner (measured ~2.8s). This advisory answers the cheap
+  question the issue actually asked — is this file inside the ratchet's declared
+  scope — and points at the real command.
+* **Substantial additions only.** Every edit to every scanned file would fire on
+  almost every edit in this repo. A new duplicate family needs a meaningful block
+  of new code, so the trigger is added lines in this file versus HEAD, over a
+  threshold. A one-line tweak to a scanned file says nothing and stays silent.
+
+Advisory only, never a gate: the hard arm stays exactly where it is. This adds an
+early signal, not a new floor.
+"""
+
+from __future__ import annotations
+
+import json
+import subprocess
+from pathlib import Path
+
+#: Fallback when the adapter cannot be read. Kept identical to the shipped
+#: `.agents/quality-adapter.yaml` `dup_ratchet.scope_paths` default.
+DEFAULT_SCOPE_PATHS = ("scripts", "skills/public", "skills/support")
+
+#: Added lines in ONE file, versus HEAD, before the advisory fires. A new
+#: fixable duplicate family is a repeated block, not a line: below this the
+#: signal would be noise, and a noisy advisory is worse than none.
+DEFAULT_ADDED_LINE_THRESHOLD = 30
+
+# The ratchet is not Python-only: this repo already carries two checked-in `.mjs`
+# duplicate families, and `dup-ratchet.md` explicitly contemplates a non-Python
+# family member. A `.py`-only advisory would be silent for exactly those.
+_SCANNED_SUFFIXES = (".py", ".mjs", ".sh")
+
+
+def scope_paths(repo_root: Path) -> tuple[str, ...]:
+    """The ratchet's declared scope, read from the adapter with a pinned fallback."""
+
+    adapter = repo_root / ".agents/quality-adapter.yaml"
+    if not adapter.is_file():
+        return DEFAULT_SCOPE_PATHS
+    try:
+        import yaml  # imported lazily: the advisory must never break an edit
+    except ImportError:  # pragma: no cover - yaml is a repo dependency
+        return DEFAULT_SCOPE_PATHS
+    try:
+        data = yaml.safe_load(adapter.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, yaml.YAMLError):
+        return DEFAULT_SCOPE_PATHS
+    if not isinstance(data, dict):
+        return DEFAULT_SCOPE_PATHS
+    section = data.get("dup_ratchet")
+    if not isinstance(section, dict) or not section.get("enabled", False):
+        # A disabled ratchet cannot hard-block, so there is nothing to warn about
+        # — and neither can an ABSENT one. Falling back to the default scope when
+        # the section is missing would make this advisory fire in a consumer repo
+        # that never opted into the ratchet, pointing at a command that may not
+        # exist there. The fallback below is for an unreadable adapter only.
+        return ()
+    declared = section.get("scope_paths")
+    if not isinstance(declared, list) or not declared:
+        return DEFAULT_SCOPE_PATHS
+    return tuple(str(entry) for entry in declared if isinstance(entry, str))
+
+
+def in_ratchet_scope(relpath: str, roots: tuple[str, ...]) -> bool:
+    """Whether the ratchet would scan this repo-relative path at all."""
+
+    if not relpath.endswith(_SCANNED_SUFFIXES):
+        return False
+    # Generated mirrors carry the same code but are not independently authored,
+    # and the ratchet does not scan them. Warning about them would send an author
+    # to fix a file that is regenerated from the one they should be editing.
+    if relpath.startswith("plugins/"):
+        return False
+    posix = Path(relpath).as_posix()
+    return any(posix == root or posix.startswith(f"{root}/") for root in roots)
+
+
+def _git(repo_root: Path, *args: str) -> subprocess.CompletedProcess[str] | None:
+    """One git invocation, or None when git itself could not be run.
+
+    Local and tiny on purpose: an advisory on an edit-time hook must never raise,
+    so every git failure collapses to "no answer" and the advisory stays silent.
+    """
+
+    try:
+        return subprocess.run(
+            ["git", *args], cwd=repo_root, capture_output=True, text=True, timeout=10
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def added_lines_vs_head(repo_root: Path, relpath: str) -> int | None:
+    """Added lines for one path versus HEAD, or None when git cannot answer.
+
+    A brand-new untracked file counts as fully added: that is the case most
+    likely to introduce a family, and `git diff HEAD` alone would report nothing
+    for it.
+    """
+
+    proc = _git(repo_root, "diff", "--numstat", "HEAD", "--", relpath)
+    if proc is None or proc.returncode != 0:
+        return None
+    for line in proc.stdout.splitlines():
+        parts = line.split("\t")
+        if len(parts) >= 3 and parts[0].isdigit():
+            return int(parts[0])
+    target = repo_root / relpath
+    if not target.is_file():
+        return None
+    tracked = _git(repo_root, "ls-files", "--error-unmatch", relpath)
+    if tracked is None:
+        return None
+    if tracked.returncode == 0:
+        return 0  # tracked and unchanged versus HEAD
+    try:
+        return len(target.read_text(encoding="utf-8").splitlines())
+    except (OSError, UnicodeDecodeError):
+        return None
+
+
+_SEEN_RELPATH = ".charness/dup-ratchet/advised.json"
+
+
+def _already_advised(repo_root: Path, relpath: str, head: str | None) -> bool:
+    """Whether this (file, HEAD) pair has already been advised about.
+
+    Without this the advisory re-fires on EVERY later edit to the same file --
+    a typo fix, a one-word rename -- because `added_lines_vs_head` measures
+    cumulative additions versus HEAD rather than this edit's delta. Repeated
+    identical advisories are the token-theater this module exists to avoid, and
+    they would also make "warns at the FIRST substantial addition" false.
+
+    Keyed by HEAD so the signal returns after a commit moves the baseline.
+    """
+
+    if head is None:
+        return False
+    path = repo_root / _SEEN_RELPATH
+    try:
+        seen = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        seen = {}
+    if not isinstance(seen, dict) or seen.get("head") != head:
+        seen = {"head": head, "paths": []}
+    paths = seen.get("paths")
+    if not isinstance(paths, list):
+        paths = []
+    if relpath in paths:
+        return True
+    paths.append(relpath)
+    seen["paths"] = paths
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(json.dumps(seen), encoding="utf-8")
+    except OSError:
+        # Unwritable state means we re-advise rather than go silent: a repeated
+        # advisory is noise, a missed one is the trap this exists to catch.
+        return False
+    return False
+
+
+def advise_for_edited_file(
+    repo_root: Path,
+    relpath: str,
+    *,
+    threshold: int = DEFAULT_ADDED_LINE_THRESHOLD,
+) -> str | None:
+    """The advisory text for a just-edited file, or None to stay silent."""
+
+    roots = scope_paths(repo_root)
+    if not roots or not in_ratchet_scope(relpath, roots):
+        return None
+    added = added_lines_vs_head(repo_root, relpath)
+    if added is None or added < threshold:
+        return None
+    head = _git(repo_root, "rev-parse", "HEAD")
+    head_sha = head.stdout.strip() if head is not None and head.returncode == 0 else None
+    if _already_advised(repo_root, relpath, head_sha):
+        return None
+    return (
+        f"ADVISORY (dup ratchet): {relpath} is inside the duplicate-ratchet scope "
+        f"and this slice has added {added} lines to it. A new fixable duplicate "
+        "family is a HARD BLOCK at the closeout aggregate, discovered after the "
+        "slice is finished and the commit message is written. Check it now:\n"
+        "  python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n"
+        "If the duplication is deliberate, classify the family `intentional` in "
+        "charness-artifacts/quality/dup-review.json with the reason; prefer the "
+        "scoped accepts over --write-baseline. Advisory only, never blocks."
+    )
+
+
+def advisory_state(repo_root: Path, relpath: str, *, threshold: int = DEFAULT_ADDED_LINE_THRESHOLD) -> dict:
+    """Structured form of the same decision, for tests and callers that want the why."""
+
+    roots = scope_paths(repo_root)
+    in_scope = bool(roots) and in_ratchet_scope(relpath, roots)
+    added = added_lines_vs_head(repo_root, relpath) if in_scope else None
+    return {
+        "path": relpath,
+        "scope_paths": list(roots),
+        "in_scope": in_scope,
+        "added_lines": added,
+        "threshold": threshold,
+        "fires": bool(in_scope and added is not None and added >= threshold),
+    }
+
+
+def main(argv: list[str] | None = None) -> int:
+    import argparse
+
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--repo-root", default=".")
+    parser.add_argument("--path", required=True, help="Repo-relative path just edited.")
+    parser.add_argument("--json", action="store_true", help="Emit the structured decision.")
+    parser.add_argument("--threshold", type=int, default=DEFAULT_ADDED_LINE_THRESHOLD)
+    args = parser.parse_args(argv)
+    repo_root = Path(args.repo_root).resolve()
+    if args.json:
+        print(json.dumps(advisory_state(repo_root, args.path, threshold=args.threshold), indent=2))
+        return 0
+    message = advise_for_edited_file(repo_root, args.path, threshold=args.threshold)
+    if message:
+        print(message)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
