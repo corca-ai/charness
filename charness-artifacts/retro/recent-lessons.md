@@ -3,21 +3,21 @@
 ## Current Focus
 
 - One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`; sources: 2)
-- Goal `2026-08-03-push-the-armed-gate-and-close-477-through-its-carrier`. (source: `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`)
+- Goal `2026-08-04-close-the-unreachable-file-class-and-widen-the-claims-round`. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
 
 ## Repeat Traps
 
 - **Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage ("four release publishes died to one shape"). (source: `charness-artifacts/retro/2026-07-27-session-retro.md`; sources: 3)
 - **Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning. (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`; sources: 2)
-- **A comment cited a guard that did not cover the branch.** The lowered shipped-layout floor named an authoring-only fixture as "the real guard"; that fixture builds no `plugins/` tree, and no fixture anywhere produced a shipped-layout `BROKEN` row. The floor and its stated justification were both weaker than they read. (source: `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`)
-- **A dup-ratchet hard-block at closeout on my own code** (two clone families in `_refusal_reason`'s repeated message blocks). The low-cost check says to run the ratchet at the FIRST edit to a gated file, not at the closeout aggregate; I ran it at the aggregate. Cost was small only because the fix was a genuine refactor rather than an accept. (source: `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`)
+- **A background test run reported "exit code 0" while its output showed 10 failures — and it happened TWICE, on two separate runs (10 failures, then 4).** I only caught both by reading the output file. Anything read from a completion summary rather than the artifact is a proxy. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
+- **Dup-ratchet fingerprints rotated twice mid-slice** — once on a refactor, once on removing a single unused import — costing three classify-and-recheck cycles before the ratchet went clean. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
 
 ## Next-Time Checklist
 
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
-- a proof-surface repair owes its second round, and the round that reads the REPAIRS is where the class reappears — twice in this run, neither visible to round 1. (source: `charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`)
-- a slice packet's non-claims are claims and need the same premise check as a plan's remedies; the one blocker in Lane A's review was a packet assertion I had not checked. (source: `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`)
-- build test inputs from the source constant, never by retyping the string the code is supposed to accept. Applied in this run (`_decline_status_line` reads `_DECLINE_ACTION` and splits it) after the hand-typed version passed against a form nothing prescribes. (source: `charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`)
+- a slice that deletes or renames a module-level name should run the broad suite at its own boundary, not defer to closeout — `--skip-broad-pytest` is correct for additive slices and blind to this one. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
+- do not run a generated-surface sync while a background suite is reading the tree — four phantom failures came from exactly that, and they look identical to real ones until you rerun them in isolation. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
+- read the OUTPUT of a background command, never its completion summary. Two summaries this run said "exit code 0" over runs with 10 and 4 failures respectively. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
 
 ## Selection Policy
 
@@ -31,7 +31,6 @@
 - `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`
 - `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
-- `charness-artifacts/retro/2026-08-02-fix-the-rule-that-cannot-fire-where-it-was-written-to-then-count-the-rest.md`
-- `charness-artifacts/retro/2026-08-02-make-a-verdict-state-its-denominator-and-move-the-fresh-eye-round-before-the-boundary.md`
 - `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`
 - `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`
+- `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`
