@@ -18,10 +18,17 @@ adding one does not copy this resolution logic again.
 """
 from __future__ import annotations
 
-import importlib.util
+import runpy
 import sys
 from pathlib import Path
-from types import ModuleType
+
+# The walk is BOUNDED. A shim sits at `<root>/<tier>/scripts/<name>`, so its
+# target is three ancestors up in the authoring tree and two in the shipped one.
+# An unbounded walk would keep climbing past the package into the consuming
+# repo and eventually `/`, and then EXECUTE whatever `scripts/<name>.py` it
+# found there -- a consumer plausibly owns a `validate_skills.py`, and running
+# their file is worse than the FileNotFoundError this promises.
+_MAX_ANCESTORS = 5
 
 
 def locate(name: str, caller: Path) -> Path:
@@ -30,42 +37,49 @@ def locate(name: str, caller: Path) -> Path:
     Walking up from the CALLER lands on `<repo>/scripts/` in the authoring tree
     and `<plugin-root>/scripts/` in the shipped one without either depth being
     hard-coded. The self-skip is load-bearing: a shim named `X.py` living in
-    `skills/shared/scripts/` is itself an `<ancestor>/scripts/X.py`, so an
-    unguarded walk finds itself and recurses until the interpreter dies.
+    `<tier>/scripts/` is itself an `<ancestor>/scripts/X.py`, so an unguarded
+    walk finds itself and recurses until the interpreter dies.
     """
     origin = caller.resolve()
-    for ancestor in origin.parents:
+    for ancestor in list(origin.parents)[:_MAX_ANCESTORS]:
         candidate = ancestor / "scripts" / name
         if candidate.is_file() and candidate.resolve() != origin:
             return candidate
     raise FileNotFoundError(
-        f"no ancestor of {origin} contains scripts/{name}; "
+        f"no ancestor of {origin} within {_MAX_ANCESTORS} levels contains scripts/{name}; "
         "this shim must ship alongside the authoring-repo script it fronts"
     )
 
 
-def load(script_path: Path) -> ModuleType:
-    """Import the target with its OWN directory importable.
+def run(name: str, caller: str) -> int:
+    """Locate the target and run it AS `__main__`, exactly as a direct call would.
 
-    Repo scripts use bare `from yaml_output import ...` / `from runtime_bootstrap
-    import ...`, which only resolve when their own directory is on `sys.path`.
-    Running one directly gets that for free; loading it from here does not.
+    Importing it and calling `main()` looks equivalent and is not: two of the
+    three targets put their ERROR HANDLING in the `__main__` guard --
+    `validate_skills.py` and `plan_risk_interrupt.py` both catch `ValidationError`
+    there and print the reason to stderr. Calling `main()` from an import leaves
+    that guard false, so a failing validation reaches the operator as a traceback
+    with the actual reason buried at the bottom, on the one path
+    `binary-preflight.md` step 5 exists to serve.
+
+    `runpy` executes the guard, so the shim inherits whatever entry contract the
+    target already has instead of re-implementing a per-target one. Its own
+    directory goes on `sys.path` first because repo scripts use bare
+    `from yaml_output import ...` imports that only resolve from there -- running
+    one directly gets that for free; reaching it from here does not.
     """
+    script_path = locate(name, Path(caller))
     script_dir = str(script_path.parent)
     if script_dir not in sys.path:
         sys.path.insert(0, script_dir)
-    spec = importlib.util.spec_from_file_location(f"{script_path.stem}_entrypoint", script_path)
-    if spec is None or spec.loader is None:
-        raise ImportError(f"Unable to load {script_path}")
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
-    return module
-
-
-def run(name: str, caller: str) -> int:
-    """Locate, load, and delegate to the target's own ``main()``.
-
-    The target's `__main__` guard stays false, so its exit code comes back as a
-    return value rather than a `SystemExit` raised through this frame.
-    """
-    return load(locate(name, Path(caller))).main()
+    try:
+        runpy.run_path(str(script_path), run_name="__main__")
+    except SystemExit as exc:
+        code = exc.code
+        if code is None:
+            return 0
+        if isinstance(code, int):
+            return code
+        print(str(code), file=sys.stderr)
+        return 1
+    return 0

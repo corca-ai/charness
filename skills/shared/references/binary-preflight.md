@@ -171,4 +171,7 @@ When migrating an existing skill to this contract:
 4. Add a pointer to this reference somewhere in the SKILL.md body
    (`## References`, a bullet, or an inline note).
 5. Run `$SKILL_DIR/../../shared/scripts/validate_skills.py --repo-root .` to confirm the new gate
-   accepts the change.
+   accepts the change. **`No skill packages found.` is not a pass** — it exits 0
+   having checked nothing, which happens when your skills are not under
+   `<repo-root>/skills/` or `<repo-root>/support/`. Point `--repo-root` at the
+   tree that actually holds them before reading the result.

@@ -44,16 +44,74 @@ SHIMS = {
 
 
 @pytest.mark.parametrize("name", sorted(SHIMS))
-def test_the_shim_does_not_find_itself(name: str) -> None:
-    """`skills/shared/scripts/<name>` IS an `<ancestor>/scripts/<name>`.
+@pytest.mark.parametrize(
+    ("scripts_dir", "expected_target_dir"),
+    [
+        pytest.param(SHARED_SCRIPTS, REPO_ROOT / "scripts", id="authoring"),
+        pytest.param(
+            MIRROR_SCRIPTS, REPO_ROOT / "plugins" / "charness" / "scripts", id="shipped"
+        ),
+    ],
+)
+def test_each_shim_resolves_to_its_OWN_tree(
+    name: str, scripts_dir: Path, expected_target_dir: Path
+) -> None:
+    """The #477 class, one level up: WHICH target did the walk find?
 
-    An unguarded ancestor walk resolves to the shim itself and recurses until
-    the interpreter dies — which is exactly what the first version did.
+    `--help` passes for either resolution, because both trees live under this
+    repo. So a mirror shim silently falling through to the AUTHORING target
+    would look green here and be broken in every real install, where the
+    authoring tree is not an ancestor. Assert the tree, not just success.
+
+    Also pins the self-skip: `<tier>/scripts/<name>` is itself an
+    `<ancestor>/scripts/<name>`, so an unguarded walk finds itself and recurses
+    until the interpreter dies — which is what the first version did.
     """
-    caller = SHARED_SCRIPTS / name
+    caller = scripts_dir / name
     located = shim_lib.locate(name, caller)
     assert located.resolve() != caller.resolve()
-    assert located.resolve() == (REPO_ROOT / "scripts" / name).resolve()
+    assert located.resolve() == (expected_target_dir / name).resolve()
+
+
+def test_the_walk_is_bounded_and_cannot_reach_an_unrelated_scripts_dir(tmp_path: Path) -> None:
+    """An unbounded walk would EXECUTE a consumer's own `validate_skills.py`.
+
+    Failing closed is the required behaviour: a plausible basename collision in
+    someone else's tree must raise, not run their file.
+    """
+    outsider = tmp_path / "scripts"
+    outsider.mkdir()
+    (outsider / "validate_skills.py").write_text("print('not ours')\n", encoding="utf-8")
+    deep = tmp_path / "a" / "b" / "c" / "d" / "e" / "shared" / "scripts"
+    deep.mkdir(parents=True)
+    caller = deep / "validate_skills.py"
+    caller.write_text("", encoding="utf-8")
+
+    with pytest.raises(FileNotFoundError):
+        shim_lib.locate("validate_skills.py", caller)
+
+
+def test_a_failing_target_reports_its_own_verdict_not_a_traceback(tmp_path: Path) -> None:
+    """Two targets put their ERROR HANDLING in the `__main__` guard.
+
+    Importing and calling `main()` leaves that guard false, so a failing
+    validation reached the operator as a traceback with the reason buried at the
+    bottom — on the exact path `binary-preflight.md` step 5 exists to serve.
+    `runpy` runs the guard, so the shim inherits the target's entry contract.
+    """
+    package = tmp_path / "skills" / "public" / "broken"
+    package.mkdir(parents=True)
+    (package / "SKILL.md").write_text("---\nname: broken\n---\n\n# Broken\n", encoding="utf-8")
+
+    result = subprocess.run(
+        [sys.executable, str(SHARED_SCRIPTS / "validate_skills.py"), "--repo-root", str(tmp_path)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "Traceback" not in result.stderr, result.stderr
+    assert "missing field" in (result.stdout + result.stderr)
 
 
 def test_locate_raises_rather_than_returning_none_when_nothing_is_there(tmp_path: Path) -> None:

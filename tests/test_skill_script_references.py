@@ -99,6 +99,11 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # three sites moved to `<authoring-repo>/`, three moved onto shared shims
     # (leaving the out-of-package forms entirely), and one bullet was dropped.
     assert forms["repo-root"] + forms["authoring-repo"] >= 10
+    # `repo-root` is exactly 1 now (`shared/references/rca-ledger-append.md`,
+    # where the path is an existence predicate the reader evaluates). A correct
+    # edit to that single line trips this with a message about floors rather
+    # than about the edit — accepted deliberately, so the classifier arm is
+    # proven to still fire at all.
     assert forms["repo-root"] > 0 and forms["authoring-repo"] > 0
     # The 7 References bullets Lane A repaired, plus the pre-existing ones.
     assert forms["references-bullet"] >= 20
@@ -141,14 +146,37 @@ def test_no_shipped_reference_is_broken_because_its_file_is_in_the_package() -> 
     # After #478, exactly ONE `<repo-root>/scripts/` reference remains repo-wide
     # (`rca-ledger-append.md`, where the path is an existence predicate the
     # reader evaluates and the spelling is correct). So this floor is now weak by
-    # construction, and says so: the real guard against the BROKEN class is
-    # `test_repo_root_prefix_is_reported_when_the_file_is_in_the_skill_package`,
-    # which builds the defect from a fixture instead of hoping one exists here.
+    # construction, and says so. The real guard against the BROKEN class is
+    # `test_the_broken_class_is_detected_in_the_SHIPPED_layout_too`, which builds
+    # the defect from a fixture in THIS layout instead of hoping a live instance
+    # exists. (An earlier version of this comment cited the authoring-only
+    # fixture, which does not cover the shipped branch at all.)
     candidates = [row for row in shipped if row["form"] == "repo-root"]
     assert len(candidates) >= 1, "no candidates left to classify; this test proves nothing"
 
     broken = [row for row in candidates if row["status"] == inventory_module.BROKEN]
     assert broken == [], _describe(broken)
+
+
+def test_the_broken_class_is_detected_in_the_SHIPPED_layout_too(tmp_path: Path) -> None:
+    """No fixture produced a shipped-layout `BROKEN` row until this one.
+
+    The live floor above is weak by construction now that one `<repo-root>/`
+    reference remains repo-wide, and the authoring-only fixture cannot stand in
+    for it: the mirror is what an installed agent reads, and its classification
+    path is a different branch.
+    """
+    package = tmp_path / "plugins" / "pkg" / "skills" / "demo"
+    (package / "scripts").mkdir(parents=True)
+    (package / "scripts" / "demo_helper.py").write_text("print('ok')\n", encoding="utf-8")
+    (package / "SKILL.md").write_text(
+        "# Demo\n\nUse `<repo-root>/scripts/demo_helper.py`.\n", encoding="utf-8"
+    )
+
+    rows = inventory_module.classify_references(tmp_path)
+    shipped = [row for row in rows if row["layout"] == inventory_module.SHIPPED]
+    assert [row["status"] for row in shipped] == [inventory_module.BROKEN]
+    assert shipped[0]["found_at"].endswith("demo/scripts/demo_helper.py")
 
 
 def test_repo_root_prefix_is_reported_when_the_file_is_in_the_skill_package(tmp_path: Path) -> None:
