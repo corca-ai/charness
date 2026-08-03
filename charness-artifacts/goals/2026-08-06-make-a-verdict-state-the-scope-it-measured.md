@@ -1,6 +1,6 @@
 # Achieve Goal: Stop a surface from returning success its own evidence contradicts
 
-Status: active
+Status: complete
 Created: 2026-08-06
 Activation: `/goal @charness-artifacts/goals/2026-08-06-make-a-verdict-state-the-scope-it-measured.md`
 
@@ -9,8 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: all four scope slices (A/#490, B/#488, C/#489, D/#487) are DONE,
-  reviewed, gated and pushed. What remains is GOAL CLOSEOUT — see Next action.
+- Current slice: COMPLETE. All four scope slices (A/#490, B/#488, C/#489, D/#487)
+  shipped, reviewed and pushed, and closeout is done: final locked proof, retro,
+  disposition review, delegated resolution critique, and the four issue closes.
   A and B are DONE and pushed (`a5b5d0e8`, `8573f862`), and **remote CI is
   confirmed green on BOTH check-runs for each**, read through the check-runs API
   — a different observer AND channel than the push exit code.
@@ -22,12 +23,12 @@ runs the activation command.
   reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: **goal closeout, none of it done.** In order: the final broad
-  proof (`run_slice_closeout.py --verification-lock` with an explicit broad-pytest
-  number), `retro`, `## Final Verification`, `## Auto-Retro` dispositions, and then
-  the issue-closeout floor for **#487, #488, #489 and #490 — all four are still
-  OPEN**, each needing `validate-closeout-draft`, a DELEGATED resolution critique
-  BEFORE the close call, and `verify-closeout --expect-state CLOSED`.
+- Next action: none for this goal. The residue that outlives it is four filed
+  issues — #491 (a reference disagreeing with the code), #492 (standalone-import
+  checking), #493 (the refill report's nested-block granularity), #494
+  (`upsert_goal.py`'s remaining argv channel) — plus D40's still-open blocking
+  half. #487 is closed on `append_slice_log.py` ONLY; the delegated critique
+  refused a wider close and #494 carries the rest.
 - **Remote CI is confirmed green on both check-runs for `a5b5d0e8` and `8573f862`.**
   For `3f7e0d04` (C) and `c09c7f4a` (D) the mutation mirror was still `in_progress`
   when this line was written — `Core deterministic gates` was green on `3f7e0d04`.
@@ -220,7 +221,13 @@ so **in the answer**, not only in prose beside it.
 ## Operator Decision Queue
 
 Both shaping decisions were RESOLVED by the operator on 2026-08-05 and are folded
-into `## Interview Decisions`. Nothing is currently queued for the operator.
+into `## Interview Decisions`; the #488 policy question raised mid-run was resolved
+2026-08-06 and is recorded below. Nothing outlives this goal.
+
+none — every operator-facing decision this goal raised was asked and answered
+in-session (the two shaping calls on 2026-08-05, and the #488 policy-(a) question
+on 2026-08-06), so no confirmation, credential action, manual proof step, or
+external-boundary approval is left waiting on the operator after closeout.
 
 - **RESOLVED by the operator 2026-08-06: a distinct non-blocking exit.** The
   lane reports `partial` (exit 4), `run-quality.sh` renders it UNPROVEN, and
@@ -228,8 +235,9 @@ into `## Interview Decisions`. Nothing is currently queued for the operator.
   nothing newly refuses, and the false green is gone. Both refusing options were
   declined. Folded into `docs/deferred-decisions.md` D40's residual, which had
   assumed the choice was between arming the teeth and leaving the green.
-- Decision (now closed): **does an unmapped changed mutation-pool file REFUSE a
-  push, or become a distinct non-blocking exit the pipeline answers for?**
+- Decision: **does an unmapped changed mutation-pool file REFUSE a push, or
+  become a distinct non-blocking exit the pipeline answers for?** CLOSED
+  2026-08-06 — see the RESOLVED line above; nothing outlives this goal.
 - Owner: operator
 - Why deferred: #488's fix runs straight into a recorded policy that contradicts
   #488's own framing, and this session should not silently overturn it.
@@ -287,6 +295,10 @@ below. Fill during the run:
   (`direct-commit`, PR body, release commit, or manual fallback), and
   `issue_tool.py validate-closeout-draft` / `verify-closeout` proof.
 
+- Issue closeout: #490, #488, #489, #487 closed via the direct-commit carrier (`a5b5d0e8`, `8573f862`, `3f7e0d04`, `c09c7f4a`), each through `issue_tool.py validate-closeout-draft --classification bug --carrier direct-commit` and read back with `verify-closeout --expect-state CLOSED`. A DELEGATED resolution critique ran BEFORE the close call and refused two of the four as scoped: it required the CI re-read below, an issue for the `mutation_testing` nested-sub-key coarseness (#493), and either a repair or a filing for `upsert_goal.py`'s remaining argv channel (#494, and #487 is closed on `append_slice_log.py` ONLY). #491/#492/#493/#494 are filed-not-closed residue.
+- **Final CI read (this is the reference non-claim 3 points at).** `94d2b74b` — the HEAD carrying all four fixes — is **`completed/success` on BOTH check-runs** (`Core deterministic gates` and `Changed-line mutation coverage (push/PR mirror)`), read through the GitHub check-runs API: a different observer AND a different channel than the push exit code. The intermediate SHAs `3f7e0d04` and `c09c7f4a` show their mutation mirror `completed/cancelled` — superseded by the next push, which is the CI system cancelling its own in-flight run, not a failure; their `Core deterministic gates` were green. The behavioural verdict for every issue therefore rests on `94d2b74b`, not on any push exit code.
+- Gather: n/a — every source in `## Context Sources` is repo-local or a GitHub issue read through the repo's own gh-backed issue adapter. The github.com URLs there are issue references resolved by `issue_tool.py`, not external web content fetched into working context, so no `gather` asset applies.
+- Routing: retro — selected from installed skill metadata for the after-action review, its sibling scan (which produced #491 and #492), and the host-log probe.
 - Routing: achieve — selected from installed skill metadata to operate this goal's lifecycle (slice sequencing, slice log, closeout floors); it delegates implementation to the repo's own impl/quality surfaces, issue to the three tracked issues, critique to the bounded rounds each verdict surface owes, and retro to the after-action review.
 
 ## Discuss Before Activation
@@ -455,13 +467,49 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-06-make-a-verdict-state-the-scope-it-measured-retro.md
+Host log probe: charness-artifacts/audit/2026-08-06-make-a-verdict-state-the-scope-it-measured-host-log-probe.md
+Disposition review: charness-artifacts/retro/2026-08-06-make-a-verdict-state-the-scope-it-measured-disposition-review.md
+
+**Self-verification.** Four issues repaired and shipped across six commits.
+Each repair is proven to BITE against the reported condition, not against the
+new branch's existence: #490 by a 5-line gutted artifact (exit 1 naming 14
+absent headings, where it was exit 0 `safe to pursue`); #488 by a real
+subprocess run with `--limit-to-file` (exit 4, where it was exit 0 beside its
+own "says NOTHING about the rest" warning); #489 by the reproduction pasted on
+the issue, run verbatim (`augmented` + 7 named sub-keys + non-empty stderr,
+where it was `preserved` + silence); #487 by driving a REAL shell, with the
+reproduction kept as a passing test that still loses the prose.
+
+**Non-claims, in writing.**
+1. **Nothing is proven about a consumer repo.** Every figure here was measured in
+   this tree or in a tmp fixture.
+2. **Slice B's round-2 reviewer-boundary window is UNPROVEN.** `verify` ran after
+   the repairs instead of the moment the reviewer returned, so it reports
+   `boundary-drift` and cannot separate reviewer writes from mine. The drift list
+   matches exactly the files I edited and the reviewer was a typed
+   `bounded-reviewer` with no write tool exposed — an argument from the envelope,
+   not a verified window. Every other round was verified clean before any parent
+   write.
+3. **Remote CI is confirmed for two of six commits.** `a5b5d0e8` and `8573f862`
+   are green on BOTH check-runs through the check-runs API. `3f7e0d04` and
+   `c09c7f4a` had their mutation mirror `cancelled`/`in_progress` when read —
+   superseded by later pushes. See `## Coordination Cues` for the final read.
+4. **The write-time mechanism that damaged this artifact was never established.**
+   Only the effect was, and the repair is a labelled reconstruction.
+5. **`_mark_subkey_refills` compares TOP-LEVEL keys**, so a nested block inside
+   `mutation_testing` whose own sub-keys were refilled is under-reported. Accepted
+   and recorded at the call site; it under-reports and never over-reports.
+
+**Residual risk.** The `partial` byte (exit 4) is new and has not yet been seen
+firing on a real push — every push this session had a fully-analyzed changed set.
+Its behaviour is proven by tests and by a subprocess run, not by production.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #491 (recurs: a shipped reference contradicting the code it documents — three instances inside this one goal, in `lifecycle-before.md`, `bootstrap-posture.md` and `goal-artifact.md`, each caught by a bounded reviewer and by no gate) — a gate refusing a change whose owning reference still describes the old behaviour.
+Retro dispositions: applied: tests/quality_gates/test_quality_policy_merge_import.py — every module in a package must import standalone; the measured pair is now guarded in BOTH orders via subprocess. Generalization to the whole package is issue #492 (novel: no prior instance of import-order-dependent breakage exists in this repo's record; the class was unobservable until an extraction created a two-module reference), split out rather than claimed, because the guard covers one pair and not the class.
+Retro dispositions: accepted-risk: verifying the reviewer boundary the moment the reviewer returns is a parent tool-call ordering property with no gate available; the one miss is recorded as a non-claim in `## Final Verification` rather than papered over.
+Structural follow-up: issue #491 (recurs: a shipped reference contradicted the code in three of four slices in a single goal, each caught only by a bounded reviewer) and issue #492 (novel: a module that cannot be imported standalone passes the whole suite, because a suite large enough to have imported everything once can never observe another order).

@@ -127,12 +127,16 @@ Use the helpers instead of hand-editing the markdown; they preserve manual
 content and avoid timestamp-only churn. Resolve `$SKILL_DIR` per
 `../../../shared/references/bootstrap-resolution.md` first.
 
-**Pass the prose through `--fields-file <json>`, not these flags.** Slice prose
-cites identifiers, so it carries backticks, and a shell expands those BEFORE the
-helper starts — the record is written with words missing and the run still reports
-`appended`. The flag form below stays valid for short identifier-free values and is
-shown for the field names; a caller building `argv` as a list with no shell is
-equally safe. See `SKILL.md` and `lifecycle-during.md`.
+**Prose must not cross a shell.** It cites identifiers, so it carries backticks,
+and a shell expands those BEFORE the helper starts — the artifact is written with
+words missing and the run still reports success. Two safe channels: build `argv`
+as a list with no shell, or use `append_slice_log.py --fields-file <json>`. The
+flag forms below are shown for the FIELD NAMES and stay valid for short
+identifier-free values.
+
+`upsert_goal.py` has no `--fields-file` yet, so its `--goal-body` is the argv
+channel with no alternative — build its `argv` as a list rather than typing it
+into a shell. Tracked as issue 494. See `SKILL.md` and `lifecycle-during.md`.
 
 ```bash
 # Scaffold a new goal (status draft), or update only the status of an existing one.

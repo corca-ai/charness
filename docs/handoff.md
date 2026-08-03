@@ -2,11 +2,11 @@
 
 ## Workflow Trigger
 
-- **A goal is ACTIVE and mid-closeout** — continue it directly, no activation
-  question (the standing approvals in `AGENTS.md` cover it):
-  `/goal @charness-artifacts/goals/2026-08-06-make-a-verdict-state-the-scope-it-measured.md`
-- All four scope slices are shipped. **Only closeout remains**, and none of it is
-  done. Read the goal's `## Active Operating Frame` Next-action line first.
+- **No goal is active.** The 2026-08-06 goal is COMPLETE: four issues repaired,
+  closed through their floor, closeout artifacts checked in.
+- **Next work is a new goal.** The strongest candidates are the four issues this
+  run filed — #491, #492, #493, #494 — plus the untouched unreachable-file
+  cluster. Shape one with `/achieve` rather than picking up a stale trigger.
 
 ## Continuation Capability
 
@@ -38,21 +38,22 @@
   check-runs**. `3f7e0d04`'s mutation mirror is `cancelled` (superseded by the
   next push) with core gates green; `c09c7f4a`'s mirror was `in_progress` and
   `736e99a0` had no runs yet. **Re-read all three before closing anything.**
-- **#487, #488, #489 and #490 are all still OPEN.** Each is fixed and pushed but
-  none has been through its closeout floor.
+- **#487, #488, #489, #490 are CLOSED** through the floor: `draft_verified`, a
+  delegated resolution critique BEFORE each close call, and a `Behavior #N:`
+  verdict resting on the check-runs API. **#487 is closed on `append_slice_log.py`
+  ONLY** — the critique refused a wider close; `upsert_goal.py` is #494.
+- **#491, #492, #493, #494 are OPEN** — this run's residue, each filed with a
+  reproduction or measured instance.
 - [deferred-decisions.md](./deferred-decisions.md) **D40's residual is RESOLVED IN PART** by an
   operator decision this session; its blocking half stays open.
 
 ## Next Session
 
-1. **Finish the goal's closeout.** Nothing else in this file is more urgent. The
-   order is in the goal's Next-action line: final broad proof with an explicit
-   pytest number, `retro`, `## Final Verification`, `## Auto-Retro` dispositions,
-   then the four issue closeouts.
-2. **Each issue close owes the full floor** (`AGENTS.md`): `validate-closeout-draft`
-   → `draft_verified`, a DELEGATED resolution critique BEFORE the close call, the
-   `bug` ledger, a `Behavior #N:` verdict naming a channel distinct from the one
-   that produced the fix, and `verify-closeout --expect-state CLOSED`.
+1. **Pick up one of #491–#494, or the unreachable-file cluster.** #494 is the
+   smallest and closes a channel this run deliberately left open.
+2. **The closeout ledger goes in the COMMIT MESSAGE for a direct-commit carrier**,
+   not the comment body — `validate-closeout-draft` reads it from there. Two
+   rounds were lost to that this run.
 3. **#482/#483/#484 (unreachable-file axes), #480, #468, and #475's behavioural
    half** are untouched and still their own goal. **The operator still owes #481
    one re-run** in their own repo.
