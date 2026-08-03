@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-03",
-  "source_artifact_count": 419,
-  "candidate_count": 1729,
+  "source_artifact_count": 420,
+  "candidate_count": 1733,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -186,6 +186,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0756c00af55f",
+      "kind": "current_focus",
+      "lesson": "One goal, run end to end: `make-deliberate-absence-representable` — issue #481, where the `quality` bootstrap silently reverted an operator's customized adapter toward the preset, destroying 14 comment lines and resurrecting 3 keys naming files that do not exist in their repo.",
+      "normalized_key": "one goal run end to end make deliberate absence representable issue 481 where the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One goal, run end to end: `make-deliberate-absence-representable` — issue #481, where the `quality` bootstrap silently reverted an operator's customized adapter toward the preset, destroying 14 comment lines and resurrecting 3 keys naming files that do not exist in their repo."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:22cb01e443a8",
       "kind": "next_improvement",
       "lesson": "a slice that deletes or renames a module-level name should run the broad suite at its own boundary, not defer to closeout — `--skip-broad-pytest` is correct for additive slices and blind to this one.",
@@ -238,6 +264,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c346f02d33c7",
+      "kind": "next_improvement",
+      "lesson": "give the changed-line mutation lane a non-green state for incomplete scope (issue #488), and give the `achieve` slice-log helpers a prose input path that cannot be shell-expanded (issue #487).",
+      "normalized_key": "give the changed line mutation lane a non green state for incomplete scope issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give the changed-line mutation lane a non-green state for incomplete scope (issue #488), and give the `achieve` slice-log helpers a prose input path that cannot be shell-expanded (issue #487)."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:94523a93ad4d",
       "kind": "next_improvement",
       "lesson": "read the OUTPUT of a background command, never its completion summary. Two summaries this run said \"exit code 0\" over runs with 10 and 4 failures respectively.",
@@ -264,6 +316,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:498d349c4389",
+      "kind": "next_improvement",
+      "lesson": "the round-2 mechanism — a repair that DUPLICATES a rule rather than moving it is the shape that carries the class forward — into `recent-lessons.md` via this artifact's digest.",
+      "normalized_key": "the round 2 mechanism a repair that duplicates a rule rather than moving it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the round-2 mechanism — a repair that DUPLICATES a rule rather than moving it is the shape that carries the class forward — into `recent-lessons.md` via this artifact's digest."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:85da7c773e7d",
       "kind": "next_improvement",
       "lesson": "the round that reads the REPAIRS is where the class comes back — now six measured instances, and this one recurred inside a repair for the same class.",
@@ -286,84 +364,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "the round that reads the REPAIRS is where the class comes back — now six measured instances, and this one recurred inside a repair for the same class."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:63580ff5e453",
-      "kind": "repeat_trap",
-      "lesson": "**A background test run reported \"exit code 0\" while its output showed 10 failures — and it happened TWICE, on two separate runs (10 failures, then 4).** I only caught both by reading the output file. Anything read from a completion summary rather than the artifact is a proxy.",
-      "normalized_key": "a background test run reported exit code 0 while its output showed 10 failures",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-      "latest_source_date": "2026-08-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A background test run reported \"exit code 0\" while its output showed 10 failures — and it happened TWICE, on two separate runs (10 failures, then 4).** I only caught both by reading the output file. Anything read from a completion summary rather than the artifact is a proxy."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c538312bbf4d",
-      "kind": "repeat_trap",
-      "lesson": "**Dup-ratchet fingerprints rotated twice mid-slice** — once on a refactor, once on removing a single unused import — costing three classify-and-recheck cycles before the ratchet went clean.",
-      "normalized_key": "dup ratchet fingerprints rotated twice mid slice once on a refactor once on removing",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-      "latest_source_date": "2026-08-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Dup-ratchet fingerprints rotated twice mid-slice** — once on a refactor, once on removing a single unused import — costing three classify-and-recheck cycles before the ratchet went clean."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:78dffd6f890f",
-      "kind": "repeat_trap",
-      "lesson": "**Four of those failures were self-inflicted by concurrency**, not real: `test_validate_packaging_committed_*` and the mirror-gate tests copy the repo and validate packaging, and I ran `sync_root_plugin_manifests.py` while the background suite was mid-flight. All four pass in isolation. Cost: one investigation round chasing a phantom. A regenerating mirror is a write to the tree the suite is reading.",
-      "normalized_key": "four of those failures were self inflicted by concurrency not real test validate packaging",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-      "latest_source_date": "2026-08-03",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Four of those failures were self-inflicted by concurrency**, not real: `test_validate_packaging_committed_*` and the mirror-gate tests copy the repo and validate packaging, and I ran `sync_root_plugin_manifests.py` while the background suite was mid-flight. All four pass in isolation. Cost: one investigation round chasing a phantom. A regenerating mirror is a write to the tree the suite is reading."
         }
       ]
     }
@@ -540,6 +540,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0756c00af55f",
+      "kind": "current_focus",
+      "lesson": "One goal, run end to end: `make-deliberate-absence-representable` — issue #481, where the `quality` bootstrap silently reverted an operator's customized adapter toward the preset, destroying 14 comment lines and resurrecting 3 keys naming files that do not exist in their repo.",
+      "normalized_key": "one goal run end to end make deliberate absence representable issue 481 where the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One goal, run end to end: `make-deliberate-absence-representable` — issue #481, where the `quality` bootstrap silently reverted an operator's customized adapter toward the preset, destroying 14 comment lines and resurrecting 3 keys naming files that do not exist in their repo."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:22cb01e443a8",
       "kind": "next_improvement",
       "lesson": "a slice that deletes or renames a module-level name should run the broad suite at its own boundary, not defer to closeout — `--skip-broad-pytest` is correct for additive slices and blind to this one.",
@@ -592,6 +618,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c346f02d33c7",
+      "kind": "next_improvement",
+      "lesson": "give the changed-line mutation lane a non-green state for incomplete scope (issue #488), and give the `achieve` slice-log helpers a prose input path that cannot be shell-expanded (issue #487).",
+      "normalized_key": "give the changed line mutation lane a non green state for incomplete scope issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give the changed-line mutation lane a non-green state for incomplete scope (issue #488), and give the `achieve` slice-log helpers a prose input path that cannot be shell-expanded (issue #487)."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:94523a93ad4d",
       "kind": "next_improvement",
       "lesson": "read the OUTPUT of a background command, never its completion summary. Two summaries this run said \"exit code 0\" over runs with 10 and 4 failures respectively.",
@@ -618,6 +670,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:498d349c4389",
+      "kind": "next_improvement",
+      "lesson": "the round-2 mechanism — a repair that DUPLICATES a rule rather than moving it is the shape that carries the class forward — into `recent-lessons.md` via this artifact's digest.",
+      "normalized_key": "the round 2 mechanism a repair that duplicates a rule rather than moving it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the round-2 mechanism — a repair that DUPLICATES a rule rather than moving it is the shape that carries the class forward — into `recent-lessons.md` via this artifact's digest."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:85da7c773e7d",
       "kind": "next_improvement",
       "lesson": "the round that reads the REPAIRS is where the class comes back — now six measured instances, and this one recurred inside a repair for the same class.",
@@ -640,6 +718,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "the round that reads the REPAIRS is where the class comes back — now six measured instances, and this one recurred inside a repair for the same class."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:210decc9f301",
+      "kind": "next_improvement",
+      "lesson": "when a gate prints a scope-limitation warning alongside a pass, treat the warning as the verdict until the scope is closed — do not push on the pass. Applied this run only after CI forced it.",
+      "normalized_key": "when a gate prints a scope limitation warning alongside a pass treat the warning",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+      "latest_source_date": "2026-08-03",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-session-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a gate prints a scope-limitation warning alongside a pass, treat the warning as the verdict until the scope is closed — do not push on the pass. Applied this run only after CI forced it."
         }
       ]
     },

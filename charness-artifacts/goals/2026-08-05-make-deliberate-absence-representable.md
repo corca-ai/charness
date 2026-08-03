@@ -1,6 +1,6 @@
 # Achieve Goal: Make deliberate absence representable, starting with the adapter bootstrap that destroys it
 
-Status: active
+Status: complete
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-deliberate-absence-representable.md`
 
@@ -9,16 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: E (closeout). A, B+C, and D are complete and logged.
-- Current slice intent: prove and close. The reviewable-intent unit is "make a
-  deliberate absence representable in the quality adapter and honor it in the
-  bootstrap writer" — one intent spanning A through D, so critique does not
-  re-fire per commit within it. Round 1 of the mandated bounded review is done
-  (7 findings, 6 repaired in-slice, 1 filed as #485); round 2 reading the
-  repairs is owed because this slice changed verdict logic on a proof surface.
-- Next action: bounded review round 2 over the repairs, then the closeout
-  aggregate, commit, push, and #481's closeout floor.
-- Non-claim to carry into closeout: the fix is proven against a fixture
+- Current slice: COMPLETE. A, B+C, D, and E are done and logged.
+- Outcome: shipped as `cec8c9b8` on `main`; #481 closed through its floor;
+  #485/#486/#487/#488 filed as residue. Remote CI confirmed green on both
+  check-runs through the GitHub API — a different observer and channel than the
+  push exit code, which mattered: the previous SHA had a green push and a failing
+  mutation mirror.
+- Next action: none for this goal. The one obligation that outlives it is in
+  `## Operator Decision Queue` — the operator re-runs #481's reproduction in their
+  own repo, recorded there AND as a comment on #481.
+- Non-claim carried into closeout: the fix is proven against a fixture
   RECONSTRUCTED from #481's posted before/after. That is evidence about the
   report, not about the reporter's tree, which this session cannot see.
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -227,7 +227,14 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: achieve — selected from installed skill metadata to operate this goal's lifecycle (slice sequencing, slice log, closeout floors); it delegated implementation to the repo's own impl/quality surfaces, issue for #485/#486/#487/#488 and #481's closeout, critique for the three bounded rounds, and retro for the after-action review.
+- Routing: debug — selected from installed skill metadata for slice A, because the report gave a symptom and not a cause; its falsifiable-hypothesis-before-fix discipline is what made the non-reproducing first replay a finding (mechanism M3) instead of a broken fixture, and it owns the durable artifact at charness-artifacts/debug/2026-08-05-quality-adapter-silent-revert.md.
+- Routing: issue — selected from installed skill metadata for the #481 resolution and closeout, and for filing #485/#486/#487/#488; it owns the classification ledger, the delegated resolution critique before the close call, and the verify-closeout readback.
+- Routing: critique — selected from installed skill metadata for the three bounded fresh-eye rounds this slice owed as a verdict-logic proof surface.
+- Routing: retro — selected from installed skill metadata for the after-action review and its sibling scan, which produced #487 and #488.
+- Gather: n/a — every source this goal was shaped from is repo-local or a GitHub issue read through the repo's own gh-backed issue adapter; no external URL, Slack, Notion, Docs, or Drive content became working context.
+- Release: n/a — no version bump, no install-manifest edit, and no release surface was touched; the plugins/ mirror sync is a generated-export refresh, not a release.
+- Issue closeout: #481 closed via the direct-commit carrier (20f8898b). validate-closeout-draft --classification bug --carrier direct-commit -> draft_verified; verify-closeout --expect-state CLOSED -> status: verified, state CLOSED read back through the adapter. Resolution critique charness-artifacts/critique/2026-08-05-issue-481-resolution-critique.md ran DELEGATED before the close call and refused it until F1-F3 were folded. #485/#486/#487/#488 are filed-not-closed residue.
 
 ## Discuss Before Activation
 
@@ -425,13 +432,48 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-03-session-retro.md
+Host log probe: charness-artifacts/retro/2026-08-03-session-retro.md
+Disposition review: charness-artifacts/critique/2026-08-05-issue-481-resolution-critique.md
+
+Broad proof, with its channel named:
+
+- Local full suite: 6981 passed, 0 failed (`python3 -m pytest tests/`, 623s).
+- Pre-push aggregate on the shipped state: 85 passed, 0 failed, mutation lane
+  `blocking: []`.
+- Remote CI on `cec8c9b8`, read through the GitHub check-runs API — a different
+  observer and a different channel than the push exit code: `Core deterministic
+  gates: completed success`, `Changed-line mutation coverage (push/PR mirror):
+  completed success`. This mattered: on the previous SHA (`b876abe5`) the push exit
+  code was green and that same mirror was `completed failure`, blocking on
+  `markdown_preview_bootstrap_lib.py:149` — a file the local lane had explicitly
+  reported it did not analyze.
+- #481 closeout: `validate-closeout-draft` -> `draft_verified`;
+  `verify-closeout --expect-state CLOSED` -> `status: verified`, state read back
+  through the adapter as CLOSED.
+
+Non-claim, in the words the goal required: **the fix is verified against a fixture
+RECONSTRUCTED from the before/after posted on #481, in THIS repo. It is not
+verified in the operator's repo, which this session cannot see.** The channel that
+reached this tree is the reconstructed CLI replay plus 29 targeted tests; no channel
+reached the reporter's tree. The reconstruction measured 24 -> 56 lines and 12 -> 0
+comments against their 47 -> 62 and 14 -> 0; it reproduces the same two mechanisms
+and the same three named nonexistent-path keys, not the same file.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro: charness-artifacts/retro/2026-08-03-session-retro.md
+
+Every improvement the retro surfaced, dispositioned:
+
+Retro dispositions: applied: the changed-line mutation lane's refusals were all honored rather than routed around — `_string_round_trips_bare` rewritten to drop a genuinely unreachable branch, and 8 new tests added covering the bootstrap's non-mapping / empty-name / non-string-reason refusals, the resolver's discard and structural-field paths, and the markdown-preview `unchanged` rerun (commits fa14e4ee, b876abe5, cec8c9b8)
+Retro dispositions: issue #488 (novel: no prior recurring class — the repo's recurring gate-refusal lessons are all about gates that refuse correctly; this is the inverse, a gate that PASSES while saying its own verdict is incomplete) — the lane returns a bare pass while reporting it could not analyze part of its changed set; this is the run's one real process miss and it is a gate change, not a note to read harder
+Retro dispositions: issue #487 (novel: no prior recurring class — prior helper-invocation lessons cover wrong arguments and wrong helper copies, not content destroyed by the shell before the helper's argv exists) — `achieve`'s slice-log helpers take prose through argv, so shell substitution silently truncated three lines of a durable record
+Retro dispositions: applied: the dup-ratchet families this slice created were classified `intentional` in charness-artifacts/quality/dup-review.json with reasons, and the over-extraction that caused four of them (`write_generated_file`) was reverted rather than baselined
+Retro dispositions: out-of-scope: the recurring 475s broad pytest gate surfaced by closeout telemetry (16 occurrences) is standing suite-runtime debt this goal did not create and cannot responsibly change under an issue-fix scope
+Retro dispositions: none — the duplication-gate-remedy-adds-duplication lesson gets no gate, because a rule that mechanically guessed "idiom vs decision" would misfire more often than it caught; it belongs in the lesson digest and is carried there
+
+Structural follow-up: issue #488 (novel: a gate that reports incomplete scope alongside a pass — the north-star "a terminal green is not a verdict" facet expressed in prose but not in the exit code)
+Structural follow-up: issue #487 (novel: a helper whose free-prose input arrives through an unguardable shell-expansion channel in front of its own argv)

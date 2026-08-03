@@ -17,7 +17,7 @@
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
 - a slice that deletes or renames a module-level name should run the broad suite at its own boundary, not defer to closeout — `--skip-broad-pytest` is correct for additive slices and blind to this one. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
 - do not run a generated-surface sync while a background suite is reading the tree — four phantom failures came from exactly that, and they look identical to real ones until you rerun them in isolation. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
-- read the OUTPUT of a background command, never its completion summary. Two summaries this run said "exit code 0" over runs with 10 and 4 failures respectively. (source: `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`)
+- give the changed-line mutation lane a non-green state for incomplete scope (issue #488), and give the `achieve` slice-log helpers a prose input path that cannot be shell-expanded (issue #487). (source: `charness-artifacts/retro/2026-08-03-session-retro.md`)
 
 ## Selection Policy
 
@@ -34,3 +34,4 @@
 - `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`
 - `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`
 - `charness-artifacts/retro/2026-08-03-close-the-unreachable-file-class-and-widen-the-claims-round.md`
+- `charness-artifacts/retro/2026-08-03-session-retro.md`
