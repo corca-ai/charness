@@ -2,11 +2,12 @@
 
 ## Workflow Trigger
 
-- **No goal is active.** The 2026-08-06 goal is COMPLETE: four issues repaired,
-  closed through their floor, closeout artifacts checked in.
-- **Next work is a new goal.** The strongest candidates are the four issues this
-  run filed — #491, #492, #493, #494 — plus the untouched unreachable-file
-  cluster. Shape one with `/achieve` rather than picking up a stale trigger.
+- **A goal is SHAPED and pursue-ready** — activate directly, no activation
+  question (the standing approvals in `AGENTS.md` cover it):
+  `/goal @charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md`
+- Scope: #494 + #493 + #492, operator-chosen. Read `## Goal` before the first
+  slice — **two of the three are deferrals being cashed in, not bugs**, and the
+  closes must say which is which.
 
 ## Continuation Capability
 
@@ -49,8 +50,9 @@
 
 ## Next Session
 
-1. **Pick up one of #491–#494, or the unreachable-file cluster.** #494 is the
-   smallest and closes a channel this run deliberately left open.
+1. **The shaped goal owns #494 + #493 + #492.** Read the goal, not this line.
+   #491 is deliberately OUT — it needs a gate-versus-reviewer-question decision
+   before any code.
 2. **The closeout ledger goes in the COMMIT MESSAGE for a direct-commit carrier**,
    not the comment body — `validate-closeout-draft` reads it from there. Two
    rounds were lost to that this run.

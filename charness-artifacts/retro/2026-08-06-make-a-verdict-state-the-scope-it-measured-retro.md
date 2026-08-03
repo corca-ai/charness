@@ -22,7 +22,13 @@ it produced a fourth before any planned slice ran.
   covering. 0 gates weakened, 0 `--no-verify`.
 - 4 dup-ratchet hard blocks; 3 classified `intentional`, 1 (`_resolve_goal_path`)
   genuinely extractable and extracted.
-- 3 forced length-cap extractions; 2 introduced a defect the suite could not see.
+- 3 length-cap extractions. **1** introduced a defect the gates could not see (the
+  import cycle). The other two were caught by the dup ratchet BEFORE commit — that
+  is the gate working, not a defect shipping. **And one of them surfaced real
+  pre-existing duplication** (`_resolve_goal_path`, copied between
+  `append_slice_log.py` and `check_goal_artifact.py` and undetected until the split
+  shifted the spans), which was then genuinely extracted. Extraction is net
+  positive here; the single real cost is the class #492 now tracks.
 
 ## Waste
 
@@ -36,9 +42,11 @@ it produced a fourth before any planned slice ran.
   `changed_line_verdict_codes.py` is 44 code / 31 comment lines, and
   `goal_artifact_lib.py` went 310 → 374 code lines while its comment count moved
   30 → 32. The caps were crossed by roughly 40-60 lines of REAL CODE each, so the
-  cap did exactly what it is for. The waste was not the cap; it was that two of the
-  three extractions shipped a defect the suite could not see. That is the item
-  below, and it stands on its own.
+  cap did exactly what it is for. Nor was the extraction itself waste — the
+  operator's correction: splitting SURFACES duplication, and it did, exposing a
+  real `_resolve_goal_path` copy that had been invisible. The only genuine cost in
+  this bullet is the one extraction that shipped an import cycle no gate could see,
+  now tracked as #492.
 - **This bullet asserted a cause it never measured**, and it is the class this very
   goal was about. Kept visible rather than silently rewritten, because a retro that
   quietly corrects itself teaches nothing about how the wrong claim got in: I
