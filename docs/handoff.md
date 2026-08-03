@@ -2,8 +2,9 @@
 
 ## Workflow Trigger
 
-- **No goal is waiting.** Start from `## Next Session`, or take a fresh request.
-  To re-chunk the backlog into one, run `charness:handoff`.
+- **A goal is SHAPED and pursue-ready** — activate directly, no activation
+  question (the standing approvals in `AGENTS.md` cover it):
+  `/goal @charness-artifacts/goals/2026-08-05-make-deliberate-absence-representable.md`
 
 ## Continuation Capability
 
@@ -29,13 +30,9 @@
 - `main` is at `ce714872`, pushed, **CI green on every pushed SHA, verified on two
   channels** (`gh api .../check-runs`, `gh run list`). The combined-status API
   says `pending`/`total_count: 0` for every commit here; not a real pending.
-- **Two link gates now, deliberately.** `check_doc_links.py` judges a link where
-  it is AUTHORED; `check_plugin_doc_links.py` judges it where a consumer READS
-  it, after the exporter flattened `skills/<kind>/<skill>/`. A link can be green
-  in one and broken in the other — that asymmetry IS the class. Both blocking.
-- **The new gate reports what it SKIPPED**, on the pass and the refusal path. A
-  green run silent about its skips reads as full coverage; that is how this class
-  accumulated three honest zeroes.
+- **Three blocking gates now judge references from the CONSUMER's position**, and
+  each reports what it SKIPPED on both paths — a green run silent about its skips
+  is how this class accumulated three honest zeroes. Anatomy lives in the sweep.
 - **The `parents[N]` cancellation is an executable invariant** with a revisit
   trigger in [implementation-discipline.md](./conventions/implementation-discipline.md). If it reddens and the fix is "bump
   the number", the class is recurring and the call sites need a shared helper.
@@ -47,14 +44,18 @@
    A3 4→0, A4 ~70→0. Its resolution critique refused an earlier close because
    this repo's own denominator record misstated the arming status — corrected,
    and the three axes with NO ruler are now filed as #482/#483/#484.
-2. **[#480](https://github.com/corca-ai/charness/issues/480) is fresh and cheap** —
-   `<authoring-repo>/` is resolved only for `scripts/` targets, so the `docs/`
-   and `charness-artifacts/` forms this run created are verified by nothing.
+2. **The waiting goal owns #481** — the operator's own external-usage report, and
+   the class behind it: a generator cannot represent DELIBERATE ABSENCE, and
+   destroys the only record of it in the same pass. Read the goal, not this line.
 3. **#481 is the operator's own external-usage report, and it is data loss:**
    `bootstrap_adapter.py` silently reverts a customized `quality` adapter to the
    preset on every run — 14 comment lines to 0, and preset defaults resurrected
    pointing at paths that do not exist in that repo.
-4. **#475's behavioural half is still an OPEN operator decision.**
+4. **#482/#483/#484 are the unreachable-file axes with NO ruler**, filed with
+   their counts: command carrier (14 sites, the spelling a consumer executes),
+   shipped non-markdown (one is a template a consumer copies and runs), and
+   `skills/shared/**` being outside the portable rules. #480 and #468 also open.
+5. **#475's behavioural half is still an OPEN operator decision.**
 
 ## Discuss
 
