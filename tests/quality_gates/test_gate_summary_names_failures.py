@@ -133,3 +133,40 @@ def test_slice_closeout_repeats_its_verdict_last() -> None:
     assert line.startswith("Closeout verdict: failed"), line
     assert "python3 broken.py" in line, line
     assert "python3 fine.py" not in line, "only the FAILING command belongs in the verdict"
+
+
+def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo: Path) -> None:
+    """A path claim the file does not back is worse than no claim.
+
+    The first cut ran the copy under `|| true` next to an UNCONDITIONAL "the log is
+    here" line. When the copy failed, the reader was pointed at a path that either held
+    nothing or — worse — held a PREVIOUS run's log for the same label, and would
+    diagnose a failure that was already fixed. A stale log at a promised path is the
+    same silent-loss shape this whole change exists to remove, reintroduced inside the
+    repair.
+    """
+    probe = gate_repo / "charness-artifacts" / "retro" / "2026-08-04-copy-failure-probe-retro.md"
+    probe.parent.mkdir(parents=True, exist_ok=True)
+    probe.write_text("# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe.\n", encoding="utf-8")
+
+    # Occupy the copy target with a read-only file, so the copy cannot land.
+    log_dir = gate_repo / ".charness" / "quality-failure-logs"
+    log_dir.mkdir(parents=True, exist_ok=True)
+    stale = log_dir / "validate-retro-artifact.log"
+    stale.write_text("STALE OUTPUT FROM AN EARLIER RUN\n", encoding="utf-8")
+    stale.chmod(0o400)
+
+    try:
+        result = _run_gate(gate_repo)
+    finally:
+        stale.chmod(0o600)
+
+    assert "could not save full output for validate-retro-artifact" in result.stderr, result.stderr[-400:]
+    assert "Full output for each failing check:" not in result.stdout, (
+        "the path must be WITHHELD when the copy did not land, or the reader is sent "
+        f"to a stale file:\n{result.stdout[-400:]}"
+    )
+    # the verdict itself still names the failure
+    assert "(FAILED: validate-retro-artifact)" in result.stdout
+    assert stale.read_text(encoding="utf-8").startswith("STALE"), "the stale file was not overwritten"
+

@@ -84,6 +84,10 @@ TOTAL_UNESTABLISHED=0
 # truncation harmless instead of forbidding the truncation.
 FAILED_LABELS=""
 UNESTABLISHED_LABELS=""
+# Only the paths that were actually WRITTEN. The summary names these rather than a
+# `<label>` template the reader has to reconstruct -- and a copy that did not land is
+# absent here, so the summary cannot promise a file that is not there.
+FAILED_LOG_PATHS=""
 # Per-phase logs live in a mktemp dir this script `rm -rf`s on EXIT, so after a run
 # there was nothing left to re-read: a truncated view of a failure could only be
 # recovered by running the whole gate again. Failing phases' logs are copied here
@@ -443,8 +447,26 @@ flush_phase() {
       FAILED_LABELS="$(append_label "$FAILED_LABELS" "$label")"
       # Copied at the moment of failure, because the batch's log paths are reset
       # between phases and the tmpdir is gone by the time the summary prints.
-      mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR"
-      cp "$log_path" "$RUN_QUALITY_FAILURE_LOG_DIR/${label// /-}.log" 2>/dev/null || true
+      #
+      # The slug is the SAME rule `queue_timed` uses for the tmp log, deliberately: two
+      # rules for one label meant the summary could name a filename that was never
+      # written, and a label containing `/` would send `cp` into a directory that does
+      # not exist.
+      #
+      # And the failure is REPORTED, not swallowed. A bare `|| true` next to an
+      # unconditional "the log is here" claim is how a reader gets pointed at a
+      # PREVIOUS run's log for the same label and diagnoses a failure that is already
+      # fixed -- a stale log at a promised path is worse than no log, and swallowing
+      # the copy error is the exact silent-loss shape this whole change removes.
+      local failure_slug failure_log
+      failure_slug="${label//[^A-Za-z0-9_.-]/_}"
+      failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
+      if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
+        FAILED_LOG_PATHS="$(append_label "$FAILED_LOG_PATHS" "${failure_log#"$REPO_ROOT"/}")"
+      else
+        printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
+          "$label" "$failure_log" >&2
+      fi
     fi
 
     # An unestablished gate does not fail the run. It must not be counted as
@@ -475,9 +497,9 @@ print_final_summary() {
   # The names travel WITH the verdict. Empty when the count is zero, so a clean run
   # reads exactly as before.
   [[ -n "$FAILED_LABELS" ]] && failed_note=" (FAILED: $FAILED_LABELS)"
-  # Named only on failure, so a clean run reads exactly as before.
-  [[ -n "$FAILED_LABELS" ]] && printf 'Full output for each failing check: %s/<label>.log\n' \
-    "${RUN_QUALITY_FAILURE_LOG_DIR#"$REPO_ROOT"/}"
+  # The ACTUAL paths, and only when a copy landed. A clean run prints nothing.
+  [[ -n "$FAILED_LOG_PATHS" ]] && printf 'Full output for each failing check: %s\n' \
+    "$FAILED_LOG_PATHS"
   [[ -n "$UNESTABLISHED_LABELS" ]] && unproven_note=" (UNPROVEN: $UNESTABLISHED_LABELS)"
 
   if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
