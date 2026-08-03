@@ -117,6 +117,17 @@ def _retro_trigger_markdown(
         "",
         "- Checked the release helper clean-tree path and the retro trigger detector path; this artifact covers the release-publish sibling where helper-generated changed paths would otherwise be lost.",
         "",
+        # Required of EVERY retro artifact by `validate_retro_artifact.py`. Its absence
+        # here made the release helper generate an artifact that failed the repo's own
+        # retro validator, which failed the release quality gate, which rolled the
+        # publish back -- a helper blocking every release on a section its own template
+        # never learned about. What this bounded artifact can honestly say about the
+        # north star is narrow, and it says exactly that rather than padding.
+        "## North Star Alignment",
+        "",
+        "- P4 (an irreversible boundary is confirmed by a different observer AND channel) is the facet this release path is built around: the helper's own exit code is not the release verdict, and tag push, workflow completion and helper green are each explicitly non-terminal per `references/publication-boundary.md`.",
+        "- SCOPE, stated rather than implied: this is a RELEASE-DELTA retro written by a helper. It can see which surfaces the delta touched; it cannot see the session's reasoning, its rework, or which facets that session mis-applied. A north-star reading of the WORK belongs in the session retro this artifact's Next Improvements line asks for -- treating this section as that reading would be the failure signature it is meant to catch.",
+        "",
         "## Persisted",
         "",
         f"Persisted: yes: {artifact_path}",
