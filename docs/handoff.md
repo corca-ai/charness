@@ -2,9 +2,11 @@
 
 ## Workflow Trigger
 
-- **No goal is shaped.** The 2026-08-07 goal is `complete`, its three issues are
-  closed and read back `CLOSED`. Pick a unit from `## Next Session` and shape it
-  with `/achieve <outcome>` before activating anything.
+- **A goal is SHAPED and pursue-ready** — activate directly, no activation question
+  (the standing approvals in `AGENTS.md` cover it):
+  `/goal @charness-artifacts/goals/2026-08-08-decide-where-the-guard-boundary-lesson-lives.md`
+- Scope: #499 + #491 as ONE decision, with #500 as the case that tests it. Read
+  `## Goal` first — the point is the decision, not the three fixes.
 
 ## Continuation Capability
 
@@ -35,8 +37,8 @@
   arrival.
 - #494 closed as `bug` (a real miss); #493 and #492 as `deferred-work` (deliberate
   recorded deferrals). The classification carries that distinction on purpose.
-- **Five issues OPEN from this run:** #495, #496 (residue #493's fix created), #497,
-  #498, #499. #491 is still open and still needs its design decision first.
+- **Open from this run:** #496 (residue #493's fix created), #497, #499, #500.
+  #495 and #498 are fixed and close on CI. #491 is folded into the shaped goal.
 - A new BLOCKING gate shipped,
   [check_standalone_imports.py](../scripts/check_standalone_imports.py). It has
   never refused a real push, and it imposes a new precondition: a hard third-party
@@ -44,11 +46,10 @@
 
 ## Next Session
 
-1. **#498 first if anything** — a shipped `achieve` template bullet is garbled and
-   propagates into every goal artifact the repo produces.
-2. **#491 + #499 together.** Both are "gate or reviewer question", and this repo has
-   measured that a gate which cries wolf gets walked past.
-3. **#497** — a consuming repo hits an ImportError in the exported plugin today.
+1. **The shaped goal owns #499 + #491 + #500.** Read the goal, not this line.
+2. **#497** — a consuming repo hits an ImportError in the exported plugin today.
+   Not in the shaped goal; it turns on nothing that goal decides.
+3. **#496** — the hollow-refill predicate choice, also independent.
 4. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
    operator still owes #481 one re-run** in their own repo.
 
