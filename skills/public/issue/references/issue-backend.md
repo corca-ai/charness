@@ -11,7 +11,7 @@ binary is on PATH.
 
 ## Adapter Field
 
-Set `issue_backend` in `.agents/issue-adapter.yaml` to route through a
+Set `issue_backend` in `<repo-root>/.agents/issue-adapter.yaml` to route through a
 host-mediated backend (e.g. `acme`) instead of the default `gh` CLI.
 `adapter.example.yaml` (ships with this skill) has a full worked
 `issue_backend` example wired to every required operation below. Seed a
@@ -204,7 +204,7 @@ Adapter-supplied templates substitute:
 
 The placeholder set is the tested contract: adding a new placeholder requires
 adding a substitution test in the authoring-repo-internal
-`tests/quality_gates/test_issue_skill.py` so adapter command templates do not
+`<authoring-repo>/tests/quality_gates/test_issue_skill.py` so adapter command templates do not
 silently grow undocumented variables.
 
 The skill does not sanitize values past what the host CLI already enforces.

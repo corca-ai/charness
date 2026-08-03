@@ -217,7 +217,7 @@ until a verification is recorded: a `confirmed` status, or a typed
 non-`verified` disposition (`not-confirmed`, `blocked-needs-capability`,
 `skipped`) -- never absent. This reuses the release skill's rung-2
 distinct-channel verdict vocabulary verbatim, from the authoring-repo-internal
-`skills/public/release/scripts/publish_release_post_create.py`, so the same
+`<plugin-dir>/skills/release/scripts/publish_release_post_create.py`, so the same
 status means the same thing everywhere in the harness. A `confirmed` verdict
 and a typed non-`verified` disposition satisfy the floor equally; the floor
 forces the question, it never demands a fake confirmation.

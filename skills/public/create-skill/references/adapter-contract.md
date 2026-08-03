@@ -7,13 +7,13 @@ should not live in the portable public skill body.
 
 Search order:
 
-1. `.agents/create-skill-adapter.yaml`
+1. `<repo-root>/.agents/create-skill-adapter.yaml`
 2. `.codex/create-skill-adapter.yaml`
 3. `.claude/create-skill-adapter.yaml`
-4. `docs/create-skill-adapter.yaml`
+4. `<repo-root>/docs/create-skill-adapter.yaml`
 5. `create-skill-adapter.yaml`
 
-The canonical checked-in location is `.agents/create-skill-adapter.yaml`.
+The canonical checked-in location is `<repo-root>/.agents/create-skill-adapter.yaml`.
 
 ## Fields
 
@@ -80,7 +80,7 @@ terms, but the fallback must stay visible. The agent should say it is using
 generic topology vocabulary instead of a repo-owned create-skill adapter.
 
 Run `python3 "$SKILL_DIR/scripts/init_adapter.py" --repo-root .` to scaffold
-the canonical `.agents/create-skill-adapter.yaml` file.
+the canonical `<repo-root>/.agents/create-skill-adapter.yaml` file.
 
 When an adapter file is present but invalid, stop and repair it before relying
 on inferred topology terms. A broken repo-owned adapter is not the same as a

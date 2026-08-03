@@ -123,7 +123,7 @@ the repo has named where state, rules, and queue ownership live.
    - what was reviewed
    - what rules were accepted
    - what still needs action or follow-up
-   - sync live runtime state into `charness-artifacts/hitl/latest.md` and run
+   - sync live runtime state into `<repo-root>/charness-artifacts/hitl/latest.md` and run
      the durable artifact freshness check
 10. Generated Reports. For generated report packets, render first-class decision
     cards with concrete questions, plain-language evidence interpretation,

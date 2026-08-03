@@ -71,7 +71,7 @@ The runtime state directory defaults to:
 
 `.charness/hitl/runtime/<session-id>` is hidden resumable state, not checked-in
 truth. Before HITL closeout or handoff, `sync_review_artifact.py` must project
-the active runtime session into `charness-artifacts/hitl/latest.md` and then run
+the active runtime session into `<repo-root>/charness-artifacts/hitl/latest.md` and then run
 `--check`.
 
 The durable checkpoint must include:

@@ -13,7 +13,7 @@ target without pushing source summarization back to the caller.
    `git log --oneline origin/main..HEAD`; otherwise continue from local
    status and diff evidence.
 4. Look for the nearest current contract in `charness-artifacts/spec/`,
-   `docs/roadmap.md`, and docs sections named Next Session, Open Decisions,
+   `<authoring-repo>/docs/roadmap.md`, and docs sections named Next Session, Open Decisions,
    Deferred, Non-Goals, Acceptance, or Risk.
 5. Prefer a live issue, handoff item, dirty diff, or ahead-of-origin commit
    over broad repo archaeology.

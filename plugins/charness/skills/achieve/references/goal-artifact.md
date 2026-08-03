@@ -215,7 +215,7 @@ duty.
 When changing the goal artifact shape, update every goal producer that emits a
 new artifact, not only the primary `achieve` template. The current producer
 contract is pinned by the authoring-repo-internal
-`tests/quality_gates/test_goal_artifact_producers.py`.
+`<authoring-repo>/tests/quality_gates/test_goal_artifact_producers.py`.
 
 ## Remaining Boundary Matrix (conditional, before blocked)
 
@@ -366,7 +366,7 @@ Exact-state broad-gate proof is recorded as a *result*, not a re-embedded
 command. The portable contract is a result triple — `gate` (id), `outcome`
 (`PASS`/`FAIL`/…), and `state_ref` (a host-provable exact state such as a commit
 SHA with a clean tree) — rendered by
-`scripts/goal_metrics_render_lib.render_broad_gate_attestation`. The structure
+`<plugin-dir>/scripts/goal_metrics_render_lib.py`'s `render_broad_gate_attestation`. The structure
 has no `command` field by design, so a host (e.g. Acme) can attest its own
 exact-state gate without weakening pushed-state proof and without leaking the
 provider CLI invocation into staged docs.

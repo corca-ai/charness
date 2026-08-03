@@ -1,21 +1,21 @@
 # Critique Adapter Contract
 
-`critique` reads its repo policy from `.agents/critique-adapter.yaml`.
+`critique` reads its repo policy from `<repo-root>/.agents/critique-adapter.yaml`.
 The adapter is optional. Without it, `critique` runs with inferred
 defaults and consumes no prepare packet. Concrete host mappings and current
 model versions are owned by [adapter.example.yaml](../adapter.example.yaml) and
 the [scaffold template](../scripts/templates/critique_adapter.yaml). A
-scaffolded `.agents/critique-adapter.yaml` is the repo-specific policy; this
+scaffolded `<repo-root>/.agents/critique-adapter.yaml` is the repo-specific policy; this
 portable contract defines only lookup and field semantics.
 
 ## Lookup Order
 
 The adapter loader searches:
 
-1. `.agents/critique-adapter.yaml` (default)
+1. `<repo-root>/.agents/critique-adapter.yaml` (default)
 2. `.codex/critique-adapter.yaml`
 3. `.claude/critique-adapter.yaml`
-4. `docs/critique-adapter.yaml`
+4. `<repo-root>/docs/critique-adapter.yaml`
 5. `critique-adapter.yaml`
 
 First file wins. Missing adapter is a valid state.
@@ -115,7 +115,7 @@ empty or the field is omitted, the conditional hard-block in
 - Scanner content correctness — adapters point at producers; producers
   decide what they find
 - Cross-skill packet sharing — the retro skill, if it later grows a
-  prepare-packet contract, reads `.agents/retro-adapter.yaml`'s own
+  prepare-packet contract, reads `<repo-root>/.agents/retro-adapter.yaml`'s own
   section slot, not this adapter
 
 ## Migration For Existing Repos

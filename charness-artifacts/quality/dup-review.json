@@ -688,6 +688,13 @@
     },
     {
       "class": "intentional",
+      "id": "58ce85c354d09844",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as the A4 slice lengthened check_doc_links and check_plugin_dir_references (main() argparse+resolve+report skeleton, the guard-clause ladders, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal with the same reasoning: the portability preamble IS the bootstrap and cannot be imported, and a shared runner would own each gate's argument surface and its operator-facing summary wording -- which is exactly the part a reader uses to tell one gate's silence from another's."
+    },
+    {
+      "class": "intentional",
       "id": "58d074440dbf9aa2",
       "note": "run_skill_efficiency_ab.py self-test synthetic-event fixtures (_write_lean/_write_wasteful) plus local _ts/mkdir idioms; the events are spelled out for test readability — folding them into a loop/helper would obscure the fixture, so the repetition is intentional",
       "reviewed_at": "2026-06-30",
@@ -1157,6 +1164,13 @@
     },
     {
       "class": "intentional",
+      "id": "94772a9b17de6488",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "two guard-clause runs INSIDE check_doc_links.py: normalize_backtick_candidate's shape filters (empty, whitespace-bearing, glob-bearing) and classify_backtick_token's tree filters (placeholder, canonical surface, package-relative resolution). Lexically both are `if <predicate>: return None` ladders; semantically they answer different questions -- one asks 'is this token even a candidate', the other asks 'does this candidate name a tree'. Merging them would put the tree decision inside the tokenizer, which is exactly the coupling that made the portable exemption invisible for as long as it was. Same idiom-sized guard-clause class already accepted as 003780cc89f2ccfd / 017938717d9e4e73. Surfaced now only because arming the portable rule lengthened the second run."
+    },
+    {
+      "class": "intentional",
       "id": "9658646a2253de06",
       "reviewed_at": "2026-08-04",
       "surface": "code",
@@ -1346,6 +1360,13 @@
     },
     {
       "class": "intentional",
+      "id": "b3c057ebab07c6d3",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as the A4 slice lengthened check_doc_links and check_plugin_dir_references (main() argparse+resolve+report skeleton, the guard-clause ladders, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal with the same reasoning: the portability preamble IS the bootstrap and cannot be imported, and a shared runner would own each gate's argument surface and its operator-facing summary wording -- which is exactly the part a reader uses to tell one gate's silence from another's."
+    },
+    {
+      "class": "intentional",
       "id": "b4c5b67aa226c2fc",
       "note": "scripts/host_hook_install_lib.py: the two halves of the repo's standard try/except ImportError sibling-module bootstrap — the fallback arm must repeat the same import list after inserting the script directory on sys.path, so the repetition IS the idiom. It crossed the scan threshold only because this slice's matcher/entry-identity split added a second imported module to both halves; collapsing it would mean abandoning the bootstrap pattern in one file while every sibling keeps it. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
       "reviewed_at": "2026-07-30",
@@ -1497,6 +1518,13 @@
       "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
       "reviewed_at": "2026-07-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c8ae02dcfa7fa177",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "ROTATION of the repo-standard gate-skeleton families as the A4 slice lengthened check_doc_links and check_plugin_dir_references (main() argparse+resolve+report skeleton, the guard-clause ladders, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal with the same reasoning: the portability preamble IS the bootstrap and cannot be imported, and a shared runner would own each gate's argument surface and its operator-facing summary wording -- which is exactly the part a reader uses to tell one gate's silence from another's."
     },
     {
       "class": "intentional",

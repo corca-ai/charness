@@ -561,3 +561,133 @@ def test_the_contradiction_rule_finds_every_live_site_in_the_real_tree(monkeypat
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(ROOT))
 
     assert result.returncode == 0, result.stderr
+
+
+# The portable-package unmarked-tree rule (#479 axis A4).
+#
+# This rule already existed for `docs/**` and was OFF inside portable skill
+# packages, because a markdown link from a skill package to an authoring-repo file
+# cannot resolve for a consumer. That was true, and it is what the placeholder
+# vocabulary now answers: with `<authoring-repo>/`, `<repo-root>/` and a resolvable
+# `<plugin-dir>/` all available, "unmarked" stopped being a forced choice.
+#
+# The verdict needs no judgement about WHICH tree — only that the author named
+# one. A bare `scripts/x.py` is refused whether it meant charness's tree or the
+# reader's, because the reader cannot tell either.
+
+
+def _portable_repo(tmp_path: Path, body: str, *, extra: dict[str, str] | None = None) -> Path:
+    repo = tmp_path / "repo"
+    skill = repo / "skills" / "public" / "demo"
+    (skill / "references").mkdir(parents=True)
+    (skill / "SKILL.md").write_text("---\nname: demo\ndescription: d\n---\n\n# Demo\n", encoding="utf-8")
+    (skill / "references" / "note.md").write_text(body, encoding="utf-8")
+    for rel, content in (extra or {}).items():
+        target = repo / rel
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(content, encoding="utf-8")
+    return repo
+
+
+def test_an_unmarked_repo_path_in_a_shipped_skill_doc_is_refused(tmp_path: Path, monkeypatch, capsys) -> None:
+    """The real A4 defect: `scripts/check_title_slug_drift.py` naming no tree."""
+    repo = _portable_repo(tmp_path, "Run `scripts/check_title_slug_drift.py` first.\n")
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "unmarked-tree" in result.stderr
+
+
+def test_each_placeholder_prefix_is_accepted(tmp_path: Path, monkeypatch, capsys) -> None:
+    """The repair must be available in every direction, or the rule is a trap."""
+    for prefix in ("<authoring-repo>/", "<repo-root>/", "<plugin-dir>/", "<skill-dir>/"):
+        repo = _portable_repo(tmp_path / prefix.strip("</>"), f"Run `{prefix}scripts/x.py`.\n")
+        result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+        assert result.returncode == 0, (prefix, result.stderr)
+
+
+def test_the_placeholder_carve_out_is_what_accepts_a_marked_path(tmp_path: Path) -> None:
+    """Asserted on the branch, because the end-to-end version is vacuous.
+
+    `<` and `>` fall out of `PATHY_TOKEN_RE` anyway, so a placeholder-bearing
+    token passes even with `has_portable_placeholder` deleted. The discriminating
+    input is a token the classifier WOULD refuse with the prefix removed.
+    """
+    package_root = tmp_path / "skills" / "public" / "demo"
+    package_root.mkdir(parents=True)
+    args = (set(), {}, set(), set(), package_root)
+
+    assert _check_doc_links.classify_backtick_token("<repo-root>/scripts/x.py", *args) is None
+    assert _check_doc_links.classify_backtick_token("scripts/x.py", *args) == "unmarked-tree"
+    assert _check_doc_links.has_portable_placeholder("<repo-root>/scripts/x.py") is True
+
+
+def test_a_path_resolving_inside_the_skill_package_is_accepted(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A skill's OWN helper is reachable as written; demanding a marker would be noise."""
+    repo = _portable_repo(
+        tmp_path,
+        "Run `scripts/own_helper.py`.\n",
+        extra={"skills/public/demo/scripts/own_helper.py": "# own\n"},
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> None:
+    """`docs/handoff.md` means the same file in EVERY tree, so it needs no marker.
+
+    Asserted on the classifier with an explicit canonical set, because the ORDER
+    is the invariant: the first armed version ran the portable rule ahead of the
+    canonical-surface check and demanded a marker on the repo's own agreed
+    vocabulary — a false positive in a blocking gate. Fixed by ordering, not by
+    adding an exemption.
+    """
+    package_root = tmp_path / "skills" / "public" / "demo"
+    package_root.mkdir(parents=True)
+
+    verdict = _check_doc_links.classify_backtick_token(
+        "docs/handoff.md",
+        set(),
+        {},
+        set(),
+        {"docs/handoff.md"},
+        package_root,
+    )
+
+    assert verdict is None
+    # And without it in the canonical set, the same token IS refused — so the test
+    # is about the canonical carve-out, not about the token happening to pass.
+    assert (
+        _check_doc_links.classify_backtick_token(
+            "docs/handoff.md", set(), {}, set(), set(), package_root
+        )
+        == "unmarked-tree"
+    )
+
+
+def test_a_non_repo_shaped_token_is_not_a_tree_claim(tmp_path: Path, monkeypatch, capsys) -> None:
+    """`package.json`, `a/b.txt`, a version string — none names a charness surface."""
+    repo = _portable_repo(tmp_path, "Set `foo/bar.baz` and `1.2.3` and `some.thing`.\n")
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_a_fenced_example_of_the_unmarked_form_is_allowed(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A doc teaching the rule must be able to show the shape it forbids."""
+    repo = _portable_repo(tmp_path, "Wrong:\n\n```text\n`scripts/x.py`\n```\n")
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_the_live_tree_has_no_unmarked_portable_reference(monkeypatch, capsys) -> None:
+    """Pins the 49 repairs: every shipped skill doc now names the tree it means."""
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(ROOT))
+
+    assert result.returncode == 0, result.stderr

@@ -160,7 +160,13 @@ def has_portable_placeholder(candidate: str) -> bool:
 
 
 def looks_like_repo_reference(candidate: str) -> bool:
-    stripped = candidate.split("#", 1)[0].strip().lstrip("./")
+    # `lstrip("./")` is a CHARACTER-set strip, not a prefix strip: it turned
+    # `.agents/x.yaml` into `agents/x.yaml`, which matches no entry, so the
+    # `.agents/` prefix in the list below could never fire -- on the most
+    # consumer-relevant path family in these docs. Strip the `./` prefix only.
+    stripped = candidate.split("#", 1)[0].strip()
+    while stripped.startswith("./"):
+        stripped = stripped[2:]
     return stripped.startswith(REPO_REFERENCE_PREFIXES)
 
 
@@ -244,6 +250,9 @@ def classify_backtick_token(
     - "prefix": starts with "./" or "../" and resolves to a tracked file or directory; the
       backtick form is never correct when the target exists, since renames silently break it.
     - "unique-basename": bare filename whose basename is unique among tracked files.
+    - "portable-absolute": an absolute repo-shaped path inside a portable skill package.
+    - "unmarked-tree": a repo-shaped path in a SHIPPED skill doc that names no tree.
+      The verdict is about the missing statement, not about which tree is right.
 
     Returns None when the token should be allowed as-is (concept, ambiguous basename, whitespace
     command invocation, version string, dotted property path, domain-like token, `./`-prefixed
@@ -254,12 +263,38 @@ def classify_backtick_token(
         return None
     if has_portable_placeholder(bare):
         return None
+    # BEFORE the portable branch, deliberately. A canonical markdown surface is an
+    # agreed name that means the same file in every tree (`AGENTS.md`,
+    # `docs/handoff.md`), so it needs no tree marker -- and running the portable
+    # rule first made the armed check demand one, which would have been a false
+    # positive in a blocking gate on the repo's own agreed vocabulary.
+    if normalize_surface_token(candidate) in canonical_markdown_surfaces:
+        return None
     if portable_package_root is not None:
         if bare.startswith("/") and PATHY_TOKEN_RE.match(bare.lstrip("/")):
             return "portable-absolute"
-        return None
-    if normalize_surface_token(candidate) in canonical_markdown_surfaces:
-        return None
+        # A path-shaped token in a SHIPPED skill doc must say which tree it means.
+        # This rule used to be off entirely inside portable packages, because a
+        # markdown link from a skill package to an authoring-repo file cannot
+        # resolve for a consumer -- which was true, and is what the placeholder
+        # vocabulary now answers. With `<authoring-repo>/`, `<repo-root>/` and a
+        # resolvable `<plugin-dir>/` all available, "unmarked" is no longer a
+        # forced choice; it is a missing statement.
+        #
+        # The verdict needs no judgement about WHICH tree, only that the author
+        # named one: a bare `scripts/x.py` is refused whether it meant charness's
+        # tree or the reader's, because the reader cannot tell either. That is what
+        # turns this axis from a per-site judgement into a mechanical check.
+        if not PATHY_TOKEN_RE.match(bare):
+            return None
+        package_relative = portable_package_root.relative_to(portable_package_root.parents[2]) / bare
+        if package_relative.as_posix() in known_repo_paths:
+            # Resolves inside the shipped package, so it is reachable as written.
+            # Checked against the git listing, not `.exists()`: an untracked helper
+            # would otherwise pass locally and fail on a CI checkout, which is the
+            # divergence `iter_unresolved_command_targets` already documents.
+            return None
+        return "unmarked-tree" if looks_like_repo_reference(bare) else None
 
     if candidate.startswith("./") or candidate.startswith("../"):
         return classify_prefixed_backtick(bare, known_repo_paths, known_directories)
@@ -505,9 +540,20 @@ def main() -> int:
             refs = ", ".join(f"`{cand}` (line {ln}, {reason})" for ln, cand, reason in backticked[:3])
             if len(backticked) > 3:
                 refs += ", ..."
-            raise ValidationError(
-                f"{doc}: backticked file reference(s) {refs}; use markdown links so renames do not rot"
-            )
+            # Branch on the reason. Telling an author to "use markdown links" for an
+            # `unmarked-tree` finding sends them straight into `validate_link`, which
+            # refuses a markdown link that leaves a portable skill package -- two gate
+            # cycles to learn a rule the first message could have named.
+            tree_reasons = {"unmarked-tree", "portable-absolute"}
+            if all(reason in tree_reasons for _ln, _cand, reason in backticked):
+                remedy = (
+                    "name the tree it lives in: `<plugin-dir>/` when the file ships to consumers, "
+                    "`<authoring-repo>/` when it exists only in charness, `<repo-root>/` when it is "
+                    "the reader's own, `<skill-dir>/` for this skill's own package"
+                )
+            else:
+                remedy = "use markdown links so renames do not rot"
+            raise ValidationError(f"{doc}: backticked file reference(s) {refs}; {remedy}")
         contradictions = iter_authoring_repo_contradictions(doc)
         if contradictions:
             lineno, sentence = contradictions[0]

@@ -14,7 +14,7 @@ credentialed provider path.
 
 ## Adapter Field
 
-Set `gather_provider` in `.agents/gather-adapter.yaml`:
+Set `gather_provider` in `<repo-root>/.agents/gather-adapter.yaml`:
 
 ```yaml
 version: 1

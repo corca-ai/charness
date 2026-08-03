@@ -38,7 +38,7 @@ bar, `event_kind` rules, and the tie-break default) are owned by the
 **classification rubric** in
 `<authoring-repo>/docs/product-success-metrics.md`. Read
 it before recording; this reference does not restate or extend it. The closed
-enums are owned by `<authoring-repo>/scripts/rca_event.schema.json`.
+enums are owned by `<plugin-dir>/scripts/rca_event.schema.json`.
 
 Field guidance for the recorder flags:
 

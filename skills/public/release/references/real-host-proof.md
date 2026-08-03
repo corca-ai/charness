@@ -33,7 +33,7 @@ NUL-delimited bytes so unusual filenames cannot make the evidence ambiguous.
 ## Broken Trigger Configuration
 
 Each `real_host_required_surfaces` entry must resolve to a declared
-`.agents/surfaces.json` `surface_id`. An unresolved id is broken configuration
+`<repo-root>/.agents/surfaces.json` `surface_id`. An unresolved id is broken configuration
 and fails loud instead of silently reporting `required: false`.
 
 Prefer surface ids for shared seams. Use path globs only for narrow

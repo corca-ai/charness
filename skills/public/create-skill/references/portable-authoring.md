@@ -28,7 +28,7 @@ different clone or CI job may read later.
 Public-skill cites to authoring-repo-only docs, tests, or source-tree skill
 paths must be either skill-relative to files that ship with the vendored skill
 or explicitly marked `authoring-repo-internal` / `not vendored` near the cite
-— checked by `scripts/validate_skills.py`'s author-repo-cite scan.
+— checked by `<plugin-dir>/scripts/validate_skills.py`'s author-repo-cite scan.
 
 ## Skill Brief
 
@@ -353,7 +353,7 @@ intervention — a `scripts/validate_*_artifact.py` + a section-gated rule.
 
 Keep the validator opt-in and section-gated (fail only when the structured
 section is present) so prose-only output and historical artifacts stay valid.
-Reuse the shared grammar in `scripts/artifact_validator.py` (e.g.
+Reuse the shared grammar in `<plugin-dir>/scripts/artifact_validator.py` (e.g.
 `validate_sibling_followups`) instead of re-implementing follow-up or enum
 parsing per skill.
 
@@ -381,7 +381,7 @@ parser.add_argument("--workspace", help="Workspace id the run targets (e.g. C012
 
 Checked by the `argparse_missing_help` skill-ergonomics rule (opt-in via
 `skill_ergonomics_gate_rules`) in
-`skills/public/quality/scripts/validate_skill_ergonomics.py`; survey the whole
+`<plugin-dir>/skills/quality/scripts/validate_skill_ergonomics.py`; survey the whole
 repo with
 `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .`.
 
@@ -426,7 +426,7 @@ Before stopping:
   cross-namespace mention of `charness-artifacts/<other>/` or
   `.agents/<other>-adapter.yaml`; declare intentional cross-skill cites
   (read-only spill targets, setup seeds) in
-  `scripts/check_skill_ownership_overlap.allowlist.txt` with a reason
+  `<plugin-dir>/scripts/check_skill_ownership_overlap.allowlist.txt` with a reason
 - check semantic message-shape regression: when the edit changes a
   message body, JSON payload, output shape, or chunk contract that
   downstream consumers (HITL, evaluator scenarios, support runtimes)

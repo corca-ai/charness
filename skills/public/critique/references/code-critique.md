@@ -71,7 +71,7 @@ tightening:
 ## Defect Class Cross-Link
 
 When a concern matches a recurring defect class, cross-link it to
-`charness-artifacts/retro/recent-lessons.md` `Repeat Traps` so the next
+`<repo-root>/charness-artifacts/retro/recent-lessons.md` `Repeat Traps` so the next
 slice does not relearn the same lesson. The cross-link is the cite path,
 not a paste.
 

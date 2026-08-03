@@ -144,7 +144,7 @@ def test_hitl_skill_carries_review_chunk_and_state_recording_rules() -> None:
     assert "last_presented_chunk_id" in skill_text
     assert "active_rules_applied" in skill_text
     assert "target_cursor_checked" in skill_text
-    assert "sync live runtime state into `charness-artifacts/hitl/latest.md`" in skill_text
+    assert "sync live runtime state into `<repo-root>/charness-artifacts/hitl/latest.md`" in skill_text
     assert "durable artifact freshness check" in skill_text
     assert "check_review_state.py" in skill_text
     assert "Active Rules Applied" in skill_text

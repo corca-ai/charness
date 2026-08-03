@@ -1,6 +1,6 @@
 # Adapter Contract
 
-`.agents/hotl-adapter.yaml` names the repo-owned facts this skill must never
+`<repo-root>/.agents/hotl-adapter.yaml` names the repo-owned facts this skill must never
 hardcode: which live surfaces the repo applies behavior to, which repo-owned
 commands may execute or read back proof, and where the proof ledger lives.
 

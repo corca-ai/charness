@@ -53,12 +53,14 @@ _repo_file_listing = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _repo_file_listing.iter_matching_repo_files
 
 DOC_GLOBS = ("README.md", "AGENTS.md", "docs/**/*.md", "presets/**/*.md", "profiles/**/*.md", "skills/**/*.md")
+PORTABLE_DOC_GLOBS = ("skills/**/*.md",)
 PLUGINS_DIR = Path("plugins")
 # `([^\s`)]+)` on purpose, not a character class of "safe" characters: the point is
 # to capture what the author WROTE, including a templated `<skill>` segment or a
 # `..`, so those can be judged instead of silently truncated into a shorter target
 # that happens to resolve.
 PLUGIN_DIR_RE = re.compile(r"<plugin-dir>/([^\s`)]+)")
+AUTHORING_RE = re.compile(r"<authoring-repo>/([^\s`)]+)")
 TEMPLATED = "templated"
 ESCAPES = "escapes-package-root"
 
@@ -93,6 +95,47 @@ def iter_references(doc: Path) -> list[tuple[int, str]]:
         if not in_fence
         for match in PLUGIN_DIR_RE.finditer(line)
     ]
+
+
+def shipped_but_marked_authoring_only(root: Path, roots: list[Path]) -> list[tuple[str, int, str, str]]:
+    """`<authoring-repo>/P` in a SHIPPED skill doc where P is in the package.
+
+    The mirror image of the unreachable-file class, and it was created while
+    closing it: `<authoring-repo>/` asserts "this resolves in charness, not
+    yours", so writing it for a file the consumer DOES have -- at
+    `<plugin-dir>/P` -- tells the reader to go somewhere they cannot instead of
+    somewhere they can. 39 such sites existed the moment the repair rule
+    "anything not consumer-shaped gets `<authoring-repo>/`" was applied.
+
+    Scoped to PORTABLE SKILL PACKAGES on purpose. In `docs/**` the reader is a
+    charness maintainer and `<authoring-repo>/` is simply true; inside a doc that
+    ships to consumers the reader is the consumer, and there the claim is false
+    whenever the exporter carries the file along. The installed layout drops the
+    `<kind>` segment, so a `skills/public/X` cite is checked as `skills/X` too.
+    """
+    findings: list[tuple[str, int, str, str]] = []
+    for doc in iter_matching_repo_files(root, PORTABLE_DOC_GLOBS):
+        for lineno, line, in_fence in iter_doc_lines(doc):
+            if in_fence:
+                continue
+            for match in AUTHORING_RE.finditer(line):
+                target = match.group(1).rstrip(".,;:)")
+                for candidate in _installed_spellings(target):
+                    shipped = next((r for r in roots if (r / candidate).exists()), None)
+                    if shipped is not None:
+                        findings.append(
+                            (doc.relative_to(root).as_posix(), lineno, target, candidate)
+                        )
+                        break
+    return findings
+
+
+def _installed_spellings(target: str) -> list[str]:
+    spellings = [target]
+    for kind in ("skills/public/", "skills/support/"):
+        if target.startswith(kind):
+            spellings.append("skills/" + target[len(kind):])
+    return spellings
 
 
 def classify(target: str, roots: list[Path]) -> str | None:
@@ -151,6 +194,17 @@ def main() -> int:
         if any(skipped.values())
         else " skipped: none"
     )
+    shipped = shipped_but_marked_authoring_only(root, roots)
+    if shipped:
+        raise ValidationError(
+            "\n".join(
+                f"{doc}:{lineno}: `<authoring-repo>/{target}` says this file is NOT in the reader's "
+                f"tree, but it SHIPS at `<plugin-dir>/{candidate}`; a consumer reading this skill doc "
+                "has the file and is being sent to a tree they do not have"
+                for doc, lineno, target, candidate in shipped
+            )
+            + f"\n({len(shipped)} mis-prefixed; the mirror image of the unreachable-file class)"
+        )
     if findings:
         raise ValidationError(
             "\n".join(

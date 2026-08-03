@@ -47,10 +47,10 @@ token (any short stable handle, e.g. `Q1`) is optional but recommended so
 
 ## Enforcement
 
-`scripts/validate_ideation_artifact.py` validates the enum values and required
+`<plugin-dir>/scripts/validate_ideation_artifact.py` validates the enum values and required
 fields when the `## Structured Questions` heading is present. The section is
 opt-in: artifacts without it pass unchanged. This reuses the same
 section-gated, fail-when-present discipline as
-`scripts/validate_critique_artifacts.py` (`## Structured Findings`) so
+`<plugin-dir>/scripts/validate_critique_artifacts.py` (`## Structured Findings`) so
 orchestrators that already consume `critique` output do not learn a parallel
 taxonomy.

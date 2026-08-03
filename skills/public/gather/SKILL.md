@@ -25,7 +25,7 @@ python3 "$SKILL_DIR/scripts/gather_plan.py" --repo-root . --url <source-url>
 
 By default, durable records live under
 `<repo-root>/charness-artifacts/gather/` with `latest.md` as the current pointer.
-Repos may override the directory with `.agents/gather-adapter.yaml`.
+Repos may override the directory with `<repo-root>/.agents/gather-adapter.yaml`.
 
 Plain `gather` is public-source only: it targets public and local sources.
 Credentialed organizational data — Slack, Notion, private Google Workspace,

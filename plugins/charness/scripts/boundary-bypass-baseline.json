@@ -26,14 +26,11 @@
     "tests/quality_gates/test_profile_and_preset_validation.py::scripts/validate_presets.py",
     "tests/quality_gates/test_profile_and_preset_validation.py::scripts/validate_profiles.py",
     "tests/quality_gates/test_python_and_security_gates.py::scripts/check_github_actions.py",
-    "tests/quality_gates/test_python_and_security_gates.py::scripts/check_python_lengths.py",
-    "tests/quality_gates/test_python_and_security_gates.py::scripts/check_python_runtime_inheritance.py",
     "tests/quality_gates/test_python_and_security_gates.py::scripts/check_supply_chain.py",
     "tests/quality_gates/test_python_filename_convention.py::scripts/check_python_filenames.py",
     "tests/quality_gates/test_quality_mutation_sampling.py::scripts/sample_mutation_files.py",
     "tests/quality_gates/test_quality_mutation_score_validity.py::scripts/check_mutation_score.py",
     "tests/quality_gates/test_quality_mutation_testing.py::scripts/run_cosmic_ray_mutation.py",
-    "tests/quality_gates/test_quality_runner.py::scripts/record_quality_runtime.py",
     "tests/quality_gates/test_quality_ubiquitous_language.py::skills/public/quality/scripts/inventory_ubiquitous_language.py",
     "tests/quality_gates/test_release_publish_real_host_delta.py::skills/public/release/scripts/bump_version.py",
     "tests/quality_gates/test_repo_copy_invariants.py::scripts/check_test_repo_copy_invariants.py",
@@ -67,9 +64,9 @@
   "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
   "summary": {
     "candidate_count": 45,
-    "candidate_key_count": 61,
+    "candidate_key_count": 58,
     "convertible_count": 0,
-    "internal_boundary_count": 31,
+    "internal_boundary_count": 32,
     "keep_boundary_count": 23
   }
 }

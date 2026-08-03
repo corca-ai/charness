@@ -14,7 +14,7 @@ Preferred path:
 ```
 
 Compatibility fallbacks, in order: `.codex/achieve-adapter.yaml`,
-`.claude/achieve-adapter.yaml`, `docs/achieve-adapter.yaml`, and
+`.claude/achieve-adapter.yaml`, `<repo-root>/docs/achieve-adapter.yaml`, and
 `achieve-adapter.yaml`.
 
 Resolve it with:

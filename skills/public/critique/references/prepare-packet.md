@@ -7,7 +7,7 @@ enumerable inventory (changed surfaces, adapter subscriptions, doc-link
 graphs, role classifications, deferred concerns).
 
 The packet shape is portable. Charness owns the envelope and the runner;
-each consumer repo's `.agents/critique-adapter.yaml` decides which
+each consumer repo's `<repo-root>/.agents/critique-adapter.yaml` decides which
 sections apply and how each section's content is produced.
 
 ## When This Fires
@@ -219,11 +219,11 @@ serves as the contract reference example:
 - `changed-files-and-owning-surfaces` — for the current
   `git status`/`git diff` working set, or for the runner's `--changed-ref`
   when provided, list each changed path and the surfaces (from
-  `.agents/surfaces.json`) that own or derive from it.
+  `<repo-root>/.agents/surfaces.json`) that own or derive from it.
   Producer:
   `python3 scripts/render_critique_section_changed_surfaces.py`.
 
-Consumers add more sections in their own `.agents/critique-adapter.yaml`.
+Consumers add more sections in their own `<repo-root>/.agents/critique-adapter.yaml`.
 
 ## Consumer Contract (Critique Skill)
 
@@ -278,8 +278,8 @@ The runner validates each declared section before invoking it:
 - `command` is a non-empty string
 
 Adapter validation is wired into the shared `validate_adapters.py`:
-`.agents/critique-adapter.yaml` is parsed by
-`scripts/critique_adapter_lib.load_adapter` so a malformed adapter
+`<repo-root>/.agents/critique-adapter.yaml` is parsed by
+`<plugin-dir>/scripts/critique_adapter_lib.py`'s `load_adapter` so a malformed adapter
 (missing required fields, dual-content fields, kind/field mismatch,
 duplicate section ids) fails the standing adapter gate before the
 runner ever spawns a producer process. The producer

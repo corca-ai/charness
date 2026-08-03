@@ -12,7 +12,7 @@ declines to fire.
 
 This reference owns the operator-facing surface. In the charness source
 repo the full implementation contract lives at
-`docs/handoff-chunked-routing.md` (authoring-repo-internal; not vendored
+`<authoring-repo>/docs/handoff-chunked-routing.md` (authoring-repo-internal; not vendored
 with the skill).
 
 ## Deterministic Trigger Rule
@@ -51,7 +51,7 @@ user named a specific next task), the chunker steps aside and the rest of the
 handoff workflow runs as usual.
 
 The trigger fixture (in the charness source repo at
-`tests/test_handoff_chunker_trigger.py`; authoring-repo-internal, not
+`<authoring-repo>/tests/test_handoff_chunker_trigger.py`; authoring-repo-internal, not
 vendored with the skill) is the source of truth; any divergence between this
 prose and that fixture is the prose's bug.
 
@@ -182,7 +182,7 @@ pickup-time rewrite is churn because the session's own work moves the state
 again. A stale `## Next Session` item discovered at pickup (already done, or
 now superseded by the live backlog) is carried in the conversation and folded
 into the single closeout write. The owning rule, in the charness source repo, is
-`docs/conventions/operating-contract.md` (Session Discipline;
+`<authoring-repo>/docs/conventions/operating-contract.md` (Session Discipline;
 authoring-repo-internal, not vendored with the skill); `## Next Session`
 is a curation/sequencing memo, not a synced task queue.
 

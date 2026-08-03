@@ -15,7 +15,7 @@ single-session waste with no plausible siblings uses the short-circuit instead.
 
 The scan lives in the per-session retro artifact written by
 `scripts/persist_retro_artifact.py`. Do NOT add it to
-`charness-artifacts/retro/recent-lessons.md` (a generated digest refreshed from
+`<repo-root>/charness-artifacts/retro/recent-lessons.md` (a generated digest refreshed from
 the selection index — hand edits are reverted) or to the selection index JSON.
 
 ## Schema
@@ -75,7 +75,7 @@ with a single bullet rather than omitting the section reasoning:
 
 ## Enforcement
 
-`scripts/validate_retro_artifact.py` enforces the follow-up grammar when a
+`<plugin-dir>/scripts/validate_retro_artifact.py` enforces the follow-up grammar when a
 `## Sibling Search` section is present in a per-session retro artifact. The
 section is opt-in: artifacts without it pass unchanged, so historical retros and
 narrowly-local sessions are not retroactively gated. The validator shares

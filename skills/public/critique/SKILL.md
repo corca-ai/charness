@@ -65,7 +65,7 @@ Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`. Read
 the smallest change surface that makes the next move legible.
 For no-argument slash-command use, run the autonomous trigger scan first.
 
-If `.agents/critique-adapter.yaml` declares ≥1 `packet_sections`, run the
+If `<repo-root>/.agents/critique-adapter.yaml` declares ≥1 `packet_sections`, run the
 prepare runner once before spawning angle subagents (see `references/prepare-packet.md`).
 
 ```bash

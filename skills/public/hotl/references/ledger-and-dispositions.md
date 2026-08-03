@@ -98,7 +98,7 @@ bundle deployed and the tracker closed, not that a connector/provider behavior
 was observed; a `verified` entry must cite the behavior channel that observed it,
 not the bundle readback or `CLOSED` state it rode in on. An entry confirmed only
 by re-reading that same proxy is not `verified` — that is the re-examination
-failure that *P4* of the authoring-repo-internal `docs/design-north-star.md`
+failure that *P4* of the authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`
 names. When this audit runs inside an
 `achieve` issue-bundle closeout, the distinct fresh-eye disposition reviewer owns
 the per-issue confirmation (achieve `lifecycle-after.md`, *Disposition Gate - Two

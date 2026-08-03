@@ -79,7 +79,7 @@ this can use the previous value (including an unset value and `/scripts/...`).
 
 For Codex plugin caches the path is host-defined and rotates on
 `charness update`. When a documented path goes stale, use
-`charness catalog resolve-skill-path` (`<authoring-repo>/scripts/capability_catalog.py`)
+`charness catalog resolve-skill-path` (`<plugin-dir>/scripts/capability_catalog.py`)
 from any directory whose `$SKILL_DIR` is known to discover the current
 location:
 
@@ -130,7 +130,7 @@ That gives a rule with no judgement in it:
 Unlike `<repo-root>/`, this placeholder is **checkable**: each reference is
 resolved against the matching path under the generated `plugins/<pkg>/` package,
 and a dangling target is refused
-(`<authoring-repo>/scripts/check_plugin_dir_references.py`). `<repo-root>/` means
+(`<plugin-dir>/scripts/check_plugin_dir_references.py`). `<repo-root>/` means
 the reader's own tree and is unverifiable from here by construction, which is what
 let a class of unreachable references accumulate.
 
@@ -144,7 +144,7 @@ The "use the repo's own copy" rule above is now enforced, not just documented.
 Write helpers that persist repo state — `refresh_recent_lessons.py`,
 `persist_retro_artifact.py`, `build_debug_seam_risk_index.py` — call
 `require_repo_local_helper` from
-`<authoring-repo>/scripts/helper_provenance_lib.py`
+`<plugin-dir>/scripts/helper_provenance_lib.py`
 before doing any work. `build_retro_lesson_selection_index.py` is guarded
 indirectly and later, at the moment `recent_lessons_lib` writes;
 `publish_release.py` is guarded at the entrypoint instead (below).
@@ -184,7 +184,7 @@ consuming repo are untouched, since a consuming repo owns no competing copy.
 A verdict reached with no counterpart resolved at all is refused as
 `scope-unestablished` rather than passed: "found no drift" and "compared nothing"
 are different facts. A run whose *own* tree cannot be located — no
-`<authoring-repo>/scripts/runtime_bootstrap.py` marker
+`<plugin-dir>/scripts/runtime_bootstrap.py` marker
 above the invoked copy, so the guard cannot
 name the tree it is comparing from — is refused as `own-root-unestablished` for
 the same reason, and its refusal message names the missing marker rather than
@@ -195,7 +195,7 @@ unlocatable own root stays `consuming-repo` and is allowed.
 a warning when the copies are known to be compatible.
 
 **Known bypass.** `CHARNESS_REPO_ROOT` retargets
-`<authoring-repo>/scripts/runtime_bootstrap.py`'s module
+`<plugin-dir>/scripts/runtime_bootstrap.py`'s module
 loader, so a guarded library imported through it belongs to the override root and
 classifies `same-tree`. The code that runs is then the target's own, but the
 invoking entry script's drift goes unchecked. Treat it as a second override
@@ -232,7 +232,7 @@ export CHARNESS_SUPPORT_DIR=packages/charness-support
 ```
 
 The override is read by `support_dir()` in
-`<authoring-repo>/scripts/repo_layout.py` and flows through
+`<plugin-dir>/scripts/repo_layout.py` and flows through
 `load_support_capability_schema()` / `load_support_capabilities()`.
 Default layouts need no override.
 

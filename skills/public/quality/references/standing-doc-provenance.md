@@ -5,7 +5,7 @@ policy**: standing/contract-rule docs state the timeless rule and keep
 provenance terse, so a reader opening a contract learns the current rule instead
 of wading through incident history. This reference is the portable description
 of the policy the skill ships; charness states the same policy in its
-authoring-repo-internal `docs/conventions/provenance-placement.md`.
+authoring-repo-internal `<authoring-repo>/docs/conventions/provenance-placement.md`.
 
 ## Why It Exists
 
@@ -34,7 +34,7 @@ skipped.
 ## Configuration
 
 The check is config-driven through the quality adapter
-(`.agents/quality-adapter.yaml`), block `standing_doc_provenance`. Field
+(`<repo-root>/.agents/quality-adapter.yaml`), block `standing_doc_provenance`. Field
 types, semantics, and defaults for `standing_docs`, `tracking_allowlist`, and
 `inline_allow_marker` are documented once in `adapter-contract.md`'s
 `standing_doc_provenance` field list; this file does not duplicate them.
@@ -61,7 +61,7 @@ shape is
 
 ## See Also
 
-- `docs/conventions/provenance-placement.md` — charness's authoring-repo-internal
+- `<authoring-repo>/docs/conventions/provenance-placement.md` — charness's authoring-repo-internal
   statement of this policy (this reference is the portable copy that ships).
 - `skill_text_quality_lib.py` — the reused anchor/dated-incident regexes.
 - `adapter-contract.md` — the full `standing_doc_provenance` field list.

@@ -20,7 +20,7 @@ shape for *this* goal in one pass instead of discovering it by failing the
   the enforced FORMS (skip-reason enum, goal-slug binding, disposition and
   `Routing:` / `Gather:` / `Release:` / `Issue closeout:` forms) for filling them,
   rendered live from `check_goal_artifact.py`'s constants. Use the skill-local
-  script, not the authoring-repo `scripts/check_artifact_surface_preflight.py`
+  script, not the authoring-repo `<plugin-dir>/scripts/check_artifact_surface_preflight.py`
   dispatcher, so the step stays portable to a consumer repo.
 
 Fill every surfaced line once, then verify once with `check_goal_artifact.py`

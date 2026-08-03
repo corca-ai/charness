@@ -99,6 +99,6 @@ Portable rule:
 - persist accepted decisions before advancing the cursor
 - keep enough cursor data to resume honestly
 - before closeout or handoff, sync hidden runtime state into the checked-in
-  `charness-artifacts/hitl/latest.md` checkpoint
+  `<repo-root>/charness-artifacts/hitl/latest.md` checkpoint
 - treat a missing or stale HITL runtime sync metadata block as a closeout
   failure, not as a cosmetic artifact drift

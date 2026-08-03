@@ -91,7 +91,7 @@ discovery for zero changed files.
 `scripts/templates/mutation-tests.yml` is installed at the adapter's
 `workflow_path`. Per checkout, the workflow:
 
-1. parses `.agents/quality-adapter.yaml` via `yq` and exports every slot
+1. parses `<repo-root>/.agents/quality-adapter.yaml` via `yq` and exports every slot
    as an env var (`MUTATION_CMD_FULL`, `MUTATION_AUTO_ISSUE_LABEL`, etc.).
 2. branches on event:
    - `pull_request`: runs `commands.dry_run` (no sample step).
@@ -118,7 +118,7 @@ discovery for zero changed files.
    have mutated the same file population as the run that filed the issue, and it
    does not verify that the reported surviving mutant is dead. Closing on it
    would be the workflow certifying its own green at an irreversible boundary,
-   per *P4*/*P5* of the authoring-repo-internal `docs/design-north-star.md`; the
+   per *P4*/*P5* of the authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`; the
    close is a distinct observer's call, made against the observables in that
    comment. Operational detail: the comment is a point-in-time snapshot posted
    **once** per recovery — the label is the dedupe key, so later greens are
@@ -181,7 +181,7 @@ The Charness repo itself uses Cosmic Ray 8.4.6, verified from PyPI's latest
 release metadata on 2026-05-15. These helpers are dogfood support for this
 repo's own mutation workflow, not a portable requirement for consumers:
 
-- `scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
+- `<plugin-dir>/scripts/sample_mutation_files.py` rewrites `cosmic-ray.toml`'s
   `[cosmic-ray].module-path` list, derives the pytest node ids that actually
   covered the selected mutation surface, rewrites `[cosmic-ray].test-command`
   for that sampled surface, applies executable-mutant and pytest-nodeid
@@ -190,9 +190,9 @@ repo's own mutation workflow, not a portable requirement for consumers:
   then filters known low-signal annotation-only work items from the session.
 - `scripts/run_cosmic_ray_mutation.py --mode full` runs baseline + init +
   filter + exec + dump.
-- `scripts/check_mutation_score.py` consumes `cosmic-ray dump` JSONL and
+- `<plugin-dir>/scripts/check_mutation_score.py` consumes `cosmic-ray dump` JSONL and
   writes `report_paths.summary_md`.
-- `scripts/run_js_mutation.py` runs the repo's StrykerJS command-runner slice
+- `<plugin-dir>/scripts/run_js_mutation.py` runs the repo's StrykerJS command-runner slice
   for `scripts/agent-runtime/*.mjs`. It is intentionally separate from the
   Python coverage-derived sampler: command-runner mode reruns the JS-native
   `npm run test:agent-runtime` command per mutant, so Charness budgets it by
