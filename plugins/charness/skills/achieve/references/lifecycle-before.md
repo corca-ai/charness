@@ -170,8 +170,7 @@ A third refusal guards the heading reading itself. Fence masking **fails open**
 on an unclosed fence and hands back the raw text, so every `## Heading` inside
 that fence would count as present — an artifact with all of them fenced away and
 no real sections would otherwise read as complete. On an unbalanced document the
-gate refuses with `unreadable: an unclosed code fence makes the heading reading
-unestablished`, the same bytes `check_goal` already refuses, rather than
+gate refuses with `unreadable: ...` naming the unclosed fence, the same bytes `check_goal` already refuses, rather than
 rendering a heading verdict over a reading nobody established. The payload
 carries `fences_balanced` and `sections_reading_established` so a machine caller
 can see which reading the heading facts came from.

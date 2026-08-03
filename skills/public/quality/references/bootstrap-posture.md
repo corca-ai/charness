@@ -10,7 +10,8 @@ The bootstrap helper should:
 - infer concept paths and preset lineage from the repo surface
 - avoid materializing language-specific defaults, such as pytest reference
   patterns, unless that language family is detected or explicitly selected
-- record `installed`, `inferred`, `preserved`, or `deferred` status per field
+- record `installed`, `inferred`, `preserved`, `augmented`, `deferred`, or
+  `deliberately-absent` status per field (all six are defined below)
 - emit a machine-readable deferred-setup report when automation stops short
 
 Default report path:
@@ -27,8 +28,17 @@ Status meanings:
 - `inferred`: the helper derived a safe default from current repo signals
 - `preserved`: the adapter already carried an explicit value and bootstrap left
   it intact
-- `augmented`: an existing explicit value was kept and extended with newly
-  discovered safe defaults
+- `augmented`: an existing explicit value was kept and added to. Two ways to get
+  here. The field-level one: newly discovered safe defaults were appended (this is
+  how `preset_lineage` reports a merge). The SUB-KEY one: the adapter kept a policy
+  block — `coverage_floor_policy`, `prompt_asset_policy`, `mutation_testing` — but
+  did not set every key inside it, so the merge refilled the rest from the preset.
+  **A kept-but-partial block is `augmented`, never `preserved`.** It used to report
+  `preserved` while the merge was refilling, which asserted the opposite of what
+  happened; the report now names the refilled sub-keys in `refilled_subkeys` and in
+  the customization warning. A sub-key counts as refilled when it is absent, blank,
+  or written with a type the merge does not accept — all three are the operator's
+  value being silently discarded, and only the first looks like a deletion.
 - `deferred`: bootstrap found no honest automatic value and left the operator a
   concrete next step instead
 - `deliberately-absent`: the adapter declared this field absent on purpose, so
@@ -74,6 +84,18 @@ alter what every field means at resolution time and break consumers that index t
 So a resolved adapter carries the default value alongside the declaration, plus:
 
 - `deliberately_absent` — the declaration itself, so it survives resolution
+- `refilled_subkeys` — `{<field>: [<sub-key>, ...]}` for every kept-but-partial
+  policy block, emitted alongside the `augmented` status. Only present when a rewrite
+  actually refilled something, so its absence means nothing was refilled, not that the
+  key was forgotten.
+
+**`deliberately_absent` names whole FIELDS only.** There is no way to declare a
+single sub-key absent on purpose: the closest available move is to drop the whole
+block and declare the field, which keeps it out of the adapter FILE and marks its
+paths unasserted — resolution still supplies the default value to consumers. Dropping
+the block without the declaration is worse than doing nothing: the field becomes
+non-explicit and the next bootstrap refills all of it.
+
 - `deliberately_absent_unasserted_paths` — the resolved path values the repo does
   **not** claim exist. Keys are `<field>.<key>` for a mapping (dotted for nesting) and
   `<field>[<index>]` for a list, so a consumer parsing them must expect both shapes.

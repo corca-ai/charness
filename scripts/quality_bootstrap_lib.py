@@ -35,6 +35,7 @@ from scripts.quality_policy_defaults import (
     default_specdown_smoke_patterns,
     merge_coverage_floor_policy,
     merge_prompt_asset_policy,
+    refilled_policy_subkeys,
     validate_mutation_testing,
     validate_skill_ergonomics_gate_rules,
 )
@@ -235,8 +236,36 @@ def _merge_lineage(
     return []
 
 
+def _mark_subkey_refills(
+    field: str,
+    existing: dict[str, Any],
+    explicit_fields: set[str],
+    final: dict[str, Any],
+    field_statuses: dict[str, str],
+    subkey_refills: dict[str, list[str]],
+    defaults: dict[str, Any],
+) -> None:
+    """Downgrade an explicit dict field from `preserved` to `augmented` when its merge
+    refilled sub-keys, and record which ones.
+
+    ONE statement of the rule, called per merged field, rather than a copy at each site:
+    the sites are what let the first instance be fixed while its twin kept reporting
+    `preserved`. `_raw_adapter` is the operator's PRE-merge block -- by the time this
+    runs, `existing[field]` is already the merged value, so comparing against it would
+    always find agreement and never fire.
+    """
+    if field not in explicit_fields or not isinstance(defaults, dict):
+        return
+    refilled = refilled_policy_subkeys(
+        (existing.get("_raw_adapter") or {}).get(field), defaults, final[field]
+    )
+    if refilled:
+        field_statuses[field] = "augmented"
+        subkey_refills[field] = refilled
+
+
 def _add_adapter_policy_fields(
-    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], merged_lineage: list[str], field_statuses: dict[str, str]
+    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], merged_lineage: list[str], field_statuses: dict[str, str], subkey_refills: dict[str, list[str]]
 ) -> None:
     python_lineage = "python-quality" in merged_lineage
     for field, default in (
@@ -247,6 +276,18 @@ def _add_adapter_policy_fields(
         value = existing[field] if explicit else default
         final[field] = dict(value) if isinstance(default, dict) else value
         field_statuses[field] = "preserved" if explicit else "defaulted"
+        # A block the operator KEPT but partially emptied is not `preserved`. The
+        # merge refills the missing sub-keys from the preset, and the field-level
+        # status only asks whether the FIELD appears -- so the report asserted the
+        # opposite of what the merge did, one level below where the deliberate-absence
+        # vocabulary can see it. `augmented` is the vocabulary already used for the
+        # same shape on `preset_lineage`: kept, and added to.
+        # No `isinstance` guard here on purpose: the helper is TOTAL, so a call site
+        # never decides which fields have sub-keys. That decision living at the call
+        # site is the split this rule was extracted to remove.
+        _mark_subkey_refills(
+            field, existing, explicit_fields, final, field_statuses, subkey_refills, default
+        )
 
     if "specdown_smoke_patterns" in explicit_fields:
         final["specdown_smoke_patterns"] = list(existing.get("specdown_smoke_patterns", []))
@@ -286,7 +327,7 @@ def _add_adapter_policy_fields(
         field_statuses[field] = "preserved" if explicit else "defaulted"
 
 def _add_prompt_and_runtime_fields(
-    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str]
+    final: dict[str, Any], existing: dict[str, Any], explicit_fields: set[str], field_statuses: dict[str, str], subkey_refills: dict[str, list[str]]
 ) -> None:
     final["prompt_asset_roots"] = list(existing.get("prompt_asset_roots", [])) if "prompt_asset_roots" in explicit_fields else []
     field_statuses["prompt_asset_roots"] = "preserved" if "prompt_asset_roots" in explicit_fields else "defaulted"
@@ -309,6 +350,14 @@ def _add_prompt_and_runtime_fields(
         field_statuses[field] = "preserved" if field in explicit_fields else "defaulted"
     final["prompt_asset_policy"] = dict(existing["prompt_asset_policy"]) if "prompt_asset_policy" in explicit_fields else dict(DEFAULT_PROMPT_ASSET_POLICY)
     field_statuses["prompt_asset_policy"] = "preserved" if "prompt_asset_policy" in explicit_fields else "defaulted"
+    # `merge_prompt_asset_policy` is the same shape as the coverage-floor merge, so it
+    # carries the same defect: a block the operator kept but partially emptied is
+    # refilled and reported `preserved`. Fixed here rather than left as a known sibling
+    # -- one fixed instance and an unexamined twin is how this class comes back.
+    _mark_subkey_refills(
+        "prompt_asset_policy", existing, explicit_fields, final, field_statuses, subkey_refills,
+        DEFAULT_PROMPT_ASSET_POLICY,
+    )
     final["domain_language_contract"] = dict(existing.get("domain_language_contract", {})) if "domain_language_contract" in explicit_fields else {}
     field_statuses["domain_language_contract"] = "preserved" if "domain_language_contract" in explicit_fields else "defaulted"
     final["skill_ergonomics_gate_rules"] = list(existing.get("skill_ergonomics_gate_rules", [])) if "skill_ergonomics_gate_rules" in explicit_fields else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
@@ -330,6 +379,7 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     explicit_fields = existing.get("_explicit_fields", set())
     detected_lineage = detect_preset_lineage(repo_root)
     field_statuses: dict[str, str] = {}
+    subkey_refills: dict[str, list[str]] = {}
     deferred_setup: list[dict[str, Any]] = []
     final = {
         "version": 1,
@@ -346,11 +396,24 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     merged_lineage = _merge_lineage(existing, detected_lineage, field_statuses)
     final["preset_lineage"] = merged_lineage
 
-    _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses)
-    _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses)
+    _add_adapter_policy_fields(final, existing, explicit_fields, merged_lineage, field_statuses, subkey_refills)
+    _add_prompt_and_runtime_fields(final, existing, explicit_fields, field_statuses, subkey_refills)
     if "mutation_testing" in explicit_fields:
         final["mutation_testing"] = dict(existing.get("mutation_testing", DEFAULT_MUTATION_TESTING))
         field_statuses["mutation_testing"] = "preserved"
+        # The THIRD merged field, and the one with the worst blast radius: a kept-but-
+        # partial block refills `workflow_path` plus three `report_paths` entries, so a
+        # deletion the operator made on purpose comes back as four phantom paths. Wired
+        # onto the same one rule rather than left as a named-but-unfixed sibling.
+        # Known coarseness, accepted: `_mark_subkey_refills` compares TOP-LEVEL keys, so
+        # a nested block (`commands`, `auto_issue`, `report_paths`) whose own sub-keys
+        # were refilled is reported as one refilled key or not at all. That under-reports
+        # and never over-reports, which is the safe direction; the nested case is the
+        # same class one level further down and is not in this slice's scope.
+        _mark_subkey_refills(
+            "mutation_testing", existing, explicit_fields, final, field_statuses,
+            subkey_refills, DEFAULT_MUTATION_TESTING,
+        )
     if field_statuses.get("spec_pytest_reference_format") == "deferred":
         deferred_setup.append({"field": "spec_pytest_reference_format", "status": "deferred", "reason": "No Python quality preset was inferred.", "suggested_families": ["choose a language-specific quality preset or leave pytest references unset"]})
 
@@ -411,6 +474,11 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
             for key in unknown_fields:
                 field_statuses[key] = "preserved"
 
+    # Carried on `final` under the module's private-key convention (`_raw_adapter`,
+    # `_explicit_fields`, `_absence_warnings`) rather than widening the return tuple:
+    # the refill set is evidence ABOUT the merge, consumed only by the intent-loss
+    # report, and every consumer of this function already ignores `_`-prefixed keys.
+    final["_subkey_refills"] = subkey_refills
     return final, field_statuses, deferred_setup
 
 
@@ -457,7 +525,10 @@ def bootstrap_quality_adapter(
         report["would_do"] = would_do
     # `written` means there was no prior file, so there is no operator intent to lose.
     if would_do == "updated":
-        report.update(describe_intent_loss(existing_text, adapter_text, field_statuses))
+        report.update(describe_intent_loss(
+            existing_text, adapter_text, field_statuses,
+            subkey_refills=final_data.get("_subkey_refills") or {},
+        ))
     if absence_warnings := final_data.get("_absence_warnings"):
         report["absence_warnings"] = list(absence_warnings)
     if not dry_run:

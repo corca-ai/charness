@@ -1987,6 +1987,20 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/check_js_mutation_score.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate."
+    },
+    {
+      "class": "intentional",
+      "id": "41324c32e734fea6",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "the SHAPE two independent bootstrappers share, not logic either could borrow: scripts/quality_bootstrap_lib.py's `bootstrap_quality_adapter` (in this diff) and scripts/markdown_preview_bootstrap_lib.py's `scaffold_markdown_preview` (untouched) both build state, decide what a real run WOULD do, branch on `dry_run`, and assemble a report dict. Every field, status vocabulary, and warning in the two is different -- what matches lexically is the sequence, and a shared scaffolder helper would need more parameters than the shared span has lines while coupling two independently-owned bootstrap surfaces through one control-flow helper. Same reasoning as the accepted guard-clause families in this overlay. Surfaced as NEW because slice C added three lines to the report-assembly region (the sub-key refill evidence for issue #489), shifting the span into a match; no duplication was written."
+    },
+    {
+      "class": "intentional",
+      "id": "fd022e8a31bc6b4b",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "the repo's standard import prologue, pairwise between scripts/quality_bootstrap_lib.py (in this diff) and scripts/quality_adapter_lib.py (untouched): the `from scripts.quality_policy_defaults import (...)` block over the same shared default/merge names, which both files legitimately consume. Deduplicating it would mean one importing the other's re-exports, which is indirection, not removal. Surfaced as NEW because slice C added `refilled_policy_subkeys` to the import list, shifting the span into a match; no duplication was written. Same class as the two bootstrap-prologue families accepted on the same day."
     }
   ],
   "fixable_ceiling": 0,

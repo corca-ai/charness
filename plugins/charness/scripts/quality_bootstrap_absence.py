@@ -118,7 +118,13 @@ def _line_has_comment(line: str) -> bool:
     return stripped.startswith("#") or strip_inline_comment(stripped) != stripped
 
 
-def describe_intent_loss(existing_text: str | None, rendered_text: str, field_statuses: dict[str, str]) -> dict[str, Any]:
+def describe_intent_loss(
+    existing_text: str | None,
+    rendered_text: str,
+    field_statuses: dict[str, str],
+    *,
+    subkey_refills: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
     """Report what an about-to-happen rewrite costs the operator.
 
     A generator that cannot preserve a customization has to SAY SO. Refusing was
@@ -144,8 +150,18 @@ def describe_intent_loss(existing_text: str | None, rendered_text: str, field_st
     refilled = sorted(
         field for field, status in field_statuses.items() if status == "defaulted" and field in written
     )
+    # SUB-KEY refills, one level below `refilled`. A field the operator KEPT but
+    # partially emptied has status `augmented`, never `defaulted`, so the filter above
+    # cannot see it and no claim was made at all -- while the field-status line said
+    # `preserved`. This is the field-level case exactly, one level down, and worse
+    # reported: the top-level one at least changed the file visibly.
+    subkey_refills = {
+        field: keys
+        for field, keys in (subkey_refills or {}).items()
+        if keys and field_statuses.get(field) == "augmented" and field in written
+    }
     dropped = count_comment_lines(existing_text) if existing_text else 0
-    if not refilled and not dropped:
+    if not refilled and not dropped and not subkey_refills:
         return {}
 
     report: dict[str, Any] = {}
@@ -157,6 +173,20 @@ def describe_intent_loss(existing_text: str | None, rendered_text: str, field_st
             f"not set: {', '.join(refilled)}. If any of them is absent ON PURPOSE, declare it in "
             f"`{FIELD}` — absence alone cannot say so, and every run will refill it again."
         )
+    if subkey_refills:
+        report["refilled_subkeys"] = {field: list(keys) for field, keys in sorted(subkey_refills.items())}
+        for field, keys in sorted(subkey_refills.items()):
+            claims.append(
+                f"this rewrite refilled {len(keys)} sub-key(s) of `{field}` from defaults that the "
+                f"adapter's own block did not set: {', '.join(keys)}. The field is reported "
+                f"`augmented`, not `preserved` — it was kept AND added to. `{FIELD}` names whole "
+                f"fields only, so it cannot yet say a SUB-key is absent on purpose; until it can, "
+                f"the closest available move is to drop the WHOLE block and declare the field in "
+                f"`{FIELD}`, which keeps it out of this FILE and marks its paths unasserted "
+                f"— resolution still supplies the default VALUE to consumers. Dropping the "
+                f"block alone, without the declaration, makes the field non-explicit and "
+                f"refills all of it."
+            )
     if dropped:
         report["comments_dropped"] = dropped
         claims.append(

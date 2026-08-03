@@ -296,8 +296,167 @@ def test_trailing_comment_does_not_swallow_a_nested_block(tmp_path: Path) -> Non
 
     payload = _bootstrap(repo)
 
-    assert payload["field_statuses"]["coverage_floor_policy"] == "preserved"
+    # `augmented`, not `preserved`: the block IS read (that is what this test was
+    # written to prove — the trailing comment no longer swallows it), and the merge
+    # then refills the seven sub-keys it does not set. Calling that `preserved` was
+    # the #489 false statement. The fact under test is unchanged and is now asserted
+    # directly: `fail_below_pct` survived, so the nested block was not dropped.
+    assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
+    assert payload["field_statuses"]["coverage_floor_policy"] != "defaulted"
     assert "fail_below_pct: 90.0" in _adapter(repo).read_text(encoding="utf-8")
+
+
+def test_a_partially_deleted_block_is_reported_augmented_and_names_its_refills(tmp_path: Path) -> None:
+    """#489, from the reproduction pasted on the issue.
+
+    An operator who keeps `coverage_floor_policy:` and deletes one key from it gets
+    the missing sub-keys refilled from the preset — `lefthook_path: lefthook.yml`
+    returns, pointing at a file the repo does not have. The status said `preserved`
+    and stderr was EMPTY, because the field-level refill claim filters on
+    `defaulted` and this field is explicit. So the report asserted the opposite of
+    what the merge did, and made no claim at all.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "coverage_floor_policy:\n  fail_below_pct: 90.0\n"
+        "  # lefthook_path deliberately removed - this repo has no lefthook\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
+    refilled = payload["refilled_subkeys"]["coverage_floor_policy"]
+    assert "lefthook_path" in refilled, "the sub-key the operator deleted must be named"
+    assert "fail_below_pct" not in refilled, "a sub-key the operator DID set is not a refill"
+    warning = payload["customization_warning"]
+    assert "sub-key(s) of `coverage_floor_policy`" in warning
+    assert "lefthook_path" in warning
+
+
+def test_a_blank_sub_key_value_is_a_refill_too(tmp_path: Path) -> None:
+    """Round 1 of the bounded review: the first cut keyed on the sub-key's ABSENCE, so
+    the other common way to empty one — leaving the value blank — still reported
+    `preserved` with an empty stderr.
+
+    `lefthook_path:` with nothing after it parses to `{}` (adapter_lib._parse_empty_value),
+    so the KEY is present, no merge branch accepts `{}`, and `lefthook.yml` came back
+    anyway. Same defect as the deleted line, reached by a gesture at least as common.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "coverage_floor_policy:\n  fail_below_pct: 90.0\n  lefthook_path:\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
+    assert "lefthook_path" in payload["refilled_subkeys"]["coverage_floor_policy"]
+
+
+def test_a_wrong_typed_sub_key_the_merge_drops_is_a_refill_too(tmp_path: Path) -> None:
+    """The worst of the three spellings, and the one the first cut missed most quietly.
+
+    `min_statements_threshold: 30.5` against an int default fails every type branch in
+    the merge, so the default wins — and the bootstrap then REWRITES the adapter with
+    it, so the operator's value is gone from disk before `validate_coverage_floor_policy`
+    (which runs at resolution, not here) could ever complain about it. Silent,
+    unreported, and irreversible unless the report says so.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "coverage_floor_policy:\n  fail_below_pct: 90.0\n  min_statements_threshold: 30.5\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
+    assert "min_statements_threshold" in payload["refilled_subkeys"]["coverage_floor_policy"]
+
+
+def test_an_int_written_against_a_float_default_is_not_a_refill(tmp_path: Path) -> None:
+    """The false-positive control for the test above. `fail_below_pct: 80` against the
+    `80.0` default is the operator's own value, accepted by the merge's int-or-float
+    branch, and `80 == 80.0` — so widening the rule to catch wrong types must not start
+    calling ordinary integer spellings a refill."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "coverage_floor_policy:\n  fail_below_pct: 80\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert "fail_below_pct" not in payload["refilled_subkeys"]["coverage_floor_policy"]
+
+
+def test_the_prompt_asset_policy_sibling_reports_its_refills_too(tmp_path: Path) -> None:
+    """One fixed instance and an unexamined twin is how this class comes back.
+
+    `merge_prompt_asset_policy` is the same shape as the coverage-floor merge and had
+    the same unconditional `preserved`. The rule now has ONE statement
+    (`_mark_subkey_refills`) called per merged field, so a third merged field inherits
+    it instead of re-deriving it.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "prompt_asset_policy:\n  min_multiline_chars: 40\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["prompt_asset_policy"] == "augmented"
+    refilled = payload["refilled_subkeys"]["prompt_asset_policy"]
+    assert "source_globs" in refilled and "exemption_globs" in refilled
+    assert "min_multiline_chars" not in refilled
+
+
+def test_a_block_replaced_by_a_scalar_reports_every_sub_key(tmp_path: Path) -> None:
+    """The maximal version of the same loss. `coverage_floor_policy: "see docs"` keeps
+    NOTHING the operator wrote — the merge never even reads it — and the first cut
+    returned an empty refill list for it, reporting the largest possible refill as
+    `preserved`."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        'coverage_floor_policy: "see docs/quality.md"\n',
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
+    assert "fail_below_pct" in payload["refilled_subkeys"]["coverage_floor_policy"]
+
+
+def test_a_fully_specified_block_is_still_preserved_and_claims_nothing(tmp_path: Path) -> None:
+    """The false-refusal control. An operator who writes every sub-key out gets
+    `preserved` and no sub-key claim — otherwise the new status would fire on every
+    adapter that spells its policy out, and the word would stop meaning anything."""
+    from scripts.quality_policy_defaults import DEFAULT_COVERAGE_FLOOR_POLICY
+
+    repo = seed_quality_repo(tmp_path)
+    block = "\n".join(f"  {key}: {value!r}".replace("'", '"') if isinstance(value, str)
+                       else f"  {key}: {value}"
+                       for key, value in DEFAULT_COVERAGE_FLOOR_POLICY.items())
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "coverage_floor_policy:\n" + block + "\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["coverage_floor_policy"] == "preserved"
+    assert "coverage_floor_policy" not in (payload.get("refilled_subkeys") or {})
 
 
 def test_trailing_comment_does_not_break_empty_collections(tmp_path: Path) -> None:

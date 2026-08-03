@@ -127,33 +127,23 @@ def default_specdown_smoke_patterns(preset_lineage: list[str]) -> list[str]:
     return list(DEFAULT_SPECDOWN_SMOKE_PATTERNS) if "specdown-quality" in preset_lineage else []
 
 
-def merge_coverage_floor_policy(value: Any) -> dict[str, Any]:
-    merged_policy = dict(DEFAULT_COVERAGE_FLOOR_POLICY)
-    if not isinstance(value, dict):
-        return merged_policy
-    for key, default_value in DEFAULT_COVERAGE_FLOOR_POLICY.items():
-        item = value.get(key)
-        if isinstance(default_value, str) and isinstance(item, str):
-            merged_policy[key] = item
-        elif isinstance(default_value, float) and isinstance(item, (int, float)):
-            merged_policy[key] = float(item)
-        elif isinstance(default_value, int) and isinstance(item, int):
-            merged_policy[key] = item
-    return merged_policy
-
-
-def merge_prompt_asset_policy(value: Any) -> dict[str, Any]:
-    merged_policy = dict(DEFAULT_PROMPT_ASSET_POLICY)
-    if not isinstance(value, dict):
-        return merged_policy
-    for field in ("source_globs", "exemption_globs"):
-        item = value.get(field)
-        if isinstance(item, list) and all(isinstance(entry, str) for entry in item):
-            merged_policy[field] = list(item)
-    min_chars = value.get("min_multiline_chars")
-    if isinstance(min_chars, int):
-        merged_policy["min_multiline_chars"] = min_chars
-    return merged_policy
+# Re-exported: the merge concept moved to `quality_policy_merge` when this file hit
+# its length cap, and every existing importer names it HERE.
+#
+# The `noqa: F401` is LOAD-BEARING, not tidiness. `ruff --fix` deleted
+# `refilled_policy_subkeys` from this block as unused on the first attempt and the whole
+# quality package stopped importing. An `__all__` was the second attempt and is worse:
+# adding one here would silence star-imports of the DEFAULT_* names this file actually
+# owns, trading one breakage for another. If the re-export ever does vanish,
+# `quality_bootstrap_lib` fails at import and every bootstrap test goes red at once, so
+# the failure is loud -- which is why no separate guard test exists for it. The failure
+# that WAS silent is the import CYCLE these two modules form; see the comment in
+# `quality_policy_merge` and `tests/quality_gates/test_quality_policy_merge_import.py`.
+from scripts.quality_policy_merge import (  # noqa: E402,F401
+    merge_coverage_floor_policy,
+    merge_prompt_asset_policy,
+    refilled_policy_subkeys,
+)
 
 
 def validate_coverage_floor_policy(value: Any, errors: list[str]) -> dict[str, Any] | None:

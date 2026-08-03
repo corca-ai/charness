@@ -9,11 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: B (#488) — the changed-line lane's partial scope now reaches its
-  exit code. A is DONE, pushed as `a5b5d0e8`, and **remote CI is confirmed green
-  on BOTH check-runs** (`Core deterministic gates` and `Changed-line mutation
-  coverage (push/PR mirror)`), read through the check-runs API — a different
-  observer AND channel than the push exit code.
+- Current slice: C (#489) is code-complete and gated; D (#487) has not started.
+  A and B are DONE and pushed (`a5b5d0e8`, `8573f862`), and **remote CI is
+  confirmed green on BOTH check-runs for each**, read through the check-runs API
+  — a different observer AND channel than the push exit code.
 - Current slice intent: this artifact was activated in a materially damaged
   state (9 sections absent — 7 of the 11 required plus 2 of the 3 portability
   headings, per the full check quoted in `## Goal`) and `--pursue-ready` still said
@@ -22,8 +21,11 @@ runs the activation command.
   reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: bounded review rounds for B (it changes verdict logic), then C
-  (#489) and D (#487).
+- Next action: commit and push C, confirm its CI through the check-runs API, then
+  slice D (#487) — the prose-through-argv channel. D is UNSTARTED and is the last
+  scope item before closeout. A working technique for it is already in evidence:
+  every `append_slice_log.py` call in this run passed argv through a Python list
+  with NO shell, and every backtick survived.
 - **Non-claim carried from the first minute — what is rebuilt and what survived.**
   **RECONSTRUCTED** (written 2026-08-06 from the three issues, the shaping commit
   message `db20ccfc`, and `docs/handoff.md`; the original text never reached disk
@@ -304,6 +306,7 @@ below. Fill during the run:
 - Test duplication pressure: check_dup_ratchet --summary reports 0 new code and 0 new doc fixable-eligible families after the extraction; the first attempt DID add 2 (the `_load_sibling` boilerplate), which is why the new module takes injected callables instead of loading its own siblings.
 - Critique: Bounded fresh-eye round 1 (delegated, read-only) returned 2 blockers, both folded. B1: pursue_readiness never consulted `fences_balanced`, and `mask_fences` fails open on odd parity - so 14 headings inside one unclosed fence read `sections_complete: true` and `pursue_ready: true`, the exact two-verdicts-on-one-bytes shape this slice closes, one command from the gate it repaired. B2: the artifact's reconstruction label omitted `## Interview Decisions` and `## Slice Log`, so operator decisions 1-2 read as established rather than as recovered text. Also folded: the PASS sentence named only the marker fact while standing in for a four-dimension verdict; and the CLI `_write_discussion_goal` fixture was over-determined by the new section floor. Round 2 (delegated, read-only, reading the REPAIRS) returned NO blocker and one HIGH: R1 removed `fence balance` from `scope_not_checked` in code but left the shipped reference `lifecycle-before.md` still listing it as not-established, and the new `unreadable:` refusal undocumented - a verdict-scope surface disagreeing with the verdict, one file from the gate this slice repaired. Folded, both copies. Also folded: two wrong figures in this artifact (9 was the TOTAL, not the required count; the test count was pre-repair), and two comment/docstring staleness nits. Round 2 confirmed clean: `fences_balanced` and `mask_fences` share one predicate so they cannot disagree about parity; the rule was injected, not re-derived; no caller matches the pass string; `_REMAINING_SECTIONS` covers exactly 13 of 14 with no doubled `## Non-Goals`. It also noted the balanced-fence CONTROL test is non-discriminating by design (it would pass pre-repair too) - it is a false-refusal guard, not bite proof; the refusal test is what bites. Cap: two rounds; no round-3 repairs were made.
 - Off-goal findings: Issue #490 filed (the pursue-ready scope gap), plus a correction comment on it — the body miscounted 9 total sections as 9 required. Nothing else off-goal yet.
+- Fresh-eye pass: scripts/quality_policy_merge.py — slice C's new module, read by both rounds; round 2 is what found it was unimportable in a fresh process.
 - Fresh-eye pass: scripts/changed_line_verdict_codes.py — the new proof surface slice B was born with, read by BOTH bounded rounds. Round 2 was the one that found a verdict site disagreeing with the rule this module extracted.
 - **Non-claim on slice B's round-2 boundary check.** `reviewer_boundary_fingerprint.py verify` was run AFTER the round-2 repairs rather than the moment the reviewer returned, so it reports `boundary-drift` and cannot distinguish reviewer writes from mine. The drift list matches exactly the files I edited, and the reviewer was a typed `bounded-reviewer` with only Read/Grep/Glob exposed, so writes were impossible by envelope — but that is an argument from the envelope, not a verified window. Rounds 1 and 2 of slice A and round 1 of slice B were each verified clean BEFORE any parent write.
 - Fresh-eye pass: skills/public/achieve/scripts/goal_artifact_pursue.py — the new proof surface this slice was born with. Read by BOTH bounded rounds by a different agent context: round 1 refused it over the fail-open fence reading, round 2 re-derived `fences_balanced`/`mask_fences` parity agreement line by line and cleared the repair. Classified: it IS a verdict surface (it renders `pursue_ready`, the only gate in front of `/goal`), which is why it took two rounds rather than the advisory's one.
@@ -323,6 +326,20 @@ below. Fill during the run:
 - Off-goal findings: None new. #490 remains filed-not-closed from slice A.
 - Lessons carried forward: Round 1's blocker and round 2's F4 are the SAME defect in two places - a scope-limiting fact computed, attached to the payload, and dropped before the byte - and I repaired one of them while writing a comment claiming the ordering did not matter. The transferable rule: when a fix is `make this computed fact reach the answer`, the next question is ALWAYS `where else is this fact computed and not returned`, and the answer is usually the sibling branch ten lines away. Also: `_verdict_exit_code` centralised the values before it centralised the decision - three of five verdict sites still chose their byte inline, and the one that disagreed was found by a reviewer, not by the extraction.
 - Metrics: 1 of 5 verdict sites disagreed with the extracted rule after the extraction - 2026-08-06, found by round 2. 3 exit codes before, 4 after. Round 1: 1 blocker + 4 non-blocking. Round 2: 6 findings, 0 blockers confirmed, all folded.
+
+### Slice 3: C - #489: a partially-refilled block reports augmented, and names what was refilled
+
+- Objective: Stop the adapter bootstrap reporting `preserved` about a `coverage_floor_policy:` block whose sub-keys the merge refilled from the preset.
+- Why this approach: It is the residue the #486 fix left, and it is WORSE reported than #481 was: #481 at least changed the file visibly, while this said `preserved` with an empty stderr while `lefthook_path: lefthook.yml` came back pointing at a file the repo does not have.
+- Commits: pending (this slice)
+- What changed: NEW `refilled_policy_subkeys` and the two merges now live in NEW `scripts/quality_policy_merge.py` (quality_policy_defaults.py passed its 480-line cap), re-exported so every importer is unchanged. NEW `_mark_subkey_refills` in quality_bootstrap_lib.py is the ONE statement of the rule, called for `coverage_floor_policy`, `prompt_asset_policy` AND `mutation_testing`. `describe_intent_loss` gained `subkey_refills`, emits `refilled_subkeys`, and claims it in the customization warning. Both copies of `bootstrap-posture.md` document `augmented`'s sub-key meaning, the `refilled_subkeys` key, and the fields-only limit of `deliberately_absent`. NEW tests/quality_gates/test_quality_policy_merge_import.py.
+- Alternatives rejected: Growing `deliberately_absent` into a dotted sub-key vocabulary was rejected BY THE OPERATOR on 2026-08-05 as a larger verification and ambiguity surface - deferred, not wrong. Leaving `prompt_asset_policy` and `mutation_testing` as named-but-unfixed siblings was rejected: one fixed instance and unexamined twins is exactly how this class came back from #481 to #486 to #489.
+- Targeted verification: #489's own pasted reproduction run verbatim: status `augmented`, all 7 refilled sub-keys named including `lefthook_path`, stderr no longer empty. 4982 tests green. check_python_lengths 0; ruff clean; dup ratchet clean.
+- Test duplication pressure: Two dup families surfaced from span shifts (the report-assembly parallel with markdown_preview_bootstrap_lib, and the shared quality_policy_defaults import block) and were classified `intentional` with per-family partner names.
+- Critique: TWO delegated bounded rounds. Round 1 returned TWO blockers, both the same shape as the bug: the refill detector keyed on the sub-key's ABSENCE, so it caught ONE of the three ways an operator empties a sub-key - a blank value parses to `{}` (key present, merge ignores it, default refilled, status still `preserved`), and a wrong-typed value is silently dropped by the merge and then WRITTEN OVER in the file before the resolution-time validator could ever see it. A non-dict block reported `[]`, i.e. the maximal refill as `preserved`. Round 1 also found the claim sentence told operators to drop the block, which is the #481 failure. Round 2 read the repairs and found the extraction had introduced a REAL import cycle - `quality_policy_merge` was unimportable in a fresh process, invisible to the whole suite because every existing importer reaches `quality_policy_defaults` first, and the first person to write a unit test importing it directly would have hit it in a single-file run nobody else could reproduce. Confirmed live, fixed by lazy imports, now guarded by a subprocess test in both orders. Round 2 also found `mutation_testing` was a third unfixed sibling with FOUR phantom paths, that the repaired warning still promised a remedy resolution does not honour, that the shipped `bootstrap-posture.md` did not know the new vocabulary (the same shape slice A's round 2 found), and that the re-export comment described an `__all__` that does not exist. All folded. Cap is two rounds; these round-2 repairs are accepted-unreviewed.
+- Off-goal findings: None new.
+- Lessons carried forward: Round 1's two blockers were the SAME finding as the bug: I fixed `the status lies about a deletion` and shipped a detector that only recognised deletions. The transferable rule: when the defect is `the surface did not notice X`, enumerate every SPELLING of X before writing the detector, because the spelling you reproduced from the issue is the one you will implement. And round 2's cycle is the second time this goal a length-cap extraction introduced a defect the suite could not see - the first was a dup family, this one was an import order. An extraction is a change, not a move.
+- Metrics: 3 spellings of an emptied sub-key, 1 detected by the first cut - 2026-08-06. 3 merged fields on the rule, 1 in the first cut. 4 phantom paths in the `mutation_testing` sibling vs 1 in the reported field. Round 1: 2 blockers + 4 non-blocking. Round 2: 6 findings, 2 blockers, all folded.
 
 ## Context Sources
 
