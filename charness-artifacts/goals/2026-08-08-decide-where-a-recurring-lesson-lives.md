@@ -8,14 +8,15 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: Slice B — build the reviewer-packet control selected for #499 and #491.
-- Current slice intent: implement and exercise the reviewer-packet semantic question that names the
-  invariant/claim, its owning boundary, a recorded instance, and an axis-varying counterexample;
-  Slice A's selector and six-issue ledger are complete. Once active, this names the reviewable-intent unit in
-  progress and the commits it spans; critique and broad proof do not re-fire within one
+- Current slice: Slice C — give #502's summary format an owner or record why it should not have one.
+- Current slice intent: inspect the 17 summary-format consumers and the producer/consumer boundary;
+  decide whether the format belongs in an owned structured surface or should remain as-is, then
+  implement only the smallest owner/contract slice. Slice B's reviewer-packet control is committed
+  and its recorded #499/#491 application is complete. Once active, this names the reviewable-intent
+  unit in progress and the commits it spans; critique and broad proof do not re-fire within one
   unchanged intent — update it when the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: run the generated packet and a fresh-eye review against the recorded #499/#491
-  instances, then repair only if the question fails to distinguish proxy form from semantic fact.
+- Next action: read #502's gathered issue evidence and enumerate the 17 consumers plus the current
+  producer before choosing renderer versus structured owner; run premise checks before shaping a fix.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -121,8 +122,8 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable selector, six-row disposition/proof matrix, and measured basis for each candidate | completed |
-| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | in_progress |
-| C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | pending |
+| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | completed |
+| C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | in_progress |
 | D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | pending |
 | E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | pending |
 
@@ -174,6 +175,12 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 - Routing: critique — decision premortem for Slice A; three named lenses plus a separate counterweight reviewed the selector before it was locked.
+- Routing: impl — built the smallest reviewer-packet control and loaded `prove` for the Slice B stop gate.
+- Routing: debug — recorded the root cause and seam-risk index for the proxy-for-invariant class before shaping the control.
+- Routing: quality — planned and ran public-skill quality/dogfood validation, refreshed measurement baselines, and recorded the broad-suite result.
+- Routing: retro — persisted the auto-triggered session retro and refreshed the lesson-selection index.
+- Routing: issue — filed off-goal recurring telemetry follow-up #503 under the standing issue-creation approval.
+- Issue closeout: n/a — this slice records issue evidence and files one off-goal follow-up; tracked issue resolution belongs to Slice E.
 - Gather: charness-artifacts/gather/2026-08-04-goal-issue-sources.md — authenticated `gh` capture of the six named GitHub issue records; the public URL route was attempted first and blocked by captcha.
 
 ## Discuss Before Activation
@@ -211,6 +218,20 @@ applies.
 - Off-goal findings: none — #496 remains explicitly out of scope; no new issue was filed.
 - Lessons carried forward: A common policy may select different mechanisms per issue. A surface fix is preferred only when it can carry the semantic fact; a reviewer question must require an invariant, owner, recorded instance, and an axis-varying counterexample rather than a ritual reminder.
 - Metrics: Host token/time/tool metrics unavailable; measured review count is 3 angle reviewers plus 1 counterweight, with 4 clean boundary verifications.
+
+### Slice 2: Build the semantic reviewer-packet control
+
+- Objective: Implement and exercise the reviewer-owned semantic question selected for #499 and #491, with a recorded instance and axis-varying counterexample.
+- Why this approach: The selected branch is judgment-bound; a reviewer question can carry the invariant without adding a proxy meta-gate.
+- Commits: dd699467 Carry semantic reviewer question into critique packets
+- What changed: Added the shared reviewer-packet semantic question, source and plugin mirrors, adapter packet inclusion, critique consumer guidance, exact source-to-packet tests, and the worked #499/#491 application. Refreshed debug/probe/quality/retro truth surfaces and recorded the off-goal telemetry follow-up.
+- Alternatives rejected: Rejected a semantic blocking/meta-gate because it would encode another proxy; rejected a reminder-only packet because it would not distinguish form from invariant; deferred surface fixes for #500/#501/#497 and #502 ownership to later slices.
+- Targeted verification: Generated packet ok with three sections; exact-content and decision-boundary tests passed; three final angle reviewers plus a counterweight returned no implementation blocker with clean boundary fingerprints; cross-surface critique validation passed with owned-correctly; run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed; probe and inventory regression checks passed; standing suite reported 7028 passed in 42.76s; bash .githooks/pre-commit passed.
+- Test duplication pressure: Focused packet and critique-skill tests cover the new producer/consumer contract; exact source equality prevents mirror drift. No semantic applicability gate was added because applicability is judgment-bound.
+- Critique: charness-artifacts/critique/2026-08-04-slice-b-semantic-question.md and the generated packet/application record the delegated fresh-eye review, packet hashes, boundary ownership, findings, repairs, and non-claims.
+- Off-goal findings: Filed #503 (https://github.com/corca-ai/charness/issues/503) for recurring closeout telemetry showing slow gate-runtime and over-slice costs; the retro records it as a tracked follow-up. #496 remains outside this goal.
+- Lessons carried forward: A reviewer question earns its place when it names the invariant, owner, recorded instance, and varying counterexample, then compares the proposed control; packet delivery alone is not semantic proof. New quality artifacts must be measured and their probe baselines refreshed together.
+- Metrics: 7028 standing tests passed in 42.76s; focused packet/critique tests 49 passed; host token/tool metrics unavailable; three final angle reviewers plus one counterweight, with clean boundary verification for each review write boundary.
 
 ## Context Sources
 
