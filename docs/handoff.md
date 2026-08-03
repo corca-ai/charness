@@ -2,81 +2,77 @@
 
 ## Workflow Trigger
 
-- **A goal is SHAPED and pursue-ready** — activate directly, no activation
-  question (the standing approvals in `AGENTS.md` cover it):
-  `/goal @charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md`
-- Scope: #494 + #493 + #492, operator-chosen. Read `## Goal` before the first
-  slice — **two of the three are deferrals being cashed in, not bugs**, and the
-  closes must say which is which.
+- **No goal is shaped.** The 2026-08-07 goal is `complete`, its three issues are
+  closed and read back `CLOSED`. Pick a unit from `## Next Session` and shape it
+  with `/achieve <outcome>` before activating anything.
 
 ## Continuation Capability
 
-- **A shipped REFERENCE disagreed with the change three times in four slices.**
-  Slice A left `lifecycle-before.md` listing a dimension the code now checks;
-  slice C left `bootstrap-posture.md` not knowing `augmented`; slice D updated
-  two docs and missed `goal-artifact.md` — **the one carrying the copy-paste
-  command**. When a change alters how a helper is CALLED, fix the surface an
-  agent copies from, not only the one that explains the concept.
-- **The round that reads the REPAIRS came back with blockers three more times**,
-  and every one was the class being repaired: an ordering that silently disarmed
-  a push refusal; a detector that recognised only the spelling reproduced from
-  the issue; three silent-loss paths inside the channel built to remove silent
-  loss. When the fix is "make this computed fact reach the answer", ask where
-  else that fact is computed and dropped — it is usually the sibling branch.
-- **A length-cap extraction is a CHANGE, not a move.** Two this run introduced
-  defects the suite could not see — a dup family, and a real import cycle.
-- **Gates refused two pushes and were right both times**, naming real uncovered
-  changed lines. Both were fixed by covering, never by weakening.
+- **A guard went to the wrong boundary FIVE times in one goal, across three
+  surfaces** — and it was the round-2 blocker on every slice. Checks attached to the
+  TRANSPORT instead of the value; a predicate asked a TYPE (`isinstance(x, dict)`)
+  when `{}` is a dict, then an EQUALITY when the question was structural; a fallback
+  keyed on an error's SPELLING, twice, wrong in opposite directions. Twice the wrong
+  predicate was the repair of a previous wrong one. Filed as #499. Before writing a
+  guard, say the invariant out loud: if the predicate names a type, an equality, or
+  a message's wording, ask what it is a proxy FOR.
+- **An inversion test beats a family pin.** One enumeration was wrong three times;
+  all three were found by "every tracked file must be discovered or explicitly
+  excluded", none by listing families. A pin naming what a pattern already matches
+  cannot fail for a family nobody thought of.
+- **The broad suite caught two defects the slice gate AND both review rounds
+  passed.** Run it per slice, not only at closeout.
+- **A false-positive control only controls the axis it varies.** One held the VALUE
+  constant while varying presence, and masked a mis-naming bug for two rounds.
+- **The closeout is a verdict surface, and this one shipped eight false figures**
+  until a delegated claims review read it against the records. Budget that round.
 
 ## Current State
 
-- Six commits this session: `a5b5d0e8` (#490), `8573f862` (#488), `3f7e0d04`
-  (#489), `c09c7f4a` (#487), `736e99a0` (D review), and this handoff. Read the
-  live `git log`; a SHA written into a file that ships inside the next commit is
-  stale the moment it is written.
-- **CI, read through the check-runs API — a different observer and channel than
-  the push exit code:** `a5b5d0e8` and `8573f862` are **green on both
-  check-runs**. `3f7e0d04`'s mutation mirror is `cancelled` (superseded by the
-  next push) with core gates green; `c09c7f4a`'s mirror was `in_progress` and
-  `736e99a0` had no runs yet. **Re-read all three before closing anything.**
-- **#487, #488, #489, #490 are CLOSED** through the floor: `draft_verified`, a
-  delegated resolution critique BEFORE each close call, and a `Behavior #N:`
-  verdict resting on the check-runs API. **#487 is closed on `append_slice_log.py`
-  ONLY** — the critique refused a wider close; `upsert_goal.py` is #494.
-- **#491, #492, #493, #494 are OPEN** — this run's residue, each filed with a
-  reproduction or measured instance.
-- [deferred-decisions.md](./deferred-decisions.md) **D40's residual is RESOLVED IN PART** by an
-  operator decision this session; its blocking half stays open.
+- HEAD is pushed and **CI is green on both check-runs**, read through the check-runs
+  API — a different observer and channel than the push exit code. Read the live
+  `git log`; a SHA written into a file that ships in the next commit is stale on
+  arrival.
+- #494 closed as `bug` (a real miss); #493 and #492 as `deferred-work` (deliberate
+  recorded deferrals). The classification carries that distinction on purpose.
+- **Five issues OPEN from this run:** #495, #496 (residue #493's fix created), #497,
+  #498, #499. #491 is still open and still needs its design decision first.
+- A new BLOCKING gate shipped,
+  [check_standalone_imports.py](../scripts/check_standalone_imports.py). It has
+  never refused a real push, and it imposes a new precondition: a hard third-party
+  import now gates the commit boundary.
 
 ## Next Session
 
-1. **The shaped goal owns #494 + #493 + #492.** Read the goal, not this line.
-   #491 is deliberately OUT — it needs a gate-versus-reviewer-question decision
-   before any code.
-2. **The closeout ledger goes in the COMMIT MESSAGE for a direct-commit carrier**,
-   not the comment body — `validate-closeout-draft` reads it from there. Two
-   rounds were lost to that this run.
-3. **#482/#483/#484 (unreachable-file axes), #480, #468, and #475's behavioural
-   half** are untouched and still their own goal. **The operator still owes #481
-   one re-run** in their own repo.
+1. **#498 first if anything** — a shipped `achieve` template bullet is garbled and
+   propagates into every goal artifact the repo produces.
+2. **#491 + #499 together.** Both are "gate or reviewer question", and this repo has
+   measured that a gate which cries wolf gets walked past.
+3. **#497** — a consuming repo hits an ImportError in the exported plugin today.
+4. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
+   operator still owes #481 one re-run** in their own repo.
 
 ## Discuss
 
-- **A partial changed-line scope now exits 4, not 0** — `run-quality.sh` renders
-  it UNPROVEN and `--refuse-unestablished` deliberately does not reach it. Policy
-  (a) is intact; nothing newly refuses. Expect to see UNPROVEN where PASS used to
-  appear, and do not read it as a regression.
-- **Slice prose must not cross a shell.** Use `append_slice_log.py --fields-file`,
-  or build `argv` as a list. The flag form silently eats backticks.
-- **Issue creation is STANDING, push is standing CONDITIONAL ON THE GATES, issue
-  close is standing conditional on the closeout floor.** PR, release, tag,
-  version bump, cautilus stay per-goal.
+- `--produce-mutation-coverage` **requires `--verification-lock` and the full broad
+  run.** With `--skip-broad-pytest` it silently produces nothing and reports
+  `blocked` with no reason.
+- **Subprocess tests read as 0% to the changed-line mutation lane**, which refuses
+  the push. That refusal is correct; the fix is in-process coverage BESIDE them,
+  never instead — the subprocess is the whole proof for a shell or import-order
+  defect.
+- Prose must not cross a shell, and now both helpers have the channel:
+  `append_slice_log.py --fields-file` and `upsert_goal.py --fields-file`.
+- Issue creation is STANDING, push is standing CONDITIONAL ON THE GATES, issue close
+  is standing conditional on the closeout floor. PR, release, tag, version bump and
+  cautilus stay per-goal. **Gates refused three times this session and were right
+  every time; nothing was weakened to reach green.**
 
 ## References
 
-- [the active goal](../charness-artifacts/goals/2026-08-06-make-a-verdict-state-the-scope-it-measured.md)
-  — five slice-log entries carry the reproductions, both review rounds each, and
-  the non-claims. Read it, not this file, for what happened.
-- [the completed prior goal](../charness-artifacts/goals/2026-08-05-make-deliberate-absence-representable.md) · [its retro](../charness-artifacts/retro/2026-08-03-session-retro.md)
-- [deferred decisions](./deferred-decisions.md) (D40's partial resolution, D41–D50) · [north star](./design-north-star.md)
+- [the completed goal](../charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md)
+  — three slice-log entries, both review rounds each, residual risks and non-claims.
+  Read it, not this file, for what happened.
+- [its retro](../charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md) · [closeout claims review](../charness-artifacts/critique/2026-08-07-finish-the-sweeps-this-run-left-disposition-review.md) · [resolution critique](../charness-artifacts/critique/2026-08-07-issue-492-493-494-resolution-critique.md)
+- [the prior goal](../charness-artifacts/goals/2026-08-06-make-a-verdict-state-the-scope-it-measured.md) · [deferred decisions](./deferred-decisions.md) · [north star](./design-north-star.md)
 - [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
