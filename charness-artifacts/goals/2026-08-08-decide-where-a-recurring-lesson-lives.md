@@ -8,15 +8,15 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: Slice C — give #502's summary format an owner or record why it should not have one.
-- Current slice intent: inspect the 17 summary-format consumers and the producer/consumer boundary;
-  decide whether the format belongs in an owned structured surface or should remain as-is, then
-  implement only the smallest owner/contract slice. Slice B's reviewer-packet control is committed
-  and its recorded #499/#491 application is complete. Once active, this names the reviewable-intent
+- Current slice: Slice D — disposition #500, #501, and #497 under Slice A's selected surface-fix policy.
+- Current slice intent: inspect each issue's current producer/consumer boundary and premise before
+  shaping a repair; carry each selected surface fix through source/export proof, or record a concrete
+  exemption if the shared contract is disproven. Slice C assigned #502's per-run terminal receipt
+  owner and explicitly kept runtime telemetry separate. Once active, this names the reviewable-intent
   unit in progress and the commits it spans; critique and broad proof do not re-fire within one
   unchanged intent — update it when the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: read #502's gathered issue evidence and enumerate the 17 consumers plus the current
-  producer before choosing renderer versus structured owner; run premise checks before shaping a fix.
+- Next action: read the current #500/#501/#497 source and issue evidence, enumerate the producer,
+  consumer, and sibling boundary for each, then run premise checks before shaping any fix.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -123,8 +123,8 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 | --- | --- | --- | --- | --- |
 | A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable selector, six-row disposition/proof matrix, and measured basis for each candidate | completed |
 | B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | completed |
-| C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | in_progress |
-| D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | pending |
+| C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | completed |
+| D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | in_progress |
 | E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | pending |
 
 ## Operator Decision Queue
@@ -232,6 +232,20 @@ applies.
 - Off-goal findings: Filed #503 (https://github.com/corca-ai/charness/issues/503) for recurring closeout telemetry showing slow gate-runtime and over-slice costs; the retro records it as a tracked follow-up. #496 remains outside this goal.
 - Lessons carried forward: A reviewer question earns its place when it names the invariant, owner, recorded instance, and varying counterexample, then compares the proposed control; packet delivery alone is not semantic proof. New quality artifacts must be measured and their probe baselines refreshed together.
 - Metrics: 7028 standing tests passed in 42.76s; focused packet/critique tests 49 passed; host token/tool metrics unavailable; three final angle reviewers plus one counterweight, with clean boundary verification for each review write boundary.
+
+### Slice 3: Assign #502 a per-run receipt owner
+
+- Objective: Decide whether #502's 17 summary-format assertions require a new renderer or structured sibling, then implement the smallest owner-side contract that preserves the fact a truncated reader must act on.
+- Why this approach: The issue's production problem is truncation-safe per-run recovery, not assertion count. The producer/consumer read showed `print_final_summary` owns the terminal receipt while `runtime-signals.json` owns historical telemetry; fresh-eye review found the final-line recovery path and aggregate-warning ordering gaps.
+- Commits: 1e540417 Make quality summaries carry actionable failure receipts
+- What changed: Made `scripts/run-quality.sh` the explicit per-run receipt owner: every failed label now travels with a verified `[log: path]` or `[log unavailable]` marker on the final `Quality summary` line, and aggregate runtime recording happens before that line. Regenerated `plugins/charness/scripts/run-quality.sh`, updated the focused runner tests, recorded the critique/packet evidence, refreshed the quality artifact, and persisted the Slice C retro addendum and lesson index.
+- Alternatives rejected: Rejected a new JSON sibling because `runtime-signals.json` is rolling profile-scoped telemetry with no current-run failure provenance and no named machine consumer needs a second state surface. Rejected renderer extraction because there is one producer and no second format consumer. Rejected consolidating the 17 assertions because they cover distinct runner modes and failure paths.
+- Targeted verification: Producer/consumer and gathered #502 evidence were inspected. Focused standing tests passed 51 in 4.91s; `bash -n` passed for source and export; critique, quality, inventory-consumption, retro, packaging, markdown, and pre-commit validators passed. The first broad run exposed an exact quality-artifact marker-shape failure and was repaired. The locked broad standing suite passed 7028 in 41.93s, and the final post-ledger rerun passed 7028 in 37.47s. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review` completed its structural/deterministic checks before the locked proof.
+- Test duplication pressure: The existing 17 assertions remain distributed contract tests. Added direct final-line label/path coverage, explicit unavailable-marker coverage for failed log copies, and aggregate-recorder warning ordering coverage without widening the production test surface beyond the repaired seam.
+- Critique: `charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md` records the semantic fact, owner/readers, recorded instance, axis-varying counterexample, three decision angles, counterweight, repair-read blocker, final packet-bound approval, packet hashes, and clean reviewer-boundary verifications. The first repair-read reviewer caught the post-summary aggregate warning escape; the later repair-read and current-packet reviewers approved the final ordering. No Cautilus evaluation was run; deterministic proof was used under the ask-before-run contract.
+- Off-goal findings: No new off-goal issue. Existing #503 remains the tracked recurring closeout-runtime follow-up; #496 remains outside the goal.
+- Lessons carried forward: A verdict surface must carry the complete action fact at the actual truncation boundary: verdict, failed identity, and recovery path. Rolling telemetry is not a per-run receipt. Test the final line and place best-effort diagnostic writes before it. When a quality artifact changes inventory-consumption prose, run its consumer validator before the broad suite.
+- Metrics: 7028 broad standing tests passed in 41.93s, with a final post-ledger rerun at 37.47s; 51 focused tests passed in 4.91s; 3 initial angle reviewers plus 1 counterweight, then repair-read and current-packet bounded reviewers; every reviewer boundary verification was clean; host token/tool metrics unavailable.
 
 ## Context Sources
 

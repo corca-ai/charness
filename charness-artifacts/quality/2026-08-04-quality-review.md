@@ -16,7 +16,8 @@ Ambient repo findings: no unrelated quality repair was taken.
 - `run_slice_closeout.py --skip-broad-pytest` structural sweep passes after the
   critique artifacts were repaired to the required reviewer/boundary shape.
 - Focused packet and critique-skill tests: 49 passed.
-- Latest standing suite: 7028 passed in 41.93s (prior Slice B baseline: 42.76s).
+- Slice C standing suite at quality-artifact capture: 7028 passed in 41.93s
+  (prior Slice B baseline: 42.76s; final post-ledger rerun: 37.47s).
 - Slice C focused runner tests: 51 passed in 4.91s.
 - `scripts/run-quality.sh` and its checked-in plugin export are synchronized and
   byte-identical; both pass `bash -n`.
@@ -110,7 +111,7 @@ Ambient repo findings: no unrelated quality repair was taken.
 - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --target-skill quality`
 - `python3 scripts/sync_root_plugin_manifests.py --repo-root .`; `bash -n scripts/run-quality.sh plugins/charness/scripts/run-quality.sh`
 - `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_gate_summary_names_failures.py --pytest-target tests/quality_gates/test_quality_runner.py --pytest-target tests/quality_gates/test_quality_runner_runtime_aggregate.py` — 51 passed in 4.91s
-- `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` — latest Slice C verification: 7028 passed in 41.93s
+- `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` — final post-ledger rerun: 7028 passed in 37.47s
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --paths charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md`
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`; `validate_public_skill_validation.py`; `validate_skills.py`; Cautilus proof/diagnostics validators; doc links; markdown
 
