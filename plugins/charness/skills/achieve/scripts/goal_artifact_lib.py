@@ -109,9 +109,15 @@ _ACTIVATION_LINE = re.compile(r"^[ \t>*\-]*\**[ \t]*Activation[ \t]*:[ \t]*\**[ 
 _TEMPLATE = (Path(__file__).resolve().parent / "goal_artifact_template.md").read_text(encoding="utf-8")
 
 
+#: What `slugify` returns when the input contained nothing usable. Named because it is
+#: the TOTAL-LOSS signature callers refuse on -- not merely "was coerced", which is
+#: normal and global.
+SLUG_FALLBACK = "goal"
+
+
 def slugify(value: str) -> str:
     slug = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
-    return slug or "goal"
+    return slug or SLUG_FALLBACK
 
 
 def goal_path(repo_root: Path, date: str, slug: str) -> Path:

@@ -157,20 +157,41 @@ def test_a_multi_line_title_is_refused_including_a_bare_carriage_return(tmp_path
         assert "`title` must be single-line" in result.stderr, raw
 
 
-def test_a_slug_that_would_be_silently_rewritten_is_refused(tmp_path: Path) -> None:
+def test_a_slug_that_lost_everything_is_refused(tmp_path: Path) -> None:
     """`slugify` never raises — it COERCES, and an empty result becomes the literal
-    `goal`. So `--slug` damaged by a shell did not fail; it created a differently-named
-    artifact and reported `created`. That is the same silent-damage-under-success class,
-    on the one flag left on argv precisely because it was believed to fail loudly."""
-    rewritten = _run(tmp_path, "--slug", "Not Kebab", "--date", "2026-08-07", "--title", "T")
-    assert rewritten.returncode != 0
-    assert "would be written as 'not-kebab'" in rewritten.stderr
-
-    # the total-loss case: command substitution returning nothing became `<date>-goal.md`
-    emptied = _run(tmp_path, "--slug", "", "--date", "2026-08-07", "--title", "T")
-    assert emptied.returncode != 0
-    assert "would be written as 'goal'" in emptied.stderr
+    `goal`. So `--slug` emptied by a failed shell substitution did not fail; it created
+    `<date>-goal.md` and reported `created`, which is the silent-damage-under-success
+    class this helper is being repaired for."""
+    for emptied in ("", "!!!", "   "):
+        result = _run(tmp_path, "--slug", emptied, "--date", "2026-08-07", "--title", "T")
+        assert result.returncode != 0, emptied
+        assert "contains nothing usable" in result.stderr, emptied
     assert not (tmp_path / "charness-artifacts" / "goals" / "2026-08-07-goal.md").exists()
+
+
+def test_a_merely_COERCED_slug_is_not_refused(tmp_path: Path) -> None:
+    """The false-positive control, and the reason this guard was narrowed.
+
+    Coercion is not damage: it is GLOBAL. `goal_path` slugifies too, and every sibling
+    helper resolves through it, so `--slug PROJ_184` round-tripped across
+    `upsert_goal`, `append_slice_log` and `check_goal_artifact` alike. The first cut
+    refused any slug `slugify` would rewrite, which broke a correct caller while its
+    siblings kept working — and, because the check ran before the `path.exists()`
+    branch, it also refused a plain status flip against an artifact created weeks
+    earlier. The caller never asked for a filename; it asked for a stable key.
+
+    Caught by the release critique, as the SEVENTH instance this run of a guard placed
+    at the boundary that was easy to test rather than the one that breaks the invariant.
+    """
+    for coerced in ("PROJ_184", "My Goal", "Acme 184 Push"):
+        root = tmp_path / coerced.replace(" ", "_")
+        root.mkdir()
+        result = _run(root, "--slug", coerced, "--date", "2026-08-07", "--title", "T")
+        assert result.returncode == 0, (coerced, result.stderr)
+
+    # and the flip path on an EXISTING artifact, which the first cut also refused
+    flip = _run(tmp_path / "PROJ_184", "--slug", "PROJ_184", "--date", "2026-08-07", "--status", "active")
+    assert flip.returncode == 0, flip.stderr
 
 
 def test_changed_prose_against_an_existing_artifact_is_refused_not_dropped(tmp_path: Path) -> None:

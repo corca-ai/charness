@@ -104,13 +104,16 @@ def test_reject_unwritable_prose_covers_each_refusal_and_the_clean_path() -> Non
         upsert._reject_unwritable_prose("T", "intro\n\n## Slice Log\n")
 
 
-def test_resolve_slug_passes_a_kebab_slug_and_refuses_a_coerced_one() -> None:
-    assert upsert._resolve_slug("acme-184-push") == "acme-184-push"
+def test_resolve_slug_refuses_total_loss_and_allows_mere_coercion() -> None:
+    """Coercion is global — `goal_path` slugifies too — so refusing it broke a correct
+    caller while every sibling helper kept resolving the same key. Only total loss is
+    the damage signature."""
+    for fine in ("acme-184-push", "PROJ_184", "My Goal", "trailing-", "goal"):
+        upsert._resolve_slug(fine)
 
-    for bad, shown in (("Not Kebab", "not-kebab"), ("", "goal"), ("trailing-", "trailing")):
-        with pytest.raises(SystemExit) as exc:
-            upsert._resolve_slug(bad)
-        assert f"would be written as {shown!r}" in str(exc.value), bad
+    for emptied in ("", "!!!", "   "):
+        with pytest.raises(SystemExit, match="contains nothing usable"):
+            upsert._resolve_slug(emptied)
 
 
 def test_merge_field_prefers_the_flag_unless_it_is_an_empty_override() -> None:

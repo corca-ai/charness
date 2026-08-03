@@ -27,7 +27,8 @@ git log --oneline -10
 # 2. any active goal already on disk
 ls charness-artifacts/goals/ 2>/dev/null || true
 
-# 3. scaffold or locate first, then validate post-scaffold (helpers preserve manual content)
+# 3. scaffold first, then validate. To LOCATE an existing goal, drop --fields-file:
+#    a body that no longer matches the edited artifact is refused, not ignored.
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug> --fields-file <fields.json>
 python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . --slug <slug> --date <yyyy-mm-dd>
 ```

@@ -98,19 +98,32 @@ def _reject_unwritable_prose(title: str, goal_body: str) -> None:
 
 
 def _resolve_slug(slug: str) -> str:
-    """Refuse a slug `slugify` would rewrite, rather than writing a different file.
+    """Refuse a slug that lost EVERYTHING to coercion, not one that was merely coerced.
 
     `goal_artifact_lib.slugify` never raises: it coerces, and an empty result becomes
     the literal `goal`. So a shell-damaged `--slug` does not fail -- it creates
     `<date>-goal.md` and reports `created`, which is the same silent-damage-under-a-
-    success-verdict class this helper is being repaired for, on the one flag left on
-    `argv` precisely because it was believed to fail loudly. It does now.
+    success-verdict class this helper is being repaired for.
+
+    THAT total loss is the signature, and it is the only thing refused here. The first
+    cut refused any slug `slugify` would rewrite at all, and that was the wrong boundary
+    -- again. Coercion is not damage: it is GLOBAL and consistent, because `goal_path`
+    slugifies too and every sibling helper resolves through it. So `--slug PROJ_184`
+    round-tripped across `upsert_goal`, `append_slice_log` and `check_goal_artifact`
+    alike, and refusing it here broke a correct caller while its siblings kept working
+    -- including on a status flip against an artifact created weeks earlier. The caller
+    never asked for a filename; it asked for a stable key, and the key resolved.
+
+    An emptied slug is different in kind: nothing of what was passed survives, and the
+    `goal` that replaces it was never anyone's key.
     """
     resolved = goal_lib.slugify(slug)
-    if resolved != slug:
+    if resolved == goal_lib.SLUG_FALLBACK and slug.strip().lower() != goal_lib.SLUG_FALLBACK:
         raise SystemExit(
-            f"--slug {slug!r} is not already kebab-case; it would be written as {resolved!r}. "
-            f"Pass {resolved!r} explicitly so the filename is the one you asked for."
+            f"--slug {slug!r} contains nothing usable and would be written as "
+            f"{resolved!r} -- a filename you did not ask for. An argument that survives "
+            f"as nothing is what a failed shell substitution looks like, so this refuses "
+            f"rather than creating <date>-{resolved}.md."
         )
     return resolved
 
