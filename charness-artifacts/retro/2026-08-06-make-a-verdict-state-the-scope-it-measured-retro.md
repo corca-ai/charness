@@ -29,8 +29,21 @@ it produced a fourth before any planned slice ran.
 - **The unplanned artifact repair came first.** ~1 slice of budget reconstructing
   a goal artifact rather than pursuing the goal. Cost created by the previous
   session's write, not avoidable in-session.
-- **Three length-cap extractions, all forced mid-slice** because the slice added
-  reasoning comments. Each then needed its own dup classification or repair.
+- **Three length-cap extractions, all forced mid-slice.** ~~Because the slice added
+  reasoning comments.~~ **CORRECTED 2026-08-06 after the operator challenged the
+  premise, and they were right.** `check_python_lengths` uses `tokei`'s CODE count,
+  which already excludes comments and docstrings — measured: the extracted
+  `changed_line_verdict_codes.py` is 44 code / 31 comment lines, and
+  `goal_artifact_lib.py` went 310 → 374 code lines while its comment count moved
+  30 → 32. The caps were crossed by roughly 40-60 lines of REAL CODE each, so the
+  cap did exactly what it is for. The waste was not the cap; it was that two of the
+  three extractions shipped a defect the suite could not see. That is the item
+  below, and it stands on its own.
+- **This bullet asserted a cause it never measured**, and it is the class this very
+  goal was about. Kept visible rather than silently rewritten, because a retro that
+  quietly corrects itself teaches nothing about how the wrong claim got in: I
+  reached for the most available explanation (comments felt like what I had added)
+  instead of running `tokei -f` once.
 - **Four dup-ratchet hard blocks, none of them new duplication** — every one a
   span shift bringing a pre-existing boilerplate parallel over the threshold.
 
