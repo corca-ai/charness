@@ -56,8 +56,44 @@ one level up. So the status is its own table, and it says what has SHIPPED:
 | --- | --- | --- |
 | A1 | **ARMED** — `check_plugin_doc_links.py`, blocking, wired into `run-quality.sh`, the commit-time plan, and `quality-core.yml` | 0 remaining (12 repaired) — see the ruler note below |
 | A2 | **ARMED** — `iter_authoring_repo_contradictions` in `check_doc_links.py`, sentence-scoped, blocking | 0 remaining (6 source + 6 mirror repaired) |
-| A3 | not gated; disposition only | 4 |
-| A4 | not gated by design (judgment-bearing) | **29** after slice B, was 30 — see the note below |
+| A3 | **ARMED** — `check_plugin_dir_references.py` resolves `<plugin-dir>/` against the generated package and refuses the kind-flattened `skills/public/…` spelling, which IS the A3 defect | 0 remaining (4 repaired via the D50 adoption) |
+| A4 | **ARMED** — `unmarked-tree` in `check_doc_links.py`; the rule existed and was switched off inside portable packages | 0 remaining (~70 repaired: 49 + 21 after the `.agents/` prefix bug was fixed) |
+| A5 | **NOT RULED** — the same defect in COMMAND carrier | **14 live** (see below) |
+| A6 | **NOT RULED** — shipped non-markdown assets | **2 confirmed live** (see below) |
+| A7 | **NOT RULED** — `skills/shared/**` is not a portable package | prevention gap; 2 residue sites |
+
+**This table was WRONG until 2026-08-04, in the direction that manufactures a
+false zero.** A3 and A4 were armed and their sites repaired, and this table still
+said "not gated / 29 live". A future enumerator reading it would have re-repaired
+a population that no longer existed while the genuinely unruled axes stayed
+unnamed. That is the fourth honest zero in this lineage, and it happened INSIDE
+the artifact built to prevent it — one axis over from the A2 instance a claims
+review had already caught. Corrected by the delegated resolution critique before
+[#479](https://github.com/corca-ai/charness/issues/479) was closed.
+
+## The Three Axes That Still Have No Ruler
+
+Named here rather than left for the next widening to rediscover. Each is
+in-class, each is a DENOMINATOR miss, and each has its own issue.
+
+- **A5 — command carrier.** `python3 skills/public/<skill>/scripts/x.py` in a
+  shipped doc. Every armed gate is green on it: `unmarked-tree` drops any
+  backtick span containing whitespace, and `iter_unresolved_command_targets`
+  resolves against the AUTHORING tree, where the path exists. The installed file
+  is at `<plugin-dir>/skills/<skill>/scripts/x.py`. **14 live sites**, exemplar
+  `skills/public/critique/references/prepare-packet.md:23`. This is the most
+  action-bearing spelling: a consumer EXECUTES it.
+- **A6 — shipped non-markdown.** The corpus below is 510 MARKDOWN files. Every
+  gate globs `*.md`, so shipped `.json`/`.yaml` assets are unenumerated.
+  `plugins/charness/integrations/tools/vulture.json:91` and
+  `plugins/charness/skills/achieve/adapter.example.yaml:9` both carry it, and the
+  second is worse than prose: it is a TEMPLATE a consumer copies into their own
+  adapter and runs.
+- **A7 — `skills/shared/**` is not a portable package.**
+  `PORTABLE_SKILL_KINDS = {"public", "support"}`, so the A4 rule, the
+  portable-absolute rule, and `validate_link`'s portable-escape branch are all
+  structurally off for 18 shipped files. Small residue today; an open prevention
+  gap for the next author.
 
 **A4 moved 30 → 29 for a reason, not by a re-count.** `skills/support/README.md:26`
 was in both populations: it named `scripts/sync_support.py` inside a markdown

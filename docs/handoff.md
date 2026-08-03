@@ -26,7 +26,7 @@
 
 ## Current State
 
-- `main` is at `d0d63eed`, pushed, **CI green on the pushed SHA, verified on two
+- `main` is at `ce714872`, pushed, **CI green on every pushed SHA, verified on two
   channels** (`gh api .../check-runs`, `gh run list`). The combined-status API
   says `pending`/`total_count: 0` for every commit here; not a real pending.
 - **Two link gates now, deliberately.** `check_doc_links.py` judges a link where
@@ -43,14 +43,17 @@
 
 ## Next Session
 
-1. **#479 is repaired but OPEN; closing needs a grant.** All four axes carry a
-   per-instance disposition: A1 12→0 and A2 6→0 gated, A3 3-of-4, A4's 29
-   deliberately ungated.
+1. **#479 is CLOSED.** All four axes armed and repaired: A1 12→0, A2 6→0,
+   A3 4→0, A4 ~70→0. Its resolution critique refused an earlier close because
+   this repo's own denominator record misstated the arming status — corrected,
+   and the three axes with NO ruler are now filed as #482/#483/#484.
 2. **[#480](https://github.com/corca-ai/charness/issues/480) is fresh and cheap** —
    `<authoring-repo>/` is resolved only for `scripts/` targets, so the `docs/`
    and `charness-artifacts/` forms this run created are verified by nothing.
-3. **D50 blocks one A3 site** (`bootstrap-resolution.md:175`) — needs the
-   `<plugin-dir>/` call.
+3. **#481 is the operator's own external-usage report, and it is data loss:**
+   `bootstrap_adapter.py` silently reverts a customized `quality` adapter to the
+   preset on every run — 14 comment lines to 0, and preset defaults resurrected
+   pointing at paths that do not exist in that repo.
 4. **#475's behavioural half is still an OPEN operator decision.**
 
 ## Discuss
