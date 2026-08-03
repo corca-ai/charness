@@ -363,7 +363,17 @@ def staged_commit_gate_plan(
         path for path in existing
         if path.endswith(".py")
         and not path.endswith("__init__.py")
-        and (path.startswith("scripts/") or path.startswith("skills/"))
+        and (
+            path.startswith("scripts/")
+            or path.startswith("skills/")
+            # Repo-ROOT modules too. `runtime_bootstrap.py` and `skill_runtime_bootstrap.py`
+            # are imported by 135 scripts and are the family `SCAN_PATTERNS`'s first entry
+            # was added for -- found by the inversion test because nobody listing families
+            # thought of them. Repairing the enumeration and leaving the TRIGGER with the
+            # original blind spot is this run's own lesson, one layer up: a changed root
+            # shim would have skipped the gate entirely.
+            or "/" not in path
+        )
     ]:
         # Scoped to the CHANGED modules, not the whole package. The full sweep is ~2.0s
         # for 649 modules (measured 2026-08-07, 16 workers), so the scoping is not about

@@ -28,7 +28,7 @@ enumeration misses is unchecked, not proven clean, and `--changed` runs are a st
 subset -- so the scope is printed with every verdict rather than left for the reader to
 assume. A partial run must never read as a whole-package verdict.
 
-It does not prove the absence of import cycles in general. Three known blind spots,
+It does not prove the absence of import cycles in general. Four known blind spots,
 each measured rather than assumed:
 
 * A cycle that resolves in both directions is invisible here, and harmless.

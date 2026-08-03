@@ -9,22 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: A, B and C are all DONE and gated; D next — closeout.
-- Current slice intent: bundle proof with `--verification-lock`, a claims review by a
-  distinct observer, retro, the three issue closeouts through their floor, and the
-  commit. Each close must state whether it was a deferred deferral (#493, #492) or a
-  real miss (#494) — two of three were correctly recorded decisions and calling all
-  three bug fixes would misdescribe the record.
-- Next action: commit slice C, then run the closeout preflight
-  (`describe_goal_closeout_shape.py`) to get this goal's conditional missing-line set
-  in ONE pass rather than flip-serially.
-- Carry-forward from A, B and C: **a guard belongs at the boundary that breaks the
-  invariant, not the one that is easy to test.** A attached shape checks to the
-  TRANSPORT; B guarded a TYPE, then an EQUALITY, when the question was structural; C's
-  fallback predicate was wrong twice in opposite directions because both cuts asked
-  about the error's spelling rather than what the fallback was for. And an inversion
-  test beats a family pin: C's enumeration was wrong three times and a pin naming the
-  families it already matched could not have failed for any of them.
+- Current slice: D — closeout. All three code slices are committed
+  (`25a8e265`, `86be2df5`, `70e32238`); retro, disposition review and the closeout
+  sections are written. Remaining: push, CI confirmation by a different observer
+  and channel, and the three issue closes through their floor.
+- Current slice intent: prove and close. Each close states whether it was a
+  deferred deferral (#493, #492) or a real miss (#494) — two of three were
+  correctly recorded decisions and calling all three bug fixes would misdescribe
+  the record.
+- Next action: run the closeout commit (ledger IN THE COMMIT MESSAGE for a
+  direct-commit carrier), push, then read CI through the check-runs API — a
+  different observer AND channel than the push exit code.
+- Carry-forward, the run's most transferable lesson: **a guard belongs at the
+  boundary that breaks the invariant, not the one that is easy to test.** It went
+  wrong five times across three surfaces this run (tracked as #499), and it was
+  the round-2 blocker on every slice. Second: an inversion test beats a family
+  pin, because a pin cannot fail for a family nobody thought of.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -177,8 +177,11 @@ does.
 
 ## Operator Decision Queue
 
-- Queued: none — the scope decision was made by the operator on 2026-08-06 and is
-  folded into `## Interview Decisions`. Nothing is waiting on the operator to start.
+- none — every decision this run fell inside the three standing approvals recorded in
+  `AGENTS.md` (issue creation; push conditional on the gates; issue close conditional
+  on the closeout floor), and the scope decision was already made by the operator on
+  2026-08-06 and folded into `## Interview Decisions`. Nothing was deferred to the
+  operator and nothing is waiting on one.
 
 ## Coordination Cues
 
@@ -213,7 +216,9 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: impl — selected from installed skill metadata and model judgment: all three slices were code/test/reference changes against tracked issues, so impl owned the build and prove owned each slice stop gate; quality owned the validation-posture calls (dup-ratchet classifications, the Floor-Addition Restraint call on the new blocking gate, and the two public-skill scenario-review records); issue owned the three closeouts and the five off-goal filings; critique owned the six bounded rounds plus the closeout claims review; retro owned the after-action review.
+- Gather: n/a — every source this goal was shaped from is repo-local. The three GitHub issues were read through the gh issue adapter, and the prior goal, its resolution critique and its retro are checked-in artifacts; the GitHub URLs in Context Sources are issue references resolved through that adapter, not external web pages needing a durable gathered asset.
+- Issue closeout: #494, #493, #492 — carrier direct-commit; each ledger rehearsed with issue_tool.py validate-closeout-draft --commit-message-file before the close commit and read back with verify-closeout --expect-state CLOSED after, with the proof recorded in Final Verification. Off-goal filings #495/#496/#497/#498/#499 are creations, not closes, and stay open.
 
 ## Discuss Before Activation
 
@@ -234,10 +239,10 @@ per the bullets above when that boundary is crossed):
 
 - Objective: Give `upsert_goal.py` an input channel with no shell in front of it, and stop `references/goal-artifact.md` demonstrating the form it forbids. #494 is the only real MISS of this goal's three: a sibling helper named in #487's own `## Boundaries` and then never swept.
 - Why this approach: `--goal-body` writes the `## Goal` section, so a hole there is worse than a hole in one slice-log line. The reference carried the rule directly above an example calling the forbidden form for a helper with no alternative. The channel is unfixable from inside the process, so this adds a CHANNEL, not a validator - the same shape #487 shipped.
-- Commits: pending (this slice's commit)
+- Commits: `25a8e265`
 - What changed: NEW `--fields-file` on `upsert_goal.py` taking `title`/`goal-body`; the JSON parse and its six refusals extracted to `goal_cli_args.load_fields_file` and now SHARED with `append_slice_log.py` (whose 8 pre-existing tests are the parity evidence). `_DATE` anchored with `\Z` in `goal_artifact_lib.py`. SKILL.md, `references/goal-artifact.md` and `references/lifecycle-during.md` repaired. NEW `tests/quality_gates/test_upsert_goal_input_channel.py` (17 tests). One `intentional` dup classification (c71405ac5e920fb0). `plugins/` mirror synced.
 - Alternatives rejected: Rejected mirroring `append_slice_log.py`'s WHOLE field set for symmetry (goal stop condition 3): only `title` and `goal-body` are free prose. Rejected leaving `--slug` on argv on the old rationale - it was FALSE, so the slug now refuses a value `slugify` would rewrite instead. Rejected forcing `goal-body` single-line like a slice field: a goal body is a SECTION, and forcing one line would push callers straight back to the shell.
-- Targeted verification: 17 + 8 channel tests through a REAL shell (`shell=True`), because the loss happens in the shell and an argv-list test cannot reproduce it; 4234-test broad run pending. Each of the 5 new guards MUTATION-CHECKED to be load-bearing: reverting `_merge_field`'s empty-override refusal, `fences_balanced`, `_normalize_newlines`, and `$`-vs-`\Z` each made its own test FAIL. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: completed.
+- Targeted verification: 17 + 8 channel tests through a REAL shell (`shell=True`), because the loss happens in the shell and an argv-list test cannot reproduce it. BROAD SUITE 7060 passed / 0 failed (623.8s), recorded here at closeout - it was left as `pending` when this entry was first written, which the closeout claims review correctly called out. Each of the 5 new guards MUTATION-CHECKED to be load-bearing: reverting `_merge_field`'s empty-override refusal, `fences_balanced`, `_normalize_newlines`, and `$`-vs-`\Z` each made its own test FAIL. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: completed.
 - Test duplication pressure: dup ratchet clean after one `intentional` classification: the extraction SHRANK four existing families and surfaced one new one that is a pre-existing CLI-boilerplate parallel (`try: <lib call> / except: print; return 2`) across three unrelated commands - verified pre-existing by stashing and re-running, ratchet clean on the base tree. Same span-shift class this repo measured four times on 2026-08-06.
 - Critique: TWO bounded rounds, each with a verified `reviewer_boundary_fingerprint` window (both `clean`). Round 1 found 3 blockers: guards attached to the TRANSPORT not the value, so the documented list-argv channel walked past them and wrote a forged heading at exit 0; a lone CR forging a heading via universal-newline read-back; and a FALSE shipped claim that `--slug` fails loudly. Round 2 - the round that read the REPAIRS - found 3 more: an empty `--goal-body` flag overriding a non-empty file value (this helper's own total-loss shape, on the field the channel exists to protect); the fence mask rendering a verdict over a reading `mask_fences` documents as unestablished; and the `_DATE` repair shipped with no biting test. All repaired.
 - Off-goal findings: Filed #495 - `docs/handoff-chunked-routing.md` says `draft_goal_from_chunk.py` writes through `upsert_goal`; it renders and writes directly, so a reader would wrongly conclude the new guards cover both goal-artifact writers.
@@ -248,7 +253,7 @@ per the bullets above when that boundary is crossed):
 
 - Objective: `refilled_policy_subkeys` compared TOP-LEVEL keys only, so a nested block (`mutation_testing.report_paths`) whose own leaves were refilled was under-reported. Make the report reach the class its instance came from.
 - Why this approach: Third instance in one family - #481 whole-field, #489 sub-key, this sub-sub-key: a checker written against the granularity of the reported instance stopping exactly one level above the next instance. This was a DELIBERATE recorded deferral with its direction stated at the call site, so the slice CASHES IN scheduled work rather than repairing a mistake, and the close says so.
-- Commits: pending (this slice's commit)
+- Commits: `86be2df5`
 - What changed: `refilled_policy_subkeys` recurses into a block the operator wrote something into, reporting dotted leaves; a block refilled WHOLE keeps its single block name. The stale call-site comment in `quality_bootstrap_lib.py` and three false or misplaced claims in `skills/public/quality/references/bootstrap-posture.md` were corrected. 6 new unit tests plus 2 end-to-end tests through the real bootstrap. `plugins/` mirrors synced.
 - Alternatives rejected: Rejected reporting every leaf of a wholly-refilled block: the goal's stop condition 2 names a report nobody reads as the measured failure mode, and a block name says it better. Rejected touching the dotted `deliberately_absent` DECLARATION vocabulary - explicitly out of scope per Non-Goals, and grep confirms nothing parses these report names back into a key path. Rejected fixing the hollow-refill noise the recursion surfaced; filed as #496 because the predicate choice is a policy decision this slice should not settle by fiat.
 - Targeted verification: Both arms of the defect reproduced against the pre-fix function BEFORE designing, plus a false-positive control (fully-specified nested block reports nothing) and the whole-block case. 63 tests green across the two files; broad suite pending. Every new guard mutation-checked: reverting the recursion, and reverting the round-2 outcome-based guard to the round-1 type-based one, each makes its own test FAIL. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: completed. BROAD SUITE 7068 green - and it caught a regression BOTH bounded rounds and the slice gate passed: the round-2 fallback predicate `merged_sub != default` MIS-named a fully-specified but CUSTOMISED block as refilled, flipping `mutation_testing` from `preserved` to `augmented` in `test_quality_bootstrap_adapter_preserves_existing_explicit_commands`. The predicate is now structural (did the merge produce a block carrying every default key), and both the pre-existing broad test and a new unit test refute the old form. Report size MEASURED at 17 names worst case - under the goal's `dozens` stop condition, and independently re-derived by the reviewer.
@@ -262,10 +267,10 @@ per the bullets above when that boundary is crossed):
 
 - Objective: Generalize the one-pair subprocess guard into a repo-wide gate: every module must import FIRST, in a fresh interpreter. A full test suite structurally CANNOT see this class - it imports everything once, in one order, at collection.
 - Why this approach: The measured instance passed 4979 tests while being unimportable on its own, and was found by a person reading two import statements. `ruff` does not check import cycles and `check_python_lengths` cannot. Exposure grows with every length-cap extraction, which this repo forces routinely - three in one goal, two of which introduced a defect the suite could not see.
-- Commits: pending (this slice's commit)
+- Commits: `70e32238`
 - What changed: NEW `scripts/check_standalone_imports.py`, wired into `staged_commit_gate_plan.py` as a structural-sweep gate scoped to CHANGED modules. NEW `tests/quality_gates/test_standalone_imports.py` (14 tests). `plugins/` mirror synced. Floor-Addition Restraint call recorded at the site: BLOCKING deliberately, with the recurrence measured rather than assumed.
 - Alternatives rejected: Rejected scoping the pre-push run for COST: the full sweep is 2.0s for 649 modules at 16 workers (measured), so goal stop condition 1 did not trigger. It is still scoped to changed modules on the different ground that a commit-boundary gate should answer for what the commit touched - and the check prints `PARTIAL: checked N of M` with its verdict so that can never read as a whole-package clean bill. Rejected probing a single import shape: this repo has two legitimate shapes and one-shape probing reported 35 healthy modules as broken.
-- Targeted verification: The acceptance that matters: the check FAILS on the real cycle, recovered by reconstruction. The pre-fix module was never committed - the cycle was found and fixed inside the same commit - so the test hoists the function-level sibling imports back to module scope and FIRST proves that reproduction emits the issue's exact `partially initialized module` text before asserting anything about the gate. Every new guard mutation-checked: reverting any of the three SCAN_PATTERN entries, the `ok` predicate, or the fallback predicate each fails its own test. BROAD SUITE then caught the WIRING, which the slice gate and both rounds passed: the gate was registered from the whole touched scope, which includes DELETED files, and this repo has an explicit invariant that a scope path never reaches a per-file validator as an argument. It now takes the existing-file list like its two sibling gates.
+- Targeted verification: The acceptance that matters: the check FAILS on the real cycle, recovered by reconstruction. The pre-fix module was never committed - the cycle was found and fixed inside the same commit - so the test hoists the function-level sibling imports back to module scope and FIRST proves that reproduction emits the issue's exact `partially initialized module` text before asserting anything about the gate. Every new guard mutation-checked: reverting any of the three inversion-found SCAN_PATTERN entries (of eight total), the `ok` predicate, or the fallback predicate each fails its own test. BROAD SUITE 7083 passed / 0 failed (623.4s) - and it caught the WIRING, which the slice gate and both rounds passed: the gate was registered from the whole touched scope, which includes DELETED files, and this repo has an explicit invariant that a scope path never reaches a per-file validator as an argument. It now takes the existing-file list like its two sibling gates.
 - Test duplication pressure: 14 tests in one new file; the mini-repo helper builds throwaway packages for cycle shapes this repo does not contain, and the repo-copy fixture keeps every sweep off the live checkout after `check_test_repo_copy_invariants` correctly refused the first cut for mutating it.
 - Critique: TWO bounded rounds, both windows verified `clean`, and the gate's own defects outnumbered anything else this slice. Round 1: `skills/shared/scripts/` (10 modules, the extraction-PAIR family this gate exists for) was unenumerated; the exported mirror matched ZERO skill modules while printing `checked all N`; the shape fallback MASKED cycles; `other_failures` did not block; unmatched paths were named only when the scope collapsed to zero. Round 2, reading the repairs: the mirror repair was PARTIAL because the export flattens twice, and the `plugins/` exclusion in the new inversion test re-hid exactly the tree whose enumeration had just been found broken.
 - Off-goal findings: Filed #497 - `scripts/validate_adapters.py` cannot be imported in the exported plugin at all: it hardcodes `skills.public.retro.scripts.resolve_adapter` and the export flattens that path away. Found by this gate on its first run against the mirror, which is the class it was built for.
@@ -326,9 +331,40 @@ Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
 
+- The plan was shaped on 2026-08-06 and its critique is recorded in that goal's
+  resolution critique (`../critique/2026-08-06-issue-487-488-489-490-resolution-critique.md`),
+  which REFUSED two of four closes and produced #493 and #494. No separate plan-critique
+  round ran at activation: the operator had already chosen the unit, all three issues
+  carried finished reproductions, and `## Discuss Before Activation` recorded the one
+  proof-level non-claim as resolved. Stated here rather than left blank so a fresh
+  session knows this section is empty by decision, not by omission.
+- The three stop conditions were the plan's own teeth and all three were EXERCISED:
+  #492's cost was measured (2.0s, so condition 1 did not fire), #493's report size was
+  measured at 17 names (condition 2 did not fire), and #494's field set was deliberately
+  NOT made symmetric with its sibling's (condition 3 fired and was honoured).
+
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- [#495](https://github.com/corca-ai/charness/issues/495) — `docs/handoff-chunked-routing.md`
+  says `draft_goal_from_chunk.py` writes through `upsert_goal`; it renders and writes
+  directly. Found by slice A's round 2 while checking whether the new input guards'
+  blast radius was correctly scoped. The doc currently prevents anyone noticing that
+  there are TWO goal-artifact writers and the guards reach only one.
+- [#496](https://github.com/corca-ai/charness/issues/496) — slice B's recursion newly
+  reports hollow refills for inert empty-string defaults (`commands.dry_run`), where the
+  attached warning then advises dropping a whole block of real config. Residue this goal
+  CREATED, filed rather than fixed because the predicate choice is a policy decision a
+  slice scoped to something else should not settle by fiat.
+- [#497](https://github.com/corca-ai/charness/issues/497) — `scripts/validate_adapters.py`
+  cannot be imported in the exported plugin at all: it hardcodes
+  `skills.public.retro.scripts.resolve_adapter` and the export flattens that path away.
+  Found by slice C's own new gate on its first run against the mirror — the class it was
+  built for, on day one.
+- [#498](https://github.com/corca-ai/charness/issues/498) — the shipped `achieve` goal
+  template's `Routing` bullet is garbled by a bad splice and reproduces into every goal
+  artifact, including this one. Found by the closeout claims review.
 
 ## Final Verification
 
@@ -337,13 +373,66 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md
+Host log probe: skipped: host-log-not-exposed: this run executed on a Claude Code host, which exposes no per-session token or tool-call log to the agent. `probe_host_logs.py` did find Codex sqlite logs on this machine, but they belong to a different host and an unrelated session, so citing them would attribute another run's numbers to this one.
+Disposition review: charness-artifacts/critique/2026-08-07-finish-the-sweeps-this-run-left-disposition-review.md
+
+**Self-verification.** 3 slices, 3 commits (`25a8e265`, `86be2df5`, `70e32238`),
+3 issues repaired. Broad suite 7060 / 7068 / 7083 passed, 0 failed — one full run
+per slice (source: `pytest tests/ -q`, 2026-08-07). `run_slice_closeout.py
+--skip-broad-pytest --ack-cautilus-skill-review` reported `completed` at every
+slice boundary. 6 bounded review rounds, every fingerprint window `clean`, plus a
+delegated closeout claims review before the completion flip. 0 gates weakened,
+0 `--no-verify`.
+
+**Residual risk.**
+
+1. **The new `check-standalone-imports` gate is BLOCKING and has never refused a
+   real push.** It refused the reconstructed cycle and three synthetic ones, and it
+   passes 649 modules in both trees — but a gate's false-fire behaviour is only
+   learned in traffic. Its new precondition is real: a hard third-party import now
+   gates the commit boundary, so an environment missing `jsonschema` or `yaml`
+   refuses a commit that previously passed.
+2. **Slice B's 17-name worst case is unpinned.** It is a measurement of a report's
+   size under a pathological adapter, not an invariant, and a test asserting a count
+   would fail on every legitimate defaults change. If `DEFAULT_MUTATION_TESTING`
+   grows, nothing notices that the report got longer.
+3. **The mirrored gate reports BLOCKED today** on a real pre-existing defect
+   (#497). Nothing in the commit path runs it, so this does not refuse anything —
+   but a consuming repo that runs it will see a failure this goal did not fix.
+4. **The three code slices' round-2 repairs are accepted-unreviewed**, per the
+   two-round cap. Two of the three were subsequently exercised by the broad suite;
+   slice A's were not.
+5. **The delegated resolution critique found instance SIX of this run's own class**
+   and it is repaired, not carried: the commit-gate TRIGGER for the new check
+   excluded repo-root modules, so a changed `runtime_bootstrap.py` — the exact
+   family `SCAN_PATTERNS`'s first entry was added for — would have skipped the gate.
+   The enumeration had been repaired and the trigger one layer up still carried the
+   original blind spot. Fixed and pinned; recorded here because it is the sharpest
+   evidence for #499 that this run produced.
+
+**Non-claims.**
+
+- **No CI, no remote proof, no push at the time the closeout review ran.** Any CI
+  statement below this line is recorded separately and by its own channel.
+- **The check can only establish what it enumerated.** A module outside its eight
+  patterns is unchecked, not clean. Four blind spots are recorded in its own
+  docstring, including one (a cycle a module swallows itself) that is undecidable
+  from outside the process rather than merely unimplemented.
+- **The fingerprint-verify TIMING is practice followed, not artifact-proven.** The
+  slice logs record each window's `clean` verdict; they do not record when the
+  verify ran relative to the parent's next write.
+- **No claim that either deferral was wrong to make.** #493 and #492 were correctly
+  recorded decisions; this goal cashed them in, and only #494 was a miss.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: two of the three surfaced improvements became committed tests this run, and the third is issue #499 (see the per-improvement lines below).
+
+- applied: tests/quality_gates/test_quality_policy_merge.py::test_a_fully_specified_nested_block_with_CUSTOM_values_reports_nothing plus test_a_wrong_shape_sibling_error_still_falls_through — the improvement "a false-positive control must vary the axis the predicate reads", turned into controls that vary VALUE rather than presence.
+- applied: tests/quality_gates/test_standalone_imports.py::test_every_tracked_module_is_either_discovered_or_deliberately_excluded and ::test_the_exported_mirror_enumerates_its_own_modules — the improvement "prefer an inversion test to a family pin", one inversion per tree that ships; between them they found three module families a pin could not have.
+- issue #499 — the improvement "when a fix is a guard, name the invariant before writing the predicate". Filed rather than applied because the remedy is a gate-versus-reviewer-question decision on the same axis as #491, and this repo has measured that a gate which cries wolf gets walked past.
+
+Structural follow-up: issue #499 (recurs: the guard-at-the-wrong-boundary class fired 5× across 3 surfaces in one goal — transport-instead-of-value, type-instead-of-outcome, equality-instead-of-structure, and a fallback predicate wrong in both directions; each cost a review round or a broad run)
