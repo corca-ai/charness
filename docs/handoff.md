@@ -29,8 +29,10 @@
 
 ## Current State
 
-- `main` is at `736e99a0`. Five commits this session: `a5b5d0e8` (#490),
-  `8573f862` (#488), `3f7e0d04` (#489), `c09c7f4a` (#487), `736e99a0` (D review).
+- Six commits this session: `a5b5d0e8` (#490), `8573f862` (#488), `3f7e0d04`
+  (#489), `c09c7f4a` (#487), `736e99a0` (D review), and this handoff. Read the
+  live `git log`; a SHA written into a file that ships inside the next commit is
+  stale the moment it is written.
 - **CI, read through the check-runs API — a different observer and channel than
   the push exit code:** `a5b5d0e8` and `8573f862` are **green on both
   check-runs**. `3f7e0d04`'s mutation mirror is `cancelled` (superseded by the
