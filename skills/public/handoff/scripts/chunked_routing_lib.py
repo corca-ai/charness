@@ -80,6 +80,7 @@ AGENT_VERIFICATION_PLACEHOLDER = _auto_draft.AGENT_VERIFICATION_PLACEHOLDER
 INTERVIEW_DECISIONS_PLACEHOLDER = _auto_draft.INTERVIEW_DECISIONS_PLACEHOLDER
 PLAN_CRITIQUE_PLACEHOLDER = _auto_draft.PLAN_CRITIQUE_PLACEHOLDER
 auto_draft_slug = _auto_draft.auto_draft_slug
+render_goal_values = _auto_draft.render_goal_values
 render_auto_draft_artifact = _auto_draft.render_auto_draft_artifact
 
 

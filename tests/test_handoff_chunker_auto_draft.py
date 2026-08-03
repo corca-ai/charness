@@ -566,6 +566,53 @@ def test_an_empty_chunk_is_refused_instead_of_drafted(tmp_path: Path, lib, chunk
     assert list((tmp_path / "charness-artifacts" / "goals").glob("*.md"))
 
 
+def test_auto_drafter_shares_goal_value_guards_before_writing(
+    tmp_path: Path, chunk_from_entry_1
+) -> None:
+    def _draft(payload: dict, root: Path, *extra: str) -> subprocess.CompletedProcess[str]:
+        return subprocess.run(
+            ["python3", str(DRAFTER_SCRIPT), "--input", "-", "--date", "2026-07-28",
+             "--repo-root", str(root), *extra],
+            input=json.dumps(payload), capture_output=True, text=True, check=False,
+        )
+
+    def _payload(*, objective: str = "A safe objective", title: str = "source", body: str = "body") -> dict:
+        payload = chunk_from_entry_1.to_dict()
+        payload["objective_summary"] = objective
+        payload["entries"][0]["title"] = title
+        payload["entries"][0]["body"] = body
+        return payload
+
+    bad_title = _draft(
+        _payload(objective="Unsafe\r## Injected"), tmp_path / "bad-objective"
+    )
+    assert bad_title.returncode == 1
+    assert "single-line" in bad_title.stderr
+    assert not list((tmp_path / "bad-objective").rglob("*.md"))
+
+    bad_entry_title = _draft(
+        _payload(title="source\r## Injected"), tmp_path / "bad-entry-title"
+    )
+    assert bad_entry_title.returncode == 1
+    assert "unfenced markdown heading" in bad_entry_title.stderr
+    assert not list((tmp_path / "bad-entry-title").rglob("*.md"))
+
+    normalized = _draft(_payload(body="body\rwith a CR"), tmp_path / "normalized")
+    assert normalized.returncode == 0, normalized.stderr
+    normalized_path = Path(json.loads(normalized.stdout)["path"])
+    assert "\r" not in normalized_path.read_text(encoding="utf-8")
+
+    bad_slug = _draft(_payload(), tmp_path / "bad-slug", "--slug", "!!!")
+    assert bad_slug.returncode == 1
+    assert "contains nothing usable" in bad_slug.stderr
+    assert not list((tmp_path / "bad-slug").rglob("*.md"))
+
+    auto_fallback = _draft(_payload(objective="!!!"), tmp_path / "auto-fallback")
+    assert auto_fallback.returncode == 0, auto_fallback.stderr
+    auto_payload = json.loads(auto_fallback.stdout)
+    assert auto_payload["slug"] == "auto-draft"
+
+
 def test_a_failed_gate_rolls_the_artifact_back_instead_of_leaving_it_on_disk(
     tmp_path: Path, lib, chunk_from_entry_1, monkeypatch, capsys
 ) -> None:

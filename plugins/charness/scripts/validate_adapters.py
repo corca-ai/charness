@@ -8,7 +8,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from runtime_bootstrap import import_repo_module, repo_root_from_script
+from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
 
@@ -18,9 +18,18 @@ _scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cau
 load_cautilus_adapter = _scripts_cautilus_adapter_lib_module.load_cautilus_adapter
 _scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
 load_critique_adapter = _scripts_critique_adapter_lib_module.load_adapter
-_skills_public_retro_resolve_adapter_module = import_repo_module(
-    __file__, "skills.public.retro.scripts.resolve_adapter"
-)
+def _load_retro_resolver_module():
+    for relative in (
+        Path("skills/public/retro/scripts/resolve_adapter.py"),
+        Path("skills/retro/scripts/resolve_adapter.py"),
+    ):
+        candidate = REPO_ROOT / relative
+        if candidate.is_file():
+            return load_path_module("validate_adapters_retro_resolver", candidate)
+    raise ImportError("retro resolve_adapter.py not found in source or exported skill layout")
+
+
+_skills_public_retro_resolve_adapter_module = _load_retro_resolver_module()
 load_retro_adapter = _skills_public_retro_resolve_adapter_module.load_adapter
 _scripts_quality_adapter_lib_module = import_repo_module(__file__, "scripts.quality_adapter_lib")
 load_quality_adapter_strict = _scripts_quality_adapter_lib_module.load_quality_adapter_strict
@@ -93,9 +102,18 @@ def validate_resolver(path: Path, root: Path) -> None:
 
 
 def iter_resolvers(root: Path, *, require_git: bool = False) -> list[Path]:
+    if (root / "skills" / "public").is_dir():
+        patterns = ("skills/public/*/scripts/resolve_adapter.py",)
+    elif (root / "skills").is_dir():
+        patterns = ("skills/*/scripts/resolve_adapter.py",)
+    else:
+        patterns = (
+            "skills/public/*/scripts/resolve_adapter.py",
+            "skills/*/scripts/resolve_adapter.py",
+        )
     return iter_matching_repo_files(
         root,
-        ("skills/public/*/scripts/resolve_adapter.py",),
+        patterns,
         require_git=require_git,
     )
 

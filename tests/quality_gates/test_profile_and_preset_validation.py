@@ -1,6 +1,10 @@
 from __future__ import annotations
 
 import json
+import os
+import re
+import subprocess
+import sys
 from pathlib import Path
 
 from scripts import validate_presets as VALIDATE_PRESETS
@@ -503,6 +507,47 @@ def test_validate_adapters_accepts_checked_in_charness_quality_coverage_floor() 
     result = run_script("scripts/validate_adapters.py", "--repo-root", str(Path(__file__).resolve().parents[2]))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -> None:
+    output_root = tmp_path / "export"
+    exported = subprocess.run(
+        [
+            sys.executable,
+            str(Path(__file__).resolve().parents[2] / "scripts" / "export_plugin.py"),
+            "--repo-root",
+            str(Path(__file__).resolve().parents[2]),
+            "--host",
+            "claude",
+            "--output-root",
+            str(output_root),
+        ],
+        cwd=tmp_path,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert exported.returncode == 0, exported.stderr
+    plugin_root = output_root / "plugins" / "charness"
+
+    child_env = os.environ.copy()
+    child_env.pop("CHARNESS_REPO_ROOT", None)
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(plugin_root / "scripts" / "validate_adapters.py"),
+            "--repo-root",
+            str(plugin_root),
+        ],
+        cwd=tmp_path,
+        env=child_env,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 0, result.stderr
+    match = re.search(r"Validated (\d+) adapter resolvers and (\d+) adapter YAML", result.stdout)
+    assert match and int(match.group(1)) > 0, result.stdout
 
 
 def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path) -> None:

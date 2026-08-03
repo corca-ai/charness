@@ -1,13 +1,14 @@
 # Quality Review
 Date: 2026-08-04
-Title: Critique packet semantic control and #502 summary owner
+Title: Critique packet, #502 summary, and producer/export boundaries
 
 ## Scope
 
 Target boundary: the public `critique` packet consumer and its shared semantic
-reviewer question, plus #502's quality-runner summary owner and truncation-safe
-per-run receipt. The capabilities under review are judgment quality at a
-guard/reference/claim/verdict-surface boundary and actionable gate diagnostics.
+reviewer question, #502's quality-runner summary owner, and Slice D's shared
+goal-value/export-validator boundaries. The capabilities under review are
+judgment quality at guard/reference/claim/verdict surfaces and actionable gate
+diagnostics.
 
 Ambient repo findings: no unrelated quality repair was taken.
 
@@ -23,14 +24,17 @@ Ambient repo findings: no unrelated quality repair was taken.
   byte-identical; both pass `bash -n`.
 - Public-skill dogfood, skill, adapter, Cautilus-artifact, doc-link, and
   markdown validators pass.
+- Slice D focused producer/export tests: 127 passed; `run-quality.sh`: 85
+  passed, 0 failed, 1 UNPROVEN only because the dirty worktree excluded the
+  changed-line mutation pool.
 
 ## Runtime Signals
 
 - runtime source: timing capture is missing — no runtime behavior changed and
   no new timing signal was needed.
 - runtime hot spots: not applicable to this prose/packet slice.
-- coverage gate: no eligible production Python changed; focused tests cover the
-  packet producer and consumer contract.
+- coverage gate: changed production Python is covered by focused tests; the
+  changed-line mutation verdict is unproven until the implementation is committed.
 - evaluator depth: deterministic-gates-only; Cautilus remains ask-before-run,
   and no log-backed behavior proof was requested.
 
@@ -39,6 +43,9 @@ Ambient repo findings: no unrelated quality repair was taken.
 - The shared reference owns the question, the adapter owns packet inclusion, and
   the plugin mirror is regenerated rather than hand-maintained.
 - The packet test compares exact source bytes and pins the decision boundary.
+- Goal-value invariants have one library owner, and the exported validator is
+  exercised through a generated flattened tree with its repo-root override
+  removed.
 - A bounded worked application names both recorded issue families and records
   reject/repair outcomes without claiming future reviewer efficacy.
 - `print_final_summary` owns the per-run terminal receipt; each failed label is
@@ -67,6 +74,8 @@ Ambient repo findings: no unrelated quality repair was taken.
 
 - No local proof establishes host rendering or long-run reviewer behavior. This
   is an explicit non-claim, not a missing semantic gate.
+- The AST gate intentionally does not infer variables, aliases, f-strings,
+  concatenation, qualified calls, or arbitrary dynamic imports.
 
 ## Deferred
 
@@ -97,6 +106,8 @@ Ambient repo findings: no unrelated quality repair was taken.
   counterweight, then repair-read reviewers. One found the post-summary telemetry
   warning escape; the moved ordering was approved by later repair-read and
   current-packet reviewers. Clean fingerprint verification preceded parent writes.
+- Slice D used three critique angles plus a counterweight and a final bounded
+  repair-read; the final boundary fingerprint was clean and no blocker remained.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof):
   not_applicable — no slow-gate scope changed.
 
@@ -114,6 +125,8 @@ Ambient repo findings: no unrelated quality repair was taken.
 - `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` — final post-ledger rerun: 7028 passed in 37.47s
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --paths charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md`
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`; `validate_public_skill_validation.py`; `validate_skills.py`; Cautilus proof/diagnostics validators; doc links; markdown
+- Slice D: export-safe imports, both adapter validators, seam-index check,
+  critique/debug artifact validators, focused pytest, and `./scripts/run-quality.sh`.
 
 ## Recommended Next Quality Moves
 

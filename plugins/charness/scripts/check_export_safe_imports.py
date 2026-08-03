@@ -180,6 +180,36 @@ def validate_asset_paths(path: Path, tree: ast.AST) -> None:
         )
 
 
+def _call_argument(node: ast.Call, position: int, keyword: str) -> ast.AST | None:
+    if len(node.args) > position:
+        return node.args[position]
+    for item in node.keywords:
+        if item.arg == keyword:
+            return item.value
+    return None
+
+
+def _is_supported_script_file(value: ast.AST | None) -> bool:
+    return ast.unparse(value) in {"__file__", "Path(__file__)"} if value else False
+
+
+def _forbidden_import_repo_module_call(node: ast.AST) -> str | None:
+    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Name):
+        return None
+    if node.func.id != "import_repo_module":
+        return None
+    script_file = _call_argument(node, 0, "script_file")
+    module_name = _call_argument(node, 1, "module_name")
+    if (
+        not _is_supported_script_file(script_file)
+        or not isinstance(module_name, ast.Constant)
+        or not isinstance(module_name.value, str)
+        or not _is_forbidden(module_name.value)
+    ):
+        return None
+    return module_name.value
+
+
 def validate_imports(path: Path) -> None:
     tree = ast.parse(path.read_text(encoding="utf-8"))
     validate_asset_paths(path, tree)
@@ -197,6 +227,12 @@ def validate_imports(path: Path) -> None:
                         f"dev-tree only and breaks after plugin export. "
                         f"{REMEDIATION}"
                     )
+        literal = _forbidden_import_repo_module_call(node)
+        if literal is not None:
+            raise ValidationError(
+                f"{path}:{node.lineno}: `import_repo_module(..., {literal!r})` "
+                f"is dev-tree only and breaks after plugin export. {REMEDIATION}"
+            )
 
 
 def main() -> int:

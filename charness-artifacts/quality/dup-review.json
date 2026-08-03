@@ -2015,6 +2015,20 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "a single argparse flag declaration -- the `--repo-root` / `--goal-path` style `parser.add_argument(..., type=Path, help=...)` line -- shared between skills/public/achieve/scripts/goal_cli_args.py (in this diff) and scripts/critique_enforcement_scope.py (untouched). Irreducible: argparse flag declarations for two independent CLIs cannot be shared without one importing the other's parser, which couples unrelated command surfaces to remove one line. Surfaced as NEW because slice D EXTRACTED the achieve goal-target flags into goal_cli_args.py rather than accepting the two larger families they were part of -- that extraction removed real duplication between append_slice_log.py and check_goal_artifact.py and left this one-line residue behind."
+    },
+    {
+      "class": "intentional",
+      "id": "2e98240a5f7205ac",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "same chunker per-stage CLI skeleton as the accepted 0bc23ea0000c6cf9 and e870767ba8b3d1ab families: parse_handoff_entries and draft_goal_from_chunk are separate pipeline executables, so their timeout/parse/try-finally lifecycle remains explicit. Their stage work, input resolution, refusal payloads, and rollback contracts differ; extracting the surrounding main would couple independent stages behind a generic runner and hide which stage owns a failure. Surfaced as a fingerprint rotation because this slice changed draft_goal_from_chunk while parse_handoff_entries stayed untouched; the repeated skeleton was pre-existing and no new shared behavior was introduced."
+    },
+    {
+      "class": "intentional",
+      "id": "3e53f4696faac404",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "top-level runtime_bootstrap import/alias preamble shared by independent repo commands: build_retro_lesson_selection_index and validate_adapters bind different helpers for different owner contracts, and each must remain directly executable from both source and exported layouts. The bootstrap is the mechanism that makes shared-module imports possible, so extracting it would add indirection without removing the portability requirement. Surfaced as new because validate_adapters gained the source/flattened resolver loader; the matching prologue in build_retro_lesson_selection_index was untouched."
     }
   ],
   "fixable_ceiling": 0,

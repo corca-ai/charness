@@ -91,6 +91,21 @@ def _render_goal_body(chunk: ChunkCandidate) -> str:
     return f"{objective}\n\n{separator.join(sources)}"
 
 
+def render_goal_values(
+    chunk: ChunkCandidate,
+    *,
+    title: str | None = None,
+    goal_body: str | None = None,
+) -> tuple[str, str]:
+    """Return the exact title and Goal-section values used by the template."""
+    rendered_title = _objective_from_chunk(chunk)
+    rendered_body = _render_goal_body(chunk)
+    return (
+        rendered_title if title is None else title,
+        rendered_body if goal_body is None else goal_body,
+    )
+
+
 def _render_non_goals(chunk: ChunkCandidate) -> str:
     """Two default Non-Goals seeded into every auto-drafted artifact."""
     lines = [
@@ -205,7 +220,12 @@ def auto_draft_slug(chunk: ChunkCandidate) -> str:
 
 
 def render_auto_draft_artifact(
-    chunk: ChunkCandidate, *, date: str, goal_rel: str
+    chunk: ChunkCandidate,
+    *,
+    date: str,
+    goal_rel: str,
+    title: str | None = None,
+    goal_body: str | None = None,
 ) -> str:
     """Render the auto-drafted goal artifact body.
 
@@ -217,11 +237,14 @@ def render_auto_draft_artifact(
     exemption from ``goal_artifact_lib``, so there is no longer a marker
     phrase a quoted handoff entry could use to neuter the portability gate.
     """
+    rendered_title, rendered_body = render_goal_values(
+        chunk, title=title, goal_body=goal_body
+    )
     return _AUTODRAFT_TEMPLATE.format(
-        title=_objective_from_chunk(chunk),
+        title=rendered_title,
         date=date,
         goal_rel=goal_rel,
-        goal_body=_render_goal_body(chunk),
+        goal_body=rendered_body,
         non_goals=_render_non_goals(chunk),
         boundaries=_render_boundaries(chunk),
         user_acceptance=USER_ACCEPTANCE_PLACEHOLDER,

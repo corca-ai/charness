@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import re
 import runpy
 from datetime import date as date_cls
 from pathlib import Path
@@ -20,10 +19,8 @@ def _load_skill_runtime_bootstrap():
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
 goal_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_cli_args")
-goal_markdown = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_markdown")
 
 _PROSE_FIELDS = ("title", "goal-body")
-_MARKDOWN_HEADING = re.compile(r"^#{1,6} ", re.MULTILINE)
 
 
 def _load_fields_file(path: Path) -> dict[str, str]:
@@ -50,7 +47,7 @@ def _normalize_newlines(value: str) -> str:
     Normalizing first makes the bytes on disk agree with the bytes every reader sees,
     which closes the gap rather than merely refusing at it.
     """
-    return value.replace("\r\n", "\n").replace("\r", "\n")
+    return goal_lib.normalize_goal_text(value)
 
 
 def _reject_unwritable_prose(title: str, goal_body: str) -> None:
@@ -62,39 +59,10 @@ def _reject_unwritable_prose(title: str, goal_body: str) -> None:
     `--fields-file` would leave the documented alternative unpoliced. The property
     belongs to the value, not to its transport.
     """
-    if "\n" in title:
-        raise SystemExit("goal `title` must be single-line; it is rendered as one `# Achieve Goal:` heading")
-    # A goal body IS allowed newlines -- it is a whole section, and forcing it to one
-    # line would push callers back to the shell for anything real. What it may not do
-    # is open a heading: the body is written under `## Goal`, so a line beginning `## `
-    # would end that section early and hand `check_goal_artifact.py` a heading nobody
-    # wrote. Same silent-corruption-under-a-success-verdict class as the shell itself.
-    #
-    # An unclosed fence is refused BEFORE the heading scan, on its own cause. This is
-    # `mask_fences`'s documented contract: with odd parity it fails open and returns the
-    # RAW text, so a caller that scans the result renders a verdict over a reading it
-    # could not establish. Both directions were wrong -- a body whose fenced `# comment`
-    # then matched got a refusal telling it to "put the line inside a fenced code block",
-    # which it already had; and a body with no `#` inside the fence passed, only for
-    # `check_goal_artifact.py` (the very next documented command) to refuse it as
-    # unbalanced. `check_goal` refuses on this same fact; so does this now.
-    if not goal_markdown.fences_balanced(goal_body):
-        raise SystemExit(
-            "goal `goal-body` leaves a code fence unclosed (odd number of ``` / ~~~ markers). "
-            "Every heading check reads the body with fences masked, and an unbalanced body has "
-            "two irreconcilable readings, so this refuses rather than guessing. Close the fence."
-        )
-    # Fences are masked first, because every heading reader in `goal_artifact_lib`
-    # masks them too. A goal body quoting a shell command in a fenced block carries
-    # `# comment` lines that no parser will ever read as a heading; refusing those
-    # would send the caller back to the one channel this helper exists to replace.
-    if _MARKDOWN_HEADING.search(goal_markdown.mask_fences(goal_body)):
-        raise SystemExit(
-            "goal `goal-body` contains an unfenced markdown heading line (`# `..`###### `). "
-            "The body is written under `## Goal`; a heading there would silently end that "
-            "section and be read back as a real one. Use bold or list text, or put the line "
-            "inside a fenced code block."
-        )
+    try:
+        goal_lib.validate_goal_values(title, goal_body)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def _resolve_slug(slug: str) -> str:
@@ -117,15 +85,10 @@ def _resolve_slug(slug: str) -> str:
     An emptied slug is different in kind: nothing of what was passed survives, and the
     `goal` that replaces it was never anyone's key.
     """
-    resolved = goal_lib.slugify(slug)
-    if resolved == goal_lib.SLUG_FALLBACK and slug.strip().lower() != goal_lib.SLUG_FALLBACK:
-        raise SystemExit(
-            f"--slug {slug!r} contains nothing usable and would be written as "
-            f"{resolved!r} -- a filename you did not ask for. An argument that survives "
-            f"as nothing is what a failed shell substitution looks like, so this refuses "
-            f"rather than creating <date>-{resolved}.md."
-        )
-    return resolved
+    try:
+        return goal_lib.resolve_supplied_slug(slug)
+    except ValueError as exc:
+        raise SystemExit(str(exc)) from exc
 
 
 def parse_args() -> argparse.Namespace:

@@ -166,10 +166,24 @@ def main() -> int:
                 }
             )
         slug = args.slug or chunked_routing_lib.auto_draft_slug(chunk)
+        if args.slug:
+            try:
+                slug = GOAL_LIB.resolve_supplied_slug(slug)
+            except ValueError as exc:
+                return chunked_routing_cli.stage_refusal({"error": str(exc)})
+        title, goal_body = chunked_routing_lib.render_goal_values(chunk)
+        try:
+            title, goal_body = GOAL_LIB.validate_goal_values(title, goal_body)
+        except ValueError as exc:
+            return chunked_routing_cli.stage_refusal({"error": str(exc)})
         goal_path = GOAL_LIB.goal_path(repo_root, args.date, slug)
         goal_rel = GOAL_LIB.goal_rel(repo_root, goal_path)
         artifact_text = chunked_routing_lib.render_auto_draft_artifact(
-            chunk, date=args.date, goal_rel=goal_rel
+            chunk,
+            date=args.date,
+            goal_rel=goal_rel,
+            title=title,
+            goal_body=goal_body,
         )
         goal_path.parent.mkdir(parents=True, exist_ok=True)
         # Refuse to overwrite an existing artifact; the auto-draft writer

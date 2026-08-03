@@ -120,6 +120,48 @@ def slugify(value: str) -> str:
     return slug or SLUG_FALLBACK
 
 
+def normalize_goal_text(value: str) -> str:
+    """Normalize line endings before a value is checked or rendered."""
+    return value.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def validate_goal_values(title: str, goal_body: str) -> tuple[str, str]:
+    """Return canonical goal values or reject shapes that change on readback."""
+    title = normalize_goal_text(title)
+    goal_body = normalize_goal_text(goal_body)
+    if "\n" in title:
+        raise ValueError(
+            "goal `title` must be single-line; it is rendered as one `# Achieve Goal:` heading"
+        )
+    if not _fences_balanced(goal_body):
+        raise ValueError(
+            "goal `goal-body` leaves a code fence unclosed (odd number of ``` / ~~~ markers). "
+            "Every heading check reads the body with fences masked, and an unbalanced body has "
+            "two irreconcilable readings, so this refuses rather than guessing. Close the fence."
+        )
+    if re.search(r"^#{1,6} ", _mask_fences(goal_body), re.MULTILINE):
+        raise ValueError(
+            "goal `goal-body` contains an unfenced markdown heading line (`# `..`###### `). "
+            "The body is written under `## Goal`; a heading there would silently end that "
+            "section and be read back as a real one. Use bold or list text, or put the line "
+            "inside a fenced code block."
+        )
+    return title, goal_body
+
+
+def resolve_supplied_slug(slug: str) -> str:
+    """Resolve a caller-supplied slug while refusing total loss to the fallback."""
+    resolved = slugify(slug)
+    if resolved == SLUG_FALLBACK and slug.strip().lower() != SLUG_FALLBACK:
+        raise ValueError(
+            f"--slug {slug!r} contains nothing usable and would be written as "
+            f"{resolved!r} -- a filename you did not ask for. An argument that survives "
+            f"as nothing is what a failed shell substitution looks like, so this refuses "
+            f"rather than creating <date>-{resolved}.md."
+        )
+    return resolved
+
+
 def goal_path(repo_root: Path, date: str, slug: str) -> Path:
     if not _DATE.match(date):
         raise ValueError(f"invalid date {date!r}; expected YYYY-MM-DD")

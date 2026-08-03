@@ -358,6 +358,60 @@ def test_relative_import_with_no_module_is_not_flagged(tmp_path: Path) -> None:
     validate_imports(path)
 
 
+def test_literal_import_repo_module_call_is_rejected(tmp_path: Path) -> None:
+    path = _write(
+        tmp_path,
+        'import_repo_module(__file__, "skills.public.quality.scripts.x")\n',
+    )
+    with pytest.raises(ValidationError) as excinfo:
+        validate_imports(path)
+
+    assert "skills.public.quality.scripts.x" in str(excinfo.value)
+    assert REMEDIATION in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'import_repo_module(__file__, module_name="skills.public.quality.scripts.x")\n',
+        'import_repo_module(script_file=__file__, module_name="skills.public.quality.scripts.x")\n',
+        'import_repo_module(Path(__file__), "skills.public.quality.scripts.x")\n',
+        'import_repo_module(script_file=Path(__file__), module_name="skills.public.quality.scripts.x")\n',
+    ],
+)
+def test_supported_literal_import_repo_module_forms_are_rejected(
+    tmp_path: Path, source: str
+) -> None:
+    with pytest.raises(ValidationError) as excinfo:
+        validate_imports(_write(tmp_path, source))
+
+    assert "import_repo_module(..." in str(excinfo.value)
+    assert REMEDIATION in str(excinfo.value)
+
+
+@pytest.mark.parametrize(
+    "source",
+    [
+        'module_name = "skills.public.quality.scripts.x"\n'
+        "import_repo_module(__file__, module_name)\n",
+        'import_repo_module(repo_root, "skills.public.quality.scripts.x")\n',
+        'runtime.import_repo_module(__file__, "skills.public.quality.scripts.x")\n',
+        'import_repo_module(__file__, "skills.public.quality.scripts.x" + suffix)\n',
+        'import_repo_module(__file__, f"skills.public.{skill}")\n',
+        'import_repo_module(script_file=script_path, module_name="skills.public.quality.scripts.x")\n',
+        'import_repo_module(script_file=Path(script_path), module_name="skills.public.quality.scripts.x")\n',
+        'import_repo_module(pathlib.Path(__file__), "skills.public.quality.scripts.x")\n',
+        'import_repo_module(__file__, module_name=f"skills.public.{skill}")\n',
+        'message = "skills.public.quality.scripts.x"\n',
+        'import_repo_module(__file__, "skills.publication.quality.scripts.x")\n',
+    ],
+)
+def test_unsupported_or_near_miss_import_strings_are_not_inferred(
+    tmp_path: Path, source: str
+) -> None:
+    validate_imports(_write(tmp_path, source))
+
+
 def test_asset_paths_are_checked_before_imports(tmp_path: Path) -> None:
     """Both arms offend; the path arm is the quieter failure and must be reported.
 

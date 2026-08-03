@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 107,
-  "indexed_artifact_count": 95,
+  "source_artifact_count": 108,
+  "indexed_artifact_count": 96,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
     "external-seam": 8,
     "host-disproves-local": 2,
-    "none": 33,
+    "none": 34,
     "operator-visible-recovery": 22,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 79,
+    "monitor": 80,
     "none": 11
   },
   "entries": [
@@ -1310,6 +1310,20 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-04-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "export layout and runtime module resolution are under investigation.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this dated debug record",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-04-debug-review.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1344,11 +1358,11 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "none",
+      "seam": "export layout and runtime module resolution are under investigation.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "this dated record and the refreshed debug current pointer",
+      "handoff_artifact": "this dated debug record",
       "forced": false
     }
   ],
