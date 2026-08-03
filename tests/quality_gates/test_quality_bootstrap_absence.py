@@ -367,6 +367,37 @@ def test_resolution_warns_instead_of_dropping_a_malformed_declaration(tmp_path: 
     assert any("must be a mapping" in warning for warning in resolved["warnings"])
 
 
+def test_non_mapping_declaration_is_refused_by_the_bootstrap(tmp_path: Path) -> None:
+    """A bare scalar is an easy hand-edit slip and must not be read as "nothing declared"."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent: security_commands\n",
+        encoding="utf-8",
+    )
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "must be a mapping" in result.stderr
+    assert "got str" in result.stderr
+
+
+def test_empty_field_name_is_refused(tmp_path: Path) -> None:
+    """A nameless declaration names nothing, so honoring it would honor a blank."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        'deliberately_absent:\n  "": no field here\n',
+        encoding="utf-8",
+    )
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "is not a non-empty string" in result.stderr
+
+
 def test_non_string_reason_is_refused_by_the_bootstrap(tmp_path: Path) -> None:
     """An unquoted number reads as an int, not a reason a later reader can use."""
     repo = seed_quality_repo(tmp_path)
