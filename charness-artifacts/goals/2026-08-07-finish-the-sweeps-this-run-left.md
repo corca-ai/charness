@@ -1,6 +1,6 @@
 # Achieve Goal: Finish the sweeps this run left: pay the deferred residue, and one real miss
 
-Status: active
+Status: complete
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md`
 
