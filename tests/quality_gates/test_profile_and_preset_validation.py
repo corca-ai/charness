@@ -7,6 +7,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
+from scripts import validate_adapters as VALIDATE_ADAPTERS
 from scripts import validate_presets as VALIDATE_PRESETS
 from scripts import validate_profiles as VALIDATE_PROFILES
 
@@ -548,6 +551,20 @@ def test_exported_validate_adapters_runs_from_flattened_layout(tmp_path: Path) -
     assert result.returncode == 0, result.stderr
     match = re.search(r"Validated (\d+) adapter resolvers and (\d+) adapter YAML", result.stdout)
     assert match and int(match.group(1)) > 0, result.stdout
+
+
+def test_validate_adapters_covers_flattened_and_missing_layout_branches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    resolver = tmp_path / "skills" / "demo" / "scripts" / "resolve_adapter.py"
+    resolver.parent.mkdir(parents=True)
+    resolver.write_text("def load_adapter(repo_root):\n    return {}\n", encoding="utf-8")
+
+    assert VALIDATE_ADAPTERS.iter_resolvers(tmp_path) == [resolver]
+
+    monkeypatch.setattr(VALIDATE_ADAPTERS, "REPO_ROOT", tmp_path / "missing")
+    with pytest.raises(ImportError, match="retro resolve_adapter.py not found"):
+        VALIDATE_ADAPTERS._load_retro_resolver_module()
 
 
 def test_validate_adapters_rejects_charness_quality_command_drift(tmp_path: Path) -> None:

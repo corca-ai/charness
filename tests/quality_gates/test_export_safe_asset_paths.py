@@ -398,6 +398,7 @@ def test_supported_literal_import_repo_module_forms_are_rejected(
         'runtime.import_repo_module(__file__, "skills.public.quality.scripts.x")\n',
         'import_repo_module(__file__, "skills.public.quality.scripts.x" + suffix)\n',
         'import_repo_module(__file__, f"skills.public.{skill}")\n',
+        'import_repo_module(__file__)\n',
         'import_repo_module(script_file=script_path, module_name="skills.public.quality.scripts.x")\n',
         'import_repo_module(script_file=Path(script_path), module_name="skills.public.quality.scripts.x")\n',
         'import_repo_module(pathlib.Path(__file__), "skills.public.quality.scripts.x")\n',

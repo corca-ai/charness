@@ -76,9 +76,9 @@ completed; boundary fingerprints before/after the review were clean.
 
 - Packet consumed: `charness-artifacts/critique/2026-08-04-slice-d-final-packet.json`
 - Packet path: `charness-artifacts/critique/2026-08-04-slice-d-final-packet.json`
-- Packet SHA256: `849519c1b4ced00ad1d1ee224b495abbb77ab5834a2b3d0e3d217144954da6ce`
-- Packet Markdown SHA256: `bd93e8e6fa54d320fde2e8ba7dc75e6a97f96b67bfc35b6157ffbc0b3f008421`
-- Identity SHA256: `cd41715084c073b734c91acd1f342e29f482d4decf7490012f52cf75ec7aa63d`
+- Packet SHA256: `00b0eb24dfa1a07b07c996baa3b4efe7f8b1039be6356509ee3382b64533dc32`
+- Packet Markdown SHA256: `33443f3c60611d7d4bb4e08dae0ca37c193dcb85f86255001d764150725538d9`
+- Identity SHA256: `9dec3758126056e616ea68a6834827a2d89eae22ef2181862ed8bdf997fcc853`
 
 ## Boundary Ownership
 

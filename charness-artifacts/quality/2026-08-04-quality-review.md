@@ -24,17 +24,17 @@ Ambient repo findings: no unrelated quality repair was taken.
   byte-identical; both pass `bash -n`.
 - Public-skill dogfood, skill, adapter, Cautilus-artifact, doc-link, and
   markdown validators pass.
-- Slice D focused producer/export tests: 127 passed; `run-quality.sh`: 85
-  passed, 0 failed, 1 UNPROVEN only because the dirty worktree excluded the
-  changed-line mutation pool.
+- Slice D focused producer/export tests: 89 passed; the post-commit broad run
+  established the mutation lane and caught two uncovered branches, then the
+  branch tests made the direct changed-line producer clean.
 
 ## Runtime Signals
 
 - runtime source: timing capture is missing — no runtime behavior changed and
   no new timing signal was needed.
 - runtime hot spots: not applicable to this prose/packet slice.
-- coverage gate: changed production Python is covered by focused tests; the
-  changed-line mutation verdict is unproven until the implementation is committed.
+- coverage gate: changed production Python is covered by focused tests and the
+  final direct changed-line producer reports every mapped changed line covered.
 - evaluator depth: deterministic-gates-only; Cautilus remains ask-before-run,
   and no log-backed behavior proof was requested.
 
@@ -126,7 +126,8 @@ Ambient repo findings: no unrelated quality repair was taken.
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --paths charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md`
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`; `validate_public_skill_validation.py`; `validate_skills.py`; Cautilus proof/diagnostics validators; doc links; markdown
 - Slice D: export-safe imports, both adapter validators, seam-index check,
-  critique/debug artifact validators, focused pytest, and `./scripts/run-quality.sh`.
+  critique/debug artifact validators, focused pytest, `./scripts/run-quality.sh`,
+  and `prepush_focused_changed_line_coverage.py` after the coverage repair.
 
 ## Recommended Next Quality Moves
 

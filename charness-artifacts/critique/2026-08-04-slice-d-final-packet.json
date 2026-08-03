@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-03T23:27:03Z",
+  "generated_at": "2026-08-03T23:35:26Z",
   "prepared_for": "Slice D final implementation and repair-read",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-03-225320-packet.json\n- charness-artifacts/critique/2026-08-03-225320-packet.md\n- charness-artifacts/critique/2026-08-04-critique-review.md\n- charness-artifacts/critique/2026-08-04-slice-d-final-packet.json\n- charness-artifacts/critique/2026-08-04-slice-d-final-packet.md\n- charness-artifacts/debug/2026-08-04-debug-review-followup.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/quality/2026-08-04-quality-review.md\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/sloc-inventory/latest.json\n- plugins/charness/scripts/check_export_safe_imports.py\n- plugins/charness/scripts/validate_adapters.py\n- plugins/charness/skills/achieve/scripts/goal_artifact_lib.py\n- plugins/charness/skills/achieve/scripts/upsert_goal.py\n- plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py\n- plugins/charness/skills/handoff/scripts/chunked_routing_lib.py\n- plugins/charness/skills/handoff/scripts/draft_goal_from_chunk.py\n- scripts/check_export_safe_imports.py\n- scripts/validate_adapters.py\n- skills/public/achieve/scripts/goal_artifact_lib.py\n- skills/public/achieve/scripts/upsert_goal.py\n- skills/public/handoff/scripts/chunked_routing_auto_draft.py\n- skills/public/handoff/scripts/chunked_routing_lib.py\n- skills/public/handoff/scripts/draft_goal_from_chunk.py\n- tests/quality_gates/test_export_safe_asset_paths.py\n- tests/quality_gates/test_profile_and_preset_validation.py\n- tests/test_handoff_chunker_auto_draft.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/check_export_safe_imports.py, scripts/validate_adapters.py, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/upsert_goal.py, skills/public/handoff/scripts/chunked_routing_auto_draft.py, skills/public/handoff/scripts/chunked_routing_lib.py, skills/public/handoff/scripts/draft_goal_from_chunk.py\n  derived matches: plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/validate_adapters.py, plugins/charness/skills/achieve/scripts/goal_artifact_lib.py, plugins/charness/skills/achieve/scripts/upsert_goal.py, plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py, plugins/charness/skills/handoff/scripts/chunked_routing_lib.py, plugins/charness/skills/handoff/scripts/draft_goal_from_chunk.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-03-225320-packet.md, charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/critique/2026-08-04-slice-d-final-packet.md, charness-artifacts/debug/2026-08-04-debug-review-followup.md, charness-artifacts/debug/latest.md, charness-artifacts/quality/2026-08-04-quality-review.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/upsert_goal.py, skills/public/handoff/scripts/chunked_routing_auto_draft.py, skills/public/handoff/scripts/chunked_routing_lib.py, skills/public/handoff/scripts/draft_goal_from_chunk.py\n  derived matches: plugins/charness/skills/achieve/scripts/goal_artifact_lib.py, plugins/charness/skills/achieve/scripts/upsert_goal.py, plugins/charness/skills/handoff/scripts/chunked_routing_auto_draft.py, plugins/charness/skills/handoff/scripts/chunked_routing_lib.py, plugins/charness/skills/handoff/scripts/draft_goal_from_chunk.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/upsert_goal.py, skills/public/handoff/scripts/chunked_routing_auto_draft.py, skills/public/handoff/scripts/chunked_routing_lib.py, skills/public/handoff/scripts/draft_goal_from_chunk.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/upsert_goal.py, skills/public/handoff/scripts/chunked_routing_auto_draft.py, skills/public/handoff/scripts/chunked_routing_lib.py, skills/public/handoff/scripts/draft_goal_from_chunk.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-03-225320-packet.json, charness-artifacts/critique/2026-08-03-225320-packet.md, charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/critique/2026-08-04-slice-d-final-packet.json, charness-artifacts/critique/2026-08-04-slice-d-final-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-04-debug-review-followup.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/validate_adapters.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_export_safe_imports.py, scripts/validate_adapters.py, tests/quality_gates/test_export_safe_asset_paths.py, tests/quality_gates/test_profile_and_preset_validation.py, tests/test_handoff_chunker_auto_draft.py\n  derived matches: plugins/charness/scripts/check_export_safe_imports.py, plugins/charness/scripts/validate_adapters.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_export_safe_imports.py, scripts/validate_adapters.py, skills/public/achieve/scripts/goal_artifact_lib.py, skills/public/achieve/scripts/upsert_goal.py, skills/public/handoff/scripts/chunked_routing_auto_draft.py, skills/public/handoff/scripts/chunked_routing_lib.py, skills/public/handoff/scripts/draft_goal_from_chunk.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-critique-review.md\n- charness-artifacts/critique/2026-08-04-slice-d-final-packet.json\n- charness-artifacts/critique/2026-08-04-slice-d-final-packet.md\n- charness-artifacts/quality/2026-08-04-quality-review.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- tests/quality_gates/test_export_safe_asset_paths.py\n- tests/quality_gates/test_profile_and_preset_validation.py\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/critique/2026-08-04-slice-d-final-packet.md, charness-artifacts/quality/2026-08-04-quality-review.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/critique/2026-08-04-slice-d-final-packet.json, charness-artifacts/critique/2026-08-04-slice-d-final-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_export_safe_asset_paths.py, tests/quality_gates/test_profile_and_preset_validation.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\nPlanned sync commands before validators:\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n",
       "ok": true,
       "errors": []
     },
@@ -55,15 +55,13 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "a847b2624d1c820a39ecedc578ccae5181dbbcfc",
+    "base_head": "aa30b66d73735135f907ca1ec1f43fe134739e7a",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/debug/2026-08-04-debug-review-followup.md",
       "charness-artifacts/debug/latest.md",
       "charness-artifacts/debug/seam-risk-index.json",
-      "charness-artifacts/quality/2026-08-04-quality-review.md",
       "charness-artifacts/quality/dup-review.json",
-      "charness-artifacts/quality/sloc-inventory/latest.json",
       "plugins/charness/scripts/check_export_safe_imports.py",
       "plugins/charness/scripts/validate_adapters.py",
       "plugins/charness/skills/achieve/scripts/goal_artifact_lib.py",
@@ -96,16 +94,8 @@
         "content_sha256": "cf7d4cc013daf56e9a886e97cc087eef3339ad47f528e9af3e4461bd380cbe20"
       },
       {
-        "path": "charness-artifacts/quality/2026-08-04-quality-review.md",
-        "content_sha256": "9200b8ec5c587634457d19409f5bd845fe21497b677450d847d715385a9b9f3d"
-      },
-      {
         "path": "charness-artifacts/quality/dup-review.json",
         "content_sha256": "ae9c8c205ebb42323fe3b279f0d55379709800749b53e9095a9f87e5738fd125"
-      },
-      {
-        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
-        "content_sha256": "e3ba7d4e951e749d3a09b31645a7876d0a325fd4526b20c0ee6b8305da79160a"
       },
       {
         "path": "plugins/charness/scripts/check_export_safe_imports.py",
@@ -165,11 +155,11 @@
       },
       {
         "path": "tests/quality_gates/test_export_safe_asset_paths.py",
-        "content_sha256": "d124c5935dae140460ad788736fb054543d4e7de4fa608fc15748a1213452ab5"
+        "content_sha256": "0c26294648e9fdf3a56fba5e35e72d952196e07606c0aad39305a1cb8e10119d"
       },
       {
         "path": "tests/quality_gates/test_profile_and_preset_validation.py",
-        "content_sha256": "2188ad83bfc36fd31ddc2d0386fd79b76e19c3619b7bd7458f0eecf995866005"
+        "content_sha256": "5fe04317b49e39fe5e3872a92cf9fe5fe057a90a19369539cedd68cb1a252126"
       },
       {
         "path": "tests/test_handoff_chunker_auto_draft.py",
@@ -177,16 +167,10 @@
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "staged_patch_sha256": "01685b4020e02308dd0a7d1264f5586a3fc129aa23f2a03514b01f98c132cf4a",
-    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "3068a447513d1ff9e240bf1526c1c2ddc1bb299a0e8713ad4a521f58ea4af61f",
     "declared_untracked": [],
-    "auto_excluded_paths": [
-      "charness-artifacts/critique/2026-08-03-225320-packet.json",
-      "charness-artifacts/critique/2026-08-03-225320-packet.md",
-      "charness-artifacts/critique/2026-08-04-critique-review.md",
-      "charness-artifacts/critique/2026-08-04-slice-d-final-packet.json",
-      "charness-artifacts/critique/2026-08-04-slice-d-final-packet.md"
-    ],
-    "identity_sha256": "cd41715084c073b734c91acd1f342e29f482d4decf7490012f52cf75ec7aa63d"
+    "auto_excluded_paths": [],
+    "identity_sha256": "9dec3758126056e616ea68a6834827a2d89eae22ef2181862ed8bdf997fcc853"
   }
 }
