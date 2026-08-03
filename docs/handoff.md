@@ -4,9 +4,10 @@
 
 - **A goal is SHAPED and pursue-ready** — activate directly, no activation question
   (the standing approvals in `AGENTS.md` cover it):
-  `/goal @charness-artifacts/goals/2026-08-08-decide-where-the-guard-boundary-lesson-lives.md`
-- Scope: #499 + #491 as ONE decision, with #500 as the case that tests it. Read
-  `## Goal` first — the point is the decision, not the three fixes.
+  `/goal @charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md`
+- Scope: two questions on one axis — where a recurring judgment-bound lesson lives
+  (#499, #491, #500), and why a verdict surface keeps losing the fact its reader needs
+  (#502, #501, #497). Read `## Goal` first: the point is the decision, not the fixes.
 
 ## Continuation Capability
 
@@ -37,20 +38,21 @@
   arrival.
 - #494 closed as `bug` (a real miss); #493 and #492 as `deferred-work` (deliberate
   recorded deferrals). The classification carries that distinction on purpose.
-- **Open from this run:** #496 (residue #493's fix created), #497, #499, #500.
-  #495 and #498 are fixed and close on CI. #491 is folded into the shaped goal.
+- **Open:** #496, #497, #499, #500, #501, #502 — all but #496 folded into the shaped
+  goal. #491 too. #492/#493/#494/#495/#498 are closed and verified.
 - A new BLOCKING gate shipped,
   [check_standalone_imports.py](../scripts/check_standalone_imports.py). It has
   never refused a real push, and it imposes a new precondition: a hard third-party
   import now gates the commit boundary.
+- **Gate output now survives truncation.** Both gates name their failing checks in the
+  LAST line, and `run-quality.sh` copies each failing check's full output to a durable
+  path it names — but only when the copy landed, so it cannot point at a stale log.
 
 ## Next Session
 
-1. **The shaped goal owns #499 + #491 + #500.** Read the goal, not this line.
-2. **#497** — a consuming repo hits an ImportError in the exported plugin today.
-   Not in the shaped goal; it turns on nothing that goal decides.
-3. **#496** — the hollow-refill predicate choice, also independent.
-4. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
+1. **The shaped goal owns #499, #491, #500, #502, #501 and #497.** Read the goal.
+2. **#496** — the hollow-refill predicate choice; independent of that decision.
+3. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
    operator still owes #481 one re-run** in their own repo.
 
 ## Discuss
