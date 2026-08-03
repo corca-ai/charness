@@ -66,8 +66,11 @@ says so instead of silently reverting.
 
 ## Non-Goals
 
-- **Not redesigning the adapter schema.** The question is whether deletion is
-  representable and whether intent survives a regeneration, not what fields exist.
+- **Not redesigning the adapter schema.** Adding the ONE field that makes a
+  deliberate absence representable is in scope (decided 2026-08-03); changing what
+  the other fields mean is not.
+- **Not adding `ruamel.yaml`.** Decided: the rationale moves into data instead, so
+  comment round-tripping stops being the property the fix depends on.
 - **Not converting every generated surface to round-trip YAML.** Measure which of
   the 5 writers actually face hand-authored input first; a generator whose output
   nobody edits does not need comment preservation.
@@ -89,10 +92,9 @@ says so instead of silently reverting.
   the `plugins/` mirror of anything touched.
 - Stop conditions: (1) if honoring deletion requires a schema migration that
   invalidates existing consumer adapters, stop and treat it as a design decision
-  for the operator; (2) if comment preservation needs a dependency this repo does
-  not already carry (`ruamel.yaml`), name the cost before adding it — a
-  supply-chain addition for a formatting concern is not obviously worth it, and
-  "refuse to rewrite" is a cheaper answer to the same failure; (3) if the fix
+  for the operator; (2) if the data-field approach turns out to need `ruamel.yaml` after all, STOP and
+  re-ask — the operator rejected that dependency, so discovering it is
+  unavoidable is a design change rather than an implementation detail; (3) if the fix
   starts changing what the adapter MEANS rather than how it is written, stop.
 - **Cut order if short: D, then C.** A and B are the report; without them nothing
   is fixed for the person who filed it.
@@ -103,8 +105,11 @@ says so instead of silently reverting.
   reproduction: a customized adapter with comments and deleted preset keys, run
   through the bootstrap, compared before/after. The 14-to-0 comment loss and the
   3 resurrected nonexistent-path keys are the two observables.
-- **A deliberate absence is expressible**, and the mechanism is stated where an
-  operator will find it — not only in the checker.
+- **A deliberate absence is expressible as DATA**, and an adapter written before
+  the field existed keeps working unchanged — back-compat is a criterion, not a
+  hope, because every consumer adapter in the wild predates it.
+- **The rationale survives a regeneration**, proven by running the bootstrap twice
+  over an adapter carrying the field and diffing.
 - **A generator that cannot honor an existing customization SAYS SO** rather than
   reverting silently. Refusing is an acceptable answer; refusing quietly is not.
 - **The other 4 writers carry a decision**, each either fixed or recorded with a
@@ -154,32 +159,27 @@ says so instead of silently reverting.
 | --- | --- | --- | --- | --- |
 | A | Replay #481's reproduction and separate the two mechanisms | A fix designed before the observation is a fix for the report; and the two causes could each be fixed while the other still bites | A before/after diff reproducing 14->0 comments and the 3 resurrected keys, with each attributed to its mechanism | pending |
 | B | Make a deliberate absence representable, and make the merge honor it | `existing.get(f) or default` cannot see a deletion; until it can, every other fix is cosmetic | The operator's deleted keys stay deleted across a bootstrap run, proven on their fixture | pending |
-| C | Stop destroying the intent: preserve comments, or refuse to rewrite and say why | The comment was the only record of WHY the field was cut; losing it loses the input the merge needs | Comments survive, or the run refuses with a message naming what it would have overwritten | pending |
+| C | Move the rationale into the same data field, and keep an older adapter loading | The comment was the only record of WHY a field was cut, and it lives in the one place a re-serializer cannot keep; data survives, and no dependency is added | Rationale survives a double bootstrap run; an adapter WITHOUT the new field loads and behaves exactly as before | pending |
 | D | Decide the other 4 writers | One fixed instance and three unexamined siblings is how a class comes back | Each of the 4 fixed or recorded with a reason | pending |
 | E | Closeout: bundle gate, claims review by a distinct observer, retro, #481 closeout floor, commit | Repo contract treats critique, closeout, and commit as task-completing work | `run_slice_closeout.py --verification-lock`; an explicit broad-pytest number; `check_goal_artifact.py` green; #481 closed through its floor or explicitly deferred | pending |
 
 ## Operator Decision Queue
-- Decision: add `ruamel.yaml` as a dependency to round-trip the adapter, or
-  refuse to rewrite an existing one instead
-- Owner: operator
-- Why deferred: it does not block slice A or B. The default recorded in Interview
-  Decision 2 is REFUSE — a new dependency for a formatting concern is a
-  supply-chain cost in a repo that gates on supply chain, and refusing to
-  overwrite answers the same failure for free. The operator may prefer the
-  dependency if adapters are expected to stay hand-edited long-term.
-- Unblock action: say which, or let the goal proceed on the refuse default
-- Revisit trigger: slice C starting, or a second report of comment loss
+Both activation decisions were RESOLVED by the operator on 2026-08-03 and are
+folded into `## Interview Decisions`; what remains here is the one obligation
+that outlives this goal.
 
-- Decision: whether the #481 behavioural verdict must reach the operator's own
-  repo before the issue is closed
+- Decision: re-run #481's reproduction in the operator's own repo and confirm
+  the loss is gone
 - Owner: operator
-- Why deferred: this session cannot see that tree. The goal's plan is to
-  reconstruct the fixture from the posted before/after and say explicitly that it
-  is a reconstruction, which satisfies the floor's form but is weaker evidence
-  than a run in the repo where the loss happened.
-- Unblock action: re-run the reproduction in that repo after the fix ships, or
-  accept the reconstruction as the verdict channel
-- Revisit trigger: the #481 close attempt
+- Why deferred: this session cannot see that tree. The close is carried by a
+  fixture RECONSTRUCTED from the before/after posted on #481, which is evidence
+  about the report and not about the reporter's repo — the closeout must say so
+  in those words rather than letting a reconstruction read as a live verdict.
+- Unblock action: after the fix ships, run the three commands from #481 in that
+  repo and compare; a clean diff closes this, a dirty one reopens #481
+- Revisit trigger: the next `quality` run in that repo. Recorded in TWO places on
+  purpose — here and as a comment on #481 at close time — because a deferred
+  confirmation kept in one place has evaporated more than once in this repo.
 
 ## Coordination Cues
 
@@ -263,19 +263,41 @@ rejected-alternatives reason.
    inverts the order. Anti-anchoring: `axis: a class is found by fixing one
    instance carefully, not by touching five quickly`.
 2. **Comment preservation, or refusal?** Family considered: {round-trip YAML via
-   `ruamel`; refuse to rewrite an existing adapter; write a sidecar; accept the
-   loss}. **Chosen: decide in-goal, with refusal as the default.** A dependency
-   added for a formatting concern is a supply-chain cost for a repo that gates on
-   supply chain; refusing to overwrite is cheaper and answers the same failure.
-   Anti-anchoring: `axis: preserving the artifact and not destroying it are
-   different problems with different prices`.
+   `ruamel.yaml`; refuse to rewrite an existing adapter; move the rationale into a
+   DATA field; write a sidecar; accept the loss}. **Chosen by the operator
+   2026-08-03: move the rationale into a data field (`deliberately_absent`), and
+   add no dependency.**
+
+   Two observations settled it and neither was in the original framing. First,
+   **the operator does not hand-edit adapters** — so "refuse and print the diff"
+   pushes the merge onto whoever called the tool, which is the tool's own job.
+   Their words: *"refusing means the repo has to work it out itself, right?"*
+   Second, **the lost comment reads as agent-authored** (*"the bootstrap applied
+   the typescript-quality preset, but this repo uses neither..."* is written by
+   whoever watched the bootstrap run), so the adapter is a record agents write and
+   agents read — and a rationale agents write need not be a COMMENT at all.
+
+   Moving it into data resolves three things at once: the merge can finally SEE a
+   deletion (there is a field to look at), the rationale survives
+   re-serialization, and no dependency is added. Comments still vanish, but they
+   stop being load-bearing — losing one no longer produces a false signal.
+   Rejected `ruamel.yaml`: a supply-chain addition in a repo that gates on supply
+   chain, for a formatting property the data field makes non-essential; and
+   round-trip MERGE carries its own unresolved question about where a comment
+   attached to a nested node should follow. Anti-anchoring: `axis: if the only
+   reader is a machine, the rationale does not belong in the one place machines
+   cannot read`.
 3. **Should the verdict reach the operator's repo?** Family considered: {this
-   repo's fixtures only; ask the operator to re-run; construct an equivalent
-   fixture from #481's before/after}. **Chosen: construct the fixture from their
-   posted before/after, and record explicitly that it is a reconstruction.** The
-   loss was observed in a tree this session cannot see. Anti-anchoring: `axis: a
-   fixture built from a real report is evidence about the report, not about the
-   reporter's tree`.
+   repo's fixtures only; block the close on an operator re-run; reconstruct from
+   the posted before/after; reconstruct now and re-run later}. **Chosen by the
+   operator 2026-08-03: reconstruct from the posted before/after and close, with
+   the re-run recorded as a revisit.** The loss was observed in a tree this
+   session cannot see, so the reconstruction is evidence about the REPORT and not
+   about the reporter's tree, and the closeout must say exactly that. Because
+   "confirm it later" has evaporated more than once here, the revisit is recorded
+   in TWO durable places — a comment on #481 at close time AND this goal's
+   Operator Decision Queue — rather than in prose. Anti-anchoring: `axis: a
+   deferred confirmation that lives in one place is one that will be lost`.
 
 ## Plan Critique Findings
 
