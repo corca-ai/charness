@@ -74,8 +74,11 @@ alter what every field means at resolution time and break consumers that index t
 So a resolved adapter carries the default value alongside the declaration, plus:
 
 - `deliberately_absent` — the declaration itself, so it survives resolution
-- `deliberately_absent_unasserted_paths` — `<field>.<key>` -> the resolved path value
-  the repo does **not** claim exists
+- `deliberately_absent_unasserted_paths` — the resolved path values the repo does
+  **not** claim exist. Keys are `<field>.<key>` for a mapping (dotted for nesting) and
+  `<field>[<index>]` for a list, so a consumer parsing them must expect both shapes.
+  A value counts as a path when it contains `/` or ends in a file extension AND has no
+  whitespace — the whitespace clause is what keeps a cron expression and a regex out
 - a warning naming those paths, because a resolved default that names a file the repo
   does not have is what sends the next session hunting for it
 

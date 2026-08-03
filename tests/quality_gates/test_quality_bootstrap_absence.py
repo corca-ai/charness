@@ -13,10 +13,13 @@ from pathlib import Path
 
 from scripts.adapter_lib import load_yaml, render_yaml_mapping
 from scripts.quality_adapter_lib import (
+    ABSENCE_STRUCTURAL_FIELDS,
     PATH_BEARING_ABSENCE_FIELDS,
     infer_quality_defaults,
     is_deliberately_absent,
     load_quality_adapter_permissive,
+    names_a_filesystem_location,
+    path_bearing_entries,
 )
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
@@ -493,20 +496,82 @@ def test_rationale_that_looks_like_a_scalar_round_trips_as_text(tmp_path: Path) 
     assert second["deliberately_absent"] == {"security_commands": "true", "coverage_floor_policy": "123"}
 
 
-def test_path_bearing_map_names_keys_that_actually_exist() -> None:
-    """The map is a hand-maintained ruler over another module's defaults.
+# Fields whose default names a filesystem location but which are deliberately NOT
+# treated, each with the reason. Every entry must be structural (declaring one absent is
+# refused outright), which the test below asserts — an unenforced allowance would let a
+# bogus exclusion silence the completeness guard field-wide.
+_PATH_BEARING_EXCLUSIONS = {
+    "output_dir": "structural — declaring it absent is refused outright by the bootstrap",
+    "repo": "structural — and it is the repo directory name, which may contain a dot",
+}
 
-    A renamed default key would silently make an entry inert — the declaration would
-    stop marking a phantom path and nothing would say so. (This caught a real slip:
-    `dup_ratchet` was first written with `review_path`/`baseline_path`, which do not
-    exist.)
+
+def test_path_bearing_map_is_complete() -> None:
+    """Re-derive the field set from live defaults; fail if a phantom path would go unnamed.
+
+    The set is hand-maintained over another module's defaults, and the warning it feeds
+    reads as an exhaustive list. Its first version named `mutation_testing.workflow_path`
+    and silently omitted the three paths under `report_paths` — one of four, presented as
+    all four. This test re-derives with the SAME ruler the runtime marking uses
+    (`path_bearing_entries`, imported rather than restated), so the guard cannot admit a
+    narrower rule than the one it documents.
     """
     defaults = infer_quality_defaults(Path("."))
-    for field, path_keys in PATH_BEARING_ABSENCE_FIELDS.items():
-        assert field in defaults, f"{field} is not a resolved field at all"
-        value = defaults[field]
-        for key in path_keys:
-            assert isinstance(value, dict) and key in value, f"{field}.{key} does not exist"
+    derived = {field for field, value in defaults.items() if path_bearing_entries(value, field)}
+
+    unmapped = sorted(derived - PATH_BEARING_ABSENCE_FIELDS - set(_PATH_BEARING_EXCLUSIONS))
+    assert not unmapped, (
+        f"these fields have a path-bearing default but are neither treated nor excluded: {unmapped}. "
+        "Add them to PATH_BEARING_ABSENCE_FIELDS, or to _PATH_BEARING_EXCLUSIONS with a reason."
+    )
+
+
+def test_path_bearing_exclusions_are_honest() -> None:
+    """An exclusion is the one way to make the completeness test green without treating a
+    field, so it may only name a field the bootstrap refuses outright anyway."""
+    assert set(_PATH_BEARING_EXCLUSIONS) <= ABSENCE_STRUCTURAL_FIELDS
+    assert all(reason.strip() for reason in _PATH_BEARING_EXCLUSIONS.values())
+    assert not (PATH_BEARING_ABSENCE_FIELDS & set(_PATH_BEARING_EXCLUSIONS))
+
+
+def test_the_ruler_admits_what_it_documents() -> None:
+    """"contains `/` or ends in a file extension, and no whitespace" — as stated."""
+    for path in ("lefthook.yml", ".github/workflows/*.yml", "coverage.xml", "lcov.info", "AGENTS.md", "a/b"):
+        assert names_a_filesystem_location(path), path
+    for not_a_path in ("17 */3 * * *", "Covered by pytest:\\s+`tests/[^`]+`", "en", "default", "", "provenance-allow"):
+        assert not names_a_filesystem_location(not_a_path), not_a_path
+
+
+def test_nested_and_list_paths_are_reachable() -> None:
+    """A shape the walker cannot reach is a phantom path the warning silently omits."""
+    entries = path_bearing_entries(
+        {"report_paths": {"summary_md": "reports/mutation/summary.md"},
+         "probes": [{"log": "reports/probe.log"}, "docs/x.md", "not-a-path"]},
+        "f",
+    )
+    assert entries == {
+        "f.report_paths.summary_md": "reports/mutation/summary.md",
+        "f.probes[0].log": "reports/probe.log",
+        "f.probes[1]": "docs/x.md",
+    }
+
+
+def test_every_mapped_path_is_actually_marked_when_declared_absent(tmp_path: Path) -> None:
+    """Every path in a treated field's default must actually be marked at runtime."""
+    repo = seed_quality_repo(tmp_path)
+    declared = "\n".join(f"  {field}: declared absent for this test" for field in sorted(PATH_BEARING_ABSENCE_FIELDS))
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        f"deliberately_absent:\n{declared}\n",
+        encoding="utf-8",
+    )
+
+    marked = load_quality_adapter_permissive(repo)["data"]["deliberately_absent_unasserted_paths"]
+
+    defaults = infer_quality_defaults(Path("."))
+    for field in PATH_BEARING_ABSENCE_FIELDS:
+        for key in path_bearing_entries(defaults[field], field):
+            assert key in marked, f"{key} is path-bearing in the defaults but was never marked"
 
 
 def test_declared_absence_marks_the_phantom_paths_it_does_not_claim(tmp_path: Path) -> None:

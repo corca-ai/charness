@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -329,20 +330,61 @@ ABSENCE_STRUCTURAL_FIELDS = frozenset(
 )
 
 
-# Fields whose PRESET DEFAULT names a filesystem path. Measured 2026-08-05 over
-# `infer_quality_defaults`, ruler = a default value containing `/` or ending in a
-# file extension; `output_dir` is excluded because it is structural and refused.
+# THE RULER, stated once as code. Three statements of "what counts as a path" (a
+# comment, a test helper, and a reference doc) is how the first version of this guard
+# came to admit a narrower set than it documented — a partial rule presented as a
+# complete one, which is the class this whole field exists to close. The test imports
+# this rather than restating it; its independence is in re-deriving over the LIVE
+# defaults, not in re-implementing the predicate.
+_PATH_EXTENSION_RE = re.compile(r"\.[A-Za-z0-9]{1,8}$")
+
+
+def names_a_filesystem_location(value: Any) -> bool:
+    """Whether this string names a file or directory rather than merely mentioning `/`.
+
+    The no-whitespace clause is what excludes a cron expression and a regex that happen
+    to contain a slash.
+    """
+    return (
+        isinstance(value, str)
+        and bool(value)
+        and not any(char.isspace() for char in value)
+        and ("/" in value or bool(_PATH_EXTENSION_RE.search(value)))
+    )
+
+
+def path_bearing_entries(value: Any, prefix: str = "") -> dict[str, str]:
+    """`<dotted/indexed key>` -> the path-naming string, walking dicts AND lists.
+
+    Recursing both shapes is load-bearing: a nested key or a list-of-mappings that this
+    walker cannot reach is a phantom path the warning would silently omit while reading
+    as exhaustive.
+    """
+    found: dict[str, str] = {}
+    if isinstance(value, dict):
+        for key, child in value.items():
+            found.update(path_bearing_entries(child, f"{prefix}.{key}" if prefix else str(key)))
+    elif isinstance(value, list):
+        for index, item in enumerate(value):
+            found.update(path_bearing_entries(item, f"{prefix}[{index}]"))
+    elif names_a_filesystem_location(value):
+        found[prefix] = value
+    return found
+
+
+# Fields whose PRESET DEFAULT names a filesystem location. Only the FIELD set is
+# hand-maintained; which keys within it are path-bearing is derived by the ruler above,
+# so a renamed or newly nested path key cannot make an entry silently inert. Structural
+# fields are excluded because declaring one absent is refused outright.
+#
 # These are the only fields where a resolved default can send a reader hunting for a
-# file the repo does not have, which is the harm the reporter actually named. Other
-# declared-absent fields keep their default untouched: their values are thresholds,
-# rule names, and markers, which assert nothing about the filesystem.
-PATH_BEARING_ABSENCE_FIELDS: dict[str, tuple[str, ...]] = {
-    "coverage_floor_policy": ("exemption_list_path", "gate_script_pattern", "lefthook_path", "ci_workflow_glob"),
-    "changed_line_mutation_gate": ("coverage_json",),
-    "dup_ratchet": ("review_artifact_path", "gate_baseline_path"),
-    "mutation_testing": ("workflow_path",),
-    "canonical_markdown_surfaces": (),
-}
+# file the repo does not have, which is the harm the reporter named. Other
+# declared-absent fields keep their default untouched: thresholds, rule names, and
+# markers assert nothing about the filesystem.
+PATH_BEARING_ABSENCE_FIELDS = frozenset(
+    "coverage_floor_policy changed_line_mutation_gate dup_ratchet mutation_testing "
+    "canonical_markdown_surfaces".split()
+)
 
 
 def is_deliberately_absent(data: dict[str, Any], field: str) -> bool:
@@ -358,18 +400,13 @@ def is_deliberately_absent(data: dict[str, Any], field: str) -> bool:
 
 
 def unasserted_paths(validated: dict[str, Any], honored: dict[str, str]) -> dict[str, str]:
-    """`<field>.<key>` -> the resolved path value the repo does NOT claim exists."""
+    """`<field>.<key>` / `<field>[<i>]` -> the resolved path the repo does NOT claim exists."""
     found: dict[str, str] = {}
-    for field, path_keys in PATH_BEARING_ABSENCE_FIELDS.items():
-        if field not in honored:
-            continue
-        value = validated.get(field)
-        if isinstance(value, dict):
-            found.update(
-                {f"{field}.{key}": value[key] for key in path_keys if isinstance(value.get(key), str) and value[key]}
-            )
-        elif isinstance(value, list):
-            found.update({f"{field}[{index}]": item for index, item in enumerate(value) if isinstance(item, str)})
+    # Filter structural fields the same way the warning does. Without this, a structural
+    # path-bearing field would populate the data key with no warning naming it — the data
+    # saying one thing and the prose another.
+    for field in sorted(PATH_BEARING_ABSENCE_FIELDS & set(honored) - ABSENCE_STRUCTURAL_FIELDS):
+        found.update(path_bearing_entries(validated.get(field), field))
     return found
 
 
