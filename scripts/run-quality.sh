@@ -82,12 +82,11 @@ TOTAL_UNESTABLISHED=0
 # through `tail` to save context) kept the count and lost the only fact they could act
 # on, and had to re-run a ~95s gate to recover it. Naming them here makes the common
 # truncation harmless instead of forbidding the truncation.
-FAILED_LABELS=""
 UNESTABLISHED_LABELS=""
-# Only the paths that were actually WRITTEN. The summary names these rather than a
-# `<label>` template the reader has to reconstruct -- and a copy that did not land is
-# absent here, so the summary cannot promise a file that is not there.
-FAILED_LOG_PATHS=""
+# The final line is the per-run operator receipt. Each failed label travels with either
+# the verified durable log path or an explicit unavailable marker; a preceding path
+# line is not enough because a truncating reader may preserve only the final line.
+declare -a FAILED_RECEIPT_ENTRIES=()
 # Per-phase logs live in a mktemp dir this script `rm -rf`s on EXIT, so after a run
 # there was nothing left to re-read: a truncated view of a failure could only be
 # recovered by running the whole gate again. Failing phases' logs are copied here
@@ -444,7 +443,6 @@ flush_phase() {
       UNESTABLISHED_LABELS="$(append_label "$UNESTABLISHED_LABELS" "$label")"
     else
       TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
-      FAILED_LABELS="$(append_label "$FAILED_LABELS" "$label")"
       # Copied at the moment of failure, because the batch's log paths are reset
       # between phases and the tmpdir is gone by the time the summary prints.
       #
@@ -458,15 +456,17 @@ flush_phase() {
       # PREVIOUS run's log for the same label and diagnoses a failure that is already
       # fixed -- a stale log at a promised path is worse than no log, and swallowing
       # the copy error is the exact silent-loss shape this whole change removes.
-      local failure_slug failure_log
+      local failure_slug failure_log receipt_entry
       failure_slug="${label//[^A-Za-z0-9_.-]/_}"
       failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
       if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
-        FAILED_LOG_PATHS="$(append_label "$FAILED_LOG_PATHS" "${failure_log#"$REPO_ROOT"/}")"
+        receipt_entry="$label [log: ${failure_log#"$REPO_ROOT"/}]"
       else
         printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
           "$label" "$failure_log" >&2
+        receipt_entry="$label [log unavailable]"
       fi
+      FAILED_RECEIPT_ENTRIES+=("$receipt_entry")
     fi
 
     # An unestablished gate does not fail the run. It must not be counted as
@@ -494,30 +494,16 @@ print_final_summary() {
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
   local failed_note="" unproven_note=""
-  # The names travel WITH the verdict. Empty when the count is zero, so a clean run
-  # reads exactly as before.
-  [[ -n "$FAILED_LABELS" ]] && failed_note=" (FAILED: $FAILED_LABELS)"
-  # The ACTUAL paths, and only when a copy landed. A clean run prints nothing.
-  [[ -n "$FAILED_LOG_PATHS" ]] && printf 'Full output for each failing check: %s\n' \
-    "$FAILED_LOG_PATHS"
+  # The names and recovery locations travel WITH the verdict. Empty when the count is
+  # zero, so a clean run reads exactly as before.
+  if ((${#FAILED_RECEIPT_ENTRIES[@]} > 0)); then
+    failed_note=" (FAILED: ${FAILED_RECEIPT_ENTRIES[*]})"
+  fi
   [[ -n "$UNESTABLISHED_LABELS" ]] && unproven_note=" (UNPROVEN: $UNESTABLISHED_LABELS)"
 
-  if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
-    printf 'Quality summary: %s passed, %s failed%s, %s UNPROVEN%s (ran; established nothing, or only part of its scope), total %s\n' \
-      "$TOTAL_PASSES" \
-      "$TOTAL_FAILURES" \
-      "$failed_note" \
-      "$TOTAL_UNESTABLISHED" \
-      "$unproven_note" \
-      "$(format_elapsed "$elapsed_ms")"
-  else
-    printf 'Quality summary: %s passed, %s failed%s, total %s\n' \
-      "$TOTAL_PASSES" \
-      "$TOTAL_FAILURES" \
-      "$failed_note" \
-      "$(format_elapsed "$elapsed_ms")"
-  fi
-
+  # Record the aggregate before printing the receipt. A warning from this best-effort
+  # telemetry write must not become the last combined-output line and displace the
+  # actionable verdict from a context-truncated reader.
   if [[ -z "$RUN_QUALITY_LABELS" ]]; then
     status="pass"
     if [[ "$OVERALL_RC" != "0" ]]; then
@@ -536,6 +522,22 @@ print_final_summary() {
     if ! record_runtime "$aggregate_label" "$elapsed_ms" "$status" "$timestamp"; then
       echo "run-quality: warning: failed to record aggregate runtime for ${aggregate_label}." >&2
     fi
+  fi
+
+  if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
+    printf 'Quality summary: %s passed, %s failed%s, %s UNPROVEN%s (ran; established nothing, or only part of its scope), total %s\n' \
+      "$TOTAL_PASSES" \
+      "$TOTAL_FAILURES" \
+      "$failed_note" \
+      "$TOTAL_UNESTABLISHED" \
+      "$unproven_note" \
+      "$(format_elapsed "$elapsed_ms")"
+  else
+    printf 'Quality summary: %s passed, %s failed%s, total %s\n' \
+      "$TOTAL_PASSES" \
+      "$TOTAL_FAILURES" \
+      "$failed_note" \
+      "$(format_elapsed "$elapsed_ms")"
   fi
 }
 

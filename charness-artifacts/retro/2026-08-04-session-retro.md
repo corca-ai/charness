@@ -3,8 +3,9 @@ Date: 2026-08-04
 
 ## Context
 
-This retro covers Slice B of the active goal: carrying a semantic reviewer
-question into critique packets for the recorded #499 and #491 issue families.
+This retro covers Slices B and C of the active goal: carrying a semantic reviewer
+question into critique packets for #499/#491, then assigning #502's quality-runner
+summary a per-run receipt owner.
 The work mattered because the selected control had to stay judgment-supporting
 without becoming a semantic meta-gate. The auto-retro trigger fired on the
 checked-in plugin export surface, so this is a bounded session retro for the
@@ -15,10 +16,10 @@ judgment about future reviewer uptake. The latter remains unproven.
 
 ## Window
 
-From the Slice A checkpoint at `e8a4b2c9` through the Slice B verification
-checkpoint on 2026-08-04. The window included the packet implementation, three
-fresh-eye review rounds, the quality review, probe refreshes, the broad suite,
-and the recurring-telemetry follow-up.
+From the Slice A checkpoint at `e8a4b2c9` through the Slice C verification
+checkpoint on 2026-08-04. The window included the packet implementation, the
+#502 runner repair, fresh-eye review rounds, the quality review, probe refreshes,
+the broad suite, and the recurring-telemetry follow-up.
 
 ## Evidence Summary
 
@@ -43,6 +44,16 @@ and the recurring-telemetry follow-up.
   four recurring findings. The follow-up was filed as
   [#503](https://github.com/corca-ai/charness/issues/503), with the create
   ledger reporting `body_verified: true`.
+- Strong: #502's producer/consumer inspection found 17 assertions in three test
+  files, but no production reader of the text summary. The actual consumers are
+  terminal/CI-tail readers and runtime trend/budget tooling.
+- Strong: the final receipt now pairs each failed label with its verified log path
+  or `[log unavailable]`; aggregate telemetry records before the receipt so a
+  warning cannot displace it in a merged tail. Focused tests passed 51 and the
+  latest broad suite passed 7028.
+- Strong: one repair-read reviewer caught the post-summary telemetry warning
+  escape; later repair-read and current-packet reviewers approved the ordering.
+  Boundary fingerprints were clean around every parent write.
 
 ## Waste
 
@@ -62,6 +73,10 @@ and the recurring-telemetry follow-up.
 - The 42.76-second current broad run was not waste: it was the required second
   evidence channel for a slice whose earlier focused checks could not see
   corpus-measurement drift.
+- The first Slice C broad run caught a quality-artifact marker-shape omission:
+  semantic review markers were present but not in the exact inventory-consumption
+  form. The repair restored the literal markers and reran the broad suite, rather
+  than weakening the consumer validator. (recurrence-class: measurement-baseline-sync)
 
 ## Critical Decisions
 
@@ -78,6 +93,13 @@ and the recurring-telemetry follow-up.
 - Filed #503 as off-goal tracked follow-up for recurring closeout-runtime and
   over-slice telemetry; the active goal remains focused on its six issue
   dispositions.
+- Kept `print_final_summary` as the owner of the current-run operator receipt and
+  kept `runtime-signals.json` as historical telemetry. The 17 distributed tests
+  remain distinct contracts; no new JSON sibling or renderer abstraction was
+  justified by a named consumer.
+- Moved aggregate runtime recording before the final summary after a fresh-eye
+  reviewer showed that a best-effort warning could otherwise become the last
+  merged output line.
 
 ## Trends vs Last Retro
 
@@ -104,6 +126,9 @@ token or tool-call metric.
 - The run walked into the named failure signature “form-passed ≠
   content-correct”: focused checks and structural closeout passed before the
   broad measurement checks caught the stale corpus record.
+- Slice C repeated the same shape at a smaller boundary: focused runner tests
+  passed before the broad suite caught a literal quality-artifact consumption
+  marker mismatch. The second broad run was the completion evidence.
 
 ## Expert Counterfactuals
 
@@ -135,10 +160,15 @@ token or tool-call metric.
 - memory: keep the semantic reviewer question and the worked #499/#491
   application linked from the Slice B critique record so future reviewers see
   the invariant/owner/instance/counterexample shape.
+- workflow: define truncation boundaries as a complete operator receipt — verdict,
+  failed identity, and recovery path — and test the final line, not only a tail
+  window. Keep best-effort telemetry writes before that receipt.
+- capability: do not promote rolling telemetry into a structured per-run receipt
+  without a named consumer, run identity, retention, and stale-state contract.
 
 ## Packet Consumed
 
-Packet Consumed: charness-artifacts/retro/2026-08-03-221151-packet.md
+Packet Consumed: charness-artifacts/retro/2026-08-03-224212-packet.md
 
 ## Persisted
 

@@ -791,9 +791,10 @@ def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(
     assert result.returncode != 0
     assert "FAIL validate-skills" in result.stdout
     assert "UNPROVEN" not in result.stdout
-    # The name travels WITH the count: the summary is the last line, the one every
-    # truncation preserves, so a reader who saw only it can still act.
-    assert "1 passed, 1 failed (FAILED: validate-skills), total" in result.stdout
+    # The name and verified recovery path travel WITH the count: the summary is the
+    # last line, the one every truncation preserves, so a reader who saw only it can
+    # still act.
+    assert "1 passed, 1 failed (FAILED: validate-skills [log: " in result.stdout
 
 
 def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
@@ -826,7 +827,9 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
     assert "FAIL check-doc-links" in result.stdout
     # Both names travel with both counts, so a truncated read can act on either.
     assert (
-        f"0 passed, 1 failed (FAILED: check-doc-links), 1 UNPROVEN (UNPROVEN: {_UNPROVEN_LABEL})"
+        "0 passed, 1 failed (FAILED: check-doc-links [log: "
+        f".charness/quality-failure-logs/check-doc-links.log]), 1 UNPROVEN "
+        f"(UNPROVEN: {_UNPROVEN_LABEL})"
     ) in result.stdout
 
 

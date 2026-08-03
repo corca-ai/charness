@@ -182,6 +182,7 @@ def test_run_quality_preserves_success_when_aggregate_runtime_recording_fails(
 
     assert result.returncode == 0
     assert "Quality summary:" in result.stdout
+    assert result.stdout.splitlines()[-1].startswith("Quality summary:"), result.stdout
     assert "warning: failed to record aggregate runtime for run-quality-read-only" in result.stderr
 
 
@@ -197,6 +198,7 @@ def test_run_quality_preserves_gate_failure_when_aggregate_runtime_recording_fai
 
     assert result.returncode == 1
     assert "Quality summary:" in result.stdout
+    assert result.stdout.splitlines()[-1].startswith("Quality summary:"), result.stdout
     assert "warning: failed to record aggregate runtime for run-quality-full" in result.stderr
 
 

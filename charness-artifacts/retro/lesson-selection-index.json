@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-07",
-  "source_artifact_count": 427,
-  "candidate_count": 1762,
+  "source_artifact_count": 428,
+  "candidate_count": 1764,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -54,6 +54,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:53cd7536bd81",
+      "kind": "repeat_trap",
+      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
+      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
+      "recurrence_class": "measurement-baseline-sync",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.24,
+      "selection_weight": 1.184,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first Slice C broad run caught a quality-artifact marker-shape omission: semantic review markers were present but not in the exact inventory-consumption form. The repair restored the literal markers and reran the broad suite, rather than weakening the consumer validator."
         }
       ]
     },
@@ -340,32 +374,6 @@
           "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against."
         }
       ]
-    },
-    {
-      "candidate_id": "repeat_trap:4461ac975eea",
-      "kind": "repeat_trap",
-      "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of.",
-      "normalized_key": "the enumeration in slice c was wrong three times repo root shims imported by",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of."
-        }
-      ]
     }
   ],
   "candidates": [
@@ -408,6 +416,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:53cd7536bd81",
+      "kind": "repeat_trap",
+      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
+      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
+      "recurrence_class": "measurement-baseline-sync",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.24,
+      "selection_weight": 1.184,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The first Slice C broad run caught a quality-artifact marker-shape omission: semantic review markers were present but not in the exact inventory-consumption form. The repair restored the literal markers and reran the broad suite, rather than weakening the consumer validator."
         }
       ]
     },
@@ -1034,10 +1076,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:642b2f919cec",
+      "candidate_id": "current_focus:1dac0553232a",
       "kind": "current_focus",
-      "lesson": "This retro covers Slice B of the active goal: carrying a semantic reviewer question into critique packets for the recorded #499 and #491 issue families.",
-      "normalized_key": "this retro covers slice b of the active goal carrying a semantic reviewer question",
+      "lesson": "This retro covers Slices B and C of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, then assigning #502's quality-runner summary a per-run receipt owner.",
+      "normalized_key": "this retro covers slices b and c of the active goal carrying a semantic",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1055,7 +1097,59 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "This retro covers Slice B of the active goal: carrying a semantic reviewer question into critique packets for the recorded #499 and #491 issue families."
+          "lesson": "This retro covers Slices B and C of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, then assigning #502's quality-runner summary a per-run receipt owner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7db053c87ce3",
+      "kind": "next_improvement",
+      "lesson": "define truncation boundaries as a complete operator receipt — verdict, failed identity, and recovery path — and test the final line, not only a tail window. Keep best-effort telemetry writes before that receipt.",
+      "normalized_key": "define truncation boundaries as a complete operator receipt verdict failed identity and recovery path",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "define truncation boundaries as a complete operator receipt — verdict, failed identity, and recovery path — and test the final line, not only a tail window. Keep best-effort telemetry writes before that receipt."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:25949ddcf250",
+      "kind": "next_improvement",
+      "lesson": "do not promote rolling telemetry into a structured per-run receipt without a named consumer, run identity, retention, and stale-state contract.",
+      "normalized_key": "do not promote rolling telemetry into a structured per run receipt without a named",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "do not promote rolling telemetry into a structured per-run receipt without a named consumer, run identity, retention, and stale-state contract."
         }
       ]
     },
@@ -1134,32 +1228,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:53cd7536bd81",
-      "kind": "repeat_trap",
-      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
-      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
-      "recurrence_class": "measurement-baseline-sync",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.12,
-      "selection_weight": 0.9548,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
         }
       ]
     },

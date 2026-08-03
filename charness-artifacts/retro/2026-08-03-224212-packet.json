@@ -1,0 +1,22 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-03T22:42:12Z",
+  "prepared_for": "Slice C quality-runner receipt and export retro",
+  "changed_ref": null,
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/quality/2026-08-04-quality-review.md\n- plugins/charness/scripts/run-quality.sh\n- scripts/run-quality.sh\n- tests/quality_gates/test_gate_summary_names_failures.py\n- tests/quality_gates/test_quality_runner.py\n- tests/quality_gates/test_quality_runner_runtime_aggregate.py\n- charness-artifacts/critique/2026-08-03-221939-packet.json\n- charness-artifacts/critique/2026-08-03-221939-packet.md\n- charness-artifacts/critique/2026-08-03-222903-packet.json\n- charness-artifacts/critique/2026-08-03-222903-packet.md\n- charness-artifacts/critique/2026-08-03-223438-packet.json\n- charness-artifacts/critique/2026-08-03-223438-packet.md\n- charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/run-quality.sh\n  derived matches: plugins/charness/scripts/run-quality.sh\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/quality/2026-08-04-quality-review.md, charness-artifacts/critique/2026-08-03-221939-packet.md, charness-artifacts/critique/2026-08-03-222903-packet.md, charness-artifacts/critique/2026-08-03-223438-packet.md, charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-03-221939-packet.json, charness-artifacts/critique/2026-08-03-221939-packet.md, charness-artifacts/critique/2026-08-03-222903-packet.json, charness-artifacts/critique/2026-08-03-222903-packet.md, charness-artifacts/critique/2026-08-03-223438-packet.json, charness-artifacts/critique/2026-08-03-223438-packet.md, charness-artifacts/critique/2026-08-04-slice-c-summary-owner.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/run-quality.sh\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_gate_summary_names_failures.py, tests/quality_gates/test_quality_runner.py, tests/quality_gates/test_quality_runner_runtime_aggregate.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 1,
+  "ok": true
+}

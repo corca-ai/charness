@@ -58,16 +58,18 @@ def test_run_quality_summary_names_its_failing_checks(gate_repo: Path) -> None:
 
     result = _run_gate(gate_repo)
 
-    tail = result.stdout.strip().splitlines()[-3:]
-    joined = "\n".join(tail)
+    summary_line = [line for line in result.stdout.splitlines() if line.startswith("Quality summary:")][-1]
 
-    assert re.search(r"Quality summary: \d+ passed, [1-9]\d* failed", joined), joined
-    assert "(FAILED: validate-retro-artifact)" in joined, (
+    assert re.search(r"Quality summary: \d+ passed, [1-9]\d* failed", summary_line), summary_line
+    assert (
+        "(FAILED: validate-retro-artifact "
+        "[log: .charness/quality-failure-logs/validate-retro-artifact.log])"
+    ) in summary_line, (
         "the summary must NAME the failing check, not just count it: the count alone "
-        f"is what forced a re-run. Got tail:\n{joined}"
+        f"is what forced a re-run, and its final line must carry the recovery path. Got:\n{summary_line}"
     )
-    assert ".charness/quality-failure-logs/" in joined, (
-        f"a truncated read must still be told where the full output is. Got:\n{joined}"
+    assert ".charness/quality-failure-logs/" in summary_line, (
+        f"a truncated read must still be told where the full output is. Got:\n{summary_line}"
     )
 
 
@@ -167,6 +169,6 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
         f"to a stale file:\n{result.stdout[-400:]}"
     )
     # the verdict itself still names the failure
-    assert "(FAILED: validate-retro-artifact)" in result.stdout
+    assert "(FAILED: validate-retro-artifact [log unavailable])" in result.stdout
+    assert "quality-failure-logs/validate-retro-artifact.log" not in result.stdout
     assert stale.read_text(encoding="utf-8").startswith("STALE"), "the stale file was not overwritten"
-
