@@ -261,6 +261,13 @@
     },
     {
       "class": "intentional",
+      "id": "c71405ac5e920fb0",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "ROTATED from 23c406419969c6e2 the same day, when the round-2 repairs grew upsert_goal.py's main() and moved this block's span; same three members, same reasoning. the standard CLI-entrypoint shape `try: <lib call with kwargs> / except <Error> as exc: print(str(exc)); return 2`, shared by three unrelated commands: upsert_goal.py (ValueError from goal_artifact_lib), audit_codex_session.py (ValueError from codex_audit), and check_test_production_ratio.py (TokeiUnavailableError from tokei). Different libraries, different exception types, different follow-on code; what they share is Python's own convention for turning a library error into an operator-readable exit, not a concept. A shared helper would have to take a thunk plus an exception class -- an abstraction over control flow rather than over meaning. Verified pre-existing rather than introduced: the ratchet is CLEAN on the tree before this slice (checked by stashing), and the family surfaced only because the upsert_goal.py --fields-file work shifted that block's span and changed two kwarg expressions; the other two members are untouched. Same boy-scout span-shift class this repo measured four times on 2026-08-06."
+    },
+    {
+      "class": "intentional",
       "id": "26933afae751e598",
       "note": "module docstring + sibling-loader preamble shared by the two chunker modules that both load siblings (chunked_routing_issue_source, chunked_routing_staleness); the loader is the same portability preamble class, and the docstring overlap is two modules documenting the same boundary set they deliberately share",
       "reviewed_at": "2026-07-27",

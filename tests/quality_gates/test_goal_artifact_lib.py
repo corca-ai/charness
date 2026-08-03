@@ -137,7 +137,11 @@ def test_set_status_rejects_invalid_and_preserves_crlf() -> None:
 
 
 def test_goal_path_rejects_malformed_dates(tmp_path: Path) -> None:
-    for bad in ("2026/05/27", "../escape", "2026-5-7", "not-a-date"):
+    # The trailing-line-break cases are what distinguish `\Z` from `$`: `$` also matches
+    # BEFORE a final newline, so `"2026-05-27\n"` validated and built a filename with an
+    # embedded line break. `\r` is included because every reader opens goal artifacts
+    # with universal newlines, which turns a lone CR back into one.
+    for bad in ("2026/05/27", "../escape", "2026-5-7", "not-a-date", "2026-05-27\n", "2026-05-27\r"):
         with pytest.raises(ValueError):
             gal.goal_path(tmp_path, bad, "g")
     # well-formed date is accepted and stays inside the goals namespace

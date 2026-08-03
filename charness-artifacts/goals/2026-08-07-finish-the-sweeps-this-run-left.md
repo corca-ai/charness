@@ -1,6 +1,6 @@
 # Achieve Goal: Finish the sweeps this run left: pay the deferred residue, and one real miss
 
-Status: draft
+Status: active
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md`
 
@@ -9,14 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-07-finish-the-sweeps-this-run-left.md` after confirming the draft is
-  still intended.
+- Current slice: A is DONE and committed; B next — #493, make the refill report
+  reach a nested block.
+- Current slice intent: `_mark_subkey_refills` compares TOP-LEVEL keys, so a
+  nested block (`mutation_testing.report_paths`) whose own leaves were refilled
+  is under-reported. #481 was whole-field, #489 sub-key, this sub-sub-key. TWO
+  bounded rounds are owed: this changes a REPORT other surfaces read. This names
+  the reviewable-intent unit in progress and the commits it spans; critique and
+  broad proof do not re-fire within one unchanged intent — update it when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- Next action: reproduce #493 from the issue (`mutation_testing.report_paths`
+  minus `summary_md`) BEFORE designing, then check stop condition 2 — if the
+  recursion names dozens of leaves, STOP and ask rather than shipping a report
+  nobody reads.
+- Slice A carry-forward: a guard belongs to the VALUE, not the transport that
+  delivered it; and a masking primitive that FAILS OPEN turns any caller
+  scanning its output into a verdict over a reading it never established.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -162,7 +170,7 @@ does.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | #494 — close `upsert_goal.py`'s argv channel and stop the reference contradicting itself | The only real MISS of the three, and the shipped reference currently forbids a form and then demonstrates it | A backtick-bearing `--goal-body` through a real shell arrives whole or fails loudly; the reference example matches the rule | pending |
+| A | #494 — close `upsert_goal.py`'s argv channel and stop the reference contradicting itself | The only real MISS of the three, and the shipped reference currently forbids a form and then demonstrates it | A backtick-bearing `--goal-body` through a real shell arrives whole or fails loudly; the reference example matches the rule | done — see Slice 1; two bounded rounds, 6 blockers found and repaired, 5 guards mutation-checked |
 | B | #493 — make the refill report reach a nested block | #481 whole-field, #489 sub-key, this sub-sub-key; the class has moved down one level twice already | The issue's reproduction names the refilled leaf; a fully-specified nested block still reports nothing | pending |
 | C | #492 — a standalone-import check for every module in the package | A real cycle passed 4979 tests; the guard exists for one pair only | The check FAILS on the pre-fix module recovered from git, and passes on the current tree | pending |
 | D | Closeout: bundle gate, claims review, retro, the three issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor, stating deferral-versus-miss | pending |
@@ -221,6 +229,20 @@ per the bullets above when that boundary is crossed):
 - **This goal is ready to run.**
 
 ## Slice Log
+
+### Slice 1: Close upsert_goal.py's prose-through-argv channel (#494)
+
+- Objective: Give `upsert_goal.py` an input channel with no shell in front of it, and stop `references/goal-artifact.md` demonstrating the form it forbids. #494 is the only real MISS of this goal's three: a sibling helper named in #487's own `## Boundaries` and then never swept.
+- Why this approach: `--goal-body` writes the `## Goal` section, so a hole there is worse than a hole in one slice-log line. The reference carried the rule directly above an example calling the forbidden form for a helper with no alternative. The channel is unfixable from inside the process, so this adds a CHANNEL, not a validator - the same shape #487 shipped.
+- Commits: pending (this slice's commit)
+- What changed: NEW `--fields-file` on `upsert_goal.py` taking `title`/`goal-body`; the JSON parse and its six refusals extracted to `goal_cli_args.load_fields_file` and now SHARED with `append_slice_log.py` (whose 8 pre-existing tests are the parity evidence). `_DATE` anchored with `\Z` in `goal_artifact_lib.py`. SKILL.md, `references/goal-artifact.md` and `references/lifecycle-during.md` repaired. NEW `tests/quality_gates/test_upsert_goal_input_channel.py` (17 tests). One `intentional` dup classification (c71405ac5e920fb0). `plugins/` mirror synced.
+- Alternatives rejected: Rejected mirroring `append_slice_log.py`'s WHOLE field set for symmetry (goal stop condition 3): only `title` and `goal-body` are free prose. Rejected leaving `--slug` on argv on the old rationale - it was FALSE, so the slug now refuses a value `slugify` would rewrite instead. Rejected forcing `goal-body` single-line like a slice field: a goal body is a SECTION, and forcing one line would push callers straight back to the shell.
+- Targeted verification: 17 + 8 channel tests through a REAL shell (`shell=True`), because the loss happens in the shell and an argv-list test cannot reproduce it; 4234-test broad run pending. Each of the 5 new guards MUTATION-CHECKED to be load-bearing: reverting `_merge_field`'s empty-override refusal, `fences_balanced`, `_normalize_newlines`, and `$`-vs-`\Z` each made its own test FAIL. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: completed.
+- Test duplication pressure: dup ratchet clean after one `intentional` classification: the extraction SHRANK four existing families and surfaced one new one that is a pre-existing CLI-boilerplate parallel (`try: <lib call> / except: print; return 2`) across three unrelated commands - verified pre-existing by stashing and re-running, ratchet clean on the base tree. Same span-shift class this repo measured four times on 2026-08-06.
+- Critique: TWO bounded rounds, each with a verified `reviewer_boundary_fingerprint` window (both `clean`). Round 1 found 3 blockers: guards attached to the TRANSPORT not the value, so the documented list-argv channel walked past them and wrote a forged heading at exit 0; a lone CR forging a heading via universal-newline read-back; and a FALSE shipped claim that `--slug` fails loudly. Round 2 - the round that read the REPAIRS - found 3 more: an empty `--goal-body` flag overriding a non-empty file value (this helper's own total-loss shape, on the field the channel exists to protect); the fence mask rendering a verdict over a reading `mask_fences` documents as unestablished; and the `_DATE` repair shipped with no biting test. All repaired.
+- Off-goal findings: Filed #495 - `docs/handoff-chunked-routing.md` says `draft_goal_from_chunk.py` writes through `upsert_goal`; it renders and writes directly, so a reader would wrongly conclude the new guards cover both goal-artifact writers.
+- Lessons carried forward: The round that reads the REPAIRS earned its keep again: round 2's blockers were all the class being repaired. Two are worth carrying: a guard belongs to the VALUE, not to the transport that delivered it - round 1's blocker was that the new checks only policed the new channel while the documented-safe one bypassed them; and a masking primitive that FAILS OPEN turns any caller scanning its output into a verdict over a reading it never established, which is why `mask_fences` ships `fences_balanced` beside it.
+- Metrics:
 
 ## Context Sources
 

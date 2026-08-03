@@ -28,7 +28,7 @@ git log --oneline -10
 ls charness-artifacts/goals/ 2>/dev/null || true
 
 # 3. scaffold or locate first, then validate post-scaffold (helpers preserve manual content)
-python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug> --title "<title>"
+python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . --slug <slug> --fields-file <fields.json>
 python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . --slug <slug> --date <yyyy-mm-dd>
 ```
 
@@ -61,7 +61,8 @@ brief's `closeout_handoff` note when starting closeout.
      Boundaries, verification, interview decisions, or critique findings, add a
      non-empty `Discuss before activation:` summary and resolve or explicitly ask
      before activation; `--pursue-ready` fails unless that summary is resolved
-   - save with `upsert_goal.py` at status `draft`; artifact-only — it must not
+   - save with `upsert_goal.py --fields-file <json>` at status `draft` (see the
+     no-shell prose rule under During); artifact-only — it must not
      consume the host active-goal slot while drafting (only `/goal` pursuit does)
    - close with `Goal file:`, exact `Activation:` line, and the
      inert-until-`/goal` status; do not execute slices yourself
@@ -78,14 +79,14 @@ brief's `closeout_handoff` note when starting closeout.
    - for fresh-eye slice critique, hand the reviewer a bounded slice packet:
      intent, changed files and owning/generated surfaces, expected invariants,
      tests/proof, non-claims, out-of-scope lines, and questions
-   - append slice reports with `append_slice_log.py`, passing the prose through
-     `--fields-file <json>` rather than per-field flags: slice prose cites
-     identifiers, so it carries backticks, and a shell expands those BEFORE the
-     helper starts — the record is written with words missing and the run still
-     reports `appended`. Nothing inside the helper can detect that. (A caller
-     that builds `argv` itself, with no shell, is equally safe.) When tests are
-     added or expanded, include a cheap duplicate-pressure sample via
-     `test-pressure`
+   - append slice reports with `append_slice_log.py`. It and `upsert_goal.py`
+     both take their prose through `--fields-file <json>`, never per-field
+     flags: goal and slice prose cites identifiers, so it carries backticks, and
+     a shell expands those BEFORE the helper starts — the artifact is written
+     with words missing and the run still reports success. Nothing inside the
+     helper can detect that. (A caller that builds `argv` itself, with no shell,
+     is equally safe.) When tests are added or expanded, include a cheap
+     duplicate-pressure sample via `test-pressure`
    - use cheap deterministic checks at commit boundaries; use higher-cost proof
      at slice boundaries; reserve broad/live proof for bundle boundaries or the
      final stage

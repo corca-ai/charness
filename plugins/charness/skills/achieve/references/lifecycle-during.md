@@ -182,14 +182,23 @@ rather than inheriting it silently.
 
 ### Prose never crosses a shell
 
-`append_slice_log.py` takes the slice report through `--fields-file <json>`. That is
-not a convenience: a slice report cites identifiers, so its prose is full of
-backticks, and a shell performs command substitution on a quoted argument **before
-the helper's process starts**. What arrives is well-formed text with words missing.
-The helper exits 0 and reports `"action": "appended"`, and the surface it just
-damaged is the durable record a compacted or resumed session reads to learn what
-happened. No validation inside the helper can catch it — by the time `argv` exists,
-there is nothing left to compare against.
+`append_slice_log.py` and `upsert_goal.py` both take their prose through
+`--fields-file <json>`. That is not a convenience: goal and slice prose cites
+identifiers, so it is full of backticks, and a shell performs command substitution
+on a quoted argument **before the helper's process starts**. What arrives is
+well-formed text with words missing. The helper exits 0 and reports `"appended"` or
+`"created"`, and the surface it just damaged is the durable record a compacted or
+resumed session reads to learn what happened — or, for `upsert_goal.py --goal-body`,
+the `## Goal` section that says what the goal IS. No validation inside the helper
+can catch it — by the time `argv` exists, there is nothing left to compare against.
+
+Only genuinely free prose needs the file. `upsert_goal.py`'s prose keys are `title`
+and `goal-body`; its `--slug`, `--date` and `--status` stay flags because each one
+REFUSES a damaged value instead of absorbing it — the status is a closed enum, the
+date is anchored, and a slug is rejected unless it already equals the kebab-case
+form that becomes the filename. Building `argv` as a list protects prose from the
+shell but not from these shape rules, so the helper applies them to the value
+whatever channel delivered it.
 
 Two safe channels, one unsafe one:
 

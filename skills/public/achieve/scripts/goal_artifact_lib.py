@@ -93,7 +93,8 @@ PORTABILITY_SECTIONS = (
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
-_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+_DATE = re.compile(r"^\d{4}-\d{2}-\d{2}\Z")  # \Z, not $: `$` also matches before a trailing newline, so a
+# date carrying one passed validation and built a filename with an embedded line break.
 # A real activation line: its own line (optionally a list item) with a non-empty
 # value. The old substring test (`"Activation:" not in text`) passed a goal whose
 # only occurrence was a fenced template excerpt or a bare valueless label.

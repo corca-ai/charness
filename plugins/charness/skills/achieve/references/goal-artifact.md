@@ -130,19 +130,27 @@ content and avoid timestamp-only churn. Resolve `$SKILL_DIR` per
 **Prose must not cross a shell.** It cites identifiers, so it carries backticks,
 and a shell expands those BEFORE the helper starts — the artifact is written with
 words missing and the run still reports success. Two safe channels: build `argv`
-as a list with no shell, or use `append_slice_log.py --fields-file <json>`. The
-flag forms below are shown for the FIELD NAMES and stay valid for short
-identifier-free values.
+as a list with no shell, or use `--fields-file <json>`, which both
+`upsert_goal.py` and `append_slice_log.py` accept. The flag forms below are shown
+for the FIELD NAMES and stay valid for short identifier-free values.
 
-`upsert_goal.py` has no `--fields-file` yet, so its `--goal-body` is the argv
-channel with no alternative — build its `argv` as a list rather than typing it
-into a shell. Tracked as issue 494. See `SKILL.md` and `lifecycle-during.md`.
+`upsert_goal.py`'s prose fields are `title` and `goal-body`. `--slug`, `--date`
+and `--status` stay flags because each refuses a damaged value rather than
+absorbing it: the status is a closed enum, the date is anchored, and the slug is
+rejected unless it is already the kebab-case form that becomes the filename
+(`slugify` would otherwise silently coerce it into a DIFFERENT valid filename).
+See `SKILL.md` and `lifecycle-during.md`.
 
 ```bash
 # Scaffold a new goal (status draft), or update only the status of an existing one.
+# Write the JSON with a file tool; a goal body cites identifiers, and --goal-body
+# typed into a shell arrives with words missing under a `created` verdict.
+cat > /tmp/goal-fields.json <<'JSON'
+{"title": "Acme 184 push confidence",
+ "goal-body": "Make the accumulated local commits safe to push."}
+JSON
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
-  --slug acme-184-push-confidence --title "Acme 184 push confidence" \
-  --goal-body "Make the accumulated local commits safe to push."
+  --slug acme-184-push-confidence --fields-file /tmp/goal-fields.json
 
 # Append one slice report to the Slice Log.
 # Use --test-pressure when the slice adds or expands tests, to carry a cheap
@@ -153,17 +161,21 @@ python3 "$SKILL_DIR/scripts/append_slice_log.py" --repo-root . \
   --test-pressure "adjacent duplicates 23.2% vs 22% gate; +2 runtime tests this slice"
 
 # Flip status as the run progresses (draft -> active -> blocked/complete).
+# No title needed: an existing artifact's heading and body are never rewritten.
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
-  --slug acme-184-push-confidence --title "Acme 184 push confidence" --status active
+  --slug acme-184-push-confidence --status active
 
 # Check required sections, status, and activation line before completion.
 python3 "$SKILL_DIR/scripts/check_goal_artifact.py" --repo-root . \
   --slug acme-184-push-confidence --date 2026-05-26
 ```
 
-`upsert_goal.py` never overwrites an existing artifact body; on a second call it
-only rewrites the `Status:` line, and only when the value changed (the result
-carries a note so a caller expecting a new file can tell). The slice number in
+`upsert_goal.py` never overwrites an existing artifact's heading or body; on a
+second call it only rewrites the `Status:` line, and only when the value changed
+(the result carries a note so a caller expecting a new file can tell). Re-running
+with the SAME `title`/`goal-body` is therefore idempotent, but a CHANGED one is
+refused rather than silently dropped — edit the artifact directly instead. The
+slice number in
 `append_slice_log.py` is derived from the existing `### Slice N:` headings, so
 reports stay ordered without a counter argument.
 
