@@ -49,10 +49,26 @@ def _load_fields_file(path: Path) -> dict[str, str]:
     A file has no such layer. The caller writes the JSON with its own file tool (or
     a heredoc it controls), and the bytes on disk are the bytes this reads.
     """
+    def _no_duplicate_keys(pairs):
+        # `json.loads` is LAST-WINS on a repeated key, which is this helper's own
+        # defect inside its own repair: a long hand-written report with `changed`
+        # twice would append a record missing one of them and report `appended`.
+        # Undetectable from inside, exactly like the shell was.
+        seen = [key for key, _ in pairs]
+        if repeated := sorted({key for key in seen if seen.count(key) > 1}):
+            raise SystemExit(f"--fields-file repeats field(s): {', '.join(repeated)}; each may appear once")
+        return dict(pairs)
+
     try:
-        raw = json.loads(path.read_text(encoding="utf-8"))
+        raw = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_no_duplicate_keys)
     except OSError as exc:
         raise SystemExit(f"--fields-file unreadable: {exc}") from exc
+    except UnicodeDecodeError as exc:
+        # Caught by name, not by `ValueError`: `json.JSONDecodeError` is also a
+        # ValueError, and a bare `except ValueError` would swallow the duplicate-key
+        # SystemExit's sibling paths under one message. A non-UTF-8 file used to
+        # escape as a traceback, which is the one refusal that did not name its cause.
+        raise SystemExit(f"--fields-file is not UTF-8: {exc}") from exc
     except json.JSONDecodeError as exc:
         raise SystemExit(f"--fields-file is not valid JSON: {exc}") from exc
     if not isinstance(raw, dict):
@@ -65,6 +81,17 @@ def _load_fields_file(path: Path) -> dict[str, str]:
         raise SystemExit(f"--fields-file has unknown field(s): {', '.join(unknown)}; known: {', '.join(sorted(known))}")
     if bad := sorted(key for key, value in raw.items() if not isinstance(value, str)):
         raise SystemExit(f"--fields-file values must be strings; not strings: {', '.join(bad)}")
+    # A JSON report makes multi-line prose easy where a shell argument made it awkward,
+    # and the renderer writes `- <label>: <value>` verbatim. A value carrying a line
+    # that starts `### Slice` or `## ` becomes a heading the caller never wrote, which
+    # `next_slice_number` and the section checks then read as real -- record corruption
+    # under an `appended` verdict, the class this whole helper is being repaired for.
+    if multiline := sorted(key for key, value in raw.items() if "\n" in value):
+        raise SystemExit(
+            f"--fields-file values must be single-line; these contain newlines: "
+            f"{', '.join(multiline)}. A line beginning `## ` or `### Slice` would be "
+            f"read back as a real heading. Write the value as one line."
+        )
     return raw
 
 

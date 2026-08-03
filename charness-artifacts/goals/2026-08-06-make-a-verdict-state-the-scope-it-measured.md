@@ -9,9 +9,8 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: D (#487) is code-complete and gated but **NOT bounded-reviewed** —
-  see its Slice Log entry; that is an owed round, not a waived one. A, B, C are
-  DONE and pushed.
+- Current slice: all four scope slices (A/#490, B/#488, C/#489, D/#487) are DONE,
+  reviewed, gated and pushed. What remains is GOAL CLOSEOUT — see Next action.
   A and B are DONE and pushed (`a5b5d0e8`, `8573f862`), and **remote CI is
   confirmed green on BOTH check-runs for each**, read through the check-runs API
   — a different observer AND channel than the push exit code.
@@ -23,9 +22,16 @@ runs the activation command.
   reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: run D's bounded slice critique, then goal closeout (final broad
-  proof, retro, `## Final Verification`, `## Auto-Retro` dispositions, and the
-  issue-closeout floor for #487/#488/#489 — none of them is closed yet).
+- Next action: **goal closeout, none of it done.** In order: the final broad
+  proof (`run_slice_closeout.py --verification-lock` with an explicit broad-pytest
+  number), `retro`, `## Final Verification`, `## Auto-Retro` dispositions, and then
+  the issue-closeout floor for **#487, #488, #489 and #490 — all four are still
+  OPEN**, each needing `validate-closeout-draft`, a DELEGATED resolution critique
+  BEFORE the close call, and `verify-closeout --expect-state CLOSED`.
+- **Remote CI is confirmed green on both check-runs for `a5b5d0e8` and `8573f862`.**
+  For `3f7e0d04` (C) and `c09c7f4a` (D) the mutation mirror was still `in_progress`
+  when this line was written — `Core deterministic gates` was green on `3f7e0d04`.
+  NOT confirmed; re-read the check-runs API before closing anything.
 - **Non-claim carried from the first minute — what is rebuilt and what survived.**
   **RECONSTRUCTED** (written 2026-08-06 from the three issues, the shaping commit
   message `db20ccfc`, and `docs/handoff.md`; the original text never reached disk
@@ -354,6 +360,20 @@ below. Fill during the run:
 - Off-goal findings: None new.
 - Lessons carried forward: This entry was written through `--fields-file` - the repair dogfooding itself. Every earlier entry in this log went through a Python argv list with no shell, which is the other safe channel and is why none of them lost text. And the unknown-key REFUSAL caught a real mistake on its first live use: this entry was first written with `test_pressure`/`off_goal` underscores, and the helper refused instead of silently dropping two fields into a record nobody would have re-read.
 - Metrics: 3 slice-log lines lost in the reported instance. 2 safe channels, 1 unsafe. 2 dup families removed by extraction, 1 one-line residue classified.
+
+### Slice 5: D round 1 - the owed bounded review, run after the push
+
+- Objective: Discharge slice D's owed slice critique and fold what it found.
+- Why this approach: The previous entry recorded the round as owed rather than waived; leaving it owed past closeout would have made the record the only place the gap existed.
+- Commits: pending (this slice); D itself shipped as c09c7f4a
+- What changed: Refusals added for the three silent-loss paths the reviewer found INSIDE the new channel: duplicate JSON keys (json.loads is last-wins, so a repeated `changed` dropped one value under an `appended` verdict), an embedded newline (a JSON report invites multi-line prose, and the renderer writes it verbatim, so a value containing a line starting `### Slice` becomes a heading `next_slice_number` reads as real), and a non-UTF-8 file (escaped as a traceback rather than a named refusal). Both copies of `references/goal-artifact.md` - the file that carries the actual copy-paste invocation - now state the rule; SKILL.md and lifecycle-during.md had it and that reference did not. `goal_cli_args` docstring stopped claiming a reach it does not have.
+- Alternatives rejected: Accepting the duplicate-key and newline paths as edge cases was rejected: both write an incomplete record and report success, which is the exact defect this slice repairs, inside the repair.
+- Targeted verification: 8 tests in the input-channel file; markdown lint clean. The reviewer's one evidence request was answered from git: the pre-extraction `_resolve_goal_path` in check_goal_artifact.py is byte-identical to the extracted one, including `.expanduser().resolve()` on the --goal-path branch, so the extraction changed no path semantics.
+- Test duplication pressure: One added test covers all three new refusals rather than three near-identical test bodies.
+- Critique: Bounded fresh-eye round 1 (delegated, read-only), boundary verified clean BEFORE any repair. It found the canonical example doc still teaching the lossy form - the same shape slice A and slice C round 2 both found, a shipped reference disagreeing with the change one file away, now three times in one goal. Round 2 NOT run: slice D is an input channel and a shared CLI surface, not verdict logic, so the two-round trigger does not apply; the ordinary one round is now discharged.
+- Off-goal findings: None new.
+- Lessons carried forward: Three slices, three times the shipped reference did not know what the code now does. The reference that mattered most here was the one carrying the copy-paste command, which neither of the two docs I did update was. When a change alters how a helper should be CALLED, the surface to fix is the one an agent copies from, not the one that explains the concept.
+- Metrics: 3 silent-loss paths found inside the repair - 2026-08-06. 3rd stale-reference finding in 4 slices.
 
 ## Context Sources
 

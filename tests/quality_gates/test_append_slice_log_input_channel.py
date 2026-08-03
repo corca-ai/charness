@@ -166,7 +166,7 @@ def test_the_slug_and_date_selector_resolves_and_refuses(tmp_path: Path) -> None
 
     resolved = _run(tmp_path, "--slug", "g", "--date", "2026-08-06", "--fields-file", str(fields))
     assert resolved.returncode == 0, resolved.stderr
-    assert json.loads(resolved.stdout)["path"] == str(goal)
+    assert Path(json.loads(resolved.stdout)["path"]) == goal.resolve()
 
     partial = _run(tmp_path, "--slug", "g", "--date", "", "--fields-file", str(fields))
     assert partial.returncode != 0
@@ -175,3 +175,26 @@ def test_the_slug_and_date_selector_resolves_and_refuses(tmp_path: Path) -> None
     malformed = _run(tmp_path, "--slug", "g", "--date", "2026-8-6", "--fields-file", str(fields))
     assert malformed.returncode != 0
     assert "invalid date" in malformed.stderr
+
+
+def test_the_new_channel_has_no_silent_loss_of_its_own(tmp_path: Path) -> None:
+    """The repair must not carry the class it repairs. Three inputs that would have
+    written an incomplete record under an `appended` verdict, each refused by name."""
+    goal = _goal(tmp_path)
+    fields = tmp_path / "f.json"
+
+    # last-wins duplicate keys: the earlier value vanishes
+    fields.write_text('{"name": "s", "changed": "first", "changed": "second"}', encoding="utf-8")
+    dup = _run(tmp_path, "--goal-path", str(goal), "--fields-file", str(fields))
+    assert dup.returncode != 0 and "repeats field(s): changed" in dup.stderr
+
+    # a newline turns a value into a heading the caller never wrote
+    fields.write_text(json.dumps({"name": "s", "lessons": "a\n### Slice 9: fake"}), encoding="utf-8")
+    nl = _run(tmp_path, "--goal-path", str(goal), "--fields-file", str(fields))
+    assert nl.returncode != 0 and "must be single-line" in nl.stderr
+
+    # non-UTF-8 used to escape as a traceback rather than a named refusal
+    fields.write_bytes('{"name": "s"}'.encode("utf-16"))
+    enc = _run(tmp_path, "--goal-path", str(goal), "--fields-file", str(fields))
+    assert enc.returncode != 0
+    assert "not UTF-8" in enc.stderr and "Traceback" not in enc.stderr

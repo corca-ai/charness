@@ -127,6 +127,13 @@ Use the helpers instead of hand-editing the markdown; they preserve manual
 content and avoid timestamp-only churn. Resolve `$SKILL_DIR` per
 `../../../shared/references/bootstrap-resolution.md` first.
 
+**Pass the prose through `--fields-file <json>`, not these flags.** Slice prose
+cites identifiers, so it carries backticks, and a shell expands those BEFORE the
+helper starts — the record is written with words missing and the run still reports
+`appended`. The flag form below stays valid for short identifier-free values and is
+shown for the field names; a caller building `argv` as a list with no shell is
+equally safe. See `SKILL.md` and `lifecycle-during.md`.
+
 ```bash
 # Scaffold a new goal (status draft), or update only the status of an existing one.
 python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \

@@ -16,7 +16,13 @@ from pathlib import Path
 
 
 def add_goal_target_args(parser: argparse.ArgumentParser) -> None:
-    """The four flags that name a goal artifact, identically in every helper."""
+    """The four flags that name a goal artifact.
+
+    Used by `append_slice_log.py` and `check_goal_artifact.py`, which had a copy each.
+    NOT by every achieve helper -- `normalize_goal_closeout.py` and
+    `record_metric_window.py` still declare their own `--goal-path`, and saying
+    "identically in every helper" here would assert a reach this does not have.
+    """
     parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root that owns charness-artifacts/goals/")
     parser.add_argument("--goal-path", type=Path, help="Explicit path to the goal artifact (overrides --slug/--date)")
     parser.add_argument("--slug", help="Goal slug, used with --date to locate the artifact")
@@ -29,9 +35,9 @@ def resolve_goal_path(args, goal_lib) -> Path:
     ``goal_lib`` is injected so this module stays free of the library's import cost
     and its callers keep loading it their own way.
     """
-    repo_root = args.repo_root.expanduser().resolve()
     if args.goal_path is not None:
         return args.goal_path.expanduser().resolve()
+    repo_root = args.repo_root.expanduser().resolve()
     if not (args.slug and args.date):
         raise SystemExit("provide --goal-path, or both --slug and --date")
     try:
