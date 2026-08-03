@@ -211,7 +211,31 @@ def test_check_goal_artifact_cli_reports_head_freshness_failure(tmp_path: Path, 
 
 def test_check_goal_artifact_cli_pursue_ready_return_codes(tmp_path: Path, monkeypatch, capsys) -> None:
     ready_path = tmp_path / "ready.md"
-    ready_path.write_text("Status: active\n## Goal\nshaped\n", encoding="utf-8")
+    # This test pins the CLI's exit CODES, not the readiness rule, so the fixture
+    # carries every required/portability heading — otherwise the section floor
+    # (not the exit-code mapping under test) is what decides the result.
+    ready_path.write_text(
+        "Status: active\n## Goal\nshaped\n"
+        + "".join(
+            f"## {section}\n"
+            for section in (
+                "Non-Goals",
+                "Boundaries",
+                "User Acceptance",
+                "Agent Verification Plan",
+                "Slice Plan",
+                "Slice Log",
+                "Off-Goal Findings",
+                "Final Verification",
+                "User Verification Instructions",
+                "Auto-Retro",
+                "Context Sources",
+                "Interview Decisions",
+                "Plan Critique Findings",
+            )
+        ),
+        encoding="utf-8",
+    )
     result = run_check_goal_artifact(
         monkeypatch,
         capsys,

@@ -53,7 +53,9 @@ brief's `closeout_handoff` note when starting closeout.
      test-duplication pressure, slice sequence, critique plan, stop conditions,
      reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
    - replace all `To be filled by the achieve Before-phase` placeholders; any
-     leftover marker leaves the goal unshaped to `--pursue-ready`
+     leftover marker leaves the goal unshaped to `--pursue-ready`, and so does a
+     MISSING required/portability heading (an artifact whose sections were never
+     written carries no marker either, so marker-absence is not shaping-presence)
    - for consequential defaults (live/prod proof, issue close/split, broad scope,
      irreversible side effects, or proof-level non-claims) in Non-Goals,
      Boundaries, verification, interview decisions, or critique findings, add a

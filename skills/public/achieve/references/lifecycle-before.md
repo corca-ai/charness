@@ -155,6 +155,36 @@ pursue and route the operator to the Before-phase (`/achieve @<artifact>`). Do
 **not** shape the goal inside `/goal` — that would put shaping back into the
 pursue path, the exact responsibility blur this boundary removes.
 
+Unshaped has **two** forms, and the second is the one that reads as ready. A
+placeholder marker means the sections exist and were not filled; an artifact
+whose sections were never WRITTEN carries no marker at all, so marker-absence is
+not shaping-presence. `--pursue-ready` therefore also requires every required
+and portability H2 heading to be present, and refuses with
+`incomplete: N required section heading(s) absent (...)` naming each one. This
+is the only gate in front of `/goal`, and the sections it would otherwise skip
+(`Boundaries`, `Slice Plan`, `User Acceptance`) are exactly what bounds an
+autonomous run — a goal with no `Boundaries` section has no recorded
+external-side-effect scope and no stop conditions.
+
+A third refusal guards the heading reading itself. Fence masking **fails open**
+on an unclosed fence and hands back the raw text, so every `## Heading` inside
+that fence would count as present — an artifact with all of them fenced away and
+no real sections would otherwise read as complete. On an unbalanced document the
+gate refuses with `unreadable: an unclosed code fence makes the heading reading
+unestablished`, the same bytes `check_goal` already refuses, rather than
+rendering a heading verdict over a reading nobody established. The payload
+carries `fences_balanced` and `sections_reading_established` so a machine caller
+can see which reading the heading facts came from.
+
+The mode stays deliberately narrower than the full `check_goal` sweep, so it
+carries `scope_not_checked` in its payload naming what its verdict does **not**
+establish (status validity, activation-line shape, closeout evidence, and the
+CONTENT under each heading). Read the scope from the answer; a green here is a
+claim about markers, headings, fences, and operator discussion — not about what
+is written under the headings. `reason` names **every** refusal clause, not only
+the first, so fixing the one it named does not surface a second on the next
+attempt, and the PASS sentence states its own scope too.
+
 ### Consequential Discussion Before Activation
 
 Structural readiness is not enough when the goal contains consequential

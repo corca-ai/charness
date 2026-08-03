@@ -13,6 +13,20 @@ from .support import (
 GOAL_PATH = "charness-artifacts/goals/2026-06-03-testability-quality-skill-ratchet.md"
 
 
+# Required/portability headings a fixture must carry so the pursue-readiness
+# section floor is not what decides its verdict. `Non-Goals` is omitted because
+# both fixtures below already write that heading themselves (with content in the
+# discussion fixture, empty in the draft-frame one) — including it here would
+# emit the heading twice.
+_REMAINING_SECTIONS = (
+    "## Goal\n\n## Boundaries\n\n## User Acceptance\n\n"
+    "## Agent Verification Plan\n\n## Slice Plan\n\n## Slice Log\n\n"
+    "## Off-Goal Findings\n\n## Final Verification\n\n"
+    "## User Verification Instructions\n\n## Auto-Retro\n\n"
+    "## Context Sources\n\n## Interview Decisions\n\n## Plan Critique Findings\n"
+)
+
+
 def _write_discussion_goal(repo: Path) -> Path:
     goal = repo / "charness-artifacts" / "goals" / "discussion-warning.md"
     goal.parent.mkdir(parents=True, exist_ok=True)
@@ -21,7 +35,11 @@ def _write_discussion_goal(repo: Path) -> Path:
         "Status: draft\n"
         "Activation: `/goal @charness-artifacts/goals/discussion-warning.md`\n\n"
         "## Non-Goals\n\nDo not close #279 until proof-bearing closeout.\n\n"
-        "Discuss before activation: confirm issue closeout timing first.\n\n",
+        "Discuss before activation: confirm issue closeout timing first.\n\n"
+        # Headings present so exit 1 attributes to the UNRESOLVED-DISCUSSION
+        # clause under test; without them the section floor forces exit 1 on its
+        # own and the assertion would pass even if the discussion gate regressed.
+        + _REMAINING_SECTIONS,
         encoding="utf-8",
     )
     return goal
@@ -38,7 +56,11 @@ def _write_generic_draft_frame_goal(repo: Path) -> Path:
         "- Current slice: before activation.\n"
         "- Next action: activate with `/goal @charness-artifacts/goals/generic-draft-frame.md`.\n\n"
         "## User Acceptance\n\nUser runs X and sees Y.\n\n"
-        "## Agent Verification Plan\n\nRun the suite; assert Z.\n",
+        "## Agent Verification Plan\n\nRun the suite; assert Z.\n\n"
+        # This fixture isolates the draft-frame ADVISORY, which must stay
+        # non-blocking, so the section floor is satisfied and only the frame
+        # disposition is generic.
+        "## Non-Goals\n\n" + _REMAINING_SECTIONS,
         encoding="utf-8",
     )
     return goal

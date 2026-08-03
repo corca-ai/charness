@@ -32,6 +32,7 @@ _draft_frame = _load_sibling("goal_artifact_draft_frame")
 _markdown = _load_sibling("goal_artifact_markdown")
 _metric_window = _load_sibling("goal_metric_window_lib")
 _policy = _load_sibling("achieve_adapter_policy")
+_pursue = _load_sibling("goal_artifact_pursue")
 _scaffold = _load_sibling("goal_artifact_scaffold")
 _timebox = _load_sibling("goal_artifact_timebox")
 CLOSEOUT_EVIDENCE_NAMES = _closeout.CLOSEOUT_EVIDENCE_NAMES
@@ -84,9 +85,10 @@ PORTABILITY_SECTIONS = (
     "Plan Critique Findings",
 )
 
-# Before-phase placeholder marker the handoff auto-draft leaves until shaping
-# fills it; its presence means `/goal` must fail-fast to `/achieve`.
-_UNSHAPED_MARKER = re.compile(r"to be filled by the achieve before-phase", re.IGNORECASE)
+# The Before-phase placeholder marker moved with the readiness concept to
+# `goal_artifact_pursue.UNSHAPED_MARKER` — its only reader. Left as ONE
+# definition rather than a second copy here: a repair that duplicates a rule
+# instead of moving it is the shape that has come back repeatedly.
 
 _SLICE_HEADING = re.compile(r"^### Slice (\d+):", re.MULTILINE)
 _STATUS_LINE = re.compile(r"^Status:[^\n]*$", re.MULTILINE)
@@ -247,56 +249,26 @@ def next_slice_number(text: str) -> int:
     return (max(numbers) + 1) if numbers else 1
 
 
+PURSUE_SCOPE_NOT_CHECKED = _pursue.SCOPE_NOT_CHECKED
+
+
 def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | None = None) -> dict[str, Any]:
     """Whether a goal is shaped enough to *pursue* via ``/goal``.
 
-    Unshaped = a Before-phase placeholder marker still present (the handoff
-    auto-draft state); on it ``/goal`` must fail-fast and route to ``/achieve``
-    rather than shape. Shaping is the Before-phase's job; pursuing is ``/goal``'s.
-
-    ``deploy_vocab`` (an achieve adapter's ``discussion_deploy_vocab``) is passed
-    through to the discussion gate so the consumer-axis deploy vocabulary is
-    adapter-provided, not a charness hardcode; ``None`` keeps the English default.
+    The concept lives in ``goal_artifact_pursue``; this wrapper supplies the two
+    facts this module owns -- the artifact's status and the required-heading set
+    ``check_goal`` enforces -- so the readiness module never reaches back here.
     """
-    masked = _mask_fences(text)
-    placeholders = _UNSHAPED_MARKER.findall(masked)
-    discussion = discussion_readiness(text, deploy_vocab=deploy_vocab)
-    disposition = _draft_frame.draft_frame_disposition(text, status=read_status(text), masked=masked)
-    shape_ready = not placeholders
-    activation_ready = shape_ready and discussion["discussion_ready"]
-    discussion_warning = (
-        "Consequential activation decisions are surfaced but unresolved. "
-        "Resolve or explicitly ask about them in the transcript before offering `/goal`, "
-        "then mark the summary `RESOLVED`, `CONFIRMED`, or `APPROVED`."
-        if discussion["discussion_required"] and discussion["discussion_summary_present"] and not discussion["discussion_resolved"]
-        else ""
+    return _pursue.pursue_readiness(
+        text,
+        required_sections=REQUIRED_SECTIONS + PORTABILITY_SECTIONS,
+        status=read_status(text),
+        deploy_vocab=deploy_vocab,
+        mask_fences=_mask_fences,
+        fences_balanced=_fences_balanced,
+        discussion_readiness=discussion_readiness,
+        draft_frame_disposition=_draft_frame.draft_frame_disposition,
     )
-    reason = (
-        "operator discussion unresolved: consequential activation decisions are surfaced "
-        "but not marked resolved -- resolve or confirm them before offering `/goal`"
-        if shape_ready and discussion_warning
-        else "shaped: no Before-phase placeholders remain; safe to pursue via `/goal`"
-        if activation_ready
-        else (
-            f"unshaped: {len(placeholders)} Before-phase placeholder(s) remain -- run "
-            "the achieve Before-phase (`/achieve @<file>`) before `/goal`; `/goal` pursues "
-            "only and does not shape"
-            if placeholders
-            else "operator discussion required: consequential activation decisions are present "
-            "but no non-empty `Discuss before activation:` summary was found"
-        )
-    )
-    return {
-        "pursue_ready": activation_ready,
-        "shape_ready": shape_ready,
-        "activation_ready": activation_ready,
-        "placeholder_count": len(placeholders),
-        "reason": reason,
-        "activation_discussion_warning": discussion_warning,
-        "draft_frame_disposition_present": disposition["present"],
-        "draft_frame_warning": disposition["warning"],
-        **discussion,
-    }
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
