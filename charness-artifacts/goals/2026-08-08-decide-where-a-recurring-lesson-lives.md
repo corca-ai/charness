@@ -1,22 +1,21 @@
 # Achieve Goal: Decide where a recurring judgment-bound lesson lives, and stop verdict surfaces losing their own evidence
 
-Status: draft
+Status: active
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md`
 
-This file is the living goal scratchpad. It becomes active only when the user
-runs the activation command.
+This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md` after confirming the draft is
-  still intended.
+- Current slice: Slice B — build the reviewer-packet control selected for #499 and #491.
+- Current slice intent: implement the reviewer question that names the invariant/claim, its
+  owning boundary, a recorded instance, and an axis-varying counterexample; Slice A's selector
+  and six-issue ledger are complete. Once active, this names the reviewable-intent unit in
+  progress and the commits it spans; critique and broad proof do not re-fire within one
+  unchanged intent — update it when the intent changes, not per commit (meaningful-slice-cadence).
+- Next action: inspect the reviewer-packet producer and its consumers, then implement the
+  smallest portable question and prove it bites against a #499 or #491 record.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -31,11 +30,11 @@ runs the activation command.
 
 ## Goal
 
-Six open findings, two questions, one axis.
+Six issue findings, two questions, one axis.
 
 **Question A — where does a recurring judgment-bound lesson live?** A gate, a reviewer question, or a recorded exemption. This repo has measured that a gate which cries wolf gets walked past, and Floor-Addition Restraint already says an advisory is the default until a recurrence is RECORDED.
 
-- [#499](https://github.com/corca-ai/charness/issues/499) — a guard written against the OBSERVED FAILURE's shape instead of the invariant. Seven instances in one session across four surfaces; it was the round-2 blocker on every slice, twice the wrong predicate was the repair of a previous wrong predicate, and the last one was caught by a RELEASE critique after two code rounds passed it.
+- [#499](https://github.com/corca-ai/charness/issues/499) — a guard written against the OBSERVED FAILURE's shape instead of the invariant. Five instances in one session across three surfaces; it was the round-2 blocker on every slice, twice the wrong predicate was the repair of a previous wrong predicate, and the last one was caught by a RELEASE critique after two code rounds passed it. GitHub currently records this issue as CLOSED; it remains the recorded recurrence that tests the policy.
 - [#491](https://github.com/corca-ai/charness/issues/491) — a shipped reference disagreeing with the code. Same axis, deliberately deferred so it would get its own shaping.
 - [#500](https://github.com/corca-ai/charness/issues/500) — the second goal-artifact CREATOR gets none of the first one's value guards. The concrete case that TESTS whichever answer wins.
 
@@ -51,8 +50,8 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 
 ## Non-Goals
 
-- **Not re-litigating the seven #499 instances.** They are repaired and committed. The
-  open question is what catches the eighth.
+- **Not re-litigating the five #499 instances.** They are repaired and committed. The
+  open question is what catches the sixth.
 - **Not a new blocking gate by default.** Floor-Addition Restraint says an advisory is
   the default until a recurrence is RECORDED, and a gate that guesses at a
   judgment-bound property cries wolf. #499 has a recorded recurrence; #491 may not.
@@ -80,40 +79,13 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
   this goal exists to prevent.
 - **The decision weighs THREE candidate answers, not two** — gate, reviewer question,
   and *fix the surface so the lesson is unnecessary* — because the third one already
-  has a measured worked example in this repo (see `## Context Sources
-
-Durable references this goal was shaped from, in reading order.
-
-1. **Commit `aea9cd99` and `a26bac92`** — the worked example that makes this goal's
-   third candidate answer concrete rather than hypothetical. A recurring waste (a
-   truncated gate read losing the failing check's name) was removed by making the
-   SURFACE carry what the reader needs, not by a gate, a reviewer question, or a
-   lesson. It paid for itself on the first run after it landed. Read these before
-   slice A weighs its options.
-2. [issue #499](https://github.com/corca-ai/charness/issues/499) — seven instances
-   tabulated, three candidate remedies weighed. The instances are what any control must
-   be shown to catch.
-3. [#491](https://github.com/corca-ai/charness/issues/491),
-   [#500](https://github.com/corca-ai/charness/issues/500),
-   [#502](https://github.com/corca-ai/charness/issues/502),
-   [#501](https://github.com/corca-ai/charness/issues/501),
-   [#497](https://github.com/corca-ai/charness/issues/497).
-4. [the 2026-08-07 goal](2026-08-07-finish-the-sweeps-this-run-left.md) and
-   [its retro](../retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md) — the
-   retro's `## North Star Alignment` names this class as the run's failure signature.
-5. [the 3.1.1 release critique](../critique/2026-08-07-release-3.1.1-critique.md) — the
-   round that caught the surface fix reintroducing its own class, which is the sharpest
-   single instance of why this goal exists.
-6. [design-north-star.md](../../docs/design-north-star.md) — "teeth only where a wrong
-   answer escapes" governs slice A.
-7. [implementation-discipline.md](../../docs/conventions/implementation-discipline.md)
-   `## Floor-Addition Restraint` — the checklist slice A must run and record.
+  has a measured worked example in this repo (see `## Context Sources`).
 
 ## Agent Verification Plan
 
 ### Low-Cost Checks
 
-- **Read the seven #499 instances and the truncation fix before designing.** The issue
+- **Read the five #499 instances and the truncation fix before designing.** The issue
   tabulates the first; commit `aea9cd99` is the second. A remedy designed without
   reading what it must catch is the class it is trying to fix.
 - **Never pipe a gate through `tail`/`head`** — redirect and grep. Both gates now name
@@ -146,8 +118,8 @@ Durable references this goal was shaped from, in reading order.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable record naming the choice, the rejected alternatives, and the measured basis for each | pending |
-| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the seven is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | pending |
+| A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable selector, six-row disposition/proof matrix, and measured basis for each candidate | completed |
+| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | pending |
 | C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | pending |
 | D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | pending |
 | E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | pending |
@@ -199,6 +171,8 @@ closeout floors are presence-only, so no stub is seeded for them — add their l
 per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
+- Routing: critique — decision premortem for Slice A; three named lenses plus a separate counterweight reviewed the selector before it was locked.
+- Gather: charness-artifacts/gather/2026-08-04-goal-issue-sources.md — authenticated `gh` capture of the six named GitHub issue records; the public URL route was attempted first and blocked by captcha.
 
 ## Discuss Before Activation
 
@@ -222,17 +196,36 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Select the evidence-carrying control
+
+- Objective: Lock one recorded selector policy for #499 and #491 across gate, reviewer question, and surface fix, then disposition all six issue records under that policy.
+- Why this approach: The two issues share the proxy-for-invariant failure axis but do not necessarily share a mechanism; the truncation repair supplies a measured third candidate without proving it universal.
+- Commits: none — Slice A changed the active goal artifact and gathered evidence only; implementation remains in Slices B–D.
+- What changed: Selector: name the semantic fact and reader/control; choose a surface fix when the surface can carry and prove that fact, a reviewer question when the fact is judgment-bound, and a gate only for an observable predicate with recorded escape and measured false-fire cost. #499 CLOSED → reviewer question; #491 OPEN → reviewer question; #500 OPEN → shared creator/value surface; #502 OPEN → owned or structured verdict surface, architecture deferred to C; #501 OPEN → helper-aware import-path surface; #497 OPEN → exported-layout importability surface.
+- Alternatives rejected: Rejected a semantic blocking/meta-gate because it would encode another proxy and violate P1/P5; rejected one universal mechanism because the six records have different owners; rejected a blanket surface-fix mandate because the truncation commits are a worked example, not a theorem. Deferred #502 renderer versus structured sibling to Slice C.
+- Targeted verification: Read current GitHub issue JSON through the gathered record; confirmed #499 CLOSED and #491/#500/#501/#502/#497 OPEN. Read aea9cd99, a26bac92, the five #499 instances in the prior goal/retro, design-north-star.md, implementation-discipline.md, and recent-lessons.md. check_goal_artifact.py will verify the repaired artifact after this append.
+- Test duplication pressure: n/a — no tests were added or expanded in this decision/artifact slice.
+- Critique: Three named decision lenses plus one separate counterweight returned findings; all four shared the packet and were verified with clean reviewer-boundary fingerprints before parent writes. The full triage and packet hashes are in Plan Critique Findings.
+- Off-goal findings: none — #496 remains explicitly out of scope; no new issue was filed.
+- Lessons carried forward: A common policy may select different mechanisms per issue. A surface fix is preferred only when it can carry the semantic fact; a reviewer question must require an invariant, owner, recorded instance, and an axis-varying counterexample rather than a ritual reminder.
+- Metrics: Host token/time/tool metrics unavailable; measured review count is 3 angle reviewers plus 1 counterweight, with 4 clean boundary verifications.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
 the originating context by following them in order.
 
-1. TODO the repo's governing design standard, and what it says about THIS goal —
-   which facets bear on its boundaries, where its teeth belong, and which
-   irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
-   the standard is what tells you where a wrong answer escapes, and that is a
-   Before-phase question. (The retro's `## North Star Alignment` asks the
-   backward-looking half; this is the forward-looking one.)
+1. [design-north-star.md](../../docs/design-north-star.md) — the governing standard for where
+   teeth belong, where judgment should remain, and which proof-surface changes are irreversible.
+2. **Commits `aea9cd99` and `a26bac92`** — the worked example where a verdict surface was made
+   to carry failing names and only backed log paths, paying for itself on the first rerun.
+3. [gathered GitHub issue record](../gather/2026-08-04-goal-issue-sources.md) — captured primary
+   bodies, current states, timestamps, and candidate directions for #499, #491, #500, #502,
+   #501, and #497; the record preserves the six canonical issue URLs.
+4. [the 2026-08-07 goal](2026-08-07-finish-the-sweeps-this-run-left.md) and [its retro](../retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md) — the five recorded #499 instances and the failure signature that led to this goal.
+5. [the 3.1.1 release critique](../critique/2026-08-07-release-3.1.1-critique.md) — the review that caught the truncation repair reintroducing its own evidence-loss class.
+6. [implementation-discipline.md](../../docs/conventions/implementation-discipline.md) — especially `## Floor-Addition Restraint` and change-discipline premise checks.
+7. [recent lessons](../retro/recent-lessons.md) — recurring traps that the selector must not repeat.
 
 ## Interview Decisions
 
@@ -259,9 +252,47 @@ rejected-alternatives reason.
 
 ## Plan Critique Findings
 
-Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
-not folded, and reviewer provenance. Preserves reasoning so a fresh session
-re-verifies the folded revisions without re-running critique.
+Blockers folded into the Slice A decision and active frame; over-worry raised but
+not folded; reviewer provenance preserved so a fresh session can re-verify the
+folded revisions without re-running critique.
+
+- **Selector locked:** name the semantic fact/invariant and its reader or control;
+  first ask whether a source/verdict surface can carry or derive that fact and prove
+  a recorded instance; if yes, fix that surface; if the fact remains judgment-bound,
+  require a reviewer-packet question; use a gate only for a mechanically observable
+  predicate with a recorded escape, measured false-fire cost, and Floor-Addition
+  Restraint. The selector chooses per issue; it is one policy, not one universal
+  mechanism.
+- **#499 and #491:** both select the reviewer-packet branch for Slice B. #499's
+  "right boundary" is semantic and a detector would be another proxy; #491's
+  current inventory has no `reference-claims` or claims-manifest surface, while the
+  review-owned shape already caught all three recorded mismatches. The surface-fix
+  branch remains selected for the concrete verdict/creator/export cases where the
+  surface can carry the missing fact.
+- **Six-row proof ledger:** #499 (CLOSED, five recorded instances) — reviewer question,
+  prove against one instance plus an axis-varying counterexample; #491 (OPEN, three
+  recorded mismatches) — reviewer question, name the claim, owner, and changed behavior;
+  #500 (OPEN) — surface fix at the shared creator/value boundary, with an explicit
+  exemption only if premise checks prove no shared contract; #502 (OPEN) — surface fix
+  for an owned/structured verdict output, exact renderer architecture deferred to Slice C;
+  #501 (OPEN) — surface fix for helper-supplied module-path semantics; #497 (OPEN) —
+  surface fix for exported-layout importability. Slices B–D owe the recorded-instance
+  proof for each selected branch.
+- **Rejected:** a semantic blocking gate or meta-gate for "correct reasoning" would
+  encode another proxy and contradict P1/P5; a blanket reviewer question would leave
+  machine-observable evidence-loss and export failures unfixed; a blanket surface-fix
+  mandate over-generalizes the truncation worked example. #502's renderer-versus-
+  structured choice is valid but deferred to its own consumer-inventory slice.
+- **Fresh-eye review:** parent-delegated high-leverage decision critique with three
+  named lenses and one separate counterweight; all four findings were received and
+  each boundary fingerprint verified `verdict: clean` before parent writes. Packet
+  JSON: `charness-artifacts/critique/2026-08-03-211703-packet.json`, SHA-256
+  `8bb22a4dea80a1540e489ad2059b130d1e6bba4de2b4bef4b1f2315d370a40a1`; reviewer
+  markdown consumed: `charness-artifacts/critique/2026-08-03-211703-packet.md`,
+  SHA-256 `a5ccbc7413e293b37a1cfb7ad8e220e8156a0881776355be1453f6edc7e472b0`;
+  reviewed-input identity `eab5f4d09d3ff4509d30542b05cfabfb4259ebfd517c1483c96ac61117b55722`;
+  requested spawn fields were `gpt-5.6-terra`, medium, priority; application was
+  not independently confirmed by the host.
 
 ## Off-Goal Findings
 
