@@ -354,6 +354,32 @@ def staged_commit_gate_plan(
     plan.extend(_skill_core_headroom_gates(repo_root, existing))
     plan.extend(_artifact_shape_gates(repo_root, existing))
     plan.extend(_timing_layer_gates(repo_root, paths, existing))
+    # `existing`, not `paths`. These are handed to a validator as ARGUMENTS, and scope
+    # includes DELETED files -- the invariant `test_a_scope_path_never_reaches_a_per_file_
+    # validator` exists because a validator given a path to a file that is gone is a
+    # hazard, whatever the individual consumer happens to tolerate. Same reason
+    # `_skill_core_headroom_gates` and `_artifact_shape_gates` take `existing`.
+    if changed_modules := [
+        path for path in existing
+        if path.endswith(".py")
+        and not path.endswith("__init__.py")
+        and (path.startswith("scripts/") or path.startswith("skills/"))
+    ]:
+        # Scoped to the CHANGED modules, not the whole package. The full sweep is ~2.0s
+        # for 649 modules (measured 2026-08-07, 16 workers), so the scoping is not about
+        # cost here -- it is that a commit-boundary gate should answer for what the commit
+        # touched. The check prints `PARTIAL: checked N of M` with its verdict, so this
+        # run can never be mistaken for a whole-package clean bill; the full sweep runs
+        # in the standalone-import test.
+        plan.extend(
+            _timing_pull_gate(
+                repo_root, "check-standalone-imports",
+                "scripts/check_standalone_imports.py",
+                "--repo-root", str(repo_root), "--require-git-file-listing",
+                "--changed", *changed_modules,
+            )
+        )
+
     plan.extend(_leak_scan_gates(repo_root, paths))
 
     # #314: append the fast surface verify checkers so the literal pre-commit gate
@@ -384,6 +410,7 @@ STRUCTURAL_SWEEP_LABELS: frozenset[str] = frozenset(
         "check-artifact-shape (staged)",
         "validate-inference-interpretation",
         "check-bootstrap-shim-consistency",
+        "check-standalone-imports",
         "check-inventory-declaration-coverage",
         "check-timing-layer-completeness",
         "validate-quality-reference-catalog",
