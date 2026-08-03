@@ -12,7 +12,12 @@ import json
 from pathlib import Path
 
 from scripts.adapter_lib import load_yaml, render_yaml_mapping
-from scripts.quality_adapter_lib import load_quality_adapter_permissive
+from scripts.quality_adapter_lib import (
+    PATH_BEARING_ABSENCE_FIELDS,
+    infer_quality_defaults,
+    is_deliberately_absent,
+    load_quality_adapter_permissive,
+)
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
 
@@ -117,15 +122,22 @@ def test_rewrite_announces_the_comments_it_cannot_keep(tmp_path: Path) -> None:
     assert "WARN:" in result.stderr
 
 
-def test_quiet_run_makes_no_loss_claim(tmp_path: Path) -> None:
-    """No comments to lose means no warning — the signal has to stay meaningful."""
+def test_comment_claim_is_not_made_when_there_were_no_comments(tmp_path: Path) -> None:
+    """The two claims are independent: no comments means no COMMENT claim, and nothing more.
+
+    This used to assert total silence, which is what made the refill claim
+    self-silencing — the first rewrite strips every comment, so from then on a
+    refilled deletion was reverted with the tool saying nothing.
+    """
     repo = seed_quality_repo(tmp_path)
     _adapter(repo).write_text(CUSTOMIZED_ADAPTER, encoding="utf-8")
 
     payload = _bootstrap(repo)
 
     assert "comments_dropped" not in payload
-    assert "customization_warning" not in payload
+    assert "comment line(s)" not in payload.get("customization_warning", "")
+    # ...but the refill claim is still owed, because this rewrite did refill.
+    assert payload["refilled_fields"]
 
 
 def test_contradictory_absence_declaration_is_refused(tmp_path: Path) -> None:
@@ -212,11 +224,11 @@ def test_loss_warning_names_only_fields_it_actually_wrote(tmp_path: Path) -> Non
     rewritten = _adapter(repo).read_text(encoding="utf-8")
     warning = payload["customization_warning"]
 
-    named = warning.split("Fields this run refilled from defaults: ")[1].rstrip(".").split(", ")
-    for field in named:
+    assert "refilled" in warning
+    for field in payload["refilled_fields"]:
         assert f"\n{field}:" in f"\n{rewritten}", f"{field} was named but never written"
     # Fields the renderer drops as empty must not be named.
-    assert "vendored_paths" not in named
+    assert "vendored_paths" not in payload["refilled_fields"]
 
 
 def test_empty_absence_declaration_is_accepted(tmp_path: Path) -> None:
@@ -479,3 +491,99 @@ def test_rationale_that_looks_like_a_scalar_round_trips_as_text(tmp_path: Path) 
     second = _bootstrap(repo)
 
     assert second["deliberately_absent"] == {"security_commands": "true", "coverage_floor_policy": "123"}
+
+
+def test_path_bearing_map_names_keys_that_actually_exist() -> None:
+    """The map is a hand-maintained ruler over another module's defaults.
+
+    A renamed default key would silently make an entry inert — the declaration would
+    stop marking a phantom path and nothing would say so. (This caught a real slip:
+    `dup_ratchet` was first written with `review_path`/`baseline_path`, which do not
+    exist.)
+    """
+    defaults = infer_quality_defaults(Path("."))
+    for field, path_keys in PATH_BEARING_ABSENCE_FIELDS.items():
+        assert field in defaults, f"{field} is not a resolved field at all"
+        value = defaults[field]
+        for key in path_keys:
+            assert isinstance(value, dict) and key in value, f"{field}.{key} does not exist"
+
+
+def test_declared_absence_marks_the_phantom_paths_it_does_not_claim(tmp_path: Path) -> None:
+    """The reported harm: a resolved default naming files the repo does not have."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  coverage_floor_policy: this repo uses neither lefthook nor CI\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+    unasserted = resolved["data"]["deliberately_absent_unasserted_paths"]
+
+    assert unasserted["coverage_floor_policy.lefthook_path"] == "lefthook.yml"
+    assert unasserted["coverage_floor_policy.ci_workflow_glob"] == ".github/workflows/*.yml"
+    assert unasserted["coverage_floor_policy.exemption_list_path"] == "scripts/coverage-floor-exemptions.txt"
+    # The value itself is unchanged, so no consumer that indexes it breaks.
+    assert resolved["data"]["coverage_floor_policy"]["lefthook_path"] == "lefthook.yml"
+    assert any("do not go looking for them" in w for w in resolved["warnings"])
+
+
+def test_is_deliberately_absent_is_the_single_call_a_consumer_makes(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  coverage_floor_policy: neither lefthook nor CI here\n",
+        encoding="utf-8",
+    )
+
+    data = load_quality_adapter_permissive(repo)["data"]
+
+    assert is_deliberately_absent(data, "coverage_floor_policy") is True
+    assert is_deliberately_absent(data, "gate_commands") is False
+    assert is_deliberately_absent({}, "coverage_floor_policy") is False
+
+
+def test_non_path_bearing_absence_marks_nothing(tmp_path: Path) -> None:
+    """Thresholds and rule names assert nothing about the filesystem, so they are left alone."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  coverage_fragile_margin_pp: no coverage tooling here\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+
+    assert "deliberately_absent_unasserted_paths" not in resolved["data"]
+    assert not any("do not go looking" in w for w in resolved["warnings"])
+
+
+def test_refill_is_reported_even_when_the_adapter_has_no_comments(tmp_path: Path) -> None:
+    """The first rewrite makes every adapter comment-free, so gating the refill claim on
+    comments meant the tool went permanently quiet about undoing a repo's decisions."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\ngate_commands:\n- npm run gate\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert "comments_dropped" not in payload
+    assert payload["refilled_fields"], "a rewrite that refilled defaults must say so"
+    assert "coverage_floor_policy" in payload["refilled_fields"]
+    assert "absent ON PURPOSE" in payload["customization_warning"]
+
+
+def test_a_converged_adapter_still_says_nothing(tmp_path: Path) -> None:
+    """Not "warn more often": no rewrite, no claim. The refill claim also quiets itself
+    once the refilled fields are written, because they then count as explicit."""
+    repo = seed_quality_repo(tmp_path)
+    _bootstrap(repo)
+
+    second = _bootstrap(repo)
+
+    assert second["adapter_status"] == "unchanged"
+    assert "refilled_fields" not in second
+    assert "customization_warning" not in second

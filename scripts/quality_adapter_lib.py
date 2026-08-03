@@ -329,17 +329,60 @@ ABSENCE_STRUCTURAL_FIELDS = frozenset(
 )
 
 
+# Fields whose PRESET DEFAULT names a filesystem path. Measured 2026-08-05 over
+# `infer_quality_defaults`, ruler = a default value containing `/` or ending in a
+# file extension; `output_dir` is excluded because it is structural and refused.
+# These are the only fields where a resolved default can send a reader hunting for a
+# file the repo does not have, which is the harm the reporter actually named. Other
+# declared-absent fields keep their default untouched: their values are thresholds,
+# rule names, and markers, which assert nothing about the filesystem.
+PATH_BEARING_ABSENCE_FIELDS: dict[str, tuple[str, ...]] = {
+    "coverage_floor_policy": ("exemption_list_path", "gate_script_pattern", "lefthook_path", "ci_workflow_glob"),
+    "changed_line_mutation_gate": ("coverage_json",),
+    "dup_ratchet": ("review_artifact_path", "gate_baseline_path"),
+    "mutation_testing": ("workflow_path",),
+    "canonical_markdown_surfaces": (),
+}
+
+
+def is_deliberately_absent(data: dict[str, Any], field: str) -> bool:
+    """Whether `field` was declared absent on purpose by the repo.
+
+    The one call a consumer makes before premising anything on that field's resolved
+    value. Resolution still returns the preset default (changing that would alter what
+    every field means at resolution time and break consumers that index them), so a
+    consumer that is about to treat a resolved path as real has to ask.
+    """
+    declared = data.get("deliberately_absent")
+    return isinstance(declared, dict) and field in declared
+
+
+def unasserted_paths(validated: dict[str, Any], honored: dict[str, str]) -> dict[str, str]:
+    """`<field>.<key>` -> the resolved path value the repo does NOT claim exists."""
+    found: dict[str, str] = {}
+    for field, path_keys in PATH_BEARING_ABSENCE_FIELDS.items():
+        if field not in honored:
+            continue
+        value = validated.get(field)
+        if isinstance(value, dict):
+            found.update(
+                {f"{field}.{key}": value[key] for key in path_keys if isinstance(value.get(key), str) and value[key]}
+            )
+        elif isinstance(value, list):
+            found.update({f"{field}[{index}]": item for index, item in enumerate(value) if isinstance(item, str)})
+    return found
+
+
 def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], warnings: list[str]) -> None:
-    """Carry the operator's declared absences through resolution, and say where they do not bite.
+    """Carry the operator's declared absences through resolution, and mark the phantom paths.
 
     Keeping the bootstrap from rewriting the field is only half the job: this resolver
     still fills every unset field from `infer_quality_defaults`, so a repo that declared
-    `coverage_floor_policy` absent still resolves to the preset default that names
-    `lefthook.yml` and `.github/workflows/*.yml`. Making each consumer honor the
-    declaration would change what those fields mean at resolution time and could break
-    consumers that index them, so it is a design decision rather than an implementation
-    detail. What is fixed here is the silence: the declaration survives resolution
-    instead of being dropped, and every field where the default still wins is named.
+    `coverage_floor_policy` absent still resolves to the preset default naming
+    `lefthook.yml`. Changing what a resolved field MEANS would break consumers that index
+    it, so the default stays — but the specific values that assert a file exists are
+    listed as unasserted, because "the next session goes hunting for gates that do not
+    exist" is the harm, and only path-bearing values can cause it.
     """
     declared = data.get("deliberately_absent")
     if declared is None:
@@ -371,13 +414,22 @@ def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], w
         for field in honored
         if field not in ABSENCE_STRUCTURAL_FIELDS and validated.get(field) not in (None, {}, [], "")
     )
+    unasserted = unasserted_paths(validated, honored)
+    if unasserted:
+        validated["deliberately_absent_unasserted_paths"] = unasserted
     if still_defaulted:
-        warnings.append(
+        warning = (
             "deliberately_absent declares "
             + ", ".join(still_defaulted)
             + " absent, but resolution still returns a repo default for each; treat those "
             "values as a preset default rather than as this repo's own declaration."
         )
+        if unasserted:
+            warning += (
+                " These resolved values name PATHS this repo does not claim exist, so do not go "
+                "looking for them: " + ", ".join(f"{ref} ({path})" for ref, path in sorted(unasserted.items())) + "."
+            )
+        warnings.append(warning)
 
 
 def validate_quality_adapter_data(

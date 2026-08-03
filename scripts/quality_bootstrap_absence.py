@@ -126,23 +126,44 @@ def describe_intent_loss(existing_text: str | None, rendered_text: str, field_st
     would push the merge back onto whoever ran the tool. Saying so keeps the merge
     here and still leaves a signal a reader can act on.
     """
-    dropped = count_comment_lines(existing_text) if existing_text else 0
-    if not dropped:
-        return {}
+    # TWO independent claims, reported independently. Gating them together on the comment
+    # count made the refill claim self-silencing: the first rewrite destroys every comment,
+    # so from then on the file has none, and a later deletion could be refilled with the
+    # tool saying nothing at all. The longer a repo lived with the tool, the quieter the
+    # tool got about undoing that repo's decisions.
+    #
+    # This is not "warn more often". A converged adapter is not rewritten at all, so it
+    # stays completely silent; and once a refilled field is written it counts as explicit
+    # on the next run, so the refill claim quiets itself as soon as it has been acted on.
+    # The signal fires when something was actually reverted, not on a schedule.
+    #
     # Only name fields this run actually wrote into the file. `defaulted` covers every
-    # field the operator never set, and the renderer drops the empty ones, so listing
-    # all of them buries the one or two that matter under ~25 names nobody customized —
-    # which is how an operator learns to skim the warning.
+    # field the operator never set, and the renderer drops the empty ones, so listing all
+    # of them buries the one or two that matter under ~25 names nobody customized.
     written = {line.split(":", 1)[0] for line in rendered_text.splitlines() if line[:1].isalpha()}
-    refillable = sorted(
+    refilled = sorted(
         field for field, status in field_statuses.items() if status == "defaulted" and field in written
     )
-    warning = (
-        f"{dropped} comment line(s) in the existing adapter will not survive this rewrite: the "
-        "adapter is re-serialized from data, so comments have nowhere to go. If any of them "
-        f"recorded WHY a field was removed, move that reason into `{FIELD}` — it is data, so it "
-        "survives, and it also stops the bootstrap from refilling the field."
-    )
-    if refillable:
-        warning += f" Fields this run refilled from defaults: {', '.join(refillable)}."
-    return {"comments_dropped": dropped, "customization_warning": warning}
+    dropped = count_comment_lines(existing_text) if existing_text else 0
+    if not refilled and not dropped:
+        return {}
+
+    report: dict[str, Any] = {}
+    claims: list[str] = []
+    if refilled:
+        report["refilled_fields"] = refilled
+        claims.append(
+            f"this rewrite refilled {len(refilled)} field(s) from defaults that the adapter did "
+            f"not set: {', '.join(refilled)}. If any of them is absent ON PURPOSE, declare it in "
+            f"`{FIELD}` — absence alone cannot say so, and every run will refill it again."
+        )
+    if dropped:
+        report["comments_dropped"] = dropped
+        claims.append(
+            f"{dropped} comment line(s) in the existing adapter will not survive this rewrite: the "
+            "adapter is re-serialized from data, so comments have nowhere to go. If any of them "
+            f"recorded WHY a field was removed, move that reason into `{FIELD}` — it is data, so "
+            "it survives."
+        )
+    report["customization_warning"] = " ".join(claims)
+    return report

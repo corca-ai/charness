@@ -67,8 +67,29 @@ Rules:
 - the field is hand-authored; bootstrap never invents it
 - an adapter without the field behaves exactly as it did before the field existed
 
-Scope limit: honoring the declaration is implemented in the bootstrap writer. Adapter
-*resolution* still fills unset fields from repo defaults, so a resolved adapter carries
-the default value alongside the declaration and a warning naming each field where that
-happens. Do not read a resolved default for a declared-absent field as this repo's own
+## What a declaration means at resolution time
+
+Adapter *resolution* still fills unset fields from repo defaults — changing that would
+alter what every field means at resolution time and break consumers that index them.
+So a resolved adapter carries the default value alongside the declaration, plus:
+
+- `deliberately_absent` — the declaration itself, so it survives resolution
+- `deliberately_absent_unasserted_paths` — `<field>.<key>` -> the resolved path value
+  the repo does **not** claim exists
+- a warning naming those paths, because a resolved default that names a file the repo
+  does not have is what sends the next session hunting for it
+
+Only fields whose default names a filesystem path get the path treatment; thresholds,
+rule names, and markers assert nothing about the filesystem and are left alone.
+
+**A consumer about to premise anything on a resolved value asks first:**
+
+```python
+from scripts.quality_adapter_lib import is_deliberately_absent
+
+if not is_deliberately_absent(data, "coverage_floor_policy"):
+    ...  # safe to treat the resolved paths as this repo's real surface
+```
+
+Do not read a resolved default for a declared-absent field as this repo's own
 declaration.
