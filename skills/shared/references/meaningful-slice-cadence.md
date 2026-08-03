@@ -23,6 +23,12 @@ with a **named proof intent** (what evidence will show it worked) and a
 it). A helper-only extraction, a rename, or an artifact touch-up is part of a
 slice; it is not a slice by itself unless the artifact is the deliverable.
 
+When the slice changes a guard, reference, claim, or verdict surface, its
+review packet also carries the [semantic question](./reviewer-packet-semantic-question.md):
+the semantic fact or invariant, owning boundary, recorded instance, and an
+axis-varying counterexample. This is reviewer evidence, not a new semantic
+meta-gate.
+
 When candidate work keeps splitting into tiny moves, that is a signal the
 candidate set is not structurally settled yet — go back to selection (for
 structural quality cleanup, the quality signal scorecard) instead of

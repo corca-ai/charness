@@ -326,6 +326,28 @@ packet_sections:
     assert "**Changed ref**: `HEAD`" in md
 
 
+def test_charness_packet_carries_the_semantic_reviewer_question() -> None:
+    adapter = load_adapter(REPO_ROOT)
+    packet = build_packet(adapter=adapter, repo_root=REPO_ROOT, prepared_for="unit")
+
+    section = next(
+        item for item in packet["sections"] if item["id"] == "reviewer-packet-semantic-question"
+    )
+    assert section["ok"] is True
+    source = (REPO_ROOT / "skills/shared/references/reviewer-packet-semantic-question.md").read_text(
+        encoding="utf-8"
+    )
+    assert section["content"] == source
+    assert "Semantic fact or invariant" in section["content"]
+    assert "Owning boundary" in section["content"]
+    assert "Recorded instance" in section["content"]
+    assert "Axis-varying counterexample" in section["content"]
+    assert "## Compare the Proposed Control" in section["content"]
+    assert "Prefer a surface fix" in section["content"]
+    assert "Keep the control as a reviewer question" in section["content"]
+    assert "Add a gate only" in section["content"]
+
+
 def test_packet_records_adapter_reviewer_tier_evidence(tmp_path: Path) -> None:
     _write_yaml(tmp_path / ".agents/critique-adapter.yaml", """\
 version: 1

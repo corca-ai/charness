@@ -9,13 +9,13 @@ This file is the living goal scratchpad for the active run.
 ## Active Operating Frame
 
 - Current slice: Slice B — build the reviewer-packet control selected for #499 and #491.
-- Current slice intent: implement the reviewer question that names the invariant/claim, its
-  owning boundary, a recorded instance, and an axis-varying counterexample; Slice A's selector
-  and six-issue ledger are complete. Once active, this names the reviewable-intent unit in
+- Current slice intent: implement and exercise the reviewer-packet semantic question that names the
+  invariant/claim, its owning boundary, a recorded instance, and an axis-varying counterexample;
+  Slice A's selector and six-issue ledger are complete. Once active, this names the reviewable-intent unit in
   progress and the commits it spans; critique and broad proof do not re-fire within one
   unchanged intent — update it when the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: inspect the reviewer-packet producer and its consumers, then implement the
-  smallest portable question and prove it bites against a #499 or #491 record.
+- Next action: run the generated packet and a fresh-eye review against the recorded #499/#491
+  instances, then repair only if the question fails to distinguish proxy form from semantic fact.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -24,6 +24,8 @@ This file is the living goal scratchpad for the active run.
 - Slice review packet: before fresh-eye slice critique, provide intent, changed
   files and owning/generated surfaces, expected invariants, tests/proof,
   non-claims, out-of-scope lines, and reviewer questions.
+- Semantic packet question: state the semantic fact/invariant, owning boundary,
+  recorded instance, and axis-varying counterexample before judging the control.
 - History boundary: keep this frame current; move completed detail to
   `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`,
   and `## Auto-Retro`.
@@ -119,7 +121,7 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable selector, six-row disposition/proof matrix, and measured basis for each candidate | completed |
-| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | pending |
+| B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | in_progress |
 | C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | pending |
 | D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | pending |
 | E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | pending |

@@ -232,6 +232,10 @@ When `critique` runs and the repo's adapter declares ≥1 packet section:
 1. The bootstrap produces a packet when the adapter declares sections, or the
    parent passes an already-produced packet path/body through. The fresh-eye
    reviewer subagents receive the markdown render before broad repo sampling.
+   For a guard, reference, claim, or verdict-surface change, they also apply the
+   [semantic reviewer question](../../../shared/references/reviewer-packet-semantic-question.md):
+   name the semantic fact or invariant, owning boundary, recorded instance, and
+   an axis-varying counterexample before judging the selected control.
 2. The critique closeout records `Packet Consumed: <path>` plus reviewer-tier
    evidence: requested tier, requested spawn fields, host exposure state, and
    applied-evidence boundary, plus reviewed-input binding evidence. The

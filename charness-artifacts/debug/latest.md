@@ -1,1 +1,1 @@
-2026-08-05-quality-adapter-silent-revert.md
+2026-08-04-debug-review.md

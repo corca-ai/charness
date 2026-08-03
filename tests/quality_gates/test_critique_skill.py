@@ -25,6 +25,12 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     packet_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "prepare-packet.md"
     ).read_text(encoding="utf-8")
+    semantic_question_text = (
+        ROOT / "skills" / "shared" / "references" / "reviewer-packet-semantic-question.md"
+    ).read_text(encoding="utf-8")
+    critique_adapter_text = (ROOT / ".agents" / "critique-adapter.yaml").read_text(
+        encoding="utf-8"
+    )
     autonomous_text = (
         ROOT / "skills" / "public" / "critique" / "references" / "autonomous-trigger.md"
     ).read_text(encoding="utf-8")
@@ -105,6 +111,12 @@ def test_critique_skill_surfaces_counterweight_and_deliberately_not_doing() -> N
     assert 'python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root .' in skill_text
     assert 'prepare_packet.py" --repo-root . --prepared-for "<short label>" 2>/dev/null || true' not in skill_text
     assert "The `critique` bootstrap runs the runner before spawning reviewers" in packet_text
+    assert "semantic reviewer question" in packet_text
+    assert "Semantic fact or invariant" in semantic_question_text
+    assert "Owning boundary" in semantic_question_text
+    assert "Recorded instance" in semantic_question_text
+    assert "Axis-varying counterexample" in semantic_question_text
+    assert "reviewer-packet-semantic-question.md" in critique_adapter_text
     assert "does not fire automatically inside the `critique` workflow" not in packet_text
     for risk_class in (
         "workflow",

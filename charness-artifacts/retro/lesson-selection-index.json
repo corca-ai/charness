@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-07",
-  "source_artifact_count": 425,
-  "candidate_count": 1755,
+  "source_artifact_count": 427,
+  "candidate_count": 1762,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1030,6 +1030,188 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Three length-cap extractions, all forced mid-slice.** ~~Because the slice added reasoning comments.~~ **CORRECTED 2026-08-06 after the operator challenged the premise, and they were right.** `check_python_lengths` uses `tokei`'s CODE count, which already excludes comments and docstrings — measured: the extracted `changed_line_verdict_codes.py` is 44 code / 31 comment lines, and `goal_artifact_lib.py` went 310 → 374 code lines while its comment count moved 30 → 32. The caps were crossed by roughly 40-60 lines of REAL CODE each, so the cap did exactly what it is for. Nor was the extraction itself waste — the operator's correction: splitting SURFACES duplication, and it did, exposing a real `_resolve_goal_path` copy that had been invisible. The only genuine cost in this bullet is the one extraction that shipped an import cycle no gate could see, now tracked as #492."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:642b2f919cec",
+      "kind": "current_focus",
+      "lesson": "This retro covers Slice B of the active goal: carrying a semantic reviewer question into critique packets for the recorded #499 and #491 issue families.",
+      "normalized_key": "this retro covers slice b of the active goal carrying a semantic reviewer question",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers Slice B of the active goal: carrying a semantic reviewer question into critique packets for the recorded #499 and #491 issue families."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:c1a049811ea4",
+      "kind": "next_improvement",
+      "lesson": "keep the semantic reviewer question and the worked #499/#491 application linked from the Slice B critique record so future reviewers see the invariant/owner/instance/counterexample shape.",
+      "normalized_key": "keep the semantic reviewer question and the worked 499 491 application linked from the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "keep the semantic reviewer question and the worked #499/#491 application linked from the Slice B critique record so future reviewers see the invariant/owner/instance/counterexample shape."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:78e984261a28",
+      "kind": "next_improvement",
+      "lesson": "let the quality closeout packet surface the current corpus denominator beside a recorded probe when the corpus itself changes; issue #503 owns the broader runtime/over-slice decision.",
+      "normalized_key": "let the quality closeout packet surface the current corpus denominator beside a recorded probe",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "let the quality closeout packet surface the current corpus denominator beside a recorded probe when the corpus itself changes; issue #503 owns the broader runtime/over-slice decision."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6996b06d29fe",
+      "kind": "next_improvement",
+      "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete.",
+      "normalized_key": "when a quality artifact cites an inventory or probe run its measurement and consumer",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:53cd7536bd81",
+      "kind": "repeat_trap",
+      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
+      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
+      "recurrence_class": "measurement-baseline-sync",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:cae910afd88a",
+      "kind": "repeat_trap",
+      "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift.",
+      "normalized_key": "the 42 76 second current broad run was not waste it was the required",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:befcfbadb2bd",
+      "kind": "repeat_trap",
+      "lesson": "The recurring telemetry stream reports gate-baseline runtime as a real cost, not a reason to weaken proof: the standing quality suite recurred 16 times with a 475.46-second peak, the release bundle 4 times with a 152.15-second peak, the standing runner 4 times with a 208.32-second peak, and over-slice runs recurred 37 times with a peak run of 4. These are measured local stream signals, not proof that any particular gate should be removed. Issue #503 now carries the tracked follow-up.",
+      "normalized_key": "the recurring telemetry stream reports gate baseline runtime as a real cost not a",
+      "recurrence_class": "closeout-runtime-owner",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The recurring telemetry stream reports gate-baseline runtime as a real cost, not a reason to weaken proof: the standing quality suite recurred 16 times with a 475.46-second peak, the release bundle 4 times with a 152.15-second peak, the standing runner 4 times with a 208.32-second peak, and over-slice runs recurred 37 times with a peak run of 4. These are measured local stream signals, not proof that any particular gate should be removed. Issue #503 now carries the tracked follow-up."
         }
       ]
     },

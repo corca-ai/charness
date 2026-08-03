@@ -1,6 +1,6 @@
 {
   "_provenance": {
-    "baseline_check": "The repaired validator was run against all 105 artifacts and compared with HEAD's validator over the same corpus from a detached worktree: 4 fail at HEAD, the same 4 fail after, 0 newly refused and 0 newly passing. The four are pre-existing failures the default gate never reaches, because it reads only charness-artifacts/quality/latest.md.",
+    "baseline_check": "The repaired validator was run against all 106 artifacts and compared with HEAD's validator over the same corpus from a detached worktree: 4 fail at HEAD, the same 4 fail after, 0 newly refused and 0 newly passing. The four are pre-existing failures the default gate never reaches, because it reads only charness-artifacts/quality/latest.md.",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-01",
@@ -8,18 +8,18 @@
     "repo_head_at_run": "5f99e8427bf61b637b93d99b1c5ee99cb3f2a98d",
     "worktree": "dirty (the slice's own uncommitted repair)"
   },
-  "artifacts": 105,
+  "artifacts": 106,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 105,
+    "not-claimed": 106,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 169,
-    "median": 34,
+    "count": 174,
+    "median": 30,
     "min": 0,
     "p5": 5
   },
@@ -1215,24 +1215,34 @@
     },
     {
       "citations": {
-        "inventory_standing_test_economics.py": {
-          "engaged_presence_only": 4,
-          "engaged_with_a_value": 4,
-          "lost_to_the_floor": [],
-          "required": 2
-        },
-        "inventory_structural_waste.py": {
-          "engaged_presence_only": 5,
-          "engaged_with_a_value": 5,
+        "inventory_skill_ergonomics.py": {
+          "engaged_presence_only": 7,
+          "engaged_with_a_value": 7,
           "lost_to_the_floor": [],
           "required": 2
         }
       },
       "claims_pre_contract_exemption": false,
-      "commit_state": "dated",
-      "declared_date": "2026-07-25",
+      "commit_state": "uncommitted",
+      "declared_date": "2026-08-04",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-07-25",
+      "last_commit_date": "2026-08-04",
+      "path": "charness-artifacts/quality/2026-08-04-quality-review.md"
+    },
+    {
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "engaged_presence_only": 7,
+          "engaged_with_a_value": 7,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dirty",
+      "declared_date": "2026-08-04",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-04",
       "path": "charness-artifacts/quality/latest.md"
     }
   ]
