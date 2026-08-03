@@ -21,6 +21,7 @@ reports/
 .charness/dup-ratchet*
 .charness/t-events/
 .charness/usage-episodes/
+.charness/quality-failure-logs/
 integrations/locks/*.json
 !integrations/locks/.gitkeep
 !integrations/locks/lock.schema.json

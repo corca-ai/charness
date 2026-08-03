@@ -100,6 +100,14 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - Current-pointer helpers should no-op without canonical content change; unexpected rewrites are invocation drift or helper bugs.
 - Treat critique, closeout, and commit as part of task-completing repo work, not optional follow-up.
 - After verification passes for task-completing repo work, commit before answering follow-up usage/status questions or checking installed-machine state.
+- **Do not pipe a GATE through `tail`/`head`.** Redirect it to a file and read that
+  (`cmd > /tmp/x.txt 2>&1; grep -nE '^FAIL ' /tmp/x.txt`). Truncating a gate destroys the
+  one fact you need and costs a full re-run to recover; it has cost ~10 minutes in a
+  single session. This is reinforcement, not the mechanism — `run-quality.sh` and
+  `run_slice_closeout.py` now NAME their failures in the last line, and `run-quality.sh`
+  keeps each failing check's full output under `.charness/quality-failure-logs/`, so a
+  truncated read stays actionable. The rule matters for gates that have not been taught
+  that yet.
 
 ## Work Phase Map
 

@@ -721,7 +721,8 @@ def test_an_optin_gate_that_established_nothing_is_neither_passed_nor_failed(
     assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
     assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
     assert (
-        "1 passed, 0 failed, 1 UNPROVEN (ran; established nothing, or only part of its scope)"
+        f"1 passed, 0 failed, 1 UNPROVEN (UNPROVEN: {_UNPROVEN_LABEL}) "
+        "(ran; established nothing, or only part of its scope)"
         in result.stdout
     )
     # The reason is always shown. A bare `UNPROVEN <label>` line is the same
@@ -790,7 +791,9 @@ def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(
     assert result.returncode != 0
     assert "FAIL validate-skills" in result.stdout
     assert "UNPROVEN" not in result.stdout
-    assert "1 passed, 1 failed, total" in result.stdout
+    # The name travels WITH the count: the summary is the last line, the one every
+    # truncation preserves, so a reader who saw only it can still act.
+    assert "1 passed, 1 failed (FAILED: validate-skills), total" in result.stdout
 
 
 def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
@@ -821,7 +824,10 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
     assert result.returncode != 0
     assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
     assert "FAIL check-doc-links" in result.stdout
-    assert "0 passed, 1 failed, 1 UNPROVEN" in result.stdout
+    # Both names travel with both counts, so a truncated read can act on either.
+    assert (
+        f"0 passed, 1 failed (FAILED: check-doc-links), 1 UNPROVEN (UNPROVEN: {_UNPROVEN_LABEL})"
+    ) in result.stdout
 
 
 def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:

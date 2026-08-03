@@ -155,3 +155,24 @@ def print_text(payload: dict[str, object]) -> None:
     _print_mutation_coverage_proof(payload)
     _print_executed_commands(payload)
     _print_usage_episode(payload)
+    _print_final_verdict(payload)
+
+
+def _print_final_verdict(payload: dict[str, object]) -> None:
+    """Repeat the verdict LAST, and name what failed.
+
+    `Closeout status:` is printed at the top of this report, followed by changed paths,
+    matched surfaces, advisories and executed commands -- often a hundred lines. The
+    last line is the one every truncation preserves (a human scrolling, a CI log tail,
+    an agent piping through `tail` to bound context), and it was a usage-episode
+    footer. So a truncated read kept the least actionable line and lost both the
+    verdict and the failing command, which costs a full re-run of the aggregate to
+    recover. Cheaper to say it twice than to make the reader re-run it.
+    """
+    failed = [
+        str(step["command"])
+        for step in payload["executed_commands"]
+        if step["returncode"] != 0
+    ]
+    note = f" (FAILED: {'; '.join(failed)})" if failed else ""
+    print(f"Closeout verdict: {payload['status']}{note}")

@@ -76,6 +76,24 @@ declare -a COMPLETED_STATUSES=()
 TOTAL_PASSES=0
 TOTAL_FAILURES=0
 TOTAL_UNESTABLISHED=0
+# The NAMES behind the counts. The summary used to report "1 failed" without saying
+# which, and the summary is the LAST line -- the one line every `tail` preserves. So a
+# reader who truncated the output (a human scrolling, a CI log tail, an agent piping
+# through `tail` to save context) kept the count and lost the only fact they could act
+# on, and had to re-run a ~95s gate to recover it. Naming them here makes the common
+# truncation harmless instead of forbidding the truncation.
+FAILED_LABELS=""
+UNESTABLISHED_LABELS=""
+# Per-phase logs live in a mktemp dir this script `rm -rf`s on EXIT, so after a run
+# there was nothing left to re-read: a truncated view of a failure could only be
+# recovered by running the whole gate again. Failing phases' logs are copied here
+# instead, and the path is named in the summary -- the durable half of the same fix.
+RUN_QUALITY_FAILURE_LOG_DIR="$REPO_ROOT/.charness/quality-failure-logs"
+
+append_label() {
+  # $1 = current list, $2 = label. Space-separated, no leading space.
+  if [[ -z "$1" ]]; then printf '%s' "$2"; else printf '%s %s' "$1" "$2"; fi
+}
 OVERALL_RC=0
 
 format_elapsed() {
@@ -419,8 +437,14 @@ flush_phase() {
       TOTAL_PASSES=$((TOTAL_PASSES + 1))
     elif [[ "$status" == "unestablished" ]]; then
       TOTAL_UNESTABLISHED=$((TOTAL_UNESTABLISHED + 1))
+      UNESTABLISHED_LABELS="$(append_label "$UNESTABLISHED_LABELS" "$label")"
     else
       TOTAL_FAILURES=$((TOTAL_FAILURES + 1))
+      FAILED_LABELS="$(append_label "$FAILED_LABELS" "$label")"
+      # Copied at the moment of failure, because the batch's log paths are reset
+      # between phases and the tmpdir is gone by the time the summary prints.
+      mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR"
+      cp "$log_path" "$RUN_QUALITY_FAILURE_LOG_DIR/${label// /-}.log" 2>/dev/null || true
     fi
 
     # An unestablished gate does not fail the run. It must not be counted as
@@ -447,16 +471,28 @@ print_final_summary() {
 
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
+  local failed_note="" unproven_note=""
+  # The names travel WITH the verdict. Empty when the count is zero, so a clean run
+  # reads exactly as before.
+  [[ -n "$FAILED_LABELS" ]] && failed_note=" (FAILED: $FAILED_LABELS)"
+  # Named only on failure, so a clean run reads exactly as before.
+  [[ -n "$FAILED_LABELS" ]] && printf 'Full output for each failing check: %s/<label>.log\n' \
+    "${RUN_QUALITY_FAILURE_LOG_DIR#"$REPO_ROOT"/}"
+  [[ -n "$UNESTABLISHED_LABELS" ]] && unproven_note=" (UNPROVEN: $UNESTABLISHED_LABELS)"
+
   if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
-    printf 'Quality summary: %s passed, %s failed, %s UNPROVEN (ran; established nothing, or only part of its scope), total %s\n' \
+    printf 'Quality summary: %s passed, %s failed%s, %s UNPROVEN%s (ran; established nothing, or only part of its scope), total %s\n' \
       "$TOTAL_PASSES" \
       "$TOTAL_FAILURES" \
+      "$failed_note" \
       "$TOTAL_UNESTABLISHED" \
+      "$unproven_note" \
       "$(format_elapsed "$elapsed_ms")"
   else
-    printf 'Quality summary: %s passed, %s failed, total %s\n' \
+    printf 'Quality summary: %s passed, %s failed%s, total %s\n' \
       "$TOTAL_PASSES" \
       "$TOTAL_FAILURES" \
+      "$failed_note" \
       "$(format_elapsed "$elapsed_ms")"
   fi
 
