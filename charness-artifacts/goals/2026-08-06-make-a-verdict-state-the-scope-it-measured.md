@@ -9,7 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: C (#489) is code-complete and gated; D (#487) has not started.
+- Current slice: D (#487) is code-complete and gated but **NOT bounded-reviewed** —
+  see its Slice Log entry; that is an owed round, not a waived one. A, B, C are
+  DONE and pushed.
   A and B are DONE and pushed (`a5b5d0e8`, `8573f862`), and **remote CI is
   confirmed green on BOTH check-runs for each**, read through the check-runs API
   — a different observer AND channel than the push exit code.
@@ -21,11 +23,9 @@ runs the activation command.
   reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: commit and push C, confirm its CI through the check-runs API, then
-  slice D (#487) — the prose-through-argv channel. D is UNSTARTED and is the last
-  scope item before closeout. A working technique for it is already in evidence:
-  every `append_slice_log.py` call in this run passed argv through a Python list
-  with NO shell, and every backtick survived.
+- Next action: run D's bounded slice critique, then goal closeout (final broad
+  proof, retro, `## Final Verification`, `## Auto-Retro` dispositions, and the
+  issue-closeout floor for #487/#488/#489 — none of them is closed yet).
 - **Non-claim carried from the first minute — what is rebuilt and what survived.**
   **RECONSTRUCTED** (written 2026-08-06 from the three issues, the shaping commit
   message `db20ccfc`, and `docs/handoff.md`; the original text never reached disk
@@ -340,6 +340,20 @@ below. Fill during the run:
 - Off-goal findings: None new.
 - Lessons carried forward: Round 1's two blockers were the SAME finding as the bug: I fixed `the status lies about a deletion` and shipped a detector that only recognised deletions. The transferable rule: when the defect is `the surface did not notice X`, enumerate every SPELLING of X before writing the detector, because the spelling you reproduced from the issue is the one you will implement. And round 2's cycle is the second time this goal a length-cap extraction introduced a defect the suite could not see - the first was a dup family, this one was an import order. An extraction is a change, not a move.
 - Metrics: 3 spellings of an emptied sub-key, 1 detected by the first cut - 2026-08-06. 3 merged fields on the rule, 1 in the first cut. 4 phantom paths in the `mutation_testing` sibling vs 1 in the reported field. Round 1: 2 blockers + 4 non-blocking. Round 2: 6 findings, 2 blockers, all folded.
+
+### Slice 4: D - #487: close the prose-through-argv channel for the slice-log helper
+
+- Objective: Give `append_slice_log.py` an input channel with no shell in front of it, so a slice report citing identifiers cannot arrive with words missing under an `appended` verdict.
+- Why this approach: The surface is the durable record a compacted or resumed session reads, the loss is silent, and the helper cannot detect it from inside: the shell substitutes before `argv` exists, so there is nothing left to compare against.
+- Commits: pending (this slice)
+- What changed: `--fields-file <json>` on `append_slice_log.py`, with an unknown key REFUSED rather than ignored and per-field flags defaulting to `None` (absent) instead of `""` so an unpassed flag cannot blank a file value. NEW `skills/public/achieve/scripts/goal_cli_args.py` holds the `--repo-root/--goal-path/--slug/--date` surface and the resolution rule that `append_slice_log.py` and `check_goal_artifact.py` each had a copy of. SKILL.md and `references/lifecycle-during.md` state the rule and generalize it. NEW tests/quality_gates/test_append_slice_log_input_channel.py.
+- Alternatives rejected: Validating inside the helper was rejected as impossible, not merely hard - the expansion happens before the process starts. Removing the per-field flags was rejected: they are fine for short identifier-free values, and deleting a working interface to fix a channel is a wider change than the defect. Classifying the two dup families as `intentional` was rejected in favour of actually extracting `goal_cli_args.py`, because `_resolve_goal_path` really was duplicated and an `intentional` label on extractable code is a false record on a proof surface.
+- Targeted verification: The reproduction and the repair are BOTH driven through a real shell (`shell=True`) rather than a Python argv list, because the loss happens in the shell and an argv-built test cannot reproduce it. The reproduction test asserts the truncation still happens (exit 0, `appended`, `preserved` gone from the file) - kept, so the repair is never mistaken for a fix to the shell. 456 achieve/goal tests green; lengths, ruff, dup ratchet clean.
+- Test duplication pressure: Extracting `goal_cli_args.py` REMOVED two dup families rather than accepting them, leaving a one-line argparse-declaration residue that is genuinely irreducible and is classified with that reasoning.
+- Critique: NOT bounded-reviewed. This slice ran at the end of a long session and the two-round obligation was not met; it changes an input channel and a shared CLI surface, not verdict logic, so it does not carry the verdict-surface trigger - but one round is still owed by the ordinary slice-critique rule and was not run. Recorded as a real gap, not waived.
+- Off-goal findings: None new.
+- Lessons carried forward: This entry was written through `--fields-file` - the repair dogfooding itself. Every earlier entry in this log went through a Python argv list with no shell, which is the other safe channel and is why none of them lost text. And the unknown-key REFUSAL caught a real mistake on its first live use: this entry was first written with `test_pressure`/`off_goal` underscores, and the helper refused instead of silently dropping two fields into a record nobody would have re-read.
+- Metrics: 3 slice-log lines lost in the reported instance. 2 safe channels, 1 unsafe. 2 dup families removed by extraction, 1 one-line residue classified.
 
 ## Context Sources
 

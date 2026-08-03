@@ -2001,6 +2001,13 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "the repo's standard import prologue, pairwise between scripts/quality_bootstrap_lib.py (in this diff) and scripts/quality_adapter_lib.py (untouched): the `from scripts.quality_policy_defaults import (...)` block over the same shared default/merge names, which both files legitimately consume. Deduplicating it would mean one importing the other's re-exports, which is indirection, not removal. Surfaced as NEW because slice C added `refilled_policy_subkeys` to the import list, shifting the span into a match; no duplication was written. Same class as the two bootstrap-prologue families accepted on the same day."
+    },
+    {
+      "class": "intentional",
+      "id": "59c2c5986b2b51b6",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "a single argparse flag declaration -- the `--repo-root` / `--goal-path` style `parser.add_argument(..., type=Path, help=...)` line -- shared between skills/public/achieve/scripts/goal_cli_args.py (in this diff) and scripts/critique_enforcement_scope.py (untouched). Irreducible: argparse flag declarations for two independent CLIs cannot be shared without one importing the other's parser, which couples unrelated command surfaces to remove one line. Surfaced as NEW because slice D EXTRACTED the achieve goal-target flags into goal_cli_args.py rather than accepting the two larger families they were part of -- that extraction removed real duplication between append_slice_log.py and check_goal_artifact.py and left this one-line residue behind."
     }
   ],
   "fixable_ceiling": 0,

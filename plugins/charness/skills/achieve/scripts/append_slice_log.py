@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-from datetime import date as date_cls
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
+goal_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_cli_args")
 
 _FIELD_FLAGS = (
     ("objective", "Objective"),
@@ -34,39 +34,80 @@ _FIELD_FLAGS = (
 )
 
 
-def _resolve_goal_path(args) -> Path:
-    repo_root = args.repo_root.expanduser().resolve()
-    if args.goal_path is not None:
-        return args.goal_path.expanduser().resolve()
-    if not (args.slug and args.date):
-        raise SystemExit("provide --goal-path, or both --slug and --date")
+def _load_fields_file(path: Path) -> dict[str, str]:
+    """Read every slice field from ONE JSON file, so no prose crosses a shell.
+
+    The lossy channel this closes is in front of ``argv`` and cannot be seen from
+    inside the process. A slice report cites identifiers, so the prose is full of
+    backticks; passed as a shell argument, the shell performs command substitution
+    BEFORE this program starts, and what arrives is well-formed text with words
+    missing. Exit 0, ``"action": "appended"``, and a durable record with holes in it
+    -- which is the surface a compacted or resumed session reads to learn what
+    happened. No validation here could ever have detected it: there is nothing left
+    to compare against.
+
+    A file has no such layer. The caller writes the JSON with its own file tool (or
+    a heredoc it controls), and the bytes on disk are the bytes this reads.
+    """
     try:
-        return goal_lib.goal_path(repo_root, args.date, args.slug)
-    except ValueError as exc:
-        raise SystemExit(str(exc))
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except OSError as exc:
+        raise SystemExit(f"--fields-file unreadable: {exc}") from exc
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"--fields-file is not valid JSON: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise SystemExit("--fields-file must contain a JSON object of field -> text")
+    known = {flag for flag, _ in _FIELD_FLAGS} | {"name"}
+    # REFUSE an unknown key rather than ignoring it. A typo'd field name in a file the
+    # caller cannot see the effect of is the same silent-loss shape this flag exists to
+    # remove: the run would report `appended` over a record missing that field.
+    if unknown := sorted(set(raw) - known):
+        raise SystemExit(f"--fields-file has unknown field(s): {', '.join(unknown)}; known: {', '.join(sorted(known))}")
+    if bad := sorted(key for key, value in raw.items() if not isinstance(value, str)):
+        raise SystemExit(f"--fields-file values must be strings; not strings: {', '.join(bad)}")
+    return raw
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Append one slice report to a goal artifact's Slice Log.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root that owns charness-artifacts/goals/")
-    parser.add_argument("--goal-path", type=Path, help="Explicit path to the goal artifact (overrides --slug/--date)")
-    parser.add_argument("--slug", help="Goal slug, used with --date to locate the artifact")
-    parser.add_argument("--date", default=date_cls.today().isoformat(), help="Goal date prefix YYYY-MM-DD used with --slug")
-    parser.add_argument("--name", required=True, help="Short slice name for the slice heading")
+    goal_cli.add_goal_target_args(parser)
+    parser.add_argument("--name", help="Short slice name for the slice heading (or `name` in --fields-file)")
+    parser.add_argument(
+        "--fields-file",
+        type=Path,
+        help="JSON object of field -> text (keys: name, "
+        + ", ".join(flag for flag, _ in _FIELD_FLAGS)
+        + "). PREFER THIS for real slice prose: an argument carrying backticks is "
+        "expanded by the shell before this program starts, so the text arrives with "
+        "words silently missing and the run still reports `appended`. Per-field flags "
+        "override the file.",
+    )
     for flag, label in _FIELD_FLAGS:
-        parser.add_argument(f"--{flag}", default="", help=f"Slice report value for '{label}'")
-    return parser.parse_args()
+        parser.add_argument(f"--{flag}", default=None, help=f"Slice report value for '{label}'")
+    args = parser.parse_args()
+    if args.name is None and args.fields_file is None:
+        parser.error("provide --name, or --fields-file carrying a `name` key")
+    return args
 
 
 def main() -> int:
     args = parse_args()
-    path = _resolve_goal_path(args)
+    path = goal_cli.resolve_goal_path(args, goal_lib)
     if not path.exists():
         raise SystemExit(f"goal artifact not found: {path}")
     text = path.read_text(encoding="utf-8")
     number = goal_lib.next_slice_number(text)
-    fields = {label: getattr(args, flag.replace("-", "_")) for flag, label in _FIELD_FLAGS}
-    block = goal_lib.render_slice_block(number, args.name, fields)
+    from_file = _load_fields_file(args.fields_file) if args.fields_file else {}
+    # A per-field flag overrides the file, and `None` (flag absent) means "not given"
+    # rather than "empty" -- otherwise every unpassed flag would blank a file value.
+    fields = {
+        label: (value if (value := getattr(args, flag.replace("-", "_"))) is not None else from_file.get(flag, ""))
+        for flag, label in _FIELD_FLAGS
+    }
+    name = args.name if args.name is not None else from_file.get("name", "")
+    if not name.strip():
+        raise SystemExit("slice name is empty; pass --name or a non-empty `name` in --fields-file")
+    block = goal_lib.render_slice_block(number, name, fields)
     updated = goal_lib.append_slice(text, block)
     if updated != text:
         path.write_text(updated, encoding="utf-8")

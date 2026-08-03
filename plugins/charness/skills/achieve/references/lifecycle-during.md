@@ -179,3 +179,26 @@ approval does **not** transfer to the new slice. Verify the continuation slice
 not push and watch CI per slice unless the operator explicitly asked or the
 continuation slice is runtime-affecting. Re-scope the approval to the new phase
 rather than inheriting it silently.
+
+### Prose never crosses a shell
+
+`append_slice_log.py` takes the slice report through `--fields-file <json>`. That is
+not a convenience: a slice report cites identifiers, so its prose is full of
+backticks, and a shell performs command substitution on a quoted argument **before
+the helper's process starts**. What arrives is well-formed text with words missing.
+The helper exits 0 and reports `"action": "appended"`, and the surface it just
+damaged is the durable record a compacted or resumed session reads to learn what
+happened. No validation inside the helper can catch it — by the time `argv` exists,
+there is nothing left to compare against.
+
+Two safe channels, one unsafe one:
+
+- **safe** — `--fields-file <path>` with the JSON written by a file tool.
+- **safe** — building `argv` yourself as a list, with no shell in between.
+- **unsafe** — per-field flags typed into a shell command line. They remain for
+  short, identifier-free values; anything citing code should use the file.
+
+An unknown key in the fields file is REFUSED rather than ignored, because a typo'd
+field name in a file whose effect the caller cannot see is the same silent loss one
+layer up. This rule generalizes: any helper documented with a shell-quoted prose
+argument has an unguardable lossy channel in front of it.

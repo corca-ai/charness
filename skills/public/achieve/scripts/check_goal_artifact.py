@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import json
 import runpy
-from datetime import date as date_cls
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -18,6 +17,7 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 goal_lib = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_lib")
+goal_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_cli_args")
 head_freshness = SKILL_RUNTIME.load_local_skill_module(__file__, "goal_artifact_head_freshness")
 adapter_policy = SKILL_RUNTIME.load_local_skill_module(__file__, "achieve_adapter_policy")
 # The proof-mismatch floor is a portable top-level module (reused by issue
@@ -33,24 +33,9 @@ def _attach_phase_brief(payload: dict, status: str | None) -> None:
         payload["phase_brief"] = brief
 
 
-def _resolve_goal_path(args) -> Path:
-    repo_root = args.repo_root.expanduser().resolve()
-    if args.goal_path is not None:
-        return args.goal_path.expanduser().resolve()
-    if not (args.slug and args.date):
-        raise SystemExit("provide --goal-path, or both --slug and --date")
-    try:
-        return goal_lib.goal_path(repo_root, args.date, args.slug)
-    except ValueError as exc:
-        raise SystemExit(str(exc))
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Check that a goal artifact keeps the required sections, status, and activation line.")
-    parser.add_argument("--repo-root", type=Path, default=Path.cwd(), help="Repo root that owns charness-artifacts/goals/")
-    parser.add_argument("--goal-path", type=Path, help="Explicit path to the goal artifact (overrides --slug/--date)")
-    parser.add_argument("--slug", help="Goal slug, used with --date to locate the artifact")
-    parser.add_argument("--date", default=date_cls.today().isoformat(), help="Goal date prefix YYYY-MM-DD used with --slug")
+    goal_cli.add_goal_target_args(parser)
     parser.add_argument(
         "--pursue-ready",
         action="store_true",
@@ -169,7 +154,7 @@ def _evidence_missing_bits(evidence_report: dict) -> list[str]:
 
 def main() -> int:
     args = parse_args()
-    path = _resolve_goal_path(args)
+    path = goal_cli.resolve_goal_path(args, goal_lib)
     if not path.exists():
         print(json.dumps({"ok": False, "issues": [f"goal artifact not found: {path}"]}, ensure_ascii=False, indent=2, sort_keys=True))
         return 2

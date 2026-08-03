@@ -78,8 +78,14 @@ brief's `closeout_handoff` note when starting closeout.
    - for fresh-eye slice critique, hand the reviewer a bounded slice packet:
      intent, changed files and owning/generated surfaces, expected invariants,
      tests/proof, non-claims, out-of-scope lines, and questions
-   - append slice reports with `append_slice_log.py`; when tests are added or
-     expanded, include a cheap duplicate-pressure sample via `--test-pressure`
+   - append slice reports with `append_slice_log.py`, passing the prose through
+     `--fields-file <json>` rather than per-field flags: slice prose cites
+     identifiers, so it carries backticks, and a shell expands those BEFORE the
+     helper starts — the record is written with words missing and the run still
+     reports `appended`. Nothing inside the helper can detect that. (A caller
+     that builds `argv` itself, with no shell, is equally safe.) When tests are
+     added or expanded, include a cheap duplicate-pressure sample via
+     `test-pressure`
    - use cheap deterministic checks at commit boundaries; use higher-cost proof
      at slice boundaries; reserve broad/live proof for bundle boundaries or the
      final stage
