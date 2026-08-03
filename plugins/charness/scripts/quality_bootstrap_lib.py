@@ -405,11 +405,12 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         # partial block refills `workflow_path` plus three `report_paths` entries, so a
         # deletion the operator made on purpose comes back as four phantom paths. Wired
         # onto the same one rule rather than left as a named-but-unfixed sibling.
-        # Known coarseness, accepted: `_mark_subkey_refills` compares TOP-LEVEL keys, so
-        # a nested block (`commands`, `auto_issue`, `report_paths`) whose own sub-keys
-        # were refilled is reported as one refilled key or not at all. That under-reports
-        # and never over-reports, which is the safe direction; the nested case is the
-        # same class one level further down and is not in this slice's scope.
+        # The nested case is covered now: a block the operator PARTIALLY wrote
+        # (`commands`, `auto_issue`, `report_paths`) is recursed into and its refilled
+        # leaves reported dotted, while a block refilled WHOLE keeps its single block
+        # name. Before this it compared top-level keys only, and the quiet arm was the
+        # bad one -- a partially refilled block whose merged value no longer equalled the
+        # default vanished from the report entirely rather than merely being coarse.
         _mark_subkey_refills(
             "mutation_testing", existing, explicit_fields, final, field_statuses,
             subkey_refills, DEFAULT_MUTATION_TESTING,

@@ -9,22 +9,30 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: A is DONE and committed; B next — #493, make the refill report
-  reach a nested block.
-- Current slice intent: `_mark_subkey_refills` compares TOP-LEVEL keys, so a
-  nested block (`mutation_testing.report_paths`) whose own leaves were refilled
-  is under-reported. #481 was whole-field, #489 sub-key, this sub-sub-key. TWO
-  bounded rounds are owed: this changes a REPORT other surfaces read. This names
-  the reviewable-intent unit in progress and the commits it spans; critique and
-  broad proof do not re-fire within one unchanged intent — update it when the
-  intent changes, not per commit (meaningful-slice-cadence).
-- Next action: reproduce #493 from the issue (`mutation_testing.report_paths`
-  minus `summary_md`) BEFORE designing, then check stop condition 2 — if the
-  recursion names dozens of leaves, STOP and ask rather than shipping a report
-  nobody reads.
-- Slice A carry-forward: a guard belongs to the VALUE, not the transport that
-  delivered it; and a masking primitive that FAILS OPEN turns any caller
-  scanning its output into a verdict over a reading it never established.
+- Current slice: A and B are DONE; C next — #492, a standalone-import check for
+  every module in the package.
+- Current slice intent: slice C of the 2026-08-06 goal created a real import
+  cycle that 4979 passing tests could not see, because every existing importer
+  reached the other module first. A subprocess guard was shipped for that ONE
+  module pair; the class is every module. TWO bounded rounds are owed: this IS a
+  new gate. This names the reviewable-intent unit in progress and the commits it
+  spans; critique and broad proof do not re-fire within one unchanged intent —
+  update it when the intent changes, not per commit (meaningful-slice-cadence).
+- Next action: recover the pre-fix `quality_policy_merge.py` with
+  `git show <sha>^:<path>` and prove the check FAILS on it. A guard that only
+  passes on a healthy tree is the empty-scope green this repo refuses. Then check
+  stop condition 1 — if the repo-wide sweep is slow enough to hurt the pre-push
+  lane, scope it to CHANGED modules there, run the full sweep in CI, and say so
+  in the check's OWN output so a partial run never reads as a whole-package
+  verdict.
+- Carry-forward from A and B: **a guard belongs at the boundary that breaks the
+  invariant, not the one that is easy to test** — A attached shape checks to the
+  TRANSPORT instead of the value, B guarded a TYPE when the question was whether
+  the merge produced the block. Both times, deciding on the OUTCOME covered every
+  shape. Also: a masking primitive that FAILS OPEN turns any caller scanning its
+  output into a verdict over a reading it never established; and a doc correction
+  is a claim like any other — one shipped false this run and was pinned with a
+  test rather than reworded.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -171,7 +179,7 @@ does.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | #494 — close `upsert_goal.py`'s argv channel and stop the reference contradicting itself | The only real MISS of the three, and the shipped reference currently forbids a form and then demonstrates it | A backtick-bearing `--goal-body` through a real shell arrives whole or fails loudly; the reference example matches the rule | done — see Slice 1; two bounded rounds, 6 blockers found and repaired, 5 guards mutation-checked |
-| B | #493 — make the refill report reach a nested block | #481 whole-field, #489 sub-key, this sub-sub-key; the class has moved down one level twice already | The issue's reproduction names the refilled leaf; a fully-specified nested block still reports nothing | pending |
+| B | #493 — make the refill report reach a nested block | #481 whole-field, #489 sub-key, this sub-sub-key; the class has moved down one level twice already | The issue's reproduction names the refilled leaf; a fully-specified nested block still reports nothing | done — see Slice 2; two bounded rounds, 6 findings, report size measured at 17 names |
 | C | #492 — a standalone-import check for every module in the package | A real cycle passed 4979 tests; the guard exists for one pair only | The check FAILS on the pre-fix module recovered from git, and passes on the current tree | pending |
 | D | Closeout: bundle gate, claims review, retro, the three issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor, stating deferral-versus-miss | pending |
 
@@ -243,6 +251,20 @@ per the bullets above when that boundary is crossed):
 - Off-goal findings: Filed #495 - `docs/handoff-chunked-routing.md` says `draft_goal_from_chunk.py` writes through `upsert_goal`; it renders and writes directly, so a reader would wrongly conclude the new guards cover both goal-artifact writers.
 - Lessons carried forward: The round that reads the REPAIRS earned its keep again: round 2's blockers were all the class being repaired. Two are worth carrying: a guard belongs to the VALUE, not to the transport that delivered it - round 1's blocker was that the new checks only policed the new channel while the documented-safe one bypassed them; and a masking primitive that FAILS OPEN turns any caller scanning its output into a verdict over a reading it never established, which is why `mask_fences` ships `fences_balanced` beside it.
 - Metrics:
+
+### Slice 2: Make the refill report reach a nested block (#493)
+
+- Objective: `refilled_policy_subkeys` compared TOP-LEVEL keys only, so a nested block (`mutation_testing.report_paths`) whose own leaves were refilled was under-reported. Make the report reach the class its instance came from.
+- Why this approach: Third instance in one family - #481 whole-field, #489 sub-key, this sub-sub-key: a checker written against the granularity of the reported instance stopping exactly one level above the next instance. This was a DELIBERATE recorded deferral with its direction stated at the call site, so the slice CASHES IN scheduled work rather than repairing a mistake, and the close says so.
+- Commits: pending (this slice's commit)
+- What changed: `refilled_policy_subkeys` recurses into a block the operator wrote something into, reporting dotted leaves; a block refilled WHOLE keeps its single block name. The stale call-site comment in `quality_bootstrap_lib.py` and three false or misplaced claims in `skills/public/quality/references/bootstrap-posture.md` were corrected. 6 new unit tests plus 2 end-to-end tests through the real bootstrap. `plugins/` mirrors synced.
+- Alternatives rejected: Rejected reporting every leaf of a wholly-refilled block: the goal's stop condition 2 names a report nobody reads as the measured failure mode, and a block name says it better. Rejected touching the dotted `deliberately_absent` DECLARATION vocabulary - explicitly out of scope per Non-Goals, and grep confirms nothing parses these report names back into a key path. Rejected fixing the hollow-refill noise the recursion surfaced; filed as #496 because the predicate choice is a policy decision this slice should not settle by fiat.
+- Targeted verification: Both arms of the defect reproduced against the pre-fix function BEFORE designing, plus a false-positive control (fully-specified nested block reports nothing) and the whole-block case. 63 tests green across the two files; broad suite pending. Every new guard mutation-checked: reverting the recursion, and reverting the round-2 outcome-based guard to the round-1 type-based one, each makes its own test FAIL. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: completed. BROAD SUITE 7068 green - and it caught a regression BOTH bounded rounds and the slice gate passed: the round-2 fallback predicate `merged_sub != default` MIS-named a fully-specified but CUSTOMISED block as refilled, flipping `mutation_testing` from `preserved` to `augmented` in `test_quality_bootstrap_adapter_preserves_existing_explicit_commands`. The predicate is now structural (did the merge produce a block carrying every default key), and both the pre-existing broad test and a new unit test refute the old form. Report size MEASURED at 17 names worst case - under the goal's `dozens` stop condition, and independently re-derived by the reviewer.
+- Test duplication pressure: dup ratchet clean, no new family; 8 tests added across two existing files rather than a new one, so no new pool file for the changed-line lane.
+- Critique: TWO bounded rounds, both windows verified `clean`. Round 1: the recursion's `else {}` arm reported a partially refilled block as NOTHING - silence, the worse arm of this very defect, written into the repair; a test fixture modelling a merge the bootstrap cannot produce; NO end-to-end proof for the nested case at all; and three false or misplaced claims in the shipped reference. Round 2, reading the REPAIRS: the silence fix stopped at the TYPE boundary, and `{}` is a dict, so it recursed, found nothing and went silent anyway - and my doc correction was ITSELF false, since `mutation_testing` errors on blank scalars and blank nested LEAVES but accepts a blank nested BLOCK header silently.
+- Off-goal findings: Filed #496 - the recursion newly reports hollow refills for inert empty-string defaults (`commands.dry_run`), where the attached warning then advises dropping a whole block of real config to silence a claim about nothing.
+- Lessons carried forward: Twice now a guard has been placed at the boundary that was easy to test rather than the one that breaks the invariant: slice A attached shape checks to the TRANSPORT instead of the value, and this slice guarded a TYPE (`isinstance(merged_sub, dict)`) when the real question was whether the merge produced the block at all. Deciding on the OUTCOME covered every shape at once. And a doc correction is a claim like any other - mine shipped false, and the fix was to pin it with a test rather than to word it more carefully. The sharpest lesson is the THIRD wrong predicate: two bounded rounds and the slice gate all passed a fallback that MIS-named a fully-specified block, because every control test in the file used DEFAULT values, so `merged == default` masked it. A false-positive control is only a control against the inputs it varies - mine varied presence and not value. The broad suite was the observer that caught it, which is the argument for running it per slice rather than only at closeout.
+- Metrics: Host log exposes no per-slice token or tool-call totals; not claimed.
 
 ## Context Sources
 

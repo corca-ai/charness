@@ -58,14 +58,69 @@ def refilled_policy_subkeys(raw_value: Any, defaults: dict[str, Any], merged: di
     A non-dict block (``coverage_floor_policy: "see docs/quality.md"``) reports EVERY key
     as refilled: the merge kept none of what was written, which is the maximal version of
     the same loss, and returning ``[]`` there reported the largest refill as ``preserved``.
+
+    A NESTED block the operator partially supplied is recursed into and its refilled
+    leaves reported dotted (``report_paths.sample_md``). Comparing only top-level keys
+    was this rule stopping exactly one level above the next instance, for the third time
+    in the family -- whole-field, then sub-key, then sub-sub-key. It had two arms, and the
+    quieter one is worse: with ``report_paths`` refilled to exactly the default the block
+    at least got named, but once the operator customised ONE leaf the block no longer
+    equalled the default, the ``merged == default`` test failed, and a partially refilled
+    block vanished from the report entirely.
+
+    Recursion is for a block the operator wrote SOMETHING into. An absent, non-dict, or
+    empty raw block was refilled WHOLE, and naming its block once says that better than
+    naming every leaf under it -- a report nobody reads is the failure mode this repo has
+    already measured, so the granularity goes where the ambiguity is. (A block whose keys
+    are all typos was also refilled whole, but takes the recursion branch and names its
+    leaves; that is the more useful answer, not an accident to preserve.)
+
+    Whether to recurse at all is a STRUCTURAL question -- did the merge produce a block
+    carrying every default key? If it did not (absent, non-dict, ``{}``, or missing keys)
+    the recursion can find nothing, so the BLOCK name is reported rather than nothing:
+    going quiet about a block the operator wrote is the arm of this defect that was worse
+    than the coarseness. Asking it as ``merged != default`` instead was measured wrong in
+    the opposite direction -- a block written out IN FULL with customised values is also
+    unequal to the defaults, and naming it as refilled is a MIS-name. Over-naming a real
+    loss is the only direction this function may err in.
+
+    Dotted names are a REPORT granularity, not a declaration vocabulary: nothing parses
+    these back into a key path, and the dotted ``deliberately_absent`` declaration stays
+    deferred as the operator decided on 2026-08-05.
     """
     if not isinstance(raw_value, dict):
         return sorted(defaults)
-    return sorted(
-        key
-        for key, default in defaults.items()
-        if merged.get(key) == default and raw_value.get(key) != merged.get(key)
-    )
+    names: list[str] = []
+    for key, default in defaults.items():
+        raw_sub = raw_value.get(key)
+        merged_sub = merged.get(key)
+        if isinstance(default, dict) and isinstance(raw_sub, dict) and raw_sub:
+            # Did the merge actually produce a whole block? That is a STRUCTURAL question,
+            # and asking it any other way has been wrong twice. A merged block that is
+            # absent, non-dict, `{}`, or missing keys yields no leaves from the recursion
+            # -- every leaf test compares against `merged_sub.get(leaf)` -- so swallowing
+            # the block name on top of that would report a refilled block as NOTHING, and
+            # silence is the arm of this defect that was worse than the coarseness.
+            #
+            # Two rejected predicates, both measured wrong:
+            #   `isinstance(merged_sub, dict)` stopped at the TYPE boundary, and `{}` is a
+            #   dict, so it recursed, found nothing, and went silent anyway.
+            #   `merged_sub != default` then over-fired in the other direction: a block the
+            #   operator wrote out IN FULL with customised values is also unequal to the
+            #   defaults, so it got named as refilled when nothing was. That is a
+            #   MIS-name, which this function must never do -- over-naming is the only
+            #   direction it is allowed to err in.
+            if isinstance(merged_sub, dict) and set(default) <= set(merged_sub):
+                names.extend(
+                    f"{key}.{leaf}"
+                    for leaf in refilled_policy_subkeys(raw_sub, default, merged_sub)
+                )
+            else:
+                names.append(key)
+            continue
+        if merged_sub == default and raw_sub != merged_sub:
+            names.append(key)
+    return sorted(names)
 
 
 def merge_coverage_floor_policy(value: Any) -> dict[str, Any]:

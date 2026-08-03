@@ -11,6 +11,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.adapter_lib import load_yaml, render_yaml_mapping
 from scripts.quality_adapter_lib import (
     ABSENCE_STRUCTURAL_FIELDS,
@@ -836,3 +838,74 @@ def test_a_rewrite_that_reverts_nothing_says_nothing(tmp_path: Path) -> None:
     assert "comments_dropped" not in payload
     assert "customization_warning" not in payload
     assert result.stderr == ""
+
+
+def test_a_partially_written_nested_block_names_its_leaves_end_to_end(tmp_path: Path) -> None:
+    """#493, through the REAL merge and the real report rather than a fixture.
+
+    Every earlier proof in this family stopped at the granularity of the instance that
+    was reported — whole-field, then sub-key — and the next instance sat one level below
+    it. Unit-testing the recursion against a hand-built merged dict would repeat that:
+    it proves the function, not that a dotted name survives `describe_intent_loss`'s two
+    filters (`augmented` status, and the field appearing in what was written) into the
+    report an operator actually reads.
+
+    `summary_md` is CUSTOMISED on purpose. That is the arm where the merged block stops
+    equalling the default, which is what used to make a partially refilled block vanish
+    from the report entirely instead of merely being reported coarsely.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  report_paths:\n    summary_md: custom/summary.md\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert payload["field_statuses"]["mutation_testing"] == "augmented"
+    refilled = payload["refilled_subkeys"]["mutation_testing"]
+    assert "report_paths.sample_md" in refilled, "the refilled nested leaf must be named"
+    assert "report_paths.log" in refilled
+    assert "report_paths.summary_md" not in refilled, "the operator wrote this one"
+    assert "report_paths" not in refilled, "the coarse block name is replaced, not added to"
+    warning = payload["customization_warning"]
+    assert "sub-key(s) of `mutation_testing`" in warning
+    assert "report_paths.sample_md" in warning
+
+
+def test_mutation_testing_validates_where_the_other_policies_refill(tmp_path: Path) -> None:
+    """The doc claim about `mutation_testing`, pinned so it cannot drift again.
+
+    `bootstrap-posture.md` states the absent/blank/wrong-typed three-way refill rule for
+    all three policy blocks. It is `coverage_floor_policy` and `prompt_asset_policy` only:
+    `mutation_testing` validates. Two rounds of review each corrected this sentence and
+    the FIRST correction was itself wrong — it said every blank sub-key errors, which is
+    false for a blank nested BLOCK header. That is the one spelling accepted silently.
+    """
+    errors = {
+        "blank scalar": "mutation_testing:\n  score_break:\n",
+        "wrong-typed scalar": "mutation_testing:\n  score_break: nope\n",
+        "blank nested leaf": "mutation_testing:\n  report_paths:\n    summary_md:\n",
+    }
+    for label, body in errors.items():
+        repo = seed_quality_repo(tmp_path / label.replace(" ", "-"))
+        _adapter(repo).write_text(
+            "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n" + body,
+            encoding="utf-8",
+        )
+        with pytest.raises(Exception):
+            _bootstrap(repo)
+
+    # ...and the one that is accepted: a blank nested BLOCK header refills the whole
+    # block silently, so it reports the coarse block name rather than erroring.
+    repo = seed_quality_repo(tmp_path / "blank-block")
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  score_break: 70\n  report_paths:\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert "report_paths" in payload["refilled_subkeys"]["mutation_testing"]
