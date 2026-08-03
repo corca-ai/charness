@@ -652,3 +652,28 @@ def test_a_converged_adapter_still_says_nothing(tmp_path: Path) -> None:
     assert second["adapter_status"] == "unchanged"
     assert "refilled_fields" not in second
     assert "customization_warning" not in second
+
+
+def test_a_rewrite_that_reverts_nothing_says_nothing(tmp_path: Path) -> None:
+    """The third state: a real rewrite that costs the operator nothing.
+
+    Reachable through the trigger from the original report — a benign `concept_paths`
+    augmentation forces a write on an already-converged adapter. Neither claim is owed,
+    so the tool must stay silent rather than warn on the mere fact of writing.
+    """
+    repo = seed_quality_repo(tmp_path)
+    _bootstrap(repo)
+    assert _bootstrap(repo)["adapter_status"] == "unchanged"
+
+    # A newly detected concept path is a legitimate merge, not a reversion.
+    (repo / "charness-artifacts" / "quality").mkdir(parents=True, exist_ok=True)
+    (repo / "charness-artifacts" / "quality" / "latest.md").write_text("# report\n", encoding="utf-8")
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    payload = json.loads(result.stdout)
+
+    assert payload["adapter_status"] == "updated"
+    assert "refilled_fields" not in payload
+    assert "comments_dropped" not in payload
+    assert "customization_warning" not in payload
+    assert result.stderr == ""
