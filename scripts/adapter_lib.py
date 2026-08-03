@@ -10,7 +10,26 @@ from typing import Any
 SUPPORTED_BLOCK_SCALAR_RE = re.compile(r"^[|>](-)?$")
 
 
+def strip_inline_comment(value: str) -> str:
+    """Drop a trailing ` # ...` comment from an unquoted scalar.
+
+    Without this the comment text is swallowed into the value, so
+    ``margin: 2.0  # widened`` parses as the string ``"2.0  # widened"``. A caller
+    type-checking for a number then rejects it and silently falls back to a default,
+    while still reporting the field as preserved — the operator's value is lost and
+    the report says it was kept. Only space-hash starts a YAML comment, so a value
+    like ``a#b`` is left alone.
+    """
+    if _is_quoted_scalar(value):
+        return value
+    for index, char in enumerate(value):
+        if char == "#" and (index == 0 or value[index - 1] in " \t"):
+            return value[:index].strip()
+    return value
+
+
 def _coerce_scalar(value: str) -> Any:
+    value = strip_inline_comment(value)
     _reject_unsupported_scalar(value)
     if value == "":
         return ""
@@ -165,11 +184,19 @@ def _mapping_value(
     scalar swallowed the following lines, which is the one case a caller must not treat
     as a single-line advance.
     """
+    # Strip before the dispatch below, not only inside `_coerce_scalar`. Every branch
+    # here compares the raw post-colon text, so a trailing comment made `[]`, `{}`, a
+    # block-scalar header, and "empty, value is on the following lines" all fall through
+    # to the scalar branch — turning a nested block into the empty string and dropping
+    # its children silently, while the field still counted as explicitly set.
+    value = strip_inline_comment(value)
     if not value:
         parsed, next_index = _parse_empty_value(lines, index, indent)
         return parsed, next_index, False
     if value == "[]":
         return [], index + 1, False
+    if value == "{}":
+        return {}, index + 1, False
     if value.startswith(("|", ">")):
         parsed, next_index = _parse_block_scalar(lines, index, indent, value)
         return parsed, next_index, True
@@ -380,6 +407,19 @@ def list_field_state(data: dict[str, Any], field: str) -> str:
     return "configured"
 
 
+def _string_round_trips_bare(value: str) -> bool:
+    """Would this string parse back as the same string if emitted without quotes?
+
+    A string like ``"true"`` or ``"123"`` is legal YAML text, but emitted bare it
+    reloads as a bool or an int. That silently changes a value's type across a
+    write/read cycle, so such a string has to be quoted.
+    """
+    try:
+        return _coerce_scalar(value) == value
+    except ValueError:
+        return False
+
+
 def _yaml_scalar(value: Any) -> str:
     if value is None:
         return "null"
@@ -391,6 +431,7 @@ def _yaml_scalar(value: Any) -> str:
             or value[0] in "*&!@`#{}[],:>|-'\""
             or any(char in value for char in ("\n", "\r", ": ", "#", "\\"))
             or value != value.strip()
+            or not _string_round_trips_bare(value)
         ):
             escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
             return f'"{escaped}"'
@@ -453,6 +494,22 @@ def render_yaml_mapping(items: list[tuple[str, Any]]) -> str:
     for key, value in items:
         _render_yaml_value(lines, key, value, indent=0)
     return "\n".join(lines) + "\n"
+
+
+def plan_generated_write(
+    existing_text: str | None, rendered_text: str, *, also_unchanged_when: bool = False
+) -> str:
+    """Classify what writing `rendered_text` over `existing_text` would do.
+
+    Returns `absent` (no file yet), `unchanged`, or `differs`. Deciding this BEFORE
+    touching the disk is what lets a dry run report the same verdict a real run would
+    reach, and what keeps a generator from rewriting a file it has nothing to change in.
+    Callers map the three outcomes onto their own status vocabulary and their own policy
+    for whether `differs` may overwrite.
+    """
+    if existing_text is None:
+        return "absent"
+    return "unchanged" if existing_text == rendered_text or also_unchanged_when else "differs"
 
 
 def write_adapter_scaffold(repo_root: Path, output: Path, contents: str, force: bool) -> Path:

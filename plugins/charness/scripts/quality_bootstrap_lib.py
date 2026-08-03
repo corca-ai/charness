@@ -4,8 +4,9 @@ import json
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, plan_generated_write
 from scripts.path_portability_lib import repo_relative
+from scripts.quality_bootstrap_absence import describe_intent_loss, load_deliberately_absent
 from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
@@ -45,6 +46,16 @@ class BootstrapValidationError(Exception):
     pass
 
 
+# `_infer_defaults` is NOT the set of fields the bootstrap generates: several are
+# rendered and read back without ever carrying an inferred default. Using the smaller
+# set told operators that a correct declaration was a typo — a false warning on the
+# one surface whose whole job is to stop a false signal.
+_FIELDS_RENDERED_WITHOUT_DEFAULTS = frozenset(
+    "preset_version recommendation_defaults_version public_spec_section_exemptions "
+    "public_spec_pointer_proof_markers public_spec_implementation_ref_density_floor".split()
+)
+
+
 def _merge_existing_paths(existing: list[str], detected: list[str]) -> tuple[list[str], str]:
     if existing:
         merged = merge_unique(existing, detected)
@@ -63,6 +74,7 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "preset_id": "portable-defaults",
         "customized_from": "portable-defaults",
         "preset_lineage": [],
+        "deliberately_absent": {},
         "coverage_fragile_margin_pp": DEFAULT_COVERAGE_FRAGILE_MARGIN_PP,
         "coverage_floor_policy": dict(DEFAULT_COVERAGE_FLOOR_POLICY),
         "specdown_smoke_patterns": [],
@@ -96,6 +108,9 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "security_commands": [],
         "mutation_testing": dict(DEFAULT_MUTATION_TESTING),
     }
+
+
+KNOWN_ADAPTER_FIELDS = frozenset(_infer_defaults(Path("."))) | _FIELDS_RENDERED_WITHOUT_DEFAULTS
 
 
 def _existing_adapter_path(repo_root: Path) -> Path | None:
@@ -178,9 +193,15 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
         return defaults
     validated_skill_rules = _load_explicit_skill_rules(raw, adapter_path)
     mutation_testing = _load_explicit_mutation_testing(raw, adapter_path)
+    try:
+        deliberately_absent, absence_warnings = load_deliberately_absent(raw, adapter_path, KNOWN_ADAPTER_FIELDS)
+    except ValueError as exc:
+        raise BootstrapValidationError(str(exc)) from exc
     data = dict(defaults)
     data["_explicit_fields"] = set(raw.keys())
     data["_raw_adapter"] = raw
+    data["deliberately_absent"] = deliberately_absent
+    data["_absence_warnings"] = absence_warnings
     _apply_existing_scalar_fields(data, raw)
     _apply_existing_policy_fields(data, raw, validated_skill_rules)
     if mutation_testing is not None:
@@ -365,6 +386,19 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
         final["review_commands"] = []
         field_statuses["review_commands"] = "deferred"
 
+    # A field the operator declared deliberately absent keeps whatever `final` computed
+    # for it — consumers of `build_bootstrap_state` still see a usable value — but it is
+    # not rendered back into the adapter, and its status says the absence was honored
+    # rather than defaulted. Suppressing the matching `deferred_setup` nag is part of the
+    # same intent: prompting to install a gate the repo deliberately does not have is
+    # exactly the "sends the next session hunting for them" failure (#481).
+    deliberately_absent = existing.get("deliberately_absent") or {}
+    final["deliberately_absent"] = dict(deliberately_absent)
+    final["_absence_warnings"] = list(existing.get("_absence_warnings") or [])
+    for field in deliberately_absent:
+        field_statuses[field] = "deliberately-absent"
+    deferred_setup = [entry for entry in deferred_setup if entry.get("field") not in deliberately_absent]
+
     # Unknown top-level fields (repo-extended config such as a consumer-owned
     # gate block) must round-trip verbatim: every known field is in `final` by
     # now, so anything else in the raw adapter would otherwise be silently
@@ -389,17 +423,25 @@ def bootstrap_quality_adapter(
     adapter_text = render_bootstrap_adapter(final_data, field_statuses)
     existing_text = adapter_path.read_text(encoding="utf-8") if adapter_path.is_file() else None
 
+    # Decide what a real run WOULD do before branching on dry_run. A dry run that skips
+    # the comparison cannot tell a would-be rewrite from a would-be no-op, so it warned
+    # about destroying comments that a real run leaves untouched — a warning that cries
+    # wolf on every plan is one an operator stops reading.
+    plan = plan_generated_write(
+        existing_text,
+        adapter_text,
+        also_unchanged_when=existing_text is not None
+        and _diff_is_defaulted_only(existing_text, adapter_text, field_statuses),
+    )
+    would_do = {"absent": "written", "unchanged": "unchanged", "differs": "updated"}[plan]
+
     if dry_run:
         adapter_status = "dry-run"
-    elif existing_text is None:
-        adapter_path.parent.mkdir(parents=True, exist_ok=True)
-        adapter_path.write_text(adapter_text, encoding="utf-8")
-        adapter_status = "written"
-    elif existing_text == adapter_text or _diff_is_defaulted_only(existing_text, adapter_text, field_statuses):
-        adapter_status = "unchanged"
     else:
-        adapter_path.write_text(adapter_text, encoding="utf-8")
-        adapter_status = "updated"
+        adapter_status = would_do
+        if would_do in {"written", "updated"}:
+            adapter_path.parent.mkdir(parents=True, exist_ok=True)
+            adapter_path.write_text(adapter_text, encoding="utf-8")
 
     report = {
         "adapter_path": repo_relative(repo_root, adapter_path),
@@ -409,7 +451,15 @@ def bootstrap_quality_adapter(
         "preset_lineage": final_data["preset_lineage"],
         "field_statuses": field_statuses,
         "deferred_setup": deferred_setup,
+        "deliberately_absent": dict(final_data.get("deliberately_absent") or {}),
     }
+    if dry_run:
+        report["would_do"] = would_do
+    # `written` means there was no prior file, so there is no operator intent to lose.
+    if would_do == "updated":
+        report.update(describe_intent_loss(existing_text, adapter_text, field_statuses))
+    if absence_warnings := final_data.get("_absence_warnings"):
+        report["absence_warnings"] = list(absence_warnings)
     if not dry_run:
         resolved_report_path.parent.mkdir(parents=True, exist_ok=True)
         resolved_report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")

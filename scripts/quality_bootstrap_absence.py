@@ -1,0 +1,148 @@
+"""Deliberate absence — the adapter's vocabulary for "this field is missing on purpose".
+
+Absence alone cannot carry intent. `field not in raw` reads identically whether the
+operator never set the field or deliberately cut it, so a generator that defaults on
+absence refills both cases. That is the #481 loss: a repo that had removed
+`coverage_floor_policy` (because it uses neither lefthook nor CI) got it back on the
+next bootstrap, pointing at files that do not exist.
+
+`deliberately_absent` makes the second case sayable, and it carries the rationale in
+the SAME place as the signal. That pairing is the point: the rationale used to live in
+a YAML comment, which is the one part of the file a re-serializer cannot keep, so the
+only record of the intent died in the same pass that overrode it.
+
+    deliberately_absent:
+      coverage_floor_policy: this repo uses neither lefthook nor CI
+      security_commands: no repo-owned security helper exists here
+
+An adapter without the field behaves exactly as it did before it existed.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+from scripts.adapter_lib import strip_inline_comment
+
+# Fields that describe the adapter itself rather than an optional repo surface.
+# Declaring one of these absent would not express a customization, it would produce
+# an adapter that cannot be resolved — so it is refused rather than honored.
+STRUCTURAL_FIELDS = frozenset(
+    "version repo language output_dir preset_id customized_from deliberately_absent".split()
+)
+
+FIELD = "deliberately_absent"
+
+
+def load_deliberately_absent(
+    raw: dict[str, Any], adapter_path: Path, known_fields: set[str] | None = None
+) -> tuple[dict[str, str], list[str]]:
+    """Validate and return the adapter's declared deliberate absences, plus warnings.
+
+    Raises ValueError with a repair instruction; the caller re-raises it as the
+    bootstrap's own validation error type.
+    """
+    if FIELD not in raw:
+        return {}, []
+    declared = raw.get(FIELD)
+    if not isinstance(declared, dict):
+        raise ValueError(
+            f"{adapter_path}: `{FIELD}` must be a mapping of field name to the reason it is "
+            f"absent (got {type(declared).__name__}). Repair the adapter before rerunning bootstrap."
+        )
+    errors: list[str] = []
+    honored: dict[str, str] = {}
+    for field, reason in declared.items():
+        if not isinstance(field, str) or not field.strip():
+            errors.append(f"field name {field!r} is not a non-empty string")
+            continue
+        if not isinstance(reason, str) or not reason.strip():
+            errors.append(
+                f"`{field}` has no reason; a deliberate absence must say why, or a later "
+                "reader cannot tell it from an oversight"
+            )
+            continue
+        if field in STRUCTURAL_FIELDS:
+            errors.append(f"`{field}` is structural and cannot be declared absent")
+            continue
+        if field in raw:
+            errors.append(
+                f"`{field}` is declared absent but is also set in this adapter; remove one "
+                "of the two so the intent is unambiguous"
+            )
+            continue
+        honored[field] = reason.strip()
+    if errors:
+        rendered = "; ".join(errors)
+        raise ValueError(
+            f"{adapter_path}: invalid `{FIELD}`; {rendered}. Repair the adapter before rerunning bootstrap."
+        )
+    # A misspelled field name is honored as a silent no-op: the declaration looks
+    # right in the file and the real field keeps getting refilled forever, which is
+    # the exact confusion this vocabulary exists to end. It stays a warning rather
+    # than an error because declaring a consumer-owned field absent is legal.
+    warnings: list[str] = []
+    if known_fields:
+        unrecognized = sorted(field for field in honored if field not in known_fields)
+        if unrecognized:
+            warnings.append(
+                f"`{FIELD}` names {len(unrecognized)} field(s) this bootstrap does not "
+                f"generate: {', '.join(unrecognized)}. If one is a typo, the field it was "
+                "meant to name is still being refilled from defaults."
+            )
+    return honored, warnings
+
+
+def count_comment_lines(text: str) -> int:
+    """Count lines carrying a YAML comment — the surface a re-serializer silently drops.
+
+    Trailing comments count too. They are just as destroyed by a rewrite as a full-line
+    one, and a repo that annotates fields in place would otherwise get a rewrite that
+    reports losing nothing.
+    """
+    return sum(1 for line in text.splitlines() if _line_has_comment(line))
+
+
+def _line_has_comment(line: str) -> bool:
+    """Defer to the parser's own rule rather than re-deriving it.
+
+    A second implementation of "where does the comment start" disagreed with the
+    parser on an unquoted value carrying an apostrophe: the parser stripped the
+    comment while this counter, tracking that apostrophe as an unclosed quote, saw
+    none — so the rewrite destroyed an annotation and reported losing nothing.
+    """
+    stripped = line.strip()
+    if not stripped:
+        return False
+    return stripped.startswith("#") or strip_inline_comment(stripped) != stripped
+
+
+def describe_intent_loss(existing_text: str | None, rendered_text: str, field_statuses: dict[str, str]) -> dict[str, Any]:
+    """Report what an about-to-happen rewrite costs the operator.
+
+    A generator that cannot preserve a customization has to SAY SO. Refusing was
+    considered and rejected: the operator does not hand-edit adapters, so refusing
+    would push the merge back onto whoever ran the tool. Saying so keeps the merge
+    here and still leaves a signal a reader can act on.
+    """
+    dropped = count_comment_lines(existing_text) if existing_text else 0
+    if not dropped:
+        return {}
+    # Only name fields this run actually wrote into the file. `defaulted` covers every
+    # field the operator never set, and the renderer drops the empty ones, so listing
+    # all of them buries the one or two that matter under ~25 names nobody customized —
+    # which is how an operator learns to skim the warning.
+    written = {line.split(":", 1)[0] for line in rendered_text.splitlines() if line[:1].isalpha()}
+    refillable = sorted(
+        field for field, status in field_statuses.items() if status == "defaulted" and field in written
+    )
+    warning = (
+        f"{dropped} comment line(s) in the existing adapter will not survive this rewrite: the "
+        "adapter is re-serialized from data, so comments have nowhere to go. If any of them "
+        f"recorded WHY a field was removed, move that reason into `{FIELD}` — it is data, so it "
+        "survives, and it also stops the bootstrap from refilling the field."
+    )
+    if refillable:
+        warning += f" Fields this run refilled from defaults: {', '.join(refillable)}."
+    return {"comments_dropped": dropped, "customization_warning": warning}

@@ -24,6 +24,12 @@ Required shared core:
 - `language`
 - `output_dir`
 
+Optional deliberate-absence declaration:
+
+- `deliberately_absent` — mapping of field name to the reason that field is absent
+  on purpose. Hand-authored; keeps bootstrap from refilling the field from a default.
+  See `bootstrap-posture.md` for the rules and the resolution-scope limit.
+
 Optional shared provenance:
 
 - `preset_id`

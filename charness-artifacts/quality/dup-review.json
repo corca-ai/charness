@@ -1437,6 +1437,13 @@
     },
     {
       "class": "intentional",
+      "id": "c0b64c7b48194172",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "the two adapter-writing bootstraps (markdown_preview_bootstrap_lib.scaffold and quality_bootstrap_lib.bootstrap_quality_adapter) share a SHAPE, not logic: resolve the output path, read any existing text, classify what a write would do, write only when it would change something, return a report dict. Surfaced as new because the #481 dry-run repair moved quality's status decision ahead of the dry_run branch, converging its ordering on markdown_preview's. The genuinely shared kernel WAS extracted this slice -- adapter_lib.plan_generated_write -- and both members now call it. What remains is each writer's own POLICY, and those policies are opposite: markdown_preview refuses an existing file unless --force (statuses preserved-existing / would-write / would-update), while quality MERGES into it and suppresses a defaulted-only diff. The slice's own sibling-writer measurement found that this refuse-vs-merge split is exactly what made one of them capable of the reported data loss and the other not, so collapsing them into one function would couple the two policies the fix depends on keeping apart."
+    },
+    {
+      "class": "intentional",
       "id": "c178ae00e001f90a",
       "note": "the gate `run()` convention already accepted as 119fa9bcafbd3048: load the strict quality adapter, return a typed adapter-invalid report, read this gate's config block, dispatch. check_dup_ratchet and migrate_dup_fingerprints dispatch to different modes with different report shapes; a shared runner would take those as data and each script would still spell them out through an indirection",
       "reviewed_at": "2026-07-26",
@@ -1679,6 +1686,13 @@
       "note": "eight-line import/bootstrap overlap between standalone feedback writer and usage reporter after both consume usage-episode helper modules; this is local command wiring rather than an extractable behavior seam",
       "reviewed_at": "2026-07-10",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "dbbde6e7e8d7a125",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "idiom-sized two-line `if <scalar> is <sentinel>: return <literal>` guard clause shared by six unrelated owners (adapter_lib._yaml_scalar's None case and adapter_lib.plan_generated_write's absent case, subprocess_guard, inventory_ci_recoverable_gates, render_runtime_summary, route_public_fetch_routes). Same accepted class as 017938717d9e4e73. Different sentinels, different return values, different subsystems; there is no behavior to centralize in a leading guard clause, and a shared helper would couple a YAML scalar renderer to a write planner to a subprocess guard. Surfaced as new because plan_generated_write was added to adapter_lib this slice; the other four members are untouched."
     },
     {
       "class": "intentional",

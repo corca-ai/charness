@@ -1,1 +1,1 @@
-2026-07-27-absent-guard-not-dead-guard.md
+2026-08-05-quality-adapter-silent-revert.md

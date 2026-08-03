@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import render_yaml_mapping
+from scripts.adapter_lib import plan_generated_write, render_yaml_mapping
 
 LIB_REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_SEARCH_PATHS = (
@@ -143,9 +143,10 @@ def scaffold_markdown_preview(
     relative_output = resolved_output.relative_to(repo_root).as_posix()
     existing_text = resolved_output.read_text(encoding="utf-8") if resolved_output.is_file() else None
 
-    if existing_text is None:
+    plan = plan_generated_write(existing_text, config_text)
+    if plan == "absent":
         config_status = "would-write" if dry_run else "written"
-    elif existing_text == config_text:
+    elif plan == "unchanged":
         config_status = "unchanged"
     elif not force:
         config_status = "preserved-existing"

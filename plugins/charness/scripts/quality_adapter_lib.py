@@ -322,6 +322,64 @@ def _apply_lint_ignore_discovery(
         validated["lint_ignore_discovery"] = block
 
 
+# A structural field is refused outright by the bootstrap, so naming one here as
+# "still resolving to a default" would report a declaration that can never be honored.
+ABSENCE_STRUCTURAL_FIELDS = frozenset(
+    "version repo language output_dir preset_id customized_from deliberately_absent".split()
+)
+
+
+def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], warnings: list[str]) -> None:
+    """Carry the operator's declared absences through resolution, and say where they do not bite.
+
+    Keeping the bootstrap from rewriting the field is only half the job: this resolver
+    still fills every unset field from `infer_quality_defaults`, so a repo that declared
+    `coverage_floor_policy` absent still resolves to the preset default that names
+    `lefthook.yml` and `.github/workflows/*.yml`. Making each consumer honor the
+    declaration would change what those fields mean at resolution time and could break
+    consumers that index them, so it is a design decision rather than an implementation
+    detail. What is fixed here is the silence: the declaration survives resolution
+    instead of being dropped, and every field where the default still wins is named.
+    """
+    declared = data.get("deliberately_absent")
+    if declared is None:
+        return
+    # Dropping a malformed declaration in silence would re-create the exact failure this
+    # field exists to close: the file says something, the resolver acts as if it did not,
+    # and nothing tells the operator which reading won. The bootstrap refuses these
+    # outright; the resolver only warns, because refusing here would break loading a repo
+    # that the bootstrap has not yet been run against.
+    if not isinstance(declared, dict):
+        warnings.append(
+            "deliberately_absent must be a mapping of field name to reason; "
+            f"got {type(declared).__name__}, so no declaration was honored."
+        )
+        return
+    honored = {
+        field: reason for field, reason in declared.items() if isinstance(field, str) and isinstance(reason, str)
+    }
+    if discarded := sorted(str(field) for field in declared if field not in honored):
+        warnings.append(
+            "deliberately_absent entries ignored because the field name or reason is not a "
+            f"string: {', '.join(discarded)}."
+        )
+    if not honored:
+        return
+    validated["deliberately_absent"] = honored
+    still_defaulted = sorted(
+        field
+        for field in honored
+        if field not in ABSENCE_STRUCTURAL_FIELDS and validated.get(field) not in (None, {}, [], "")
+    )
+    if still_defaulted:
+        warnings.append(
+            "deliberately_absent declares "
+            + ", ".join(still_defaulted)
+            + " absent, but resolution still returns a repo default for each; treat those "
+            "values as a preset default rather than as this repo's own declaration."
+        )
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -346,6 +404,7 @@ def validate_quality_adapter_data(
     _apply_test_file_discovery(data, validated, errors, warnings)
     _apply_lint_ignore_discovery(data, validated, errors, warnings)
 
+    _apply_deliberate_absence(data, validated, warnings)
     if data.get("repo") == "CHANGE_ME":
         warnings.append("repo is still set to CHANGE_ME")
     if not validated["gate_commands"]:

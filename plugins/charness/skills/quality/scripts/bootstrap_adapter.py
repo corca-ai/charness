@@ -41,6 +41,11 @@ def main() -> None:
         dry_run=args.dry_run,
     )
     sys.stdout.write(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
+    # Reverting an operator's customization silently is the failure this guards. The
+    # JSON carries the same fact, but a run log shows stderr, so the warning goes
+    # where it will actually be read.
+    for warning in [*report.get("absence_warnings", []), *([report["customization_warning"]] if report.get("customization_warning") else [])]:
+        print(f"WARN: {warning}", file=sys.stderr)
 
 
 if __name__ == "__main__":

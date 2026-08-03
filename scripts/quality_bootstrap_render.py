@@ -16,6 +16,9 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
     ]
     if data.get("preset_version") or field_statuses.get("preset_version") == "preserved":
         items.append(("preset_version", data["preset_version"]))
+    deliberately_absent = data.get("deliberately_absent") or {}
+    if deliberately_absent:
+        items.append(("deliberately_absent", dict(deliberately_absent)))
     policy_items: list[tuple[str, Any]] = [
         ("preset_lineage", data["preset_lineage"]),
         ("coverage_fragile_margin_pp", data["coverage_fragile_margin_pp"]),
@@ -74,7 +77,10 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
     items.extend(policy_items)
     for key, value in (data.get("_unknown_fields") or {}).items():
         items.append((key, value))
-    return render_yaml_mapping(items)
+    # A declared absence is honored by NOT writing the field back. This is the one
+    # place the intent has teeth: every branch above still computes a value, so
+    # filtering at render is what keeps a deleted key deleted (#481).
+    return render_yaml_mapping([(key, value) for key, value in items if key not in deliberately_absent])
 
 
 def diff_is_defaulted_only(existing_text: str, rendered_text: str, statuses: dict[str, str]) -> bool:
