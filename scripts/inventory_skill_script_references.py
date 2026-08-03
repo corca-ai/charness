@@ -65,6 +65,13 @@ REPO_ROOT_SCRIPT_RE = re.compile(rf"<repo-root>/scripts/({_SCRIPT_NAME})")
 # and the whole point of the split: a consumer reads it as "not mine", and this
 # check resolves it instead of waving it through as an unverifiable placeholder.
 AUTHORING_REPO_SCRIPT_RE = re.compile(rf"<authoring-repo>/scripts/({_SCRIPT_NAME})")
+# `<plugin-dir>/scripts/<name>` -- the INSTALLED plugin package. Verifiable here
+# against the generated `plugins/<pkg>/`, which is what makes it the honest
+# spelling for a charness script the consumer actually receives. Adopted 2026-08-04
+# (D50); until then this family was invisible to this inventory, so 41 references
+# moved out of measurement the moment they were repaired into it.
+PLUGIN_DIR_SCRIPT_RE = re.compile(rf"<plugin-dir>/scripts/({_SCRIPT_NAME})")
+PLUGIN_PACKAGE_ROOT = "plugins/charness"
 # `$SKILL_DIR/<path>` -- the in-package form the working references use.
 SKILL_DIR_RE = re.compile(r"\$SKILL_DIR/([A-Za-z0-9_.][A-Za-z0-9_./-]*)")
 # A `## References` list bullet naming a package-local script. Deliberately
@@ -325,24 +332,31 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
                     }
                 )
 
-            for match in AUTHORING_REPO_SCRIPT_RE.finditer(line):
-                name = match.group(1)
-                # The prose asserts this lives in the charness authoring repo, so
-                # the assertion is checkable rather than exempt. The root is
-                # carried per package (see SkillPackage), never counted backwards.
-                target_path = package.authoring_root / "scripts" / name
-                resolved = target_path.is_file()
-                rows.append(
-                    {
-                        "doc": rel_doc,
-                        "line": lineno,
-                        "layout": layout,
-                        "reference": f"<authoring-repo>/scripts/{name}",
-                        "form": "authoring-repo",
-                        "status": AUTHORING_MARKED if resolved else UNRESOLVED,
-                        "found_at": _repo_relative(repo_root, target_path) if resolved else None,
-                    }
-                )
+            # Both placeholders make a CHECKABLE claim; they differ only in which
+            # tree they claim. `<authoring-repo>/` resolves against the charness
+            # tree carried per package (never counted backwards, see SkillPackage);
+            # `<plugin-dir>/` resolves against the generated package, because that
+            # is the claim it makes -- that the consumer received the file.
+            for pattern, placeholder, form, script_root in (
+                (AUTHORING_REPO_SCRIPT_RE, "<authoring-repo>", "authoring-repo", package.authoring_root),
+                (PLUGIN_DIR_SCRIPT_RE, "<plugin-dir>", "plugin-dir", repo_root / PLUGIN_PACKAGE_ROOT),
+            ):
+                for match in pattern.finditer(line):
+                    name = match.group(1)
+                    target_path = script_root / "scripts" / name
+                    resolved = target_path.is_file()
+                    rows.append(
+                        {
+                            "doc": rel_doc,
+                            "line": lineno,
+                            "layout": layout,
+                            "reference": f"{placeholder}/scripts/{name}",
+                            "form": form,
+                            "status": AUTHORING_MARKED if resolved else UNRESOLVED,
+                            "found_at": _repo_relative(repo_root, target_path) if resolved else None,
+                        }
+                    )
+
 
             bullet = REFERENCES_BULLET_RE.match(line)
             if bullet is not None:

@@ -91,14 +91,18 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # satisfied while another form's population silently fell to zero.
     forms = collections.Counter(row["form"] for row in authoring)
     assert forms["skill-dir"] > 100
-    # Floor the two out-of-package forms TOGETHER: converting a reference from
-    # `<repo-root>/` to `<authoring-repo>/` moves a row between them and must not
-    # trip a floor, but the combined population going to zero still must.
+    # Floor the out-of-package forms TOGETHER: converting a reference between them
+    # moves a row and must not trip a floor, but the combined population going to
+    # zero still must.
     #
-    # The combined number dropped from 15 to 11 when #478 was dispositioned:
-    # three sites moved to `<authoring-repo>/`, three moved onto shared shims
-    # (leaving the out-of-package forms entirely), and one bullet was dropped.
-    assert forms["repo-root"] + forms["authoring-repo"] >= 10
+    # The combined number dropped from 15 to 11 when #478 was dispositioned: three
+    # sites moved to `<authoring-repo>/`, three moved onto shared shims, and one
+    # bullet was dropped. `plugin-dir` joined the sum on 2026-08-04 for exactly the
+    # reason this floor is a SUM: 41 references were repaired from
+    # `<authoring-repo>/` to `<plugin-dir>/` because the files ship to consumers,
+    # and until the inventory learned that form they left measurement entirely --
+    # a floor that cannot see a form reports its population as lost.
+    assert forms["repo-root"] + forms["authoring-repo"] + forms["plugin-dir"] >= 10
     # Deliberately NOT `forms["repo-root"] > 0`. That pinned at least one live
     # `<repo-root>/scripts/` reference in real prose FOREVER, so correctly
     # converting the last one would fail the suite with a message about floors
@@ -106,7 +110,15 @@ def test_no_authoring_layout_reference_fails_to_resolve() -> None:
     # red build. The classifier arm is already proven to fire by the synthetic
     # fixtures below, which exercise it on a tmp tree where the population is
     # controlled instead of incidental.
-    assert forms["authoring-repo"] > 0
+    # `forms["authoring-repo"] > 0` was HERE and is deliberately gone, for the
+    # reason the paragraph above gives about `repo-root`: on 2026-08-04 every live
+    # `<authoring-repo>/scripts/` reference was correctly converted to
+    # `<plugin-dir>/` (the files ship to consumers, so the old prefix was a false
+    # claim), and the pin turned that correct edit into a red suite complaining
+    # about a floor instead of about the edit. The classifier arm stays proven by
+    # the synthetic fixtures below, which exercise BOTH its resolved and unresolved
+    # outcomes on a tmp tree where the population is controlled rather than
+    # incidental — which is the whole argument for not pinning live prose.
     # The 7 References bullets Lane A repaired, plus the pre-existing ones.
     assert forms["references-bullet"] >= 20
 
@@ -722,3 +734,33 @@ def test_advisory_exits_zero_on_a_clean_repo_too(tmp_path: Path) -> None:
         str(tmp_path),
     )
     assert result.returncode == 0
+
+
+def test_a_plugin_dir_reference_is_resolved_against_the_shipped_package(tmp_path: Path) -> None:
+    """The new arm, proven on a controlled tree rather than on live prose.
+
+    `<plugin-dir>/scripts/x.py` asserts the file ships to the consumer, so it is
+    checked against the generated package — not the authoring tree, which is what
+    makes it a different claim from `<authoring-repo>/` rather than a synonym.
+    """
+    repo = tmp_path / "repo"
+    package = repo / "skills" / "public" / "demo"
+    (package / "references").mkdir(parents=True)
+    (package / "SKILL.md").write_text("---\nname: demo\ndescription: d\n---\n\n# Demo\n", encoding="utf-8")
+    (package / "references" / "note.md").write_text(
+        "Run `<plugin-dir>/scripts/real.py`.\n\nAlso `<plugin-dir>/scripts/vanished.py`.\n",
+        encoding="utf-8",
+    )
+    shipped = repo / "plugins" / "charness" / "scripts"
+    shipped.mkdir(parents=True)
+    (shipped / "real.py").write_text("# ships\n", encoding="utf-8")
+
+    rows = [
+        row
+        for row in inventory_module.classify_references(repo)
+        if row["form"] == "plugin-dir"
+    ]
+
+    by_reference = {row["reference"]: row for row in rows}
+    assert by_reference["<plugin-dir>/scripts/real.py"]["status"] == inventory_module.AUTHORING_MARKED
+    assert by_reference["<plugin-dir>/scripts/vanished.py"]["status"] == inventory_module.UNRESOLVED
