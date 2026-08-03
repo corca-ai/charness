@@ -307,11 +307,15 @@ merge.
    and operator value judgment. The user picks one chunk (or none) and
    may ask "why not chunk X?" in the same turn; the agent answers from
    the already-rendered reasoning.
-6. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py) calls
-   [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py)
-   to write the goal artifact at
-   `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at status
-   `draft`, then runs the auto-draft template described below. The drafter
+6. **Draft.** On user selection, [`draft_goal_from_chunk.py`](../skills/public/handoff/scripts/draft_goal_from_chunk.py)
+   renders the auto-draft template described below and writes the goal artifact
+   itself at `<repo-root>/charness-artifacts/goals/<yyyy-mm-dd-slug>.md` at status
+   `draft`. It does NOT route through
+   [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py) —
+   it uses that library only for `goal_path` / `goal_rel` / `check_goal`. **There are
+   TWO goal-artifact CREATORS** (other achieve helpers write EXISTING artifacts), and
+   the value guards on `upsert_goal.py`'s input surface do not reach this one — whether
+   they should is issue #500. The drafter
    returns `next_step` / `shape_command` (`/achieve @<artifact>`) as the
    operator's next move: the draft is unshaped, so the achieve Before-phase
    must fill it before `/goal @<artifact>` (the artifact's `activation`
@@ -322,11 +326,11 @@ merge.
 The draft writer fills exactly four sections plus the seeded portability
 section:
 
-- **Title**: the `title` argument passed to
-  [`upsert_goal`](../skills/public/achieve/scripts/upsert_goal.py) is
-  `<one-line objective from chunk>` only. The template at
-  [`goal_artifact_lib._TEMPLATE`](../skills/public/achieve/scripts/goal_artifact_lib.py)
-  already wraps it in `# Achieve Goal: {title}`, so passing
+- **Title**: the title this writer renders into the heading is
+  `<one-line objective from chunk>` only. The auto-draft template at
+  [`templates/auto_draft_goal.md`](../skills/public/handoff/scripts/templates/auto_draft_goal.md)
+  already wraps it in `# Achieve Goal: {title}` on its first line — as does the achieve
+  template it was copied from — so passing
   `"Achieve Goal: <objective>"` would produce a double prefix. The slice-5
   fixture asserts the rendered heading line is exactly
   `# Achieve Goal: <objective>` (single prefix).
@@ -373,10 +377,7 @@ placeholder line:
 - **Plan Critique Findings**:
   `*To be filled by the achieve plan-critique pass.*`
 
-The auto-draft seeds all three portability headings (`Context Sources`,
-`Interview Decisions`, `Plan Critique Findings`) from the
-[goal-artifact template](../skills/public/achieve/scripts/goal_artifact_template.md),
-so the draft passes the always-on portability check at write time (#255
+The auto-draft seeds all three portability headings (`Context Sources`, `Interview Decisions`, `Plan Critique Findings`) from its OWN copy of the achieve shape at [`templates/auto_draft_goal.md`](../skills/public/handoff/scripts/templates/auto_draft_goal.md) — a copy, not a runtime read of the achieve template, so the two can drift — and the draft therefore passes the always-on portability check at write time (#255
 removed the trivial-goal exemption; the seeded headings — not an exemption —
 are what keep the check satisfied).
 

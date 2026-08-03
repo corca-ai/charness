@@ -49,11 +49,15 @@ _AUTODRAFT_TEMPLATE = (
 def _objective_from_chunk(chunk: ChunkCandidate) -> str:
     """Return the one-line objective summary passed as `title`.
 
-    The goal_artifact template at
-    ``skills/public/achieve/scripts/goal_artifact_lib.py`` already wraps
-    ``{title}`` in ``# Achieve Goal: {title}``. The auto-draft writer
-    therefore passes only the objective text, never the literal
-    ``Achieve Goal:`` prefix — slice 1 critique finding 1.
+    This writer's OWN template, ``templates/auto_draft_goal.md``, already wraps
+    ``{title}`` in ``# Achieve Goal: {title}`` on its first line. So only the
+    objective text is passed, never the literal ``Achieve Goal:`` prefix -- slice 1
+    critique finding 1.
+
+    Named precisely because the earlier wording here pointed at
+    ``goal_artifact_lib``, which this path never reads, and that error propagated
+    into `docs/handoff-chunked-routing.md` twice. This module templates from a COPY
+    of the achieve shape; the two can drift.
     """
     return chunk.objective_summary.strip()
 

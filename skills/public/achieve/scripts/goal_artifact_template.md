@@ -67,7 +67,6 @@ below. Fill during the run:
 
 - **Routing** — choose the skill for the current phase or boundary from installed
   metadata/model judgment, and record the route. At completion, recorded
-  boundary, and record the route it returns. At completion, recorded
   implementation / debug / quality / issue work needs this `Routing:` evidence
   or a `Routing: n/a — <reason>` opt-out.
 - **Gather step** — when `## Context Sources` names an external source
