@@ -1973,6 +1973,20 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "808dad940a8e5681",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/sample_mutation_files.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate."
+    },
+    {
+      "class": "intentional",
+      "id": "825ebe6cba3065d4",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/check_js_mutation_score.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate."
     }
   ],
   "fixable_ceiling": 0,

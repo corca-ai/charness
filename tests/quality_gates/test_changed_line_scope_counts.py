@@ -66,8 +66,11 @@ def test_a_partial_denominator_states_both_numbers_on_a_passing_run(tmp_path: Pa
 
     result = _run_two_file(repo, base, head, cov, "scripts/foo.py")
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    # Exit 4 (PARTIAL), not 0. Operator decision 2026-08-06 on #488, folding D40's
+    # residual: a partial scope stops wearing a PASS, and still never refuses.
+    assert result.returncode == 4, result.stdout + result.stderr
     assert json.loads(result.stdout)["blocking"] == []
+    assert json.loads(result.stdout)["changed_line_proof"] == "partial"
     assert _counts(result) == {"analyzed": 1, "changed": 2}
     # Both channels, agreeing. stderr already said "analyzed only 1 of 2"; the
     # machine-readable payload said it nowhere, so a consumer parsing JSON and an
@@ -75,13 +78,17 @@ def test_a_partial_denominator_states_both_numbers_on_a_passing_run(tmp_path: Pa
     assert "analyzed only 1 of 2" in result.stderr
 
 
-def test_disclosing_the_denominator_does_not_change_the_verdict(tmp_path: Path) -> None:
-    """The control. Lane A discloses; it does not refuse.
+def test_a_partial_denominator_is_not_a_pass_and_is_not_a_refusal(tmp_path: Path) -> None:
+    """The control, re-pointed by the operator's 2026-08-06 answer on #488.
 
-    Without this, the fixture above would prove only that a key appeared. A CLEAN
-    partial denominator still exits 0, and an uncovered changed line still exits 1
-    — whether a partial denominator should refuse is D40's toll question and stays
-    the operator's, not this change's.
+    D40's residual left the toll question open and this test pinned exit 0 while it
+    stood. The answer taken was neither of the two D40 feared: a partial scope gets
+    its own byte (4), so it stops reading as PASS, and it still never refuses a push
+    — policy (a) survives, and this repo's lane does not go red on ordinary work.
+
+    Three states, three bytes, all asserted here so a future change cannot collapse
+    two of them: a partial CLEAN scope is 4, a real uncovered changed line is still
+    1, and neither is 0.
     """
     repo, base, head = _seed_two_changed_pool_files(tmp_path)
     cov = _write_two_file_coverage(repo)
@@ -89,7 +96,7 @@ def test_disclosing_the_denominator_does_not_change_the_verdict(tmp_path: Path) 
     partial = _run_two_file(repo, base, head, cov, "scripts/foo.py")
     unlimited = _run_two_file(repo, base, head, cov)
 
-    assert partial.returncode == 0, "a partial denominator must not start refusing"
+    assert partial.returncode == 4, "a partial denominator must not report a bare pass"
     assert unlimited.returncode == 1, "a real uncovered changed line must still block"
     assert _counts(partial) == {"analyzed": 1, "changed": 2}
     assert _counts(unlimited) == {"analyzed": 2, "changed": 2}

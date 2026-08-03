@@ -720,11 +720,56 @@ def test_an_optin_gate_that_established_nothing_is_neither_passed_nor_failed(
     assert result.returncode == 0, result.stderr
     assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
     assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
-    assert "1 passed, 0 failed, 1 UNPROVEN (ran, established nothing)" in result.stdout
+    assert (
+        "1 passed, 0 failed, 1 UNPROVEN (ran; established nothing, or only part of its scope)"
+        in result.stdout
+    )
     # The reason is always shown. A bare `UNPROVEN <label>` line is the same
     # unexplained verdict in a new word, and this message carries no WARNING
     # prefix, so only the status can be what surfaces it.
     assert "this run analyzed nothing" in result.stdout
+
+
+def test_an_optin_gate_with_a_partial_scope_is_also_neither_passed_nor_failed(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    """Exit 4 (PARTIAL) renders UNPROVEN, like 3.
+
+    Without this the `PARTIAL_EXIT` clause could be deleted and the whole suite
+    would stay green while every partial run rendered FAIL — a false STOP, which is
+    the operator-declined outcome arriving through the runner instead of the gate.
+    """
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _stub_gate(repo, _UNPROVEN_GATE_SCRIPT, 4, "analyzed only 1 of 2 changed files")
+    env["CHARNESS_QUALITY_LABELS"] = f"{_UNPROVEN_LABEL},check-markdown"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
+    assert f"FAIL {_UNPROVEN_LABEL}" not in result.stdout
+    assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
+    assert "analyzed only 1 of 2 changed files" in result.stdout
+
+
+def test_exit_four_from_a_gate_that_did_not_opt_in_still_fails(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    """The laundering guard, extended to the new byte.
+
+    Same reasoning as the exit-3 guard below: 4 is not this runner's to redefine
+    globally, and a gate joins the allowlist by having its own exit-code contract
+    read. A tool that exits 4 for its own reasons must still FAIL.
+    """
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _stub_gate(repo, "validate_skills.py", 4, "some other tool's exit 4")
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,check-markdown"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode != 0
+    assert "FAIL validate-skills" in result.stdout
+    assert "UNPROVEN" not in result.stdout
 
 
 def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(

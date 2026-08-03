@@ -36,10 +36,22 @@ them. Narrowing that gap belongs to the mapper, not to this policy.
 
 Exit codes:
   0  nothing to analyze, or every mapped file's changed lines are covered
-  1  a mapped changed pool file has uncovered changed lines (the blocker)
+  1  a mapped changed pool file has uncovered changed lines (the blocker), or an
+     UNESTABLISHED result under `--refuse-unestablished`
   2  the run produced NO verdict (base discovery failed, or the focused producer
      itself failed). Deliberately distinct from 1, and deliberately NOT 0: an
      unusable run is not a pass.
+  3  UNESTABLISHED: the lane judged nothing about the files it was asked to judge
+     (a dirty pool whose edits `base..HEAD` cannot see, or a limit that
+     intersected to nothing). Non-blocking mid-work; REFUSABLE at push time via
+     `--refuse-unestablished`, which is what makes it distinct from 4.
+  4  PARTIAL: some of the changed pool set was analyzed and some was not, and
+     what WAS analyzed came back clean. `run-quality.sh` renders it UNPROVEN. It
+     is NOT refusable, at push time or anywhere else -- policy (a) above is the
+     owner's deliberate non-blocking choice, and the repair for the false green
+     it produced was to stop calling it a PASS, not to start stopping pushes on
+     the mapper's blind spot. 3 was previously undocumented here; documenting it
+     alongside 4 is the point, since the difference between them IS the refusal.
 """
 from __future__ import annotations
 
@@ -66,6 +78,14 @@ EMPTY_SCOPE_REASON_PREFIX = "no eligible mutation-pool files changed"
 # it into a 1.
 CONSUMER_UNESTABLISHED_EXIT = 3
 UNESTABLISHED_EXIT = 3
+# What the consumer returns when it judged its analyzed set clean but could not
+# analyze part of the changed set. Distinct from 3 because it is NOT refusable:
+# policy (a) below keeps an unmapped changed pool file non-blocking, and the
+# repair for that false green is to stop calling it a PASS, not to start
+# stopping pushes on the mapper's blind spot.
+CONSUMER_PARTIAL_EXIT = 4
+# This lane's own byte for the same state. `run-quality.sh` renders it UNPROVEN.
+PARTIAL_EXIT = 4
 CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 
 #: The run judged nothing about the files it was asked to judge — a dirty pool whose
@@ -74,6 +94,14 @@ CONSUMER = "scripts/check_changed_line_mutation_coverage.py"
 #: one is refusable: policy (a) is the owner's deliberate non-blocking choice, while
 #: this one is the lane failing to do its job and must not read as a pass at push time.
 UNESTABLISHED_STATUS = "unestablished"
+
+#: The lane analyzed part of its changed set and says so IN THE VERDICT. Policy (a)
+#: (below) is preserved -- this never refuses a push -- but it stops wearing exit 0.
+#: The measured failure it removes: a local run printed "this run analyzed only 6 of
+#: 7 changed mutation-pool file(s). A clean verdict says NOTHING about the rest",
+#: returned the same byte as a run with no blind spot, the push landed, and remote CI
+#: blocked on the 7th file.
+PARTIAL_STATUS = "partial"
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -169,7 +197,26 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
       `run-quality.sh` print PASS beside the warning below, which is the green over
       an unestablished scope this lane exists to refuse.
     """
-    if result.returncode == CONSUMER_UNESTABLISHED_EXIT:
+    if result.returncode == CONSUMER_PARTIAL_EXIT:
+        # Same readability guard as the unestablished branch below: `no-verdict`
+        # means the payload could not be read, so the consumer's exit code stands
+        # for nothing and must not be rewritten into a bounded status.
+        #
+        # `UNESTABLISHED_STATUS` is guarded for a sharper reason: it is the only
+        # REFUSABLE status here, and `partial` is deliberately not. Overwriting it
+        # would let a partial scope launder a dirty-pool result past
+        # `--refuse-unestablished` -- a push this lane used to stop, waved through
+        # by a repair that was never about the dirty-pool cause. Belt to the
+        # consumer's braces: the consumer now returns 3 (not 4) when both hold, so
+        # this branch should not see that combination at all; a defence at both
+        # ends is cheap, and the seam between them is where the first cut broke.
+        if payload["status"] not in ("no-verdict", UNESTABLISHED_STATUS):
+            payload["status"] = PARTIAL_STATUS
+            payload.setdefault(
+                "reason",
+                "the consumer analyzed only part of the changed mutation-pool set",
+            )
+    elif result.returncode == CONSUMER_UNESTABLISHED_EXIT:
         # Only when the payload was READABLE. `no-verdict` means the consumer's stdout
         # could not be read, so its exit code stands for nothing -- including this one.
         # Rewriting that to `unestablished` reported an unreadable result as a bounded,
@@ -183,6 +230,17 @@ def _dispose_consumer_verdict(payload: dict, result, args) -> int | None:
         _warn(f"the changed-line consumer exited {result.returncode}; this is NOT a pass.")
         _emit(payload, as_json=args.json)
         return NO_VERDICT_EXIT
+    if payload["status"] == PARTIAL_STATUS:
+        # Loud for the same reason the unestablished warning is: in a summary that
+        # prints only a label and a status, a quiet partial is a pass.
+        _warn(
+            "this run analyzed only PART of the changed mutation-pool set; a clean "
+            f"verdict says nothing about the rest: {payload['reason']}"
+        )
+        _emit_consumer_stdout(payload, result, args)
+        _emit(payload, as_json=args.json)
+        # NOT gated on `--refuse-unestablished`: policy (a) is preserved on purpose.
+        return PARTIAL_EXIT
     if payload["status"] in (UNESTABLISHED_STATUS, "no-verdict"):
         # Has to be LOUD or it is indistinguishable from a pass in a summary that
         # prints only the label and its status.
@@ -268,7 +326,11 @@ def main(argv: list[str] | None = None) -> int:
             },
             as_json=args.json,
         )
-        return 0
+        # Option (a) keeps this NON-BLOCKING -- and non-blocking is not the same
+        # byte as proven-clean. Returning 0 here made `run-quality.sh` print PASS
+        # beside the warning three lines up, which is the whole finding: a lane that
+        # analyzed nothing wore the verdict of a lane that analyzed everything.
+        return PARTIAL_EXIT
 
     command = _focused_pytest_command(recommendation)
     coverage_json = (

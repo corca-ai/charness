@@ -9,8 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: A — repair this artifact, and close the pursue-ready scope gap
-  it exposed.
+- Current slice: B (#488) — the changed-line lane's partial scope now reaches its
+  exit code. A is DONE, pushed as `a5b5d0e8`, and **remote CI is confirmed green
+  on BOTH check-runs** (`Core deterministic gates` and `Changed-line mutation
+  coverage (push/PR mirror)`), read through the check-runs API — a different
+  observer AND channel than the push exit code.
 - Current slice intent: this artifact was activated in a materially damaged
   state (9 sections absent — 7 of the 11 required plus 2 of the 3 portability
   headings, per the full check quoted in `## Goal`) and `--pursue-ready` still said
@@ -19,8 +22,8 @@ runs the activation command.
   reviewable-intent unit in progress and the commits it spans; critique and
   broad proof do not re-fire within one unchanged intent — update it when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: reconstruct-and-commit the artifact repair, then fix
-  `pursue_readiness` so its verdict names what it did not check.
+- Next action: bounded review rounds for B (it changes verdict logic), then C
+  (#489) and D (#487).
 - **Non-claim carried from the first minute — what is rebuilt and what survived.**
   **RECONSTRUCTED** (written 2026-08-06 from the three issues, the shaping commit
   message `db20ccfc`, and `docs/handoff.md`; the original text never reached disk
@@ -211,8 +214,48 @@ so **in the answer**, not only in prose beside it.
 Both shaping decisions were RESOLVED by the operator on 2026-08-05 and are folded
 into `## Interview Decisions`. Nothing is currently queued for the operator.
 
-- Queued: none — the two shaping decisions are resolved and folded; no new
-  operator-only decision has surfaced.
+- **RESOLVED by the operator 2026-08-06: a distinct non-blocking exit.** The
+  lane reports `partial` (exit 4), `run-quality.sh` renders it UNPROVEN, and
+  `--refuse-unestablished` deliberately does not reach it. Policy (a) is intact,
+  nothing newly refuses, and the false green is gone. Both refusing options were
+  declined. Folded into `docs/deferred-decisions.md` D40's residual, which had
+  assumed the choice was between arming the teeth and leaving the green.
+- Decision (now closed): **does an unmapped changed mutation-pool file REFUSE a
+  push, or become a distinct non-blocking exit the pipeline answers for?**
+- Owner: operator
+- Why deferred: #488's fix runs straight into a recorded policy that contradicts
+  #488's own framing, and this session should not silently overturn it.
+  `scripts/prepush_focused_changed_line_coverage.py:69-75` records **policy (a)**
+  in as many words: a changed pool file that maps to NO standing test is reported
+  `unproven` and is *"the owner's deliberate non-blocking choice"*, kept
+  refusal-exempt on purpose, *"a stop here would be a stop on the mapper's blind
+  spot, not on a coverage gap"* (`:254-256`). #488 says the opposite about the
+  same event: the resulting push *"lands on `main` and a CI failure that has to be
+  chased backwards, which is the exact ordering the pre-push lane exists to
+  prevent."* Both cannot hold.
+- What is NOT in question: the bare `return 0` is wrong either way. Two paths
+  return the same exit code as a run with no blind spot —
+  `prepush_focused_changed_line_coverage.py:270` (ALL changed pool files
+  unmapped) and the partial case, where the consumer's own
+  `unanalyzed_changed_pool_files` warning reaches stderr and never reaches the
+  exit code (`check_changed_line_mutation_coverage.py:496-505` computes it,
+  `:557-561` drops it before `clean_code = 0`). Making that scope reach the
+  verdict is in scope regardless.
+- Unblock action: pick one —
+  (i) **refuse at push time**: route `unproven` through the existing
+  `--refuse-unestablished` path, so an unmapped changed pool file blocks the push
+  until its test is named. Strongest, reverses policy (a), and risks the goal's
+  own stop condition (1) if unmapped files are common.
+  (ii) **distinct non-blocking exit**: a `partial` state that is not exit 0 and
+  not exit 1, rendered UNPROVEN by `run-quality.sh` at verify time and left
+  non-blocking at push time. Preserves policy (a), and the push in #488 still
+  lands — but no longer wearing a green.
+  (iii) **refuse only the PARTIAL case**: a run that analyzed some-but-not-all
+  refuses; a run where nothing was mappable stays policy (a). Splits the
+  difference on the argument that a partial run is the one that *reads as*
+  complete.
+- Revisit trigger: this is the first thing slice B needs; C and D do not depend
+  on it.
 
 ## Coordination Cues
 
@@ -261,9 +304,25 @@ below. Fill during the run:
 - Test duplication pressure: check_dup_ratchet --summary reports 0 new code and 0 new doc fixable-eligible families after the extraction; the first attempt DID add 2 (the `_load_sibling` boilerplate), which is why the new module takes injected callables instead of loading its own siblings.
 - Critique: Bounded fresh-eye round 1 (delegated, read-only) returned 2 blockers, both folded. B1: pursue_readiness never consulted `fences_balanced`, and `mask_fences` fails open on odd parity - so 14 headings inside one unclosed fence read `sections_complete: true` and `pursue_ready: true`, the exact two-verdicts-on-one-bytes shape this slice closes, one command from the gate it repaired. B2: the artifact's reconstruction label omitted `## Interview Decisions` and `## Slice Log`, so operator decisions 1-2 read as established rather than as recovered text. Also folded: the PASS sentence named only the marker fact while standing in for a four-dimension verdict; and the CLI `_write_discussion_goal` fixture was over-determined by the new section floor. Round 2 (delegated, read-only, reading the REPAIRS) returned NO blocker and one HIGH: R1 removed `fence balance` from `scope_not_checked` in code but left the shipped reference `lifecycle-before.md` still listing it as not-established, and the new `unreadable:` refusal undocumented - a verdict-scope surface disagreeing with the verdict, one file from the gate this slice repaired. Folded, both copies. Also folded: two wrong figures in this artifact (9 was the TOTAL, not the required count; the test count was pre-repair), and two comment/docstring staleness nits. Round 2 confirmed clean: `fences_balanced` and `mask_fences` share one predicate so they cannot disagree about parity; the rule was injected, not re-derived; no caller matches the pass string; `_REMAINING_SECTIONS` covers exactly 13 of 14 with no doubled `## Non-Goals`. It also noted the balanced-fence CONTROL test is non-discriminating by design (it would pass pre-repair too) - it is a false-refusal guard, not bite proof; the refusal test is what bites. Cap: two rounds; no round-3 repairs were made.
 - Off-goal findings: Issue #490 filed (the pursue-ready scope gap), plus a correction comment on it — the body miscounted 9 total sections as 9 required. Nothing else off-goal yet.
+- Fresh-eye pass: scripts/changed_line_verdict_codes.py — the new proof surface slice B was born with, read by BOTH bounded rounds. Round 2 was the one that found a verdict site disagreeing with the rule this module extracted.
+- **Non-claim on slice B's round-2 boundary check.** `reviewer_boundary_fingerprint.py verify` was run AFTER the round-2 repairs rather than the moment the reviewer returned, so it reports `boundary-drift` and cannot distinguish reviewer writes from mine. The drift list matches exactly the files I edited, and the reviewer was a typed `bounded-reviewer` with only Read/Grep/Glob exposed, so writes were impossible by envelope — but that is an argument from the envelope, not a verified window. Rounds 1 and 2 of slice A and round 1 of slice B were each verified clean BEFORE any parent write.
 - Fresh-eye pass: skills/public/achieve/scripts/goal_artifact_pursue.py — the new proof surface this slice was born with. Read by BOTH bounded rounds by a different agent context: round 1 refused it over the fail-open fence reading, round 2 re-derived `fences_balanced`/`mask_fences` parity agreement line by line and cleared the repair. Classified: it IS a verdict surface (it renders `pursue_ready`, the only gate in front of `/goal`), which is why it took two rounds rather than the advisory's one.
 - Lessons carried forward: The goal's own activation command produced a fourth instance of the class the goal was shaped around, before any planned slice ran. And the round-1 repair for it carried the class it fixed: the section floor was rendered over a fail-open reading nobody established. That is the ninth measured time the repairs are where the class comes back.
 - Metrics: 1 goal artifact, 9 sections restored - 7 of 11 required + 2 of 3 portability, 2026-08-06. 14 headings absent on the 5-line reproduction. goal_artifact_lib.py 374 -> under the 360 cap after extraction; test_goal_artifact_lib.py 821/800 -> under the cap after the pursue tests moved out.
+
+### Slice 2: B - #488: the changed-line lane's partial scope reaches its exit code
+
+- Objective: Stop `check_changed_line_mutation_coverage.py` and the pre-push lane from returning the same byte for a run with a blind spot as for a run without one, while preserving policy (a).
+- Why this approach: This is the instance that let a defect reach `main`: the lane printed `analyzed only 6 of 7 ... A clean verdict says NOTHING about the rest`, exited 0, `run-quality.sh` printed PASS, the push landed, and remote CI blocked on the 7th file.
+- Commits: pending (this slice)
+- What changed: NEW `PARTIAL_EXIT = 4` and `_verdict_exit_code(blocking, fg_warning, unanalyzed)` in NEW `scripts/changed_line_verdict_codes.py` (the constants and the rule moved there when `check_changed_line_mutation_coverage.py` passed its 480-line cap; re-imported by name so `_consumer.REFUSED_EXIT`/`.PARTIAL_EXIT` still resolve). `prepush_focused_changed_line_coverage.py` gains `PARTIAL_STATUS`, maps consumer exit 4 to it WITHOUT consulting `--refuse-unestablished`, returns 4 from the all-unmapped path, and documents exits 3 and 4 (3 was undocumented). `run-quality.sh` renders 4 as UNPROVEN for opted-in labels only. `mutation_coverage_producer.py` maps 4 to `blocked` in an explicit branch. D40's residual and both copies of `attention-state-visibility.json` updated. NEW `tests/quality_gates/test_changed_line_verdict_codes.py`.
+- Alternatives rejected: Reusing exit 3 was rejected: 3 means `established nothing`, this run established something about most of its scope, AND 3 is refusable at push time - which would have reversed policy (a) by the back door. Refusing at push time and refusing only the partial case were both put to the operator and both declined. Blocking was never on the table for the all-unmapped path: a stop there is a stop on the mapper's blind spot.
+- Targeted verification: 589 tests green across the mutation/changed-line/prepush/runner/attention surfaces. The rule is proven to BITE end-to-end (a real subprocess run with `--limit-to-file` now exits 4 where it exited 0) and proven NOT to over-refuse (`--refuse-unestablished` still returns 4, and an unlimited run with a real uncovered line still exits 1). check_python_lengths 0; ruff clean; dup ratchet clean.
+- Test duplication pressure: The extraction shifted the sys.path bootstrap prologue into spans matching `sample_mutation_files.py` and `check_js_mutation_score.py`; both classified `intentional` in dup-review.json with per-family partner names, because the prologue is the code that makes importing a shared helper possible and so cannot be extracted into one.
+- Critique: TWO delegated bounded rounds, both read-only. Round 1 returned a BLOCKER: the new `elif unanalyzed:` was ordered ABOVE `elif fg_warning:`, and since 3 is refusable at push time while 4 deliberately is not, a dirty pool that ALSO had a limited scope stopped blocking a push it used to block - a policy change nobody decided, shipped under a defect-repair banner, and invisible to the suite because no test covered the combination. My own comment had asserted `either byte is honest when both hold`, which was the reasoning error. Repaired at both ends with a regression test at each. Round 2 read the repairs and found: a dead branch in `mutation_coverage_producer` that no test could distinguish from the fallthrough it replaced (same class, one layer up); one of the three new tests was a tautology that would pass with either repair reverted; the empty-changed-set branch still chose its byte inline and DISAGREED with the new rule, dropping `fg_warning` before the exit code - the same computed-fact-never-reaches-the-answer shape, one branch over; the consumer's own attention-state declaration still said its skip exits 0; and the two dup-review notes were byte-identical while describing pairwise families. All folded. Cap is two rounds; these round-2 repairs are accepted-unreviewed.
+- Off-goal findings: None new. #490 remains filed-not-closed from slice A.
+- Lessons carried forward: Round 1's blocker and round 2's F4 are the SAME defect in two places - a scope-limiting fact computed, attached to the payload, and dropped before the byte - and I repaired one of them while writing a comment claiming the ordering did not matter. The transferable rule: when a fix is `make this computed fact reach the answer`, the next question is ALWAYS `where else is this fact computed and not returned`, and the answer is usually the sibling branch ten lines away. Also: `_verdict_exit_code` centralised the values before it centralised the decision - three of five verdict sites still chose their byte inline, and the one that disagreed was found by a reviewer, not by the extraction.
+- Metrics: 1 of 5 verdict sites disagreed with the extracted rule after the extraction - 2026-08-06, found by round 2. 3 exit codes before, 4 after. Round 1: 1 blocker + 4 non-blocking. Round 2: 6 findings, 0 blockers confirmed, all folded.
 
 ## Context Sources
 

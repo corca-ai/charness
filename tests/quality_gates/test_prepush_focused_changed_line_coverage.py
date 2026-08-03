@@ -72,17 +72,23 @@ def test_a_dead_producer_is_a_no_verdict_not_a_pass(gate, monkeypatch, capsys) -
 
 
 def test_nothing_mapped_warns_loudly_and_does_not_block(gate, monkeypatch, capsys) -> None:
-    """Policy (a), chosen 2026-07-29: an unmapped file is a MAPPER gap, not a coverage
-    gap, so blocking on it would stop a push over the tool's blind spot. It is named
-    instead — loudly enough for `run-quality.sh` to surface it on a passing gate."""
+    """Policy (a), chosen 2026-07-29 and PRESERVED: an unmapped file is a MAPPER gap,
+    not a coverage gap, so blocking on it would stop a push over the tool's blind spot.
+
+    What changed 2026-08-06 (operator decision on #488) is the BYTE, not the policy.
+    The lane used to return 0 here — the same verdict as a run that analyzed its whole
+    changed set — so `run-quality.sh` printed PASS beside the warning below, and a real
+    push landed on `main` before CI blocked on the file this lane never read. It now
+    returns 4 (`PARTIAL`), which renders UNPROVEN and still does not stop the push."""
     monkeypatch.setattr(
         gate._suggest,
         "build_recommendation",
         lambda *_a, **_k: _recommendation(status="missing", mapped_tests_by_file={}),
     )
 
-    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == 0
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
 
+    assert code == 4, "an unanalyzed changed set must not wear a bare pass"
     captured = capsys.readouterr()
     payload = json.loads(captured.out)
     assert payload["status"] == "unproven"
@@ -248,6 +254,83 @@ def _blocking_consumer_stub(gate, monkeypatch, consumer_payload: dict, returncod
     )
 
 
+def test_the_wrapper_does_not_rewrite_an_unestablished_status_into_partial(gate, monkeypatch, capsys) -> None:
+    """The braces half of the guard above, driven directly.
+
+    If a consumer ever returns 4 for a payload the wrapper reads as dirty, the
+    wrapper must keep the refusable status rather than adopting the non-refusable
+    one. This is the seam the first cut broke; the consumer-side fix alone would
+    leave it re-breakable by any future change to the consumer's ordering."""
+    _blocking_consumer_stub(
+        gate,
+        monkeypatch,
+        {"ok": True, "blocking": [], "dirty_pool_unverified": True},
+        returncode=4,
+    )
+
+    code = gate.main(
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+    )
+
+    assert code == 1
+    assert json.loads(capsys.readouterr().out)["status"] == gate.UNESTABLISHED_STATUS
+
+
+def test_a_partial_consumer_result_becomes_partial_and_never_refuses(gate, monkeypatch, capsys) -> None:
+    """The #488 seam, end to end. `returncode=4` is what the consumer ACTUALLY returns
+    for this payload — SOME changed pool files analyzed, one left out — so the stub does
+    not fabricate a combination the consumer cannot produce.
+
+    The measured failure this closes: the consumer printed "this run analyzed only 6 of
+    7 changed mutation-pool file(s). A clean verdict says NOTHING about the rest",
+    returned 0, this lane returned 0, `run-quality.sh` printed PASS, the push landed,
+    and remote CI blocked on the 7th file."""
+    _blocking_consumer_stub(
+        gate,
+        monkeypatch,
+        {
+            "ok": True,
+            "blocking": [],
+            "changed_line_proof": "partial",
+            "unanalyzed_changed_pool_files": ["scripts/bar.py"],
+        },
+        returncode=4,
+    )
+
+    code = gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"])
+
+    assert code == 4
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["status"] == gate.PARTIAL_STATUS
+    assert "analyzed only PART of the changed mutation-pool set" in captured.err
+
+
+def test_a_partial_consumer_result_still_does_not_refuse_at_push_time(gate, monkeypatch, capsys) -> None:
+    """The discriminating control for the test above, and the one that keeps the repair
+    from overturning policy (a) sideways. The state now has a non-zero byte, so the
+    cheap next step would be to route it through `--refuse-unestablished` — which is
+    precisely the reversal the operator declined on 2026-08-06. Push time must still
+    read 4, not 1."""
+    _blocking_consumer_stub(
+        gate,
+        monkeypatch,
+        {
+            "ok": True,
+            "blocking": [],
+            "changed_line_proof": "partial",
+            "unanalyzed_changed_pool_files": ["scripts/bar.py"],
+        },
+        returncode=4,
+    )
+
+    code = gate.main(
+        ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
+    )
+
+    assert code == 4, "the partial state is non-blocking BY DECISION, at push time too"
+    assert json.loads(capsys.readouterr().out)["status"] == gate.PARTIAL_STATUS
+
+
 def test_an_unestablished_result_refuses_at_push_time(gate, monkeypatch, capsys) -> None:
     # `returncode=3` is what the consumer ACTUALLY returns for this payload. Stubbing
     # 0 alongside a `dirty_pool_unverified` payload fabricated a combination the
@@ -290,7 +373,13 @@ def test_the_same_result_stays_non_blocking_mid_work(gate, monkeypatch, capsys) 
 def test_policy_a_stays_non_blocking_even_at_push_time(gate, monkeypatch, capsys) -> None:
     """`--refuse-unestablished` must NOT govern policy (a). An unmapped file is a mapper
     gap, and the repo owner's decision is that a push is never stopped over the tool's
-    blind spot. Conflating the two would silently overturn that decision."""
+    blind spot. Conflating the two would silently overturn that decision.
+
+    This is the test that keeps the #488 repair honest. The repair gives the state its
+    own non-zero byte; the temptation is then to route it through the existing refusal
+    flag, which would reverse policy (a) under a defect-repair banner. 4 at push time,
+    never 1 — reaffirmed by the operator on 2026-08-06 when they chose the distinct
+    non-blocking exit over refusing."""
     monkeypatch.setattr(
         gate._suggest,
         "build_recommendation",
@@ -301,7 +390,9 @@ def test_policy_a_stays_non_blocking_even_at_push_time(gate, monkeypatch, capsys
         ["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json", "--refuse-unestablished"]
     )
 
-    assert code == 0
+    # Discriminating because the INPUT varies: `--refuse-unestablished` is passed.
+    # Asserting `!= 1` right after `== 4` on the same value would restate it.
+    assert code == 4, "policy (a) reports PARTIAL even at push time, not a refusal"
     assert json.loads(capsys.readouterr().out)["status"] == "unproven"
 
 

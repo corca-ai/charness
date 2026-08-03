@@ -446,6 +446,41 @@ def test_git_lines_handles_missing_git_binary(tmp_path: Path, monkeypatch) -> No
     assert trust._head_resolves_to_head(tmp_path, "some-ref") is False
 
 
+def test_a_dirty_pool_still_reports_unestablished_when_the_scope_was_also_partial(tmp_path: Path) -> None:
+    """Both causes at once, and the REFUSABLE one must win.
+
+    Exit 3 is refusable at push time (`--refuse-unestablished`); exit 4 is
+    deliberately not. The first cut of the partial repair ordered `unanalyzed`
+    above `fg_warning` on the reasoning that "both are non-blocking non-passes, so
+    either byte is honest when both hold" — which is false, and turned a push this
+    lane used to STOP into one it waves through. The operator's decision that
+    created exit 4 was about the unmapped-file cause and said nothing about the
+    dirty-pool cause.
+
+    Discriminating: the same run WITHOUT `--limit-to-file` is the control below,
+    and a plain limited-and-clean run is exit 4 elsewhere in this file — so this
+    asserts the ORDER, not merely that 3 exists.
+    """
+    repo, base, head = _seed_two_changed_pool_files(tmp_path)
+    _dirty_pool_file(repo)
+    cov = _write_two_file_coverage(repo)
+
+    result = run_script(
+        _TEETH, "--repo-root", str(repo), "--base-sha", base, "--head-sha", head,
+        "--reuse-coverage", "--coverage-json", str(cov), "--allow-dirty",
+        "--limit-to-file", "scripts/foo.py",
+    )
+
+    assert result.returncode == UNESTABLISHED_EXIT, (
+        "a dirty pool must not be downgraded to the non-refusable PARTIAL byte "
+        "just because the scope was also limited"
+    )
+    payload = json.loads(result.stdout)
+    # The narrower fact is NOT lost by losing the byte — both channels still name it.
+    assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
+    assert "says NOTHING about the rest" in result.stderr
+
+
 def test_false_green_warning_surfaces_in_report_and_stderr(tmp_path: Path) -> None:
     # The late warning is now only reachable under the explicit --allow-dirty
     # advisory read; the default path refuses at startup instead (see
@@ -706,10 +741,14 @@ def test_limit_to_file_narrows_the_blocking_set_and_names_the_rest(tmp_path: Pat
         "--reuse-coverage", "--coverage-json", str(cov), "--limit-to-file", "scripts/foo.py",
     )
 
-    assert result.returncode == 0, result.stdout + result.stderr
+    # Exit 4 (PARTIAL). It used to be 0 -- the same byte as a run with no blind
+    # spot at all -- while stderr said "A clean verdict says NOTHING about the
+    # rest". The scope now reaches the verdict; it still does not refuse.
+    assert result.returncode == 4, result.stdout + result.stderr
     payload = json.loads(result.stdout)
     assert payload["blocking"] == []
-    # The green is scoped, and says so on both channels.
+    # Scoped on all THREE channels now: stderr, the payload, and the exit code.
+    assert payload["changed_line_proof"] == "partial"
     assert payload["unanalyzed_changed_pool_files"] == ["scripts/bar.py"]
     assert "says NOTHING about the rest" in result.stderr
     assert "scripts/bar.py" in result.stderr
@@ -925,6 +964,14 @@ def test_consumer_status_keeps_refused_distinct_from_blocked() -> None:
     assert producer.consumer_status(0) == "passed"
     assert producer.consumer_status(1) == "blocked"
     assert producer.consumer_status(teeth.REFUSED_EXIT) == "refused"
+    # PARTIAL maps to `blocked` HERE and to a non-blocking `partial` in the pre-push
+    # lane, deliberately: this producer runs under `--verification-lock` where coverage
+    # was produced over the whole changed set, so a short scope is a real closeout gap
+    # rather than the mapper's blind spot. Asserted rather than left to the fallthrough
+    # -- the branch returns the same value the fallthrough did, so without this the
+    # decision is a comment no test can tell from an accident.
+    assert producer.CONSUMER_PARTIAL_EXIT == teeth.PARTIAL_EXIT
+    assert producer.consumer_status(teeth.PARTIAL_EXIT) == "blocked"
 
 
 def test_the_scope_mismatch_return_carries_the_limit_disclosure_too(tmp_path: Path, monkeypatch) -> None:

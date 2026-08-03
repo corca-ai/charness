@@ -29,6 +29,10 @@ _consumer = import_repo_module(__file__, "scripts.check_changed_line_mutation_co
 #: Read from the consumer rather than transcribed: a local `2` here that drifted
 #: from the consumer's own contract would silently re-collapse the two states.
 CONSUMER_REFUSED_EXIT = _consumer.REFUSED_EXIT
+#: Same discipline, for the same reason. Unreachable on today's producer path (it
+#: never passes `--limit-to-file`, so `unanalyzed` is always empty), but named so
+#: the mapping below is a DECISION rather than a fallthrough the day that changes.
+CONSUMER_PARTIAL_EXIT = _consumer.PARTIAL_EXIT
 
 DEFAULT_COVERAGE_JSON = Path("reports/mutation/test-coverage.json")
 _COVERAGE_ENV_KEYS = ("COVERAGE_PROCESS_START", "COVERAGE_RCFILE", "PYTHONPATH")
@@ -330,6 +334,15 @@ def consumer_status(returncode: object) -> str:
         return "passed"
     if returncode == CONSUMER_REFUSED_EXIT:
         return "refused"
+    if returncode == CONSUMER_PARTIAL_EXIT:
+        # `blocked` HERE, deliberately, and for the same reason exit 3 is: this
+        # producer runs under `--verification-lock`, where the coverage was just
+        # produced over the whole changed set, so a scope that came back short is a
+        # real closeout gap rather than the mapper's blind spot. The pre-push lane
+        # answers the same byte with a non-blocking `partial` because its scope is
+        # limited BY DESIGN. Two contexts, two right answers -- which is exactly why
+        # this needs a branch and not a fallthrough.
+        return "blocked"
     return "blocked"
 
 

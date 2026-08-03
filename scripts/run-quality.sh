@@ -103,6 +103,13 @@ format_elapsed() {
 # which is a worse escape than the green this exists to remove. A gate joins by
 # being named here, after its own exit-code contract has been read.
 UNESTABLISHED_EXIT=3
+# A lane that judged what it analyzed CLEAN but could not analyze part of its
+# changed set. Renders UNPROVEN, exactly like 3, and for the same reason: it is
+# not a pass. Kept a DISTINCT byte from 3 upstream because only 3 is refusable at
+# push time; here the two collapse, because the runner's job is the verdict LINE,
+# not the push decision. Same opt-in discipline as 3 -- a label joins this list
+# after its own exit-code contract has been read, never by global reinterpretation.
+PARTIAL_EXIT=4
 UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage"
 
 label_may_report_unestablished() {
@@ -259,7 +266,7 @@ queue_timed() {
       status="pass"
     else
       rc=$?
-      if [[ "$rc" == "$UNESTABLISHED_EXIT" ]] && label_may_report_unestablished "$label"; then
+      if [[ "$rc" == "$UNESTABLISHED_EXIT" || "$rc" == "$PARTIAL_EXIT" ]] && label_may_report_unestablished "$label"; then
         status="unestablished"
       else
         status="fail"
@@ -441,7 +448,7 @@ print_final_summary() {
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
   if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
-    printf 'Quality summary: %s passed, %s failed, %s UNPROVEN (ran, established nothing), total %s\n' \
+    printf 'Quality summary: %s passed, %s failed, %s UNPROVEN (ran; established nothing, or only part of its scope), total %s\n' \
       "$TOTAL_PASSES" \
       "$TOTAL_FAILURES" \
       "$TOTAL_UNESTABLISHED" \

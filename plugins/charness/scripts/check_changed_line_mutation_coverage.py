@@ -36,6 +36,15 @@ non-blocking, like exit 0 was — but exit 0 made `run-quality.sh` print PASS
 beside the payload that said nothing was proven, and that green is the class this
 gate exists to refuse. An EMPTY changed set still exits 0: nothing was in scope,
 which is honestly nothing to prove.
+Exit 4 when the run RAN, judged everything it analyzed CLEAN, could not analyze
+part of its changed set (``unanalyzed_changed_pool_files`` non-empty), AND no
+stronger cause held -- a real uncovered changed line is still 1 and an
+untrustworthy tree is still 3, because those are actionable and refusable where
+this is neither. ``_verdict_exit_code`` is the whole rule; this sentence is a
+summary of it and the function is what decides. The gate already printed "A clean
+verdict says NOTHING about the rest" and then returned the byte it returns with
+no blind spot at all; now the scope reaches the verdict. Deliberately non-blocking
+at push time -- see ``PARTIAL_EXIT``.
 """
 
 from __future__ import annotations
@@ -45,20 +54,6 @@ import json
 import os
 import sys
 from pathlib import Path
-
-#: Exit code for "no verdict was produced" — a startup refusal (contaminated
-#: inputs) or an untrusted result (the repo moved mid-run). Deliberately distinct
-#: from 1 (a real changed-line blocker) so callers can tell "I refused to judge"
-#: from "I judged and it failed".
-REFUSED_EXIT = 2
-# "Ran, established nothing" -- distinct from both a pass and a block. The runner
-# renders this as UNPROVEN and counts it in neither column, because a green over a
-# scope this gate never read is the exact class it exists to refuse, and printing
-# PASS next to its own "this run proves nothing" warning is that class appearing in
-# the verdict line. Deliberately NOT returned when no eligible file changed at all:
-# an empty scope is honestly nothing to prove, and marking every such run UNPROVEN
-# would train the reader to skip the word.
-UNESTABLISHED_EXIT = 3
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 if str(REPO_ROOT) not in sys.path:
@@ -86,6 +81,12 @@ from scripts.changed_line_scope_counts import (  # noqa: E402
     apply_file_limit as _apply_file_limit,
 )
 from scripts.changed_line_scope_counts import scope_counts, scope_counts_not_computed  # noqa: E402
+from scripts.changed_line_verdict_codes import (  # noqa: E402
+    PARTIAL_EXIT,
+    REFUSED_EXIT,
+    UNESTABLISHED_EXIT,
+    _verdict_exit_code,
+)
 from scripts.mutation_changed_files_lib import (  # noqa: E402
     changed_line_numbers,
     changed_line_scope_gap_targets,
@@ -530,12 +531,20 @@ def main() -> int:
                 "This range changed no eligible pool file, so there was nothing to "
                 "prove — but the empty scope is the ANALYZED head's, not this tree's.\n"
             )
+        # `unanalyzed` non-empty means files WERE in scope and the limit emptied the
+        # set: nothing was established about them, so 3 (not 4) -- this run analyzed
+        # NOTHING, which is what 3 means. An empty `unanalyzed` means nothing was in
+        # scope to begin with, which is honestly nothing to prove.
+        #
+        # `fg_warning` is consulted here for the same reason the ordering rule exists.
+        # It used to be attached to the payload and dropped before the byte, so a
+        # contaminated pool whose range happened to touch no eligible file exited 0 --
+        # a computed blind-spot fact that reached the report and not the answer, which
+        # is the class this whole slice repairs, one branch over from where round 1
+        # caught it.
+        empty_code = UNESTABLISHED_EXIT if (unanalyzed or fg_warning) else 0
         return _finalize(_attach_warning(empty_scope, fg_warning),
-            repo_root, base_sha, head_sha, pinned,
-            # `unanalyzed` non-empty means files WERE in scope and the limit
-            # emptied the set: nothing was established about them. An empty
-            # `unanalyzed` means nothing was in scope to begin with.
-            UNESTABLISHED_EXIT if unanalyzed else 0)
+            repo_root, base_sha, head_sha, pinned, empty_code)
 
     coverage_json = args.coverage_json if args.coverage_json.is_absolute() else repo_root / args.coverage_json
     skip = _coverage_source_skip(args, repo_root, coverage_json, base_sha, head_sha)
@@ -550,18 +559,15 @@ def main() -> int:
         repo_root, args, base_sha, analyzed_head, changed_before_coverage, coverage_json
     )
     blocking = list(report["blocking"])
-    if blocking:
-        clean_code = 1
-    elif fg_warning:
-        # The false-green case, named exactly. Changed pool files have uncommitted
-        # worktree edits that `base..HEAD` cannot see, so a clean verdict is clean
-        # about a tree that is not this one. This path returned 0 and printed PASS
-        # beside its own warning.
-        clean_code = UNESTABLISHED_EXIT
-    else:
-        clean_code = 0
+    clean_code = _verdict_exit_code(blocking, fg_warning, unanalyzed)
+    payload = _attach_warning({**report, **metadata}, fg_warning)
+    if clean_code == PARTIAL_EXIT:
+        # The payload states it too. A caller that reads `ok`/`blocking` and never
+        # the exit code would otherwise see a clean report with no field saying the
+        # scope was short -- the same one-channel gap, one layer up.
+        payload["changed_line_proof"] = "partial"
     code = _finalize(
-        _attach_warning({**report, **metadata}, fg_warning),
+        payload,
         repo_root, base_sha, head_sha, pinned, clean_code,
     )
     if blocking and code == 1:
