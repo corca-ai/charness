@@ -150,3 +150,30 @@ def test_quality_bootstrap_markdown_preview_reports_not_applicable(tmp_path: Pat
     assert payload["config_status"] == "not-written"
     assert payload["config_path"] is None
     assert payload["preview_command"] is None
+
+
+def test_quality_bootstrap_markdown_preview_reports_unchanged_on_a_rerun(tmp_path: Path, monkeypatch, capsys) -> None:
+    """A rerun that would write byte-identical config must not report a write.
+
+    Reachable through `--output` pointing outside the config search paths: the
+    early "some config already exists" return does not fire, so the write planner
+    is what decides, and it has to be able to say "nothing to do" rather than
+    rewriting the file every run.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Hello\n", encoding="utf-8")
+    output = "config/preview.yaml"
+
+    first = run_quality_preview(monkeypatch, capsys, repo, "--output", output)
+    assert first.returncode == 0, first.stderr
+    assert json.loads(first.stdout)["config_status"] == "written"
+    written = (repo / output).read_text(encoding="utf-8")
+
+    second = run_quality_preview(monkeypatch, capsys, repo, "--output", output)
+
+    assert second.returncode == 0, second.stderr
+    payload = json.loads(second.stdout)
+    assert payload["config_status"] == "unchanged"
+    assert payload["warnings"] == []
+    assert (repo / output).read_text(encoding="utf-8") == written
