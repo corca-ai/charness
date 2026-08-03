@@ -414,10 +414,15 @@ def _string_round_trips_bare(value: str) -> bool:
     reloads as a bool or an int. That silently changes a value's type across a
     write/read cycle, so such a string has to be quoted.
     """
-    try:
-        return _coerce_scalar(value) == value
-    except ValueError:
+    if value.lower() in ("true", "false", "null", "~"):
         return False
+    for parse in (int, float):
+        try:
+            parse(value)
+        except ValueError:
+            continue
+        return False
+    return True
 
 
 def _yaml_scalar(value: Any) -> str:

@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+from scripts.adapter_lib import load_yaml, render_yaml_mapping
 from scripts.quality_adapter_lib import load_quality_adapter_permissive
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
@@ -364,6 +365,74 @@ def test_resolution_warns_instead_of_dropping_a_malformed_declaration(tmp_path: 
     resolved = load_quality_adapter_permissive(repo)
 
     assert any("must be a mapping" in warning for warning in resolved["warnings"])
+
+
+def test_non_string_reason_is_refused_by_the_bootstrap(tmp_path: Path) -> None:
+    """An unquoted number reads as an int, not a reason a later reader can use."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  security_commands: 481\n",
+        encoding="utf-8",
+    )
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "must say why" in result.stderr
+
+
+def test_resolution_warns_about_entries_it_discards(tmp_path: Path) -> None:
+    """The resolver only warns where the bootstrap refuses, but it must not be silent."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  security_commands: 481\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+
+    assert any("entries ignored" in warning for warning in resolved["warnings"])
+    assert "deliberately_absent" not in resolved["data"]
+
+
+def test_resolution_does_not_name_a_structural_field_as_still_defaulted(tmp_path: Path) -> None:
+    """The bootstrap refuses these outright, so reporting one as unhonored is noise."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  output_dir: not needed here\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+
+    assert not any("output_dir" in warning and "preset default" in warning for warning in resolved["warnings"])
+
+
+def test_declared_absence_of_an_unset_field_reports_no_default_conflict(tmp_path: Path) -> None:
+    """A field that resolves to an empty value is genuinely honored, so it is not named."""
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n  vendored_paths: nothing is vendored here\n",
+        encoding="utf-8",
+    )
+
+    resolved = load_quality_adapter_permissive(repo)
+
+    assert resolved["data"]["deliberately_absent"] == {"vendored_paths": "nothing is vendored here"}
+    assert not any("preset default" in warning for warning in resolved["warnings"])
+
+
+def test_scalar_shaped_strings_round_trip_through_the_renderer() -> None:
+    """A string emitted bare that reloads as a bool/int changes type across a write."""
+    for text in ("true", "TRUE", "false", "null", "~", "123", "-2", "1.5", "1e3"):
+        rendered = render_yaml_mapping([("deliberately_absent", {"f": text})])
+        assert load_yaml(rendered)["deliberately_absent"]["f"] == text, text
+    # A value that is genuinely plain must NOT be needlessly quoted.
+    assert 'f: plain text\n' in render_yaml_mapping([("deliberately_absent", {"f": "plain text"})])
 
 
 def test_rationale_that_looks_like_a_scalar_round_trips_as_text(tmp_path: Path) -> None:
