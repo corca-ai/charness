@@ -2,69 +2,55 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** read the completed goal and the draft [#504 closeout goal](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md).
-  If the operator confirms #504 priority, activate that draft; otherwise invoke
-  `/handoff` to select backlog work. Never reactivate the completed goal.
+- **Next pickup:** first request the user's explicit confirmation of the #502 focus and two-surface scope. Until that confirmation is received, do not activate or implement. On confirmation, activate the draft [larger #502 goal](../charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md) with `/goal @charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md`; if declined, use `/handoff` to choose a different backlog item. Do not activate the smaller #504 closeout draft by default.
 
 ## Continuation Capability
 
-- **A guard went to the wrong boundary FIVE times in one goal, across three
-  surfaces** — and it was the round-2 blocker on every slice. Checks attached to the
-  TRANSPORT instead of the value; a predicate asked a TYPE (`isinstance(x, dict)`)
-  when `{}` is a dict, then an EQUALITY when the question was structural; a fallback
-  keyed on an error's SPELLING, twice, wrong in opposite directions. Twice the wrong
-  predicate was the repair of a previous wrong one. Filed as #499. Before writing a
-  guard, say the invariant out loud: if the predicate names a type, an equality, or
-  a message's wording, ask what it is a proxy FOR.
-- **An inversion test beats a family pin.** One enumeration was wrong three times;
-  all three were found by "every tracked file must be discovered or explicitly
-  excluded", none by listing families. A pin naming what a pattern already matches
-  cannot fail for a family nobody thought of.
-- **The broad suite caught two defects the slice gate AND both review rounds
-  passed.** Run it per slice, not only at closeout.
-- **A false-positive control only controls the axis it varies.** One held the VALUE
-  constant while varying presence, and masked a mis-naming bug for two rounds.
-- **The closeout is a verdict surface, and this one shipped eight false figures**
-  until a delegated claims review read it against the records. Budget that round.
+- A terminal verdict is a proof surface: its last retained line must state the
+  real outcome, actionable subject, and trustworthy recovery evidence. Keep
+  semantic facts separate from the observed spelling or transport that exposed
+  them. A false-positive control only controls the axis it varies; write the
+  invariant and an axis-varying counterexample before adding a guard.
+- Run the broad suite per meaningful slice, not only at closeout. Proof-surface
+  repairs owe a second bounded fresh-eye round that reads the repaired surface.
 
 ## Current State
 
-- HEAD is pushed and **CI is green on both check-runs**, read through the check-runs
-  API — a different observer and channel than the push exit code. Read the live
-  `git log`; a SHA written into a file that ships in the next commit is stale on
-  arrival.
-- #494 closed as `bug` (a real miss); #493 and #492 as `deferred-work` (deliberate
-  recorded deferrals). #497/#500/#501 are now CLOSED and read back through the
-  GitHub backend; the durable readback is under the active goal's issue artifacts.
-- **Open:** #496, #499, #502, #504 — local implementation for #504 is complete,
-  but its remote closeout remains unclaimed; do not reactivate its completed goal.
-- A new BLOCKING gate shipped,
-  [check_standalone_imports.py](../scripts/check_standalone_imports.py). It has
-  never refused a real push, and it imposes a new precondition: a hard third-party
-  import now gates the commit boundary.
+- Push `f29009bd` reached `origin/main`; the GitHub Checks API independently
+  read both check-runs as successful: [core gates](https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004731) and [changed-line mutation coverage](https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004666). The durable [remote readback](../charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json) records this different observer/channel from the push exit code.
+- Local `556dfee6` is one commit ahead of `origin/main`; it contains only the
+  unactivated #502 goal draft and its critique evidence, not implementation.
+- Live #502 is OPEN. Its problem is the 17 hand-written consumers of the
+  `run-quality.sh` summary and the related slice-closeout verdict ownership
+  decision. #504 is also OPEN but its local implementation is complete and its
+  remote-only closeout is intentionally a smaller goal.
 
 ## Next Session
 
-1. **The completed goal owns #499, #491, #500, #502, #501 and #497.** Read its
-   final record; do not reactivate it.
-2. **Draft next goal:** [close #504 through distinct remote proof](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md).
-   Read it and resolve its two activation decisions before `/goal`.
-3. **#496** — the hollow-refill predicate choice; independent of that decision.
-4. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
-   operator still owes #481 one re-run** in their own repo.
+1. Request explicit confirmation that #502 and its two-surface scope are the
+   next goal; do not activate or implement before that answer.
+2. After confirmation, read the [goal draft](../charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md), [critique](../charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md), and live [issue #502](https://github.com/corca-ai/charness/issues/502), then activate with `/goal`.
+3. Slice A must lock the state/exit/recovery matrix and owner before
+   implementation; then implement the thinnest shared receipt owner with producer-owned quality and
+   closeout adapters; preserve domain-specific statuses and plugin parity.
+4. Close #502 only after carrier validation, delegated resolution critique,
+   distinct behavior proof, and adapter readback all pass.
 
 ## Discuss
 
-- Confirm #504 closeout is ahead of independent #496 work.
-- Inspect branch publication scope before choosing a direct-commit carrier; do
-  not publish unrelated history just to close an issue.
-- Close #504 only after carrier validation, delegated critique, a distinct
-  behavior verdict, and `verify-closeout --expect-state CLOSED` all exist.
+- Confirm the larger #502 goal is preferred over #504 remote closeout, #496,
+  or #491.
+- Decide the structured receipt lifetime at activation: per-run contract/test
+  seam with explicit machine-readable opt-in, not an unowned telemetry store.
+- Treat cross-surface parity as shared semantic facts, not identical prose or
+  status vocabulary; keep `unproven` and `blocked` distinct.
 
 ## References
 
-- [current completed goal](../charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md)
-  — final decision, evidence binding, issue readback, and non-claims.
-- [its retro](../charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md) · [claims review](../charness-artifacts/critique/2026-08-04-decide-where-a-recurring-lesson-lives-disposition-review.md)
-- [the prior goal](../charness-artifacts/goals/2026-08-06-make-a-verdict-state-the-scope-it-measured.md) · [deferred decisions](./deferred-decisions.md) · [north star](./design-north-star.md)
-- [recent lessons](../charness-artifacts/retro/recent-lessons.md) · [quality review](../charness-artifacts/quality/latest.md) · [release state](../charness-artifacts/release/latest.md)
+- [larger goal](../charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md) · [goal critique](../charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md)
+- [North Star](./design-north-star.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [quality review](../charness-artifacts/quality/latest.md) · [remote check readback](../charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json) · [#502](https://github.com/corca-ai/charness/issues/502) · [#504 draft](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md)
+
+Refresh kept: pushed SHA and independently observed green remote checks, the unactivated larger-goal pickup, and the owner/matrix decision required before implementation.
+
+Refresh non-claims: the local #502 draft has not been pushed or remotely CI-verified; no implementation, issue close, release, or Cautilus evaluation was run for the new goal.

@@ -1,0 +1,30 @@
+{
+  "observed_at": "2026-08-04T21:18:03Z",
+  "observed_via": "GitHub Checks API",
+  "repository": "corca-ai/charness",
+  "commit": "f29009bdb1377a0434ed6b300911c8e55052dc53",
+  "remote_ref": "refs/heads/main",
+  "run_id": 30950181120,
+  "checks": [
+    {
+      "name": "Core deterministic gates",
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 92130004731,
+      "url": "https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004731",
+      "completed_at": "2026-08-04T20:57:30Z"
+    },
+    {
+      "name": "Changed-line mutation coverage (push/PR mirror)",
+      "status": "completed",
+      "conclusion": "success",
+      "job_id": 92130004666,
+      "url": "https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004666",
+      "completed_at": "2026-08-04T21:15:23Z"
+    }
+  ],
+  "non_claims": [
+    "This readback proves the cited remote check-runs, not the unpushed local draft at 556dfee6.",
+    "It does not prove issue state, release state, or behavior beyond the named checks."
+  ]
+}
