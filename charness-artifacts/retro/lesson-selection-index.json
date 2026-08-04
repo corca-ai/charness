@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 432,
-  "candidate_count": 1783,
+  "source_artifact_count": 433,
+  "candidate_count": 1786,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1450,6 +1450,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:7b0b9c0b2a25",
+      "kind": "next_improvement",
+      "lesson": "Applied: current-tree inventory probes were refreshed after the quality corpus changed, with the refusal count still measured at five citations across four artifacts.",
+      "normalized_key": "applied current tree inventory probes were refreshed after the quality corpus changed with the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Applied: current-tree inventory probes were refreshed after the quality corpus changed, with the refusal count still measured at five citations across four artifacts."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a51c7fa63f2d",
+      "kind": "next_improvement",
+      "lesson": "Applied: shared write-boundary identity validation, canonicalization, full-tree no-write tests, caller-contract regression coverage, and synchronized plugin mirrors.",
+      "normalized_key": "applied shared write boundary identity validation canonicalization full tree no write tests caller contract",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Applied: shared write-boundary identity validation, canonicalization, full-tree no-write tests, caller-contract regression coverage, and synchronized plugin mirrors."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:2de3b07e32c8",
       "kind": "next_improvement",
       "lesson": "Artifact: keep release-content proof separate from post-publication remote, public, and installed readbacks; this was applied in the two release records.",
@@ -1524,6 +1576,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "Memory: require a host metric window for any per-goal host-cost claim; when it is absent, persist the probe and state the non-claim."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:da867fe273dd",
+      "kind": "next_improvement",
+      "lesson": "Out-of-scope: host-installed invocation proof and remote issue closure require a separate observer/channel and the existing issue closeout floor.",
+      "normalized_key": "out of scope host installed invocation proof and remote issue closure require a separate",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Out-of-scope: host-installed invocation proof and remote issue closure require a separate observer/channel and the existing issue closeout floor."
         }
       ]
     },

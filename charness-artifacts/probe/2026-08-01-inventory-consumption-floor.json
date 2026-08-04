@@ -1,24 +1,15 @@
 {
-  "_provenance": {
-    "baseline_check": "The repaired validator was run against all 106 artifacts and compared with HEAD's validator over the same corpus from a detached worktree: 4 fail at HEAD, the same 4 fail after, 0 newly refused and 0 newly passing. The four are pre-existing failures the default gate never reaches, because it reads only charness-artifacts/quality/latest.md.",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-01",
-    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused artifacts and deferred as D47.",
-    "repo_head_at_run": "5f99e8427bf61b637b93d99b1c5ee99cb3f2a98d",
-    "worktree": "dirty (the slice's own uncommitted repair)"
-  },
-  "artifacts": 106,
+  "artifacts": 107,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 106,
+    "not-claimed": 107,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 174,
+    "count": 167,
     "median": 30,
     "min": 0,
     "p5": 5
@@ -26,7 +17,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 303,
+    "count": 311,
     "median": 44,
     "min": 7
   },
@@ -1223,27 +1214,40 @@
         }
       },
       "claims_pre_contract_exemption": false,
-      "commit_state": "uncommitted",
+      "commit_state": "dated",
       "declared_date": "2026-08-04",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-04",
       "path": "charness-artifacts/quality/2026-08-04-quality-review.md"
     },
     {
-      "citations": {
-        "inventory_skill_ergonomics.py": {
-          "engaged_presence_only": 7,
-          "engaged_with_a_value": 7,
-          "lost_to_the_floor": [],
-          "required": 2
-        }
-      },
+      "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "dirty",
+      "commit_state": "dated",
+      "declared_date": "2026-08-04",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-04",
+      "path": "charness-artifacts/quality/2026-08-04-retro-goal-binding-quality-review.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
       "declared_date": "2026-08-04",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-04",
       "path": "charness-artifacts/quality/latest.md"
     }
-  ]
+  ],
+  "_provenance": {
+    "baseline_check": "Original 2026-08-01 baseline check covered 106 artifacts: the repaired validator and HEAD produced the same four pre-existing failures, with no newly refused or newly passing rows. The current measurement is refreshed over 107 artifacts after the quality corpus changed; this refresh does not claim a new detached-tree validator comparison.",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-04",
+    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused artifacts and deferred as D47.",
+    "repo_head_at_run": "9768f95dcde783fd128e3ad21fb8f6d2973760c1",
+    "worktree": "clean",
+    "synchronized_after": "The quality corpus changed after the 2026-08-01 probe: the rolling quality/latest.md pointer now resolves to a non-inventory review, and this slice added one quality artifact. The current tree was remeasured before final closeout.",
+    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains 5 and no current citation drops below its requirement."
+  }
 }

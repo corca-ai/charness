@@ -16,8 +16,8 @@ runs the activation command.
   retro write boundary and prove mismatches fail before any write. Once active,
   this names the reviewable-intent unit in progress; critique and broad proof
   do not re-fire within one unchanged intent.
-- Next action: commit this slice, then run `describe_goal_closeout_shape.py` and
-  the verification-locked closeout bundle.
+- Next action: run the verification-locked closeout bundle, then flip the
+  artifact only if its final evidence remains complete.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused and fresh-eye proof at slice boundaries; strongest applicable proof
   at final closeout.
@@ -147,7 +147,8 @@ active frame and Slice Plan.
 
 - Objective: Move achieve goal identity validation to the shared retro write boundary and prove mismatch refusal before every derived write.
 - Why this approach: The caller map showed the shared library owns the first artifact, event, summary, and index writes while achieve only checked identity later.
-- Commits: uncommitted slice; commit after pre-lock closeout gate
+- Commits: `9768f95d` (`fix: bind retro persistence to owning goals`); follow-up
+  durable closeout records remain to be committed after final proof.
 - What changed: scripts/retro_persistence_lib.py and CLI; achieve closeout token binding; retro/achieve workflow instructions; synchronized plugins/charness mirrors; direct-library/CLI tests; debug and critique records.
 - Alternatives rejected: Rejected universal goal requirements because release/session callers are intentionally goal-free; rejected semantic lesson-quality validation and #496 combination.
 - Targeted verification: 13-test initial proof, 103-test repair proof, 106-test pre-lock proof, 111 focused tests after the heading-boundary and slug-canonicalization repairs, then 112 tests with the maintained achieve/retro caller-contract regression; source/plugin diffs are identical; reviewer boundary fingerprints were clean for all initial/repair windows and the recorded repair reads.
@@ -249,10 +250,9 @@ Pre-lock gate: completed — `run_slice_closeout.py --skip-broad-pytest
 --ack-cautilus-skill-review` completed with all structural, sync, and
 deterministic verify phases passing; broad pytest was intentionally skipped by
 the pre-lock policy.
-Retro: pending — create a goal-bound retro in the After phase of the final
-closeout.
-Host log probe: skipped: no goal-scoped host metric window was requested; do not claim host efficiency.
-Disposition review: pending — create a distinct claims review before completion.
+Retro: charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window was requested, so host efficiency is not claimed.
+Disposition review: charness-artifacts/critique/2026-08-04-retro-persistence-goal-aware-disposition-review.md
 
 ## User Verification Instructions
 
@@ -262,6 +262,5 @@ record and inspect the no-write proof before accepting #504 as closed.
 
 ## Auto-Retro
 
-Retro dispositions: pending final closeout — disposition every surfaced
-improvement as applied, issue, or explicit no-improvement.
-Structural follow-up: pending activation — run the retro sibling scan and record an applied guard, tracked issue, or explicit none disposition.
+Retro dispositions: applied: goal-aware persistence validation, canonical output, and full no-write proof.
+Structural follow-up: none — host invocation enforcement is unavailable in this local contract, so no additional guard is claimed.

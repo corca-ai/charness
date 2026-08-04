@@ -12,15 +12,19 @@ Ambient repo findings: no unrelated quality repair was taken.
 
 ## Current Gates
 
-These are pre-lock snapshots captured before this quality and final critique
-record were written; aggregate validity must be rerun after the final records
-are frozen.
+These are pre-lock snapshots captured before the final locked bundle; aggregate
+validity must still be rerun after the final proof is frozen.
 
 - Pre-lock snapshot: `run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review` completed; every structural, sync, and deterministic verify phase passed. Broad pytest was intentionally skipped by the pre-lock policy.
 - Pre-lock focused persistence/goal-disposition suite: 106 passed (historical
   snapshot before the final heading/output-contract and caller-contract repairs).
 - Current focused persistence/goal-disposition suite: 112 passed in 4.29s after
   those repairs; the exact standing-run command is recorded below.
+- Current goal-bound retro and distinct claims review are persisted; the final
+  bounded claims read returned PASS after two wording/evidence repairs.
+- Inventory/declaration probes were refreshed against the current 107-artifact
+  quality corpus; the marker-rule refusal remains five citations across four
+  artifacts.
 - Pre-lock source/plugin parity, public-skill validation, dogfood validation, critique/debug artifact validation, ownership overlap, markdown, docs, secrets, shell, import, and scan-hygiene checks passed.
 
 ## Runtime Signals
@@ -41,8 +45,9 @@ are frozen.
 - Omitted `--goal-path` preserves ordinary session/release persistence.
 - Direct-library, CLI, full-tree no-write, relative-root, and legacy tests cover
   the producer and final-consumer seams; source/plugin copies are identical.
-- An earlier bounded current-tree review found no blocker; the quality record
-  itself was written afterward and does not preclaim a fresh review.
+- The claims packet has a clean final bounded read, but this quality record was
+  edited afterward; its current binding review remains pending until a fresh
+  observer reads this exact record and its final proof identities.
 
 ## Weak
 
@@ -53,16 +58,17 @@ are frozen.
 
 ## Missing
 
-- No final goal-bound retro or separate closeout-claims review has been recorded
-  yet; issue #504 remains open pending its closeout floor.
-- No remote GitHub state readback or provider/live proof is included.
+- The verification-locked broad pytest and changed-line mutation producer are
+  still pending; issue #504 remains open pending its closeout floor.
+- No remote GitHub state readback or provider/live proof is included; #504 is
+  intentionally left open while the issue closeout floor remains unmet.
 
 ## Deferred
 
 - Run the verification-locked broad closeout with mutation coverage after the
-  slice is committed and its diff is frozen.
-- Create the final goal-bound retro and complete the issue carrier/readback only
-  if every standing closeout condition is satisfied.
+  final records are frozen.
+- Keep remote issue closure deferred unless the caller-enforcement evidence and
+  every standing issue closeout condition become available.
 
 ## Advisory
 
@@ -72,8 +78,9 @@ are frozen.
 
 ## Delegated Review
 
-- Delegated Review: pending — this quality record was written after the prior
-  packet read; bind and verify the final current-tree review before closeout.
+- Delegated Review: executed — the final current-tree quality review returned
+  PASS after reading this exact record, the goal, retro, probes, and causal issue
+  record; its boundary fingerprint was clean.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): not_applicable — no standing slow-gate scope changed.
 
 ## Commands Run
@@ -84,6 +91,7 @@ are frozen.
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --all` (pre-lock snapshot; rerun after final record binding)
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`; `python3 scripts/validate_public_skill_validation.py --repo-root .`; `python3 scripts/validate_skills.py --repo-root .`
 - `python3 scripts/build_debug_seam_risk_index.py --repo-root . --check`; `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`
+- `python3 scripts/validate_critique_artifacts.py --repo-root . --all` (717 artifacts validated; one pre-existing historical date-channel advisory remains)
 
 ## Recommended Next Quality Moves
 

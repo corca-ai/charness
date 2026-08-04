@@ -73,7 +73,7 @@ STUB_PHRASE_RE = re.compile(
 # closed S3 ("evidence must say something beyond the identity it was checked against"),
 # applied one surface over.
 #
-# The floor is 5, and it is a measured number rather than a defended one. Over the 105
+# The floor is 5, and it is a measured number rather than a defended one. Over the 107
 # checked-in quality artifacts the lowest real label value scores 7 and a bare `n/a`
 # scores 0, so 5 sits under the corpus minimum with margin. Re-runnable with
 # `measure_inventory_consumption_floor.py --floor N`, recorded at
@@ -93,8 +93,8 @@ STUB_PHRASE_RE = re.compile(
 #     `- Runtime hotspot ranking excludes samples older than 14 days` engages `ranking`
 #     and `excludes` on incidental prose. MEASURED, and re-derivable — run
 #     `scripts/measure_inventory_marker_rule.py` against
-#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 169 presence-only
-#     field mentions, 161 clear this floor, and 47 of those carry no value marker at all.
+#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 167 presence-only
+#     field mentions, 159 clear this floor, and 46 of those carry no value marker at all.
 #     Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse the sampled
 #     incidental cases — not all of them, since a marker can appear in prose too — costing
 #     5 refused citations across 4 checked-in artifacts. It is deferred as D47.
