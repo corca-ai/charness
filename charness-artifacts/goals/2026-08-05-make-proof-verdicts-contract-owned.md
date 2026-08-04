@@ -62,6 +62,15 @@ proof, distinct behavior evidence, and the issue closeout floors pass.
   `not-applicable`), unproven subjects where applicable, and process exit
   status. The normalized contract must distinguish a real failure from an
   unestablished scope and distinguish a closeout block from a failed command.
+- Adverse-subject cardinality: the receipt carries a collection of adverse
+  subjects, each paired with its own recovery disposition. Mixed quality
+  failures (one copied log available, another unavailable) must not collapse to
+  one run-level boolean or path.
+- Effective exit boundary: `effective_exit_code` is the actual entrypoint
+  process result asserted by a subprocess test, not a re-derived count or one
+  child command's return code. Quality's eligible `unproven`/partial lane may
+  remain visibly non-pass while the existing runner exits zero; ordinary
+  failures remain nonzero.
 - Quality mapping: `pass` means all selected scope was established with no
   failure; `fail` remains nonzero and carries failed labels plus verified or
   unavailable log receipt; `unproven` remains visibly non-pass even when the
@@ -69,7 +78,9 @@ proof, distinct behavior evidence, and the issue closeout floors pass.
 - Closeout mapping: preserve its existing `completed`, `failed`, `blocked`,
   `planned`, and `noop` domain states. A `blocked` or non-command failure must
   carry its recorded cause; it must not be inferred from an empty failed-command
-  list.
+  list. Cause precedence is explicit and deterministic: recorded block/error,
+  then producer-level failure, then failed command; a no-command adverse state
+  cannot render without a recorded cause.
 - Structured output boundary: the receipt is a per-run contract and test seam;
   any machine-readable opt-in must be explicit and must not create an
   unowned durable telemetry store. The default human output remains compatible
@@ -99,7 +110,10 @@ proof, distinct behavior evidence, and the issue closeout floors pass.
   usable.
 - The focused tests assert the structured receipt contract and only the small
   per-renderer last-line compatibility surface; the 17 prose consumers no
-  longer independently define the format.
+  longer independently define the format. Slice A records the complete
+  consumer inventory and classifies every in-scope assertion as a semantic-field
+  test, shared-owner test, or the deliberately retained renderer compatibility
+  test.
 - Source and shipped plugin behavior are proven in parity when either surface
   is exported, broad quality proof passes, and #502 is either verified CLOSED
   under the issue floor or honestly remains open with a durable blocker.
@@ -122,9 +136,9 @@ proof, distinct behavior evidence, and the issue closeout floors pass.
 - First review round: a delegated fresh-eye critique reads the proposed owner,
   state mapping, and initial implementation packet.
 - Focused proof covers clean, ordinary failure, unproven/partial, durable log
-  available, log-copy unavailable, closeout blocked before commands, and
-  non-command closeout failure. It checks final-line-only reads and preserves
-  process exit status.
+  available, mixed available/unavailable failed logs, log-copy unavailable,
+  closeout blocked before commands, and non-command closeout failure. It checks
+  final-line-only reads and the actual subprocess exit code together.
 - If the changed surface renders a verdict, run the required second bounded
   review round after repairs; record accepted-unreviewed round-2 repairs under
   the repository cap rather than claiming a third review.
@@ -146,9 +160,9 @@ proof, distinct behavior evidence, and the issue closeout floors pass.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Reconcile #502, inspect all consumers, and lock the semantic receipt/mapping contract | The existing format has many consumers and two domain-specific verdict surfaces; implementation before ownership would repeat the issue | Live issue read, consumer inventory, producer/consumer brief, state/exit/recovery matrix, and resolved owner decision | pending |
+| A | Reconcile #502, inventory every consumer, and lock the semantic receipt/mapping contract | The existing format has many consumers and two domain-specific verdict surfaces; implementation before ownership would repeat the issue | Live issue read, complete consumer inventory/disposition, producer/consumer brief, state/effective-exit/recovery/cause-precedence matrix, and resolved owner decision | pending |
 | B | Implement the thinnest shared receipt owner and producer adapters | A single semantic owner removes hand-sanded prose while preserving quality/closeout-specific state | Shared model/renderer, quality and closeout adapters, source/plugin sync, focused unit/contract tests | pending |
-| C | Migrate consumers and prove terminal behavior | The value is operational only if truncation, stale-log prevention, unproven scope, and blocked/no-command paths remain honest | Semantic-field tests, one black-box last-line test per renderer, real-shell exit tests, broad gate, mutation proof, second repaired-surface review | pending |
+| C | Migrate consumers and prove terminal behavior | The value is operational only if truncation, stale-log prevention, unproven scope, and blocked/no-command paths remain honest | All in-scope consumer dispositions, semantic-field tests including mixed recovery, one subprocess last-line+exit test per renderer, closeout cause precedence tests, broad gate, mutation proof, second repaired-surface review | pending |
 | D | Publish the final carrier and close or honestly disposition #502 | Issue state is an irreversible boundary and must not be inferred from local green | Validated carrier, delegated resolution critique, distinct behavior verdict, adapter readback, or durable blocker with issue open | pending |
 
 ## Operator Decision Queue
@@ -243,10 +257,16 @@ Issue closeout: #502 — carrier and `validate-closeout-draft`/`verify-closeout`
   `planned`/`noop`; parity is tested at normalized semantic facts.
 - Folded: closeout can be blocked with zero failed commands and can fail after
   commands succeed; acceptance therefore requires a recorded cause, not just a
-  failed-command list.
+  failed-command list, with explicit cause precedence.
 - Folded: failed-log copy availability is an axis. A failed copy must yield
-  `unavailable`, never a stale path, and that distinction belongs in the
-  receipt.
+  `unavailable`, never a stale path, each adverse subject keeps its own
+  disposition, and mixed availability is tested.
+- Folded: “preserve exit behavior” now means assert the actual entrypoint
+  `effective_exit_code` beside the final line; it is not inferred from the
+  terminal status or child command list.
+- Folded: the 17-consumer migration is enumerable. Slice A records each
+  consumer's disposition so a shared renderer cannot leave the distributed
+  ownership problem in place.
 - Folded: plugin mirror synchronization is conditional but explicit whenever a
   shared/exported source changes.
 - Rejected as over-worry: a universal verdict protocol, a new meta-gate, a

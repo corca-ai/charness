@@ -69,6 +69,9 @@ and must not advertise a stale log path after a copy failure.
 - F4 | bin: bundle-anyway | evidence: strong | ref: plugins/charness | action: fix | note: synchronize and verify the exported mirror if the shared source surface is touched
 - F5 | bin: over-worry | evidence: weak | ref: n/a | action: document | note: a universal proof-verdict protocol for every runtime surface is outside this goal
 - F6 | bin: valid-but-defer | evidence: strong | ref: https://github.com/corca-ai/charness/issues/491 | action: defer | follow-up: deferred next structural quality goal | note: documentation claim synchronization is related but not the same owner problem
+- F7 | bin: act-before-ship | evidence: strong | ref: https://github.com/corca-ai/charness/issues/502 | action: fix | note: enumerate and disposition all 17 consumers so a shared renderer does not leave distributed ownership in place
+- F8 | bin: act-before-ship | evidence: strong | ref: scripts/run-quality.sh:286-294 | action: fix | note: assert effective entrypoint exit code separately from normalized outcome, including eligible unproven/partial zero-exit behavior
+- F9 | bin: act-before-ship | evidence: strong | ref: scripts/run_slice_closeout.py:117-135,506-509 | action: fix | note: define cause precedence and preserve per-subject recovery state, including mixed log availability and no-command closeout failures
 
 ## Deliberately Not Doing
 
@@ -96,11 +99,11 @@ boundary verification was clean for all four windows; see the durable receipt.
 
 - Packet consumed: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
 - Packet path: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
-- Packet SHA256: `cf02484d22ce19b4dfb1659e4de949302f42433fd4868a1706ec4f8bfb0ce130`
-- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md` (SHA256 `6e1b1c231fd93585a19b5b5075b84334fc924f63f5fa4c07a7ae64451f4db6fe`)
+- Packet SHA256: `03f66f5a3ebcc48a05248d99a7280afca0b0422f281ca63e48440328ec06c9d4`
+- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md` (SHA256 `0b38c5f115cc06ec2dfd7714bdb2236c7297f0438598c5a473bf784f769ffc82`)
 - JSON binding path: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
-- JSON binding SHA256: `cf02484d22ce19b4dfb1659e4de949302f42433fd4868a1706ec4f8bfb0ce130`
-- Identity SHA256: `dfe62ee26407a8ea9ef4031d1348556a6943e35a291e94f048d8596d56a2740b`
+- JSON binding SHA256: `03f66f5a3ebcc48a05248d99a7280afca0b0422f281ca63e48440328ec06c9d4`
+- Identity SHA256: `528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb`
 
 ## Boundary Ownership
 

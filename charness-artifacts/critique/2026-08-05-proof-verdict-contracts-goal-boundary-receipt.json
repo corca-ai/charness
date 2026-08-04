@@ -41,10 +41,10 @@
   ],
   "packet": {
     "markdown": "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md",
-    "markdown_sha256": "6e1b1c231fd93585a19b5b5075b84334fc924f63f5fa4c07a7ae64451f4db6fe",
+    "markdown_sha256": "0b38c5f115cc06ec2dfd7714bdb2236c7297f0438598c5a473bf784f769ffc82",
     "json": "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json",
-    "json_sha256": "cf02484d22ce19b4dfb1659e4de949302f42433fd4868a1706ec4f8bfb0ce130",
-    "identity_sha256": "dfe62ee26407a8ea9ef4031d1348556a6943e35a291e94f048d8596d56a2740b"
+    "json_sha256": "03f66f5a3ebcc48a05248d99a7280afca0b0422f281ca63e48440328ec06c9d4",
+    "identity_sha256": "528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb"
   },
   "non_claims": [
     "provider application of requested subagent model fields",

@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-04T21:05:06Z",
-  "prepared_for": "proof-verdict-contracts-goal",
+  "generated_at": "2026-08-04T21:26:34Z",
+  "prepared_for": "proof-verdict-contracts-goal-final-shaped",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-210437-packet.json\n- charness-artifacts/critique/2026-08-04-210437-packet.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-210437-packet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-210437-packet.json, charness-artifacts/critique/2026-08-04-210437-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n- charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "f29009bdb1377a0434ed6b300911c8e55052dc53",
+    "base_head": "82c61f71cc6699a639b3d1cce55ca808c61a109b",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
@@ -77,7 +77,7 @@
       },
       {
         "path": "docs/handoff.md",
-        "content_sha256": "e0f53a551c32c74c6990e27ec67314e3a1f115740f9c9048adc0f2f458e0e605"
+        "content_sha256": "f155da43f0e24e1091c47b5a8e559199b6241aeea7a8236fdcb2774bc6b091c6"
       },
       {
         "path": "scripts/run-quality.sh",
@@ -101,6 +101,6 @@
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "dfe62ee26407a8ea9ef4031d1348556a6943e35a291e94f048d8596d56a2740b"
+    "identity_sha256": "528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb"
   }
 }

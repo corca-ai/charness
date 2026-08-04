@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-04T21:05:06Z
-- **Prepared for**: proof-verdict-contracts-goal
+- **Generated**: 2026-08-04T21:26:34Z
+- **Prepared for**: proof-verdict-contracts-goal-final-shaped
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `dfe62ee26407a8ea9ef4031d1348556a6943e35a291e94f048d8596d56a2740b`
+- **Reviewed input identity**: `528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb`
 - **Reviewed paths**: 7
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,15 +28,16 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/critique/2026-08-04-210437-packet.json
-- charness-artifacts/critique/2026-08-04-210437-packet.md
+- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json
+- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md
+- charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-04-210437-packet.md
+  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-04-210437-packet.json, charness-artifacts/critique/2026-08-04-210437-packet.md
+  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 ```
 
