@@ -154,6 +154,16 @@ def test_read_lines_missing_stream_returns_empty(tmp_path: Path) -> None:
     assert miner._read_lines(tmp_path, miner.DEFAULT_STREAM_PATH) == []
 
 
+def test_detail_read_lines_unreadable_stream_is_typed(monkeypatch, tmp_path: Path) -> None:
+    miner = _load_miner()
+
+    def raise_permission_error(*args, **kwargs):
+        raise PermissionError("fixture unreadable")
+
+    monkeypatch.setattr(Path, "read_text", raise_permission_error)
+    assert miner._read_lines_for_detail(tmp_path, miner.DEFAULT_STREAM_PATH) == ([], "unreadable")
+
+
 def test_cli_over_seeded_stream(tmp_path: Path) -> None:
     stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
     stream.parent.mkdir(parents=True, exist_ok=True)
@@ -174,6 +184,7 @@ def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> 
     lines = [
         "",
         "not json",
+        json.dumps(["not", "a", "record"]),
         json.dumps({"event_type": "usage_episode"}),
         json.dumps({"event_type": "closeout_telemetry", "schema_version": 2}),
         _detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", 200.0),
@@ -187,9 +198,9 @@ def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> 
     detail = result["detail"]
     population = detail["population"]
     assert detail["stream_read"] == {"status": "present"}
-    assert population["physical_lines"] == 7
+    assert population["physical_lines"] == 8
     assert population["blank_lines"] == 1
-    assert population["malformed_lines"] == 1
+    assert population["malformed_lines"] == 2
     assert population["foreign_event_lines"] == 1
     assert population["unsupported_schema_lines"] == 1
     assert population["retained_records"] == 3

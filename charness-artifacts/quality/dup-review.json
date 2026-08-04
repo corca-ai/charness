@@ -2029,6 +2029,13 @@
       "reviewed_at": "2026-08-04",
       "surface": "code",
       "note": "top-level runtime_bootstrap import/alias preamble shared by independent repo commands: build_retro_lesson_selection_index and validate_adapters bind different helpers for different owner contracts, and each must remain directly executable from both source and exported layouts. The bootstrap is the mechanism that makes shared-module imports possible, so extracting it would add indirection without removing the portability requirement. Surfaced as new because validate_adapters gained the source/flattened resolver loader; the matching prologue in build_retro_lesson_selection_index was untouched."
+    },
+    {
+      "class": "intentional",
+      "id": "66f4c0f1eb35d6fe",
+      "reviewed_at": "2026-08-04",
+      "surface": "code",
+      "note": "portable import preamble shared by scripts/bootstrap_runtime.py and the standalone markdown-preview renderer. The renderer must remain directly executable in both the source and exported plugin layouts, so importing a shared bootstrap would add the coupling that this preamble establishes. The family surfaced when the renderer gained its independent PTY probe imports; no new shared behavior was introduced."
     }
   ],
   "fixable_ceiling": 0,

@@ -282,6 +282,32 @@ def test_markdown_preview_falls_back_when_script_flags_are_unsupported(
     assert payload["previews"][0]["status"] == "rendered"
 
 
+def test_markdown_preview_direct_fallback_handles_script_race(
+    tmp_path: Path, monkeypatch
+) -> None:
+    render = RENDER_MARKDOWN_PREVIEW._RENDER
+    source = tmp_path / "README.md"
+    source.write_text("# Hello\n", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        if command[0] == "/fake/script":
+            raise FileNotFoundError(command[0])
+        return subprocess.CompletedProcess(command, 0, "DIRECT RENDER\n", "")
+
+    monkeypatch.setattr(render.sys, "stdout", SimpleNamespace(isatty=lambda: False))
+    monkeypatch.setattr(render.shutil, "which", lambda name: "/fake/script" if name == "script" else None)
+    monkeypatch.setattr(render.subprocess, "run", fake_run)
+
+    rendered, error = render._render_with_glow(source, 80)
+
+    assert rendered == "DIRECT RENDER\n"
+    assert error is None
+    assert calls[0][0] == "/fake/script"
+    assert calls[1] == ["glow", "-w", "80", str(source)]
+
+
 def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
