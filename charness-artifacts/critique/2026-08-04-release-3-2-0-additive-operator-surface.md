@@ -83,13 +83,25 @@ candidate inventory must be read from the frozen release diff.
 
 Before ship: run final verification lock and fresh-checkout probes, sync and
 inspect release surfaces, run release dry-run, create release notes, and
-complete the release claims review. The final candidate includes all changes
-since `v3.1.1`; bind that frozen diff to this critique. Push the branch, then
+complete the release claims review. The pre-version-bump bundle is now bound by
+`charness-artifacts/release/v3.2.0-candidate-scope.md`; the final release
+commit must still record its exact SHA after the version bump. Push the branch, then
 independently verify the exact remote commit and CI before tag/public release;
 if the repo helper cannot interpose that readback, stop and record the
 limitation rather than calling the release complete. After publication,
 independently verify public visibility, installed refresh/readback, and handoff
 baton reconciliation.
+
+## Frozen Candidate Scope
+
+The pre-version-bump bundle is frozen at `e7bc7eaf780e7ce89d9866c450d3bc7107907c75`
+against base `v3.1.1` (`7fa4a776909241bda02949fd851edfb54212b259`). The exact
+14-commit log and 118-path name-status inventory, plus the operator summary,
+are recorded in `charness-artifacts/release/v3.2.0-candidate-scope.md`. This
+scope includes every unreleased change since `v3.1.1`, not only this goal's
+two slices. The subsequent version-bump/release-content commit is a separate
+candidate and must be bound by the generated release evidence before tag/public
+publication.
 
 ## Upgrade Path
 
@@ -107,8 +119,10 @@ remote issue closure and measured runtime relief are not claimed.
 
 ## Local / Remote Proof Status
 
-- Local: focused #496/#503 proof and pre-lock deterministic closeout are green;
-  the final broad verification lock is still pending at this critique stage.
+- Local: focused #496/#503 proof, final deterministic closeout, and the final
+  broad verification lock are green; durable broad-proof record:
+  `.charness/closeout/broad-pytest-proof.json`, latest lock
+  `2026-08-04T02:25:42Z`, 46.31 seconds.
 - Source-tree startup probes: the three declared probes passed in the current
   source tree; this is not yet a durable clean-checkout receipt.
 - Remote branch/CI: not yet pushed or independently read back.
@@ -131,7 +145,8 @@ Gawande, Minto, Raskin,
 and the counterweight observer returned findings with clean boundary windows
 `release2-gawande`, `release2-minto`, `release2-raskin`, and
 `release2-counterweight`. Their required repairs are recorded above and remain
-open until the final candidate is frozen. The separate claims review is recorded
+the pre-version-bump scope is now frozen in the candidate-scope record. The
+separate claims review is recorded
 at `charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md`; it
 accepted the claims with four explicit pre-ship conditions. The first release
 critique round is quarantined:
