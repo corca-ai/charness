@@ -54,12 +54,12 @@
   status vocabulary, or a shared closure transaction; keep `unproven` and
   `blocked` distinct.
 
+Refresh kept: pushed SHA and independently observed green remote checks, the unactivated larger-goal pickup, and the owner/matrix decision required before implementation.
+
+Refresh non-claims: the local #502 draft has not been pushed or remotely CI-verified; no implementation, issue close, release, or Cautilus evaluation was run for the new goal.
+
 ## References
 
 - [broader goal](../charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md) · [goal pre-mortem](../charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md) · [#502-focused fallback](../charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md)
 - [North Star](./design-north-star.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [quality review](../charness-artifacts/quality/latest.md) · [remote check readback](../charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json) · [#502](https://github.com/corca-ai/charness/issues/502) · [#504 draft](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md)
-
-Refresh kept: pushed SHA and independently observed green remote checks, the unactivated larger-goal pickup, and the owner/matrix decision required before implementation.
-
-Refresh non-claims: the local #502 draft has not been pushed or remotely CI-verified; no implementation, issue close, release, or Cautilus evaluation was run for the new goal.
