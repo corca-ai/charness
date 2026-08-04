@@ -1,6 +1,6 @@
 # Achieve Goal: Make proof claims explicit, scoped, and actionable
 
-Status: draft
+Status: active
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 
@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: substantial draft/backlog awaiting activation; the
-  five-issue bundle is a
-  recommendation, not an active implementation run.
-- Current slice intent: decide whether these issues share one capability before
-  fixing any of them. Once active, the frame names the reviewable intent unit;
-  completed detail moves to the Slice Log and final proof sections.
-- Next action: confirm or change the five-issue scope, then activate this file
-  with `/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`.
+- Current disposition: active local-first planning/evidence-coordination goal;
+  the five selected issues remain independent tracks with separate proof and
+  closure boundaries.
+- Current slice intent: Slice A — reconcile live issue state and lock the
+  per-track claim, scope, identity, owner, reader, action, and falsifier
+  matrix before implementation.
+- Next action: start Slice B by reading the implementation-discipline and
+  `impl` contracts, then design the smallest #502 receipt seam from the locked
+  matrix before editing producer or consumer code.
 - Verification cadence: cheap contract and artifact checks at commit
   boundaries; focused behavior and bounded fresh-eye review at each proof
   surface slice; broad proof at the final local bundle and live proof at each
@@ -28,8 +29,9 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: this draft is inert and local. No implementation, push,
-  release, or remote issue close is implied by saving it.
+- History boundary: Slice A is recorded and the goal is active. No push,
+  release, or remote issue close is implied by the local matrix or by saving
+  this artifact; each external track remains separately gated.
 
 ## Goal
 
@@ -102,6 +104,27 @@ rework and delayed discovery, not only line count.
   The matrix is not a runtime schema. Its `first reader`, `producer`, and
   `observable / falsifier` columns prevent a superficially complete owner list
   from hiding the different causal boundaries.
+
+### Locked Slice A Matrix (2026-08-05)
+
+This matrix is locked from the live issue reads and current-tree inventory. The
+issue reads were performed through the selected `gh` adapter with
+`comments_read: true`; all five issues were `OPEN`. Evidence identities below
+bind the row to the reader-facing source and its current proof record, not only
+to the issue number.
+
+| Issue | Semantic claim | Measured scope | Evidence identity | Owner / first reader | Observable / falsifier | Next action | Non-claims | Closure dependency |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| #491 | A shipped reference must not describe behavior, status vocabulary, or a copy-paste command that the implementation no longer has. | Three concrete claim families from the issue: `lifecycle-before.md` readiness scope/refusal, `bootstrap-posture.md` status and `refilled_subkeys`, and `goal-artifact.md` `--fields-file` invocation; this is not a full reference corpus. | Live #491 read plus the three current source references at `HEAD` `abf6c508`; the current texts carry the repaired claims but no source-to-reference manifest. | Reference author owns the claim; bounded reviewer is the first independent reader of the semantic question. | Falsifier: shipped reference contradicts the behavior or gives a command that cannot preserve the stated contract. | Keep the existing reviewer-owned semantic question as the contract; do not add a manifest or literal-set gate without a new mapped recurrence. Carry an explicit claim disposition to independent #491 closeout. | No mechanical proof of all reference correctness, no full-corpus census, and no universal reference schema. | Independent carrier, delegated resolution critique, distinct claim-read behavior verdict, and adapter readback. |
+| #496 | An intent-loss warning must distinguish inert omitted defaults from intent-bearing policy values and preserve configured siblings. | `mutation_testing.commands` inert-leaf allowlist, missing-real-command negative case, sibling preservation, `prompt_asset_policy.exemption_globs` axis control, and source/plugin payload parity. | Live #496 read plus `charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md`, `scripts/quality_bootstrap_lib.py`, `scripts/quality_bootstrap_absence.py`, and their identical plugin mirrors. | Quality/bootstrap maintainer owns `_mark_subkey_refills` and `describe_intent_loss`; policy/config author is the first reader. | Falsifier: a hollow refill is reported as lost intent, a meaningful empty value is suppressed, or the warning recommends deleting a configured block. | Re-run the existing focused semantic controls and prepare an independent closeout disposition; do not reopen the settled generic-empty predicate. | No remote issue closure, provider/host proof, or future-consumer guarantee; no universal empty-value taxonomy. | Independent carrier, delegated resolution critique, distinct behavior verdict, and adapter readback or durable blocker. |
+| #502 | A terminal proof receipt must state the outcome, adverse subject, recovery evidence, unproven scope when relevant, and actual process exit behavior. | `scripts/run-quality.sh` quality summary with 21 literal summary assertions across three test files, plus `scripts/slice_closeout_reporting.py` final verdict with one literal pin; quality and closeout keep domain-specific states. | Live #502 read plus `scripts/run-quality.sh`, `scripts/slice_closeout_reporting.py`, `tests/quality_gates/test_quality_runner.py`, `test_quality_runner_runtime_aggregate.py`, and `test_gate_summary_names_failures.py`. | Shared per-run receipt owner with producer-owned quality/closeout adapters; terminal operator or CI reader is first reader. | Falsifier: a failed subject has no trustworthy recovery disposition, `unproven` renders as pass, a closeout block with no failed command loses its cause, or the final line and subprocess exit disagree. | Slice B: implement the thinnest shared receipt/test seam, then migrate consumer assertions to semantic fields while retaining one renderer compatibility pin per surface. | No universal status schema, no rolling telemetry store, no remote CI or issue-close claim from local receipt proof. | Independent carrier, delegated resolution critique, distinct behavior verdict, and adapter readback. |
+| #504 | Goal-bound retro evidence must bind to the owning goal before persistence writes; session retros remain goal-free. | Goal-aware `--goal-path` success, wrong/malformed/outside/missing identity no-write refusal, exact slug canonicalization, legacy session mode, and achieve/retro caller contract. | Live #504 read plus `charness-artifacts/issue/2026-08-04-issue-504-causal-review.md`, `2026-08-04-retro-persistence-goal-binding.md`, `scripts/retro_persistence_lib.py`, `skills/public/retro/scripts/persist_retro_artifact.py`, and `tests/quality_gates/test_retro_persistence.py`; source/plugin mirrors are identical. | Retro persistence helper and achieve closeout own the binding; goal operator is first reader. | Falsifier: a wrong-owner or malformed goal retro writes an artifact/summary/event, or legacy session mode is forced into goal scope. | Keep implementation closeout-only; re-run its local behavior proof and independently prepare the remote issue disposition. | No host invocation proof that every caller supplies `--goal-path`, no remote issue state, and no claim that session retros become goal-scoped. | Independent carrier, delegated resolution critique, distinct local behavior verdict, and adapter readback or durable blocker. |
+| #506 | Reviewer-boundary verification must certify the requested review window and refuse stale/default snapshots that belong to another window. | Snapshot/verify window binding, explicit `--before` path, canonical default behavior, legacy snapshot compatibility, parent-attribution exit distinction, and no-write boundary semantics. | Live #506 read plus `skills/shared/scripts/reviewer_boundary_fingerprint.py`, `tests/quality_gates/test_reviewer_boundary_fingerprint.py`, and identical plugin mirror; current tests cover explicit `round-1`/`round-2` refusal. | Reviewer-boundary helper owns snapshot identity; review parent is first reader. | Falsifier: a snapshot from another window is accepted, the default silently selects stale evidence, or parent-attributed drift is rendered as an undeclared clean proof. | Keep this helper-owned and separate from #502; verify default invocation/readback behavior during its independent disposition. | No proof of host reviewer spawning, no universal receipt, and no replacement of the distinct-observer requirement with a same-agent reread. | Independent carrier, delegated resolution critique, distinct boundary behavior verdict, and adapter readback or durable blocker. |
+
+**Slice A lock:** #502 is the only new implementation slice. #496 and #504
+remain closeout-only unless fresh behavior proof contradicts their existing
+local carriers. #491 remains a reviewer-owned claim decision, and #506 remains
+helper-owned; neither is absorbed into the #502 receipt or a universal gate.
 - Reader-position axis: a reference may be authored in the source tree and read
   in an exported consumer tree. The first slice must decide whether any claim
   is checked at the author, consumer, or evidence-reader position before a
@@ -197,8 +220,8 @@ rework and delayed discovery, not only line count.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Reconcile the five live issues and lock the shared claim dimensions | The common pattern is plausible, but scope and reader position must be proven before five fixes become five new contracts | Live reads, producer/consumer/evidence map, issue inclusion matrix, owner decision, false-unification risks, bounded pre-mortem | pending |
-| B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | pending |
+| A | Reconcile the five live issues and lock the shared claim dimensions | The common pattern is plausible, but scope and reader position must be proven before five fixes become five new contracts | Live reads, producer/consumer/evidence map, issue inclusion matrix, owner decision, false-unification risks, bounded pre-mortem | completed |
+| B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | in_progress |
 | C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | pending |
 | D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | pending |
 | E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | pending |
@@ -211,18 +234,25 @@ rework and delayed discovery, not only line count.
   Why deferred: the bundle is coherent at the capability level but crosses
   quality, achieve, and reviewer tooling, so activation should not silently
   convert a recommendation into authorization.
-  Unblock action: confirm the bundle and the local-first, independently
-  verified external-boundary rule, or name the issue family to remove.
-  Revisit trigger: before `/goal` activation.
+  Resolution: CONFIRMED by the operator; retain the bundle as one
+  planning/evidence-coordination goal with independent tracks, local-first
+  execution, and separately verified external boundaries.
+  Revisit trigger: only if Slice A finds that a selected issue has no honest
+  capability relationship or its own owner cannot be identified.
 - Decision: choose whether #491 receives a mechanical claim manifest, a narrow
   literal-set check, or an explicit reviewer-owned contract after Slice A reads
   the real corpus; do not let the matrix preselect a gate.
   Owner: agent, with operator review if the choice adds a blocking floor.
   Why deferred: the live issue lists all three directions and current evidence
   only proves that memory alone failed.
-  Unblock action: run the source/consumer inventory and record the option and
-  false-fire cost in the matrix.
-  Revisit trigger: Slice A owner lock.
+  Resolution: reviewer-owned semantic question. The live corpus has three
+  concrete claim families but no stable source-to-reference mapping; a
+  manifest or literal-set gate would either overreach or miss the actual
+  behavior claim. The existing bounded reviewer packet already carries the
+  invariant, owner, recorded instance, axis-varying counterexample, and
+  reject/repair/defer comparison.
+  Revisit trigger: a new recurrence with a mechanically observable mapping and
+  a separately reviewed false-fire decision.
 - Decision: treat push, remote CI, release, and issue-close actions as
   independently verified track boundaries, even when a final local bundle
   contains several tracks.
@@ -256,15 +286,30 @@ be completed independently per issue.
 
 ## Discuss Before Activation
 
-Discuss before activation: unresolved — confirm the five-issue bundle as one
-planning/evidence-coordination goal, explicitly not one shared implementation
-or release/issue-close transaction; accept the local-first boundary; and accept
-that #491's implementation shape remains a Slice A decision rather than a
-preselected manifest or new gate.
+Discuss before activation: CONFIRMED — the operator accepted the five-issue
+bundle as one planning/evidence-coordination goal, explicitly not one shared
+implementation or release/issue-close transaction; accepted the local-first
+boundary; and accepted that #491's implementation shape remains a Slice A
+decision rather than a preselected manifest or new gate.
 
 ## Slice Log
 
-No slices have run. This is an inert draft.
+Slice A is complete; the following report is the execution archive. The active
+frame above is the control panel for Slice B.
+
+### Slice 1: Lock the five-track proof matrix
+
+- Objective: Reconcile the five live issue records with the current producer, first-reader, evidence, and test surfaces, then lock the independent-track boundary before implementation.
+- Why this approach: The user-confirmed umbrella is only honest if the shared capability does not erase different readers or owners. Live reads and source inventory were the cheapest way to test that premise before changing code.
+- Commits: No implementation commit; the active goal artifact is the only changed surface in this slice.
+- What changed: Updated the goal artifact with the locked Slice A matrix, evidence identities, the #491 reviewer-owned decision, and the #502-only implementation boundary.
+- Alternatives rejected: Rejected a universal receipt/status schema, a reference-claim manifest, a generic empty-default predicate, and a shared closure transaction. Kept #496/#504 closeout-only and #491/#506 independent because their first readers and falsifiers differ.
+- Targeted verification: Issue planners for #491/#496/#502/#504/#506 passed with the adapter selected as gh; all five adapter reads returned comments_read=true and state OPEN. Current-tree inventory found 21 literal Quality summary assertions across three test files and one Closeout verdict pin. Source/plugin cmp was identical for the #496, #504, #506, and referenced #491 surfaces. The existing #496 local carrier, #504 causal/local carrier, and #506 window tests were read as evidence; no remote close or implementation proof is claimed by this slice.
+- Test duplication pressure: No tests added or expanded in Slice A; duplicate-pressure sample not applicable.
+- Critique: The activated pre-mortem was already completed with four bounded fresh-eye lenses and a repaired-surface round. Its independent-track correction is carried into the locked matrix; no new proof-surface code was changed in Slice A.
+- Off-goal findings: #491 mechanical coupling remains a reviewer-owned disposition unless a new mapped recurrence justifies a gate. #496/#504 local carriers and #506 helper proof remain independent closeout tracks; #503/#505 and packaging/reference families remain out of scope.
+- Lessons carried forward: A durable issue body is a hypothesis until the current producer and first reader are read. Keep semantic facts, observed spelling, and external issue state separate; do not treat source/plugin parity or a local green as remote behavior proof.
+- Metrics: Host token/time/tool metrics are not exposed in a goal-scoped session file; no such metrics are claimed. Five issue planner reads and five issue adapter reads were run in parallel; all were read-only.
 
 ## Context Sources
 
