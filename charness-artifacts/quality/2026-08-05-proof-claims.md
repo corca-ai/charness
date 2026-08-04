@@ -16,10 +16,13 @@ floor was selected.
 
 - Slice B pre-lock closeout passed all non-broad checks, packaging/export
   validation, critique validation, shell/Python checks, and parity.
-- Focused proof passed 92 receipt tests, 85 #496 tests, 29 #504 tests, and 24
+- Focused proof passed 15 receipt tests, 85 #496 tests, 29 #504 tests, and 24
   #506 tests. Goal and critique artifact validators passed.
 - Source/plugin `cmp -s` parity passed for every changed or reverified mirror.
-- Broad locked quality proof and mutation proof remain pending for Slice E.
+- The final read-only quality gate passed 85 checks with 0 failures in 124.6s;
+  its changed-line mutation consumer passed in 121.4s.
+- Independent full changed-line coverage passed with 7,108 tests, 79 deselected,
+  no blocking files, and `ok: true` against `origin/main`.
 
 ## Runtime Signals
 
@@ -30,8 +33,8 @@ floor was selected.
   at 168.0s, `run-quality-full` at 150.0s, and `run-quality-read-only` at
   74.2s; these are repo-wide signals, not a claim about this slice's elapsed
   cost.
-- coverage gate: not yet run for the final locked bundle; focused behavior
-  proof is green.
+- coverage gate: the final local changed-line consumer is green; its full
+  coverage source recorded no blocking files.
 - evaluator depth: deterministic-gates-only; no Cautilus run because no
   explicit evaluation grant or live agent behavior claim is in scope.
 
@@ -45,8 +48,6 @@ floor was selected.
 
 ## Weak
 
-- The final broad gate and changed-line mutation proof are not yet established;
-  this review is a pre-broad bundle assessment.
 - #491 remains reviewer-owned judgment: current evidence supports a claim
   disposition, not mechanical coverage of every shipped reference.
 - Skill ergonomics reports 16 heuristic packages / 93 host-surface hits;
@@ -87,17 +88,14 @@ floor was selected.
 - `plan_quality_run.py --repo-root . --detail`
 - `inventory_skill_ergonomics.py --repo-root . --summary`
 - `render_runtime_summary.py --repo-root . --detail`
+- `./scripts/run-quality.sh --read-only` — 85 passed, 0 failed, 124.6s.
+- `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main` — full coverage: 7,108 passed, 79 deselected; no blocking files.
 - Focused #502/#496/#504/#506 pytest commands recorded in the goal artifact.
 - `check_goal_artifact.py`, `validate_critique_artifacts.py`, source/plugin
   parity, `py_compile`, focused `ruff check`, and `git diff --check`.
 
 ## Recommended Next Quality Moves
 
-- active run the locked local quality bundle — capability_needed=one
-  cross-track deterministic proof; next_center=the existing
-  `run-quality.sh --read-only` gate and changed-line consumer;
-  transformation=execute and record the same locked scope; proof_boundary=the
-  committed goal diff plus per-track focused receipts; enforcement_posture=existing-gate-reuse.
 - passive keep independent producer-owned carriers because a universal schema
   would erase first-reader semantics until a shared consumer is evidenced;
   capability_needed=actionable per-track evidence; next_center=the issue
