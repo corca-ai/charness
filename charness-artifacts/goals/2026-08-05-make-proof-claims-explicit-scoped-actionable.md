@@ -305,8 +305,8 @@ decision rather than a preselected manifest or new gate.
 
 ## Slice Log
 
-Slice A is complete; the following report is the execution archive. The active
-frame above is the control panel for Slice B.
+Slices A and B are complete; the following report is the execution archive. The
+active frame above is the control panel for Slice C.
 
 ### Slice 1: Lock the five-track proof matrix
 
@@ -326,13 +326,39 @@ frame above is the control panel for Slice B.
 
 - Objective: Implement the smallest #502 semantic owner for quality and closeout, preserve their domain-specific statuses, and make terminal output carry actionable subjects, recovery evidence, causes, and the actual entrypoint exit code.
 - Why this approach: The live issue's duplicated prose was a consumer-ownership problem, not a reason to unify unrelated verdict vocabularies. One shared model with producer-owned adapters keeps semantics centralized while leaving quality and closeout state decisions local.
-- Commits: Pending Slice B closeout commit; source/plugin generated export is synchronized in the worktree.
+- Commits: `c5519bfb` (`feat: make proof receipts actionable`); source/plugin generated export is synchronized and committed.
 - What changed: Added `scripts/proof_receipt.py` and its plugin export; routed `run-quality.sh` through the quality adapter with explicit `CHARNESS_QUALITY_RECEIPT_JSON` / `--receipt-json=PATH` opt-in; attached closeout receipts in `--json`; routed the closeout final line through the shared renderer; added semantic and subprocess-focused tests.
 - Targeted verification: The exact focused command over `test_proof_receipt.py`, `test_quality_runner.py`, `test_quality_runner_runtime_aggregate.py`, `test_run_slice_closeout_surface_obligations.py`, and `test_slice_closeout_broad_gate.py` passed 92 tests after moving explicit-filter no-match detection after all queue declarations and counting only actual explicit selections, including forced-opt-in counterexamples. `bash -n`, `py_compile`, `git diff --check`, and source/plugin parity passed for the changed runtime files. The durable review record is `charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md`.
 - Fresh-eye review: Round 1 used three unnamed Codex bounded reviewers with distinct semantic, shell/runtime, and closeout/export lenses; all boundary verifies were clean. Round 2 read the repaired surface with the same three lenses and found three real issues (closeout cause precedence visibility, blank error fallback, and an explicit filter that could pass with zero scope); all were repaired. A later claims review found the zero-match check was placed before later queue declarations; that placement repair is recorded as accepted-unreviewed under the two-round cap. The durable artifact records each reviewer identity and the clean boundary checks; it does not claim a third proof-surface round.
 - Alternatives rejected: Rejected a universal status enum, durable telemetry store, swallowed JSON-write failure, and a zero-scope green for an explicit label filter. Kept optional receipt-write failure separate from the gate's actual exit code while reporting it before the terminal human line.
 - Non-claims: No broad quality gate, changed-line mutation proof, remote CI, plugin installation readback, issue carrier validation, delegated issue-resolution critique, issue close, push, or release is claimed by this slice.
-- Next step: run the pre-lock closeout, commit the local implementation, and continue with Slice C's independent #496 re-verification.
+- Next step: continue with Slice D's independent #491, #504, and #506 claim/binding tracks.
+
+### Slice 3: Re-verify and disposition the existing #496 semantic repair
+
+- Objective: Confirm that the existing hollow-refill repair still establishes
+  its policy-aware invariant without reopening the generic empty-value
+  predicate or changing the remote issue.
+- Why this approach: #496 already has a bounded local carrier and a delegated
+  repaired-surface review. A current focused rerun and source/plugin comparison
+  provide regression evidence for this goal slice without inventing a second
+  implementation or a universal policy taxonomy.
+- Commits: No code change; this goal update records the independent track
+  re-verification after Slice B's commit.
+- Targeted verification: The carrier's exact focused command —
+  `pytest -q tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_bootstrap_absence.py tests/quality_gates/test_quality_policy_merge.py` — passed 85 tests in 0.83 seconds. `cmp -s` passed for both source/plugin bootstrap modules; `py_compile`, focused `ruff check`, and `git diff --check` passed.
+- Behavior disposition: Positive and negative controls, sibling preservation,
+  the prompt-asset empty-scope axis control, explicit empty command slots, and
+  complete source/plugin payload parity remain green. The existing local
+  carrier remains valid; the remote issue is still OPEN and is not closed by
+  this slice.
+- Fresh-eye evidence: Reused the carrier's delegated fresh-eye acceptance by
+  Helmholtz (`019fca72-094b-7721-8d21-6fd732d557e9`) and its clean final
+  boundary window. No new proof-surface verdict logic changed in this slice,
+  so no new bounded review round is claimed.
+- Non-claims: No remote issue closure, remote CI, release, host-specific
+  rendering, future-consumer guarantee, or generic empty-value taxonomy.
+- Next step: start Slice D with the independent #491, #504, and #506 tracks.
 
 ## Context Sources
 
@@ -409,9 +435,9 @@ only declared drift was the parent edit to this draft after the snapshot.
 
 ## Final Verification
 
-This draft has not run implementation or closeout proof. No push, release,
-remote CI claim, issue close, or Cautilus evaluation is claimed. Activation and
-execution remain the operator's explicit next decision.
+Slices A–C have run their recorded local proof. The broader goal still has no
+push, release, remote CI claim, issue close, or Cautilus evaluation; those are
+separate later boundaries.
 
 ## User Verification Instructions
 
