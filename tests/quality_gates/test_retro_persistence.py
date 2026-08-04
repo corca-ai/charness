@@ -231,6 +231,39 @@ def _goal_retro(goal_value: str) -> str:
     )
 
 
+def test_goal_metadata_canonicalizer_keeps_text_without_one_field_unchanged() -> None:
+    text = "# Goal Retro\n\n## Context\n\n- No identity metadata.\n"
+
+    assert _persistence_lib._canonicalize_goal_metadata(
+        text, "charness-artifacts/goals/2026-05-07-owner.md"
+    ) == text
+
+
+def test_goal_metadata_canonicalizer_preserves_crlf_when_rewriting_a_slug() -> None:
+    text = "# Goal Retro\r\nGoal: owner\r\n\r\n## Context\r\n"
+
+    rewritten = _persistence_lib._canonicalize_goal_metadata(
+        text, "charness-artifacts/goals/2026-05-07-owner.md"
+    )
+
+    assert rewritten == (
+        "# Goal Retro\r\n"
+        "Goal: charness-artifacts/goals/2026-05-07-owner.md\r\n"
+        "\r\n## Context\r\n"
+    )
+
+
+def test_goal_identity_rejects_a_goal_path_outside_the_repo(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    outside_goal = tmp_path / "outside" / "2026-05-07-owner.md"
+    outside_goal.parent.mkdir()
+    outside_goal.write_text("# Achieve Goal: Owner\n\nStatus: active\n", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="inside --repo-root"):
+        _persistence_lib._goal_identity(repo, outside_goal, _goal_retro("owner"))
+
+
 def _tree_snapshot(root: Path) -> dict[str, tuple[str, bytes | None]]:
     snapshot: dict[str, tuple[str, bytes | None]] = {}
     for path in sorted(root.rglob("*")):

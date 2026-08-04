@@ -48,7 +48,7 @@ not another local writer.
 
 ## Verification
 
-- Focused proof: 112 persistence, goal-library, and disposition tests passed.
+- Focused proof: 115 persistence, goal-library, and disposition tests passed.
 - Pre-lock deterministic closeout: completed with broad pytest intentionally skipped.
 - Locked broad and mutation results: pending — the frozen closeout bundle has not
   run yet, so no locked result is claimed; no Cautilus evaluation was requested.

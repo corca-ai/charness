@@ -18,7 +18,7 @@ validity must still be rerun after the final proof is frozen.
 - Pre-lock snapshot: `run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review` completed; every structural, sync, and deterministic verify phase passed. Broad pytest was intentionally skipped by the pre-lock policy.
 - Pre-lock focused persistence/goal-disposition suite: 106 passed (historical
   snapshot before the final heading/output-contract and caller-contract repairs).
-- Current focused persistence/goal-disposition suite: 112 passed in 4.29s after
+- Current focused persistence/goal-disposition suite: 115 passed in 4.29s after
   those repairs; the exact standing-run command is recorded below.
 - Current goal-bound retro and distinct claims review are persisted; the final
   bounded claims read returned PASS after two wording/evidence repairs.
@@ -46,8 +46,9 @@ validity must still be rerun after the final proof is frozen.
 - Direct-library, CLI, full-tree no-write, relative-root, and legacy tests cover
   the producer and final-consumer seams; source/plugin copies are identical.
 - The claims packet has a clean final bounded read, but this quality record was
-  edited afterward; its current binding review remains pending until a fresh
-  observer reads this exact record and its final proof identities.
+  edited afterward to add three mutation-coverage regressions; its current
+  binding review remains pending until a fresh observer reads this exact record
+  and its final proof identities.
 
 ## Weak
 
@@ -78,16 +79,16 @@ validity must still be rerun after the final proof is frozen.
 
 ## Delegated Review
 
-- Delegated Review: executed — the final current-tree quality review returned
-  PASS after reading this exact record, the goal, retro, probes, and causal issue
-  record; its boundary fingerprint was clean.
+- Delegated Review: pending — three mutation-coverage regressions changed this
+  record's current proof count after the prior quality read; bind this exact
+  record and final proof identities with a fresh observer before closeout.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): not_applicable — no standing slow-gate scope changed.
 
 ## Commands Run
 
 - `python3 /home/hwidong/.codex/plugins/cache/local/charness/3.2.0/skills/quality/scripts/plan_quality_run.py --repo-root .`
 - `python3 scripts/run_slice_closeout.py --repo-root . --skip-broad-pytest --ack-cautilus-skill-review`
-- `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_retro_persistence.py --pytest-target tests/quality_gates/test_goal_artifact_lib.py --pytest-target tests/quality_gates/test_goal_disposition_gate.py` (112 passed in 4.29s)
+- `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/quality_gates/test_retro_persistence.py --pytest-target tests/quality_gates/test_goal_artifact_lib.py --pytest-target tests/quality_gates/test_goal_disposition_gate.py` (115 passed in 4.29s)
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --all` (pre-lock snapshot; rerun after final record binding)
 - `python3 scripts/validate_public_skill_dogfood.py --repo-root .`; `python3 scripts/validate_public_skill_validation.py --repo-root .`; `python3 scripts/validate_skills.py --repo-root .`
 - `python3 scripts/build_debug_seam_risk_index.py --repo-root . --check`; `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`
