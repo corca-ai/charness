@@ -1788,10 +1788,10 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:b8e40974fbfc",
+      "candidate_id": "repeat_trap:ac0f61bcd91f",
       "kind": "repeat_trap",
-      "lesson": "`gate-baseline-runtime` — the final gate still costs 122.7s and the focused coverage phase 119.6s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization.",
-      "normalized_key": "gate baseline runtime the final gate still costs 122 7s and the focused coverage",
+      "lesson": "`gate-baseline-runtime` — the final gate still costs 122.0s and the focused coverage phase 118.9s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization.",
+      "normalized_key": "gate baseline runtime the final gate still costs 122 0s and the focused coverage",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1809,7 +1809,7 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "`gate-baseline-runtime` — the final gate still costs 122.7s and the focused coverage phase 119.6s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization."
+          "lesson": "`gate-baseline-runtime` — the final gate still costs 122.0s and the focused coverage phase 118.9s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization."
         }
       ]
     },

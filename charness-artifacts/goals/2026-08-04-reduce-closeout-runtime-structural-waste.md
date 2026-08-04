@@ -1,6 +1,6 @@
 # Achieve Goal: Reduce closeout runtime by removing structural waste
 
-Status: draft
+Status: active
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-reduce-closeout-runtime-structural-waste.md`
 
