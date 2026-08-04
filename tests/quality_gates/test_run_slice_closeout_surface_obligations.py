@@ -92,6 +92,8 @@ def test_run_slice_closeout_executes_sync_then_verify(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "completed"
+    assert payload["effective_exit_code"] == result.returncode == 0
+    assert payload["proof_receipt"]["surface"] == "closeout"
     assert [step["phase"] for step in payload["executed_commands"]] == ["sync", "verify"]
     assert (repo / "sync.log").read_text(encoding="utf-8").strip() == "sync"
     assert (repo / "verify.log").read_text(encoding="utf-8").strip() == "verify"
@@ -111,7 +113,20 @@ def test_run_slice_closeout_attaches_telemetry_on_stop_path(tmp_path: Path) -> N
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "failed"
+    assert payload["effective_exit_code"] == result.returncode == 1
+    assert payload["proof_receipt"]["adverse_subjects"]
     assert "closeout_telemetry" in payload  # attached on the stop path
+
+
+def test_emit_payload_repairs_blank_adverse_cause(capsys) -> None:
+    from scripts import run_slice_closeout as closeout
+
+    payload = {"status": "blocked", "changed_paths": [], "executed_commands": [], "error": ""}
+
+    assert closeout._emit_payload(payload, as_json=True) == 1
+    emitted = json.loads(capsys.readouterr().out)
+    assert emitted["error"].startswith("closeout receipt could not identify a cause:")
+    assert emitted["proof_receipt"]["cause"] == emitted["error"]
 
 
 def test_run_slice_closeout_appends_agent_browser_hygiene_when_guard_exists(tmp_path: Path) -> None:
@@ -145,6 +160,8 @@ def test_run_slice_closeout_blocks_unsafe_agent_browser_surface_commands(tmp_pat
 
     assert result.returncode == 1
     assert payload["status"] == "blocked"
+    assert payload["proof_receipt"]["cause"]
+    assert payload["proof_receipt"]["effective_exit_code"] == result.returncode
     assert "unsafe agent-browser probe" in "\n".join(payload["blockers"])
 
 

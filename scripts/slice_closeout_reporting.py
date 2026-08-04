@@ -15,6 +15,9 @@ from runtime_bootstrap import import_repo_module
 
 _slice_closeout_broad_gate = import_repo_module(__file__, "scripts.slice_closeout_broad_gate")
 print_broad_pytest_policy = _slice_closeout_broad_gate.print_broad_pytest_policy
+_proof_receipt = import_repo_module(__file__, "scripts.proof_receipt")
+closeout_receipt = _proof_receipt.closeout_receipt
+render_closeout_verdict = _proof_receipt.render_closeout_verdict
 
 
 def _print_list(label: str, values: list[str]) -> None:
@@ -159,20 +162,9 @@ def print_text(payload: dict[str, object]) -> None:
 
 
 def _print_final_verdict(payload: dict[str, object]) -> None:
-    """Repeat the verdict LAST, and name what failed.
-
-    `Closeout status:` is printed at the top of this report, followed by changed paths,
-    matched surfaces, advisories and executed commands -- often a hundred lines. The
-    last line is the one every truncation preserves (a human scrolling, a CI log tail,
-    an agent piping through `tail` to bound context), and it was a usage-episode
-    footer. So a truncated read kept the least actionable line and lost both the
-    verdict and the failing command, which costs a full re-run of the aggregate to
-    recover. Cheaper to say it twice than to make the reader re-run it.
-    """
-    failed = [
-        str(step["command"])
-        for step in payload["executed_commands"]
-        if step["returncode"] != 0
-    ]
-    note = f" (FAILED: {'; '.join(failed)})" if failed else ""
-    print(f"Closeout verdict: {payload['status']}{note}")
+    """Repeat the semantic closeout receipt last for truncating readers."""
+    effective_exit_code = int(
+        payload.get("effective_exit_code", 1 if payload.get("status") in {"blocked", "failed"} else 0)
+    )
+    receipt = closeout_receipt(payload, effective_exit_code=effective_exit_code)
+    print(render_closeout_verdict(receipt))

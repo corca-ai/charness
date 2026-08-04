@@ -440,6 +440,8 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
 
     shutil.copy2(ROOT / "scripts" / "run-quality.sh", scripts_dir / "run-quality.sh")
     (scripts_dir / "run-quality.sh").chmod(0o755)
+    shutil.copy2(ROOT / "scripts" / "proof_receipt.py", scripts_dir / "proof_receipt.py")
+    (scripts_dir / "proof_receipt.py").chmod(0o755)
     shutil.copy2(
         ROOT / "scripts" / "run_standing_pytest.py",
         scripts_dir / "run_standing_pytest.py",

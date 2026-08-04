@@ -60,6 +60,7 @@ _skill_cut_safety_advisory = import_repo_module(__file__, "scripts.skill_cut_saf
 _mutation_coverage_producer = import_repo_module(__file__, "scripts.mutation_coverage_producer")
 _slice_closeout_reporting = import_repo_module(__file__, "scripts.slice_closeout_reporting")
 _slice_closeout_run_command = import_repo_module(__file__, "scripts.slice_closeout_run_command")
+_proof_receipt = import_repo_module(__file__, "scripts.proof_receipt")
 plan_broad_pytest_policy = _slice_closeout_broad_gate.plan_broad_pytest_policy
 should_block_broad_pytest_policy = _slice_closeout_broad_gate.should_block_broad_pytest_policy
 closeout_producer_or_error = _mutation_coverage_producer.closeout_producer_or_error
@@ -68,6 +69,8 @@ run_focused_closeout_coverage = _mutation_coverage_producer.run_focused_closeout
 run_produced_coverage_consumer = _mutation_coverage_producer.run_produced_coverage_consumer
 print_text = _slice_closeout_reporting.print_text
 run_command = _slice_closeout_run_command.run_command
+closeout_receipt = _proof_receipt.closeout_receipt
+ReceiptContractError = _proof_receipt.ReceiptContractError
 
 
 def _agent_browser_hygiene_command(repo_root: Path) -> str | None:
@@ -86,13 +89,25 @@ def _agent_browser_hygiene_command(repo_root: Path) -> str | None:
 
 
 def _emit_payload(payload: dict[str, object], *, as_json: bool, stderr_message: str | None = None) -> int:
+    effective_exit_code = 0 if payload["status"] not in {"blocked", "failed"} else 1
+    try:
+        receipt = closeout_receipt(payload, effective_exit_code=effective_exit_code)
+    except ReceiptContractError as exc:
+        # A failed/blocked path without a command still needs a named cause. Make
+        # the missing producer fact itself explicit, then render that contract
+        # failure instead of emitting a bare status that cannot be acted on.
+        if not isinstance(payload.get("error"), str) or not payload["error"].strip():
+            payload["error"] = f"closeout receipt could not identify a cause: {exc}"
+        receipt = closeout_receipt(payload, effective_exit_code=effective_exit_code)
+    payload["effective_exit_code"] = effective_exit_code
+    payload["proof_receipt"] = receipt.as_dict()
     if as_json:
         print(json.dumps(payload, ensure_ascii=False, indent=2))
     else:
         print_text(payload)
         if stderr_message is not None:
             print(stderr_message, file=sys.stderr)
-    return 0 if payload["status"] not in {"blocked", "failed"} else 1
+    return effective_exit_code
 
 
 def _unsafe_command_blockers(command_plan: list[tuple[str, str]]) -> list[str]:

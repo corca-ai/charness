@@ -36,6 +36,9 @@ def test_run_slice_closeout_requires_lock_before_broad_pytest() -> None:
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
+    assert payload["proof_receipt"]["status"] == "blocked"
+    assert payload["proof_receipt"]["effective_exit_code"] == result.returncode
+    assert payload["proof_receipt"]["cause"] == payload["error"]
     assert payload["verification_lock_required"] is True
     assert payload["broad_pytest_policy_mode"] == "lock-required"
     assert "Choose --skip-broad-pytest" in payload["broad_pytest_recommendation"]
@@ -61,6 +64,7 @@ def test_run_slice_closeout_requires_exclusive_broad_pytest_phase_flags() -> Non
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["status"] == "blocked"
+    assert payload["proof_receipt"]["cause"] == payload["error"]
     assert payload["phase_conflict"] is True
     assert "mutually exclusive" in payload["error"]
     assert payload["executed_commands"] == []
@@ -84,6 +88,8 @@ def test_run_slice_closeout_skip_broad_pytest_rehearsal_filters_pytest() -> None
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["status"] == "planned"
+    assert payload["proof_receipt"]["status"] == "planned"
+    assert payload["proof_receipt"]["effective_exit_code"] == result.returncode
     assert payload["broad_pytest_policy_mode"] == "pre-lock-rehearsal"
     assert "focused current-diff proof" in payload["broad_pytest_recommendation"]
     assert "stale after reviewer-driven changes" in payload["broad_pytest_cost_warning"]

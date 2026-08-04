@@ -12,12 +12,21 @@ runs the activation command.
 - Current disposition: active local-first planning/evidence-coordination goal;
   the five selected issues remain independent tracks with separate proof and
   closure boundaries.
-- Current slice intent: Slice A — reconcile live issue state and lock the
-  per-track claim, scope, identity, owner, reader, action, and falsifier
-  matrix before implementation.
-- Next action: start Slice B by reading the implementation-discipline and
-  `impl` contracts, then design the smallest #502 receipt seam from the locked
-  matrix before editing producer or consumer code.
+- Current slice: C — re-verify and disposition the existing #496 semantic
+  repair.
+- Current slice intent: independently prove the policy-aware intent-loss
+  behavior and carry an honest issue disposition without reopening the settled
+  generic-empty predicate.
+- Next action: read the current #496 carrier and implementation, run its
+  focused positive/negative controls and source/plugin parity checks, then
+  prepare its independent closeout or durable blocker.
+- Slice B acceptance envelope: one semantic owner; quality maps
+  `pass`/`fail`/`unestablished`, closeout preserves
+  `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
+  its own recovery disposition; `effective_exit_code` is the real entrypoint
+  result; a closeout block has a recorded cause even with zero failed commands;
+  structured output is explicit opt-in and per-run only; human renderers stay
+  thin and keep one terminal compatibility assertion each.
 - Verification cadence: cheap contract and artifact checks at commit
   boundaries; focused behavior and bounded fresh-eye review at each proof
   surface slice; broad proof at the final local bundle and live proof at each
@@ -29,9 +38,11 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: Slice A is recorded and the goal is active. No push,
+- History boundary: Slices A and B are recorded and the goal is active. No push,
   release, or remote issue close is implied by the local matrix or by saving
-  this artifact; each external track remains separately gated.
+  this artifact. Slice B's implementation and repaired-surface review are
+  recorded locally; broad/final proof and each external track remain separately
+  gated.
 
 ## Goal
 
@@ -221,8 +232,8 @@ helper-owned; neither is absorbed into the #502 receipt or a universal gate.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | Reconcile the five live issues and lock the shared claim dimensions | The common pattern is plausible, but scope and reader position must be proven before five fixes become five new contracts | Live reads, producer/consumer/evidence map, issue inclusion matrix, owner decision, false-unification risks, bounded pre-mortem | completed |
-| B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | in_progress |
-| C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | pending |
+| B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | completed |
+| C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | in_progress |
 | D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | pending |
 | E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | pending |
 
@@ -310,6 +321,18 @@ frame above is the control panel for Slice B.
 - Off-goal findings: #491 mechanical coupling remains a reviewer-owned disposition unless a new mapped recurrence justifies a gate. #496/#504 local carriers and #506 helper proof remain independent closeout tracks; #503/#505 and packaging/reference families remain out of scope.
 - Lessons carried forward: A durable issue body is a hypothesis until the current producer and first reader are read. Keep semantic facts, observed spelling, and external issue state separate; do not treat source/plugin parity or a local green as remote behavior proof.
 - Metrics: Host token/time/tool metrics are not exposed in a goal-scoped session file; no such metrics are claimed. Five issue planner reads and five issue adapter reads were run in parallel; all were read-only.
+
+### Slice 2: Implement and repair the shared terminal receipt owner
+
+- Objective: Implement the smallest #502 semantic owner for quality and closeout, preserve their domain-specific statuses, and make terminal output carry actionable subjects, recovery evidence, causes, and the actual entrypoint exit code.
+- Why this approach: The live issue's duplicated prose was a consumer-ownership problem, not a reason to unify unrelated verdict vocabularies. One shared model with producer-owned adapters keeps semantics centralized while leaving quality and closeout state decisions local.
+- Commits: Pending Slice B closeout commit; source/plugin generated export is synchronized in the worktree.
+- What changed: Added `scripts/proof_receipt.py` and its plugin export; routed `run-quality.sh` through the quality adapter with explicit `CHARNESS_QUALITY_RECEIPT_JSON` / `--receipt-json=PATH` opt-in; attached closeout receipts in `--json`; routed the closeout final line through the shared renderer; added semantic and subprocess-focused tests.
+- Targeted verification: The exact focused command over `test_proof_receipt.py`, `test_quality_runner.py`, `test_quality_runner_runtime_aggregate.py`, `test_run_slice_closeout_surface_obligations.py`, and `test_slice_closeout_broad_gate.py` passed 92 tests after moving explicit-filter no-match detection after all queue declarations and counting only actual explicit selections, including forced-opt-in counterexamples. `bash -n`, `py_compile`, `git diff --check`, and source/plugin parity passed for the changed runtime files. The durable review record is `charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md`.
+- Fresh-eye review: Round 1 used three unnamed Codex bounded reviewers with distinct semantic, shell/runtime, and closeout/export lenses; all boundary verifies were clean. Round 2 read the repaired surface with the same three lenses and found three real issues (closeout cause precedence visibility, blank error fallback, and an explicit filter that could pass with zero scope); all were repaired. A later claims review found the zero-match check was placed before later queue declarations; that placement repair is recorded as accepted-unreviewed under the two-round cap. The durable artifact records each reviewer identity and the clean boundary checks; it does not claim a third proof-surface round.
+- Alternatives rejected: Rejected a universal status enum, durable telemetry store, swallowed JSON-write failure, and a zero-scope green for an explicit label filter. Kept optional receipt-write failure separate from the gate's actual exit code while reporting it before the terminal human line.
+- Non-claims: No broad quality gate, changed-line mutation proof, remote CI, plugin installation readback, issue carrier validation, delegated issue-resolution critique, issue close, push, or release is claimed by this slice.
+- Next step: run the pre-lock closeout, commit the local implementation, and continue with Slice C's independent #496 re-verification.
 
 ## Context Sources
 

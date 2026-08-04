@@ -32,6 +32,67 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, s
     assert "Quality summary: 4 passed, 0 failed" in result.stdout
 
 
+def test_run_quality_explicit_receipt_contains_scope_and_actual_exit(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    receipt_path = repo / "receipt.json"
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills"
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "pass"
+    assert receipt["effective_exit_code"] == result.returncode
+    assert receipt["measured_scope"] == ["validate-skills"]
+
+
+def test_run_quality_rejects_empty_explicit_receipt_path(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills"
+
+    result = run_shell_script(
+        repo / "scripts" / "run-quality.sh", "--receipt-json=", cwd=repo, env=env
+    )
+
+    assert result.returncode == 2
+    assert "requires a non-empty path" in result.stderr
+
+
+def test_run_quality_rejects_explicit_filter_without_a_matching_check(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "does-not-exist"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 2
+    assert "matched no queued checks" in result.stderr
+    assert "0 passed, 1 failed (FAILED: explicit label filter [log unavailable])" in result.stdout
+
+
+@pytest.mark.parametrize(
+    "opt_in_env",
+    ["CHARNESS_QUALITY_DEAD_CODE", "CHARNESS_AGENT_BROWSER_RUNTIME_HYGIENE"],
+)
+def test_run_quality_rejects_unmatched_filter_even_with_forced_opt_in(
+    tmp_path: Path, seeded_quality_runner_repo: Path, opt_in_env: str
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    env["CHARNESS_QUALITY_LABELS"] = "does-not-exist"
+    env[opt_in_env] = "1"
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
+
+    assert result.returncode == 2
+    assert "matched no queued checks" in result.stderr
+
+
 def test_quality_runner_clones_do_not_contaminate_each_other_or_the_module_seed(
     tmp_path: Path, seeded_quality_runner_repo: Path
 ) -> None:
@@ -818,7 +879,9 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     _stub_gate(repo, _UNPROVEN_GATE_SCRIPT, 3, "this run analyzed nothing")
     _stub_gate(repo, "check_doc_links.py", 1, "broken link")
+    receipt_path = repo / "receipt.json"
     env["CHARNESS_QUALITY_LABELS"] = f"{_UNPROVEN_LABEL},check-doc-links"
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
 
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
 
@@ -831,6 +894,11 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
         f".charness/quality-failure-logs/check-doc-links.log]), 1 UNPROVEN "
         f"(UNPROVEN: {_UNPROVEN_LABEL})"
     ) in result.stdout
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "fail"
+    assert receipt["effective_exit_code"] == result.returncode
+    assert receipt["unproven_subjects"] == [_UNPROVEN_LABEL]
+    assert receipt["adverse_subjects"][0]["subject"] == "check-doc-links"
 
 
 def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:

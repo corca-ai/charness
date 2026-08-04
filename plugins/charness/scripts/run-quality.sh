@@ -7,6 +7,7 @@ cd "$REPO_ROOT"
 RUN_QUALITY_REVIEW=0
 RUN_QUALITY_MODE="${CHARNESS_QUALITY_MODE:-full}"
 RUN_QUALITY_INCLUDE_RELEASE_ONLY="${CHARNESS_QUALITY_INCLUDE_RELEASE_ONLY:-0}"
+RUN_QUALITY_RECEIPT_JSON="${CHARNESS_QUALITY_RECEIPT_JSON:-}"
 for arg in "$@"; do
   case "$arg" in
     --review)
@@ -21,12 +22,20 @@ for arg in "$@"; do
     --release)
       RUN_QUALITY_INCLUDE_RELEASE_ONLY=1
       ;;
+    --receipt-json=*)
+      RUN_QUALITY_RECEIPT_JSON="${arg#*=}"
+      if [[ -z "$RUN_QUALITY_RECEIPT_JSON" ]]; then
+        echo "run-quality: --receipt-json= requires a non-empty path" >&2
+        exit 2
+      fi
+      ;;
     --help|-h)
-      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release]"
+      echo "Usage: ./scripts/run-quality.sh [--review] [--read-only|--full] [--release] [--receipt-json=PATH]"
       echo "  --review     replay passing phase logs and validate external links online"
       echo "  --read-only  skip phases that would mutate git-tracked quality artifacts"
       echo "  --full       refresh git-tracked quality artifacts (default)"
       echo "  --release    include release_only pytest cases (charness update/install lifecycle regression tests)"
+      echo "  --receipt-json=PATH  write the per-run semantic receipt (also via CHARNESS_QUALITY_RECEIPT_JSON)"
       exit 0
       ;;
     *)
@@ -76,6 +85,7 @@ declare -a COMPLETED_STATUSES=()
 TOTAL_PASSES=0
 TOTAL_FAILURES=0
 TOTAL_UNESTABLISHED=0
+RUN_QUALITY_SELECTED_LABEL_MATCHES=0
 # The NAMES behind the counts. The summary used to report "1 failed" without saying
 # which, and the summary is the LAST line -- the one line every `tail` preserves. So a
 # reader who truncated the output (a human scrolling, a CI log tail, an agent piping
@@ -86,7 +96,8 @@ UNESTABLISHED_LABELS=""
 # The final line is the per-run operator receipt. Each failed label travels with either
 # the verified durable log path or an explicit unavailable marker; a preceding path
 # line is not enough because a truncating reader may preserve only the final line.
-declare -a FAILED_RECEIPT_ENTRIES=()
+declare -a FAILED_RECEIPT_SUBJECTS=()
+declare -a FAILED_RECEIPT_RECOVERY_SPECS=()
 # Per-phase logs live in a mktemp dir this script `rm -rf`s on EXIT, so after a run
 # there was nothing left to re-read: a truncated view of a failure could only be
 # recovered by running the whole gate again. Failing phases' logs are copied here
@@ -364,6 +375,9 @@ queue_selected() {
     return 0
   fi
 
+  if [[ -n "$RUN_QUALITY_LABELS" ]]; then
+    RUN_QUALITY_SELECTED_LABEL_MATCHES=$((RUN_QUALITY_SELECTED_LABEL_MATCHES + 1))
+  fi
   queue_timed "$label" "$@"
 }
 
@@ -375,6 +389,9 @@ queue_agent_browser_runtime_gate() {
     return 0
   fi
 
+  if [[ -n "$RUN_QUALITY_LABELS" ]] && label_is_explicitly_selected "$label"; then
+    RUN_QUALITY_SELECTED_LABEL_MATCHES=$((RUN_QUALITY_SELECTED_LABEL_MATCHES + 1))
+  fi
   queue_timed "$label" "$@"
 }
 
@@ -456,17 +473,18 @@ flush_phase() {
       # PREVIOUS run's log for the same label and diagnoses a failure that is already
       # fixed -- a stale log at a promised path is worse than no log, and swallowing
       # the copy error is the exact silent-loss shape this whole change removes.
-      local failure_slug failure_log receipt_entry
+      local failure_slug failure_log recovery_spec
       failure_slug="${label//[^A-Za-z0-9_.-]/_}"
       failure_log="$RUN_QUALITY_FAILURE_LOG_DIR/${failure_slug}.log"
       if mkdir -p "$RUN_QUALITY_FAILURE_LOG_DIR" 2>/dev/null && cp "$log_path" "$failure_log" 2>/dev/null; then
-        receipt_entry="$label [log: ${failure_log#"$REPO_ROOT"/}]"
+        recovery_spec="available:${failure_log#"$REPO_ROOT"/}"
       else
         printf 'WARN: could not save full output for %s to %s; its log is NOT available.\n' \
           "$label" "$failure_log" >&2
-        receipt_entry="$label [log unavailable]"
+        recovery_spec="unavailable:full output could not be copied"
       fi
-      FAILED_RECEIPT_ENTRIES+=("$receipt_entry")
+      FAILED_RECEIPT_SUBJECTS+=("$label")
+      FAILED_RECEIPT_RECOVERY_SPECS+=("$recovery_spec")
     fi
 
     # An unestablished gate does not fail the run. It must not be counted as
@@ -493,27 +511,17 @@ print_final_summary() {
 
   end_ns="$(date +%s%N)"
   elapsed_ms="$(((end_ns - RUN_QUALITY_START_NS) / 1000000))"
-  local failed_note="" unproven_note=""
-  # The names and recovery locations travel WITH the verdict. Empty when the count is
-  # zero, so a clean run reads exactly as before.
-  if ((${#FAILED_RECEIPT_ENTRIES[@]} > 0)); then
-    failed_note=" (FAILED: ${FAILED_RECEIPT_ENTRIES[*]})"
+  status="pass"
+  if [[ "$OVERALL_RC" != "0" ]]; then
+    status="fail"
+  elif [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
+    status="unestablished"
   fi
-  [[ -n "$UNESTABLISHED_LABELS" ]] && unproven_note=" (UNPROVEN: $UNESTABLISHED_LABELS)"
 
   # Record the aggregate before printing the receipt. A warning from this best-effort
   # telemetry write must not become the last combined-output line and displace the
   # actionable verdict from a context-truncated reader.
   if [[ -z "$RUN_QUALITY_LABELS" ]]; then
-    status="pass"
-    if [[ "$OVERALL_RC" != "0" ]]; then
-      status="fail"
-    elif [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
-      # Otherwise the green survives one layer up: the console line said UNPROVEN
-      # and the durable artifact -- the one later readers and closeout narratives
-      # quote -- said `pass`. Same class, one surface over.
-      status="unestablished"
-    fi
     aggregate_label="run-quality-${RUN_QUALITY_MODE}"
     if [[ "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" == "1" ]]; then
       aggregate_label="${aggregate_label}-release"
@@ -524,20 +532,31 @@ print_final_summary() {
     fi
   fi
 
-  if [[ "$TOTAL_UNESTABLISHED" -gt 0 ]]; then
-    printf 'Quality summary: %s passed, %s failed%s, %s UNPROVEN%s (ran; established nothing, or only part of its scope), total %s\n' \
-      "$TOTAL_PASSES" \
-      "$TOTAL_FAILURES" \
-      "$failed_note" \
-      "$TOTAL_UNESTABLISHED" \
-      "$unproven_note" \
-      "$(format_elapsed "$elapsed_ms")"
-  else
-    printf 'Quality summary: %s passed, %s failed%s, total %s\n' \
-      "$TOTAL_PASSES" \
-      "$TOTAL_FAILURES" \
-      "$failed_note" \
-      "$(format_elapsed "$elapsed_ms")"
+  local -a receipt_args=(--status "$status" --effective-exit-code "$OVERALL_RC" \
+    --passed "$TOTAL_PASSES" --failed "$TOTAL_FAILURES" --elapsed "$(format_elapsed "$elapsed_ms")")
+  local scope_label unproven_label i
+  for scope_label in "${COMPLETED_LABELS[@]}"; do
+    receipt_args+=(--measured-scope "$scope_label")
+  done
+  for i in "${!FAILED_RECEIPT_SUBJECTS[@]}"; do
+    receipt_args+=(--adverse-subject "${FAILED_RECEIPT_SUBJECTS[$i]}" \
+      --recovery "${FAILED_RECEIPT_RECOVERY_SPECS[$i]}")
+  done
+  if [[ -n "$UNESTABLISHED_LABELS" ]]; then
+    local -a unproven_labels=()
+    read -r -a unproven_labels <<< "$UNESTABLISHED_LABELS"
+    for unproven_label in "${unproven_labels[@]}"; do
+      receipt_args+=(--unproven-subject "$unproven_label")
+    done
+  fi
+  if [[ -n "$RUN_QUALITY_RECEIPT_JSON" ]]; then
+    receipt_args+=(--json-path "$RUN_QUALITY_RECEIPT_JSON")
+  fi
+  # The helper owns the terminal line and its semantic fields. Its diagnostic is
+  # emitted before that line; keep a failed optional write from changing the
+  # already-computed gate result or displacing the final human receipt.
+  if ! python3 scripts/proof_receipt.py quality "${receipt_args[@]}"; then
+    :
   fi
 }
 
@@ -586,6 +605,9 @@ queue_selected "report-usage-episodes" python3 scripts/report_usage_episodes.py 
 # regardless of label scoping, mirroring the agent-browser-runtime gate) or
 # CHARNESS_QUALITY_LABELS=dead-code-advisory to run just this gate.
 if [[ "${CHARNESS_QUALITY_DEAD_CODE:-0}" == "1" ]] || label_is_explicitly_selected "dead-code-advisory"; then
+  if [[ -n "$RUN_QUALITY_LABELS" ]] && label_is_explicitly_selected "dead-code-advisory"; then
+    RUN_QUALITY_SELECTED_LABEL_MATCHES=$((RUN_QUALITY_SELECTED_LABEL_MATCHES + 1))
+  fi
   queue_timed "dead-code-advisory" python3 skills/public/quality/scripts/run_dead_code_advisory.py --repo-root "$REPO_ROOT"
 fi
 queue_selected "check-cli-skill-surface" python3 scripts/check_cli_skill_surface.py --repo-root "$REPO_ROOT" --run-probes
@@ -763,6 +785,7 @@ queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_by
 queue_selected "specdown" bash -c "command -v specdown >/dev/null || { echo \"specdown is required for executable specs. Install from https://github.com/corca-ai/specdown or run charness tool doctor specdown for current readiness.\"; exit 1; }; specdown_config=\$(python3 \"$REPO_ROOT/scripts/specdown_ephemeral_config.py\" --repo-root \"$REPO_ROOT\" --out-dir \"$RUN_QUALITY_TMPDIR/specdown-report\") || exit 1; trap 'rm -f \"\$specdown_config\"' EXIT; specdown run -config \"\$specdown_config\" -jobs 4 -out \"$RUN_QUALITY_TMPDIR/specdown-report\""
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose --json-out "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
+
 flush_phase || OVERALL_RC=$?
 
 # Boy-scout duplicate ratchet (item 5, slice 2). Runs in the broad path only (this
@@ -844,5 +867,14 @@ if agent_browser_runtime_gate_enabled "agent-browser-runtime-hygiene"; then
     env -u CHARNESS_AGENT_BROWSER_IGNORE_ORPHANS python3 scripts/agent_browser_runtime_guard.py --repo-root "$REPO_ROOT" --cleanup-orphans --execute >/dev/null 2>&1 || true
   }
 fi
+
+if [[ -n "$RUN_QUALITY_LABELS" && "$RUN_QUALITY_SELECTED_LABEL_MATCHES" -eq 0 ]]; then
+  echo "run-quality: explicit CHARNESS_QUALITY_LABELS matched no queued checks." >&2
+  OVERALL_RC=2
+  TOTAL_FAILURES=1
+  FAILED_RECEIPT_SUBJECTS+=("explicit label filter")
+  FAILED_RECEIPT_RECOVERY_SPECS+=("unavailable:no phase matched the explicit filter")
+fi
+
 print_final_summary
 exit "$OVERALL_RC"

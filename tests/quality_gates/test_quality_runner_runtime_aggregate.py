@@ -217,6 +217,8 @@ def test_an_unproven_gate_makes_the_aggregate_unestablished_not_pass(
     """
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     log_path = _capture_run_quality_runtime_records(repo)
+    receipt_path = repo / "receipt.json"
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
     write_executable(
         repo / "scripts" / "prepush_focused_changed_line_coverage.py",
         '#!/usr/bin/env python3\nimport sys\nprint("this run analyzed nothing")\nsys.exit(3)\n',
@@ -228,3 +230,7 @@ def test_an_unproven_gate_makes_the_aggregate_unestablished_not_pass(
     aggregate = [r for r in _read_runtime_records(log_path) if r["label"] == "run-quality-full"]
     assert len(aggregate) == 1
     assert aggregate[0]["status"] == "unestablished"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["status"] == "unestablished"
+    assert receipt["effective_exit_code"] == result.returncode == 0
+    assert receipt["unproven_subjects"]
