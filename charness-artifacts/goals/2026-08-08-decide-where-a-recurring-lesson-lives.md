@@ -1,6 +1,6 @@
 # Achieve Goal: Decide where a recurring judgment-bound lesson lives, and stop verdict surfaces losing their own evidence
 
-Status: active
+Status: complete
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md`
 
@@ -171,7 +171,7 @@ per the bullets above when that boundary is crossed):
 - Routing: quality — planned and ran public-skill quality/dogfood validation, refreshed measurement baselines, and recorded the broad-suite result.
 - Routing: retro — persisted the auto-triggered session retro and refreshed the lesson-selection index.
 - Routing: issue — filed off-goal recurring telemetry follow-up #503 under the standing issue-creation approval.
-- Issue closeout: #497 #500 #501 staged via direct-commit carrier `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`; `validate-closeout-draft --carrier direct-commit` is `draft_verified`, and post-commit `verify-closeout` will be carrier-only because this goal does not push.
+- Issue closeout: #497 #500 #501 staged via direct-commit carrier commit `4a2170da0a02d8dad066af9eed20beb8c9a40ceb`; `validate-closeout-draft --carrier direct-commit` was `draft_verified`, and `verify-closeout --carrier direct-commit --commit-ref HEAD` was `carrier_verified` without remote state readback because this goal does not push.
 - Gather: charness-artifacts/gather/2026-08-04-goal-issue-sources.md — authenticated `gh` capture of the six named GitHub issue records; the public URL route was attempted first and blocked by captcha.
 
 ## Discuss Before Activation
