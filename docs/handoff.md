@@ -2,11 +2,9 @@
 
 ## Workflow Trigger
 
-- **The recurring-lesson goal is complete** — read its final record, then invoke
-  `/handoff` to select the next backlog item; do not reactivate the completed goal.
-- Scope: two questions on one axis — where a recurring judgment-bound lesson lives
-  (#499, #491, #500), and why a verdict surface keeps losing the fact its reader needs
-  (#502, #501, #497). Read the goal's final verification for the decision and proof.
+- **Next pickup:** read the completed goal and the draft [#504 closeout goal](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md).
+  If the operator confirms #504 priority, activate that draft; otherwise invoke
+  `/handoff` to select backlog work. Never reactivate the completed goal.
 
 ## Continuation Capability
 
@@ -38,8 +36,8 @@
 - #494 closed as `bug` (a real miss); #493 and #492 as `deferred-work` (deliberate
   recorded deferrals). #497/#500/#501 are now CLOSED and read back through the
   GitHub backend; the durable readback is under the active goal's issue artifacts.
-- **Open:** #496, #499, #502, #504 — #499/#502 remain recorded in the completed
-  goal; #504 is the new retro-persistence follow-up. #491 too.
+- **Open:** #496, #499, #502, #504 — local implementation for #504 is complete,
+  but its remote closeout remains unclaimed; do not reactivate its completed goal.
 - A new BLOCKING gate shipped,
   [check_standalone_imports.py](../scripts/check_standalone_imports.py). It has
   never refused a real push, and it imposes a new precondition: a hard third-party
@@ -49,26 +47,19 @@
 
 1. **The completed goal owns #499, #491, #500, #502, #501 and #497.** Read its
    final record; do not reactivate it.
-2. **#504** — goal-aware retro persistence; read its problem-first body.
+2. **Draft next goal:** [close #504 through distinct remote proof](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md).
+   Read it and resolve its two activation decisions before `/goal`.
 3. **#496** — the hollow-refill predicate choice; independent of that decision.
 4. #482/#483/#484, #480, #468 and #475's behavioural half are untouched. **The
    operator still owes #481 one re-run** in their own repo.
 
 ## Discuss
 
-- `--produce-mutation-coverage` **requires `--verification-lock` and the full broad
-  run.** With `--skip-broad-pytest` it silently produces nothing and reports
-  `blocked` with no reason.
-- **Subprocess tests read as 0% to the changed-line mutation lane**, which refuses
-  the push. That refusal is correct; the fix is in-process coverage BESIDE them,
-  never instead — the subprocess is the whole proof for a shell or import-order
-  defect.
-- Prose must not cross a shell, and now both helpers have the channel:
-  `append_slice_log.py --fields-file` and `upsert_goal.py --fields-file`.
-- Issue creation is STANDING, push is standing CONDITIONAL ON THE GATES, issue close
-  is standing conditional on the closeout floor. PR, release, tag, version bump and
-  cautilus stay per-goal. **Gates refused three times this session and were right
-  every time; nothing was weakened to reach green.**
+- Confirm #504 closeout is ahead of independent #496 work.
+- Inspect branch publication scope before choosing a direct-commit carrier; do
+  not publish unrelated history just to close an issue.
+- Close #504 only after carrier validation, delegated critique, a distinct
+  behavior verdict, and `verify-closeout --expect-state CLOSED` all exist.
 
 ## References
 
