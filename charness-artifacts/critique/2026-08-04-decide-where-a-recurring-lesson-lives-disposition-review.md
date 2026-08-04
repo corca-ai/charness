@@ -1,90 +1,125 @@
 # Goal Disposition Review — Decide Where a Recurring Lesson Lives
 Date: 2026-08-04
 
-## Goal Claims Verdict: pass
+## Decision Under Review
 
-This review audits the goal artifact's claims against its six-item User
-Acceptance bar and the cited implementation, debug, critique, retro, probe, and
-carrier records. It is a claims review, not a second code review.
+The repaired closeout record for goal
+`charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md`.
+The review audits the goal's claims, evidence identity, six-issue acceptance,
+retro dispositions, remote readback, and non-claims; it is not a second code
+review.
 
-### Acceptance bar audit
+## Acceptance Bar Audit
 
-Pass. One selector weighs gate, reviewer question, and surface fix. #499/#491
-and #500/#502/#501/#497 are each dispositioned under that selector. Slice D/E
-claims match commits `aa30b66d` and `583f731a`, the staged generated mirrors,
-the current records, and the staged carrier.
+Pass on the substantive record. One selector weighs all three answers: a gate
+only for an observable predicate with a recorded escape and measured false-fire
+cost; a reviewer question for judgment-bound facts; and a surface fix when the
+owning surface can carry the fact. The six findings are dispositioned under that
+selector: #499/#491 use the semantic reviewer question, #500/#502/#501/#497 use
+surface ownership and proof. The five #499 instances remain historical evidence,
+not a new implementation requirement.
 
-### Slice Log claim audit
+## Slice F Repair Audit
 
-Pass. Slice E accurately says the verification-lock bundle proof completed its
-staged structural/deterministic checks, the separate standing runner reported
-7048 passed in 44.52s, and this review is the final local completion evidence.
-It does not claim commit, push, issue close, or remote readback before those
-external steps occur.
+The original closeout cited a retro owned by another goal. The repaired retro
+contains the exact goal slug, the closeout validator reports no binding failure,
+and the lesson-selection digest is regenerated from it. The issue #504 follow-up
+records the general goal-aware persistence capability separately instead of
+pretending this concrete repair generalized the helper.
 
-### Auto-Retro per-improvement verdict
+The remote readback is an audit record for the already-published carrier, not a
+second closeout carrier. Its carrier sentence names the prior commit and issue
+numbers without repeating close keywords, so the commit boundary does not
+mistake the readback for a new issue-resolution publication.
 
-Pass. The seven `Next Improvements` in
-`charness-artifacts/retro/2026-08-04-session-retro.md` have seven one-to-one
-dispositions in the goal:
+The 12 `## Next Improvements` are dispositioned one-for-one in the goal's
+`## Auto-Retro`: nine applied workflow/quality/memory improvements, two explicit
+out-of-scope capabilities, and the #504 follow-up. The structural follow-up
+remains #503 for the separate recurring closeout-runtime class.
 
-- quality-artifact/probe sync — `applied:`
-- corpus-denominator packet capability — `out-of-scope:` with its separate-owner prerequisite
-- semantic reviewer question and worked application — `applied:`
-- truncation receipt and final-line test — `applied:`
-- rolling telemetry promotion — `out-of-scope:` with its named-consumer/retention prerequisite
-- changed-line producer cadence — `applied:`
-- current debug closeout claims — `applied:`
+## Claims And Channels
 
-The two exclusions do not imply completion and are not laundered as new issue
-work.
+- #497 behavior: freshly generated exported-plugin subprocess with
+  `CHARNESS_REPO_ROOT` removed.
+- #500 behavior: hostile producer inputs refuse unsafe values before writing and
+  leave no artifact.
+- #501 behavior: direct export-gate execution covers supported literals and
+  negative controls for unsupported dynamic forms.
+- Remote tracker state: the separate authenticated `gh issue view` readback at
+  `charness-artifacts/issue/2026-08-08-decide-where-a-recurring-lesson-lives-remote-readback.md`
+  records #497/#500/#501 CLOSED at the observed timestamp; it is not treated as
+  behavior proof.
 
-### Structural follow-up verdict
+## Counterweight Triage
 
-Pass. `issue #503 (recurs: ...)` truthfully routes the recurring closeout-runtime
-and over-slice telemetry class. The corpus-denominator packet capability is
-explicitly separate and out of scope; the structural line no longer claims that
-#503 owns it.
+- **Act Before Ship:** commit the fully validated evidence bundle. The host
+  completion call is downstream bookkeeping after the checked-in record exists.
+- **Bundle Anyway:** retain the goal-bound retro, regenerated lesson index,
+  handoff refresh, issue #504 body, and remote readback as one audit bundle.
+- **Over-Worry:** rerun the broad production suite solely for this markdown and
+  evidence-binding repair; no production code or tests changed in Slice F.
+- **Valid but Defer:** general goal-aware retro persistence belongs to #504.
 
-### Per-issue behavior-channel verdict
+## Structured Findings
 
-Pass. The staged carrier and the resolution critique provide channels distinct
-from tracker state and carrier validation:
-
-- #497 — generated exported-plugin subprocess.
-- #500 — hostile producer/no-artifact behavior tests.
-- #501 — direct export-gate execution with supported-form and negative controls.
-
-### Figure/source and remote-state audit
-
-Pass. The resolution-critique packet SHA-256 values match the staged JSON and
-Markdown packet files. The 7048/44.52s figure is consistently bounded as local
-standing-run evidence. Final Verification cites existing goal-bound retro and
-probe paths. Remote closure, push, and readback remain explicit non-claims.
+- F1 | bin: act-before-ship | evidence: strong | ref: goal Slice F and complete-state validator | action: document | note: commit the repaired evidence bundle before downstream host bookkeeping
+- F2 | bin: bundle-anyway | evidence: strong | ref: goal Auto-Retro and retro Next Improvements | action: document | note: retain all 12 explicit improvement dispositions and the #504 destination
+- F3 | bin: over-worry | evidence: strong | ref: Slice F changed-path set | action: defer | note: no broad code suite rerun is needed for an artifact-only repair
+- F4 | bin: valid-but-defer | evidence: moderate | ref: issue #504 | action: file-issue | follow-up: https://github.com/corca-ai/charness/issues/504 | note: helper-level goal identity should be designed separately
 
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage.
-- Requested spawn fields: model=gpt-5.6-terra, reasoning_effort=medium, service_tier=priority, fork_context=false.
+- Requested spawn fields: model=gpt-5.6-terra, reasoning_effort=medium, service_tier=priority, fork_turns=none.
 - Host exposure state: requested_fields_sent
-- Application state: unverified — the host returned the final review but exposed no provider-application confirmation.
-- Delivery state: findings-received.
+- Application state: host application not independently confirmed; no applied claim made.
+- Delivery state: findings-received
+
+## Fresh-Eye Satisfaction
+
+parent-delegated — the final claims review first found the incomplete Slice F
+state and missing improvement disposition; the repair-read round read those
+repairs and found only the remaining commit boundary. Boundary fingerprints were
+clean for the repair-read round. A later repair-read round caught that this
+record still named the superseded packet after the readback wording changed; the
+record is rebound below to the regenerated packet, and the canonical verifier
+is the authority for its sha256-v2 content identity. Final repair-read reviewer
+Hume (`019fcb4a-d9cb-7473-9415-16fc19daa16b`) returned Pass with no blockers;
+boundary window `slice-f-final-repair-read-6` verified clean before this record
+was updated.
+
+## Reviewed Input Identity
+
+- Packet consumed: `charness-artifacts/critique/2026-08-04-053842-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-04-053842-packet.json`
+- Packet SHA256: `4bf8f3dfe7aeeb56ebb02d6edc5e3ba2be254cd58e5add6af8fe92979ade6ef0`
+- Identity SHA256: `adc57fc1f4947c337372103d822bd42194bd31054f33d0ca3bbb7c84676d981f`
 
 ## Boundary Ownership
 
-- Producer: the active achieve goal artifact produces the durable status,
-  acceptance, slice, and closeout claims.
-- Consumer: the next session, closeout validators, and human operator who act on
-  the goal's recorded verdicts.
-- Owning surface: the goal artifact plus its bound retro, probe, carrier, and
-  disposition-review evidence.
-- Verdict: owned-correctly.
+- Producer: the goal artifact, goal-bound retro, issue carrier/readback, and
+  critique review each produce a different closeout fact.
+- Consumer: the next operator, closeout validator, issue tracker reader, and
+  host completion surface.
+- Owning surface: the goal artifact owns the decision and completion claim;
+  each cited artifact owns its evidence detail.
+- Verdict: owned-correctly
 
-### Findings
+## Verification
 
-None. The final goal artifact is ready for the completion flip after this review
-is bound and the staged closeout commit is verified.
+- `check_goal_artifact.py --goal-path charness-artifacts/goals/2026-08-08-decide-where-a-recurring-lesson-lives.md` returned `ok: true` with no binding or disposition failures.
+- `validate_retro_artifact.py` validated the goal-bound retro; handoff and lesson-selection-index validators pass.
+- Canonical binding for the supplied JSON packet returned `current` under the
+  packet's recorded sha256-v2 algorithm.
+- The prior locked bundle proof recorded 7048 standing tests passed in 44.52s; no production code changed in this repair, so broad rerun is not required.
 
-Fresh-Eye Satisfaction: parent-delegated — one final bounded claims reviewer
-returned `pass`; boundary fingerprint `slice-e-goal-claims-review-final`
-verified clean before this artifact was written.
+## Deliberately Not Doing
+
+No claim is made for host rendering, future reviewer uptake, per-goal host
+metrics, arbitrary dynamic imports, or general retro-persistence behavior.
+
+## Next Move
+
+Commit the evidence bundle and rerun the complete-state validator against the
+committed bytes. The commit is the remaining procedural closeout step, not an
+unproven behavioral claim; host bookkeeping follows the checked-in record.

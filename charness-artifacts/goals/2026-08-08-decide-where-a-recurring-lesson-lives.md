@@ -8,15 +8,14 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: Slice E — bundle proof, claims review, retro disposition, and staged issue closeouts.
+- Current slice: Slice F — final goal-bound closeout evidence repair and verification (completed).
 - Current slice intent: close the goal only after the final evidence record is populated and a distinct
   observer has checked the goal's claims. Slice D resolved #500/#501/#497 at their producer/export
-  boundaries; Slice E stages their carrier in the default-branch commit without pushing or closing
-  remote state out of band. Once active, this names the reviewable-intent unit in progress and the
+  boundaries; Slice E staged their carrier and the published default-branch commit closed the three
+  issues. Slice F repairs the goal-bound retro evidence before the final status claim. Once active, this names the reviewable-intent unit in progress and the
   commits it spans; critique and broad proof do not re-fire within one unchanged intent — update it
   when the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: run the locked bundle proof, bind the claims/disposition review and host probe, then
-  commit the carrier and final goal record with the remote issue close still awaiting publication.
+- Next action: commit this repaired evidence bundle; the checked-in `Status: complete` artifact is the completion record and no further external publication is pending.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -35,7 +34,7 @@ This file is the living goal scratchpad for the active run.
 
 Six issue findings, two questions, one axis.
 
-**Question A — where does a recurring judgment-bound lesson live?** A gate, a reviewer question, or a recorded exemption. This repo has measured that a gate which cries wolf gets walked past, and Floor-Addition Restraint already says an advisory is the default until a recurrence is RECORDED.
+**Question A — where does a recurring judgment-bound lesson live?** A gate, a reviewer question, or a fix to the owning surface; a recorded exemption is only the fallback when no owner can carry the fact. This repo has measured that a gate which cries wolf gets walked past, and Floor-Addition Restraint already says an advisory is the default until a recurrence is RECORDED.
 
 - [#499](https://github.com/corca-ai/charness/issues/499) — a guard written against the OBSERVED FAILURE's shape instead of the invariant. Five instances in one session across three surfaces; it was the round-2 blocker on every slice, twice the wrong predicate was the repair of a previous wrong predicate, and the last one was caught by a RELEASE critique after two code rounds passed it. GitHub currently records this issue as CLOSED; it remains the recorded recurrence that tests the policy.
 - [#491](https://github.com/corca-ai/charness/issues/491) — a shipped reference disagreeing with the code. Same axis, deliberately deferred so it would get its own shaping.
@@ -125,12 +124,13 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 | B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | completed |
 | C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | completed |
 | D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | completed |
-| E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | in_progress |
+| E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | completed |
+| F | Repair goal-bound closeout evidence and re-prove the completion claim | The authoritative closeout gate found that the cited retro belonged to another goal | A bound retro, passing goal validator, distinct claims review, and a committed final record | completed |
 
 ## Operator Decision Queue
 
-none — no operator-only decision remains; issue publication, push, and remote
-state readback are explicitly staged outside this local goal closeout.
+none — no operator-only decision remains; the carrier was published and the
+remote issue states were read back through the GitHub backend.
 
 ## Coordination Cues
 
@@ -171,7 +171,7 @@ per the bullets above when that boundary is crossed):
 - Routing: quality — planned and ran public-skill quality/dogfood validation, refreshed measurement baselines, and recorded the broad-suite result.
 - Routing: retro — persisted the auto-triggered session retro and refreshed the lesson-selection index.
 - Routing: issue — filed off-goal recurring telemetry follow-up #503 under the standing issue-creation approval.
-- Issue closeout: #497 #500 #501 staged via direct-commit carrier commit `4a2170da0a02d8dad066af9eed20beb8c9a40ceb`; `validate-closeout-draft --carrier direct-commit` was `draft_verified`, and `verify-closeout --carrier direct-commit --commit-ref HEAD` was `carrier_verified` without remote state readback because this goal does not push.
+- Issue closeout: #497 #500 #501 published through direct-commit carrier `4a2170da0a02d8dad066af9eed20beb8c9a40ceb`; `validate-closeout-draft --carrier direct-commit` was `draft_verified`, `verify-closeout --carrier direct-commit --commit-ref HEAD` was `carrier_verified`, and the distinct GitHub readback is recorded at `charness-artifacts/issue/2026-08-08-decide-where-a-recurring-lesson-lives-remote-readback.md`.
 - Gather: charness-artifacts/gather/2026-08-04-goal-issue-sources.md — authenticated `gh` capture of the six named GitHub issue records; the public URL route was attempted first and blocked by captcha.
 
 ## Discuss Before Activation
@@ -265,6 +265,20 @@ applies.
 - Lessons carried forward: A closeout record is itself a verdict surface. Bind the exact packet bytes, keep debug ownership current, and name each final-consumer behavior channel separately from the carrier and tracker state.
 - Metrics: 7048 standing tests passed; 4 issue-resolution reviewers returned findings; the first claims review returned three closeout blockers that were repaired; the final claims review is the completion evidence; host window metrics are unscoped because the goal has no `Host metric window:` line.
 
+### Slice 6: Repair goal-bound closeout evidence
+
+- Objective: replace the stale cross-goal retro citation with a retro bound to this goal, reconcile its improvement dispositions, and re-prove the final status claim.
+- Why this approach: the completion validator correctly distinguishes an existing artifact from evidence owned by the goal; changing the validator or leaving `Status: complete` would preserve the exact proof-surface failure this goal is meant to prevent.
+- Commits: this closeout commit — the final SHA is supplied by the commit itself after the complete-state validator passes.
+- What changed: created `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`, refreshed the lesson-selection digest, filed off-goal issue #504 for a general goal-aware persistence contract, recorded the remote issue readback, and staged the goal citation/status repair for review.
+- Alternatives rejected: rejected reusing `2026-08-04-session-retro.md` because its `Goal:` names another objective; rejected weakening the goal binding floor; rejected treating the existing disposition review as sufficient without rereading the repaired goal record.
+- Targeted verification: the pre-repair `check_goal_artifact.py` failed only on the unbound retro; `describe_goal_closeout_shape.py` named that missing line. The repaired retro validator and authoring preflight pass; the final complete-state validator and repair-read claims review are recorded below before commit.
+- Test duplication pressure: no production tests or code were added; this is an evidence/artifact repair with validator coverage already present.
+- Critique: the delegated `critique` repair-read claims reviewer must confirm the repaired Slice F state and all 12 improvement dispositions before commit.
+- Off-goal findings: #504 — goal-aware retro persistence is a separate capability follow-up; the issue body records the observed cross-goal evidence mismatch before proposing a direction.
+- Lessons carried forward: evidence identity is part of the verdict; a path that exists is not a path that belongs to the current goal.
+- Metrics: host token/tool metrics unavailable; no goal-scoped host metric window exists.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -324,7 +338,8 @@ folded revisions without re-running critique.
   review-owned shape already caught all three recorded mismatches. The surface-fix
   branch remains selected for the concrete verdict/creator/export cases where the
   surface can carry the missing fact.
-- **Six-row proof ledger:** #499 (CLOSED, five recorded instances) — reviewer question,
+- **Six-row proof ledger (Slice-A historical snapshot; later states and proof are in the
+  Slice Log and Final Verification):** #499 (CLOSED, five recorded instances) — reviewer question,
   prove against one instance plus an axis-varying counterexample; #491 (OPEN, three
   recorded mismatches) — reviewer question, name the claim, owner, and changed behavior;
   #500 (OPEN) — surface fix at the shared creator/value boundary, with an explicit
@@ -355,18 +370,19 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Retro: charness-artifacts/retro/2026-08-04-session-retro.md
+Retro: charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md
 Host log probe: charness-artifacts/probe/2026-08-04-decide-where-a-recurring-lesson-lives.json
 Disposition review: charness-artifacts/critique/2026-08-04-decide-where-a-recurring-lesson-lives-disposition-review.md
 - Standing proof: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` — 7048 passed in 44.52s.
 - Bundle proof: `run_slice_closeout.py --verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review` completed with all staged structural/deterministic checks passing; `run_standing_pytest.py --mode read-only` separately reported 7048 passed in 44.52s. No Cautilus evaluation was run under the ask-before-run contract.
-- Claims boundary: local tests and `verify-closeout` carrier checks do not prove remote issue state; push, GitHub close, and post-publication state readback remain outside this local goal closeout.
+- Claims boundary: local tests and `verify-closeout` carrier checks did not prove remote issue state; the separate GitHub readback now records #497, #500, and #501 as CLOSED through a different observer and channel.
+- Remote issue readback: `charness-artifacts/issue/2026-08-08-decide-where-a-recurring-lesson-lives-remote-readback.md` — authenticated `gh issue view` output for #497, #500, and #501.
 - Host metrics: the probe found available thread-wide Claude/Codex logs but no goal-scoped window because this artifact has no `Host metric window:` line; goal-window elapsed/token/tool totals are therefore unclaimed.
 
 ## User Verification Instructions
 
-- Run the final carrier commit through the normal default-branch publication path; its `Closes #497`, `Closes #500`, and `Closes #501` keywords are staged in `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`.
-- After publication, run `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo corca-ai/charness --number 497 --number 500 --number 501 --classification bug --carrier direct-commit --commit-ref <published-carrier-sha> --expect-state CLOSED` and retain the distinct behavior verdicts already recorded in the carrier.
+- The carrier was published through the normal default-branch path; its `Closes #497`, `Closes #500`, and `Closes #501` keywords are recorded in `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`.
+- The post-publication GitHub state readback is complete and retained at `charness-artifacts/issue/2026-08-08-decide-where-a-recurring-lesson-lives-remote-readback.md`; the carrier's distinct behavior verdicts remain the behavior proof.
 
 ## Auto-Retro
 
@@ -377,4 +393,9 @@ Retro dispositions: out-of-scope: the quality-packet corpus-denominator capabili
 Retro dispositions: out-of-scope: promoting rolling telemetry into a structured per-run receipt needs a named consumer, retention, and stale-state contract outside this goal.
 Retro dispositions: applied: ran the changed-line producer after focused branch-coverage repair.
 Retro dispositions: applied: reconciled the debug record's ownership, invariant, sibling, and final-consumer proof paragraphs.
+Retro dispositions: applied: replaced the cross-goal retro citation with a goal-bound retro; the final binding verification is recorded in Slice 6 before the status claim.
+Retro dispositions: issue #504 (recurs: goal-closeout evidence can be shape-valid but owned by another goal)
+Retro dispositions: applied: kept the claims review and retro as distinct observers and files before updating the final goal citation.
+Retro dispositions: applied: continued broad verification per slice and recorded the resulting proof number in the slice log.
+Retro dispositions: applied: preserved the surface-owner examples in the goal-bound packet and refreshed the handoff pointer for the next operator.
 Structural follow-up: issue #503 (recurs: recurring closeout-runtime and over-slice telemetry needs a gate-owner decision; the separate corpus-denominator packet surface remains explicitly out-of-scope here)
