@@ -311,13 +311,37 @@ The following repairs were folded into this artifact:
 
 ## Final Verification
 
-No execution yet — this draft has no final verification claims. Activation must
-replace the draft state with a current baseline, intervention result, correctness
-proof, bound retro, and disposition review before completion.
+- Final self-verification: the current closeout bottleneck was the focused
+  changed-line coverage phase. The worker-cap candidate was falsified: uncapped
+  mean 114.70s versus cap-4 mean 114.81s, so the 5s materiality threshold was
+  not met and the pre-change producer behavior was retained. No production,
+  gate, runner, test, generated, or plugin behavior changed in this goal.
+- Proof preservation: the controlled fixture channel ran
+  `python3 -m pytest -vv tests/quality_gates/test_mutation_coverage_producer.py::test_produce_broad_coverage_skips_emit_on_failure tests/quality_gates/test_mutation_coverage_producer.py::test_run_focused_closeout_coverage_marks_failed_payload tests/quality_gates/test_changed_line_coverage_gate.py::test_flags_uncovered_changed_line`
+  and passed 3 tests in 0.70s. These fixtures assert a failed producer returns
+  non-zero, does not export/stamp fresh coverage, records `status=failed`, and
+  keeps an uncovered changed line blocking. Receipt:
+  `/tmp/charness-closeout-controlled-failure.log`.
+- Separate correctness channel: the focused producer/consumer tests passed 43
+  tests in 4.68s. Receipt: `/tmp/charness-closeout-mutation-correctness.log`.
+- Final local quality: `./scripts/run-quality.sh --read-only` passed 85 checks
+  with 0 failures in 122.0s; the changed-line phase was 118.9s and the
+  standing pytest phase was 44.8s. Receipt:
+  `/tmp/charness-closeout-final-quality.log`. The run executed at HEAD
+  `ab0e4ad8d9999e3383401e348bf3d651746e4033` and the pre/post identity receipt
+  shows that HEAD did not move. The worktree contained only the closeout goal,
+  retro, packet, index, and claims-review artifacts listed in that receipt; no
+  production or proof-surface path changed. Those artifact changes were also
+  covered by the gate's artifact validators and the final goal check below.
+- Final disposition: no measured relief, no cross-host or remote claim, no
+  host token/tool/turn totals, no Cautilus evaluation, no proof-surface change,
+  and no issue close or release/push action. The exact reopen trigger is a new
+  same-host focused candidate that preserves the mapped proof scope and exceeds
+  the fixed 5s median-relief threshold.
 
-Retro: not yet applicable — no slices have executed.
-Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window is requested for this draft; runtime claims will use explicit local command timing instead.
-Disposition review: not yet applicable — no implementation or closeout claims exist in this draft.
+Retro: `charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md`
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window is exposed; explicit local command timing is recorded instead.
+Disposition review: `charness-artifacts/critique/2026-08-04-reduce-current-closeout-bottleneck-claims-review.md`
 
 ## User Verification Instructions
 
@@ -325,12 +349,24 @@ Activate with:
 
     /goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md
 
-The first slice will measure the current critical path before changing any gate,
-runner, or test scope. Nothing in this draft changes repository behavior.
+The goal has completed a local no-safe-change experiment. To verify it, inspect
+the Slice Log, the bound retro, the candidate critique, the disposition review,
+and the separate success/failure receipts named under Final Verification. A
+future retry is justified only by the recorded 5s same-host focused-candidate
+reopen trigger; no gate weakening or global worker change is implied.
 
 ## Auto-Retro
 
-Retro dispositions: none yet — execution has not started; closeout will record
-each surfaced improvement as applied, tracked, or an explicit accepted risk.
-Structural follow-up: n/a — no transferable waste has been observed in this
-draft; reassess after the actual baseline and experiment.
+Retro dispositions: applied: used the fixed-threshold, matched-sample, and
+separate-correctness protocol for this experiment; future adherence is a
+non-claim, while the protocol is durably recorded in the goal and critique.
+Retro dispositions: none — no producer-owned worker option is safe to add until
+a new focused candidate exceeds the fixed 5s median-relief threshold while
+preserving the existing proof scope; D51 remains the follow-up anchor.
+Retro dispositions: applied: recorded the falsified global-cap result, exact
+reopen trigger, and packet identity in the committed goal, critique, and bound
+retro so the candidate is not retried from memory alone.
+Structural follow-up: none — the transferable workflow lesson is already
+applied in the fixed timing/correctness protocol, and the remaining historical
+gate-runtime owner is D51; this no-change evidence does not justify another
+permanent guard.

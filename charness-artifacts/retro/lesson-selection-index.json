@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 433,
-  "candidate_count": 1786,
+  "source_artifact_count": 435,
+  "candidate_count": 1794,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1450,6 +1450,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:3adf464e998b",
+      "kind": "current_focus",
+      "lesson": "This retro covers the current-host closeout optimization experiment: baseline selection, a focused changed-line coverage worker-cap candidate, its matched falsification, final local proof, and the no-safe-change disposition.",
+      "normalized_key": "this retro covers the current host closeout optimization experiment baseline selection a focused changed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the current-host closeout optimization experiment: baseline selection, a focused changed-line coverage worker-cap candidate, its matched falsification, final local proof, and the no-safe-change disposition."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7b0b9c0b2a25",
       "kind": "next_improvement",
       "lesson": "Applied: current-tree inventory probes were refreshed after the quality corpus changed, with the refusal count still measured at five citations across four artifacts.",
@@ -1554,6 +1580,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e53fc00e2d2c",
+      "kind": "next_improvement",
+      "lesson": "If a future candidate exceeds 5s relief, add only a focused producer-owned option subordinate to xdist detection, with regression checks; no current implementation is justified.",
+      "normalized_key": "if a future candidate exceeds 5s relief add only a focused producer owned option",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "If a future candidate exceeds 5s relief, add only a focused producer-owned option subordinate to xdist detection, with regression checks; no current implementation is justified."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:542a6809128d",
+      "kind": "next_improvement",
+      "lesson": "Keep the fixed-threshold, matched-sample, separate-correctness protocol for future closeout timing candidates; this was applied to the goal and candidate critique in this run.",
+      "normalized_key": "keep the fixed threshold matched sample separate correctness protocol for future closeout timing candidates",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Keep the fixed-threshold, matched-sample, separate-correctness protocol for future closeout timing candidates; this was applied to the goal and candidate critique in this run."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:21427545d4cf",
       "kind": "next_improvement",
       "lesson": "Memory: require a host metric window for any per-goal host-cost claim; when it is absent, persist the probe and state the non-claim.",
@@ -1602,6 +1680,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "Out-of-scope: host-installed invocation proof and remote issue closure require a separate observer/channel and the existing issue closeout floor."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:28ebe800c93f",
+      "kind": "next_improvement",
+      "lesson": "Preserve the no-safe-change result, exact reopen trigger, and packet identity in the goal/retro artifacts so a future session does not retry the falsified global-cap intuition.",
+      "normalized_key": "preserve the no safe change result exact reopen trigger and packet identity in the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Preserve the no-safe-change result, exact reopen trigger, and packet identity in the goal/retro artifacts so a future session does not retry the falsified global-cap intuition."
         }
       ]
     },
@@ -1658,6 +1762,58 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:f60a2a91ec63",
+      "kind": "repeat_trap",
+      "lesson": "`candidate-protocol-rework` — the first critique artifact used the packet's markdown path while carrying the JSON digest, so the binding validator caught the mismatch. This was necessary recovery at a proof boundary; the avoidable waste was not copying the canonical JSON packet path from the prepare-packet contract on the first draft. The artifact was repaired and validated before commit.",
+      "normalized_key": "candidate protocol rework the first critique artifact used the packet s markdown path while",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`candidate-protocol-rework` — the first critique artifact used the packet's markdown path while carrying the JSON digest, so the binding validator caught the mismatch. This was necessary recovery at a proof boundary; the avoidable waste was not copying the canonical JSON packet path from the prepare-packet contract on the first draft. The artifact was repaired and validated before commit."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b8e40974fbfc",
+      "kind": "repeat_trap",
+      "lesson": "`gate-baseline-runtime` — the final gate still costs 122.7s and the focused coverage phase 119.6s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization.",
+      "normalized_key": "gate baseline runtime the final gate still costs 122 7s and the focused coverage",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`gate-baseline-runtime` — the final gate still costs 122.7s and the focused coverage phase 119.6s. This is measured quality debt, not a reason to weaken floors or shrink proof. The worker-cap candidate produced no material saving; D51 remains the named owner/reopen anchor for a future safe optimization."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:47204b421534",
       "kind": "repeat_trap",
       "lesson": "`gate-baseline-runtime` — the release and pre-push gates measured about 168.19 and 162.8 seconds. This is quality debt and an optimization target, not a reason to weaken floors or shrink test scope. Decision: valid follow-up outside the slice. Proof: D51 records the named owner surface and reopen trigger in `docs/deferred-decisions.md`.",
@@ -1680,6 +1836,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "`gate-baseline-runtime` — the release and pre-push gates measured about 168.19 and 162.8 seconds. This is quality debt and an optimization target, not a reason to weaken floors or shrink test scope. Decision: valid follow-up outside the slice. Proof: D51 records the named owner surface and reopen trigger in `docs/deferred-decisions.md`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bdbac597203e",
+      "kind": "repeat_trap",
+      "lesson": "Host metric window and per-goal token/tool/turn totals were unavailable; no waste conclusion is inferred from cached input or broad transcript shape.",
+      "normalized_key": "host metric window and per goal token tool turn totals were unavailable no waste",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Host metric window and per-goal token/tool/turn totals were unavailable; no waste conclusion is inferred from cached input or broad transcript shape."
         }
       ]
     },
@@ -1784,6 +1966,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "`release-boundary-ordering` — the release helper's natural sequence did not interpose remote branch CI before tag/public publication. The limitation was caught by F9 before it escaped; the publish was manually split into branch push, independent CI readback, tag/publication, and independent readback. Decision: valid follow-up outside the slice. Proof: the release readback and the durable D51 entry in `docs/deferred-decisions.md`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0637355fa379",
+      "kind": "repeat_trap",
+      "lesson": "`safety-cost` — the three baseline runs, six matched candidate runs, separate correctness tests, delegated critique, and final quality gate were necessary safety cost for a proof-adjacent timing experiment, not reducible waste.",
+      "normalized_key": "safety cost the three baseline runs six matched candidate runs separate correctness tests delegated",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`safety-cost` — the three baseline runs, six matched candidate runs, separate correctness tests, delegated critique, and final quality gate were necessary safety cost for a proof-adjacent timing experiment, not reducible waste."
         }
       ]
     },
