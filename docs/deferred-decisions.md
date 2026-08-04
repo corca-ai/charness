@@ -630,9 +630,10 @@ Reopen trigger:
   "Qualify the generic tokens in inventory-consumer-fields.json so a field declares
   whether its name is distinctive" cannot both impose a real marker rule and spare the
   cited reviews, because the fields the corpus actually engages ARE the ordinary-English
-  ones: `inventory_nose_clones.py` declares `status, advisory, family_count, families,
-  excludes, ignore_file, paths, ranking, scope, notes`, and the citing reviews engage the
-  ordinary ones on incidental prose. Declaring them non-distinctive refuses those
+  ones: `inventory_nose_clones.py` declares these fields: `status`, `advisory`,
+  `family_count`, `families`, `excludes`, `ignore_file`, `paths`, `ranking`, `scope`,
+  and `notes`. The citing reviews engage the ordinary ones on incidental prose.
+  Declaring them non-distinctive refuses those
   reviews; declaring them distinctive makes the marker rule apply to no field the corpus
   ever engages — a measured-zero no-op that would read here as a repair. It is also a
   STRONGER self-declaration than the `required_release_surfaces` list [D48](#d48-should-an-absent-release-surface-be-drift-without-a-self-authored-declaration)
@@ -902,3 +903,24 @@ Reopen trigger:
 After these closures, the next major workstream is `cautilus` integration and
 contract wiring, not further pre-`cautilus` product-boundary debate unless a
 reopen trigger fires.
+
+### D51. Release branch/CI barrier and quality-gate runtime
+
+- Question: How should the release helper preserve the branch-push → different
+  observer CI barrier before tag/public publication, while making the measured
+  quality-gate runtime actionable without weakening proof floors?
+- Current choice: Defer the helper state-machine repair and runtime treatment
+  as one explicit follow-up. The v3.2.0 closeout used a manually split
+  branch-push, remote CI readback, tag/publication, and independent public
+  readback sequence. The local release quality gate measured 168.19 seconds
+  and the pre-push gate measured 162.8 seconds; those are quality debt signals,
+  not permission to remove or narrow proof.
+- Why now: The release helper's natural ordering would otherwise allow tag
+  publication before the remote branch's CI result, and the recurring runtime
+  signal needs an owner that can optimize structure rather than ask operators
+  to accept a terminal green.
+- Impact surfaces: [publish_release_execute.py](../skills/public/release/scripts/publish_release_execute.py),
+  [run-quality.sh](../scripts/run-quality.sh), [design-north-star.md](./design-north-star.md),
+  and release closeout artifacts.
+- Reopen trigger: the next release-helper change, or a measured quality-gate
+  runtime regression that supplies a concrete optimization candidate.

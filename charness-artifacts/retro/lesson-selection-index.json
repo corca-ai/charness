@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-07",
-  "source_artifact_count": 429,
-  "candidate_count": 1769,
+  "source_artifact_count": 430,
+  "candidate_count": 1768,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -54,40 +54,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:53cd7536bd81",
-      "kind": "repeat_trap",
-      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
-      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
-      "recurrence_class": "measurement-baseline-sync",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.24,
-      "selection_weight": 1.184,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The first Slice C broad run caught a quality-artifact marker-shape omission: semantic review markers were present but not in the exact inventory-consumption form. The repair restored the literal markers and reran the broad suite, rather than weakening the consumer validator."
         }
       ]
     },
@@ -374,6 +340,32 @@
           "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against."
         }
       ]
+    },
+    {
+      "candidate_id": "repeat_trap:4461ac975eea",
+      "kind": "repeat_trap",
+      "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of.",
+      "normalized_key": "the enumeration in slice c was wrong three times repo root shims imported by",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of."
+        }
+      ]
     }
   ],
   "candidates": [
@@ -416,40 +408,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:53cd7536bd81",
-      "kind": "repeat_trap",
-      "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first.",
-      "normalized_key": "adding the new quality artifact changed the measured quality artifact corpus the first broad",
-      "recurrence_class": "measurement-baseline-sync",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.24,
-      "selection_weight": 1.184,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Adding the new quality artifact changed the measured quality-artifact corpus. The first broad run exposed four stale recorded-measurement values, and the inventory-consumption test exposed that the artifact had not engaged the exact declared fields. This was useful detection, but it created avoidable rework because the quality artifact and its probe baselines were not treated as one sync unit at first."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The first Slice C broad run caught a quality-artifact marker-shape omission: semantic review markers were present but not in the exact inventory-consumption form. The repair restored the literal markers and reran the broad suite, rather than weakening the consumer validator."
         }
       ]
     },
@@ -1076,10 +1034,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:543e70abbf5f",
+      "candidate_id": "current_focus:508d845cad08",
       "kind": "current_focus",
-      "lesson": "This retro covers Slices B, C, and D of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, assigning #502's quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497 producer/export boundaries.",
-      "normalized_key": "this retro covers slices b c and d of the active goal carrying a",
+      "lesson": "This retro covers S1–S7 of the active goal: the #503 telemetry cohort and decision receipt, the narrow #496 refill repair, final local proof, the v3.2.0 release, and its remote, public, and installed readbacks.",
+      "normalized_key": "this retro covers s1 s7 of the active goal the 503 telemetry cohort and",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1097,15 +1055,15 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "This retro covers Slices B, C, and D of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, assigning #502's quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497 producer/export boundaries."
+          "lesson": "This retro covers S1–S7 of the active goal: the #503 telemetry cohort and decision receipt, the narrow #496 refill repair, final local proof, the v3.2.0 release, and its remote, public, and installed readbacks."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:7db053c87ce3",
+      "candidate_id": "next_improvement:2de3b07e32c8",
       "kind": "next_improvement",
-      "lesson": "define truncation boundaries as a complete operator receipt — verdict, failed identity, and recovery path — and test the final line, not only a tail window. Keep best-effort telemetry writes before that receipt.",
-      "normalized_key": "define truncation boundaries as a complete operator receipt verdict failed identity and recovery path",
+      "lesson": "Artifact: keep release-content proof separate from post-publication remote, public, and installed readbacks; this was applied in the two release records.",
+      "normalized_key": "artifact keep release content proof separate from post publication remote public and installed readbacks",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1123,15 +1081,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "define truncation boundaries as a complete operator receipt — verdict, failed identity, and recovery path — and test the final line, not only a tail window. Keep best-effort telemetry writes before that receipt."
+          "lesson": "Artifact: keep release-content proof separate from post-publication remote, public, and installed readbacks; this was applied in the two release records."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:25949ddcf250",
+      "candidate_id": "next_improvement:b0604073bbc3",
       "kind": "next_improvement",
-      "lesson": "do not promote rolling telemetry into a structured per-run receipt without a named consumer, run identity, retention, and stale-state contract.",
-      "normalized_key": "do not promote rolling telemetry into a structured per run receipt without a named",
+      "lesson": "Capability: teach the release helper to expose and persist the branch-push, remote-CI, tag, public-release, and install-refresh states with explicit observers; D51 owns this follow-up.",
+      "normalized_key": "capability teach the release helper to expose and persist the branch push remote ci",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1149,15 +1107,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "do not promote rolling telemetry into a structured per-run receipt without a named consumer, run identity, retention, and stale-state contract."
+          "lesson": "Capability: teach the release helper to expose and persist the branch-push, remote-CI, tag, public-release, and install-refresh states with explicit observers; D51 owns this follow-up."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:c1a049811ea4",
+      "candidate_id": "next_improvement:21427545d4cf",
       "kind": "next_improvement",
-      "lesson": "keep the semantic reviewer question and the worked #499/#491 application linked from the Slice B critique record so future reviewers see the invariant/owner/instance/counterexample shape.",
-      "normalized_key": "keep the semantic reviewer question and the worked 499 491 application linked from the",
+      "lesson": "Memory: require a host metric window for any per-goal host-cost claim; when it is absent, persist the probe and state the non-claim.",
+      "normalized_key": "memory require a host metric window for any per goal host cost claim when",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1175,15 +1133,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "keep the semantic reviewer question and the worked #499/#491 application linked from the Slice B critique record so future reviewers see the invariant/owner/instance/counterexample shape."
+          "lesson": "Memory: require a host metric window for any per-goal host-cost claim; when it is absent, persist the probe and state the non-claim."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:78e984261a28",
+      "candidate_id": "next_improvement:c0f8731d7ee9",
       "kind": "next_improvement",
-      "lesson": "let the quality closeout packet surface the current corpus denominator beside a recorded probe when the corpus itself changes; issue #503 owns the broader runtime/over-slice decision.",
-      "normalized_key": "let the quality closeout packet surface the current corpus denominator beside a recorded probe",
+      "lesson": "Quality: run changed-line coverage immediately after focused branch additions and before the broad release gate; this was applied in this session.",
+      "normalized_key": "quality run changed line coverage immediately after focused branch additions and before the broad",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1201,15 +1159,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "let the quality closeout packet surface the current corpus denominator beside a recorded probe when the corpus itself changes; issue #503 owns the broader runtime/over-slice decision."
+          "lesson": "Quality: run changed-line coverage immediately after focused branch additions and before the broad release gate; this was applied in this session."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:ef987b7d1754",
+      "candidate_id": "next_improvement:b68f0e5b0851",
       "kind": "next_improvement",
-      "lesson": "run the changed-line coverage producer immediately after any focused branch-coverage repair; applied in this run by adding direct in-process tests beside the subprocess proof and rerunning the producer.",
-      "normalized_key": "run the changed line coverage producer immediately after any focused branch coverage repair applied",
+      "lesson": "Workflow: freeze the release candidate and refresh its critique packet only after the final implementation surface is stable.",
+      "normalized_key": "workflow freeze the release candidate and refresh its critique packet only after the final",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1227,93 +1185,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "run the changed-line coverage producer immediately after any focused branch-coverage repair; applied in this run by adding direct in-process tests beside the subprocess proof and rerunning the producer."
+          "lesson": "Workflow: freeze the release candidate and refresh its critique packet only after the final implementation surface is stable."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:ad24f9d1b10e",
-      "kind": "next_improvement",
-      "lesson": "treat a resolved debug artifact's ownership, invariant, sibling, and proof paragraphs as closeout claims that must be refreshed with the code; applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`.",
-      "normalized_key": "treat a resolved debug artifact s ownership invariant sibling and proof paragraphs as closeout",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.12,
-      "selection_weight": 0.9548,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "treat a resolved debug artifact's ownership, invariant, sibling, and proof paragraphs as closeout claims that must be refreshed with the code; applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:6996b06d29fe",
-      "kind": "next_improvement",
-      "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete.",
-      "normalized_key": "when a quality artifact cites an inventory or probe run its measurement and consumer",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.12,
-      "selection_weight": 0.9548,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:e90c699e1a17",
+      "candidate_id": "repeat_trap:47204b421534",
       "kind": "repeat_trap",
-      "lesson": "Slice D's first post-commit broad run refused the changed-line mutation lane on two uncovered branches. This was not wasted safety cost: the refusal named real uncovered behavior, and the direct producer rerun became clean after two focused in-process tests were added. The avoidable waste was discovering those branches after the first commit rather than running the producer immediately after the focused test expansion.",
-      "normalized_key": "slice d s first post commit broad run refused the changed line mutation lane",
-      "recurrence_class": "changed-line-proof-cadence",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 3,
-      "recency_weight": 0.9548,
-      "alpha": 0.12,
-      "selection_weight": 0.9548,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Slice D's first post-commit broad run refused the changed-line mutation lane on two uncovered branches. This was not wasted safety cost: the refusal named real uncovered behavior, and the direct producer rerun became clean after two focused in-process tests were added. The avoidable waste was discovering those branches after the first commit rather than running the producer immediately after the focused test expansion."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:cae910afd88a",
-      "kind": "repeat_trap",
-      "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift.",
-      "normalized_key": "the 42 76 second current broad run was not waste it was the required",
+      "lesson": "`gate-baseline-runtime` — the release and pre-push gates measured about 168.19 and 162.8 seconds. This is quality debt and an optimization target, not a reason to weaken floors or shrink test scope. Decision: valid follow-up outside the slice. Proof: D51 records the named owner surface and reopen trigger in `docs/deferred-decisions.md`.",
+      "normalized_key": "gate baseline runtime the release and pre push gates measured about 168 19 and",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1331,16 +1211,16 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift."
+          "lesson": "`gate-baseline-runtime` — the release and pre-push gates measured about 168.19 and 162.8 seconds. This is quality debt and an optimization target, not a reason to weaken floors or shrink test scope. Decision: valid follow-up outside the slice. Proof: D51 records the named owner surface and reopen trigger in `docs/deferred-decisions.md`."
         }
       ]
     },
     {
-      "candidate_id": "class:e343ec755a43",
+      "candidate_id": "repeat_trap:763f1268cbbf",
       "kind": "repeat_trap",
-      "lesson": "The causal closeout read exposed stale debug prose after the code was repaired. That was a real trust risk, not cosmetic churn: the carrier would have claimed current ownership from a record that still said “candidate owners” and “tests pending.” Reconciling the record and rebuilding its seam index was necessary closeout work.",
-      "normalized_key": "the causal closeout read exposed stale debug prose after the code was repaired that",
-      "recurrence_class": "closeout-record-currentness",
+      "lesson": "Missing host metric window was not treated as waste or backfilled by inference. It is a measurement boundary and remains an explicit non-claim.",
+      "normalized_key": "missing host metric window was not treated as waste or backfilled by inference it",
+      "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
@@ -1357,16 +1237,16 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "The causal closeout read exposed stale debug prose after the code was repaired. That was a real trust risk, not cosmetic churn: the carrier would have claimed current ownership from a record that still said “candidate owners” and “tests pending.” Reconciling the record and rebuilding its seam index was necessary closeout work."
+          "lesson": "Missing host metric window was not treated as waste or backfilled by inference. It is a measurement boundary and remains an explicit non-claim."
         }
       ]
     },
     {
-      "candidate_id": "class:befcfbadb2bd",
+      "candidate_id": "repeat_trap:c8b86f6e7e66",
       "kind": "repeat_trap",
-      "lesson": "The recurring telemetry stream reports gate-baseline runtime as a real cost, not a reason to weaken proof: the standing quality suite recurred 16 times with a 475.46-second peak, the release bundle 4 times with a 152.15-second peak, the standing runner 4 times with a 208.32-second peak, and over-slice runs recurred 37 times with a peak run of 4. These are measured local stream signals, not proof that any particular gate should be removed. Issue #503 now carries the tracked follow-up.",
-      "normalized_key": "the recurring telemetry stream reports gate baseline runtime as a real cost not a",
-      "recurrence_class": "closeout-runtime-owner",
+      "lesson": "`non-tty-proof-boundary` — the first release preparation exposed that a piped `glow` invocation could produce a blank capture. The PTY fallback repair and its first fresh-eye hold were real safety work, not cosmetic churn. Decision: same waste, fix now. Proof: source/plugin parity, fallback tests, and the second bounded review are recorded above.",
+      "normalized_key": "non tty proof boundary the first release preparation exposed that a piped glow invocation",
+      "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
@@ -1383,7 +1263,85 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "The recurring telemetry stream reports gate-baseline runtime as a real cost, not a reason to weaken proof: the standing quality suite recurred 16 times with a 475.46-second peak, the release bundle 4 times with a 152.15-second peak, the standing runner 4 times with a 208.32-second peak, and over-slice runs recurred 37 times with a peak run of 4. These are measured local stream signals, not proof that any particular gate should be removed. Issue #503 now carries the tracked follow-up."
+          "lesson": "`non-tty-proof-boundary` — the first release preparation exposed that a piped `glow` invocation could produce a blank capture. The PTY fallback repair and its first fresh-eye hold were real safety work, not cosmetic churn. Decision: same waste, fix now. Proof: source/plugin parity, fallback tests, and the second bounded review are recorded above."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4e55670f7259",
+      "kind": "repeat_trap",
+      "lesson": "`quality-gate-branch-coverage` — the first release prep found genuine uncovered changed lines in the miner and renderer, requiring focused tests and another full release gate. Decision: same waste, fix now. Proof: the later 85-check release gate and the focused suites passed after those tests.",
+      "normalized_key": "quality gate branch coverage the first release prep found genuine uncovered changed lines in",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`quality-gate-branch-coverage` — the first release prep found genuine uncovered changed lines in the miner and renderer, requiring focused tests and another full release gate. Decision: same waste, fix now. Proof: the later 85-check release gate and the focused suites passed after those tests."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0bef4b04650d",
+      "kind": "repeat_trap",
+      "lesson": "`release-boundary-ordering` — the release helper's natural sequence did not interpose remote branch CI before tag/public publication. The limitation was caught by F9 before it escaped; the publish was manually split into branch push, independent CI readback, tag/publication, and independent readback. Decision: valid follow-up outside the slice. Proof: the release readback and the durable D51 entry in `docs/deferred-decisions.md`.",
+      "normalized_key": "release boundary ordering the release helper s natural sequence did not interpose remote branch",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`release-boundary-ordering` — the release helper's natural sequence did not interpose remote branch CI before tag/public publication. The limitation was caught by F9 before it escaped; the publish was manually split into branch push, independent CI readback, tag/publication, and independent readback. Decision: valid follow-up outside the slice. Proof: the release readback and the durable D51 entry in `docs/deferred-decisions.md`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99d5bdaa696d",
+      "kind": "repeat_trap",
+      "lesson": "`truth-surface-rebinding` — the support repair changed reviewed truth surfaces after the release critique, so the candidate scope, critique packet, packet identity, and release evidence had to be rebound. The extra prep and packet refreshes were necessary once the repair was real, but the avoidable part was letting the release packet span an unfrozen support surface. Decision: same waste, fix now. Proof: the final packet identity and candidate scope were regenerated after the last reviewed repair.",
+      "normalized_key": "truth surface rebinding the support repair changed reviewed truth surfaces after the release critique",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`truth-surface-rebinding` — the support repair changed reviewed truth surfaces after the release critique, so the candidate scope, critique packet, packet identity, and release evidence had to be rebound. The extra prep and packet refreshes were necessary once the repair was real, but the avoidable part was letting the release packet span an unfrozen support surface. Decision: same waste, fix now. Proof: the final packet identity and candidate scope were regenerated after the last reviewed repair."
         }
       ]
     },

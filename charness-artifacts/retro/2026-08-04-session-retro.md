@@ -1,227 +1,186 @@
 # Session Retro
+
 Date: 2026-08-04
-Goal: decide-where-a-recurring-lesson-lives
+Goal: `make-recurring-closeout-cost-actionable`
 
 ## Context
 
-This retro covers Slices B, C, and D of the active goal: carrying a semantic
-reviewer question into critique packets for #499/#491, assigning #502's
-quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497
-producer/export boundaries.
-The work mattered because the selected control had to stay judgment-supporting
-without becoming a semantic meta-gate, and the later fixes had to prove the
-actual exported consumer rather than the authoring tree. The commit-range
-auto-retro trigger fired on the checked-in plugin export surface, so this is a
-bounded session retro for these slices rather than a claim about the whole goal.
-
-Claims below distinguish strong local execution evidence from moderate
-judgment about future reviewer uptake. The latter remains unproven.
+This retro covers S1–S7 of the active goal: the #503 telemetry cohort and
+decision receipt, the narrow #496 refill repair, final local proof, the v3.2.0
+release, and its remote, public, and installed readbacks. The strongest claims
+are execution claims with durable evidence; future operator uptake and runtime
+relief remain unproven.
 
 ## Window
 
-From the Slice A checkpoint at `e8a4b2c9` through the Slice D verification and
-closeout-preparation checkpoint on 2026-08-04. The window included the packet
-implementation, the #502 runner repair, the #500/#501/#497 producer/export
-repairs, fresh-eye review rounds, the quality review, probe refreshes, the broad
-suite, the changed-line coverage repair, and the recurring-telemetry follow-up.
+The window runs from the goal's local slices and release preparation through the
+release-content commit `2a652b18de280fa50d0f1e46f9caebe41c70755a` and the
+post-publish evidence commit `a12b2779`, both on 2026-08-04. It includes the
+final public page and install readbacks recorded after publication.
 
 ## Evidence Summary
 
-- Strong: `charness-artifacts/critique/slice-b-semantic-review-packet.md` and
-  `.json` carry the shared question through the adapter; the exact-source test
-  and packet identity bind the source, mirror, and rendered section.
-- Strong: the worked application records concrete #499 and #491 instances and
-  rejects controls that vary observed form while leaving the semantic fact
-  unchanged.
-- Strong: three final angle reviewers plus a counterweight returned no
-  implementation blocker; boundary fingerprints were clean before every parent
-  write. The critique artifact records the independent review evidence.
-- Strong: `python3 scripts/run_standing_pytest.py --repo-root . --mode
-  read-only` reported 7028 passed in 42.76s. The closeout structural gates and
-  inventory/probe checks also passed.
-- Strong: the quality artifact now records the inventory's non-headline fields,
-  exact prose/structural review results, the broad run, and the Cautilus
-  ask-before-run non-claim. No Cautilus evaluation was run.
-- Strong: the retro prepare packet was consumed from
-  `charness-artifacts/retro/2026-08-03-221151-packet.md`.
-- Strong: the local closeout telemetry miner examined 1320 records and found
-  four recurring findings. The follow-up was filed as
-  [#503](https://github.com/corca-ai/charness/issues/503), with the create
-  ledger reporting `body_verified: true`.
-- Strong: #502's producer/consumer inspection found 17 assertions in three test
-  files, but no production reader of the text summary. The actual consumers are
-  terminal/CI-tail readers and runtime trend/budget tooling.
-- Strong: the final receipt now pairs each failed label with its verified log path
-  or `[log unavailable]`; aggregate telemetry records before the receipt so a
-  warning cannot displace it in a merged tail. Focused tests passed 51 and the
-  latest broad suite passed 7028.
-- Strong: one repair-read reviewer caught the post-summary telemetry warning
-  escape; later repair-read and current-packet reviewers approved the ordering.
-  Boundary fingerprints were clean around every parent write.
-- Strong: Slice D moved the exact goal-value contract into `goal_artifact_lib.py`,
-  narrowed export scanning to supported literal helper calls, and made adapter
-  loading/discovery source-or-flattened-layout aware. Source and generated
-  mirrors are identical at the repaired paths.
-- Strong: the hostile producer tests, exact import-call controls, generated
-  exported-validator subprocess, and direct changed-line producer exercised the
-  selected boundaries. The final standing runner reported 7048 passed in 44.52s.
-- Strong: a final causal fresh-eye read found the implementation proof useful but
-  the debug close ledger stale. The debug artifact was reconciled to current
-  ownership, per-issue invariants, sibling decisions, and final-consumer proof
-  before issue closeout drafting.
+- #503's selected cohort has one `phase=verify`/command key, 16 matching
+  entries, 12 completed and 4 failed parent records, 6,257.15 seconds total,
+  447.03-second median, 475.46-second peak, a 120-second budget, and
+  4,337.15 seconds of paired excess. The decision receipt is opt-in and
+  read-only; it changes no emitter schema, gate, or CI behavior. Measured local
+  relief is 0 seconds and is not presented as a success claim.
+- #496's repair is an exact field-scoped allowlist with configured siblings
+  preserved. The final release quality bundle reported 85 checks passed and 0
+  failed; the post-repair markdown-preview/miner focused suite reported 36
+  passed, and the renderer-specific suite reported 20 passed. Issues #496 and
+  #503 remain open.
+- The final deterministic lock completed at `2026-08-04T02:25:42Z` in 46.31
+  seconds, with the recorded checks passing. No Cautilus evaluation was run.
+- Release quality completed with 85 passed and 0 failed in 168.19 seconds.
+  The normal pre-push gate completed with 85 passed and 0 failed in about
+  162.8 seconds. Clean-checkout startup probes passed before publication.
+- The delegated release critique's clean second round recorded the release
+  claims conditions and the F9 branch/CI ordering limitation. The markdown
+  preview repair had a first bounded reviewer hold on portable `script` flags
+  and missing branch coverage (`019fcaaa-ea95-7413-9ef6-f3ebd6927d38`); after
+  repair, `019fcaad-ab74-7602-bf11-9e594cd55de1` accepted the source/plugin
+  pair and focused proof with a clean boundary verify.
+- The release-content SHA was read back through the GitHub branch and commit
+  APIs. Actions run `30874005717` read back at the exact SHA with both core and
+  changed-line mutation jobs successful. Tag `v3.2.0` resolves to that exact
+  release-content SHA. The release helper and an independent HTTPS page read
+  both confirmed the public release; the unauthenticated REST API returned 403
+  rate limiting and is recorded as unavailable, not as proof.
+- `charness update`, `charness version`, and `charness doctor` read back the
+  installed/source/cache surfaces at 3.2.0 with no cache drift. Baton reconcile
+  was explicitly n/a because `docs/handoff.md` has no release-version claim.
+  Full boundary evidence is in
+  `charness-artifacts/release/v3.2.0-public-readback.md`.
+- The host-log probe is persisted at
+  `charness-artifacts/probe/2026-08-04-goal-host-log-probe.md`. It found no
+  goal metric window, so its thread-wide signals do not support per-goal
+  token, tool, turn, or cost totals.
+- Packet consumed: `charness-artifacts/retro/2026-08-04-session-retro-packet.md`.
 
 ## Waste
 
-- Adding the new quality artifact changed the measured quality-artifact
-  corpus. The first broad run exposed four stale recorded-measurement values,
-  and the inventory-consumption test exposed that the artifact had not engaged
-  the exact declared fields. This was useful detection, but it created avoidable
-  rework because the quality artifact and its probe baselines were not treated
-  as one sync unit at first. (recurrence-class: measurement-baseline-sync)
-- The recurring telemetry stream reports gate-baseline runtime as a real cost,
-  not a reason to weaken proof: the standing quality suite recurred 16 times
-  with a 475.46-second peak, the release bundle 4 times with a 152.15-second
-  peak, the standing runner 4 times with a 208.32-second peak, and over-slice
-  runs recurred 37 times with a peak run of 4. These are measured local stream
-  signals, not proof that any particular gate should be removed. Issue #503 now
-  carries the tracked follow-up. (recurrence-class: closeout-runtime-owner)
-- The 42.76-second current broad run was not waste: it was the required second
-  evidence channel for a slice whose earlier focused checks could not see
-  corpus-measurement drift.
-- The first Slice C broad run caught a quality-artifact marker-shape omission:
-  semantic review markers were present but not in the exact inventory-consumption
-  form. The repair restored the literal markers and reran the broad suite, rather
-  than weakening the consumer validator. (recurrence-class: measurement-baseline-sync)
-- Slice D's first post-commit broad run refused the changed-line mutation lane
-  on two uncovered branches. This was not wasted safety cost: the refusal named
-  real uncovered behavior, and the direct producer rerun became clean after two
-  focused in-process tests were added. The avoidable waste was discovering those
-  branches after the first commit rather than running the producer immediately
-  after the focused test expansion. (recurrence-class: changed-line-proof-cadence)
-- The causal closeout read exposed stale debug prose after the code was repaired.
-  That was a real trust risk, not cosmetic churn: the carrier would have claimed
-  current ownership from a record that still said “candidate owners” and “tests
-  pending.” Reconciling the record and rebuilding its seam index was necessary
-  closeout work. (recurrence-class: closeout-record-currentness)
+- `truth-surface-rebinding` — the support repair changed reviewed truth
+  surfaces after the release critique, so the candidate scope, critique packet,
+  packet identity, and release evidence had to be rebound. The extra prep and
+  packet refreshes were necessary once the repair was real, but the avoidable
+  part was letting the release packet span an unfrozen support surface. Decision:
+  same waste, fix now. Proof: the final packet identity and candidate scope were
+  regenerated after the last reviewed repair.
+- `non-tty-proof-boundary` — the first release preparation exposed that a piped
+  `glow` invocation could produce a blank capture. The PTY fallback repair and
+  its first fresh-eye hold were real safety work, not cosmetic churn. Decision:
+  same waste, fix now. Proof: source/plugin parity, fallback tests, and the
+  second bounded review are recorded above.
+- `release-boundary-ordering` — the release helper's natural sequence did not
+  interpose remote branch CI before tag/public publication. The limitation was
+  caught by F9 before it escaped; the publish was manually split into branch
+  push, independent CI readback, tag/publication, and independent readback.
+  Decision: valid follow-up outside the slice. Proof: the release readback and
+  the durable D51 entry in `docs/deferred-decisions.md`.
+- `gate-baseline-runtime` — the release and pre-push gates measured about 168.19
+  and 162.8 seconds. This is quality debt and an optimization target, not a
+  reason to weaken floors or shrink test scope. Decision: valid follow-up
+  outside the slice. Proof: D51 records the named owner surface and reopen
+  trigger in `docs/deferred-decisions.md`.
+- `quality-gate-branch-coverage` — the first release prep found genuine
+  uncovered changed lines in the miner and renderer, requiring focused tests
+  and another full release gate. Decision: same waste, fix now. Proof: the
+  later 85-check release gate and the focused suites passed after those tests.
+- Missing host metric window was not treated as waste or backfilled by
+  inference. It is a measurement boundary and remains an explicit non-claim.
 
 ## Critical Decisions
 
-- Kept the semantic question as a reviewer-owned control. The comparison asks
-  whether observed form and semantic invariant vary together, and records
-  `unproven — defer` when the comparison cannot be made. This preserves P1/P3
-  judgment while making the intended reasoning portable.
-- Added the worked #499/#491 application and exact source-to-packet test before
-  closeout. A packet-presence claim alone would have shown delivery, not that
-  the question could distinguish a transport or reference proxy from its fact.
-- Refreshed the measured probe artifacts and D47 together after the quality
-  artifact changed the corpus. Excluding the new artifact would have hidden a
-  real source-of-truth change.
-- Filed #503 as off-goal tracked follow-up for recurring closeout-runtime and
-  over-slice telemetry; the active goal remains focused on its six issue
-  dispositions.
-- Kept `print_final_summary` as the owner of the current-run operator receipt and
-  kept `runtime-signals.json` as historical telemetry. The 17 distributed tests
-  remain distinct contracts; no new JSON sibling or renderer abstraction was
-  justified by a named consumer.
-- Moved aggregate runtime recording before the final summary after a fresh-eye
-  reviewer showed that a best-effort warning could otherwise become the last
-  merged output line.
-- Kept the #500/#501/#497 work as three explicit surface repairs rather than
-  inventing one universal “representation boundary” detector. The causal
-  reviewer confirmed the shared lesson but required distinct root causes,
-  invariants, and non-claims.
-- Treated the exported subprocess and the in-process changed-line tests as
-  complementary evidence: the subprocess proves the delivered layout, while
-  the in-process tests let the mutation producer see the mapped branches.
+- Kept #503's receipt opt-in and read-only. The local result is 0 seconds of
+  measured relief; no emitter schema, gate, or CI change was invented to make
+  the recurring signal look resolved.
+- Kept #496's repair field-scoped and allowlisted. The empty-value predicate was
+  not generalized to unrelated configured fields.
+- Added the PTY path only for the non-TTY capture boundary and retained a
+  direct `glow` fallback when `script` is missing or unsupported. This was
+  accepted only after a distinct second review read the repaired surface.
+- Split release publication around the remote branch/CI observation instead of
+  treating the release helper's exit code as CI proof.
+- Did not close issues #496 or #503; release/public/install proof does not imply
+  issue closure.
 
 ## Trends vs Last Retro
 
-The 2026-08-07 retro reported that broad proof caught defects missed by both a
-slice gate and bounded reviews, and that closeout figures needed a distinct
-claims observer. This slice repeats the same positive pattern in a smaller
-form: the broad suite caught stale measured baselines, while the delegated
-review and quality artifact kept future-efficacy claims explicitly unproven.
-The trend comparison is qualitative; this session has no adapter-provided
-token or tool-call metric.
+The immediately prior checked-in retro is for a different goal and has no
+comparable goal-scoped host metric window. The current probe likewise reports
+`Host metric window: absent`, so no numeric trend in tokens, turns, tools, or
+cost is claimed. Qualitatively, this session repeated the prior positive
+pattern that a distinct observer caught a proof-surface gap before publication,
+and converted the lesson into a durable follow-up rather than weakening a gate.
 
 ## North Star Alignment
 
-- Held P1/P3: the shared reference briefs a capable reviewer with one principle,
-  one worked application, and a comparison; it does not encode a semantic gate
-  or a long exception list.
-- Held P4/P5 at the proof-surface boundary: the authoring context was not the
-  only observer. Fresh-eye reviewers, a broad suite, probe readback, and the
-  quality artifact each supplied distinct evidence channels.
-- Mis-applied initially: the first quality record treated inventory citation as
-  sufficient consumption and left the probe denominator stale after adding a
-  new artifact. That was a form-passed/content-missing failure. The repair was
-  to record the fields and refresh the baselines, not to weaken the validator.
-- The run walked into the named failure signature “form-passed ≠
-  content-correct”: focused checks and structural closeout passed before the
-  broad measurement checks caught the stale corpus record.
-- Slice C repeated the same shape at a smaller boundary: focused runner tests
-  passed before the broad suite caught a literal quality-artifact consumption
-  marker mismatch. The second broad run was the completion evidence.
-- Slice D also held P4/P5: the mutation refusal and causal fresh-eye read were
-  distinct channels from the implementation author's focused proof. The initial
-  debug record misapplied “resolved” by leaving stale candidate-owner prose; the
-  repair made the evidence record current before any external close.
-- Slice D repeats the same lesson at the closeout boundary: implementation and
-  focused proof were not enough until a distinct causal reader checked the
-  durable debug record itself. This is qualitative; host token/tool metrics are
-  unavailable.
+- Held P1, P4, and P5 at the release boundary: local proof, remote commit/CI
+  readback, public page readback, and installed doctor/version readback were
+  treated as separate observations and channels.
+- Initially misapplied the capture boundary: a local green release preparation
+  did not prove that piped Markdown rendering was trustworthy, and the first
+  reviewer correctly held on the portable `script` assumption. The repair added
+  fallback behavior and branch proof before publication.
+- The failure signature was “terminal green is not remote/public proof.” The
+  branch/tag helper ordering issue was caught before publication, and the
+  manual sequence preserved the different-observer requirement.
+- The #503 and #496 issue boundaries remain honest: local implementation proof
+  is recorded, but remote issue closure is not claimed.
 
 ## Expert Counterfactuals
 
-- Engelbart’s system-improving lens would have treated the human method (the
-  reviewer question), language (the packet contract), and tool (the exact
-  packet test and inventory validator) as one system from the first quality
-  artifact edit. The next move is to bundle artifact creation with a fresh
-  measurement readback before declaring the quality record complete.
-- A direct independent-observer lens would have asked earlier: “Which number
-  changes merely because this artifact exists, and which consumer reads it?”
-  That question would have predicted the probe drift before the broad suite,
-  without turning the prediction into a semantic gate.
-- An Ousterhout-style design lens would have forced the shared value API and the
-  two-layout resolver to be named as the modules' stable boundaries before the
-  issue closeout carrier was drafted. A direct P4 lens would have asked “does
-  the debug record still describe the code that the carrier claims?” immediately
-  after implementation, saving the late reconciliation pass.
+- Engelbart's system-improving lens (human method + language + artifact/tool)
+  says the critique packet, release helper, and closeout readback should make
+  the branch/CI barrier executable and observable, not merely describe it in
+  prose. D51 is the durable next owner for that repair.
+- An Ousterhout-style lens would have made the release state machine's
+  transitions explicit: branch published, CI observed, tag published, public
+  release observed, install refreshed. The current helper bundles too much
+  ordering, which is why the session had to separate those transitions manually.
 
 ## Sibling Search
 
-- same layer: quality artifacts and recorded probes | decision: same waste, fix now | proof: refreshed both inventory probes and D47, then reran the pinned measurement tests
-- abstraction up: `run_slice_closeout.py` truth-surface sync | decision: valid follow-up outside the slice | proof: the recurring telemetry class is tracked in issue #503; follow-up: https://github.com/corca-ai/charness/issues/503
-- specialization down: critique packet and public-skill dogfood records | decision: intentional boundary | proof: packet delivery and reviewer uptake remain separate; no semantic meta-gate was added
-- mental-model siblings: issue and release closeout ledgers | decision: valid follow-up outside the slice | proof: this slice does not change those ledgers; follow-up: deferred active-goal-final-closeout
+- same layer: release helper `_publish_and_finalize` and the release quality
+  runner | decision: valid follow-up outside the slice | proof: inspected the
+  helper ordering and the measured 168.19/162.8-second gates; follow-up:
+  `docs/deferred-decisions.md#d51-release-branchci-barrier-and-quality-gate-runtime`
+- abstraction up: release adapter and the north-star publication boundary |
+  decision: intentional boundary | proof: the adapter remains host-portable and
+  the manual distinct-channel sequence is recorded in the public readback.
+- specialization down: `markdown_preview_render.py`, its source/plugin mirror,
+  and `check_glow_backend` | decision: same waste, fix now | proof: fallback
+  branches, source/plugin comparison, focused tests, and second-round review.
+- mental-model siblings: #503/#496 carriers, release notes, and final
+  disposition | decision: diagnostic-only | proof: each carrier keeps its own
+  owner, predicate, and proof channel; no universal semantic policy was added.
 
 ## Next Improvements
 
-- workflow: when a quality artifact cites an inventory or probe, run its
-  measurement and consumer validator in the same pre-broad checkpoint before
-  recording the artifact as complete.
-- capability: let the quality closeout packet surface the current corpus
-  denominator beside a recorded probe when the corpus itself changes; issue
-  #503 owns the broader runtime/over-slice decision.
-- memory: keep the semantic reviewer question and the worked #499/#491
-  application linked from the Slice B critique record so future reviewers see
-  the invariant/owner/instance/counterexample shape.
-- workflow: define truncation boundaries as a complete operator receipt — verdict,
-  failed identity, and recovery path — and test the final line, not only a tail
-  window. Keep best-effort telemetry writes before that receipt.
-- capability: do not promote rolling telemetry into a structured per-run receipt
-  without a named consumer, run identity, retention, and stale-state contract.
-- workflow: run the changed-line coverage producer immediately after any focused
-  branch-coverage repair; applied in this run by adding direct in-process tests
-  beside the subprocess proof and rerunning the producer.
-- memory: treat a resolved debug artifact's ownership, invariant, sibling, and
-  proof paragraphs as closeout claims that must be refreshed with the code;
-  applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`.
+- Workflow: freeze the release candidate and refresh its critique packet only
+  after the final implementation surface is stable.
+- Capability: teach the release helper to expose and persist the branch-push,
+  remote-CI, tag, public-release, and install-refresh states with explicit
+  observers; D51 owns this follow-up.
+- Quality: run changed-line coverage immediately after focused branch additions
+  and before the broad release gate; this was applied in this session.
+- Memory: require a host metric window for any per-goal host-cost claim; when it
+  is absent, persist the probe and state the non-claim.
+- Artifact: keep release-content proof separate from post-publication remote,
+  public, and installed readbacks; this was applied in the two release records.
 
 ## Packet Consumed
 
-Packet Consumed: charness-artifacts/retro/2026-08-03-224212-packet.md
+Packet Consumed: `charness-artifacts/retro/2026-08-04-session-retro-packet.md`
+
+## Host Metrics
+
+Host metric window: absent. See
+`charness-artifacts/probe/2026-08-04-goal-host-log-probe.md`; no per-goal host
+metric total is claimed.
 
 ## Persisted
 
-Persisted: yes: charness-artifacts/retro/2026-08-04-session-retro.md
+Persisted: yes: `charness-artifacts/retro/2026-08-04-session-retro.md`

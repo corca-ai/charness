@@ -1,6 +1,6 @@
 # Achieve Goal: Make closeout cost actionable, then repair #496
 
-Status: active
+Status: complete
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md`
 
@@ -9,13 +9,11 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: G — plan, push, and release the final state in order.
-- Current slice intent: complete claims/release review, run the final
-  verification lock, then use the separately verified push/CI and release
-  readback boundaries.
-- Next action: commit the locally proven bundle, bind the exact
-  `v3.1.1..candidate` scope, then perform the ordered push/CI and
-  release/readback boundaries.
+- Current slice: G — final release and closeout complete.
+- Current slice intent: preserve separate local, remote, public, installed,
+  and retro evidence for the completed S1–S7 sequence.
+- Next action: none — the final disposition, retro, and post-publish evidence
+  are committed and pushed; D51 is the named structural follow-up.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -247,7 +245,7 @@ for this bounded goal.
 | D | Close #503 locally before changing scope | Sequential work prevents #503's cost model from contaminating #496's semantic predicate decision | `charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md` records selected cohort/owner, action or option-comparison no-change result, residuals, exact changed paths, explicit “no predicate recommendation for #496,” and fresh-observer acceptance; no unresolved shared owner; no remote claims; this checkpoint unlocks E | completed |
 | E | Reproduce and frame #496 independently | #496 is an independent hollow-refill predicate problem and must not inherit #503's answer; the known starting symptom is an inert empty-string default such as `commands.dry_run` reported as a refill and a warning that recommends dropping a real configuration block | reproduction of the end-to-end symptom, semantic invariant, axis-varying counterexample, producer/consumer map, explicit #503 handoff non-claim, critique | completed |
 | F | Repair and prove #496 locally | A warning or type-shaped proxy must not be mistaken for the semantic fix | focused positive/negative tests, changed-line proof, second review if verdict logic changes, local closeout | completed |
-| G | Plan, push, and release the final state in order | The irreversible boundary belongs after both local tracks are proven and CI is read back after push | release critique/claims review and target plan, final quality gate, gated push, independent remote commit/CI readback, gated release/tag, independent release/tag readback, explicit remote issue non-claims | in progress |
+| G | Plan, push, and release the final state in order | The irreversible boundary belongs after both local tracks are proven and CI is read back after push | release critique/claims review and target plan, final quality gate, gated push, independent remote commit/CI readback, gated release/tag, independent release/tag readback, explicit remote issue non-claims | completed |
 
 ## Operator Decision Queue
 
@@ -258,15 +256,16 @@ out of scope unless separately requested.
 
 ## Coordination Cues
 
-- Routing: prove + release — claims review is recorded; final broad proof,
-  frozen candidate scope, and the ordered remote/public readbacks remain.
+- Routing: impl, quality, issue, release, retro — selected from installed skill
+  metadata and model judgment for the recorded implementation, proof, issue,
+  release, and session-closeout phases.
 - `Gather: n/a — this draft uses checked-in handoff, North Star, retro, and
   issue evidence; no new external source was introduced.`
-- `Release: planned — operator-granted final phase only; after #503 and #496
-  local proof, push and independently read back commit/CI, then publish and
-  independently read back release/tag state.`
-- `Issue closeout: n/a — remote issue closure was not requested; push/release
-  must not be narrated as issue CLOSED.`
+- Release: charness-artifacts/release/v3.2.0-public-readback.md — v3.2.0
+  release-content SHA, remote CI, tag/public readback, and installed refresh
+  are recorded.
+- Issue closeout: n/a — remote issue closure was not requested; #496 and #503
+  remain open, and push/release is not narrated as issue CLOSED.
 
 Phase-appropriate routing for this run, chosen from installed skill metadata and
 model judgment — never a hard-coded phase-to-skill list here. Use the catalog
@@ -401,7 +400,7 @@ applies.
 - Lessons carried forward: A verdict-logic repair owes a second review of the repaired surface. A selected-key parity test can leave an unproven receipt; compare the complete consumer payload and stderr across source and shipped entrypoints.
 - Metrics: Local host tool metrics are not exposed. Focused result: 85 passed in 1.87s. Measured #496 runtime relief is not applicable; the repair changes report truthfulness and warning safety, not the closeout gate or execution cost.
 
-### Slice 7: Freeze local proof and prepare the ordered release boundary
+### Slice 7: Freeze local proof and complete the ordered release boundary
 
 - Objective: Complete the release critique/claims review and final local proof,
   then preserve the exact conditions required before any remote or public state
@@ -410,24 +409,30 @@ applies.
   distinguish the full unreleased candidate from this goal's two slices and
   keep local green, remote CI, public release, installed refresh, and baton
   observations separate.
-- Commits: No commit yet; the local bundle is ready for its first meaningful
-  commit after packet rebinding.
+- Commits: release-content commit `2a652b18de280fa50d0f1e46f9caebe41c70755a`
+  and post-publish evidence commit `a12b2779`.
 - What changed: release critique and packet, v3.2.0 notes, delegated claims
-  review, midpoint claims update, and the final verification-lock record. No
-  version/tag/push/public-release mutation has occurred.
+  review, final verification-lock record, release/public/install readbacks,
+  host-log probe, final retro, D51 follow-up, and final disposition. The tag
+  remains pinned to the release-content commit; post-publish records are not
+  silently included in the tag claim.
 - Alternatives rejected: Did not run Cautilus because policy is ask-before-run
-  and the deterministic dogfood decision is recorded. Did not call the public
-  release helper before its branch-push/CI ordering was resolved. Did not claim
-  current stream population as a fixed historical number; the #503 carrier's
-  1,326-record snapshot remains time-bound.
+  and the deterministic dogfood decision is recorded. Did not treat the
+  release helper's terminal green as CI proof; branch push, remote CI readback,
+  tag/publication, and independent public readback were kept separate. Did not
+  claim current stream population as a fixed historical number; the #503
+  carrier snapshot remains time-bound.
 - Targeted verification: Release critique round 2 returned four findings with
   clean boundary windows; the required rollback, compatibility, source-tree
   probe-label, and release-boundary wording repairs are recorded. The distinct
-  claims observer returned clean boundary verification and accepted the notes
-  subject to four pre-ship conditions. The final verification lock completed
-  with all recorded structural, synchronization, validation, standing-pytest,
-  scan-hygiene, and browser-orphan checks passing; durable broad-proof record:
-  `.charness/closeout/broad-pytest-proof.json`, 46.31 seconds.
+  claims observer accepted the notes subject to four pre-ship conditions. The
+  final verification lock completed with all recorded structural,
+  synchronization, validation, standing-pytest, scan-hygiene, and
+  browser-orphan checks passing; durable broad-proof record:
+  `.charness/closeout/broad-pytest-proof.json`, 46.31 seconds. Release quality
+  and pre-push gates both reported 85 passed and 0 failed. Remote APIs and
+  Actions read back the exact release SHA; the public HTTPS page, tag, update,
+  version, doctor, and baton observations are recorded separately.
 - Test duplication pressure: The final lock's duplicate-ratchet and Python
   length checks passed; the near-limit warnings remain advisory and are not
   disguised as a clean code-size result.
@@ -436,15 +441,18 @@ applies.
   no incorrect local figure, but required future wording until remote/public/
   installed readbacks exist. These are active release gates, not deferred
   implementation notes.
-- Off-goal findings: No issue was closed, no Cautilus evaluation ran, no gate
-  was weakened, and no remote/public/install state was changed.
+- Off-goal findings: No issue was closed, no Cautilus evaluation ran, and no
+  gate was weakened. D51 is the explicit follow-up for release-helper ordering
+  and quality-gate runtime; no implementation of that follow-up is claimed in
+  this slice.
 - Lessons carried forward: Freeze the all-unreleased candidate and notes before
   publishing; use a separate branch/CI observer before tag/public release; keep
   post-publication install and baton evidence as observations rather than
   terminal-green completion.
-- Metrics: Local host tool metrics are unavailable. Final lock elapsed time was
-  46.31 seconds in the durable broad-proof record; no remote CI or publication
-  timing is claimed yet.
+- Metrics: The host-log probe found no goal metric window, so no per-goal host
+  tool metric is claimed. Final lock elapsed time was 46.31 seconds; release
+  quality was 168.19 seconds and pre-push was about 162.8 seconds. These are
+  measured local gate observations, not a runtime-relief claim.
 
 ## Context Sources
 
@@ -528,44 +536,42 @@ created by this scope update.
 
 ## Final Verification
 
-Final local proof is now recorded. The midpoint claims review is bound at
-`charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md`; it accepts
-S1 through S6 locally after the final lock; S7 remains the remote/public
-boundary.
-The separate release claims review is bound at
-`charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md`; it accepts
-the notes with four explicit pre-ship conditions and does not promote remote or
-publication claims.
+S1–S6 are accepted locally by the midpoint claims review at
+`charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md`. S7 is
+accepted by the release claims review, the exact remote/API/Actions readback,
+and the public/install evidence in
+`charness-artifacts/release/v3.2.0-public-readback.md`.
 
 Broad verification lock: `python3 scripts/run_slice_closeout.py --repo-root .
 --verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review`
 completed at `2026-08-04T02:25:42Z`; durable proof is
 `.charness/closeout/broad-pytest-proof.json` (46.31 seconds, all recorded
-checks passed). The lock included standing pytest, structural/artifact
-validation, sync, packaging, docs, skill, Cautilus-policy, shell, scan-hygiene,
-and browser-orphan checks.
+checks passed). Release quality and the normal pre-push gate each reported 85
+passed and 0 failed. No Cautilus evaluation was run.
 
-Retro: pending final closeout — `charness:retro` is required after the release
-readbacks and before the goal is marked complete.
-Host log probe: unavailable — host-level tool logs are not exposed; no token,
-turn, or tool-count claim is made.
-Disposition review: S1–S6 locally accepted; S7 remains pending the exact remote
-commit/CI and independent release/tag/version readbacks.
+Remote/public/install boundary: release-content SHA
+`2a652b18de280fa50d0f1e46f9caebe41c70755a` was read back through GitHub branch
+and commit APIs; Actions run `30874005717` and both required jobs succeeded;
+tag `v3.2.0` resolves to that SHA; the public HTTPS page returned 200; and
+`charness update`, `version`, and `doctor` read back 3.2.0 with no cache drift.
+The unauthenticated REST API returned 403 rate limiting and is not claimed as
+proof. See `charness-artifacts/release/v3.2.0-public-readback.md`.
+
+Retro: charness-artifacts/retro/2026-08-04-session-retro.md
+Host log probe: charness-artifacts/probe/2026-08-04-goal-host-log-probe.md
+The host metric window was absent, so no per-goal host cost total is claimed.
+Disposition review: charness-artifacts/issue/2026-08-04-make-recurring-closeout-cost-actionable-final-disposition.md
 
 ## User Verification Instructions
 
-The operator has resolved the scope. Activate with:
-
-`/goal @charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md`
-
-At closeout, verify S1–S6 locally first. Then run S7 in order: release
-critique/claims review and target plan, push, independent remote commit/CI
-readback for the exact SHA, release/tag publication, and independent
-release/tag readback. Do not claim remote issue CLOSED.
+Closeout is complete. S1–S7 and their non-claims are recorded in the final
+disposition. Issues #496 and #503 remain open; no remote issue CLOSED claim is
+made.
 
 ## Auto-Retro
 
-Retro dispositions: pending final closeout — no disposition is claimed before
-the final retro reads the completed work unit.
-Structural follow-up: pending final closeout — the final retro must scan the
-chosen waste class's siblings before closeout.
+Retro dispositions: applied: the final retro records the packet consumed,
+host-log non-claim, repaired support-boundary waste, and D51 release-helper /
+quality-runtime follow-up.
+Structural follow-up: none — D51 records the owner and reopen trigger, but no
+structural gate implementation is claimed in this completed slice.
