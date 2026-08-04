@@ -1,6 +1,6 @@
 # Achieve Goal: Make retro persistence goal-aware without breaking session retros
 
-Status: active
+Status: complete
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-retro-persistence-goal-aware.md`
 
@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: Slice 1 is implemented and locally proven; final bundle
-  proof and closeout records remain.
+- Current disposition: Slice 1 and its closeout bundle are implemented and
+  locally proven; remote issue closure remains explicitly unclaimed.
 - Current slice: goal-aware persistence validation and no-write proof.
 - Current slice intent: make the owning goal an explicit, opt-in input at the
   retro write boundary and prove mismatches fail before any write. Once active,
   this names the reviewable-intent unit in progress; critique and broad proof
   do not re-fire within one unchanged intent.
-- Next action: run the verification-locked closeout bundle, then flip the
-  artifact only if its final evidence remains complete.
+- Next action: none — the local goal is complete; #504 remains open until its
+  separate remote closeout floor can be satisfied.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused and fresh-eye proof at slice boundaries; strongest applicable proof
   at final closeout.
@@ -113,7 +113,7 @@ a goal. Resolve issue #504 with local proof and an honest closeout record.
 | A | Map persistence callers and choose the identity API | The issue direction is a hypothesis; verify its premise before coding | Caller/consumer map, exact `Goal:` grammar, sibling and generated-surface inventory | completed |
 | B | Add optional goal-aware persistence validation | The write boundary is where wrong ownership should stop | Library + CLI input, exact field comparison, pre-write refusal, unchanged session mode | completed |
 | C | Prove positive and negative behavior | Shape-valid output is not enough; mismatches must be unable to write silently | Focused direct-library/CLI tests, full side-effect-tree snapshot, source/plugin parity | completed |
-| D | Close out the capability and issue | The fix needs durable evidence and separate remote state proof | Locked quality proof, retro, claims review, carrier/readback | in progress |
+| D | Close out the capability and issue | The fix needs durable evidence and separate remote state proof | Locked quality proof, retro, claims review, carrier/readback | completed |
 
 ## Operator Decision Queue
 
@@ -147,8 +147,9 @@ active frame and Slice Plan.
 
 - Objective: Move achieve goal identity validation to the shared retro write boundary and prove mismatch refusal before every derived write.
 - Why this approach: The caller map showed the shared library owns the first artifact, event, summary, and index writes while achieve only checked identity later.
-- Commits: `9768f95d` (`fix: bind retro persistence to owning goals`); follow-up
-  durable closeout records remain to be committed after final proof.
+- Commits: `9768f95d` (`fix: bind retro persistence to owning goals`),
+  `9540ee21`, `c655e9aa`, and `24108669`; subsequent durable closeout records
+  are committed with this complete status.
 - What changed: scripts/retro_persistence_lib.py and CLI; achieve closeout token binding; retro/achieve workflow instructions; synchronized plugins/charness mirrors; direct-library/CLI tests; debug and critique records.
 - Alternatives rejected: Rejected universal goal requirements because release/session callers are intentionally goal-free; rejected semantic lesson-quality validation and #496 combination.
 - Targeted verification: 13-test initial proof, 103-test repair proof, 106-test pre-lock proof, 111 focused tests after the heading-boundary and slug-canonicalization repairs, then 112 tests with the maintained achieve/retro caller-contract regression, and 115 after direct coverage for the defensive canonicalization/path branches; source/plugin diffs are identical; reviewer boundary fingerprints were clean for all initial/repair windows and the recorded repair reads.
@@ -250,15 +251,22 @@ Pre-lock gate: completed — `run_slice_closeout.py --skip-broad-pytest
 --ack-cautilus-skill-review` completed with all structural, sync, and
 deterministic verify phases passing; broad pytest was intentionally skipped by
 the pre-lock policy.
+Locked gate: completed — `run_slice_closeout.py --verification-lock
+--refresh-broad-pytest-proof --produce-mutation-coverage` passed its
+deterministic bundle, broad standing pytest (7087 passed in 41.91s), the
+mutation producer plus the markdown-preview coverage target, and the
+changed-line mutation consumer. No gate was weakened; no Cautilus evaluation
+was run.
 Retro: charness-artifacts/retro/2026-08-04-retro-persistence-goal-aware-closeout.md
 Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window was requested, so host efficiency is not claimed.
 Disposition review: charness-artifacts/critique/2026-08-04-retro-persistence-goal-aware-disposition-review.md
+Issue state: OPEN in the earlier adapter read; remote closure is not claimed because host-level caller-enforcement proof and the issue closeout floor were not satisfied.
 
 ## User Verification Instructions
 
-After activation, follow the Slice Plan. At closeout, run the documented
-positive, mismatch, and legacy-session commands from the final verification
-record and inspect the no-write proof before accepting #504 as closed.
+The local goal closeout is complete. The documented positive, mismatch, and
+legacy-session commands reproduce the local proof; do not treat #504 as closed,
+because remote issue closure remains deferred behind its separate closeout floor.
 
 ## Auto-Retro
 

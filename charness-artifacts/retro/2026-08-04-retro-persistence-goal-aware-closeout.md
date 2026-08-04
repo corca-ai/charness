@@ -50,8 +50,10 @@ not another local writer.
 
 - Focused proof: 115 persistence, goal-library, and disposition tests passed.
 - Pre-lock deterministic closeout: completed with broad pytest intentionally skipped.
-- Locked broad and mutation results: pending — the frozen closeout bundle has not
-  run yet, so no locked result is claimed; no Cautilus evaluation was requested.
+- Locked broad and mutation results: completed — broad standing pytest passed
+  7087 tests in 41.91s; the mutation producer and changed-line mutation
+  consumer passed with the additional markdown-preview target; no Cautilus
+  evaluation was requested.
 - Non-claims: host-installed behavior, provider/live behavior, and remote issue closure
   are not established by this local artifact.
 
