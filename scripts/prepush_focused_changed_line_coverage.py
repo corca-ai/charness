@@ -165,10 +165,16 @@ def _emit(payload: dict, *, as_json: bool) -> None:
 def _focused_pytest_command(recommendation: dict) -> str | None:
     """The suggester's command, normalized to something coverage can instrument.
 
-    The suggester emits a `run_standing_pytest.py` invocation for operator use;
-    `run_test_coverage` instruments only a bare pytest command. Rebuilding it from
-    the recommendation's own target list keeps ONE source of truth for WHICH tests
-    run — the mapping — while changing only HOW they are launched.
+    The suggester emits a `run_standing_pytest.py` invocation for operator use, and
+    the producer can instrument that runner as a child process. Keeping the runner
+    here makes the focused lane inherit its host-safe xdist, worker-cap, scheduler-
+    compatibility, and external-temp policy instead of maintaining a second copy.
+    Rebuilding the target flags from the recommendation keeps ONE source of truth
+    for WHICH tests run — the mapping — while changing only HOW they are launched.
+
+    `--include-release-only` preserves the old bare-pytest command's scope. The
+    canonical runner otherwise defaults to `-m not release_only`, which would make
+    this runtime optimization silently narrow the proof set.
     """
     targets = sorted({
         target
@@ -177,7 +183,18 @@ def _focused_pytest_command(recommendation: dict) -> str | None:
     })
     if not targets:
         return None
-    return "python3 -m pytest -q " + " ".join(shlex.quote(target) for target in targets)
+    return shlex.join(
+        [
+            "python3",
+            "scripts/run_standing_pytest.py",
+            "--repo-root",
+            ".",
+            "--mode",
+            "read-only",
+            "--include-release-only",
+            *(token for target in targets for token in ("--pytest-target", target)),
+        ]
+    )
 
 
 

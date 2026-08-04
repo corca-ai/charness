@@ -11,6 +11,7 @@ clean run, on the exit code and in the payload.
 from __future__ import annotations
 
 import json
+import shlex
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -120,16 +121,24 @@ def test_warning_lines_use_the_head_run_quality_actually_surfaces(gate, capsys) 
 
 
 def test_focused_command_is_instrumentable_pytest(gate) -> None:
-    """The suggester emits a `run_standing_pytest.py` wrapper for operator use, which
-    coverage cannot instrument. Rebuilding from the same mapping keeps ONE source of
-    truth for which tests run while changing how they are launched."""
+    """The focused lane reuses the canonical runner's scheduling and temp policy."""
     command = gate._focused_pytest_command(
         _recommendation(mapped_tests_by_file={"a.py": ["tests/test_b.py"], "c.py": ["tests/test_a.py", "tests/test_b.py"]})
     )
 
-    assert command.startswith("python3 -m pytest -q ")
-    # Deduplicated and ordered, so two files sharing a test do not run it twice.
-    assert command.endswith("tests/test_a.py tests/test_b.py")
+    tokens = shlex.split(command)
+    assert tokens[:6] == [
+        "python3",
+        "scripts/run_standing_pytest.py",
+        "--repo-root",
+        ".",
+        "--mode",
+        "read-only",
+    ]
+    assert "--include-release-only" in tokens
+    assert tokens.count("--pytest-target") == 2
+    assert tokens[tokens.index("--pytest-target") + 1] == "tests/test_a.py"
+    assert tokens[tokens.index("--pytest-target", tokens.index("--pytest-target") + 1) + 1] == "tests/test_b.py"
     assert gate._producer.is_instrumentable_pytest_command(command)
 
 

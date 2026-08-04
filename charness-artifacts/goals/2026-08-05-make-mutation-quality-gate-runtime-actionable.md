@@ -1,6 +1,6 @@
 # Achieve Goal: Make mutation and quality-gate runtime actionable without weakening proof floors
 
-Status: draft
+Status: active
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-mutation-quality-gate-runtime-actionable.md`
 
@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-05-make-mutation-quality-gate-runtime-actionable.md` after confirming the draft is
-  still intended.
+- Current slice: B — canonical-runner mutation coverage candidate implemented;
+  post-implementation proof and matched receipts remain.
+- Current slice intent: preserve the mapper's exact focused test scope while
+  moving scheduling, worker caps, version compatibility, and temp isolation
+  back to the canonical standing runner. The slice spans the focused producer,
+  its worker-coverage test, and the durable candidate evidence below.
+- Next action: run the pre-lock closeout, commit the candidate so the changed-
+  line consumer can judge the actual edited pool, then collect three matched
+  post-change full-command receipts.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -114,8 +115,8 @@ only; this goal does not close #505, push, publish, or claim remote CI.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Map the mutation critical path and its owner | The prior goal proved the CLI family is not the mutation bottleneck | Three current baseline receipts, mapper output, phase/consumer manifest, proof ledger | pending |
-| B | Falsify or implement one owned structural candidate | A named owner and materiality test are required before code changes | Matched before/after full-command runs, focused preservation checks, rollback/no-safe-change decision | pending |
+| A | Map the mutation critical path and its owner | The prior goal proved the CLI family is not the mutation bottleneck | Three current baseline receipts, mapper output, phase/consumer manifest, proof ledger | completed — recorded with Slice 1 before implementation |
+| B | Falsify or implement one owned structural candidate | A named owner and materiality test are required before code changes | Matched before/after full-command runs, focused preservation checks, rollback/no-safe-change decision | in progress |
 | C | Lock the decision and close honestly | Runtime relief is provisional until independently observed | Final quality, fresh-eye review, complete validator, retro, and explicit #505 follow-up | pending |
 
 ## Operator Decision Queue
@@ -150,6 +151,34 @@ applies.
   and issue closeout.
 
 ## Slice Log
+
+### Slice 1: B — Make focused mutation coverage use the canonical runner
+
+- Phase/owner manifest: `run-quality.sh` queues `check-changed-line-mutation-coverage`;
+  `prepush_focused_changed_line_coverage.py` owns the focused producer and
+  consumer invocation; `suggest_mutation_coverage_command.py` owns changed-pool
+  to standing-test mapping; `mutation_coverage_producer.py` owns coverage setup,
+  shard combine, and the focused artifact; `check_changed_line_mutation_coverage.py`
+  owns the changed-line verdict; `run_standing_pytest.py` owns xdist activation,
+  worker width, scheduler compatibility, and external temp isolation. The
+  mapped pool before this edit was `scripts/retro_persistence_lib.py`,
+  `scripts/validate_inventory_consumption.py`,
+  `skills/public/achieve/scripts/goal_artifact_closeout_evidence.py`, and
+  `skills/public/retro/scripts/persist_retro_artifact.py`; all four mapped to
+  30 standing test files and 667 collected tests. This is the migration unit,
+  not a file-count candidate list.
+
+- Objective: Replace the focused changed-line coverage producer's serial bare-pytest launch with the canonical standing runner, preserving the mapped target set, release_only scope, subprocess coverage, focused artifact path, and consumer verdict semantics.
+- Why this approach: Slice A established the current owner: check-changed-line-mutation-coverage consumes 120.4–120.9 seconds of a 123.5–124.0 second read-only quality run. The mapper selects four changed pool files, 30 standing test files, and 667 collected tests. An unmodified xdist spike over the same mapped tests passed and exported coverage in 47.68 seconds, clearing the fixed ten-second materiality bar before implementation.
+- Commits: Not committed yet; the implementation and goal evidence are the current worktree slice.
+- What changed: scripts/prepush_focused_changed_line_coverage.py now emits python3 scripts/run_standing_pytest.py with repeated sorted --pytest-target flags and explicit --include-release-only, so worker caps, scheduler-version compatibility, affinity, and external temp isolation remain owned by the canonical runner. Tests pin exact target multiplicity and prove two xdist workers export subprocess coverage into the focused JSON.
+- Alternatives rejected: Rejected hand-assembled -n 16 flags because they duplicate runner portability policy and fail on missing/old xdist or constrained affinity. Rejected mapper/test-scope changes because the measured owner is launch scheduling, not target discovery. Broad coverage, verdict semantics, unmapped-file policy, remote CI, release, push, issue close, and Cautilus remain out of scope.
+- Targeted verification: Three sequential pre-change ./scripts/run-quality.sh --read-only receipts passed 85/0: totals 123.96s, 123.75s, 124.25s; changed-line mutation 120.6s, 120.4s, 120.9s. The unmodified xdist coverage spike passed 667 tests and exported coverage in 47.68s. Pre-edit focused producer/consumer suite: 57 passed. After the implementation and probe repair: 57 passed. The first real post-edit gate run reached the canonical runner in 50.42s, then correctly returned exit 3/unestablished because the mutation-pool source file was uncommitted; no clean verdict is claimed until the slice is committed and rerun.
+- Test duplication pressure: No production test family was pruned. One existing integration test was strengthened with two temporary test files and worker identity records; no duplicate-pressure expansion beyond the focused proof was introduced.
+- Critique: Delegated critique executed with three distinct unnamed Codex reviewers: problem framing, diagnostic/boundary ownership, and operational counterweight. All converged on reusing the canonical runner, preserving release_only explicitly, and proving worker-level coverage. The prepared packet is `charness-artifacts/critique/2026-08-04-194549-packet.md` with its JSON binding beside it. Boundary fingerprint verification was parent-attributed for the three edited paths with no undeclared drift. Reviewer envelopes were unbound on this Codex host; reviewers performed read-only inspection by instruction. Findings received. No verdict logic changed, so the second repaired-surface round is not triggered.
+- Off-goal findings: No external source or side effect was added. No push, release, remote CI, issue close, or Cautilus run occurred. Cross-invocation locking for the fixed focused artifact remains deferred and predates this candidate.
+- Lessons carried forward: A focused coverage producer is still a proof boundary even when it only changes scheduling. Reuse the canonical runner instead of copying worker policy, and make scope changes such as release_only inclusion explicit when translating a wrapper command.
+- Metrics: Baseline receipt sources: /tmp/charness-mutation-goal-baseline-1.log, -2.log, -3.log. Candidate spike source: /tmp/charness-mutation-xdist-spike.log. Candidate gate source: /tmp/charness-mutation-xdist-candidate-gate.log. These receipts establish local Linux x86_64 / Python 3.10.12 behavior only; no host-wide token, cost, provider, or remote claim is made.
 
 ## Context Sources
 

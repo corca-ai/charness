@@ -80,30 +80,41 @@ def test_standing_runner_child_process_reaches_coverage_json(tmp_path: Path) -> 
     """The focused runner adds a subprocess boundary; prove coverage crosses it."""
     from scripts import mutation_coverage_producer as prod
 
+    pytest.importorskip("xdist", reason="worker coverage probe requires pytest-xdist")
     repo = tmp_path / "repo"
     (repo / "scripts").mkdir(parents=True)
     (repo / "tests").mkdir()
     (repo / "scripts" / "demo.py").write_text(
         "def answer():\n    return 42\n", encoding="utf-8"
     )
-    (repo / "tests" / "test_demo.py").write_text(
+    test_source = (
+        "import os\n"
+        "from pathlib import Path\n\n"
         "from scripts.demo import answer\n\n"
-        "def test_answer():\n    assert answer() == 42\n",
-        encoding="utf-8",
+        "def test_answer():\n"
+        "    worker = os.environ.get('PYTEST_XDIST_WORKER', '')\n"
+        "    assert worker.startswith('gw')\n"
+        "    Path(__file__).parents[1].joinpath(f'worker-{worker}').write_text(worker)\n"
+        "    assert answer() == 42\n"
     )
+    (repo / "tests" / "test_demo_one.py").write_text(test_source, encoding="utf-8")
+    (repo / "tests" / "test_demo_two.py").write_text(test_source, encoding="utf-8")
     coverage_json = repo / "coverage.json"
     data_file, rcfile, env = prod._sampling.prepare_plain_coverage(repo, coverage_json)
     runner = Path(__file__).resolve().parents[2] / "scripts" / "run_standing_pytest.py"
     command = prod.instrument_broad_command(
         f"python3 {runner} --repo-root {repo} --mode read-only "
-        "--pytest-target tests/test_demo.py",
+            "--pytest-target tests/test_demo_one.py "
+            "--pytest-target tests/test_demo_two.py",
         data_file,
     )
 
+    env["CHARNESS_PYTEST_WORKERS"] = "2"
     result = subprocess.run(
         shlex.split(command), cwd=repo, env=env, check=False, capture_output=True, text=True
     )
     assert result.returncode == 0, result.stdout + result.stderr
+    assert len(list(repo.glob("worker-gw*"))) == 2
     prod._sampling.combine_and_export_coverage(
         repo, rcfile, data_file, coverage_json, env, show_contexts=False
     )
