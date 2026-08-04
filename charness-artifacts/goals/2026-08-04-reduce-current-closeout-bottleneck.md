@@ -1,6 +1,6 @@
 # Achieve Goal: Reduce the current closeout bottleneck without weakening proof
 
-Status: draft
+Status: active
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md`
 
@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
+- Current slice: Slice A — current closeout journey baseline and target selection.
 - Current slice intent: reproduce the current closeout critical path before
   changing any gate, runner, test scope, or proof surface.
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md` after confirming the draft is still intended.
+- Next action: run comparable timed baselines for the full read-only quality path and standing-pytest path, then select one current critical-path seam.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   repeated timing and fresh-eye proof at slice boundaries; strongest local
   proof at final closeout.
