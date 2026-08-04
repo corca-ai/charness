@@ -1,11 +1,22 @@
 {
-  "artifacts": 107,
+  "_provenance": {
+    "baseline_check": "Original 2026-08-01 baseline check covered 106 artifacts. The current measurement is refreshed over 108 artifacts after the bounded CLI-family manifest and supporting probe artifacts changed the quality corpus; no detached-tree validator comparison is claimed.",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-04",
+    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused artifacts and deferred as D47.",
+    "repo_head_at_run": "23f60313ca9c58a4bac235166966b87a5f3bbb37",
+    "synchronized_after": "The quality corpus changed when the bounded CLI-family manifest was added; the current floor measurement was regenerated from the repository-owned measurement script.",
+    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains 5 and no current citation drops below its requirement.",
+    "worktree": "dirty: goal closeout artifacts are being finalized"
+  },
+  "artifacts": 108,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 107,
+    "not-claimed": 108,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -1223,6 +1234,15 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
+      "commit_state": "uncommitted",
+      "declared_date": null,
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-04",
+      "path": "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
       "commit_state": "dated",
       "declared_date": "2026-08-04",
       "exemption": "not-claimed",
@@ -1238,16 +1258,5 @@
       "last_commit_date": "2026-08-04",
       "path": "charness-artifacts/quality/latest.md"
     }
-  ],
-  "_provenance": {
-    "baseline_check": "Original 2026-08-01 baseline check covered 106 artifacts: the repaired validator and HEAD produced the same four pre-existing failures, with no newly refused or newly passing rows. The current measurement is refreshed over 107 artifacts after the quality corpus changed; this refresh does not claim a new detached-tree validator comparison.",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-04",
-    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused artifacts and deferred as D47.",
-    "repo_head_at_run": "9768f95dcde783fd128e3ad21fb8f6d2973760c1",
-    "worktree": "clean",
-    "synchronized_after": "The quality corpus changed after the 2026-08-01 probe: the rolling quality/latest.md pointer now resolves to a non-inventory review, and this slice added one quality artifact. The current tree was remeasured before final closeout.",
-    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains 5 and no current citation drops below its requirement."
-  }
+  ]
 }

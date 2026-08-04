@@ -1,0 +1,185 @@
+# Bounded CLI-family manifest — reduce-closeout-runtime-structural-waste
+
+This is a read-only, node-level selection manifest for the exact standing `tests/charness_cli` family. It is a falsification artifact, not a migration authorization.
+
+- Schema: `charness.goal.cli-family-manifest.v1`
+- Producer: `python3 -m pytest --collect-only -q -m 'not release_only' tests/charness_cli`
+- Nodeid receipt: `/tmp/charness-structural-goal-cli-nodeids.txt`
+- Nodeid SHA256: `56afd5bdfd97d1f661a9e4c6bd349843050399270bafdb0a9a4673decda634d9`
+- Collected: `155`; release-only deselected: `46`
+- Classification counts: `{'in-process-test': 94, 'internal-process': 3, 'main-cli-delivery': 58}`
+- Classification method: AST-assisted per-node function-body scan; direct subprocess targets remain node-specific unless routed through `run_cli`/`run_cli_in_repo`.
+
+## Measurement and decision
+
+- Command: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --pytest-target tests/charness_cli`
+- Receipt: `/tmp/charness-structural-goal-cli-1.log`; result: `155 passed`; real time: `3.62s`
+- Fixed materiality bar: `10.0s` on the real closeout path.
+- Decision: rejected as the first remedy target; this named family is below the bar, and its boundary-bearing nodes are not generic duplicate ordinary assertions.
+
+## Boundary ledger
+
+- In-process fact: no single ordinary assertion family was isolated by this manifest; in-process-only nodes do not prove the CLI launch is removable.
+- Retained real boundary: `main-cli-delivery` nodes invoke the source/target Charness CLI; `internal-process` nodes retain their child/tool boundary.
+- Controlled failure: existing failure/assertion nodes remain subprocess-backed; no conversion is proposed.
+- Packaging: source-tree/installed-package behavior is outside this standing family and is not generalized from this result.
+- Owner: `tests/charness_cli` and `tests/charness_cli/support.py`; no repo-wide migration owner is identified.
+
+## Node-level entries
+
+Fields: `nodeid` | `source` | `calls` | `boundary`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_bootstrap_runtime_creates_runtime_and_installs_requirements` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_bootstrap_runtime_repairs_stale_launcher_when_base_has_modules` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_bootstrap_runtime_reuses_existing_runtime_when_modules_are_present` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_charness_invokes_repo_scripts_with_bootstrap_runtime` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_reuses_healthy_launcher_without_bootstrap` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_bootstraps_when_launcher_is_absent` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_bootstraps_when_contract_schema_is_invalid` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[min-version-wrong-type]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[min-version-too-short]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[min-version-not-numeric]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[runtime-dir-empty]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[requirements-file-wrong-type]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap[required-modules-empty]` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_bootstraps_when_launcher_probe_fails` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_bootstraps_when_launcher_is_too_old` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_resolve_repo_python_bootstraps_when_launcher_is_not_executable` | `tests/charness_cli/test_bootstrap_runtime.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_bootstrap_runtime.py::test_init_sh_falls_back_to_python_when_python3_is_missing` | `tests/charness_cli/test_bootstrap_runtime.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_resolve_reads_repo_local_config` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_env_emits_alias_exports_without_printing_secret_values` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_doctor_reuses_provider_metadata_for_resolved_profile` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_init_scaffolds_repo_local_config_and_updates_gitignore` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_init_does_not_duplicate_gitignore_line_when_already_present` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_resolve_reports_missing_config_when_file_does_not_exist` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_resolve_failure_points_at_retired_xdg_layout` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_explain_reports_skill_needs_and_announcement_adapter_binding` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_explain_keeps_unwired_thread_reply_draft_only` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_capability_resolution.py::test_capability_explain_keeps_thread_reply_before_parent_draft_only` | `tests/charness_cli/test_capability_resolution.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_claude_home_unit.py::test_claude_subprocess_env_preserves_default_and_binds_custom_home` | `tests/charness_cli/test_claude_home_unit.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_claude_home_unit.py::test_run_claude_forwards_effective_home_to_subprocess` | `tests/charness_cli/test_claude_home_unit.py` | `-` | `main-cli-delivery`
+- `tests/charness_cli/test_claude_home_unit.py::test_all_claude_call_sites_bind_custom_home_and_doctor_reads_it` | `tests/charness_cli/test_claude_home_unit.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_claude_home_unit.py::test_doctor_consumer_uses_custom_home_for_claude_listing` | `tests/charness_cli/test_claude_home_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_cache_diff_and_staleness_capture_rotation` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_session_staleness_without_cache_diff_returns_none` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_jsonrpc_response_wait_uses_one_absolute_deadline` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_jsonrpc_response_wait_reports_malformed_payload_and_eof[print('not-json', flush=True)-invalid JSON-RPC payload]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_jsonrpc_response_wait_reports_malformed_payload_and_eof[pass-exited before returning a response]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_jsonrpc_response_wait_returns_matching_error_after_unrelated_message` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_preserves_matching_error_envelope` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_accepts_real_initialize_shape_and_lifecycle_notifications` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_maps_transport_failures_to_existing_envelope[unrelated-stream-timed out while waiting for Codex app-server response]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_maps_transport_failures_to_existing_envelope[malformed-invalid JSON-RPC payload]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_maps_transport_failures_to_existing_envelope[eof-exited before returning a response]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_codex_cache_refresh_maps_transport_failures_to_existing_envelope[initialize-error-Codex app-server initialize failed: forced initialize failure]` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_session_staleness_uses_repo_resolver_then_managed_checkout_fallback` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_charness_catalog_loader_imports_backend_in_process` | `tests/charness_cli/test_codex_cache_refresh.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_installed_cli_catalog_list_loads_backend_from_managed_checkout` | `tests/charness_cli/test_codex_cache_refresh.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_codex_cache_refresh.py::test_charness_catalog_refresh_invalid_roots_subprocess_contract` | `tests/charness_cli/test_codex_cache_refresh.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_codex_managed_install.py::test_codex_host_guidance_without_refreshed_cache_requires_manual_refresh` | `tests/charness_cli/test_codex_managed_install.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_doctor_cache_selection.py::test_codex_primary_cache_entry_without_stale_enabled_version_prefers_source_version` | `tests/charness_cli/test_doctor_cache_selection.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_doctor_next_action.py::test_charness_doctor_next_action_without_source_uses_manual_guidance` | `tests/charness_cli/test_doctor_next_action.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_uses_stable_cli_surface_for_achieve_helper` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_resolves_relative_goal_path_under_target_repo` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_blocks_unresolved_activation_discussion` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_concise_output_surfaces_draft_frame_warning` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_help_names_stable_helper_surface` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_goal_helpers.py::test_goal_check_missing_helper_error_names_stable_search_path` | `tests/charness_cli/test_goal_helpers.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_managed_install.py::test_git_has_tracked_changes_blocks_tracked_edits_without_blocking_untracked_files` | `tests/charness_cli/test_managed_install.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_managed_install_extended.py::test_non_managed_repo_root_requires_skip_cli_install` | `tests/charness_cli/test_managed_install_extended.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_managed_install_extended.py::test_doctor_handles_missing_source_checkout_without_traceback` | `tests/charness_cli/test_managed_install_extended.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_managed_install_release_checks.py::test_charness_version_without_writable_state_cache_degrades_to_payload` | `tests/charness_cli/test_managed_install_release_checks.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_task_envelope.py::test_task_claim_submit_and_status_are_structured` | `tests/charness_cli/test_task_envelope.py` | `run_cli_in_repo` | `main-cli-delivery`
+- `tests/charness_cli/test_task_envelope.py::test_task_claim_conflict_and_abort_reason_are_structured` | `tests/charness_cli/test_task_envelope.py` | `run_cli_in_repo` | `main-cli-delivery`
+- `tests/charness_cli/test_task_envelope.py::test_task_rejections_carry_recovering_next_step` | `tests/charness_cli/test_task_envelope.py` | `run_cli_in_repo` | `main-cli-delivery`
+- `tests/charness_cli/test_task_envelope.py::test_task_legacy_json_flag_is_ignored_and_hidden` | `tests/charness_cli/test_task_envelope.py` | `run_cli_in_repo` | `main-cli-delivery`
+- `tests/charness_cli/test_tool_lifecycle.py::test_update_advisory_line_without_manifest_route_uses_manual_docs_url` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_update_advisory_line_without_manifest_route_uses_doctor_install_route_url` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_renders_from_and_to_when_different` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_renders_to_only_when_from_matches_to` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_renders_to_only_when_from_missing` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_reports_version_unknown_for_updated_without_transition` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_empty_for_other_statuses_without_transition` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_version_transition_suffix_renders_transition_for_failed_status` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_print_tool_statuses_renders_version_transition` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_tool_lifecycle.py::test_fake_go_installers_honor_gobin` | `tests/charness_cli/test_tool_lifecycle.py` | `subprocess.run` | `internal-process`
+- `tests/charness_cli/test_tool_lifecycle.py::test_tool_next_step_prefers_agent_browser_repair_for_cleanup_runtime_drift` | `tests/charness_cli/test_tool_lifecycle.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_update_all_flow_reuses_precomputed_support_results` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_update_flow_syncs_support_when_reuse_is_not_available` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_update_all_flow_treats_refreshed_not_ready_as_failure` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_reexec_noops_when_running_cli_matches_checkout` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_reexec_replaces_process_when_checkout_is_newer` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_reexec_guard_reports_child_and_blocks_loops` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_flow_unit.py::test_reexec_ignores_foreign_guard_value_and_survives_execve_failure` | `tests/charness_cli/test_update_flow_unit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_session_capture_status_emits_canonical_session_routing_hosts` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_update_human_summary_without_version_none_prints_tool_statuses` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_tool_update_lines_empty_results_render_nothing` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_tool_response_projection_hides_raw_probe_evidence_by_default` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_aggregate_tool_response_hides_per_tool_records_but_names_attention` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_mutating_aggregate_next_action_points_at_locks_and_readonly_doctor_stays_detail` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_compact_doctor_projection_carries_the_detected_version` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_tool_response_projection_tolerates_malformed_result_entries` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_package_manager_tool_next_step_includes_version_transition` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_update_output.py::test_print_next_actions_labels_repo_onboarding_primary_and_merges` | `tests/charness_cli/test_update_output.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_version_surface.py::test_top_level_version_alias_matches_version_subcommand` | `tests/charness_cli/test_version_surface.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_version_surface.py::test_source_checkout_version_uses_embedded_packaging_manifest` | `tests/charness_cli/test_version_surface.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_version_surface.py::test_standalone_version_falls_back_to_valid_yaml_without_pyyaml` | `tests/charness_cli/test_version_surface.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_version_surface.py::test_renderer_falls_back_to_json_yaml_when_pyyaml_is_unavailable` | `tests/charness_cli/test_version_surface.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_version_surface.py::test_legacy_json_is_accepted_but_hidden_and_ignored` | `tests/charness_cli/test_version_surface.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_version_surface.py::test_plain_version_does_not_write_version_state` | `tests/charness_cli/test_version_surface.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_version_surface.py::test_verbose_version_keeps_recorded_version_state` | `tests/charness_cli/test_version_surface.py` | `run_cli` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_audit.py::test_parse_porcelain_extracts_attributes` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_reports_only_primary_for_clean_repo` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_classifies_active_and_prunable` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_doctor_surfaces_active_unprepared_worktree` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_text_shows_primary_readiness_failure` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_classifies_stale_detached_head` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_marks_locked_detached_as_active_not_stale` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_primary_resolution_works_from_linked_worktree` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_prune_count_uses_audit_diff_not_regex` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_stale_threshold_respected` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_prune_drops_metadata_for_missing_worktrees` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_audit.py::test_audit_emits_json_when_requested` | `tests/charness_cli/test_worktree_audit.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_dry_run_plans_safe_branch_deletion` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_executes_remove_branch_and_prune` | `tests/charness_cli/test_worktree_cleanup.py` | `subprocess.run` | `internal-process`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_refuses_unmerged_branch_deletion` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_from_target_worktree_uses_primary_head_for_branch_safety` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_from_target_worktree_executes_from_primary_after_merge` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_refuses_primary_worktree` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_cleanup.py::test_cleanup_text_renders_next_step_affordance` | `tests/charness_cli/test_worktree_cleanup.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_create_dry_run_plans_git_worktree_add` | `tests/charness_cli/test_worktree_create.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_create_runs_doctor_and_warns_for_unprepared_worktree` | `tests/charness_cli/test_worktree_create.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_create_prepare_runs_adapter_and_returns_pass` | `tests/charness_cli/test_worktree_create.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_create_with_failing_prepare_carries_recovering_next_step` | `tests/charness_cli/test_worktree_create.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_create_text_renders_next_step_affordance` | `tests/charness_cli/test_worktree_create.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_create.py::test_cli_worktree_create_and_add_are_discoverable` | `tests/charness_cli/test_worktree_create.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_create.py::test_cli_worktree_create_json_executes_and_reports_doctor` | `tests/charness_cli/test_worktree_create.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_no_manifest_passes_canonical_only` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_lefthook_shim_missing_node_modules_fails` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_lefthook_shim_resolves_via_node_modules` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_husky_marker_missing_fails` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_husky_marker_present_passes` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_husky_v9_default_missing_underscore_fails` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_doctor_husky_v9_default_with_underscore_passes` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_manifest_inline_array_argv_emits_targeted_error` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_manifest_invalid_version_returns_fail` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_manifest_doctor_check_runs_extra_command` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_manifest_doctor_check_failure_surfaces_next_step` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_prepare_with_passing_commands_but_failing_doctor_surfaces_next_step` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_prepare_runs_commands_when_doctor_was_passing_with_force` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_prepare_skipped_when_doctor_passes_without_force` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_prepare_command_failure_surfaces_fail` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_prepare_no_manifest_emits_actionable_next_step` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_worktree_doctor.py::test_cli_doctor_subcommand_returns_yaml` | `tests/charness_cli/test_worktree_doctor.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_doctor.py::test_cli_prepare_subcommand_runs_command` | `tests/charness_cli/test_worktree_doctor.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_doctor.py::test_cli_worktree_doctor_via_path_shim_routes_to_managed_checkout` | `tests/charness_cli/test_worktree_doctor.py` | `subprocess.run` | `internal-process`
+- `tests/charness_cli/test_worktree_doctor.py::test_cli_worktree_doctor_via_path_shim_missing_checkout_emits_actionable_error` | `tests/charness_cli/test_worktree_doctor.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_doctor.py::test_cli_worktree_doctor_via_path_shim_explicit_checkout` | `tests/charness_cli/test_worktree_doctor.py` | `subprocess.run` | `main-cli-delivery`
+- `tests/charness_cli/test_worktree_doctor.py::test_disable_canonical_check_honored` | `tests/charness_cli/test_worktree_doctor.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_init_update_and_doctor_emit_yaml_on_all_public_paths` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_task_and_uninstall_paths_emit_yaml` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_tool_command_outputs_are_routed_through_yaml` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_operational_response_detail_preserves_the_full_payload` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_doctor_rejects_conflicting_detail_and_next_action_flags` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_worktree_and_goal_helper_fallback_keep_stdout_yaml` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_build_host_next_steps_includes_repo_onboarding_message` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`
+- `tests/charness_cli/test_yaml_output_branch_coverage.py::test_install_surface_records_claude_plugin_message_in_host_next_steps` | `tests/charness_cli/test_yaml_output_branch_coverage.py` | `-` | `in-process-test`

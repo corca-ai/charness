@@ -1,0 +1,135 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-04T13:36:35Z",
+  "prepared_for": "structural closeout runtime final repaired state",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-critique-review.md\n- charness-artifacts/goals/2026-08-04-reduce-closeout-runtime-structural-waste.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/critique/2026-08-04-131301-packet.json\n- charness-artifacts/critique/2026-08-04-131301-packet.md\n- charness-artifacts/critique/2026-08-04-132223-packet.json\n- charness-artifacts/critique/2026-08-04-132223-packet.md\n- charness-artifacts/critique/2026-08-04-133211-packet.json\n- charness-artifacts/critique/2026-08-04-133211-packet.md\n- charness-artifacts/probe/2026-08-04-reduce-closeout-runtime-structural-waste.json\n- charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md\n- charness-artifacts/retro/2026-08-04-132934-packet.json\n- charness-artifacts/retro/2026-08-04-132934-packet.md\n- charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/goals/2026-08-04-reduce-closeout-runtime-structural-waste.md, charness-artifacts/critique/2026-08-04-131301-packet.md, charness-artifacts/critique/2026-08-04-132223-packet.md, charness-artifacts/critique/2026-08-04-133211-packet.md, charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md, charness-artifacts/retro/2026-08-04-132934-packet.md, charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-critique-review.md, charness-artifacts/critique/2026-08-04-131301-packet.json, charness-artifacts/critique/2026-08-04-131301-packet.md, charness-artifacts/critique/2026-08-04-132223-packet.json, charness-artifacts/critique/2026-08-04-132223-packet.md, charness-artifacts/critique/2026-08-04-133211-packet.json, charness-artifacts/critique/2026-08-04-133211-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-04-reduce-closeout-runtime-structural-waste.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-04-132934-packet.json, charness-artifacts/retro/2026-08-04-132934-packet.md, charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "23f60313ca9c58a4bac235166966b87a5f3bbb37",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/goals/2026-08-04-reduce-closeout-runtime-structural-waste.md",
+      "charness-artifacts/probe/2026-08-04-reduce-closeout-runtime-structural-waste.json",
+      "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md",
+      "charness-artifacts/retro/2026-08-04-132934-packet.json",
+      "charness-artifacts/retro/2026-08-04-132934-packet.md",
+      "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/goals/2026-08-04-reduce-closeout-runtime-structural-waste.md",
+        "content_sha256": "0a1d3a08545c29a78e81c4ff705c0d7022b580183aa6b675f031c4e76ed40c52"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-04-reduce-closeout-runtime-structural-waste.json",
+        "content_sha256": "5463fce773268d58a77cf9f48623d46907baa0bf68ab91e38d101b58f39a03c5"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md",
+        "content_sha256": "da72d5d4abaa52df6594fceb45b4dac761b999c9e99b5fa96438a8927ec2761d"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-132934-packet.json",
+        "content_sha256": "156fe7f55c04b51fd88e80ccdbf74281110b73ee17ffb9593f1214e9c92b3a2f"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-132934-packet.md",
+        "content_sha256": "20b318665175b04582fee80c42accf7a7650e57c326a5ca0708c919af838832c"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+        "content_sha256": "61e9b34f25b45e263dc5a345d699912d576f43b5482f2b603e8b2ca2469fe09e"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "d8f1f593947732df598b89c58008647acc81da77a6078be6ae34b4c81f24d1c5"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "a8a6b522398e75a82ac7f5655489f50e72e5a96c95577b0ddc492569e6d1d99d",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/probe/2026-08-04-reduce-closeout-runtime-structural-waste.json",
+        "content_sha256": "5463fce773268d58a77cf9f48623d46907baa0bf68ab91e38d101b58f39a03c5"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-04-reduce-closeout-runtime-structural-waste-cli-manifest.md",
+        "content_sha256": "da72d5d4abaa52df6594fceb45b4dac761b999c9e99b5fa96438a8927ec2761d"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-132934-packet.json",
+        "content_sha256": "156fe7f55c04b51fd88e80ccdbf74281110b73ee17ffb9593f1214e9c92b3a2f"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-132934-packet.md",
+        "content_sha256": "20b318665175b04582fee80c42accf7a7650e57c326a5ca0708c919af838832c"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+        "content_sha256": "61e9b34f25b45e263dc5a345d699912d576f43b5482f2b603e8b2ca2469fe09e"
+      }
+    ],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-04-131301-packet.json",
+      "charness-artifacts/critique/2026-08-04-131301-packet.md",
+      "charness-artifacts/critique/2026-08-04-132223-packet.json",
+      "charness-artifacts/critique/2026-08-04-132223-packet.md",
+      "charness-artifacts/critique/2026-08-04-133211-packet.json",
+      "charness-artifacts/critique/2026-08-04-133211-packet.md",
+      "charness-artifacts/critique/2026-08-04-critique-review.md"
+    ],
+    "identity_sha256": "18771d72b2affe1729ecd68f85f85012fb89f25397575c0da816a02d634019e4"
+  }
+}

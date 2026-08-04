@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 435,
-  "candidate_count": 1794,
+  "source_artifact_count": 437,
+  "candidate_count": 1804,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1450,6 +1450,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:00177435fc50",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal's measurement, candidate triage, delegated premortem, midpoint claims review, and bounded named-family falsification.",
+      "normalized_key": "this retro covers the active goal s measurement candidate triage delegated premortem midpoint claims",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the active goal's measurement, candidate triage, delegated premortem, midpoint claims review, and bounded named-family falsification."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:3adf464e998b",
       "kind": "current_focus",
       "lesson": "This retro covers the current-host closeout optimization experiment: baseline selection, a focused changed-line coverage worker-cap candidate, its matched falsification, final local proof, and the no-safe-change disposition.",
@@ -1550,6 +1576,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "Artifact: keep release-content proof separate from post-publication remote, public, and installed readbacks; this was applied in the two release records."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:62c390f22801",
+      "kind": "next_improvement",
+      "lesson": "Capability: add a future repo-local guard that rejects stale default reviewer snapshots when an explicit before-path is required; issue #506 carries the separate helper-level design.",
+      "normalized_key": "capability add a future repo local guard that rejects stale default reviewer snapshots when",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Capability: add a future repo-local guard that rejects stale default reviewer snapshots when an explicit before-path is required; issue #506 carries the separate helper-level design."
         }
       ]
     },
@@ -1710,6 +1762,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:a78a57dc0a0a",
+      "kind": "next_improvement",
+      "lesson": "Quality: investigate the mutation/quality-gate baseline under D51 rather than optimizing the unmapped CLI family; issue #505 carries the observed runtime and proof-preserving target.",
+      "normalized_key": "quality investigate the mutation quality gate baseline under d51 rather than optimizing the unmapped",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Quality: investigate the mutation/quality-gate baseline under D51 rather than optimizing the unmapped CLI family; issue #505 carries the observed runtime and proof-preserving target."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:c0f8731d7ee9",
       "kind": "next_improvement",
       "lesson": "Quality: run changed-line coverage immediately after focused branch additions and before the broad release gate; this was applied in this session.",
@@ -1762,6 +1840,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:05abb32ed7c2",
+      "kind": "next_improvement",
+      "lesson": "Workflow: require a reproducible node-level manifest and boundary ledger before any broad runtime candidate enters implementation. This was applied in-session in the goal artifact and checked-in manifest.",
+      "normalized_key": "workflow require a reproducible node level manifest and boundary ledger before any broad runtime",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Workflow: require a reproducible node-level manifest and boundary ledger before any broad runtime candidate enters implementation. This was applied in-session in the goal artifact and checked-in manifest."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:8a0ef97cca72",
+      "kind": "next_improvement",
+      "lesson": "Workflow: rerun corpus-pinned measurement probes after adding durable quality artifacts. This was applied in-session by synchronizing the inventory-marker probe through its repository-owned measurement script.",
+      "normalized_key": "workflow rerun corpus pinned measurement probes after adding durable quality artifacts this was applied",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Workflow: rerun corpus-pinned measurement probes after adding durable quality artifacts. This was applied in-session by synchronizing the inventory-marker probe through its repository-owned measurement script."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:09b96bf54099",
+      "kind": "repeat_trap",
+      "lesson": "`candidate-corpus-identity` (strong) — the initial broad subset was useful exploration, but the ad hoc “209 targets” exclusion briefly looked like a migration unit without a producer. Decision: same waste, fix now. Proof: the checked-in 155-node manifest records the collection command, nodeid digest, boundary classification, and owner before the family was rejected.",
+      "normalized_key": "candidate corpus identity strong the initial broad subset was useful exploration but the ad",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`candidate-corpus-identity` (strong) — the initial broad subset was useful exploration, but the ad hoc “209 targets” exclusion briefly looked like a migration unit without a producer. Decision: same waste, fix now. Proof: the checked-in 155-node manifest records the collection command, nodeid digest, boundary classification, and owner before the family was rejected."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:f60a2a91ec63",
       "kind": "repeat_trap",
       "lesson": "`candidate-protocol-rework` — the first critique artifact used the packet's markdown path while carrying the JSON digest, so the binding validator caught the mismatch. This was necessary recovery at a proof boundary; the avoidable waste was not copying the canonical JSON packet path from the prepare-packet contract on the first draft. The artifact was repaired and validated before commit.",
@@ -1784,6 +1940,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "`candidate-protocol-rework` — the first critique artifact used the packet's markdown path while carrying the JSON digest, so the binding validator caught the mismatch. This was necessary recovery at a proof boundary; the avoidable waste was not copying the canonical JSON packet path from the prepare-packet contract on the first draft. The artifact was repaired and validated before commit."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:595fb946f584",
+      "kind": "repeat_trap",
+      "lesson": "`gate-baseline-runtime` (strong) — mutation coverage consumed a 120.2s median and dominates the full local path. Decision: valid follow-up outside the slice. Proof: D51 names the quality-gate owner and reopen context; the CLI candidate was not mapped to that lane.",
+      "normalized_key": "gate baseline runtime strong mutation coverage consumed a 120 2s median and dominates the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`gate-baseline-runtime` (strong) — mutation coverage consumed a 120.2s median and dominates the full local path. Decision: valid follow-up outside the slice. Proof: D51 names the quality-gate owner and reopen context; the CLI candidate was not mapped to that lane."
         }
       ]
     },
@@ -1970,6 +2152,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:f8f019a5de11",
+      "kind": "repeat_trap",
+      "lesson": "`review-snapshot-selection` (moderate) — the first boundary verify used the helper's stale default snapshot and was discarded. Decision: valid follow-up outside the slice. Proof: every authoritative reviewer window in this goal records its explicit `/tmp` before snapshot and clean `drift: []` result; follow-up: issue #506",
+      "normalized_key": "review snapshot selection moderate the first boundary verify used the helper s stale default",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`review-snapshot-selection` (moderate) — the first boundary verify used the helper's stale default snapshot and was discarded. Decision: valid follow-up outside the slice. Proof: every authoritative reviewer window in this goal records its explicit `/tmp` before snapshot and clean `drift: []` result; follow-up: issue #506"
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:0637355fa379",
       "kind": "repeat_trap",
       "lesson": "`safety-cost` — the three baseline runs, six matched candidate runs, separate correctness tests, delegated critique, and final quality gate were necessary safety cost for a proof-adjacent timing experiment, not reducible waste.",
@@ -1992,6 +2200,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "`safety-cost` — the three baseline runs, six matched candidate runs, separate correctness tests, delegated critique, and final quality gate were necessary safety cost for a proof-adjacent timing experiment, not reducible waste."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3bb606769b29",
+      "kind": "repeat_trap",
+      "lesson": "`stale-closeout-state` (strong) — Slice B was marked complete while final and user-verification prose still described Slice A as active, and the first critique packet became stale after the ledger repair. Decision: same waste, fix now. Proof: the goal frame, final sections, refreshed packet, and critique identity were reconciled before closeout preparation.",
+      "normalized_key": "stale closeout state strong slice b was marked complete while final and user verification",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`stale-closeout-state` (strong) — Slice B was marked complete while final and user-verification prose still described Slice A as active, and the first critique packet became stale after the ledger repair. Decision: same waste, fix now. Proof: the goal frame, final sections, refreshed packet, and critique identity were reconciled before closeout preparation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:084f3095896c",
+      "kind": "repeat_trap",
+      "lesson": "`supporting-probe-drift` (strong) — adding the durable manifest changed a checked-in quality corpus and exposed a stale inventory-marker probe during the full gate. Decision: same waste, fix now. Proof: the repository-owned measurement script regenerated the top-level and recursive values, and the pinned probe now matches both live reruns.",
+      "normalized_key": "supporting probe drift strong adding the durable manifest changed a checked in quality corpus",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 4,
+      "recency_weight": 0.9402,
+      "alpha": 0.12,
+      "selection_weight": 0.9402,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-reduce-closeout-runtime-structural-waste-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "`supporting-probe-drift` (strong) — adding the durable manifest changed a checked-in quality corpus and exposed a stale inventory-marker probe during the full gate. Decision: same waste, fix now. Proof: the repository-owned measurement script regenerated the top-level and recursive values, and the pinned probe now matches both live reruns."
         }
       ]
     },
