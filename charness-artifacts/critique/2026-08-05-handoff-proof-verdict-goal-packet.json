@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-04T21:27:27Z",
-  "prepared_for": "handoff-next-pickup-proof-verdict-goal-final-shaped",
+  "generated_at": "2026-08-04T21:29:36Z",
+  "prepared_for": "handoff-next-pickup-proof-verdict-goal-final-stable",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md\n- charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet-packet.json\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet-packet.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet-packet.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "82c61f71cc6699a639b3d1cce55ca808c61a109b",
+    "base_head": "509757fae75426891a206c4eb6775dc416ef2281",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md",
@@ -67,7 +67,7 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md",
-        "content_sha256": "2e652c6eaa48dd3dfd935a1dae0d83dbf4f4c421a0857abbff38d78e8a021b63"
+        "content_sha256": "fce871cf9ab42c84d86bfc10bdad8a2affadeabf5bbb554f163b0feed94eeef0"
       },
       {
         "path": "charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md",
@@ -83,14 +83,14 @@
       },
       {
         "path": "docs/handoff.md",
-        "content_sha256": "f155da43f0e24e1091c47b5a8e559199b6241aeea7a8236fdcb2774bc6b091c6"
+        "content_sha256": "a5e907087b399a54fe5d112a0b1cc669df8cff4368c3c2e0b0e3886a099164b8"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "d3af4e4f037c4d041a29127bbbd795877ec9fc3f01588e30d64ebebb55509107",
+    "unstaged_patch_sha256": "cd0e916d30b30a25e3da5b9719d615872a33e49d3e8917cdba5009684fa7755f",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "f57e63a6ce137d190b96a264b2edf6bf649d825d500d9535508538a3677b64ba"
+    "identity_sha256": "4927005e4a358f929f6855ee6c6d36e330d0600cb7a9d93d8d25e9439a7a8502"
   }
 }

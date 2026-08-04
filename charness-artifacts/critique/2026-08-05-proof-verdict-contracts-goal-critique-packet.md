@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-04T21:26:34Z
-- **Prepared for**: proof-verdict-contracts-goal-final-shaped
+- **Generated**: 2026-08-04T21:29:08Z
+- **Prepared for**: proof-verdict-contracts-goal-final-stable
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb`
-- **Reviewed paths**: 7
+- **Reviewed input identity**: `1c4dd92e1f88e1deee480916a87e22739c7c5f5db27d5e98b2e4d160f1c50ce0`
+- **Reviewed paths**: 6
 - **Sections**: 3
 - **Overall ok**: True
 
@@ -28,16 +28,18 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json
-- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md
-- charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md
+- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json
+- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md
+- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json
+- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md
+- docs/handoff.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md
+  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, docs/handoff.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md
+  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 ```
 

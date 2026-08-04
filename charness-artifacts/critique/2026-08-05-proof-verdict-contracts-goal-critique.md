@@ -99,11 +99,11 @@ boundary verification was clean for all four windows; see the durable receipt.
 
 - Packet consumed: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
 - Packet path: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
-- Packet SHA256: `03f66f5a3ebcc48a05248d99a7280afca0b0422f281ca63e48440328ec06c9d4`
-- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md` (SHA256 `0b38c5f115cc06ec2dfd7714bdb2236c7297f0438598c5a473bf784f769ffc82`)
+- Packet SHA256: `c13046beb892ac6a17da7d8297ea8de98aae6aef940d647157fa481d305fb8b1`
+- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md` (SHA256 `c306307c9e8e6e8b39077247301188934ac0d517b473f08c541c3c7ec812e8c6`)
 - JSON binding path: `charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json`
-- JSON binding SHA256: `03f66f5a3ebcc48a05248d99a7280afca0b0422f281ca63e48440328ec06c9d4`
-- Identity SHA256: `528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb`
+- JSON binding SHA256: `c13046beb892ac6a17da7d8297ea8de98aae6aef940d647157fa481d305fb8b1`
+- Identity SHA256: `1c4dd92e1f88e1deee480916a87e22739c7c5f5db27d5e98b2e4d160f1c50ce0`
 
 ## Boundary Ownership
 

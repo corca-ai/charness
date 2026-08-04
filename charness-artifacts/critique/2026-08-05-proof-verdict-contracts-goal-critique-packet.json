@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-04T21:26:34Z",
-  "prepared_for": "proof-verdict-contracts-goal-final-shaped",
+  "generated_at": "2026-08-04T21:29:08Z",
+  "prepared_for": "proof-verdict-contracts-goal-final-stable",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json\n- charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n- charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json\n- charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,12 +55,11 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "82c61f71cc6699a639b3d1cce55ca808c61a109b",
+    "base_head": "509757fae75426891a206c4eb6775dc416ef2281",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
       "docs/design-north-star.md",
-      "docs/handoff.md",
       "scripts/run-quality.sh",
       "scripts/slice_closeout_reporting.py",
       "tests/quality_gates/test_gate_summary_names_failures.py",
@@ -74,10 +73,6 @@
       {
         "path": "docs/design-north-star.md",
         "content_sha256": "5cbbdaccf043763b18ac52aeaafaf29096ec64069f588ab25c0b9137e2fd25f3"
-      },
-      {
-        "path": "docs/handoff.md",
-        "content_sha256": "f155da43f0e24e1091c47b5a8e559199b6241aeea7a8236fdcb2774bc6b091c6"
       },
       {
         "path": "scripts/run-quality.sh",
@@ -101,6 +96,6 @@
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "528a3ed44909f8a458d54a649929a67fe01d97652312142dac8dbfcfc72a20fb"
+    "identity_sha256": "1c4dd92e1f88e1deee480916a87e22739c7c5f5db27d5e98b2e4d160f1c50ce0"
   }
 }

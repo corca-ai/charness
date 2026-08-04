@@ -66,9 +66,9 @@ parent-delegated — the final bounded reviewer read the final packet and return
 
 - Packet consumed: `charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json`
 - Packet path: `charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json`
-- Packet SHA256: `1d811ca75112e3e74051074f6dfa3a4ac9103831cdefb90517d4b6e5a0638d12`
-- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md` (SHA256 `a16d32d0e6bc104d01720246b3b3c59b4b8fde6dee5ddc2e4035e29de607f114`)
-- Identity SHA256: `f57e63a6ce137d190b96a264b2edf6bf649d825d500d9535508538a3677b64ba`
+- Packet SHA256: `2202aae08811ab4a9831bce64f6e1ba1ab735ea5d5d352bbe4abc2919c53ea3c`
+- Reviewer-facing packet: `charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md` (SHA256 `f2639f7bfbd0054c757aac11c86cbc65ab04fac1f31dbedc3e9a2b0b0070532f`)
+- Identity SHA256: `4927005e4a358f929f6855ee6c6d36e330d0600cb7a9d93d8d25e9439a7a8502`
 
 ## Boundary Ownership
 

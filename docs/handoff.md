@@ -18,8 +18,10 @@
 
 - Push `f29009bd` reached `origin/main`; the GitHub Checks API independently
   read both check-runs as successful: [core gates](https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004731) and [changed-line mutation coverage](https://github.com/corca-ai/charness/actions/runs/30950181120/job/92130004666). The durable [remote readback](../charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json) records this different observer/channel from the push exit code.
-- Local `556dfee6` is one commit ahead of `origin/main`; it contains only the
-  unactivated #502 goal draft and its critique evidence, not implementation.
+- Local branch is ahead of `origin/main` with unpushed documentation/artifact
+  commits; read the live `git log` for the current HEAD. These commits contain
+  only the unactivated #502 goal draft, critique, and handoff evidence—not
+  implementation.
 - Live #502 is OPEN. Its problem is the 17 hand-written consumers of the
   `run-quality.sh` summary and the related slice-closeout verdict ownership
   decision. #504 is also OPEN but its local implementation is complete and its
