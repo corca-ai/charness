@@ -25,8 +25,8 @@ Slice B matched timing, candidate critique, and final closeout evidence.
   changed pool files, mapped corpus, host, and clean consumer verdict. Uncapped
   mean was 114.70s; cap-4 mean was 114.81s. The fixed 5s threshold was not met.
 - The separate producer/consumer correctness channel passed 43 tests in 4.68s.
-  The final local quality gate passed 85 checks with 0 failures in 122.7s;
-  its changed-line phase was 119.6s.
+  The final local quality gate passed 85 checks with 0 failures in 122.0s;
+  its changed-line phase was 118.9s and its standing pytest phase was 44.8s.
 - The candidate critique at
   `charness-artifacts/critique/2026-08-04-reduce-closeout-bottleneck-worker-cap-candidate-critique.md`
   contains three delegated read-only findings and clean worktree-boundary
@@ -45,8 +45,8 @@ Slice B matched timing, candidate critique, and final closeout evidence.
   waste was not copying the canonical JSON packet path from the prepare-packet
   contract on the first draft. The artifact was repaired and validated before
   commit.
-- `gate-baseline-runtime` — the final gate still costs 122.7s and the focused
-  coverage phase 119.6s. This is measured quality debt, not a reason to weaken
+- `gate-baseline-runtime` — the final gate still costs 122.0s and the focused
+  coverage phase 118.9s. This is measured quality debt, not a reason to weaken
   floors or shrink proof. The worker-cap candidate produced no material saving;
   D51 remains the named owner/reopen anchor for a future safe optimization.
 - `safety-cost` — the three baseline runs, six matched candidate runs, separate

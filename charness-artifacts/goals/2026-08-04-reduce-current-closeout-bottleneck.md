@@ -1,6 +1,6 @@
 # Achieve Goal: Reduce the current closeout bottleneck without weakening proof
 
-Status: active
+Status: complete
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md`
 
@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice D — final verification and no-safe-change closeout.
+- Current slice: complete — final verification and no-safe-change closeout are
+  bound to the goal, retro, and independent claims review.
 - Current slice intent: preserve the pre-change focused producer after the
-  worker-cap candidate failed the fixed materiality test, then lock the local
-  proof and durable disposition.
-- Next action: run the strongest applicable local closeout, bind the retro and
-  independent claims review, and record the exact no-safe-change reopen trigger.
+  worker-cap candidate failed the fixed materiality test, with the local proof
+  and durable disposition locked.
+- Next action: none for this goal; any retry requires the recorded same-host
+  focused-candidate reopen trigger.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   repeated timing and fresh-eye proof at slice boundaries; strongest local
   proof at final closeout.
@@ -152,8 +153,8 @@ Acceptance check matrix:
 | --- | --- | --- | --- | --- |
 | A | Reproduce the current local closeout journey and identify one critical-path bottleneck | Historical #503 telemetry is a lead, not a current diagnosis; recent evidence suggests the full quality gate may dominate standing pytest | At least three comparable baselines where feasible, phase timing, frequency/serial-position/proof-sensitivity matrix, environment/corpus identity, producer-consumer-owner map, and either a target or `historical signal retired` disposition | completed |
 | B | Choose one reversible intervention and its falsifier | Speed pressure must not choose a proof-weakening remedy by intuition | Option comparison, preservation invariant, specific controlled failure channel, fixed statistic/threshold, named selected-seam owner, fresh-eye decision, and stop/reopen rule | completed |
-| C | Implement and exercise the smallest proof-preserving improvement | The goal must change an actual current cost source, not only improve its report | Focused tests, interleaved/repeated before-after runs, controlled failure-path checks, synchronized generated surfaces, and measured result or explicit inconclusive/no-safe-change outcome | completed — no safe change |
-| D | Verify, record, and disposition the result | Runtime relief is provisional until the same proof remains intact | Separate correctness channel, final local gate, durable #503 follow-up, retro, claims review, and explicit relief/no-safe-change outcome | in_progress |
+| C | Implement and exercise the smallest proof-preserving improvement | The goal must change an actual current cost source, not only improve its report | Focused tests, interleaved/repeated before-after runs, controlled failure-path checks, synchronized generated surfaces, and measured result or explicit inconclusive/no-safe-change outcome | completed |
+| D | Verify, record, and disposition the result | Runtime relief is provisional until the same proof remains intact | Separate correctness channel, final local gate, durable #503 follow-up, retro, claims review, and explicit relief/no-safe-change outcome | completed |
 
 ## Operator Decision Queue
 
@@ -339,9 +340,9 @@ The following repairs were folded into this artifact:
   same-host focused candidate that preserves the mapped proof scope and exceeds
   the fixed 5s median-relief threshold.
 
-Retro: `charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md`
+Retro: charness-artifacts/retro/2026-08-04-reduce-current-closeout-bottleneck-retro.md
 Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window is exposed; explicit local command timing is recorded instead.
-Disposition review: `charness-artifacts/critique/2026-08-04-reduce-current-closeout-bottleneck-claims-review.md`
+Disposition review: charness-artifacts/critique/2026-08-04-reduce-current-closeout-bottleneck-claims-review.md
 
 ## User Verification Instructions
 

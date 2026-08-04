@@ -7,8 +7,9 @@ Goal: `reduce-current-closeout-bottleneck`
 A bounded read-only claims reviewer audited the goal's User Acceptance bar,
 Slice Log, Final Verification, Auto-Retro, and bound retro. The first pass
 returned `HOLD` with concrete blockers; the parent repaired the stale draft
-sections, executed the missing controlled failure fixtures, and is rerunning
-the final local gate before the final re-read.
+sections, and executed the missing controlled failure fixtures. A fresh final
+re-read then returned `CLOSE` after the final quality figures were synchronized
+between the goal and retro.
 
 ## Decision Under Review
 
@@ -52,6 +53,19 @@ export/marker, failed payload status, and an uncovered-line blocking verdict;
 the Auto-Retro now names the exact dispositions; and the closeout evidence
 names the separate retro and claims-review paths.
 
+## Final Re-Read
+
+Fresh reviewer Hooke returned `CLOSE` after the retro synchronization. The goal
+and retro agree on 85/0 checks, 122.0s total, 118.9s changed-line phase, 44.8s
+standing pytest, and gate-run HEAD `ab0e4ad8`. The reviewer re-derived the six
+candidate samples as 114.70s uncapped versus 114.81s cap-4, confirmed the 0.11s
+slower result is below the fixed 5s threshold, and confirmed the three named
+controlled fixtures substantiate failure propagation, no fresh export/marker,
+failed payload status, and uncovered-line blocking. Auto-Retro and Structural
+follow-up dispositions were explicit and the no-safe non-claims remained
+bounded. Final review boundary window `w-20260804T122500Z-claims-last` verified
+clean with `drift: []`.
+
 ## Per-Improvement Verdicts
 
 - Fixed-threshold, matched-sample, separate-correctness workflow: **applied for
@@ -82,8 +96,9 @@ names the separate retro and claims-review paths.
 parent-delegated — Euclid independently audited the goal and retro claims in a
 shared read-only worktree. Boundary fingerprint window
 `w-20260804T121300Z-claims` verified clean with `drift: []` after the review.
-This artifact records the first HOLD and its repairs; a final re-read is
-required before the complete flip so the reviewer sees the final wording.
+Hooke independently re-read the final synchronized wording in a second
+read-only review window and returned `CLOSE`; its boundary fingerprint also
+verified clean with `drift: []`.
 
 ## Reviewed Input Identity
 
