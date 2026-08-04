@@ -19,12 +19,13 @@ layout, and the export gate detects the import form it is responsible for.
 
 ## Observed Facts
 
-- `upsert_goal.py` owns `_reject_unwritable_prose` and `_resolve_slug`, while
-  `draft_goal_from_chunk.py` calls `goal_path` and writes the rendered text
-  directly; the latter does not call either guard.
-- `draft_goal_from_chunk.py` derives its slug from chunk objective text and
-  passes objective/title/body into the renderer before running only the
-  structural `check_goal` result.
+- `goal_artifact_lib.py` now owns the shared value normalization, prose-shape,
+  and supplied-slug predicates; both `upsert_goal.py` and
+  `draft_goal_from_chunk.py` call them on the values they will write.
+- `draft_goal_from_chunk.py` still derives its slug from chunk objective text,
+  but it now validates the exact rendered title/body and resolved slug before
+  creating the directory or writing the artifact. Its post-write structural
+  `check_goal` remains a separate check.
 - The gathered primary issue record says #501's AST scan sees import
   statements but not dotted strings passed to `import_repo_module`, and says
   #497's exported `scripts/validate_adapters.py` hardcodes the authoring-tree
@@ -32,6 +33,9 @@ layout, and the export gate detects the import form it is responsible for.
   (`charness-artifacts/gather/2026-08-04-goal-issue-sources.md`).
 
 ## Reproduction
+
+The following is the pre-repair reproduction record; the post-repair proof is
+under `## Verification`.
 
 - `draft_goal_from_chunk.py` with a real one-entry chunk and
   `objective_summary="Unsafe\n## Injected"` exits 0 and writes
@@ -60,22 +64,26 @@ layout, and the export gate detects the import form it is responsible for.
 
 ## Hypothesis
 
-- The primary cause is split ownership at two representation boundaries: goal
-  value guards are private to `upsert_goal.py`, and export validation models
-  only syntactic imports rather than the runtime module-resolution contract.
-  falsifier: a shared library already validates the drafter's values and the
-  exported validator's runtime imports from the generated layout.
-  disconfirmer: inspect both producers, run the smallest hostile input, and execute
-  the
-  exported validator in an isolated generated tree before changing code. Result:
-  disconfirmed for neither boundary; the reproductions confirm split ownership
-  and the exported layout failure.
+The hypothesis and its post-repair resolution are recorded together below.
+
+- The primary causes were three distinct ownership gaps: goal value guards were
+  private to `upsert_goal.py`, export validation modeled only AST import
+  statements rather than supported helper-call literals, and the adapter
+  validator assumed the authoring-tree package layout. Falsifiers were a shared
+  value owner, a literal helper-call refusal, and an isolated generated-tree
+  validator run. The Slice D repairs satisfy those falsifiers for the recorded
+  supported forms; arbitrary dynamic imports and arbitrary future layouts remain
+  outside the contract.
+- Disconfirmation path: inspect both producers, run the smallest hostile input,
+  and execute the exported validator in an isolated generated tree. The
+  pre-repair reproductions confirmed the three gaps; the post-repair proofs
+  below confirm the selected supported boundaries.
 
 ## Verification
 
-- confirmed — the minimal hostile input distinguishes the two goal producers,
-  the AST gate misses the runtime string form, and the generated plugin copy
-  fails on the authoring-only dotted package path.
+- confirmed historically — the minimal hostile input distinguished the two goal
+  producers, the AST gate missed the runtime string form, and the generated
+  plugin copy failed on the authoring-only dotted package path.
 - repaired and verified — focused producer/export tests pass; the source and
   exported import gate validate 645 files; source adapter validation reports 16
   resolvers and 18 YAML files; the checked-in exported validator reports 16
@@ -84,26 +92,29 @@ layout, and the export gate detects the import form it is responsible for.
 
 ## Root Cause
 
-The three issues are instances of boundary logic owned by a narrower
-representation than the final consumer: `upsert_goal.py` owns prose guards
-that the handoff writer bypasses; `check_export_safe_imports.py` owns AST import
-nodes but not the string contract of `import_repo_module`; and
-`validate_adapters.py` imports one source-tree package spelling even though the
-exported consumer tree removes `public`.
+The three issues have related but non-identical causes: #500 had value logic
+owned by one producer instead of the shared value boundary; #501 had a proof
+surface keyed only to import-statement syntax instead of the supported literal
+helper-call contract; and #497 had a runtime loader and discovery glob keyed to
+one source layout even though the exported consumer tree removes `public`.
 
 ## Invariant Proof
 
-- Invariant: every supported producer/export preserves the semantic safety and
-  portability contract through its final consumer.
-- Producer Proof: source and handoff reproductions show equivalent goal values
-  taking different verdict paths; the export copy fails before its validator
-  runs.
-- Final-Consumer Proof: the exported validator invocation is the final consumer
-  reproduction for #497; the string-form import is a direct proof of #501's AST
-  blind spot.
-- Interface-Shape Sibling Scan: achieve/handoff producer pair and source/export
-  validator pair are the relevant siblings; repair ownership remains to be
-  chosen by implementation review.
+- Invariant #500: every supported goal producer validates the exact canonical
+  values its final artifact reader will receive. Producer proof is the hostile
+  handoff test and no-artifact refusal; final-consumer proof is the resulting
+  goal artifact being checked through the shared goal contract.
+- Invariant #501: the export gate refuses the supported literal
+  `import_repo_module` call forms whose dotted path names the authoring-only
+  package. The gate's verdict is the final consumer for this static contract;
+  variables, aliases, f-strings, concatenation, qualified calls, and arbitrary
+  dynamic imports are explicit non-claims.
+- Invariant #497: the validator entrypoint resolves and discovers adapters in
+  the layout it is actually running under. Final-consumer proof is the fresh
+  generated-plugin subprocess with `CHARNESS_REPO_ROOT` cleared.
+- Interface-Shape Sibling Scan: the achieve/handoff producer pair and the
+  source/flattened validator pair are real siblings; each now has a selected
+  owner and a proof channel rather than a pending candidate owner.
 - Non-Claims: this does not claim every dynamic import or every host packaging
   layout is supported.
 
@@ -121,28 +132,29 @@ exported consumer tree removes `public`.
 - Mental model: a local representation check is mistaken for the shared
   producer-to-consumer contract.
 - same layer: `upsert_goal.py` and `draft_goal_from_chunk.py` | decision: fix now
-  through a shared goal-value owner, preserving the drafter's slug derivation |
-  proof: hostile-input reproduction.
+  through the shared goal-value owner, preserving the drafter's slug derivation |
+  proof: hostile-input and no-artifact tests.
 - abstraction up: `goal_artifact_lib.py` and the runtime module resolver |
-  decision: candidate owners for implementation | proof: source inspection and
-  exported invocation.
+  decision: fix now at the shared value and layout-aware loader boundaries |
+  proof: source inspection plus exported invocation.
 - specialization down: plugin mirrors and flattened export layout | decision:
   fix now with a source/export smoke proof | proof: `ModuleNotFoundError`
   reproduction.
 - cross-file: goal producer tests and `test_export_safe_asset_paths.py` |
-  decision: add behavioral regression tests beside each owner | proof: existing
-  test inventory; new tests pending.
+  decision: fix now with behavioral regression tests beside each owner | proof:
+  focused tests and the broad changed-line producer.
 
 ## Seam Risk
 
 - Interrupt ID: none
 - Risk Class: none
-- Seam: export layout and runtime module resolution are under investigation.
-- Disproving Observation: the checked-in generated validator fails in the
-  exported tree while source-tree validation is the path covered by current
-  tests.
-- What Local Reasoning Cannot Prove: that authoring and exported copies resolve
-  the same module identity.
+- Seam: export layout and runtime module resolution across source and flattened
+  generated trees.
+- Disproving Observation: the isolated generated validator subprocess now passes
+  with the source-root override removed, while source and flattened adapter
+  validation report the expected resolver sets.
+- What Local Reasoning Cannot Prove: arbitrary dynamic loader dataflow or every
+  future packaging layout beyond the two supported layouts.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
@@ -150,6 +162,7 @@ exported consumer tree removes `public`.
 - Resolution: resolved
 - Critique Required: yes
 - Next Step: impl
+- Closeout note: Slice D implementation is complete; closeout evidence remains
 - Handoff Artifact: this dated debug record
 
 ## Prevention

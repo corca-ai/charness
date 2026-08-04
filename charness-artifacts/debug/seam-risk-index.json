@@ -1316,7 +1316,7 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "export layout and runtime module resolution are under investigation.",
+      "seam": "export layout and runtime module resolution across source and flattened",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
@@ -1358,7 +1358,7 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "export layout and runtime module resolution are under investigation.",
+      "seam": "export layout and runtime module resolution across source and flattened",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",

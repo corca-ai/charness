@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-07",
   "source_artifact_count": 428,
-  "candidate_count": 1764,
+  "candidate_count": 1768,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1076,10 +1076,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:1dac0553232a",
+      "candidate_id": "current_focus:543e70abbf5f",
       "kind": "current_focus",
-      "lesson": "This retro covers Slices B and C of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, then assigning #502's quality-runner summary a per-run receipt owner.",
-      "normalized_key": "this retro covers slices b and c of the active goal carrying a semantic",
+      "lesson": "This retro covers Slices B, C, and D of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, assigning #502's quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497 producer/export boundaries.",
+      "normalized_key": "this retro covers slices b c and d of the active goal carrying a",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1097,7 +1097,7 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "This retro covers Slices B and C of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, then assigning #502's quality-runner summary a per-run receipt owner."
+          "lesson": "This retro covers Slices B, C, and D of the active goal: carrying a semantic reviewer question into critique packets for #499/#491, assigning #502's quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497 producer/export boundaries."
         }
       ]
     },
@@ -1206,6 +1206,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:ef987b7d1754",
+      "kind": "next_improvement",
+      "lesson": "run the changed-line coverage producer immediately after any focused branch-coverage repair; applied in this run by adding direct in-process tests beside the subprocess proof and rerunning the producer.",
+      "normalized_key": "run the changed line coverage producer immediately after any focused branch coverage repair applied",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the changed-line coverage producer immediately after any focused branch-coverage repair; applied in this run by adding direct in-process tests beside the subprocess proof and rerunning the producer."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ad24f9d1b10e",
+      "kind": "next_improvement",
+      "lesson": "treat a resolved debug artifact's ownership, invariant, sibling, and proof paragraphs as closeout claims that must be refreshed with the code; applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`.",
+      "normalized_key": "treat a resolved debug artifact s ownership invariant sibling and proof paragraphs as closeout",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "treat a resolved debug artifact's ownership, invariant, sibling, and proof paragraphs as closeout claims that must be refreshed with the code; applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:6996b06d29fe",
       "kind": "next_improvement",
       "lesson": "when a quality artifact cites an inventory or probe, run its measurement and consumer validator in the same pre-broad checkpoint before recording the artifact as complete.",
@@ -1232,6 +1284,32 @@
       ]
     },
     {
+      "candidate_id": "class:e90c699e1a17",
+      "kind": "repeat_trap",
+      "lesson": "Slice D's first post-commit broad run refused the changed-line mutation lane on two uncovered branches. This was not wasted safety cost: the refusal named real uncovered behavior, and the direct producer rerun became clean after two focused in-process tests were added. The avoidable waste was discovering those branches after the first commit rather than running the producer immediately after the focused test expansion.",
+      "normalized_key": "slice d s first post commit broad run refused the changed line mutation lane",
+      "recurrence_class": "changed-line-proof-cadence",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Slice D's first post-commit broad run refused the changed-line mutation lane on two uncovered branches. This was not wasted safety cost: the refusal named real uncovered behavior, and the direct producer rerun became clean after two focused in-process tests were added. The avoidable waste was discovering those branches after the first commit rather than running the producer immediately after the focused test expansion."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:cae910afd88a",
       "kind": "repeat_trap",
       "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift.",
@@ -1254,6 +1332,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The 42.76-second current broad run was not waste: it was the required second evidence channel for a slice whose earlier focused checks could not see corpus-measurement drift."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:e343ec755a43",
+      "kind": "repeat_trap",
+      "lesson": "The causal closeout read exposed stale debug prose after the code was repaired. That was a real trust risk, not cosmetic churn: the carrier would have claimed current ownership from a record that still said “candidate owners” and “tests pending.” Reconciling the record and rebuilding its seam index was necessary closeout work.",
+      "normalized_key": "the causal closeout read exposed stale debug prose after the code was repaired that",
+      "recurrence_class": "closeout-record-currentness",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+      "latest_source_date": "2026-08-04",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-session-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The causal closeout read exposed stale debug prose after the code was repaired. That was a real trust risk, not cosmetic churn: the carrier would have claimed current ownership from a record that still said “candidate owners” and “tests pending.” Reconciling the record and rebuilding its seam index was necessary closeout work."
         }
       ]
     },

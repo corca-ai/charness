@@ -8,15 +8,15 @@ This file is the living goal scratchpad for the active run.
 
 ## Active Operating Frame
 
-- Current slice: Slice D — disposition #500, #501, and #497 under Slice A's selected surface-fix policy.
-- Current slice intent: inspect each issue's current producer/consumer boundary and premise before
-  shaping a repair; carry each selected surface fix through source/export proof, or record a concrete
-  exemption if the shared contract is disproven. Slice C assigned #502's per-run terminal receipt
-  owner and explicitly kept runtime telemetry separate. Once active, this names the reviewable-intent
-  unit in progress and the commits it spans; critique and broad proof do not re-fire within one
-  unchanged intent — update it when the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: read the current #500/#501/#497 source and issue evidence, enumerate the producer,
-  consumer, and sibling boundary for each, then run premise checks before shaping any fix.
+- Current slice: Slice E — bundle proof, claims review, retro disposition, and staged issue closeouts.
+- Current slice intent: close the goal only after the final evidence record is populated and a distinct
+  observer has checked the goal's claims. Slice D resolved #500/#501/#497 at their producer/export
+  boundaries; Slice E stages their carrier in the default-branch commit without pushing or closing
+  remote state out of band. Once active, this names the reviewable-intent unit in progress and the
+  commits it spans; critique and broad proof do not re-fire within one unchanged intent — update it
+  when the intent changes, not per commit (meaningful-slice-cadence).
+- Next action: run the locked bundle proof, bind the claims/disposition review and host probe, then
+  commit the carrier and final goal record with the remote issue close still awaiting publication.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -124,22 +124,13 @@ The outcome is a RECORDED DECISION with its reasoning, each of the six issues di
 | A | Decide the axis for #499 + #491, weighing all three candidate answers, and record it with its reasoning | Both ask one question, and a third answer now has a measured worked example rather than being hypothetical | One durable selector, six-row disposition/proof matrix, and measured basis for each candidate | completed |
 | B | Build what slice A chose, proven to bite against a recorded instance | A remedy that would not have caught any of the five is theatre | The chosen control surfaces or refuses a real recorded instance; if a gate, also passes the tree with false-fire cost measured | completed |
 | C | Give #502's summary format an owner, or record why it should not have one | It is the cheapest live instance of "a verdict surface with many consumers and no definition", and it is where slice A's answer gets stress-tested | Changing the format is one edit plus one test, or a recorded decision that the 17 consumers are correct as they are | completed |
-| D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | in_progress |
-| E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | pending |
+| D | Disposition #500, #501, #497 under slice A's answer | They are the concrete cases that show whether the answer is usable on real code | Each either fixed under the chosen shape, or carrying a recorded exemption with its reasoning | completed |
+| E | Closeout: bundle gate, claims review, retro, issue closeouts, commit | Repo contract treats critique, closeout and commit as task-completing work | `--verification-lock` green with an explicit pytest number; each close through its floor | in_progress |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+none — no operator-only decision remains; issue publication, push, and remote
+state readback are explicitly staged outside this local goal closeout.
 
 ## Coordination Cues
 
@@ -180,7 +171,7 @@ per the bullets above when that boundary is crossed):
 - Routing: quality — planned and ran public-skill quality/dogfood validation, refreshed measurement baselines, and recorded the broad-suite result.
 - Routing: retro — persisted the auto-triggered session retro and refreshed the lesson-selection index.
 - Routing: issue — filed off-goal recurring telemetry follow-up #503 under the standing issue-creation approval.
-- Issue closeout: n/a — this slice records issue evidence and files one off-goal follow-up; tracked issue resolution belongs to Slice E.
+- Issue closeout: #497 #500 #501 staged via direct-commit carrier `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`; `validate-closeout-draft --carrier direct-commit` is `draft_verified`, and post-commit `verify-closeout` will be carrier-only because this goal does not push.
 - Gather: charness-artifacts/gather/2026-08-04-goal-issue-sources.md — authenticated `gh` capture of the six named GitHub issue records; the public URL route was attempted first and blocked by captcha.
 
 ## Discuss Before Activation
@@ -246,6 +237,33 @@ applies.
 - Off-goal findings: No new off-goal issue. Existing #503 remains the tracked recurring closeout-runtime follow-up; #496 remains outside the goal.
 - Lessons carried forward: A verdict surface must carry the complete action fact at the actual truncation boundary: verdict, failed identity, and recovery path. Rolling telemetry is not a per-run receipt. Test the final line and place best-effort diagnostic writes before it. When a quality artifact changes inventory-consumption prose, run its consumer validator before the broad suite.
 - Metrics: 7028 broad standing tests passed in 41.93s, with a final post-ledger rerun at 37.47s; 51 focused tests passed in 4.91s; 3 initial angle reviewers plus 1 counterweight, then repair-read and current-packet bounded reviewers; every reviewer boundary verification was clean; host token/tool metrics unavailable.
+
+### Slice 4: Repair producer and export boundary verdicts
+
+- Objective: Disposition #500, #501, and #497 under Slice A's surface-owner answer, with the final consumer proving the repaired behavior.
+- Why this approach: The debug reproductions showed split value ownership, an AST-only export blind spot, and an authoring-layout-only exported validator. Each boundary could carry and prove its own semantic fact without adding a proxy gate.
+- Commits: aa30b66d Repair producer and export boundary verdicts; 583f731a Cover export boundary branches.
+- What changed: Moved newline/prose/total-loss supplied-slug invariants into `goal_artifact_lib.py` and applied them to the exact handoff-rendered values before any write; added the narrow literal `import_repo_module` call detector with positional/keyword and `Path(__file__)` coverage plus explicit dynamic-form non-claims; made adapter resolver loading and discovery source/flattened-layout aware; and added a generated exported-validator subprocess proof with `CHARNESS_REPO_ROOT` cleared. Synced the checked-in plugin mirrors.
+- Alternatives rejected: Kept template consolidation, general package-loader redesign, and arbitrary dynamic-import inference out of scope. The duplicate-ratchet families for standalone pipeline CLI scaffolding and bootstrap preambles were reviewed as intentional, with their rationale recorded in `dup-review.json`.
+- Targeted verification: Debug artifact and seam-risk index validate; critique and quality artifacts validate; source/export import checks validate 645 files; source adapter validation reports 16 resolvers and 18 YAML files; exported validation reports 16 resolvers; focused producer/export tests pass 127, then 89 after the changed-line branch additions. The broad quality run passed 85 checks with no failures before commit; the post-commit run established the mutation lane, found two uncovered branches, and the final direct changed-line producer reports every mapped changed line covered. No Cautilus evaluation was run.
+- Test duplication pressure: The new tests prove hostile goal values leave no artifact, canonical CR handling, explicit-slug refusal, auto-draft fallback, exact import-call boundaries, source/flattened resolver branches, and environment-isolated exported execution. The new duplicate families were either removed or classified intentionally after reading their owners.
+- Critique: The pre-implementation critique used three decision angles and a separate counterweight; the final repair-read bounded reviewer found no blocker or medium finding, with clean boundary fingerprint verification. The final packet is `charness-artifacts/critique/2026-08-04-slice-d-final-packet.json`.
+- Off-goal findings: none — #496 remains outside this goal; tracked issue closeouts are deferred to Slice E under the standing closeout floor.
+- Lessons carried forward: Validate the exact values the final consumer will read, and prove exported behavior through the generated layout rather than mirror equality. A narrow static predicate is stronger when its unsupported forms are explicit. Generated current artifacts must be recaptured after broad quality refreshes before packet binding is committed.
+- Metrics: 85 broad quality checks passed with zero failures before the final coverage repair; 89 focused branch/export tests passed; the direct changed-line producer is clean; 3 critique angles plus 1 counterweight and a final repair-read reviewer; host token/tool metrics unavailable.
+
+### Slice 5: Bundle proof, claims review, retro, and staged issue carriers
+
+- Objective: close the six-row decision record with the locked bundle proof, a distinct claims/disposition review, the triggered retro disposition, and a direct-commit carrier for #497/#500/#501 without publishing remote state.
+- Why this approach: P4/P5 make the evidence record and second observer the stop condition; the achieve lifecycle stages issue close keywords in the default-branch commit and leaves push/readback outside this local goal.
+- Carrier: `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`, validated with `issue_tool.py validate-closeout-draft --carrier direct-commit --commit-message-file` as `draft_verified` before the carrier commit.
+- What changed: Reconciled the debug record after the causal review found stale candidate-owner/pending-test prose; persisted the triggered Slice D retro and lesson-selection index; bound the issue-specific resolution critique to the exact JSON packet identity; and recorded separate behavior channels for all three issues.
+- Alternatives rejected: Did not push, close GitHub state out of band, or replace the carrier with a manual fallback. Did not infer remote behavior from local tests or treat `verify-closeout` carrier checks as final tracker readback.
+- Targeted verification: `run_slice_closeout.py --verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review` completed its staged structural/deterministic bundle checks; the separate standing runner reported 7048 passed in 44.52s. The debug seam index, retro, critique, goal, and carrier validators pass; the resolution critique ran three named angles plus a separate counterweight with clean boundary verification; no Cautilus evaluation was run. The claims review remains the final completion check for this slice.
+- Critique: `charness-artifacts/critique/2026-08-04-issue-497-500-501-resolution-critique.md` records the causal context, three issue-bound behavior verdicts, boundary ownership, packet hashes, four fresh-eye findings, and the counterweight bins. The goal-level claims/disposition review is the remaining distinct observer before the status flip.
+- Off-goal findings: #496 remains outside the goal; recurring closeout-runtime/over-slice telemetry remains filed as #503.
+- Lessons carried forward: A closeout record is itself a verdict surface. Bind the exact packet bytes, keep debug ownership current, and name each final-consumer behavior channel separately from the carrier and tracker state.
+- Metrics: 7048 standing tests passed; 4 issue-resolution reviewers returned findings; the first claims review returned three closeout blockers that were repaired; the final claims review is the completion evidence; host window metrics are unscoped because the goal has no `Host metric window:` line.
 
 ## Context Sources
 
@@ -337,18 +355,26 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
-
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-04-session-retro.md
+Host log probe: charness-artifacts/probe/2026-08-04-decide-where-a-recurring-lesson-lives.json
+Disposition review: charness-artifacts/critique/2026-08-04-decide-where-a-recurring-lesson-lives-disposition-review.md
+- Standing proof: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only` — 7048 passed in 44.52s.
+- Bundle proof: `run_slice_closeout.py --verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review` completed with all staged structural/deterministic checks passing; `run_standing_pytest.py --mode read-only` separately reported 7048 passed in 44.52s. No Cautilus evaluation was run under the ask-before-run contract.
+- Claims boundary: local tests and `verify-closeout` carrier checks do not prove remote issue state; push, GitHub close, and post-publication state readback remain outside this local goal closeout.
+- Host metrics: the probe found available thread-wide Claude/Codex logs but no goal-scoped window because this artifact has no `Host metric window:` line; goal-window elapsed/token/tool totals are therefore unclaimed.
 
 ## User Verification Instructions
 
+- Run the final carrier commit through the normal default-branch publication path; its `Closes #497`, `Closes #500`, and `Closes #501` keywords are staged in `charness-artifacts/issue/2026-08-04-issues-497-500-501-closeout.md`.
+- After publication, run `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo corca-ai/charness --number 497 --number 500 --number 501 --classification bug --carrier direct-commit --commit-ref <published-carrier-sha> --expect-state CLOSED` and retain the distinct behavior verdicts already recorded in the carrier.
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: synchronized quality artifacts and probes before broad verification.
+Retro dispositions: applied: carried the semantic reviewer question and worked #499/#491 application into the critique packet.
+Retro dispositions: applied: made the truncation receipt carry verdict, failed identity, and recovery path.
+Retro dispositions: out-of-scope: the quality-packet corpus-denominator capability needs a separate owner and was not required to resolve this goal's six issue findings.
+Retro dispositions: out-of-scope: promoting rolling telemetry into a structured per-run receipt needs a named consumer, retention, and stale-state contract outside this goal.
+Retro dispositions: applied: ran the changed-line producer after focused branch-coverage repair.
+Retro dispositions: applied: reconciled the debug record's ownership, invariant, sibling, and final-consumer proof paragraphs.
+Structural follow-up: issue #503 (recurs: recurring closeout-runtime and over-slice telemetry needs a gate-owner decision; the separate corpus-denominator packet surface remains explicitly out-of-scope here)

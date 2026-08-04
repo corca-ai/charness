@@ -1,25 +1,29 @@
 # Session Retro
 Date: 2026-08-04
+Goal: decide-where-a-recurring-lesson-lives
 
 ## Context
 
-This retro covers Slices B and C of the active goal: carrying a semantic reviewer
-question into critique packets for #499/#491, then assigning #502's quality-runner
-summary a per-run receipt owner.
+This retro covers Slices B, C, and D of the active goal: carrying a semantic
+reviewer question into critique packets for #499/#491, assigning #502's
+quality-runner summary a per-run receipt owner, and repairing the #500/#501/#497
+producer/export boundaries.
 The work mattered because the selected control had to stay judgment-supporting
-without becoming a semantic meta-gate. The auto-retro trigger fired on the
-checked-in plugin export surface, so this is a bounded session retro for the
-slice rather than a claim about the whole goal.
+without becoming a semantic meta-gate, and the later fixes had to prove the
+actual exported consumer rather than the authoring tree. The commit-range
+auto-retro trigger fired on the checked-in plugin export surface, so this is a
+bounded session retro for these slices rather than a claim about the whole goal.
 
 Claims below distinguish strong local execution evidence from moderate
 judgment about future reviewer uptake. The latter remains unproven.
 
 ## Window
 
-From the Slice A checkpoint at `e8a4b2c9` through the Slice C verification
-checkpoint on 2026-08-04. The window included the packet implementation, the
-#502 runner repair, fresh-eye review rounds, the quality review, probe refreshes,
-the broad suite, and the recurring-telemetry follow-up.
+From the Slice A checkpoint at `e8a4b2c9` through the Slice D verification and
+closeout-preparation checkpoint on 2026-08-04. The window included the packet
+implementation, the #502 runner repair, the #500/#501/#497 producer/export
+repairs, fresh-eye review rounds, the quality review, probe refreshes, the broad
+suite, the changed-line coverage repair, and the recurring-telemetry follow-up.
 
 ## Evidence Summary
 
@@ -54,6 +58,17 @@ the broad suite, and the recurring-telemetry follow-up.
 - Strong: one repair-read reviewer caught the post-summary telemetry warning
   escape; later repair-read and current-packet reviewers approved the ordering.
   Boundary fingerprints were clean around every parent write.
+- Strong: Slice D moved the exact goal-value contract into `goal_artifact_lib.py`,
+  narrowed export scanning to supported literal helper calls, and made adapter
+  loading/discovery source-or-flattened-layout aware. Source and generated
+  mirrors are identical at the repaired paths.
+- Strong: the hostile producer tests, exact import-call controls, generated
+  exported-validator subprocess, and direct changed-line producer exercised the
+  selected boundaries. The final standing runner reported 7048 passed in 44.52s.
+- Strong: a final causal fresh-eye read found the implementation proof useful but
+  the debug close ledger stale. The debug artifact was reconciled to current
+  ownership, per-issue invariants, sibling decisions, and final-consumer proof
+  before issue closeout drafting.
 
 ## Waste
 
@@ -77,6 +92,17 @@ the broad suite, and the recurring-telemetry follow-up.
   semantic review markers were present but not in the exact inventory-consumption
   form. The repair restored the literal markers and reran the broad suite, rather
   than weakening the consumer validator. (recurrence-class: measurement-baseline-sync)
+- Slice D's first post-commit broad run refused the changed-line mutation lane
+  on two uncovered branches. This was not wasted safety cost: the refusal named
+  real uncovered behavior, and the direct producer rerun became clean after two
+  focused in-process tests were added. The avoidable waste was discovering those
+  branches after the first commit rather than running the producer immediately
+  after the focused test expansion. (recurrence-class: changed-line-proof-cadence)
+- The causal closeout read exposed stale debug prose after the code was repaired.
+  That was a real trust risk, not cosmetic churn: the carrier would have claimed
+  current ownership from a record that still said “candidate owners” and “tests
+  pending.” Reconciling the record and rebuilding its seam index was necessary
+  closeout work. (recurrence-class: closeout-record-currentness)
 
 ## Critical Decisions
 
@@ -100,6 +126,13 @@ the broad suite, and the recurring-telemetry follow-up.
 - Moved aggregate runtime recording before the final summary after a fresh-eye
   reviewer showed that a best-effort warning could otherwise become the last
   merged output line.
+- Kept the #500/#501/#497 work as three explicit surface repairs rather than
+  inventing one universal “representation boundary” detector. The causal
+  reviewer confirmed the shared lesson but required distinct root causes,
+  invariants, and non-claims.
+- Treated the exported subprocess and the in-process changed-line tests as
+  complementary evidence: the subprocess proves the delivered layout, while
+  the in-process tests let the mutation producer see the mapped branches.
 
 ## Trends vs Last Retro
 
@@ -129,6 +162,14 @@ token or tool-call metric.
 - Slice C repeated the same shape at a smaller boundary: focused runner tests
   passed before the broad suite caught a literal quality-artifact consumption
   marker mismatch. The second broad run was the completion evidence.
+- Slice D also held P4/P5: the mutation refusal and causal fresh-eye read were
+  distinct channels from the implementation author's focused proof. The initial
+  debug record misapplied “resolved” by leaving stale candidate-owner prose; the
+  repair made the evidence record current before any external close.
+- Slice D repeats the same lesson at the closeout boundary: implementation and
+  focused proof were not enough until a distinct causal reader checked the
+  durable debug record itself. This is qualitative; host token/tool metrics are
+  unavailable.
 
 ## Expert Counterfactuals
 
@@ -141,6 +182,11 @@ token or tool-call metric.
   changes merely because this artifact exists, and which consumer reads it?”
   That question would have predicted the probe drift before the broad suite,
   without turning the prediction into a semantic gate.
+- An Ousterhout-style design lens would have forced the shared value API and the
+  two-layout resolver to be named as the modules' stable boundaries before the
+  issue closeout carrier was drafted. A direct P4 lens would have asked “does
+  the debug record still describe the code that the carrier claims?” immediately
+  after implementation, saving the late reconciliation pass.
 
 ## Sibling Search
 
@@ -165,6 +211,12 @@ token or tool-call metric.
   window. Keep best-effort telemetry writes before that receipt.
 - capability: do not promote rolling telemetry into a structured per-run receipt
   without a named consumer, run identity, retention, and stale-state contract.
+- workflow: run the changed-line coverage producer immediately after any focused
+  branch-coverage repair; applied in this run by adding direct in-process tests
+  beside the subprocess proof and rerunning the producer.
+- memory: treat a resolved debug artifact's ownership, invariant, sibling, and
+  proof paragraphs as closeout claims that must be refreshed with the code;
+  applied in `charness-artifacts/debug/2026-08-04-debug-review-followup.md`.
 
 ## Packet Consumed
 
