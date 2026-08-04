@@ -5,12 +5,18 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+import pytest
+
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[2]
 _persist_retro_artifact = import_repo_module(
     ROOT / "skills" / "public" / "retro" / "scripts" / "persist_retro_artifact.py",
     "skills.public.retro.scripts.persist_retro_artifact",
+)
+_persistence_lib = import_repo_module(
+    ROOT / "scripts" / "retro_persistence_lib.py",
+    "scripts.retro_persistence_lib",
 )
 
 
@@ -194,6 +200,206 @@ def _write_default_adapter(repo: Path) -> None:
         + "\n",
         encoding="utf-8",
     )
+
+
+def _write_goal(repo: Path, slug: str = "owner") -> Path:
+    path = repo / "charness-artifacts" / "goals" / f"2026-05-07-{slug}.md"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text("# Achieve Goal: Owner\n\nStatus: active\n", encoding="utf-8")
+    return path
+
+
+def _goal_retro(goal_value: str) -> str:
+    return "\n".join(
+        [
+            "# Goal Retro",
+            f"Goal: {goal_value}",
+            "",
+            "## Context",
+            "",
+            "- Goal-aware persistence must bind before writing.",
+            "",
+            "## Waste",
+            "",
+            "- A late evidence check allowed avoidable closeout churn.",
+            "",
+            "## Next Improvements",
+            "",
+            "- `capability`: validate the owning goal at the shared write boundary.",
+            "",
+        ]
+    )
+
+
+def _tree_snapshot(root: Path) -> dict[str, tuple[str, bytes | None]]:
+    snapshot: dict[str, tuple[str, bytes | None]] = {}
+    for path in sorted(root.rglob("*")):
+        relative = path.relative_to(root).as_posix()
+        if path.is_dir():
+            snapshot[relative] = ("dir", None)
+        else:
+            snapshot[relative] = ("file", path.read_bytes())
+    return snapshot
+
+
+def test_goal_aware_persistence_accepts_matching_path_at_cli_boundary(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    _write_default_adapter(repo)
+    goal = _write_goal(repo)
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    markdown_file = repo / "goal-retro.md"
+    markdown_file.write_text(_goal_retro("charness-artifacts/goals/2026-05-07-owner.md"), encoding="utf-8")
+    monkeypatch.chdir(outside)
+
+    result = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-08-owner-retro.md",
+        "--markdown-file",
+        str(markdown_file),
+        "--goal-path",
+        str(goal.relative_to(repo)),
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["goal_path"] == "charness-artifacts/goals/2026-05-07-owner.md"
+    assert payload["goal_slug"] == "owner"
+    assert "Goal: charness-artifacts/goals/2026-05-07-owner.md" in (
+        repo / payload["artifact_path"]
+    ).read_text(encoding="utf-8")
+
+
+@pytest.mark.parametrize(
+    "markdown_text",
+    [
+        _goal_retro("different-owner"),
+        "# Goal Retro\n\n## Context\n\n- No identity field.\n",
+        _goal_retro(""),
+        "# Goal Retro\nGoal: owner\nGoal: owner\n\n## Context\n\n- Duplicate metadata fields.\n",
+        "# Goal Retro\n\n```text\nGoal: owner\n```\n\n## Context\n\n- Fenced example only.\n",
+        "# Goal Retro\n\n    Goal: owner\n\n## Context\n\n- Indented example only.\n",
+        "# Goal Retro\n\n## Context\n\nGoal: owner\n\n- Body heading must end the preamble.\n",
+        "# Goal Retro\n\n ## Context\n\nGoal: owner\n\n- Body heading must end the preamble.\n",
+        "# Goal Retro\n\n  ## Context\n\nGoal: owner\n\n- Body heading must end the preamble.\n",
+        "# Goal Retro\n\n   ## Context\n\nGoal: owner\n\n- Body heading must end the preamble.\n",
+        "# Goal Retro\n\n# Body\n\nGoal: owner\n\n- A later H1 is also a body boundary.\n",
+        "# Goal Retro\n\n````text\n```\nGoal: owner\n````\n\n## Context\n\n- Short inner fence only.\n",
+        "# Goal Retro\n\n````\n````still-code\nGoal: owner\n````\n\n## Context\n\n- Trailing-text pseudo-closer only.\n",
+        "# Goal Retro\n\nHeading\n---\nGoal: owner\n\n## Context\n\n- Setext heading precedes the field.\n",
+    ],
+    ids=[
+        "mismatch",
+        "missing-field",
+        "missing-value",
+        "duplicate-field",
+        "fenced",
+        "indented",
+        "atx-h2-0",
+        "atx-h2-1",
+        "atx-h2-2",
+        "atx-h2-3",
+        "atx-h1-after-title",
+        "short-fence-closer",
+        "trailing-text-closer",
+        "setext-heading",
+    ],
+)
+def test_goal_aware_mismatch_or_malformed_identity_writes_nothing(
+    tmp_path: Path, markdown_text: str
+) -> None:
+    repo = tmp_path / "repo"
+    _write_default_adapter(repo)
+    goal = _write_goal(repo)
+    (repo / ".agents" / "t-events-adapter.yaml").write_text(
+        "version: 1\nenabled: true\nstorage_path: .charness/t-events\n",
+        encoding="utf-8",
+    )
+    markdown_file = repo / "goal-retro.md"
+    markdown_file.write_text(markdown_text, encoding="utf-8")
+    before = _tree_snapshot(repo)
+
+    with pytest.raises(ValueError):
+        _persistence_lib.persist_retro_artifact(
+            repo_root=repo,
+            output_dir=repo / "charness-artifacts" / "retro",
+            artifact_name="2026-05-08-owner-retro.md",
+            markdown_text=markdown_text,
+            summary_path=repo / "charness-artifacts" / "retro" / "recent-lessons.md",
+            goal_path=goal,
+        )
+
+    assert _tree_snapshot(repo) == before
+
+
+def test_goal_aware_missing_goal_path_writes_nothing(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _write_default_adapter(repo)
+    markdown_text = _goal_retro("owner")
+    before = _tree_snapshot(repo)
+
+    with pytest.raises(ValueError):
+        _persistence_lib.persist_retro_artifact(
+            repo_root=repo,
+            output_dir=repo / "charness-artifacts" / "retro",
+            artifact_name="2026-05-08-owner-retro.md",
+            markdown_text=markdown_text,
+            summary_path=repo / "charness-artifacts" / "retro" / "recent-lessons.md",
+            goal_path=repo / "charness-artifacts" / "goals" / "2026-05-07-owner.md",
+        )
+
+    assert _tree_snapshot(repo) == before
+
+
+def test_goal_aware_library_accepts_exact_slug_and_legacy_mode_stays_goal_free(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    _write_default_adapter(repo)
+    goal = _write_goal(repo)
+    goal_retro = _goal_retro("owner")
+    result = _persistence_lib.persist_retro_artifact(
+        repo_root=repo,
+        output_dir=repo / "charness-artifacts" / "retro",
+        artifact_name="2026-05-08-owner-slug.md",
+        markdown_text=goal_retro,
+        summary_path=None,
+        goal_path=goal,
+    )
+    assert result["goal_path"] == "charness-artifacts/goals/2026-05-07-owner.md"
+    written = (repo / result["artifact_path"]).read_text(encoding="utf-8")
+    assert "Goal: charness-artifacts/goals/2026-05-07-owner.md" in written
+    assert "Goal: owner" not in written
+
+    legacy_file = repo / "legacy.md"
+    legacy_file.write_text("# Session Retro\n\nNo goal field is required.\n", encoding="utf-8")
+    legacy = run_persist(
+        monkeypatch,
+        capsys,
+        "--repo-root",
+        str(repo),
+        "--artifact-name",
+        "2026-05-09-session.md",
+        "--markdown-file",
+        str(legacy_file),
+    )
+    assert legacy.returncode == 0, legacy.stderr
+    assert "goal_path" not in json.loads(legacy.stdout)
+
+
+def test_achieve_closeout_contract_routes_owning_goal_to_persistence() -> None:
+    achieve_contract = (ROOT / "skills/public/achieve/SKILL.md").read_text(encoding="utf-8")
+    retro_contract = (ROOT / "skills/public/retro/SKILL.md").read_text(encoding="utf-8")
+
+    assert "pass `--goal-path <canonical goal artifact>`" in achieve_contract
+    assert "include exactly one matching top-level `Goal:` field" in achieve_contract
+    assert "pass `--goal-path <canonical goal artifact>`" in retro_contract
 
 
 def test_persist_retro_artifact_normalizes_artifact_name_without_md_extension(

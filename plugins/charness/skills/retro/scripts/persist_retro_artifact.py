@@ -36,6 +36,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--artifact-name", required=True, help="Filename stem (without extension) for the persisted retro artifact")
     parser.add_argument("--markdown-file", type=Path, required=True, help="Path to the rendered retro markdown body to persist")
     parser.add_argument(
+        "--goal-path",
+        type=Path,
+        help=(
+            "Opt into goal-aware persistence; the retro must contain exactly one "
+            "matching `Goal:` field before any output is written"
+        ),
+    )
+    parser.add_argument(
         "--force-empty-summary",
         action="store_true",
         help=(
@@ -62,6 +70,7 @@ def main() -> int:
         markdown_text=markdown_text,
         summary_path=(repo_root / summary_rel) if isinstance(summary_rel, str) else None,
         force_empty_summary=args.force_empty_summary,
+        goal_path=args.goal_path,
     )
     print(json.dumps(result, ensure_ascii=False))
     return 0

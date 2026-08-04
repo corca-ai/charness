@@ -132,14 +132,10 @@ def derive_goal_tokens(text: str) -> list[str]:
     if not slug:
         return []
     if slug.isdigit():
-        # A purely numeric slug leaves a BARE number as the only token, and a
-        # bare number now has to be CITED in evidence content. The canonical way
-        # a retro names its goal is by path (`charness-artifacts/goals/
-        # 2026-07-30-427.md`), where the date segment sits between the marker and
-        # the number, so the citation prefix fails and a CORRECT closeout is
-        # refused. Opting out of binding is the safe direction: presence still
-        # applies, and no such goal exists today.
-        return []
+        # A goal-aware retro carries the full canonical filename in its exact
+        # `Goal:` field, so the date-plus-number stem is a distinctive token that
+        # binds without weakening the bare-number citation rules.
+        return [stem]
     tokens = [slug]
     numeric = _LEADING_NUMERIC_CLUSTER.match(slug)
     if numeric and numeric.group(0) != slug:

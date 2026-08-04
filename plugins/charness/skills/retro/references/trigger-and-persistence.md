@@ -37,3 +37,12 @@ Allowed forms:
 - `Persisted: no: user asked to skip durable artifact update`
 
 If a durable home exists, prefer writing or updating it before moving on.
+
+For an achieve closeout, pass `--goal-path` to the persistence helper. The
+path must resolve to the owning canonical goal artifact, and the retro must
+contain exactly one `Goal:` field in the preamble after its optional document
+title, whose trimmed value is that repo-relative path or its filename slug. A
+slug is accepted as input for compatibility, but the helper writes the
+canonical repo-relative path form. This opt-in check runs before the retro,
+summary, lesson index, event, or output-directory writes; omit the flag for
+ordinary session or release-trigger retros.

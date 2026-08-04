@@ -1,6 +1,6 @@
 # Achieve Goal: Make retro persistence goal-aware without breaking session retros
 
-Status: draft
+Status: active
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-retro-persistence-goal-aware.md`
 
@@ -9,13 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: shaped and ready for activation; no slice has run.
-- Current slice: goal-aware persistence contract, awaiting activation.
+- Current disposition: Slice 1 is implemented and locally proven; final bundle
+  proof and closeout records remain.
+- Current slice: goal-aware persistence validation and no-write proof.
 - Current slice intent: make the owning goal an explicit, opt-in input at the
   retro write boundary and prove mismatches fail before any write. Once active,
   this names the reviewable-intent unit in progress; critique and broad proof
   do not re-fire within one unchanged intent.
-- Next action: run `/goal @charness-artifacts/goals/2026-08-04-retro-persistence-goal-aware.md`.
+- Next action: commit this slice, then run `describe_goal_closeout_shape.py` and
+  the verification-locked closeout bundle.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   focused and fresh-eye proof at slice boundaries; strongest applicable proof
   at final closeout.
@@ -108,10 +110,10 @@ a goal. Resolve issue #504 with local proof and an honest closeout record.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Map persistence callers and choose the identity API | The issue direction is a hypothesis; verify its premise before coding | Caller/consumer map, exact `Goal:` grammar, sibling and generated-surface inventory | pending |
-| B | Add optional goal-aware persistence validation | The write boundary is where wrong ownership should stop | Library + CLI input, exact field comparison, pre-write refusal, unchanged session mode | pending |
-| C | Prove positive and negative behavior | Shape-valid output is not enough; mismatches must be unable to write silently | Focused direct-library/CLI tests, full side-effect-tree snapshot, source/plugin parity | pending |
-| D | Close out the capability and issue | The fix needs durable evidence and separate remote state proof | Locked quality proof, retro, claims review, carrier/readback | pending |
+| A | Map persistence callers and choose the identity API | The issue direction is a hypothesis; verify its premise before coding | Caller/consumer map, exact `Goal:` grammar, sibling and generated-surface inventory | completed |
+| B | Add optional goal-aware persistence validation | The write boundary is where wrong ownership should stop | Library + CLI input, exact field comparison, pre-write refusal, unchanged session mode | completed |
+| C | Prove positive and negative behavior | Shape-valid output is not enough; mismatches must be unable to write silently | Focused direct-library/CLI tests, full side-effect-tree snapshot, source/plugin parity | completed |
+| D | Close out the capability and issue | The fix needs durable evidence and separate remote state proof | Locked quality proof, retro, claims review, carrier/readback | in progress |
 
 ## Operator Decision Queue
 
@@ -138,16 +140,34 @@ Issue closeout: #504 — direct-commit carrier only after `validate-closeout-dra
 
 ## Slice Log
 
-No slices executed; this is an activation-ready draft.
+Slice 1 is recorded below; the remaining closeout work is tracked in the
+active frame and Slice Plan.
+
+### Slice 1: Goal-aware persistence contract
+
+- Objective: Move achieve goal identity validation to the shared retro write boundary and prove mismatch refusal before every derived write.
+- Why this approach: The caller map showed the shared library owns the first artifact, event, summary, and index writes while achieve only checked identity later.
+- Commits: uncommitted slice; commit after pre-lock closeout gate
+- What changed: scripts/retro_persistence_lib.py and CLI; achieve closeout token binding; retro/achieve workflow instructions; synchronized plugins/charness mirrors; direct-library/CLI tests; debug and critique records.
+- Alternatives rejected: Rejected universal goal requirements because release/session callers are intentionally goal-free; rejected semantic lesson-quality validation and #496 combination.
+- Targeted verification: 13-test initial proof, 103-test repair proof, 106-test pre-lock proof, 111 focused tests after the heading-boundary and slug-canonicalization repairs, then 112 tests with the maintained achieve/retro caller-contract regression; source/plugin diffs are identical; reviewer boundary fingerprints were clean for all initial/repair windows and the recorded repair reads.
+- Test duplication pressure: Focused persistence and achieve binding coverage expanded by 9 tests; duplicate-pressure sample deferred to the pre-lock aggregate gate.
+- Critique: Round 1 found metadata-location, repo-root resolution, workflow-routing, and numeric-consumer blockers. Round 2 found fence-length/trailing-text and Setext-boundary blockers. The final pre-lock repair read found an indented-heading boundary gap and missing slug canonicalization; both were repaired, and the subsequent repair-read found no concrete implementation blocker. The final dogfood-record read remains carried by the critique packet.
+- Off-goal findings: #496 remains independent; no provider/live/release proof or issue close was attempted.
+- Issue causal review: the local caller contract is now regression-tested, but the
+  delegated review found no host-level proof that an agent invocation cannot omit
+  `--goal-path`; the durable causal record keeps any remote close claim deferred.
+- Lessons carried forward: Keep exact semantic identity at the write owner, mask representations before parsing, and read the repaired verdict surface again before locked proof.
+- Metrics: Host tool exposed reviewer findings; no per-goal host timing window was requested.
 
 ## Context Sources
 
 1. [design-north-star.md](../../docs/design-north-star.md) — P1/P3 keep
    judgment out of a new blocking gate; P4/P5 require distinct evidence at the
    issue-close boundary.
-2. [#504 problem-first carrier](../issue/2026-08-04-retro-persistence-goal-binding.md) — observed mismatch, impact, and candidate direction.
-3. [completed goal](2026-08-08-decide-where-a-recurring-lesson-lives.md) — the concrete failure and repaired goal-bound retro.
-4. [goal retro](../retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md) and [recent lessons](../retro/recent-lessons.md) — recurring waste and next-session guidance.
+2. [#504 problem-first carrier](../issue/2026-08-04-retro-persistence-goal-binding.md) — the contemporaneous issue record for the observed mismatch, impact, and candidate direction; its later-dated example is explanatory context, not proof for this goal.
+3. [later-added completed goal context](2026-08-08-decide-where-a-recurring-lesson-lives.md) — a later-dated record that explains the concrete failure and repaired goal-bound retro; it is not contemporaneous proof for this August 4 goal.
+4. [later-added goal retro context](../retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md) and [recent lessons](../retro/recent-lessons.md) — later-dated explanatory context and next-session guidance, not contemporaneous proof for this goal.
 5. `skills/public/retro/scripts/persist_retro_artifact.py`, `scripts/retro_persistence_lib.py`, and `tests/quality_gates/test_retro_persistence.py` — current owner and proof seams inspected while shaping.
 
 ## Interview Decisions
@@ -206,6 +226,16 @@ No slices executed; this is an activation-ready draft.
   exact identity, direct-library, full-tree no-write, and conditional-review
   repairs; boundary fingerprint `retro-goal-design-critique-repair-read-1` was
   clean.
+- Slice 1 review record: round 1 delegated reviewers found blockers in
+  metadata-location parsing, repo-root resolution, workflow routing, and the
+  numeric-only closeout consumer; round 2 found fence-length/trailing-text and
+  Setext-heading boundary blockers; the earlier final delegated repair-read
+  found no concrete implementation blocker. A later pre-lock repair read found
+  that Markdown-valid indented headings and slug-only output needed one more
+  repair; the parent added all-width no-write coverage and canonical output,
+  then a final delegated repair-read passed. All reviewer boundary fingerprints
+  verified clean. The later dogfood-record read is carried by the critique
+  packet and remains the bound review record for closeout.
 
 ## Off-Goal Findings
 
@@ -215,9 +245,14 @@ not before the read-only caller map in Slice A.
 
 ## Final Verification
 
-Retro: pending activation — create a goal-bound retro in the After phase.
+Pre-lock gate: completed — `run_slice_closeout.py --skip-broad-pytest
+--ack-cautilus-skill-review` completed with all structural, sync, and
+deterministic verify phases passing; broad pytest was intentionally skipped by
+the pre-lock policy.
+Retro: pending — create a goal-bound retro in the After phase of the final
+closeout.
 Host log probe: skipped: no goal-scoped host metric window was requested; do not claim host efficiency.
-Disposition review: pending activation — create a distinct claims review before completion.
+Disposition review: pending — create a distinct claims review before completion.
 
 ## User Verification Instructions
 
@@ -227,5 +262,6 @@ record and inspect the no-write proof before accepting #504 as closed.
 
 ## Auto-Retro
 
-Retro dispositions: pending activation — disposition every surfaced improvement as applied, issue, or explicit no-improvement.
+Retro dispositions: pending final closeout — disposition every surfaced
+improvement as applied, issue, or explicit no-improvement.
 Structural follow-up: pending activation — run the retro sibling scan and record an applied guard, tracked issue, or explicit none disposition.

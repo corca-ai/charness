@@ -110,7 +110,7 @@ brief's `closeout_handoff` note when starting closeout.
    - write final self-verification, residual risks, non-claims, and user
      verification instructions
    - if a timeboxed goal stops early, follow `references/lifecycle-after.md`
-   - run `retro` for the automatic efficiency review
+   - run `retro` for the automatic efficiency review; for this goal's closeout persistence, pass `--goal-path <canonical goal artifact>` and include exactly one matching top-level `Goal:` field
    - for a long goal with host timing data, record the goal window and render the
      provider-safe metrics block per `references/goal-artifact.md`, not by hand
    - when host evidence exists, summarize measured vs proxy efficiency signals

@@ -10,6 +10,14 @@ from scripts.recent_lessons_lib import build_indexed_recent_lessons, write_lesso
 from scripts.t_events_emit_lib import emit_retro_lesson_cites
 
 _PERSISTED_LINE_PATTERN = re.compile(r"^Persisted:.*$", re.MULTILINE)
+_GOAL_FIELD_PATTERN = re.compile(r"^Goal:[ \t]*(?P<value>[^\r\n]*)$")
+_GOAL_PATH_PATTERN = re.compile(
+    r"^charness-artifacts/goals/\d{4}-\d{2}-\d{2}-(?P<slug>[a-z0-9]+(?:-[a-z0-9]+)*)\.md$"
+)
+_FENCE_PATTERN = re.compile(r"^[ \t]*(?P<marker>`{3,}|~{3,})(?P<info>.*)$")
+_ATX_HEADING_PATTERN = re.compile(r"^[ ]{0,3}#{1,6}[ \t]+")
+_H1_PATTERN = re.compile(r"^[ ]{0,3}#[ \t]+")
+_SETEXT_H2_PATTERN = re.compile(r"^[ \t]*---+[ \t]*$")
 
 
 def stamp_persisted_path(markdown_text: str, relpath: str) -> str:
@@ -53,6 +61,110 @@ def is_stub_summary(text: str) -> bool:
     return all(marker in text for marker in _STUB_SUMMARY_MARKERS)
 
 
+def _goal_metadata_field_matches(markdown_text: str) -> list[tuple[int, str]]:
+    """Return preamble ``Goal:`` fields and their line indexes.
+
+    The first H1 is the document title and may precede the metadata. Once that
+    title has appeared, any ATX heading (H1-H6, with Markdown's 0-3-space
+    indentation) ends the preamble so body text cannot bind as metadata.
+    """
+    fields: list[tuple[int, str]] = []
+    fence_marker: tuple[str, int] | None = None
+    previous_line: str | None = None
+    seen_nonblank = False
+    title_seen = False
+    for line_number, line in enumerate(markdown_text.splitlines()):
+        # The first H1 is the document title. Every later ATX heading is a body
+        # boundary; check it before rejecting indented text so Markdown-valid
+        # 0-3-space headings cannot leave a later Goal: looking like metadata.
+        if _ATX_HEADING_PATTERN.match(line):
+            if not seen_nonblank and not title_seen and _H1_PATTERN.match(line):
+                title_seen = True
+                seen_nonblank = True
+                previous_line = line
+                continue
+            break
+        if line.startswith((" ", "\t")):
+            previous_line = None
+            continue
+        fence = _FENCE_PATTERN.match(line)
+        if fence is not None:
+            marker_text = fence.group("marker")
+            marker = marker_text[0]
+            if fence_marker is None:
+                fence_marker = (marker, len(marker_text))
+            elif (
+                marker == fence_marker[0]
+                and len(marker_text) >= fence_marker[1]
+                and not fence.group("info").strip()
+            ):
+                fence_marker = None
+            previous_line = None
+            continue
+        if fence_marker is not None:
+            previous_line = None
+            continue
+        if line.strip():
+            seen_nonblank = True
+        if previous_line is not None and _SETEXT_H2_PATTERN.fullmatch(line):
+            break
+        previous_line = line
+        match = _GOAL_FIELD_PATTERN.fullmatch(line)
+        if match is not None:
+            fields.append((line_number, match.group("value").strip()))
+    return fields
+
+
+def _goal_metadata_fields(markdown_text: str) -> list[str]:
+    """Read only top-level preamble fields, excluding fenced/code-block text."""
+    return [value for _line_number, value in _goal_metadata_field_matches(markdown_text)]
+
+
+def _canonicalize_goal_metadata(markdown_text: str, canonical_path: str) -> str:
+    """Rewrite the validated slug form to the canonical repo-relative path."""
+    fields = _goal_metadata_field_matches(markdown_text)
+    if len(fields) != 1:
+        return markdown_text
+    line_number, _value = fields[0]
+    lines = markdown_text.splitlines(keepends=True)
+    original = lines[line_number]
+    line_end = ""
+    if original.endswith("\r\n"):
+        line_end = "\r\n"
+    elif original.endswith(("\n", "\r")):
+        line_end = original[-1]
+    lines[line_number] = f"Goal: {canonical_path}{line_end}"
+    return "".join(lines)
+
+
+def _goal_identity(repo_root: Path, goal_path: Path, markdown_text: str) -> dict[str, str]:
+    """Resolve and validate the exact identity used by goal-aware persistence."""
+    root = repo_root.resolve()
+    resolved_goal = (root / goal_path).resolve() if not goal_path.is_absolute() else goal_path.resolve()
+    try:
+        relative_goal = resolved_goal.relative_to(root).as_posix()
+    except ValueError as exc:
+        raise ValueError("--goal-path must resolve inside --repo-root") from exc
+    path_match = _GOAL_PATH_PATTERN.fullmatch(relative_goal)
+    if path_match is None or not resolved_goal.is_file():
+        raise ValueError(
+            "--goal-path must resolve to an existing canonical goal artifact "
+            "under charness-artifacts/goals/YYYY-MM-DD-<slug>.md"
+        )
+
+    fields = _goal_metadata_fields(markdown_text)
+    if len(fields) != 1 or not fields[0]:
+        raise ValueError("goal-aware retro must contain exactly one non-empty `Goal:` metadata field")
+    expected_path = relative_goal
+    expected_slug = path_match.group("slug")
+    if fields[0] not in {expected_path, expected_slug}:
+        raise ValueError(
+            "retro `Goal:` identity does not match --goal-path: "
+            f"expected `{expected_path}` or `{expected_slug}`, got `{fields[0]}`"
+        )
+    return {"goal_path": expected_path, "goal_slug": expected_slug}
+
+
 def persist_retro_artifact(
     *,
     repo_root: Path,
@@ -61,12 +173,16 @@ def persist_retro_artifact(
     markdown_text: str,
     summary_path: Path | None,
     force_empty_summary: bool = False,
+    goal_path: Path | None = None,
 ) -> dict[str, Any]:
     # Guarded here, at the WRITE boundary, rather than only in the CLIs above it:
     # `publish_release` reaches this function directly, and the four failed publishes
     # this check exists for wrote an old-schema lesson index through exactly this
     # path from an installed plugin copy. See scripts/helper_provenance_lib.py.
     require_repo_local_helper(__file__, repo_root)
+    goal_identity = _goal_identity(repo_root, goal_path, markdown_text) if goal_path is not None else None
+    if goal_identity is not None:
+        markdown_text = _canonicalize_goal_metadata(markdown_text, goal_identity["goal_path"])
     normalized_name, was_normalized = normalize_artifact_name(artifact_name)
     if was_normalized:
         print(
@@ -88,6 +204,8 @@ def persist_retro_artifact(
     }
     if was_normalized:
         result["artifact_name_normalized"] = True
+    if goal_identity is not None:
+        result.update(goal_identity)
 
     emit_summary = emit_retro_lesson_cites(
         repo_root,
