@@ -12,14 +12,13 @@ runs the activation command.
 - Current disposition: active local-first planning/evidence-coordination goal;
   the five selected issues remain independent tracks with separate proof and
   closure boundaries.
-- Current slice: C — re-verify and disposition the existing #496 semantic
-  repair.
-- Current slice intent: independently prove the policy-aware intent-loss
-  behavior and carry an honest issue disposition without reopening the settled
-  generic-empty predicate.
-- Next action: read the current #496 carrier and implementation, run its
-  focused positive/negative controls and source/plugin parity checks, then
-  prepare its independent closeout or durable blocker.
+- Current slice: E — cross-track proof and independent issue disposition.
+- Current slice intent: verify that the completed local tracks retain separate
+  owners, readers, evidence identities, and non-claims before any later
+  publication or remote issue boundary.
+- Next action: run the locked local proof bundle, validate all current carriers
+  and critique/goal artifacts, then prepare an honest per-issue disposition
+  packet without implying remote success.
 - Slice B acceptance envelope: one semantic owner; quality maps
   `pass`/`fail`/`unestablished`, closeout preserves
   `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
@@ -38,7 +37,7 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: Slices A and B are recorded and the goal is active. No push,
+- History boundary: Slices A–D are recorded and the goal is active. No push,
   release, or remote issue close is implied by the local matrix or by saving
   this artifact. Slice B's implementation and repaired-surface review are
   recorded locally; broad/final proof and each external track remain separately
@@ -234,8 +233,8 @@ helper-owned; neither is absorbed into the #502 receipt or a universal gate.
 | A | Reconcile the five live issues and lock the shared claim dimensions | The common pattern is plausible, but scope and reader position must be proven before five fixes become five new contracts | Live reads, producer/consumer/evidence map, issue inclusion matrix, owner decision, false-unification risks, bounded pre-mortem | completed |
 | B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | completed |
 | C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | in_progress |
-| D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | pending |
-| E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | pending |
+| D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | completed |
+| E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | in_progress |
 
 ## Operator Decision Queue
 
@@ -359,6 +358,43 @@ active frame above is the control panel for Slice C.
 - Non-claims: No remote issue closure, remote CI, release, host-specific
   rendering, future-consumer guarantee, or generic empty-value taxonomy.
 - Next step: start Slice D with the independent #491, #504, and #506 tracks.
+
+### Slice 4: Resolve the independent claim and binding tracks
+
+- Objective: Re-prove #504's goal-aware persistence boundary and #506's
+  reviewer-window binding, while carrying #491 as the reviewer-owned semantic
+  reference disposition selected in Slice A.
+- Why this approach: these tracks have different producers and first readers.
+  Their local proof can be grouped in the goal log for sequencing, but their
+  evidence and verdicts remain separate.
+- Commits: No implementation change; this goal update records the independent
+  track proof after Slice C's commit.
+- #491 disposition: The existing reviewer-owned application records the
+  lifecycle, bootstrap, and goal-artifact claim families, an axis-varying
+  stale-reference counterexample, and the reject/repair/defer decision. Current
+  references were reread; no stable source-to-reference map justifies a new
+  mechanical gate. This is a durable local disposition, not a claim that every
+  shipped reference is mechanically covered.
+- #504 verification: `pytest -q tests/quality_gates/test_retro_persistence.py`
+  passed 29 tests in 0.46 seconds. `scripts/retro_persistence_lib.py`, the
+  public/plugin persistence entrypoints, and their plugin mirror passed `cmp`;
+  `py_compile`, focused `ruff check`, and `git diff --check` passed. The
+  existing causal carrier remains the owner of the no-write mismatch proof and
+  its host-invocation non-claim.
+- #506 verification: `pytest -q
+  tests/quality_gates/test_reviewer_boundary_fingerprint.py` passed 24 tests in
+  4.98 seconds. The shared helper and plugin mirror passed `cmp`; `py_compile`,
+  focused `ruff check`, and `git diff --check` passed. Explicit-window,
+  stale/default refusal, parent-attribution, and no-write semantics remain
+  bounded to the helper's local behavior.
+- Fresh-eye evidence: #491 reuses the delegated semantic-question application;
+  #504 reuses its causal/final carrier review; #506 uses its own boundary test
+  suite and helper-owned review contract. No proof-surface verdict logic
+  changed in this slice, so no new bounded review round is claimed.
+- Non-claims: No remote issue close, live host invocation guarantee, remote CI,
+  release, or universal claim/reference/boundary schema.
+- Next step: run Slice E's locked local proof bundle and independent
+  disposition checks.
 
 ## Context Sources
 
