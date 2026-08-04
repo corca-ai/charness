@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-04T02:26:22Z",
-  "prepared_for": "Release 3.2.0 final current working tree",
+  "generated_at": "2026-08-04T02:53:51Z",
+  "prepared_for": "v3.2.0 candidate review after portable markdown-preview repair",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/gather/latest.md\n- charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md\n- docs/public-skill-dogfood.json\n- plugins/charness/scripts/quality_bootstrap_absence.py\n- plugins/charness/scripts/quality_bootstrap_lib.py\n- plugins/charness/skills/retro/references/closeout-telemetry.md\n- plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py\n- scripts/quality_bootstrap_absence.py\n- scripts/quality_bootstrap_lib.py\n- skills/public/retro/references/closeout-telemetry.md\n- skills/public/retro/scripts/mine_closeout_telemetry.py\n- tests/quality_gates/test_quality_bootstrap.py\n- tests/quality_gates/test_quality_bootstrap_absence.py\n- tests/quality_gates/test_retro_closeout_telemetry_mining.py\n- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json\n- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md\n- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md\n- charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md\n- charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.json\n- charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md\n- charness-artifacts/debug/2026-08-04-debug-review-followup-2.md\n- charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md\n- charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md\n- charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md\n- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n- charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md\n- charness-artifacts/issue/2026-08-04-issue-503-slice-a-cohort.md\n- charness-artifacts/issue/2026-08-04-issue-503-slice-b-decision.md\n- charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md\n- charness-artifacts/release/v3.2.0-notes.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py\n  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py, plugins/charness/skills/retro/references/closeout-telemetry.md, plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/gather/latest.md, charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md, skills/public/retro/references/closeout-telemetry.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/debug/2026-08-04-debug-review-followup-2.md, charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md, charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md, charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md, charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md, charness-artifacts/issue/2026-08-04-issue-503-slice-a-cohort.md, charness-artifacts/issue/2026-08-04-issue-503-slice-b-decision.md, charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md, charness-artifacts/release/v3.2.0-notes.md\n  derived matches: plugins/charness/skills/retro/references/closeout-telemetry.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/retro/references/closeout-telemetry.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py\n  derived matches: plugins/charness/skills/retro/references/closeout-telemetry.md, plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.json, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-08-04-debug-review-followup-2.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, tests/quality_gates/test_quality_bootstrap.py, tests/quality_gates/test_quality_bootstrap_absence.py, tests/quality_gates/test_retro_closeout_telemetry_mining.py\n  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, skills/public/retro/scripts/mine_closeout_telemetry.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md\n- charness-artifacts/release/v3.2.0-candidate-scope.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/release/v3.2.0-candidate-scope.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "76f7a2ab1f250df75e1dbd875fd151827a661c53",
+    "base_head": "a833b656d68a9a1fef183342ae9c444e6e3b6b13",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       ".agents/plugins/marketplace.json",
@@ -74,12 +74,15 @@
       "plugins/charness/.codex-plugin/plugin.json",
       "plugins/charness/scripts/quality_bootstrap_absence.py",
       "plugins/charness/scripts/quality_bootstrap_lib.py",
+      "plugins/charness/support/markdown-preview/scripts/markdown_preview_render.py",
       "scripts/quality_bootstrap_absence.py",
       "scripts/quality_bootstrap_lib.py",
       "skills/public/retro/scripts/mine_closeout_telemetry.py",
+      "skills/support/markdown-preview/scripts/markdown_preview_render.py",
       "tests/quality_gates/test_quality_bootstrap.py",
       "tests/quality_gates/test_quality_bootstrap_absence.py",
-      "tests/quality_gates/test_retro_closeout_telemetry_mining.py"
+      "tests/quality_gates/test_retro_closeout_telemetry_mining.py",
+      "tests/test_markdown_preview_support.py"
     ],
     "reviewed_content": [
       {
@@ -147,6 +150,10 @@
         "content_sha256": "bfc85bcbb5f5873f30430c8384fe4806db65c1a571ce2e396a05deab57bbd763"
       },
       {
+        "path": "plugins/charness/support/markdown-preview/scripts/markdown_preview_render.py",
+        "content_sha256": "55557e6c992045bee3198990a3868b9b17ca535689f37ffb281adf932520b580"
+      },
+      {
         "path": "scripts/quality_bootstrap_absence.py",
         "content_sha256": "20211491faf29228dc3154e6250bc73287a533feaa3db366ccbc185bf6b43a1e"
       },
@@ -159,6 +166,10 @@
         "content_sha256": "80c485dbe83897ed2981b8baeb67fa12a3e02d48ace004154f641406f7eb0b5f"
       },
       {
+        "path": "skills/support/markdown-preview/scripts/markdown_preview_render.py",
+        "content_sha256": "55557e6c992045bee3198990a3868b9b17ca535689f37ffb281adf932520b580"
+      },
+      {
         "path": "tests/quality_gates/test_quality_bootstrap.py",
         "content_sha256": "0beea4996003eb9574ae2c6d8f0c73c410d3dbe9c215e7bc14bb32eb692817df"
       },
@@ -169,34 +180,17 @@
       {
         "path": "tests/quality_gates/test_retro_closeout_telemetry_mining.py",
         "content_sha256": "008f05ff06491311c8c8bda2a9fb86fc1ac6c50a4c07a769cb7045db62eab416"
+      },
+      {
+        "path": "tests/test_markdown_preview_support.py",
+        "content_sha256": "ce00ec67b52d95b877af785a076dd67f02f1ff58166a855c270f4c31e64b37f3"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "e90d4528d7d0b5d3141f8ffbcff6e2ac3931801598c33c23e81f938ae025c32c",
-    "declared_untracked": [
-      {
-        "path": "charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md",
-        "content_sha256": "0b9b9b8c871fd872377fbbe4f1d4e4aa4ae89d5ed0ea2d08f22142acc0a169b2"
-      },
-      {
-        "path": "charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md",
-        "content_sha256": "2199db6ee21cbe6598efc7318bd8a0bb31bf95acb912b5d57f656da3c31e41a6"
-      },
-      {
-        "path": "charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md",
-        "content_sha256": "4d35787eef88a28de6c4ed118d5f7d7a748ceb816c436dffbe626242aecf2b64"
-      },
-      {
-        "path": "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
-        "content_sha256": "9fc425d18e8fbbcfb622187e6a75709277c6f3bb5db4b6264ec51392acf760d3"
-      },
-      {
-        "path": "charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md",
-        "content_sha256": "20a984bcefbf61441a05c1a7f58f3660264cce3c87cda8129e71e699ded946d7"
-      }
-    ],
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "96d5dd884089d5b99f6cc128e2c06810be77db985c80e20e8a4f80da1498083c"
+    "identity_sha256": "3c91c9613d4b513c61fa13d891638c08efd011ddc69336cba5b491dc61deb38d"
   }
 }

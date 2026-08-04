@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-04T02:26:22Z
-- **Prepared for**: Release 3.2.0 final current working tree
+- **Generated**: 2026-08-04T02:53:51Z
+- **Prepared for**: v3.2.0 candidate review after portable markdown-preview repair
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `96d5dd884089d5b99f6cc128e2c06810be77db985c80e20e8a4f80da1498083c`
-- **Reviewed paths**: 22
+- **Reviewed input identity**: `3c91c9613d4b513c61fa13d891638c08efd011ddc69336cba5b491dc61deb38d`
+- **Reviewed paths**: 25
 - **Sections**: 3
 - **Overall ok**: True
 
@@ -28,87 +28,16 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/debug/latest.md
-- charness-artifacts/debug/seam-risk-index.json
-- charness-artifacts/gather/latest.md
-- charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md
-- docs/public-skill-dogfood.json
-- plugins/charness/scripts/quality_bootstrap_absence.py
-- plugins/charness/scripts/quality_bootstrap_lib.py
-- plugins/charness/skills/retro/references/closeout-telemetry.md
-- plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py
-- scripts/quality_bootstrap_absence.py
-- scripts/quality_bootstrap_lib.py
-- skills/public/retro/references/closeout-telemetry.md
-- skills/public/retro/scripts/mine_closeout_telemetry.py
-- tests/quality_gates/test_quality_bootstrap.py
-- tests/quality_gates/test_quality_bootstrap_absence.py
-- tests/quality_gates/test_retro_closeout_telemetry_mining.py
-- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json
-- charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md
 - charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md
-- charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md
-- charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.json
-- charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md
-- charness-artifacts/debug/2026-08-04-debug-review-followup-2.md
-- charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md
-- charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md
-- charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md
-- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md
-- charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md
-- charness-artifacts/issue/2026-08-04-issue-503-slice-a-cohort.md
-- charness-artifacts/issue/2026-08-04-issue-503-slice-b-decision.md
-- charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md
-- charness-artifacts/release/v3.2.0-notes.md
+- charness-artifacts/release/v3.2.0-candidate-scope.md
 
 Owning surfaces:
-- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py
-  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py, plugins/charness/skills/retro/references/closeout-telemetry.md, plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py
-  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
-  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/debug/latest.md, charness-artifacts/gather/latest.md, charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md, skills/public/retro/references/closeout-telemetry.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/debug/2026-08-04-debug-review-followup-2.md, charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md, charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md, charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md, charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md, charness-artifacts/issue/2026-08-04-issue-503-slice-a-cohort.md, charness-artifacts/issue/2026-08-04-issue-503-slice-b-decision.md, charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md, charness-artifacts/release/v3.2.0-notes.md
-  derived matches: plugins/charness/skills/retro/references/closeout-telemetry.md
+  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/release/v3.2.0-candidate-scope.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.
-  source matches: skills/public/retro/references/closeout-telemetry.md
-  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .
-- skill-packages: Public and support skill packages plus their helper scripts.
-  source matches: skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py
-  derived matches: plugins/charness/skills/retro/references/closeout-telemetry.md, plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py
-  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
-- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.
-  source matches: skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py
-  verify: python3 scripts/validate_public_skill_validation.py --repo-root .
-- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.
-  source matches: docs/public-skill-dogfood.json, skills/public/retro/references/closeout-telemetry.md, skills/public/retro/scripts/mine_closeout_telemetry.py
-  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md, charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md, charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.json, charness-artifacts/critique/2026-08-04-slice-b-metric-report-final-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md
+  source matches: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.
-  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-08-04-debug-review-followup-2.md
-  derived matches: charness-artifacts/debug/seam-risk-index.json
-  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
-  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check
-- integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py
-  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json
-- repo-python: Repo-owned Python code and tests.
-  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, tests/quality_gates/test_quality_bootstrap.py, tests/quality_gates/test_quality_bootstrap_absence.py, tests/quality_gates/test_retro_closeout_telemetry_mining.py
-  derived matches: plugins/charness/scripts/quality_bootstrap_absence.py, plugins/charness/scripts/quality_bootstrap_lib.py
-  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
-- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
-  source matches: scripts/quality_bootstrap_absence.py, scripts/quality_bootstrap_lib.py, skills/public/retro/scripts/mine_closeout_telemetry.py
-  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing
-
-Planned sync commands before validators:
-- python3 scripts/sync_root_plugin_manifests.py --repo-root .
-- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract

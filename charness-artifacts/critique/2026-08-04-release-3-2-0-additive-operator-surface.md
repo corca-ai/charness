@@ -6,7 +6,9 @@ Date: 2026-08-04
 Whether to cut Charness 3.2.0 from the current 3.1.1 surfaces after the
 #503 opt-in `retro --detail` operator receipt and the #496 hollow-refill repair
 are locally proven. The release must synchronize all plugin/version surfaces,
-preserve proof boundaries, and publish only after independent readback.
+preserve proof boundaries, and publish only after independent readback. A
+release-probe repair added portable non-TTY `glow` handling and is included in
+the final candidate after its own bounded review.
 
 ## Release Scope
 
@@ -32,6 +34,9 @@ candidate inventory must be read from the frozen release diff.
   `charness version`, `charness doctor`, and `docs/handoff.md` baton state.
 - Adapter/integration surfaces: `.agents/release-adapter.yaml` commands and
   declared fresh-checkout/real-host proof triggers.
+- Markdown-preview proof surface: the checked-in source/plugin renderer pair
+  and its backend probe must handle a util-linux PTY when available while
+  falling back honestly on incompatible `script` implementations.
 
 ## Failure Angles
 
@@ -78,6 +83,7 @@ candidate inventory must be read from the frozen release diff.
 - F7 | bin: act-before-ship | evidence: strong | ref: skills/public/retro/scripts/mine_closeout_telemetry.py:219 | action: fix | note: preserve legacy default non-finite elapsed handling while keeping finite-only filtering inside --detail; add a regression test and resynchronize the plugin mirror.
 - F8 | bin: act-before-ship | evidence: moderate | ref: Upgrade Path and installed skill layout | action: document | note: use the skill-resolved `$SKILL_DIR/scripts/mine_closeout_telemetry.py --detail` form and document rollback from a v3.1.1 source checkout with version/doctor readback.
 - F9 | bin: act-before-ship | evidence: strong | ref: skills/public/release/scripts/publish_release_execute.py:164 | action: document | note: plan an explicit branch-push/remote-CI readback before the public release/tag step, or record the helper's ordering as an honest unresolved release-boundary limitation; do not imply the helper's terminal green proves CI.
+- F10 | bin: act-before-ship | evidence: strong | ref: skills/support/markdown-preview/scripts/markdown_preview_render.py and tests/test_markdown_preview_support.py | action: fix | note: use the PTY path only when its util-linux invocation succeeds, fall back to direct `glow` on unsupported `script` flags, and cover both branches; the repaired source/plugin pair was accepted by a second bounded review.
 
 ## Operator Action Required
 
@@ -85,7 +91,9 @@ Before ship: run final verification lock and fresh-checkout probes, sync and
 inspect release surfaces, run release dry-run, create release notes, and
 complete the release claims review. The pre-version-bump bundle is now bound by
 `charness-artifacts/release/v3.2.0-candidate-scope.md`; the final release
-commit must still record its exact SHA after the version bump. Push the branch, then
+commit must still record its exact SHA after the version bump. The final
+pre-version-bump endpoint is `a833b656d68a9a1fef183342ae9c444e6e3b6b13`, which
+includes the portable markdown-preview probe repair. Push the branch, then
 independently verify the exact remote commit and CI before tag/public release;
 if the repo helper cannot interpose that readback, stop and record the
 limitation rather than calling the release complete. After publication,
@@ -94,14 +102,14 @@ baton reconciliation.
 
 ## Frozen Candidate Scope
 
-The pre-version-bump bundle is frozen at `e7bc7eaf780e7ce89d9866c450d3bc7107907c75`
+The pre-version-bump bundle is frozen at `a833b656d68a9a1fef183342ae9c444e6e3b6b13`
 against base `v3.1.1` (`7fa4a776909241bda02949fd851edfb54212b259`). The exact
-14-commit log and 118-path name-status inventory, plus the operator summary,
-are recorded in `charness-artifacts/release/v3.2.0-candidate-scope.md`. This
-scope includes every unreleased change since `v3.1.1`, not only this goal's
-two slices. The subsequent version-bump/release-content commit is a separate
-candidate and must be bound by the generated release evidence before tag/public
-publication.
+16-commit log and 122-path name-status inventory, including the post-binding
+markdown-preview repair delta, are recorded in
+`charness-artifacts/release/v3.2.0-candidate-scope.md`. This scope includes
+every unreleased change since `v3.1.1`, not only this goal's two slices. The
+subsequent version-bump/release-content commit is a separate candidate and
+must be bound by the generated release evidence before tag/public publication.
 
 ## Upgrade Path
 
@@ -123,6 +131,10 @@ remote issue closure and measured runtime relief are not claimed.
   broad verification lock are green; durable broad-proof record:
   `.charness/closeout/broad-pytest-proof.json`, latest lock
   `2026-08-04T02:25:42Z`, 46.31 seconds.
+- Markdown-preview repair: 18 focused tests passed; source/plugin copies are
+  byte-identical; the first bounded review found the portability/test gaps,
+  the repaired second round accepted them, and both boundary verifies are
+  recorded clean or parent-attributed as declared.
 - Source-tree startup probes: the three declared probes passed in the current
   source tree; this is not yet a durable clean-checkout receipt.
 - Remote branch/CI: not yet pushed or independently read back.
@@ -154,12 +166,18 @@ all four boundary verifies reported `boundary-drift` because the parent repaired
 the miner while those reviewers were still reading; none of those findings is
 counted as release approval.
 
+The separate markdown-preview proof-surface review is also
+`parent-delegated`: first round `019fcaaa-ea95-7413-9ef6-f3ebd6927d38` held on
+portable `script` flags and missing branch coverage; repaired second round
+`019fcaad-ab74-7602-bf11-9e594cd55de1` accepted the source/plugin pair and 18
+focused tests, with a clean boundary verify.
+
 ## Reviewed Input Identity
 
 - Packet consumed: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md
 - Packet path: charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json
-- Packet SHA256: d3b64cec6422c9d763a4a6e56b944910237238b73d4c4566210db94848651da2
-- Identity SHA256: 96d5dd884089d5b99f6cc128e2c06810be77db985c80e20e8a4f80da1498083c
+- Packet SHA256: 6fbfcb30a715905a458c6fc52118121d61cdbb4abf968c77a2afec78b8b9469c
+- Identity SHA256: 3c91c9613d4b513c61fa13d891638c08efd011ddc69336cba5b491dc61deb38d
 
 ## Boundary Ownership
 
