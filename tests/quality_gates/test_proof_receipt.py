@@ -9,6 +9,7 @@ import pytest
 
 from scripts.proof_receipt import (
     ReceiptContractError,
+    _parse_recovery_spec,
     _recovery,
     closeout_receipt,
     quality_receipt,
@@ -17,6 +18,71 @@ from scripts.proof_receipt import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.mark.parametrize(
+    ("status", "path", "reason", "message"),
+    [
+        ("unknown", None, None, "unknown recovery status"),
+        ("available", None, None, "available recovery requires a path"),
+        ("unavailable", "failure.log", None, "unavailable recovery must not advertise a path"),
+        ("not-applicable", "failure.log", None, "not-applicable recovery must not advertise a path"),
+        ("unavailable", None, None, "unavailable recovery requires a reason"),
+    ],
+)
+def test_recovery_contract_rejects_invalid_shapes(
+    status: str, path: str | None, reason: str | None, message: str
+) -> None:
+    with pytest.raises(ReceiptContractError, match=message):
+        _recovery(status, path=path, reason=reason)
+
+
+def test_recovery_contract_accepts_explicit_path_and_reason_specs() -> None:
+    assert _parse_recovery_spec("not-applicable").as_dict() == {"status": "not-applicable"}
+    assert _parse_recovery_spec("available:failure.log").as_dict() == {
+        "status": "available",
+        "path": "failure.log",
+    }
+    assert _parse_recovery_spec("unavailable:inspect the captured output").as_dict() == {
+        "status": "unavailable",
+        "reason": "inspect the captured output",
+    }
+
+
+def test_receipt_contract_rejects_invalid_status_and_mismatched_adverse_recovery() -> None:
+    with pytest.raises(ReceiptContractError, match="unknown quality status"):
+        quality_receipt(status="unknown", measured_scope=[], effective_exit_code=1)
+    with pytest.raises(ReceiptContractError, match="each adverse subject"):
+        quality_receipt(
+            status="fail",
+            measured_scope=["tests"],
+            adverse_subjects=["tests"],
+            recoveries=[],
+            effective_exit_code=1,
+        )
+
+
+def test_quality_summary_renders_not_applicable_and_unproven_subjects() -> None:
+    receipt = quality_receipt(
+        status="unestablished",
+        measured_scope=["tests"],
+        adverse_subjects=["not applicable finding"],
+        recoveries=[_recovery("not-applicable", reason="not in this scope")],
+        unproven_subjects=["provider behavior"],
+        effective_exit_code=0,
+        details={"passed": 1, "failed": 0, "elapsed": "3ms"},
+    )
+
+    assert render_quality_summary(receipt) == (
+        "Quality summary: 1 passed, 0 failed (FAILED: not applicable finding), "
+        "1 UNPROVEN (UNPROVEN: provider behavior) (ran; established nothing, or only part "
+        "of its scope), total 3ms"
+    )
+
+
+def test_closeout_rejects_unknown_status() -> None:
+    with pytest.raises(ReceiptContractError, match="unknown closeout status"):
+        closeout_receipt({"status": "unknown"}, effective_exit_code=1)
 
 
 def test_quality_receipt_keeps_mixed_recovery_and_actual_exit() -> None:
