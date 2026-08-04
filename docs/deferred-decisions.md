@@ -644,14 +644,14 @@ Reopen trigger:
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over this entry's own denominator (107 top-level artifacts, 28 citing a declared
+  Over this entry's own denominator (109 top-level artifacts, 28 citing a declared
   inventory): the presence-only mention total reproduces **167** exactly, **159** of those
   clear today's residual floor, **113** carry a value marker and **46** do not, and a
   marker rule would refuse **5 citations across 4 artifacts**
   (`2026-06-25-skill-ergonomics-yaml-summary`, `2026-06-25-test-speed-token-efficiency`,
   `2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
   overlap: 109 backticked, 81 `field=`, 4 `field:`. With `--recursive`, which reaches the
-  `history/` directory the sibling script's non-recursive glob silently excludes: 125
+  `history/` directory the sibling script's non-recursive glob silently excludes: 127
   artifacts (250 presence-only), 242 floor-clearing mentions, 178 marked, 64 unmarked, 7
   citations across 5 artifacts. Both variants are recorded in the probe and pinned by the
   test, so neither number is an unrecorded assertion sitting beside recorded ones. The

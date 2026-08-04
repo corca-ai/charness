@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 437,
-  "candidate_count": 1804,
+  "source_artifact_count": 439,
+  "candidate_count": 1813,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1420,6 +1420,240 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Three length-cap extractions, all forced mid-slice.** ~~Because the slice added reasoning comments.~~ **CORRECTED 2026-08-06 after the operator challenged the premise, and they were right.** `check_python_lengths` uses `tokei`'s CODE count, which already excludes comments and docstrings — measured: the extracted `changed_line_verdict_codes.py` is 44 code / 31 comment lines, and `goal_artifact_lib.py` went 310 → 374 code lines while its comment count moved 30 → 32. The caps were crossed by roughly 40-60 lines of REAL CODE each, so the cap did exactly what it is for. Nor was the extraction itself waste — the operator's correction: splitting SURFACES duplication, and it did, exposing a real `_resolve_goal_path` copy that had been invisible. The only genuine cost in this bullet is the one extraction that shipped an import cycle no gate could see, now tracked as #492."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:580038510dfc",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the completed implementation slice that moved focused changed-line mutation coverage onto the canonical standing pytest runner.",
+      "normalized_key": "this retro reviews the completed implementation slice that moved focused changed line mutation coverage",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro reviews the completed implementation slice that moved focused changed-line mutation coverage onto the canonical standing pytest runner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:7f80bb5df768",
+      "kind": "next_improvement",
+      "lesson": "applied — persist each bounded review's delivery and boundary receipt before citing it in the goal; this run's critique and claims records are the model.",
+      "normalized_key": "applied persist each bounded review s delivery and boundary receipt before citing it in",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — persist each bounded review's delivery and boundary receipt before citing it in the goal; this run's critique and claims records are the model."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:abc06fae33a5",
+      "kind": "next_improvement",
+      "lesson": "applied — worker-coverage proof now asserts distinct worker identities and exported coverage rather than an optional output banner.",
+      "normalized_key": "applied worker coverage proof now asserts distinct worker identities and exported coverage rather than",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — worker-coverage proof now asserts distinct worker identities and exported coverage rather than an optional output banner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9a9712a2017f",
+      "kind": "next_improvement",
+      "lesson": "issue #505 (recurs: closeout-critical-path runtime) — retain the measured mutation-lane owner and reopen only when a new matched receipt shows proof-preserving runtime regression or another safe structural owner.",
+      "normalized_key": "issue 505 recurs closeout critical path runtime retain the measured mutation lane owner and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue #505 (recurs: closeout-critical-path runtime) — retain the measured mutation-lane owner and reopen only when a new matched receipt shows proof-preserving runtime regression or another safe structural owner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:58e8dbd1a6ea",
+      "kind": "repeat_trap",
+      "lesson": "Closeout orchestration (moderate): two claims-review attempts had to be repeated because the boundary and delivery evidence was not persisted before citation. The next closeout should create those records immediately after each returned review and before updating the goal.",
+      "normalized_key": "closeout orchestration moderate two claims review attempts had to be repeated because the boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout orchestration (moderate): two claims-review attempts had to be repeated because the boundary and delivery evidence was not persisted before citation. The next closeout should create those records immediately after each returned review and before updating the goal."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5ec62b578d4c",
+      "kind": "repeat_trap",
+      "lesson": "Gate-baseline runtime (strong, measured): the focused mutation phase still costs 76.8s median after the repair. The old 120.6s median was not necessary safety cost; it was duplicated scheduling policy in the producer. The remaining cost is proof-bearing work and stays routed to #505, not removed.",
+      "normalized_key": "gate baseline runtime strong measured the focused mutation phase still costs 76 8s median",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Gate-baseline runtime (strong, measured): the focused mutation phase still costs 76.8s median after the repair. The old 120.6s median was not necessary safety cost; it was duplicated scheduling policy in the producer. The remaining cost is proof-bearing work and stays routed to #505, not removed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9803c2d28e46",
+      "kind": "repeat_trap",
+      "lesson": "Rework (strong): the first worker probe asserted an xdist output banner that quiet mode did not promise, and the first claims review cited a prepare packet as completed review evidence. Both were repaired by observable worker files and durable review records before closeout.",
+      "normalized_key": "rework strong the first worker probe asserted an xdist output banner that quiet mode",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Rework (strong): the first worker probe asserted an xdist output banner that quiet mode did not promise, and the first claims review cited a prepare packet as completed review evidence. Both were repaired by observable worker files and durable review records before closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4bfe12a801f2",
+      "kind": "repeat_trap",
+      "lesson": "The telemetry recurrence is broader than this slice. Existing open #505 is the structural destination; no new issue is filed for the same runtime class.",
+      "normalized_key": "the telemetry recurrence is broader than this slice existing open 505 is the structural",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The telemetry recurrence is broader than this slice. Existing open #505 is the structural destination; no new issue is filed for the same runtime class."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:99b074bc1c75",
+      "kind": "repeat_trap",
+      "lesson": "Verification (strong, necessary): three-before/three-after receipts, the worker-level coverage probe, and the dirty-tree non-claim prevented a fast but false conclusion. They are not treated as waste.",
+      "normalized_key": "verification strong necessary three before three after receipts the worker level coverage probe and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Verification (strong, necessary): three-before/three-after receipts, the worker-level coverage probe, and the dirty-tree non-claim prevented a fast but false conclusion. They are not treated as waste."
         }
       ]
     },

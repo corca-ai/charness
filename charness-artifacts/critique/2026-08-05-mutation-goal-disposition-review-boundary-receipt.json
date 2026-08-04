@@ -1,0 +1,19 @@
+{
+  "ok": true,
+  "verdict": "clean",
+  "drift": [],
+  "parent_attributed_drift": [],
+  "parent_declared": {
+    "paths": [],
+    "staged_paths": [],
+    "head_moved": false
+  },
+  "unmatched_parent_paths": [],
+  "window": {
+    "id": "mutation-goal-disposition-r1",
+    "opened_at": "2026-08-04T20:16:01Z"
+  },
+  "content_comparison": "per-path",
+  "attribution": "git proves the shared tree changed, never who changed it; parent-declared paths are recorded testimony, and undeclared drift is a boundary signal only for a window in which the parent made no writes",
+  "before_path": ".charness/reviewer-boundary/snapshot.json"
+}

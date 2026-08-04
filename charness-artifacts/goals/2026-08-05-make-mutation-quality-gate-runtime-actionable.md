@@ -1,6 +1,6 @@
 # Achieve Goal: Make mutation and quality-gate runtime actionable without weakening proof floors
 
-Status: active
+Status: complete
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-mutation-quality-gate-runtime-actionable.md`
 
@@ -9,15 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: B — canonical-runner mutation coverage candidate implemented;
-  post-implementation proof and matched receipts remain.
+- Current slice: C — lock the measured remedy and complete closeout evidence.
 - Current slice intent: preserve the mapper's exact focused test scope while
   moving scheduling, worker caps, version compatibility, and temp isolation
   back to the canonical standing runner. The slice spans the focused producer,
   its worker-coverage test, and the durable candidate evidence below.
-- Next action: run the pre-lock closeout, commit the candidate so the changed-
-  line consumer can judge the actual edited pool, then collect three matched
-  post-change full-command receipts.
+- Next action: obtain the distinct disposition review over the bound retro and
+  Auto-Retro, then run the locked final quality proof and complete validator.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -116,8 +114,8 @@ only; this goal does not close #505, push, publish, or claim remote CI.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | A | Map the mutation critical path and its owner | The prior goal proved the CLI family is not the mutation bottleneck | Three current baseline receipts, mapper output, phase/consumer manifest, proof ledger | completed — recorded with Slice 1 before implementation |
-| B | Falsify or implement one owned structural candidate | A named owner and materiality test are required before code changes | Matched before/after full-command runs, focused preservation checks, rollback/no-safe-change decision | in progress |
-| C | Lock the decision and close honestly | Runtime relief is provisional until independently observed | Final quality, fresh-eye review, complete validator, retro, and explicit #505 follow-up | pending |
+| B | Falsify or implement one owned structural candidate | A named owner and materiality test are required before code changes | Matched before/after full-command runs, focused preservation checks, rollback/no-safe-change decision | completed — 3c241399 |
+| C | Lock the decision and close honestly | Runtime relief is provisional until independently observed | Final quality, fresh-eye review, complete validator, retro, and explicit #505 follow-up | in progress |
 
 ## Operator Decision Queue
 
@@ -126,9 +124,7 @@ materiality bar, and proof-preserving local work before this draft was saved.
 
 ## Coordination Cues
 
-Routing: quality — selected for mutation-lane measurement and validation design;
-critique — selected for candidate and final claims review; impl — reserved for a
-proof-preserving remedy only after the owner manifest passes.
+Routing: quality — selected from installed skill metadata/model judgment for mutation-lane measurement and validation design; critique — selected for the candidate and final claims fresh-eye reviews; impl — selected for the proof-preserving remedy after the owner manifest passed; issue — selected for the existing #505 source and follow-up context.
 Gather: charness-artifacts/gather/2026-08-05-issue-505-source.md — issue #505 was
 captured through authenticated `gh` after the public URL route stopped at a
 CAPTCHA.
@@ -170,12 +166,12 @@ applies.
 
 - Objective: Replace the focused changed-line coverage producer's serial bare-pytest launch with the canonical standing runner, preserving the mapped target set, release_only scope, subprocess coverage, focused artifact path, and consumer verdict semantics.
 - Why this approach: Slice A established the current owner: check-changed-line-mutation-coverage consumes 120.4–120.9 seconds of a 123.5–124.0 second read-only quality run. The mapper selects four changed pool files, 30 standing test files, and 667 collected tests. An unmodified xdist spike over the same mapped tests passed and exported coverage in 47.68 seconds, clearing the fixed ten-second materiality bar before implementation.
-- Commits: Not committed yet; the implementation and goal evidence are the current worktree slice.
+- Commits: 3c241399 — implementation, focused worker-coverage test, plugin mirror, and prepared critique packet; later closeout evidence remains in this goal artifact.
 - What changed: scripts/prepush_focused_changed_line_coverage.py now emits python3 scripts/run_standing_pytest.py with repeated sorted --pytest-target flags and explicit --include-release-only, so worker caps, scheduler-version compatibility, affinity, and external temp isolation remain owned by the canonical runner. Tests pin exact target multiplicity and prove two xdist workers export subprocess coverage into the focused JSON.
 - Alternatives rejected: Rejected hand-assembled -n 16 flags because they duplicate runner portability policy and fail on missing/old xdist or constrained affinity. Rejected mapper/test-scope changes because the measured owner is launch scheduling, not target discovery. Broad coverage, verdict semantics, unmapped-file policy, remote CI, release, push, issue close, and Cautilus remain out of scope.
-- Targeted verification: Three sequential pre-change ./scripts/run-quality.sh --read-only receipts passed 85/0: totals 123.96s, 123.75s, 124.25s; changed-line mutation 120.6s, 120.4s, 120.9s. The unmodified xdist coverage spike passed 667 tests and exported coverage in 47.68s. Pre-edit focused producer/consumer suite: 57 passed. After the implementation and probe repair: 57 passed. The first real post-edit gate run reached the canonical runner in 50.42s, then correctly returned exit 3/unestablished because the mutation-pool source file was uncommitted; no clean verdict is claimed until the slice is committed and rerun.
+- Targeted verification: Three sequential pre-change ./scripts/run-quality.sh --read-only receipts passed 85/0: totals 123.96s, 123.75s, 124.25s; changed-line mutation 120.6s, 120.4s, 120.9s. The unmodified xdist coverage spike passed 667 tests and exported coverage in 47.68s. Pre-edit focused producer/consumer suite: 57 passed. After the implementation and probe repair: 57 passed. The first real post-edit gate run reached the canonical runner in 50.42s, then correctly returned exit 3/unestablished because the mutation-pool source file was uncommitted. After commit 3c241399, the mapper reported five pool files, 31 mapped test files, and no unmapped files; the real gate passed 5/5 changed-pool files with every changed line covered in 50.37s. Three matched post-change ./scripts/run-quality.sh --read-only receipts passed 85/0: totals 77.04s, 79.97s, 81.20s; changed-line mutation 73.7s, 76.8s, 78.0s. Median relief is 43.99s end-to-end (123.96s to 79.97s) and 43.8s in the mutation phase (120.6s to 76.8s). No clean verdict is inferred from the dirty pre-commit run.
 - Test duplication pressure: No production test family was pruned. One existing integration test was strengthened with two temporary test files and worker identity records; no duplicate-pressure expansion beyond the focused proof was introduced.
-- Critique: Delegated critique executed with three distinct unnamed Codex reviewers: problem framing, diagnostic/boundary ownership, and operational counterweight. All converged on reusing the canonical runner, preserving release_only explicitly, and proving worker-level coverage. The prepared packet is `charness-artifacts/critique/2026-08-04-194549-packet.md` with its JSON binding beside it. Boundary fingerprint verification was parent-attributed for the three edited paths with no undeclared drift. Reviewer envelopes were unbound on this Codex host; reviewers performed read-only inspection by instruction. Findings received. No verdict logic changed, so the second repaired-surface round is not triggered.
+- Critique: Delegated critique executed with three distinct unnamed Codex reviewers: problem framing, diagnostic/boundary ownership, and operational counterweight. Their durable result is `charness-artifacts/critique/2026-08-05-mutation-xdist-candidate-critique.md`; the individual delivery record is `charness-artifacts/critique/2026-08-05-mutation-xdist-review-delivery.md`; and the boundary receipt is `charness-artifacts/critique/2026-08-05-mutation-xdist-review-boundary-receipt.json`. The prepared packet `charness-artifacts/critique/2026-08-04-194549-packet.md` and JSON are cited there only as reviewed-input binding. All converged on reusing the canonical runner, preserving release_only explicitly, and proving worker-level coverage. Boundary fingerprint verification was parent-attributed for the three edited paths with no undeclared drift. Reviewer envelopes were unbound on this Codex host; reviewers performed read-only inspection by instruction. Findings received. No verdict logic changed, so the second repaired-surface round is not triggered.
 - Off-goal findings: No external source or side effect was added. No push, release, remote CI, issue close, or Cautilus run occurred. Cross-invocation locking for the fixed focused artifact remains deferred and predates this candidate.
 - Lessons carried forward: A focused coverage producer is still a proof boundary even when it only changes scheduling. Reuse the canonical runner instead of copying worker policy, and make scope changes such as release_only inclusion explicit when translating a wrapper command.
 - Metrics: Baseline receipt sources: /tmp/charness-mutation-goal-baseline-1.log, -2.log, -3.log. Candidate spike source: /tmp/charness-mutation-xdist-spike.log. Candidate gate source: /tmp/charness-mutation-xdist-candidate-gate.log. These receipts establish local Linux x86_64 / Python 3.10.12 behavior only; no host-wide token, cost, provider, or remote claim is made.
@@ -234,10 +230,29 @@ release ordering, push, issue close, and Cautilus remain out of scope.
 
 ## Final Verification
 
-Retro: not applicable — this draft has no executed slice or closeout retro.
-Host log probe: not applicable — no goal-scoped runtime window exists before
-activation.
-Disposition review: not applicable — this draft contains no completion claim.
+Retro: charness-artifacts/retro/2026-08-05-make-mutation-quality-gate-runtime-actionable-retro.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped Codex session file
+or configured host metrics window was exposed; local receipts are the
+authoritative runtime evidence for this goal.
+Disposition review: charness-artifacts/critique/2026-08-05-make-mutation-quality-gate-runtime-actionable-disposition-review.md
+
+Quality record: charness-artifacts/quality/2026-08-05-quality-review.md
+Claims record: charness-artifacts/critique/2026-08-05-mutation-goal-claims-midpoint.md
+Final locked closeout: `python3 scripts/run_slice_closeout.py --repo-root .
+--base origin/main --verification-lock --refresh-broad-pytest-proof
+--produce-mutation-coverage --ack-cautilus-skill-review` completed. The full
+receipt is `/tmp/charness-mutation-goal-final-closeout-6.log`; structural,
+packaging, documentation, security, skill, broad pytest, mutation producer, and
+changed-line consumer phases all passed. The broad proof record is
+`.charness/closeout/broad-pytest-proof.json` (last status `passed`, elapsed
+78.86s); the closeout's focused producer completed in 78.9s and the consumer
+returned pass. This is local Linux/Python evidence only.
+Probe synchronization: the added quality artifact changed the measured quality
+corpus by one artifact; the repo-owned D47 measurements and sibling consumption
+probe were refreshed to 109 top-level artifacts and 127 recursive marker
+artifacts, and their focused reproducibility suite passed 60/60 —
+`tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py` and
+`tests/test_inventory_marker_rule_measurement.py`.
 
 ## User Verification Instructions
 
@@ -248,7 +263,11 @@ checks, fresh-eye review, and the explicit remedy/no-safe-change decision.
 
 ## Auto-Retro
 
-Retro dispositions: none — no slices have executed; closeout will disposition
-  any surfaced improvement from the executed window.
-Structural follow-up: none — no retro exists before activation; classify any
-  transferable waste only after the goal produces evidence.
+Retro dispositions: applied: durable reviewer delivery and boundary receipts
+are now persisted before claims citation; applied: worker-level coverage proof
+uses distinct worker identities and exported lines; issue #505 (recurs:
+closeout-critical-path runtime) retains the measured mutation-lane owner and
+reopen trigger.
+Structural follow-up: issue #505 (recurs: closeout-critical-path runtime) — keep
+the local measured destination for another proof-preserving candidate; do not
+weaken mutation, coverage, or changed-line floors to meet runtime pressure.

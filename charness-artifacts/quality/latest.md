@@ -1,1 +1,1 @@
-2026-08-04-retro-goal-binding-quality-review.md
+2026-08-05-quality-review.md

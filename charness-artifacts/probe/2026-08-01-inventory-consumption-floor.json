@@ -10,13 +10,13 @@
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains 5 and no current citation drops below its requirement.",
     "worktree": "dirty: goal closeout artifacts are being finalized"
   },
-  "artifacts": 108,
+  "artifacts": 109,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 108,
+    "not-claimed": 109,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
