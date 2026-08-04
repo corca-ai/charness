@@ -9,10 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice B — matched scheduling experiment on the focused changed-line coverage producer.
-- Current slice intent: reproduce the current closeout critical path before
-  changing any gate, runner, test scope, or proof surface.
-- Next action: compare interleaved uncapped and focused-only worker-cap runs; use a fixed 5-second materiality threshold before deciding whether any cap is safe to implement.
+- Current slice: Slice D — final verification and no-safe-change closeout.
+- Current slice intent: preserve the pre-change focused producer after the
+  worker-cap candidate failed the fixed materiality test, then lock the local
+  proof and durable disposition.
+- Next action: run the strongest applicable local closeout, bind the retro and
+  independent claims review, and record the exact no-safe-change reopen trigger.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   repeated timing and fresh-eye proof at slice boundaries; strongest local
   proof at final closeout.
@@ -148,10 +150,10 @@ Acceptance check matrix:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Reproduce the current local closeout journey and identify one critical-path bottleneck | Historical #503 telemetry is a lead, not a current diagnosis; recent evidence suggests the full quality gate may dominate standing pytest | At least three comparable baselines where feasible, phase timing, frequency/serial-position/proof-sensitivity matrix, environment/corpus identity, producer-consumer-owner map, and either a target or `historical signal retired` disposition | pending |
-| B | Choose one reversible intervention and its falsifier | Speed pressure must not choose a proof-weakening remedy by intuition | Option comparison, preservation invariant, specific controlled failure channel, fixed statistic/threshold, named selected-seam owner, fresh-eye decision, and stop/reopen rule | pending |
-| C | Implement and exercise the smallest proof-preserving improvement | The goal must change an actual current cost source, not only improve its report | Focused tests, interleaved/repeated before-after runs, controlled failure-path checks, synchronized generated surfaces, and measured result or explicit inconclusive/no-safe-change outcome | pending |
-| D | Verify, record, and disposition the result | Runtime relief is provisional until the same proof remains intact | Separate correctness channel, final local gate, durable #503 follow-up, retro, claims review, and explicit relief/no-safe-change outcome | pending |
+| A | Reproduce the current local closeout journey and identify one critical-path bottleneck | Historical #503 telemetry is a lead, not a current diagnosis; recent evidence suggests the full quality gate may dominate standing pytest | At least three comparable baselines where feasible, phase timing, frequency/serial-position/proof-sensitivity matrix, environment/corpus identity, producer-consumer-owner map, and either a target or `historical signal retired` disposition | completed |
+| B | Choose one reversible intervention and its falsifier | Speed pressure must not choose a proof-weakening remedy by intuition | Option comparison, preservation invariant, specific controlled failure channel, fixed statistic/threshold, named selected-seam owner, fresh-eye decision, and stop/reopen rule | completed |
+| C | Implement and exercise the smallest proof-preserving improvement | The goal must change an actual current cost source, not only improve its report | Focused tests, interleaved/repeated before-after runs, controlled failure-path checks, synchronized generated surfaces, and measured result or explicit inconclusive/no-safe-change outcome | completed — no safe change |
+| D | Verify, record, and disposition the result | Runtime relief is provisional until the same proof remains intact | Separate correctness channel, final local gate, durable #503 follow-up, retro, claims review, and explicit relief/no-safe-change outcome | in_progress |
 
 ## Operator Decision Queue
 
@@ -198,6 +200,20 @@ No slices executed; this is a draft awaiting explicit `/goal` activation.
 - Off-goal findings: No off-goal issue was filed. Moving the gate to CI, weakening the partial/unmapped policy, broad cache reuse, and changing the standing runner globally remain out of scope.
 - Lessons carried forward: The full quality path is dominated by the focused mutation coverage phase, not by the standing suite. Separate test execution cost from coverage/export cost: the mapped tests took 20.86s without coverage, while the focused producer took about 115–120s.
 - Metrics: Host: Linux x86_64, 36 CPUs, empty PYTEST_ADDOPTS, clean e1f0f88b. Full quality median 122.71s; mutation phase median 119.3s. Standalone pytest median 44.25s. Measurement window 2026-08-04 local time; cache/load facts were not instrumented beyond repeated warm local runs and are recorded as unavailable rather than inferred.
+
+### Slice 2: B — Falsify focused worker-cap candidate
+
+- Objective: Choose and falsify one reversible intervention at the focused changed-line coverage producer seam: a focused-only xdist worker cap, measured against the existing uncapped command.
+- Why this approach: The mutation coverage phase is the current serial critical path. The critique packet fixed the preservation invariant, the separate correctness channel, and a 5-second materiality threshold before any implementation decision.
+- Commits: c01bc0b1 — baseline and Slice A evidence; no production implementation commit because the candidate did not meet the fixed relief threshold. The candidate critique artifact is recorded with this slice.
+- What changed: No production, gate, runner, test, generated, or plugin files changed. Added the durable candidate critique record; exploratory timing output remains outside the repository under /tmp.
+- Alternatives rejected: Rejected a global CHARNESS_PYTEST_WORKERS default, a forced -n 4 outside xdist detection, moving proof to CI, broad plain-coverage replacement, cache reuse, and standing-suite pruning. Each changes scope or proof shape beyond this reversible focused experiment.
+- Targeted verification: Six matched direct producer runs used the same base SHA 827a77f, four changed pool files, mapped corpus, host, and clean consumer verdict. Uncapped samples were 114.95s, 113.92s, 115.24s (mean 114.70s); cap-4 samples were 114.31s, 114.75s, 115.37s (mean 114.81s). The cap was 0.11s slower on mean and did not meet the predeclared 5s threshold, so the candidate is falsified for this host and pre-change behavior is retained. A separate focused correctness channel passed 43 tests in 4.68s; all six consumer verdicts remained clean with the same mapped proof scope.
+- Test duplication pressure: No tests were added or expanded because no implementation shipped; the existing producer and consumer test modules supplied the separate 43-test correctness channel.
+- Critique: Three delegated read-only reviewers returned findings before implementation. They required focused-only scope, preservation of xdist/no-xdist fallback, unchanged corpus/export/marker/consumer semantics, and matched samples before calling relief. Boundary fingerprints verified clean after each return. The findings are persisted in charness-artifacts/critique/2026-08-04-reduce-closeout-bottleneck-worker-cap-candidate-critique.md. No second repaired-surface round is owed because no verdict logic or proof surface was changed.
+- Off-goal findings: No off-goal issue was filed. Broad optimization, CI relocation, global runner policy, and cache reuse remain separate follow-ups; no safe current change was found at this seam.
+- Lessons carried forward: Worker-cap scheduling was not material on this host; the 0.11s mean difference is noise relative to the fixed 5s threshold and must not be reported as relief. If reopened, expose a focused producer-only option subordinate to xdist detection and rerun the same matched protocol with a material candidate. Keep coverage/export and test execution cost as separate measurements.
+- Metrics: Host: Linux x86_64, 36 CPUs, empty PYTEST_ADDOPTS, same mapped corpus and base SHA 827a77f across all runs; local warm-run cache/load conditions were not instrumented and remain unavailable. Uncapped median 114.95s, cap-4 median 114.75s; ranges 1.32s and 1.06s. Timing logs: /tmp/charness-mutation-focused-default-matched-{1,2,3}.log and /tmp/charness-mutation-focused-cap4-matched-{2,3}.log plus the first cap-4 log. Correctness log: /tmp/charness-closeout-mutation-correctness.log. Decision owner: this goal's parent agent under the active operating frame; reopen only after a new same-host candidate exceeds 5s median relief without proof-scope change.
 
 ## Context Sources
 
