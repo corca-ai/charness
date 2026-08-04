@@ -63,11 +63,11 @@ verified clean before parent writes.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/2026-08-04-001404-packet.json
-- Packet path: charness-artifacts/critique/2026-08-04-001404-packet.json
-- Packet SHA256: 4c6db3e815d402b166a2f2a7fb4de533e3bdcd460471bc95a83b75b648d400e9
-- Packet Markdown SHA256: 232fe61b5dd3c8bdf1306c1fc64a7649f331887e3781a7b18fc84a319c130578
-- Identity SHA256: cf0ee2047193dab00148334a190df373d79a954f9835be6dc679c7b3d0e4cc5f
+- Packet consumed: charness-artifacts/critique/make-recurring-closeout-cost-actionable-scope-update-packet.json
+- Packet path: charness-artifacts/critique/make-recurring-closeout-cost-actionable-scope-update-packet.json
+- Packet SHA256: d24f093448a9f6e25e4ff2f0356d893da17139aec1f56ed952518716fd7669aa
+- Packet Markdown SHA256: cb8a0a84bcb808a6be8d1af988a481f8b0746942903118e391a7e2e7bbd22f8d
+- Identity SHA256: 0c23b35750506a999c8c2bd8c2c1c29a036263cc01bb0ea107ca70929a52e943
 
 ## Boundary Ownership
 
@@ -79,3 +79,37 @@ verified clean before parent writes.
   boundary, not rolling telemetry by itself.
 - Verdict: moved-to-owner — the draft explicitly requires Slice A to discover
   and record the final owner before Slice B/C implementation.
+
+## Scope Update Review
+
+The operator expanded the design after the initial #503-only critique: execute
+#503 first, execute #496 second, and reserve push/release for the final bundle.
+Three fresh-eye angles plus a separate counterweight reviewed that expansion.
+
+- Act Before Ship findings: make Slice D's handoff artifact executable; make
+  Slice E independently reproduce the known `commands.dry_run` hollow-refill
+  symptom and record its own invariant/owner; make S3's no-safe-change branch
+  carry an option comparison; and order S7 as release plan/critique, push,
+  independent exact-SHA commit/CI readback, release publication, and independent
+  release/tag readback.
+- Bundle Anyway: the tracks are genuinely separate, and the single final
+  irreversible boundary is reasonable once D and F are local checkpoints.
+- Over-Worry: do not require future real-world speed relief or duplicate the
+  entire goal into generated packet sections.
+- Valid but Defer: cross-machine ranking, a new telemetry schema, and exact
+  release mechanics until Slice G's release plan.
+
+## Scope Update Repair-Read
+
+The final repair-read found and required three repairs: completion could not stop
+after #503, Slice D had to list every handoff field, and the critique section had
+to stop calling already-applied repairs pending. Those are now folded into the
+goal. It passed the release ordering/authorization boundary: final-phase-only,
+gate-conditional, no issue close, and no invented release mechanics before the
+release plan. Packet JSON/Markdown hashes and the reviewed-input binding verify
+current. The goal remains an inactive draft until the operator activates it.
+
+Fresh-Eye Satisfaction: parent-delegated — three scope-update angle reviewers,
+one separate counterweight, and one final repair-read reviewer returned
+findings; every reviewer boundary fingerprint verified clean before parent
+writes.

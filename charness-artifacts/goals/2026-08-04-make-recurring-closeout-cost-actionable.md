@@ -1,4 +1,4 @@
-# Achieve Goal: Make recurring closeout cost actionable
+# Achieve Goal: Make closeout cost actionable, then repair #496
 
 Status: draft
 Created: 2026-08-04
@@ -44,19 +44,23 @@ is not permission to remove proof.
 
 ## Current Slice
 
-One local, reversible bundle will select one comparable cost cohort, identify its
-producer/consumer/owner, and decide whether a proof-preserving intervention is
-justified. The bundle may end in “no safe change yet,” but only with a recorded
-reason and reopen trigger. #496 remains a separate goal.
+The work is sequential, not parallel: first complete the local #503 cost-
+decision track, then start the independent #496 hollow-refill predicate track.
+Each track has its own owner, evidence, and fresh-eye review. Only after both
+tracks pass their local proof floors does the final bundle become eligible for
+push and release.
 
 ## Fixed Decisions
 
 - No gate is weakened, skipped, or made non-blocking solely because it is slow.
-- The first bundle does not push, publish, close a remote issue, or claim remote
-  CI/live behavior.
-- #503 is the recommended first target because its recurrence can affect future
-  closeouts; this remains a user-confirmation item before activation, not a fact
-  silently assumed by the run.
+- #503 is completed first; #496 starts only after the #503 local closeout is
+  complete. Their evidence and implementation scopes must not be mixed.
+- The #503 and #496 working bundles are local and reversible. The final bundle
+  may push only after both tracks pass their local proof floors and the final
+  quality/release gates run against the final state; release publication may
+  happen only after independent remote commit/CI readback for the pushed SHA.
+- Remote issue closure is not included unless separately requested; a pushed or
+  released state must not be described as an issue being closed.
 - A report-only result is incomplete unless it records either the chosen local
   action or an evidence-backed “no safe change” disposition with a reopen
   trigger.
@@ -74,6 +78,11 @@ reason and reopen trigger. #496 remains a separate goal.
   what evidence rules out a safe change and when should the question reopen?
 - Is the corpus-denominator capability part of the same producer/consumer
   contract as #503, or does it need a separate owner and issue/spec?
+- After #503 closes locally, what exact semantic invariant, owner, and
+  axis-varying counterexample define #496's hollow-refill predicate? Which
+  positive and negative controls prove the repair rather than its warning text?
+- At the final bundle, which independent observer and channel will verify the
+  pushed commit, CI, and release result separately from the local gate exit code?
 
 ## Deferred Decisions
 
@@ -86,6 +95,11 @@ reason and reopen trigger. #496 remains a separate goal.
   and fresh proof.
 - Relief observed in a later real goal is a follow-up measurement, not a hidden
   completion requirement for this bounded local goal.
+- The exact #496 implementation shape remains deferred until its own local
+  reproduction and owner read; #503's solution must not preselect it.
+- The exact release target, version/tag mechanics, and publication procedure
+  remain deferred to Slice G's release plan; the operator's authorization is
+  already limited to that final phase.
 
 ## Constraints
 
@@ -94,7 +108,15 @@ reason and reopen trigger. #496 remains a separate goal.
 - Source and generated/plugin surfaces must be synchronized before validators
   read them.
 - The final local proof must use a channel different from the one that produced
-  the proposed intervention; remote state remains unclaimed.
+  the proposed intervention.
+- Push/release is the final irreversible boundary: its authorization is
+  conditional on the gates. The operator explicitly granted this final phase in
+  this session; the grant does not cover issue closure or any earlier mutation.
+  Its success is provisional until a different observer and different evidence
+  channel read back commit, CI, and release state.
+- The exact release target, version/tag mechanics, and publication procedure
+  are decided in Slice G's release plan before any version/tag/publish mutation;
+  they are not invented in S7's acceptance prose.
 
 ## Success Criteria
 
@@ -105,10 +127,21 @@ reason and reopen trigger. #496 remains a separate goal.
   can change; “telemetry exists” alone does not satisfy this criterion.
 - S3: a local replay or fixture demonstrates the selected action and its
   expected evidence, or demonstrates the evidence-backed no-safe-change path.
+  The no-change path must carry a durable option comparison: recorded
+  instance/cohort, candidate actions, preservation invariant, why each candidate
+  is unsafe or premature, named owner, and measurable reopen trigger.
 - S4: preservation checks show no false green, hidden failure, stale-record
   reuse, or truncation of the operator receipt for the selected path.
 - S5: the result records expected local relief or explicitly says that relief is
   not yet measurable, with a follow-up trigger rather than an invented claim.
+- S6: #496 has a separately recorded reproduction, semantic invariant, owner,
+  axis-varying counterexample, and positive/negative proof before its repair is
+  considered complete.
+- S7: only after S1–S6 pass and a release critique/claims review is recorded,
+  push the final state; independently read back the remote commit and CI for
+  that exact SHA; only then publish the release/tag if the release procedure
+  requires it; and independently read back release/tag/version and target
+  commit. Issue CLOSED is not claimed unless separately verified.
 
 ## Acceptance Checks
 
@@ -116,9 +149,11 @@ reason and reopen trigger. #496 remains a separate goal.
 | --- | --- | --- |
 | S1 | Mine/replay the local telemetry and inspect a checked-in decision record | The record contains all S1 fields and uses one comparable unit/window; missing or rotated records are visible |
 | S2 | Boundary-ownership review by a fresh observer | Producer, final consumer, owning surface, and changed operator decision agree |
-| S3 | Deterministic fixture or replay plus focused tests | The chosen action or no-safe-change branch is observable and reversible |
+| S3 | Deterministic fixture or replay plus focused tests and a durable option comparison | The chosen action or no-safe-change branch is observable, reversible, owned, and has a reopen trigger |
 | S4 | Negative controls for failed emission, stale/rotated state, and output truncation; broad proof when a verdict surface changes | Each failure remains visible and the final receipt still names recovery; no local green is treated as remote proof |
 | S5 | Closeout claims review against the record and the selected cohort | Relief is measured, or the non-claim and reopen trigger are explicit |
+| S6 | Fresh #496 reproduction and boundary-ownership review, then positive/negative controls | The predicate tracks the semantic invariant and distinguishes the axis-varying counterexample |
+| S7 | Release critique/claims review; gated push; independent remote commit/CI readback; then gated release and independent release readback | Release publication occurs only after CI is observed for the exact pushed SHA; remote issue closure remains an explicit non-claim |
 
 ## Non-Goals
 
@@ -126,8 +161,12 @@ reason and reopen trigger. #496 remains a separate goal.
   slow.
 - Do not turn rolling telemetry into a per-run receipt until a named consumer,
   run identity, retention rule, and stale-state behavior are defined.
-- Do not include #496, release work, push, production/live proof, or remote issue
-  closure in the first local bundle.
+- Do not run #503 and #496 in parallel, or let #503's telemetry decision
+  preselect #496's predicate repair.
+- Do not push or release from either local track; those actions belong only to
+  the final bundle after both tracks pass.
+- Do not include production/live proof or remote issue closure unless separately
+  requested and verified.
 - Do not promise a speed improvement before the chosen cost class has a measured
   baseline and an owner who can explain what evidence the improvement preserves.
 
@@ -136,9 +175,9 @@ reason and reopen trigger. #496 remains a separate goal.
 - North Star boundary: judgment support is the default; a new blocking tooth is
   allowed only after a recorded escape, a named false-fire cost, and evidence
   that the tooth catches the right invariant.
-- The first bundle is local and reversible. Any publish, push, remote-CI,
-  instance apply, or issue close requires a separately confirmed phase/bundle
-  boundary and its own readback.
+- Each working bundle is local and reversible. Push/release is allowed only in
+  the final bundle after #503 and #496 local proof; any instance apply or issue
+  close requires a separate boundary and readback.
 - The chosen report or packet must distinguish measured recurrence from a
   proposed intervention and from what remains unproven.
 - If the corpus denominator is part of the solution, its owner must be named;
@@ -157,9 +196,11 @@ re-running the entire session:
 4. Which proof channels show that the intervention did not create a false green,
    hide a failed run, or move a receipt behind a truncation boundary?
 
-Completion requires either one locally demonstrated, proof-preserving action or
-an explicit evidence-backed decision not to change the gate yet. A clean run by
-itself is not acceptance, and a later real-world relief claim is not required
+Completion requires the full sequence: #503's local handoff checkpoint, #496's
+independent local reproduction/repair proof, and S7's ordered push/CI-readback/
+release/release-readback evidence. Either track may record an evidence-backed
+no-safe-change decision, but #503 alone cannot complete this goal. A clean run
+by itself is not acceptance, and a later real-world relief claim is not required
 for this bounded goal.
 
 ## Agent Verification Plan
@@ -182,55 +223,51 @@ for this bounded goal.
   change alters verdict logic, a second review round that reads the repairs.
 - Run the broad standing proof at the bundle boundary and record measured cost
   separately from correctness.
+- For the #503→#496 handoff, require the checked-in local closeout record named
+  in Slice D and a fresh observer's acceptance before Slice E begins.
+- Before any final version/tag/release mutation, run release-specific critique
+  and claims review; push and release are separate proof steps.
 
 ### External Or Live Proof
 
-- Skipped by default: this goal's first bundle does not publish, push, close
-  issues, or claim remote CI/live behavior. If a later bundle requests one of
-  those lanes, it must carry explicit approval and a different-channel
-  readback.
+- Deferred until the final bundle: after #503 and #496 local proof and a release
+  critique/claims review, push the final state under the user's conditional
+  approval. Then a different observer/channel reads back the remote commit and
+  CI for that exact SHA. Only after that readback may the release/tag step run;
+  a separate observer/channel then reads back release/tag/version and target
+  commit. Do not claim issue CLOSED unless a separate closeout floor and state
+  readback are run.
 
 ## Slice Plan
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Lock the recurring-cost fact and owner | #503 contains recurrence signals but not yet a safe intervention boundary | S1/S2 record: one cohort, complete denominator/window/retention, producer-consumer map, explicit non-claims | pending activation |
-| B | Choose the smallest control surface | The remedy could be a report, packet, scheduling change, or no change; choosing by intuition risks another proxy | option comparison, named consumer, preservation invariant, S3 decision, fresh-eye critique | pending activation |
-| C | Implement and exercise one reversible local intervention | The goal needs a useful capability, not a new metric without a decision path | focused tests/fixtures, source-export sync, S4 negative controls, changed-line proof where applicable | pending activation |
-| D | Bundle-proof and close honestly | A passing local gate is not proof of operator value or remote state | S5 claims review, broad proof when required, residuals, no remote claims | pending activation |
+| A | Lock #503's recurring-cost fact and owner | #503 contains recurrence signals but not yet a safe intervention boundary | S1/S2 record: one cohort, complete denominator/window/retention, producer-consumer map, explicit non-claims | pending activation |
+| B | Choose #503's smallest control surface | The remedy could be a report, packet, scheduling change, or no change; choosing by intuition risks another proxy | option comparison, named consumer, preservation invariant, S3 decision, fresh-eye critique | pending activation |
+| C | Implement and exercise #503's reversible local intervention | The goal needs a useful capability, not a new metric without a decision path | focused tests/fixtures, source-export sync, S4 negative controls, changed-line proof where applicable | pending activation |
+| D | Close #503 locally before changing scope | Sequential work prevents #503's cost model from contaminating #496's semantic predicate decision | `charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md` records selected cohort/owner, action or option-comparison no-change result, residuals, exact changed paths, explicit “no predicate recommendation for #496,” and fresh-observer acceptance; no unresolved shared owner; no remote claims; this checkpoint unlocks E | pending activation |
+| E | Reproduce and frame #496 independently | #496 is an independent hollow-refill predicate problem and must not inherit #503's answer; the known starting symptom is an inert empty-string default such as `commands.dry_run` reported as a refill and a warning that recommends dropping a real configuration block | reproduction of the end-to-end symptom, semantic invariant, axis-varying counterexample, producer/consumer map, explicit #503 handoff non-claim, critique | pending activation |
+| F | Repair and prove #496 locally | A warning or type-shaped proxy must not be mistaken for the semantic fix | focused positive/negative tests, changed-line proof, second review if verdict logic changes, local closeout | pending activation |
+| G | Plan, push, and release the final state in order | The irreversible boundary belongs after both local tracks are proven and CI is read back after push | release critique/claims review and target plan, final quality gate, gated push, independent remote commit/CI readback, gated release/tag, independent release/tag readback, explicit remote issue non-claims | pending activation |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-- Decision: confirm that #503 is the first goal and #496 remains separate
-- Owner: operator
-- Why deferred: this prioritization changes the next session's scope; the
-  comparable cost axis itself is deliberately a Slice A probe, not an operator
-  intuition choice
-- Unblock action: confirm the recommended default: #503 first, local decision
-  surface first, #496 as a separate goal, no push or issue close in this bundle
-- Revisit trigger: before `/goal` activation
+none — the operator resolved the activation choices in this session: run #503
+first, then #496; keep both working tracks local; and reserve push/release for
+the final bundle after all local proof floors pass. Remote issue closure remains
+out of scope unless separately requested.
 
 ## Coordination Cues
 
-- `Routing: achieve + ideation/spec + quality + critique + impl + retro — shape
-  the decision first, then implement only the evidence-backed slice.`
+- `Routing: achieve + ideation/spec + quality + critique + impl + retro + release
+  — shape the decision first, then implement only the evidence-backed slice.`
 - `Gather: n/a — this draft uses checked-in handoff, North Star, retro, and
   issue evidence; no new external source was introduced.`
-- `Release: n/a — no release surface is in scope.`
-- `Issue closeout: n/a — #503 is planning context here; remote closure requires
-  a separately confirmed publication bundle.`
+- `Release: planned — operator-granted final phase only; after #503 and #496
+  local proof, push and independently read back commit/CI, then publish and
+  independently read back release/tag state.`
+- `Issue closeout: n/a — remote issue closure was not requested; push/release
+  must not be narrated as issue CLOSED.`
 
 Phase-appropriate routing for this run, chosen from installed skill metadata and
 model judgment — never a hard-coded phase-to-skill list here. Use the catalog
@@ -273,10 +310,11 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: pending operator confirmation — use #503 as the
-  first local, no-push goal and keep #496 separate. Slice A will choose the
-  comparable cost metric after recording profile, cohort, window, denominator,
-  and retention; do not activate until the #503-first scope is confirmed.
+- Discuss before activation: RESOLVED by the operator in this session — run
+  #503 first and #496 second; keep both working tracks local; and use the
+  explicitly granted final phase for push/release only after all local gates.
+  Release/tag target and procedure must still be planned and critiqued in Slice
+  G before mutation. No remote issue close is included.
 
 ## Slice Log
 
@@ -298,10 +336,9 @@ the originating context by following them in order.
 
 ## Interview Decisions
 
-- Scope: prefer #503 first over #496 or both together, because recurring proof
-  cost can affect every later goal; keep #496 as a separate goal so the next
-  session has one measurable decision boundary. This is a recommendation,
-  pending operator confirmation.
+- Scope: run #503 first and #496 second in one sequential goal, with separate
+  slice contracts and evidence packets. This prevents parallel scope creep while
+  preserving a single final push/release boundary.
 - Control type: prefer an evidence/decision surface before a blocking gate or
   automatic skip. A speed-driven gate change is rejected until an observed
   escape, false-fire cost, and invariant proof exist.
@@ -309,9 +346,9 @@ the originating context by following them in order.
   proof; do not repeat the full suite after every documentation-only adjustment.
   The broad run remains required when the corpus, verdict logic, or generated
   consumer changes.
-- External boundary: keep publish/push/issue-close out of the initial bundle;
-  this preserves reversibility and avoids confusing a local carrier with remote
-  state.
+- External boundary: keep push/release out of both working tracks and perform it
+  only in the final bundle after local proof and a different-channel readback
+  plan are ready. Remote issue closure remains excluded.
 
 ## Plan Critique Findings
 
@@ -331,11 +368,35 @@ separate counterweight returned findings; all four reviewer boundary fingerprint
 verified clean before parent writes. The final packet must be regenerated after
 any further draft edit.
 
+Scope-update note: the operator later resolved the pending choices as sequential
+#503 then #496, with final push/release only after both local proof tracks. This
+requires a fresh critique of the expanded #496 and release boundary before
+activation; the earlier review is retained as evidence for the #503 design, not
+as approval of the expanded scope.
+
+Expanded-scope fresh-eye findings: three angle reviewers identified act-before-
+activation repairs. Slice D needs a checked-in #503 local-closeout handoff with
+the selected cohort/owner, action or no-change disposition, residuals, changed
+paths, and an explicit non-recommendation for #496. Slice E must reproduce the
+known hollow-refill symptom independently and record its producer/consumer
+owner before choosing a repair. Slice G must order final proof as local S1–S6,
+release critique/claims review, push, independent remote commit/CI readback,
+release publication, and independent release/tag readback. S3 must make the
+no-safe-change path falsifiable with an option comparison and reopen trigger.
+The repair-read then identified three remaining blockers: the User Acceptance
+completion sentence allowed stopping after #503, Slice D did not make the full
+handoff fields executable, and this section still called the applied repairs
+“pending.” The current update folds those three repairs into User Acceptance,
+Slice D, and this record. A fresh packet was generated after this edit and
+verified current; the goal remains an inactive draft until activation.
+
 ## Off-Goal Findings
 
-#496 remains a separate hollow-refill predicate decision. The corpus-denominator
-packet capability is a separate owner decision unless Slice A proves that it is
-the same producer/consumer contract. No new issue is created by this draft.
+#496 is now an in-goal second track, but remains an independent hollow-refill
+predicate decision with its own owner, reproduction, proof, and review. The
+corpus-denominator packet capability remains a separate owner decision unless
+the #503 track proves it is the same producer/consumer contract. No new issue is
+created by this scope update.
 
 ## Final Verification
 
@@ -350,15 +411,14 @@ Disposition review: skipped: draft — it belongs to the activated goal's closeo
 
 ## User Verification Instructions
 
-Before activation, confirm the recommended scope in the Operator Decision Queue.
-The first cost axis is deliberately a Slice A probe, not a preselected intuition.
-Then run:
+The operator has resolved the scope. Activate with:
 
 `/goal @charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md`
 
-At closeout, verify the durable decision record satisfies S1–S5 and does not
-claim push, remote CI, issue closure, or live behavior unless those lanes were
-separately approved and read back.
+At closeout, verify S1–S6 locally first. Then run S7 in order: release
+critique/claims review and target plan, push, independent remote commit/CI
+readback for the exact SHA, release/tag publication, and independent
+release/tag readback. Do not claim remote issue CLOSED.
 
 ## Auto-Retro
 
