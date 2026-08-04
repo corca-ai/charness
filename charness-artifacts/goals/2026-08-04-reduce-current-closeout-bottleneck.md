@@ -1,0 +1,306 @@
+# Achieve Goal: Reduce the current closeout bottleneck without weakening proof
+
+Status: draft
+Created: 2026-08-04
+Activation: `/goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: real draft/backlog awaiting activation.
+- Current slice intent: reproduce the current closeout critical path before
+  changing any gate, runner, test scope, or proof surface.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md` after confirming the draft is still intended.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  repeated timing and fresh-eye proof at slice boundaries; strongest local
+  proof at final closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final proof uses `--verification-lock` and records the exact timing bundle.
+- Slice review packet: include the selected command, baseline, preservation
+  invariant, falsifier, changed/generated surfaces, timing method, correctness
+  channel, and non-claims.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Final Verification`, and `## Auto-Retro`.
+
+## Goal
+
+Use the recurring #503 cost signal as a starting point, reproduce the current
+critical-path closeout cost in this environment, then implement and measure one
+smallest reversible proof-preserving improvement. The goal completes with
+repeatable measured relief or an evidence-backed no-safe-change disposition for
+the selected current bottleneck; it does not treat historical telemetry or a
+green run as proof that a gate is safe to weaken.
+
+The earlier #503 goal is complete as a measurement and decision surface; this is
+a new current-environment experiment, not a reactivation of that goal and not a
+claim that its historical cohort is still the operator's present pain.
+
+## Non-Goals
+
+- Do not weaken, skip, downgrade, or move a proof gate merely because it is slow.
+- Do not treat the historical #503 cohort as proof that the same command is the
+  current bottleneck; current measurements choose the target.
+- Do not optimize every slow command in one goal. Select one current critical
+  path and keep the over-slice signal as a separate unit.
+- Do not introduce a universal cross-host runtime promise, a new telemetry
+  schema, a release change, a push, or a remote issue close.
+- Do not claim runtime relief from a single run or from a faster run that changes
+  the proof being measured.
+- Do not force an intervention if the current journey no longer reproduces a
+  meaningful bottleneck; a durable `historical signal retired` or `no safe
+  current target` disposition is an honest outcome.
+
+## Boundaries
+
+- This is a local, reversible optimization goal. No push, release, provider
+  proof, remote CI readback, or issue close is in scope.
+- The target is the current host/runtime environment only (`axis:
+  host/runtime profile`). Results must name the command, environment, corpus,
+  and measurement window; they must not become a cross-host promise.
+- A gate's correctness, failure visibility, coverage, and recovery path remain
+  invariant. A passing run remains distinct from an over-budget advisory.
+- Any candidate that changes a gate, validator, runner, or evidence surface is
+  treated as a proof-surface change: it requires fresh-eye review and a second
+  repaired-surface read when the verdict logic changes.
+- The intervention must be reversible until before/after evidence and the
+  separate correctness channel are complete.
+- If relief is not material, measurements are inconclusive, or correctness
+  preservation fails, restore the pre-change behavior. Only evidence-only
+  instrumentation may remain, and then only with an explicit reason, owner, and
+  reopen observation.
+- Historical telemetry is a target-selection signal only. The current baseline
+  is the source of truth for this goal.
+- Slice A must measure the actual local closeout journey, including the full
+  `run-quality.sh --read-only` path and the standing-pytest path, or explicitly
+  record why a path is not comparable. A longest single command is not enough:
+  selection considers elapsed time, invocation frequency, serial position, and
+  proof sensitivity.
+
+## User Acceptance
+
+The user can inspect one durable closeout record and answer:
+
+1. Which current closeout command or phase was selected, and why was it the
+   critical path in this environment?
+2. What changed, and did at least three comparable post-change observations show
+   improvement beyond the pre-change variation? If not, is the result explicitly
+   inconclusive rather than called relief?
+3. Which correctness and failure-preservation checks show that the work did not
+   make the proof weaker or hide a failed run?
+4. If no safe improvement was found, what candidate was falsified, who owns the
+   decision, and what exact observation reopens it?
+
+Acceptance check matrix:
+
+| Criterion | Decisive check | Required evidence |
+| --- | --- | --- |
+| Current target | Compare the local closeout journey and candidate contributors | Same command/corpus identity, phase timing, frequency, serial position, proof sensitivity, and target-selection decision |
+| Material relief | Repeat at least three comparable before/after observations with a fixed statistic and threshold chosen before the intervention | Baseline and candidate samples, cache/load/profile facts, exclusions, variation, threshold, and result or inconclusive disposition |
+| Proof preservation | Run focused controlled failure/fixture checks and the final local correctness channel separately from timing | Same non-zero outcome, visible failure name, recovery receipt, and final locked proof where applicable |
+| No-safe-change | Falsify the candidate or fail the relief threshold, restore pre-change behavior, and retain only explicitly justified evidence instrumentation | Tested seam, preservation result, owner, rollback/retention reason, and exact reopen trigger |
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- Read the existing #503 cohort, decision, and local-closeout records together
+  with `docs/deferred-decisions.md#d51` before selecting a target.
+- Run the current read-only quality and standing-pytest paths with timing
+  capture, including the actual local closeout journey, then split the selected
+  command into its phases or gate labels before changing code.
+- Confirm the selected command and corpus are the same before and after the
+  experiment. Record `HEAD`, changed-path/corpus identity, command arguments,
+  `PYTEST_ADDOPTS`, xdist/runtime profile, cache warmth, and machine-load facts
+  when available; mark unavailable fields explicitly instead of inferring them.
+- Inspect changed surfaces and generated/plugin parity before validators read
+  them; run cheap focused checks at each commit boundary.
+
+### High-Confidence Checks
+
+- Establish at least three comparable baseline observations and at least three
+  candidate observations. Interleave or alternate baseline and candidate runs
+  when feasible; if the result remains ambiguous, record `inconclusive` rather
+  than ritualistically increasing the sample.
+- Choose the materiality threshold and fixed comparison statistic before the
+  intervention. The threshold must reflect an operator-relevant saving and be
+  larger than the observed measurement resolution; it remains fixed afterward.
+- Name the timing producer, timing consumer, selected-seam owner, preservation
+  invariant, and falsifier before implementation.
+- Run the candidate through the fixed timing protocol, then use focused
+  controlled failure/fixture checks and the final correctness channel separately
+  from the timing measurement.
+- Exercise success, failure, and any unproven/blocked path the candidate could
+  affect. Preserve failure names, recovery logs, and non-zero outcomes.
+- Use a bounded fresh-eye critique before implementation. If verdict logic or a
+  proof surface changes, run the required second review of the repaired surface.
+- Run the strongest applicable local closeout at the final bundle, including
+  mutation coverage when eligible Python proof surfaces change.
+
+### External Or Live Proof
+
+- N/A — this goal intentionally stops at local current-environment evidence.
+  Remote CI, provider/live behavior, release publication, and issue state are
+  explicit non-claims.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| A | Reproduce the current local closeout journey and identify one critical-path bottleneck | Historical #503 telemetry is a lead, not a current diagnosis; recent evidence suggests the full quality gate may dominate standing pytest | At least three comparable baselines where feasible, phase timing, frequency/serial-position/proof-sensitivity matrix, environment/corpus identity, producer-consumer-owner map, and either a target or `historical signal retired` disposition | pending |
+| B | Choose one reversible intervention and its falsifier | Speed pressure must not choose a proof-weakening remedy by intuition | Option comparison, preservation invariant, specific controlled failure channel, fixed statistic/threshold, named selected-seam owner, fresh-eye decision, and stop/reopen rule | pending |
+| C | Implement and exercise the smallest proof-preserving improvement | The goal must change an actual current cost source, not only improve its report | Focused tests, interleaved/repeated before-after runs, controlled failure-path checks, synchronized generated surfaces, and measured result or explicit inconclusive/no-safe-change outcome | pending |
+| D | Verify, record, and disposition the result | Runtime relief is provisional until the same proof remains intact | Separate correctness channel, final local gate, durable #503 follow-up, retro, claims review, and explicit relief/no-safe-change outcome | pending |
+
+## Operator Decision Queue
+
+none — the user confirmed that #503 is the next goal, and all work is local and
+reversible. The measurement-derived target and threshold are agent decisions
+that will be recorded before the intervention, not operator-only approvals.
+
+## Coordination Cues
+
+- Routing: quality — select and measure the current closeout critical path;
+  quality owns proof-cost posture and preservation checks.
+- Routing: impl — implement the selected local optimization after its invariant
+  and falsifier are fixed.
+- Routing: critique — review the candidate boundary and any repaired verdict
+  surface before the final lock.
+- Routing: retro — record measured waste, relief, and the next disposition.
+- Gather: n/a — the goal uses checked-in issue and repository evidence; no new
+  external source is introduced.
+- Release: n/a — no version or install-manifest surface is in scope.
+- Issue closeout: n/a — #503 is context and this goal does not close the remote
+  issue; remote closure remains outside the local optimization boundary.
+
+## Discuss Before Activation
+
+Discuss before activation: resolved — the user selected #503 as the next
+problem because reducing a shared closeout bottleneck should make later work
+faster; the goal remains local, does not weaken gates, and chooses the concrete
+target only after a fresh current baseline.
+
+## Slice Log
+
+No slices executed; this is a draft awaiting explicit `/goal` activation.
+
+## Context Sources
+
+Durable references this goal was shaped from:
+
+1. [Design North Star](../../docs/design-north-star.md) — P1/P4/P5 require
+   judgment on reversible runtime work and distinct proof when changing a proof
+   surface; speed is not permission to remove evidence.
+2. [Completed #503 goal](2026-08-04-make-recurring-closeout-cost-actionable.md)
+   — prior work measured recurrence and created the detail receipt, but recorded
+   zero measured relief and deferred a safe optimization.
+3. [#503 cohort record](../issue/2026-08-04-issue-503-slice-a-cohort.md), [#503
+   decision](../issue/2026-08-04-issue-503-slice-b-decision.md), and [#503 local
+   carrier](../issue/2026-08-04-issue-503-local-closeout.md) — selected units,
+   owner, preservation boundary, historical cohort, and reopen conditions.
+4. [D51](../../docs/deferred-decisions.md#d51-release-branchci-barrier-and-quality-gate-runtime)
+   — runtime treatment remains deferred until a concrete current optimization
+   candidate exists.
+5. [Recent lessons](../retro/recent-lessons.md) — freeze evidence before the
+   final proof and keep telemetry separate from per-run claims.
+
+## Interview Decisions
+
+- Target selection: compare current `run-quality.sh` and standing-pytest timing,
+  then select one present critical path. `axis: host/runtime profile` — the
+  historical largest cohort does not automatically represent this host. Reject
+  optimizing the historical command without reproduction.
+- Intervention scope: one reversible local change with a fixed preservation
+  invariant. Reject gate weakening, broad suite pruning, and simultaneous
+  optimization of `over_slice` because they change the proof question before it
+  is understood.
+- Success test: record a materiality threshold after the repeated baseline but
+  before the intervention; require at least three comparable post-change
+  observations and improvement beyond measured noise. `single-point:` the
+  threshold is one decision for this goal, but its numeric value must be derived
+  from the current measurement rather than inherited from historical 120-second
+  advisory text.
+- Proof channel: keep timing measurement and correctness verification separate.
+  `single-point:` local correctness and local elapsed time are the only claims in
+  scope; no provider or remote channel is needed.
+- External boundary: no push, release, or issue close. `single-point:` the user
+  chose a local speed-improvement goal, not publication.
+
+## Plan Critique Findings
+
+Delegated fresh-eye critique of the draft packet ran with three distinct lenses;
+all three reviewers were read-only and their boundary fingerprints verified
+clean. The packet and findings are persisted in
+`charness-artifacts/critique/2026-08-04-reduce-current-closeout-bottleneck-goal-critique.md`.
+
+The following repairs were folded into this artifact:
+
+- Folded blocker: historical recurrence must not select the current target;
+  Slice A requires a fresh same-environment baseline.
+- Folded blocker: a faster command is not a successful optimization if it drops
+  coverage, failure visibility, or the recovery receipt; Slice B fixes the
+  preservation invariant and falsifier first.
+- Folded blocker: timing and correctness must not be the same proof channel;
+  Slice D requires separate correctness verification.
+- Folded blocker: optimizing all slow findings would recreate the previous
+  scope expansion; only one gate-runtime bottleneck is in scope and `over_slice`
+  remains separate.
+- Folded blocker: the baseline must cover the actual local closeout journey, not
+  only two convenient commands; target selection now includes elapsed time,
+  frequency, serial position, and proof sensitivity.
+- Folded blocker: repeated timing is now a defined protocol with comparable
+  samples, fixed command/corpus/environment facts, a fixed statistic, and an
+  explicit `inconclusive` outcome.
+- Folded blocker: no-relief handling now names the tested seam, preservation
+  result, owner, rollback/retention reason, and reopen trigger; failed or
+  inconclusive performance changes must be restored before closeout.
+- Over-worry not folded: cross-host normalization, a universal runtime budget,
+  and a new telemetry schema are deferred until a real consumer needs them.
+- Over-worry not folded: remote CI or release proof is unnecessary for this
+  local reversible goal.
+- Valid but defer: optimizing `over_slice`, release-helper ordering, and wider
+  scheduling/CI restructuring remain separate follow-ups.
+- Reviewer provenance: requested tier `high-leverage`; requested model
+  `gpt-5.6-terra`, reasoning `medium`, service tier `priority`, fork turns
+  `none`; host exposure state `requested_fields_sent`; findings received from
+  Zeno, Godel, and Banach; all three boundary windows were clean. A repaired
+  surface read by Schrodinger confirmed the journey, comparability, acceptance,
+  and separate correctness design, then required and drove the rollback rule;
+  its boundary window was also clean. A final repair read by Carver found one
+  remaining `two` versus `three` sample-count inconsistency; the parent fixed
+  it before activation and verified Carver's boundary clean. The activated goal
+  still needs a slice-level critique of the concrete implementation.
+
+## Off-Goal Findings
+
+- #491, #502, and #504 remain separate. They may benefit from a faster common
+  gate later, but none is an acceptance criterion here.
+- The prior #503 carrier's historical cohort remains evidence context, not a
+  current relief claim.
+
+## Final Verification
+
+No execution yet — this draft has no final verification claims. Activation must
+replace the draft state with a current baseline, intervention result, correctness
+proof, bound retro, and disposition review before completion.
+
+Retro: not yet applicable — no slices have executed.
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host metric window is requested for this draft; runtime claims will use explicit local command timing instead.
+Disposition review: not yet applicable — no implementation or closeout claims exist in this draft.
+
+## User Verification Instructions
+
+Activate with:
+
+    /goal @charness-artifacts/goals/2026-08-04-reduce-current-closeout-bottleneck.md
+
+The first slice will measure the current critical path before changing any gate,
+runner, or test scope. Nothing in this draft changes repository behavior.
+
+## Auto-Retro
+
+Retro dispositions: none yet — execution has not started; closeout will record
+each surfaced improvement as applied, tracked, or an explicit accepted risk.
+Structural follow-up: n/a — no transferable waste has been observed in this
+draft; reassess after the actual baseline and experiment.
