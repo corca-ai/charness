@@ -179,6 +179,25 @@ def _write_slow_fake_glow(bin_dir: Path) -> None:
     glow.chmod(glow.stat().st_mode | stat.S_IEXEC)
 
 
+def _write_fake_script(bin_dir: Path, *, compatible: bool) -> None:
+    script = bin_dir / "script"
+    body = [
+        "#!/usr/bin/env python3",
+        "import shlex",
+        "import subprocess",
+        "import sys",
+        "if not sys.argv[1:] or sys.argv[1] != '-qec':",
+        "    raise SystemExit(64)",
+        "if not %r:" % compatible,
+        "    print('unsupported script flags', file=sys.stderr)",
+        "    raise SystemExit(64)",
+        "completed = subprocess.run(shlex.split(sys.argv[2]), check=False, text=True)",
+        "raise SystemExit(completed.returncode)",
+    ]
+    script.write_text("\n".join(body) + "\n", encoding="utf-8")
+    script.chmod(script.stat().st_mode | stat.S_IEXEC)
+
+
 def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
@@ -215,6 +234,52 @@ def test_markdown_preview_renders_artifacts_with_glow(tmp_path: Path, monkeypatc
     }
     assert (repo / ".artifacts/markdown-preview/README.w80.txt").read_text(encoding="utf-8").strip() == "RENDER width=80 source=README.md"
     assert payload["previews"][0]["source_sha256"]
+
+
+def test_markdown_preview_uses_compatible_script_pty_path(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Hello\n\nWorld\n", encoding="utf-8")
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    _write_fake_glow(fake_bin)
+    _write_fake_script(fake_bin, compatible=True)
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}:{_isolated_path()}"
+
+    result = run_helper_in_process(
+        monkeypatch, capsys, repo, "--file", "README.md", "--width", "80", env=env
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "success"
+    assert payload["previews"][0]["status"] == "rendered"
+
+
+def test_markdown_preview_falls_back_when_script_flags_are_unsupported(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Hello\n\nWorld\n", encoding="utf-8")
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    _write_fake_glow(fake_bin)
+    _write_fake_script(fake_bin, compatible=False)
+    env = os.environ.copy()
+    env["PATH"] = f"{fake_bin}:{_isolated_path()}"
+
+    result = run_helper_in_process(
+        monkeypatch, capsys, repo, "--file", "README.md", "--width", "80", env=env
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "success"
+    assert payload["previews"][0]["status"] == "rendered"
 
 
 def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path, monkeypatch, capsys) -> None:

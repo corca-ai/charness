@@ -4,6 +4,7 @@ import hashlib
 import importlib.util
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -113,13 +114,41 @@ def _render_with_glow(path: Path, width: int) -> tuple[str | None, str | None]:
     command = ["glow", "-w", str(width), str(path)]
     timeout_seconds = _backend_timeout_seconds()
     try:
-        completed = subprocess.run(
-            command,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-        )
+        # glow's terminal renderer emits only a blank line when its stdout is a
+        # pipe. Release/doctor probes intentionally capture child output, so a
+        # healthy backend would otherwise look broken at that boundary. util-
+        # linux `script -qec` supplies a PTY without making the caller
+        # interactive. Other `script` implementations use different flags; a
+        # nonzero PTY probe is treated as unsupported and falls back to glow's
+        # direct invocation, preserving the normal backend error semantics.
+        script_path = shutil.which("script") if not sys.stdout.isatty() else None
+        if script_path:
+            try:
+                completed = subprocess.run(
+                    [script_path, "-qec", shlex.join(command), "/dev/null"],
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout_seconds,
+                )
+            except FileNotFoundError:
+                completed = None
+            if completed is None or completed.returncode != 0:
+                completed = subprocess.run(
+                    command,
+                    check=False,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout_seconds,
+                )
+        else:
+            completed = subprocess.run(
+                command,
+                check=False,
+                capture_output=True,
+                text=True,
+                timeout=timeout_seconds,
+            )
     except subprocess.TimeoutExpired:
         return None, _timeout_error(command, timeout_seconds)
     source_non_empty = bool(path.read_text(encoding="utf-8").strip())
