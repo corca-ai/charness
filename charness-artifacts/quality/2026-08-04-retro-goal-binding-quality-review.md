@@ -79,9 +79,9 @@ validity must still be rerun after the final proof is frozen.
 
 ## Delegated Review
 
-- Delegated Review: pending — three mutation-coverage regressions changed this
-  record's current proof count after the prior quality read; bind this exact
-  record and final proof identities with a fresh observer before closeout.
+- Delegated Review: executed — the current-HEAD bounded quality review returned
+  PASS after reading this exact record, the goal, retro, probes, and causal issue
+  record; its boundary fingerprint was clean.
 - Slow-gate lenses (fixture-economics, parallel-critical-path, duplicated-proof): not_applicable — no standing slow-gate scope changed.
 
 ## Commands Run
