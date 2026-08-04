@@ -9,10 +9,10 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice A — current closeout journey baseline and target selection.
+- Current slice: Slice B — matched scheduling experiment on the focused changed-line coverage producer.
 - Current slice intent: reproduce the current closeout critical path before
   changing any gate, runner, test scope, or proof surface.
-- Next action: run comparable timed baselines for the full read-only quality path and standing-pytest path, then select one current critical-path seam.
+- Next action: compare interleaved uncapped and focused-only worker-cap runs; use a fixed 5-second materiality threshold before deciding whether any cap is safe to implement.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   repeated timing and fresh-eye proof at slice boundaries; strongest local
   proof at final closeout.
@@ -184,6 +184,20 @@ target only after a fresh current baseline.
 ## Slice Log
 
 No slices executed; this is a draft awaiting explicit `/goal` activation.
+
+### Slice 1: A — Reproduce the current closeout journey and select the bottleneck
+
+- Objective: Reproduce the full local closeout journey and identify one current critical-path contributor before changing proof behavior.
+- Why this approach: The current host baseline, not historical #503 telemetry, determines the target; the full read-only quality path and standalone standing-pytest path were both measured.
+- Commits: e1f0f88b — activate the goal; no implementation change was made in this slice.
+- What changed: No production or gate files changed. Baseline logs remain under /tmp and runtime artifacts under reports/. The durable goal and critique packet are the checked-in evidence surfaces.
+- Alternatives rejected: Standing pytest was not selected: standalone runs were 42.42s, 44.25s, and 44.45s for 7,087 passing tests, while the full quality path was 122.35s, 122.71s, and 123.33s. Broad plain coverage was measured at 110.99s but is a different corpus/command shape and does not by itself justify replacing the focused proof.
+- Targeted verification: Full read-only quality: 85 passed, 0 failed on all three runs; phase timings named check-changed-line-mutation-coverage at 119.1s, 119.3s, and 120.1s. Standalone pytest: 7,087 passed on all three runs. Runtime summary and standing-test/CI-recoverable inventories corroborate the mutation phase as the current serial critical path. Focused mapper: 4 changed pool files, all mapped and analyzed; 26 test files / 667 tests passed in the focused no-coverage control.
+- Test duplication pressure: No tests were added or expanded in Slice A; duplicate-pressure sample is not applicable.
+- Critique: The selected target is the focused changed-line coverage producer/consumer journey. The delegated pre-implementation packet was read by three distinct lenses; all boundary verifications were clean. Their shared finding is that any worker adjustment must be focused-only, preserve xdist/no-xdist fallback and coverage export/consumer semantics, and be measured with matched interleaved samples before implementation.
+- Off-goal findings: No off-goal issue was filed. Moving the gate to CI, weakening the partial/unmapped policy, broad cache reuse, and changing the standing runner globally remain out of scope.
+- Lessons carried forward: The full quality path is dominated by the focused mutation coverage phase, not by the standing suite. Separate test execution cost from coverage/export cost: the mapped tests took 20.86s without coverage, while the focused producer took about 115–120s.
+- Metrics: Host: Linux x86_64, 36 CPUs, empty PYTEST_ADDOPTS, clean e1f0f88b. Full quality median 122.71s; mutation phase median 119.3s. Standalone pytest median 44.25s. Measurement window 2026-08-04 local time; cache/load facts were not instrumented beyond repeated warm local runs and are recorded as unavailable rather than inferred.
 
 ## Context Sources
 
