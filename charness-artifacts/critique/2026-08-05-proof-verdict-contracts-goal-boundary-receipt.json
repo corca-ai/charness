@@ -1,0 +1,55 @@
+{
+  "review": "2026-08-05-proof-verdict-contracts-goal",
+  "scope": "spec critique before implementation",
+  "reviewers": [
+    {
+      "id": "019fce98-b204-7f30-b384-353f99c696aa",
+      "lens": "jackson-problem-framing",
+      "boundary_window": "proof-verdict-goal-r1-1",
+      "before": "/tmp/charness-proof-verdict-goal-r1-1-before.json",
+      "verify": "clean",
+      "verify_exit": 0,
+      "delivery": "findings-received"
+    },
+    {
+      "id": "019fce98-b303-7212-a2fb-f34c4c71ad42",
+      "lens": "weinberg-diagnostic-ownership",
+      "boundary_window": "proof-verdict-goal-r1-2",
+      "before": "/tmp/charness-proof-verdict-goal-r1-2-before.json",
+      "verify": "clean",
+      "verify_exit": 0,
+      "delivery": "findings-received"
+    },
+    {
+      "id": "019fce98-b3f8-7e20-a559-bea24f1cac84",
+      "lens": "gawande-operational-acceptance",
+      "boundary_window": "proof-verdict-goal-r1-3",
+      "before": "/tmp/charness-proof-verdict-goal-r1-3-before.json",
+      "verify": "clean",
+      "verify_exit": 0,
+      "delivery": "findings-received"
+    },
+    {
+      "id": "019fce98-b508-70a1-b39f-3ae9a8a882e3",
+      "lens": "counterweight",
+      "boundary_window": "proof-verdict-goal-r1-4",
+      "before": "/tmp/charness-proof-verdict-goal-r1-4-before.json",
+      "verify": "clean",
+      "verify_exit": 0,
+      "delivery": "findings-received"
+    }
+  ],
+  "packet": {
+    "markdown": "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md",
+    "markdown_sha256": "6e1b1c231fd93585a19b5b5075b84334fc924f63f5fa4c07a7ae64451f4db6fe",
+    "json": "charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json",
+    "json_sha256": "cf02484d22ce19b4dfb1659e4de949302f42433fd4868a1706ec4f8bfb0ce130",
+    "identity_sha256": "dfe62ee26407a8ea9ef4031d1348556a6943e35a291e94f048d8596d56a2740b"
+  },
+  "non_claims": [
+    "provider application of requested subagent model fields",
+    "host envelope rail binding",
+    "remote issue closure",
+    "implementation correctness"
+  ]
+}
