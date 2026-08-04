@@ -259,6 +259,19 @@ def _mark_subkey_refills(
     refilled = refilled_policy_subkeys(
         (existing.get("_raw_adapter") or {}).get(field), defaults, final[field]
     )
+    if field == "mutation_testing":
+        command_defaults = defaults.get("commands")
+        if isinstance(command_defaults, dict):
+            # These two command slots are explicitly optional no-op hooks. Keep this
+            # exception at the mutation policy boundary: the generic recursive helper
+            # must continue reporting identical empty values in policies where an empty
+            # list/string changes scope or behavior.
+            inert_command_paths = {
+                f"commands.{slot}"
+                for slot, inert_default in {"dry_run": "", "sample": ""}.items()
+                if command_defaults.get(slot) == inert_default
+            }
+            refilled = [name for name in refilled if name not in inert_command_paths]
     if refilled:
         field_statuses[field] = "augmented"
         subkey_refills[field] = refilled

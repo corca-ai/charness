@@ -1,6 +1,6 @@
 # Achieve Goal: Make closeout cost actionable, then repair #496
 
-Status: draft
+Status: active
 Created: 2026-08-04
 Activation: `/goal @charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md`
 
@@ -9,14 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md` after confirming the draft is
-  still intended.
+- Current slice: G — plan, push, and release the final state in order.
+- Current slice intent: complete claims/release review, run the final
+  verification lock, then use the separately verified push/CI and release
+  readback boundaries.
+- Next action: commit the locally proven bundle, bind the exact
+  `v3.1.1..candidate` scope, then perform the ordered push/CI and
+  release/readback boundaries.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -242,13 +241,13 @@ for this bounded goal.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| A | Lock #503's recurring-cost fact and owner | #503 contains recurrence signals but not yet a safe intervention boundary | S1/S2 record: one cohort, complete denominator/window/retention, producer-consumer map, explicit non-claims | pending activation |
-| B | Choose #503's smallest control surface | The remedy could be a report, packet, scheduling change, or no change; choosing by intuition risks another proxy | option comparison, named consumer, preservation invariant, S3 decision, fresh-eye critique | pending activation |
-| C | Implement and exercise #503's reversible local intervention | The goal needs a useful capability, not a new metric without a decision path | focused tests/fixtures, source-export sync, S4 negative controls, changed-line proof where applicable | pending activation |
-| D | Close #503 locally before changing scope | Sequential work prevents #503's cost model from contaminating #496's semantic predicate decision | `charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md` records selected cohort/owner, action or option-comparison no-change result, residuals, exact changed paths, explicit “no predicate recommendation for #496,” and fresh-observer acceptance; no unresolved shared owner; no remote claims; this checkpoint unlocks E | pending activation |
-| E | Reproduce and frame #496 independently | #496 is an independent hollow-refill predicate problem and must not inherit #503's answer; the known starting symptom is an inert empty-string default such as `commands.dry_run` reported as a refill and a warning that recommends dropping a real configuration block | reproduction of the end-to-end symptom, semantic invariant, axis-varying counterexample, producer/consumer map, explicit #503 handoff non-claim, critique | pending activation |
-| F | Repair and prove #496 locally | A warning or type-shaped proxy must not be mistaken for the semantic fix | focused positive/negative tests, changed-line proof, second review if verdict logic changes, local closeout | pending activation |
-| G | Plan, push, and release the final state in order | The irreversible boundary belongs after both local tracks are proven and CI is read back after push | release critique/claims review and target plan, final quality gate, gated push, independent remote commit/CI readback, gated release/tag, independent release/tag readback, explicit remote issue non-claims | pending activation |
+| A | Lock #503's recurring-cost fact and owner | #503 contains recurrence signals but not yet a safe intervention boundary | S1/S2 record: one cohort, complete denominator/window/retention, producer-consumer map, explicit non-claims | completed |
+| B | Choose #503's smallest control surface | The remedy could be a report, packet, scheduling change, or no change; choosing by intuition risks another proxy | option comparison, named consumer, preservation invariant, S3 decision, fresh-eye critique | completed |
+| C | Implement and exercise #503's reversible local intervention | The goal needs a useful capability, not a new metric without a decision path | focused tests/fixtures, source-export sync, S4 negative controls, changed-line proof where applicable | completed |
+| D | Close #503 locally before changing scope | Sequential work prevents #503's cost model from contaminating #496's semantic predicate decision | `charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md` records selected cohort/owner, action or option-comparison no-change result, residuals, exact changed paths, explicit “no predicate recommendation for #496,” and fresh-observer acceptance; no unresolved shared owner; no remote claims; this checkpoint unlocks E | completed |
+| E | Reproduce and frame #496 independently | #496 is an independent hollow-refill predicate problem and must not inherit #503's answer; the known starting symptom is an inert empty-string default such as `commands.dry_run` reported as a refill and a warning that recommends dropping a real configuration block | reproduction of the end-to-end symptom, semantic invariant, axis-varying counterexample, producer/consumer map, explicit #503 handoff non-claim, critique | completed |
+| F | Repair and prove #496 locally | A warning or type-shaped proxy must not be mistaken for the semantic fix | focused positive/negative tests, changed-line proof, second review if verdict logic changes, local closeout | completed |
+| G | Plan, push, and release the final state in order | The irreversible boundary belongs after both local tracks are proven and CI is read back after push | release critique/claims review and target plan, final quality gate, gated push, independent remote commit/CI readback, gated release/tag, independent release/tag readback, explicit remote issue non-claims | in progress |
 
 ## Operator Decision Queue
 
@@ -259,8 +258,8 @@ out of scope unless separately requested.
 
 ## Coordination Cues
 
-- `Routing: achieve + ideation/spec + quality + critique + impl + retro + release
-  — shape the decision first, then implement only the evidence-backed slice.`
+- Routing: prove + release — claims review is recorded; final broad proof,
+  frozen candidate scope, and the ordered remote/public readbacks remain.
 - `Gather: n/a — this draft uses checked-in handoff, North Star, retro, and
   issue evidence; no new external source was introduced.`
 - `Release: planned — operator-granted final phase only; after #503 and #496
@@ -317,6 +316,135 @@ applies.
   G before mutation. No remote issue close is included.
 
 ## Slice Log
+
+### Slice 1: Lock #503 cohort and owner
+
+- Objective: Select one exact gate-runtime cohort from the retained closeout stream, make its denominator/window/retention/elapsed-seconds contract explicit, and assign the decision owner before choosing an intervention.
+- Why this approach: The recurring signal mixed gate seconds, recurrence counts, over-slice run length, and changing retention. A comparable unit and owner are prerequisites for a safe local decision.
+- Commits: No commit yet; this slice adds the checked-in evidence record and gathers #503 source context. Implementation remains in Slice B.
+- What changed: charness-artifacts/issue/2026-08-04-issue-503-slice-a-cohort.md; charness-artifacts/gather/2026-08-04-issue-503-closeout-cost.md and gather/latest.md; goal status/frame; no product or gate behavior changed.
+- Alternatives rejected: Rejected ranking over-slice run length against elapsed seconds; rejected attributing historical records to a runner/profile absent from schema; rejected treating 16 matching entries as 16 successful suite runs; rejected weakening or moving the gate from recurrence alone.
+- Targeted verification: Ran mine_closeout_telemetry.py against the local stream; directly inspected all 1,325 retained schema-1 records and the 16 exact matching entries; ran inventory_ci_recoverable_gates.py, render_runtime_summary.py, inventory_standing_test_economics.py, and inventory_structural_waste.py as advisory option evidence; authenticated gh issue read was gathered durably; delegated cohort review returned findings and reviewer_boundary_fingerprint.py verify reported clean.
+- Test duplication pressure: No tests added or expanded in this record-only slice; no duplicate-pressure sample is applicable.
+- Critique: Delegated fresh-eye cohort review: parent-delegated, clean boundary fingerprint. Blockers folded: over-budget entries are not successful suite runs; historical runner/profile provenance is unavailable; the generic gate-implementation owner was not evidence of assignment. Cohort key and report-surface candidate approved as safe for Slice B.
+- Off-goal findings: No new issue. The gathered #503 issue source is context for this in-goal track; #496 remains independent and untouched.
+- Lessons carried forward: A recurrence stream needs a query and denominator before a remedy. Treat missing provenance and bounded rotation as explicit unknowns, and keep the decision owner separate from the code that emits the signal.
+- Metrics: Local host tool metrics are not exposed. Stream window: 1,325 valid records; selected cohort 16 entries; elapsed total 6257.15s, median 447.03s, peak 475.46s, budget 120.0s; over-budget excess 4337.15s. Host-level token/time/tool counts are unclaimed.
+
+### Slice 2: Choose #503's smallest proof-preserving control surface
+
+- Objective: Select and implement the smallest reversible local decision surface for the exact #503 gate-runtime cohort, with a named owner, preservation invariant, falsifier, and reopen trigger.
+- Why this approach: The cohort evidence supports a safer report/decision receipt, but does not establish a proof-preserving optimization seam or permission to move the gate. An opt-in receipt makes the next owner decision repeatable without changing proof behavior.
+- Commits: No commit yet; Slice B evidence and implementation will be committed with the subsequent local closeout bundle.
+- What changed: skills/public/retro/scripts/mine_closeout_telemetry.py; plugins/charness/skills/retro/scripts/mine_closeout_telemetry.py; skills/public/retro/references/closeout-telemetry.md; plugins/charness/skills/retro/references/closeout-telemetry.md; tests/quality_gates/test_retro_closeout_telemetry_mining.py; charness-artifacts/issue/2026-08-04-issue-503-slice-b-decision.md; charness-artifacts/critique/2026-08-04-slice-b-503-metric-report-code-critique.md and its current packet.
+- Alternatives rejected: Selected an opt-in detail receipt over gate movement, CI relocation, automatic scheduling, or a new telemetry schema. Deferred a bounded optimization experiment because no named lower-layer seam and separate correctness channel is established. Deferred a report-free no-change record because the next decision needs a durable rerunnable receipt. Kept #496 predicate work separate.
+- Targeted verification: The second bounded reviewer read the repaired verdict surface; reviewer_boundary_fingerprint.py verify was clean. Focused standing pytest passed 15 tests. The detail fixture covers malformed, blank, foreign, unsupported-schema, missing-stream, custom recurrence threshold, multiple matching entries, non-finite elapsed values, missing budgets, and default-output parity. Source/plugin miner mirrors are byte-identical. A real --detail replay reported 1,325 retained records, the exact 16-entry cohort, 12 completed and 4 failed parent records, finite paired elapsed summaries, and 4,337.15 seconds excess over the 120-second budget.
+- Test duplication pressure: Ran check_dup_ratchet.py --summary as the cheap duplicate-pressure sample. It passed clean with no new fixable-eligible families; the first transient family was removed by sharing the timestamp list. Existing advisory reductions remain advisory and were not rebaselined.
+- Critique: Delegated first critique used three bounded angles plus a separate counterweight, with clean boundary fingerprints. The required second repair-read review found four semantic blockers: raw-line re-aggregation under custom --recur-min, non-finite peak leakage, entry-based parent status counts, and mispaired elapsed/budget excess. All four were repaired and regression-tested. The repository's two-round cap records those round-two repairs as accepted-unreviewed; final broad proof remains required.
+- Off-goal findings: No #496 predicate recommendation. No gate, emitter schema, CI placement, release, remote issue closure, or cross-repo claim was introduced.
+- Lessons carried forward: A decision surface must preserve the evidence boundary it summarizes: audit before aggregation, retain parent-record identity, reject non-finite measurements, and keep elapsed/budget pairs intact. A detailed report is useful only when its owner action and falsifier live in a durable record.
+- Metrics: Local host tool metrics are not exposed. The Slice B measurement snapshot was 16 entries / 1,325 retained records; a later live replay is 16 entries / 1,326 retained records through 2026-08-04T01:16:44Z, with 16 finite observations totaling 6,257.15s, median 447.03s, peak 475.46s, and 4,337.15s paired excess over budget. Slice B itself claims 0 seconds relief measured; reopen after a later retained window has at least two occurrences of the exact key.
+
+### Slice 3: Implement and exercise #503's reversible local intervention
+
+- Objective: Exercise the selected opt-in detail receipt across the failure classes and generated surfaces required to prove it remains advisory, finite, schema-bounded, and default-compatible.
+- Why this approach: The report is only useful if it cannot turn malformed, unsupported, missing, non-finite, or multi-entry telemetry into a false clean or misattributed verdict. This slice supplies the negative controls and pre-lock quality proof before local #503 closeout.
+- Commits: No commit yet; implementation, evidence artifacts, and the local #503 carrier remain one meaningful work unit.
+- What changed: The Slice B miner, references, focused tests, dogfood registry entry, decision record, critique packet/artifact, and goal log are now exercised as one generated/source evidence surface. No emitter, gate, CI, release, or remote issue state changed.
+- Alternatives rejected: Did not run Cautilus because the repo adapter is ask-before-run and the planner says no live proof is required for this preserve-class change. Did not run broad pytest in the pre-lock slice because reviewer-driven edits could stale it; the locked broad bundle remains mandatory later. Did not accept the duplicate-ratchet transient family; refactored the repeated timestamp expression instead.
+- Targeted verification: run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review completed. Structural/artifact preflight, packaging, committed packaging, doc links, command docs, evidence durability, markdown, secrets, Cautilus validators, skill validators, py_compile, ownership overlap, ergonomics, dup-ratchet, public-skill validation/dogfood, critique artifacts, ruff, Python lengths, attention visibility, test-copy invariants, boundary-bypass ratchet, shell, scan hygiene, and browser-orphan guard all passed. Focused telemetry-miner standing pytest passed 15 tests; source/plugin byte parity passed; live detail replay passed.
+- Test duplication pressure: The cheap duplicate-pressure sample initially caught one new repeated timestamp-expression family. The implementation was refactored to compute one matching timestamp list; rerun check_dup_ratchet.py --summary passed clean with zero new fixable-eligible families.
+- Critique: Slice B's bounded critique and capped second repair-read are carried forward. The closeout gate accepted the current artifact/packet shape and the explicit retro dogfood contract refresh. A separate fresh observer is still required for the #503 local carrier before #496 starts.
+- Off-goal findings: No #496 predicate recommendation; no remote issue closure; no Cautilus execution; no release or push; no claim that the report produced runtime relief.
+- Lessons carried forward: A proof surface's closeout must make both its positive path and its refusal classes visible. A pre-lock gate can be useful without pretending to be the final broad proof, provided the deferred proof is named and remains a hard phase barrier.
+- Metrics: Local host tool metrics are not exposed. Slice C claims 0 seconds measured relief. Focused test result: 15 passed in 1.61s. Slice C replay: 16 entries / 1,326 retained records through 2026-08-04T01:16:44Z; 6,257.15s total finite elapsed; 4,337.15s paired excess over budget.
+
+### Slice 4: Close #503 locally before changing scope
+
+- Objective: Carry the selected #503 cohort, owner, reversible action, residuals, exact changed paths, and a fresh-observer acceptance into a local closeout carrier before starting the independent #496 track.
+- Why this approach: A local decision surface is not complete until a different observer can distinguish its measured recurrence, selected intervention, remaining unknowns, and explicit boundary against #496 and remote state.
+- Commits: No commit yet; the #503 carrier and all supporting artifacts remain bundled with the implementation before the first meaningful commit.
+- What changed: charness-artifacts/issue/2026-08-04-issue-503-local-closeout.md plus current snapshot clarifications in Slice A, Slice B, and the goal. No product or remote issue state changed.
+- Alternatives rejected: Did not close the remote GitHub issue; the carrier explicitly keeps it open and out of scope. Did not begin #496 in parallel. Did not hide the one-record stream growth: the 1,325 Slice A snapshot and 1,326 live replay are both named with their windows.
+- Targeted verification: Delegated fresh-eye reviewer Boole reread the carrier and supporting records after correction and accepted with no remaining blocker. reviewer_boundary_fingerprint.py verify returned parent-attributed with drift: [] for the review window. The reviewer confirmed 1,326 current records through 2026-08-04T01:16:44Z, statuses 949/248/129, unchanged 16-entry cohort, and 4,337.15s paired excess. The pre-lock deterministic closeout and focused 15-test proof remain the implementation evidence.
+- Test duplication pressure: No new code was added in this checkpoint; the Slice C duplicate-pressure sample remains clean with zero new fixable-eligible families.
+- Critique: Fresh observer required two factual repairs—live population snapshot and carrier self-inclusion in exact changed paths—and then accepted the repaired carrier. This is a separate closeout acceptance, not a same-agent substitute for the earlier verdict-logic review.
+- Off-goal findings: Remote issue closure, #496 predicate semantics, release, push, CI, and runtime relief remain unclaimed. The local carrier explicitly says no #496 predicate recommendation.
+- Lessons carried forward: A closeout snapshot must be time-bound when the source stream can grow during the goal. Durable carriers should name both the evidence snapshot and the carrier itself in changed-path inventory so a fresh observer can audit the exact boundary.
+- Metrics: Local host tool metrics are not exposed. Current live stream: 1,326 retained schema-1 records, 949 completed, 248 failed, 129 blocked; selected cohort unchanged at 16 entries, 12 completed and 4 failed parent records, 6,257.15s total, 4,337.15s paired excess. #503 local relief remains 0 seconds measured.
+
+### Slice 5: Reproduce and frame #496 independently
+
+- Objective: Reproduce the hollow-refill warning end to end, identify its producer and consumer, state the semantic invariant, and distinguish the inert command-default axis from a meaningful empty scope before repair.
+- Why this approach: #496 is a separate semantic predicate problem. The #503 telemetry decision must not preselect a repair for a quality-policy warning whose observed empty value changes meaning across policy fields.
+- Commits: No commit yet; this diagnosis and its repair remain one local implementation bundle.
+- What changed: charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md; charness-artifacts/debug/2026-08-04-debug-review-followup-2.md; charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md and refreshed packet; goal frame. The source repair is recorded in Slice F, not attributed to this framing slice.
+- Alternatives rejected: Rejected a generic empty-string/list/map suppression because prompt_asset_policy.exemption_globs=[] is a real scan-scope boundary. Rejected changing the generic recursive helper without policy context. Rejected carrying #503's cost/report decision into #496. Deferred sub-key deliberately_absent syntax and top-level symmetry.
+- Targeted verification: Authenticated issue evidence was gathered durably after the public typed fetch hit a captcha. The exact partial mutation_testing fixture reproduced commands.dry_run and commands.sample plus the harmful whole-block warning; the prompt-asset partial fixture reproduced a meaningful empty exemption scope. Debug validation passed. Three bounded code angles plus a counterweight returned the field-aware producer/consumer ownership and axis-varying counterexample; all four pre-implementation boundary windows verified clean.
+- Test duplication pressure: No new duplication family was introduced by the framing artifacts; code duplication pressure is recorded with the Slice F implementation proof.
+- Critique: The pre-implementation critique classified exact mutation command filtering, safe leaf-level warning text, end-to-end proof, and the axis counterexample as act/bundle items. It explicitly deferred a generic semantic-emptiness framework, top-level symmetry, and sub-key absence vocabulary.
+- Off-goal findings: #503 remains locally closed with no predicate recommendation for #496. Remote issue closure, release, push, and Cautilus execution remain out of scope for this slice.
+- Lessons carried forward: A value-level recursion report is not the semantic invariant. The owning policy boundary must carry the narrow exception, while the warning consumer must preserve supplied siblings when it cannot represent sub-key absence.
+- Metrics: Local host tool metrics are not exposed. #496 reproduction: partial full+summary commands yielded the two hollow leaves before repair; prompt_asset_policy empty exemption scope remained reportable. No runtime relief or broad correctness claim is made here.
+
+### Slice 6: Repair and prove #496 locally
+
+- Objective: Repair the hollow-refill predicate at the mutation policy boundary, replace destructive nested warning advice, synchronize the shipped plugin surface, and prove positive and negative controls without broadening semantic emptiness.
+- Why this approach: The diagnosis established two owners: the mutation bootstrap report owns the exact inert-leaf exception, while the warning renderer owns the unsafe whole-block remedy. A narrow repair preserves #493 nested truth and real mutation commands.
+- Commits: No commit yet; the #503 and #496 artifacts, source/plugin changes, tests, and closeout carriers remain one final local bundle until the verification lock.
+- What changed: scripts/quality_bootstrap_lib.py; scripts/quality_bootstrap_absence.py; plugins/charness/scripts/quality_bootstrap_lib.py; plugins/charness/scripts/quality_bootstrap_absence.py; tests/quality_gates/test_quality_bootstrap.py; tests/quality_gates/test_quality_bootstrap_absence.py; refreshed #496 debug/critique/goal artifacts. The generic recursive helper and unrelated policy defaults were not changed.
+- Alternatives rejected: Rejected a generic semantic-emptiness abstraction, top-level symmetry, changing the recursive helper, and a new sub-key absence vocabulary. Rejected warning-only repair because the hollow leaves would remain in the operator receipt. Kept full and summary outside the allowlist; only missing summary is directly asserted because full is structurally outside the suppression set.
+- Targeted verification: Generated source/plugin mirrors were synchronized before proof. The focused standing suite passed 85 tests, including exact full+summary suppression, missing summary reporting, explicit empty command slots, report_paths and prompt_asset_policy empty-scope controls, fresh-bootstrap silence, warning wording, and complete source/plugin JSON plus stderr parity. The required second repaired-surface reviewer found one proof gap; after a clean boundary verify, the test now compares the complete payload and reran green. Round 2 is capped and the repair is recorded accepted-unreviewed. A separate fresh observer accepted the #496 local carrier after two wording corrections; the final reread boundary was clean.
+- Test duplication pressure: Ran the focused quality bootstrap/absence/policy-merge standing targets: 85 passed in 1.87s. The earlier duplicate-ratchet sample remains clean with zero new fixable-eligible families; no new code duplication was introduced by the parity assertion.
+- Critique: Pre-implementation critique returned F1–F6 with exact allowlist, safe warning, end-to-end controls, and axis counterexample. Round 2 read the repaired source/plugin/test surface and accepted the implementation except for complete-payload parity; that blocker was fixed after reviewer boundary verification and is accepted-unreviewed under the two-round cap. The carrier acceptance reviewer also required an explicit #503-to-#496 non-claim, then accepted the corrected carrier with no remaining blocker.
+- Off-goal findings: #503's selected report decision remains unchanged and supplies no #496 predicate recommendation. No gate was weakened, no emitter schema changed, no Cautilus evaluation ran, no remote issue was closed, and no push/release occurred.
+- Lessons carried forward: A verdict-logic repair owes a second review of the repaired surface. A selected-key parity test can leave an unproven receipt; compare the complete consumer payload and stderr across source and shipped entrypoints.
+- Metrics: Local host tool metrics are not exposed. Focused result: 85 passed in 1.87s. Measured #496 runtime relief is not applicable; the repair changes report truthfulness and warning safety, not the closeout gate or execution cost.
+
+### Slice 7: Freeze local proof and prepare the ordered release boundary
+
+- Objective: Complete the release critique/claims review and final local proof,
+  then preserve the exact conditions required before any remote or public state
+  change.
+- Why this approach: S7 is an irreversible boundary. The release record must
+  distinguish the full unreleased candidate from this goal's two slices and
+  keep local green, remote CI, public release, installed refresh, and baton
+  observations separate.
+- Commits: No commit yet; the local bundle is ready for its first meaningful
+  commit after packet rebinding.
+- What changed: release critique and packet, v3.2.0 notes, delegated claims
+  review, midpoint claims update, and the final verification-lock record. No
+  version/tag/push/public-release mutation has occurred.
+- Alternatives rejected: Did not run Cautilus because policy is ask-before-run
+  and the deterministic dogfood decision is recorded. Did not call the public
+  release helper before its branch-push/CI ordering was resolved. Did not claim
+  current stream population as a fixed historical number; the #503 carrier's
+  1,326-record snapshot remains time-bound.
+- Targeted verification: Release critique round 2 returned four findings with
+  clean boundary windows; the required rollback, compatibility, source-tree
+  probe-label, and release-boundary wording repairs are recorded. The distinct
+  claims observer returned clean boundary verification and accepted the notes
+  subject to four pre-ship conditions. The final verification lock completed
+  with all recorded structural, synchronization, validation, standing-pytest,
+  scan-hygiene, and browser-orphan checks passing; durable broad-proof record:
+  `.charness/closeout/broad-pytest-proof.json`, 46.31 seconds.
+- Test duplication pressure: The final lock's duplicate-ratchet and Python
+  length checks passed; the near-limit warnings remain advisory and are not
+  disguised as a clean code-size result.
+- Critique: The clean release round found that the release helper's current
+  tag-before-CI ordering cannot satisfy S7 by itself. The claims review found
+  no incorrect local figure, but required future wording until remote/public/
+  installed readbacks exist. These are active release gates, not deferred
+  implementation notes.
+- Off-goal findings: No issue was closed, no Cautilus evaluation ran, no gate
+  was weakened, and no remote/public/install state was changed.
+- Lessons carried forward: Freeze the all-unreleased candidate and notes before
+  publishing; use a separate branch/CI observer before tag/public release; keep
+  post-publication install and baton evidence as observations rather than
+  terminal-green completion.
+- Metrics: Local host tool metrics are unavailable. Final lock elapsed time was
+  46.31 seconds in the durable broad-proof record; no remote CI or publication
+  timing is claimed yet.
 
 ## Context Sources
 
@@ -400,14 +528,29 @@ created by this scope update.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
+Final local proof is now recorded. The midpoint claims review is bound at
+`charness-artifacts/issue/2026-08-04-goal-midpoint-claims-review.md`; it accepts
+S1 through S6 locally after the final lock; S7 remains the remote/public
+boundary.
+The separate release claims review is bound at
+`charness-artifacts/issue/2026-08-04-release-3.2.0-claims-review.md`; it accepts
+the notes with four explicit pre-ship conditions and does not promote remote or
+publication claims.
 
-Retro: skipped: draft — no execution occurred
-Host log probe: skipped: draft — no activated goal window exists
-Disposition review: skipped: draft — it belongs to the activated goal's closeout
+Broad verification lock: `python3 scripts/run_slice_closeout.py --repo-root .
+--verification-lock --refresh-broad-pytest-proof --ack-cautilus-skill-review`
+completed at `2026-08-04T02:25:42Z`; durable proof is
+`.charness/closeout/broad-pytest-proof.json` (46.31 seconds, all recorded
+checks passed). The lock included standing pytest, structural/artifact
+validation, sync, packaging, docs, skill, Cautilus-policy, shell, scan-hygiene,
+and browser-orphan checks.
+
+Retro: pending final closeout — `charness:retro` is required after the release
+readbacks and before the goal is marked complete.
+Host log probe: unavailable — host-level tool logs are not exposed; no token,
+turn, or tool-count claim is made.
+Disposition review: S1–S6 locally accepted; S7 remains pending the exact remote
+commit/CI and independent release/tag/version readbacks.
 
 ## User Verification Instructions
 
@@ -422,5 +565,7 @@ release/tag readback. Do not claim remote issue CLOSED.
 
 ## Auto-Retro
 
-Retro dispositions: none — this is a draft; no new improvement surfaced during execution
-Structural follow-up: none — the activated run must scan the chosen waste class's siblings before closeout
+Retro dispositions: pending final closeout — no disposition is claimed before
+the final retro reads the completed work unit.
+Structural follow-up: pending final closeout — the final retro must scan the
+chosen waste class's siblings before closeout.

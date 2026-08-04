@@ -1,12 +1,19 @@
 # Closeout Telemetry
 
 A retro may mine the local **closeout-telemetry** stream: objective operational
-waste the slice closeout already records — gates that pass but run over budget,
-and over-slice artifact-only-commit runs. Read it with:
+waste the slice closeout already records — gates that run over budget, and
+over-slice artifact-only-commit runs. Read it with:
 
 ```bash
 python3 "$SKILL_DIR/scripts/mine_closeout_telemetry.py" --repo-root .
 ```
+
+For a re-runnable operator decision receipt, add `--detail`. The detail report
+audits the currently readable schema-1 population, separates records from
+over-budget entries and numeric elapsed observations, and states that rotation,
+historical runner/profile provenance, command exit status, and suite pass/fail
+identity remain unknown. It does not change the default report or telemetry
+schema.
 
 This is **reading** an already-written local stream, not telemetry *logging*.
 The skill must never write hidden telemetry; the closeout emitter owns the

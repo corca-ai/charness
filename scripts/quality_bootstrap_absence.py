@@ -180,12 +180,11 @@ def describe_intent_loss(
                 f"this rewrite refilled {len(keys)} sub-key(s) of `{field}` from defaults that the "
                 f"adapter's own block did not set: {', '.join(keys)}. The field is reported "
                 f"`augmented`, not `preserved` — it was kept AND added to. `{FIELD}` names whole "
-                f"fields only, so it cannot yet say a SUB-key is absent on purpose; until it can, "
-                f"the closest available move is to drop the WHOLE block and declare the field in "
-                f"`{FIELD}`, which keeps it out of this FILE and marks its paths unasserted "
-                f"— resolution still supplies the default VALUE to consumers. Dropping the "
-                f"block alone, without the declaration, makes the field non-explicit and "
-                f"refills all of it."
+                f"fields only, so it cannot yet say a SUB-key is absent on purpose. Review the "
+                f"listed leaves individually; do not drop the whole `{field}` block merely to "
+                f"silence this warning, because configured sibling values may carry real intent. "
+                f"If the whole field is absent on purpose, declare it in `{FIELD}`; resolution "
+                f"still supplies the default VALUE to consumers."
             )
     if dropped:
         report["comments_dropped"] = dropped

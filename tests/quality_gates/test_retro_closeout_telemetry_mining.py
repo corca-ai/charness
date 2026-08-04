@@ -10,11 +10,13 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import math
 from pathlib import Path
 
 from .support import ROOT, run_script
 
 MINER_PATH = ROOT / "skills" / "public" / "retro" / "scripts" / "mine_closeout_telemetry.py"
+PLUGIN_MINER_PATH = ROOT / "plugins" / "charness" / "skills" / "retro" / "scripts" / "mine_closeout_telemetry.py"
 
 
 def _load_miner():
@@ -40,6 +42,12 @@ def _gate_record(command: str, elapsed: float, over: bool = False) -> str:
             "slice_churn": {"base": "origin/main", "commits": 1, "artifact_only_commits": 0, "artifact_only_ratio": 0.0},
         }
     )
+
+
+def _detail_gate_record(status: str, timestamp: str, command: str, elapsed: object, over: bool = False) -> str:
+    record = json.loads(_gate_record(command, elapsed, over=over))
+    record.update({"schema_version": 1, "status": status, "timestamp": timestamp})
+    return json.dumps(record)
 
 
 def test_recurring_gate_routes_to_filed_issue_not_digest() -> None:
@@ -132,6 +140,14 @@ def test_non_numeric_elapsed_seconds_is_tolerated() -> None:
     assert gate["peak_elapsed_seconds"] is None  # no numeric seconds were collected
 
 
+def test_default_miner_preserves_nonfinite_elapsed_behavior() -> None:
+    miner = _load_miner()
+    record = json.loads(_detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", "Infinity"))
+    result = miner.mine([json.dumps(record)])
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    assert math.isinf(gate["peak_elapsed_seconds"])
+
+
 def test_read_lines_missing_stream_returns_empty(tmp_path: Path) -> None:
     # A repo with no telemetry stream degrades to [] (OSError guard), never raises.
     miner = _load_miner()
@@ -149,3 +165,128 @@ def test_cli_over_seeded_stream(tmp_path: Path) -> None:
     assert gate["disposition"] == "file-issue"
     assert gate["marker"] == "recurs:"
     assert result["stream_path"].endswith("closeout_telemetry.jsonl")
+    assert "detail" not in result
+
+
+def test_detail_cli_audits_population_and_summarizes_entries(tmp_path: Path) -> None:
+    stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
+    stream.parent.mkdir(parents=True, exist_ok=True)
+    lines = [
+        "",
+        "not json",
+        json.dumps({"event_type": "usage_episode"}),
+        json.dumps({"event_type": "closeout_telemetry", "schema_version": 2}),
+        _detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", 200.0),
+        _detail_gate_record("failed", "2026-06-13T02:00:00Z", "pytest -q", 220.0),
+        _detail_gate_record("blocked", "2026-06-13T03:00:00Z", "pytest -q", "NaN", over=True),
+    ]
+    stream.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path), "--detail")
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    detail = result["detail"]
+    population = detail["population"]
+    assert detail["stream_read"] == {"status": "present"}
+    assert population["physical_lines"] == 7
+    assert population["blank_lines"] == 1
+    assert population["malformed_lines"] == 1
+    assert population["foreign_event_lines"] == 1
+    assert population["unsupported_schema_lines"] == 1
+    assert population["retained_records"] == 3
+    assert population["window_start"] == "2026-06-13T01:00:00Z"
+    assert population["window_end"] == "2026-06-13T03:00:00Z"
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    receipt = gate["detail"]
+    assert receipt["matching_records"] == 3
+    assert receipt["matching_entries"] == 3
+    assert receipt["record_status_counts"] == {"blocked": 1, "completed": 1, "failed": 1}
+    assert receipt["elapsed_seconds"] == {
+        "numeric_observations": 2,
+        "excluded_elapsed_values": 1,
+        "total_seconds": 420.0,
+        "mean_seconds": 210.0,
+        "median_seconds": 210.0,
+        "min_seconds": 200.0,
+        "max_seconds": 220.0,
+        "budget_seconds": 120.0,
+        "budget_seconds_values": [120.0],
+        "paired_observations": 2,
+        "excess_seconds": None,
+    }
+    assert "suite pass/fail" in detail["non_claims"][0]
+    assert "over_slice" in detail["unit_separation"]
+
+
+def test_detail_missing_stream_is_not_an_empty_clean_result(tmp_path: Path) -> None:
+    completed = run_script(str(MINER_PATH), "--repo-root", str(tmp_path), "--detail")
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    assert result["detail"]["stream_read"] == {"status": "missing"}
+    assert result["detail"]["population"]["retained_records"] == 0
+    assert result["detail"]["population"]["scope"].endswith("unknown")
+
+
+def test_detail_recur_min_uses_only_retained_schema_records(tmp_path: Path) -> None:
+    stream = tmp_path / ".charness" / "usage-episodes" / "closeout_telemetry.jsonl"
+    stream.parent.mkdir(parents=True, exist_ok=True)
+    unsupported = json.loads(_detail_gate_record("completed", "2026-06-13T00:00:00Z", "pytest -q", 200.0))
+    unsupported["schema_version"] = 2
+    lines = [
+        json.dumps(unsupported),
+        _detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", 200.0),
+        _detail_gate_record("completed", "2026-06-13T02:00:00Z", "pytest -q", 200.0),
+    ]
+    stream.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    completed = run_script(
+        str(MINER_PATH), "--repo-root", str(tmp_path), "--detail", "--recur-min", "3"
+    )
+    assert completed.returncode == 0, completed.stderr
+    result = json.loads(completed.stdout)
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    assert result["recur_min"] == 3
+    assert gate["occurrences"] == 2
+    assert gate["recurring"] is False
+    assert result["detail"]["population"]["unsupported_schema_lines"] == 1
+
+
+def test_detail_counts_parent_status_once_for_multiple_matching_entries() -> None:
+    miner = _load_miner()
+    record = json.loads(_detail_gate_record("failed", "2026-06-13T01:00:00Z", "pytest -q", 200.0))
+    record["gate_runtime"]["over_budget"].append(
+        {"phase": "verify", "command": "pytest -q", "elapsed_seconds": 220.0,
+         "budget_seconds": 120.0, "over_budget": True}
+    )
+    result = miner.mine_detailed([json.dumps(record)])
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    receipt = gate["detail"]
+    assert receipt["matching_records"] == 1
+    assert receipt["matching_entries"] == 2
+    assert receipt["record_status_counts"] == {"failed": 1}
+    assert receipt["elapsed_seconds"]["paired_observations"] == 2
+    assert receipt["elapsed_seconds"]["excess_seconds"] == 180.0
+
+
+def test_detail_rejects_nonfinite_peak_and_preserves_elapsed_budget_pairing() -> None:
+    miner = _load_miner()
+    record = json.loads(_detail_gate_record("completed", "2026-06-13T01:00:00Z", "pytest -q", "Infinity"))
+    record["gate_runtime"]["over_budget"].extend(
+        [
+            {"phase": "verify", "command": "pytest -q", "elapsed_seconds": 200.0,
+             "over_budget": True},
+            {"phase": "verify", "command": "pytest -q", "elapsed_seconds": 220.0,
+             "budget_seconds": 120.0, "over_budget": True},
+        ]
+    )
+    result = miner.mine_detailed([json.dumps(record)])
+    gate = next(f for f in result["findings"] if f["kind"] == "gate_runtime")
+    receipt = gate["detail"]["elapsed_seconds"]
+    assert gate["peak_elapsed_seconds"] == 220.0
+    assert receipt["numeric_observations"] == 2
+    assert receipt["excluded_elapsed_values"] == 1
+    assert receipt["paired_observations"] == 1
+    assert receipt["budget_seconds_values"] == [120.0]
+    assert receipt["excess_seconds"] is None
+
+
+def test_source_and_plugin_miner_mirrors_are_identical() -> None:
+    assert MINER_PATH.read_bytes() == PLUGIN_MINER_PATH.read_bytes()

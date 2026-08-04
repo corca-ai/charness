@@ -34,6 +34,8 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["adapter_status"] == "written"
+    assert "customization_warning" not in payload
+    assert result.stderr == ""
     assert payload["field_statuses"] == {
         "coverage_fragile_margin_pp": "defaulted",
         "coverage_floor_policy": "defaulted",

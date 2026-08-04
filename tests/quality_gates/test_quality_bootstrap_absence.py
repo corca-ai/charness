@@ -9,6 +9,8 @@ separately, because a single "the file did not change" assertion would hide one.
 from __future__ import annotations
 
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -25,6 +27,7 @@ from scripts.quality_adapter_lib import (
 )
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
+from .support import ROOT
 
 CUSTOMIZED_ADAPTER = """version: 1
 repo: demo
@@ -872,6 +875,110 @@ def test_a_partially_written_nested_block_names_its_leaves_end_to_end(tmp_path: 
     warning = payload["customization_warning"]
     assert "sub-key(s) of `mutation_testing`" in warning
     assert "report_paths.sample_md" in warning
+    assert "do not drop the whole `mutation_testing` block" in warning
+
+
+def test_issue_496_suppresses_only_the_two_inert_command_leaves(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  commands:\n"
+        "    full: pytest --mutate\n    summary: python3 scripts/summarize.py\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+    refilled = payload["refilled_subkeys"]["mutation_testing"]
+    assert "commands.dry_run" not in refilled
+    assert "commands.sample" not in refilled
+    assert "commands" not in refilled
+    warning = payload["customization_warning"]
+    assert "commands.dry_run" not in warning
+    assert "commands.sample" not in warning
+    assert "do not drop the whole `mutation_testing` block" in warning
+    assert "closest available move is to drop the WHOLE block" not in warning
+    rewritten = _adapter(repo).read_text(encoding="utf-8")
+    assert "full: pytest --mutate" in rewritten
+    assert "summary: python3 scripts/summarize.py" in rewritten
+
+
+def test_mutation_command_filter_keeps_missing_required_slot_reportable(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  commands:\n    full: pytest --mutate\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+    refilled = payload["refilled_subkeys"]["mutation_testing"]
+    assert "commands.dry_run" not in refilled
+    assert "commands.sample" not in refilled
+    assert "commands.summary" in refilled
+
+
+def test_explicit_empty_command_slots_are_not_reclassified(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  commands:\n"
+        "    dry_run: ''\n    sample: ''\n"
+        "    full: pytest --mutate\n    summary: python3 scripts/summarize.py\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+    command_refills = [
+        name for name in payload.get("refilled_subkeys", {}).get("mutation_testing", [])
+        if name.startswith("commands.")
+    ]
+    assert command_refills == []
+
+
+def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "prompt_asset_policy:\n  min_multiline_chars: 40\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+    refilled = payload["refilled_subkeys"]["prompt_asset_policy"]
+    assert "exemption_globs" in refilled
+    warning = payload["customization_warning"]
+    assert "do not drop the whole `prompt_asset_policy` block" in warning
+
+
+def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -> None:
+    adapter = (
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "mutation_testing:\n  commands:\n"
+        "    full: pytest --mutate\n    summary: python3 scripts/summarize.py\n"
+    )
+    source_repo = seed_quality_repo(tmp_path / "source")
+    plugin_repo = seed_quality_repo(tmp_path / "plugin")
+    _adapter(source_repo).write_text(adapter, encoding="utf-8")
+    _adapter(plugin_repo).write_text(adapter, encoding="utf-8")
+
+    source_result = _run_quality_bootstrap_adapter("--repo-root", str(source_repo))
+    assert source_result.returncode == 0, source_result.stderr
+    source = json.loads(source_result.stdout)
+    plugin = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "plugins" / "charness" / "skills" / "quality" / "scripts" / "bootstrap_adapter.py"),
+            "--repo-root",
+            str(plugin_repo),
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert plugin.returncode == 0, plugin.stderr
+    plugin_payload = json.loads(plugin.stdout)
+    assert plugin_payload == source
+    assert plugin.stderr == source_result.stderr
 
 
 def test_mutation_testing_validates_where_the_other_policies_refill(tmp_path: Path) -> None:
