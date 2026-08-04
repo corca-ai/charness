@@ -308,6 +308,27 @@ def test_markdown_preview_direct_fallback_handles_script_race(
     assert calls[1] == ["glow", "-w", "80", str(source)]
 
 
+def test_markdown_preview_direct_path_handles_missing_script(tmp_path: Path, monkeypatch) -> None:
+    render = RENDER_MARKDOWN_PREVIEW._RENDER
+    source = tmp_path / "README.md"
+    source.write_text("# Hello\n", encoding="utf-8")
+    calls: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        calls.append(command)
+        return subprocess.CompletedProcess(command, 0, "DIRECT RENDER\n", "")
+
+    monkeypatch.setattr(render.sys, "stdout", SimpleNamespace(isatty=lambda: False))
+    monkeypatch.setattr(render.shutil, "which", lambda name: None)
+    monkeypatch.setattr(render.subprocess, "run", fake_run)
+
+    rendered, error = render._render_with_glow(source, 80)
+
+    assert rendered == "DIRECT RENDER\n"
+    assert error is None
+    assert calls == [["glow", "-w", "80", str(source)]]
+
+
 def test_markdown_preview_writes_degraded_artifact_without_glow(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()
