@@ -23,9 +23,9 @@
       "consequence": "the buggy run supported 'the toll is smaller than D47 recorded'. Corrected, the artifact count moves 3 -> 4, closer to the hand count's 5 but still below it. Found by the round-1 bounded review before the number was trusted.",
       "what": "the first cut of the marker test used `[^`]*field[^`]*`, which matches the GAP BETWEEN two adjacent code spans, so a bare English mention sitting between two unrelated spans scored as marked"
     },
-    "known_false_positives_not_repaired": "`markers_for` treats a field name inside ANY backticked span as a citation, so a backticked PATH or flag containing the name as a hyphen-delimited token (`advisory-interpretation-contract.md`, `--paths`) scores as marked. Underscores are safe. Bias runs the same way as the repaired bug -- it inflates marked. Verified inert on today's corpus (those artifacts cite no inventory declaring that field), so the numbers above stand, but one new artifact quoting `--paths` while citing inventory_nose_clones.py would flip a refusal silently. Also unmodelled: lines with an odd number of backticks (a wrapped span's continuation line inverts code/prose -- zero live instances found) and fenced code blocks (pasted `status: ok` output scores a colon marker; fences exist only under --recursive). Marker attribution is per LINE, not per occurrence, matching the sibling's current line-granular 170. Raised by the round-2 bounded review and recorded rather than repaired: round 2 is the review cap.",
+    "known_false_positives_not_repaired": "`markers_for` treats a field name inside ANY backticked span as a citation, so a backticked PATH or flag containing the name as a hyphen-delimited token (`advisory-interpretation-contract.md`, `--paths`) scores as marked. Underscores are safe. Bias runs the same way as the repaired bug -- it inflates marked. Verified inert on today's corpus (those artifacts cite no inventory declaring that field), so the numbers above stand, but one new artifact quoting `--paths` while citing inventory_nose_clones.py would flip a refusal silently. Also unmodelled: lines with an odd number of backticks (a wrapped span's continuation line inverts code/prose -- zero live instances found) and fenced code blocks (pasted `status: ok` output scores a colon marker; fences exist only under --recursive). Marker attribution is per LINE, not per occurrence, matching the sibling's current line-granular 186. Raised by the round-2 bounded review and recorded rather than repaired: round 2 is the review cap.",
     "recursive_variant": {
-      "artifacts_citing_a_declared_inventory": 37,
+      "artifacts_citing_a_declared_inventory": 39,
       "artifacts_refused_by_the_marker_rule": [
         "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
         "charness-artifacts/quality/2026-07-13-quality-review.md",
@@ -115,14 +115,14 @@
         }
       ],
       "corpus": "charness-artifacts/quality",
-      "field_mentions_carrying_a_value_marker": 197,
-      "field_mentions_clearing_todays_floor": 235,
-      "field_mentions_presence_only": 243,
+      "field_mentions_carrying_a_value_marker": 213,
+      "field_mentions_clearing_todays_floor": 251,
+      "field_mentions_presence_only": 259,
       "field_mentions_without_a_marker": 38,
       "marker_kinds": {
         "assign": 93,
-        "backtick": 174,
-        "colon": 29
+        "backtick": 188,
+        "colon": 31
       },
       "pre_contract_citations_skipped": [],
       "recursive": true,
@@ -731,26 +731,50 @@
         },
         {
           "engaged_today": [
-            "checked_skill_count",
-            "finding_status",
-            "heuristic_finding_count",
-            "host_surface_reference_count",
-            "prose_review_status",
-            "scope_status"
+            "cli_exit_code",
+            "command",
+            "missing_paths",
+            "requested_paths",
+            "scanned_paths",
+            "scope_status",
+            "stderr"
           ],
           "engaged_with_a_marker": [
-            "checked_skill_count",
-            "finding_status",
-            "heuristic_finding_count",
-            "host_surface_reference_count",
-            "prose_review_status",
-            "scope_status"
+            "cli_exit_code",
+            "command",
+            "missing_paths",
+            "requested_paths",
+            "scanned_paths",
+            "scope_status",
+            "stderr"
           ],
-          "inventory": "inventory_skill_ergonomics.py",
+          "inventory": "inventory_nose_clones.py",
           "lost_to_the_marker_rule": [],
-          "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+          "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
           "required": 2
         },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+        "required": 2
+      },
         {
           "engaged_today": [],
           "engaged_with_a_marker": [],
@@ -1149,18 +1173,42 @@
           "lost_to_the_marker_rule": [],
           "path": "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
           "required": 2
+        },
+        {
+          "engaged_today": [
+            "cli_exit_code",
+            "command",
+            "missing_paths",
+            "requested_paths",
+            "scanned_paths",
+            "scope_status",
+            "stderr"
+          ],
+          "engaged_with_a_marker": [
+            "cli_exit_code",
+            "command",
+            "missing_paths",
+            "requested_paths",
+            "scanned_paths",
+            "scope_status",
+            "stderr"
+          ],
+          "inventory": "inventory_nose_clones.py",
+          "lost_to_the_marker_rule": [],
+          "path": "charness-artifacts/quality/latest.md",
+          "required": 2
         }
       ],
       "refused_citation_count": 5
     },
-    "repo_head_at_run": "abb3ae59564cc7d08a2c51e8ae8ed3017ad34383",
-    "synchronized_after": "Added the #503 runtime-budget quality record and refreshed the quality pointer; regenerated the measurement from its repository-owned script.",
+    "repo_head_at_run": "0b97980f9f8820076feb0f5a9d9733f1a62fba53",
+    "synchronized_after": "Added the #511 quality record's coverage-repair ledger and refreshed the quality pointer; regenerated both marker variants from the repository-owned script.",
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
     "units_matter": "The hand count's unit was REVIEWS (5). This script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS. Top level: 3 refused citations across 2 artifacts. So on the hand count's own unit the executed number is 2, not 5; the two agree only if 'reviews' is read as 'citations', which the hand count did not say. Recorded because an earlier draft of D47 swapped the units to claim agreement.",
-    "why": "docs/deferred-decisions.md D47 recorded '51 of 169 mentions unmarked' and 'refuses 5 checked-in reviews' as HAND measurements. This is the executed replacement. The original 169 was NOT hand-derived -- the sibling floor measurement produced it -- which is why the 2026-08-01 run reported a presence-only total that reproduced it exactly. The current synchronized corpus measurement is 170.",
+    "why": "docs/deferred-decisions.md D47 recorded '51 of 169 mentions unmarked' and 'refuses 5 checked-in reviews' as HAND measurements. This is the executed replacement. The original 169 was NOT hand-derived -- the sibling floor measurement produced it -- which is why the 2026-08-01 run reported a presence-only total that reproduced it exactly. The current synchronized corpus measurement is 186.",
     "worktree": "dirty: cross-track quality proof artifacts are being finalized"
   },
-  "artifacts_citing_a_declared_inventory": 29,
+      "artifacts_citing_a_declared_inventory": 31,
   "artifacts_refused_by_the_marker_rule": [
     "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
     "charness-artifacts/quality/2026-07-13-quality-review.md"
@@ -1217,14 +1265,14 @@
     }
   ],
   "corpus": "charness-artifacts/quality",
-  "field_mentions_carrying_a_value_marker": 133,
-  "field_mentions_clearing_todays_floor": 162,
-  "field_mentions_presence_only": 170,
+  "field_mentions_carrying_a_value_marker": 149,
+  "field_mentions_clearing_todays_floor": 178,
+  "field_mentions_presence_only": 186,
   "field_mentions_without_a_marker": 29,
   "marker_kinds": {
     "assign": 81,
-    "backtick": 116,
-    "colon": 24
+    "backtick": 130,
+    "colon": 26
   },
   "pre_contract_citations_skipped": [],
   "recursive": false,
@@ -1833,6 +1881,30 @@
     },
     {
       "engaged_today": [
+        "cli_exit_code",
+        "command",
+        "missing_paths",
+        "requested_paths",
+        "scanned_paths",
+        "scope_status",
+        "stderr"
+      ],
+      "engaged_with_a_marker": [
+        "cli_exit_code",
+        "command",
+        "missing_paths",
+        "requested_paths",
+        "scanned_paths",
+        "scope_status",
+        "stderr"
+      ],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [],
+      "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
+      "required": 2
+    },
+    {
+      "engaged_today": [
         "checked_skill_count",
         "finding_status",
         "heuristic_finding_count",
@@ -1852,6 +1924,30 @@
       "lost_to_the_marker_rule": [],
       "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
       "required": 2
-      }
+    },
+    {
+      "engaged_today": [
+        "cli_exit_code",
+        "command",
+        "missing_paths",
+        "requested_paths",
+        "scanned_paths",
+        "scope_status",
+        "stderr"
+      ],
+      "engaged_with_a_marker": [
+        "cli_exit_code",
+        "command",
+        "missing_paths",
+        "requested_paths",
+        "scanned_paths",
+        "scope_status",
+        "stderr"
+      ],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [],
+      "path": "charness-artifacts/quality/latest.md",
+      "required": 2
+    }
   ]
 }

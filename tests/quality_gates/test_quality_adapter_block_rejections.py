@@ -36,6 +36,7 @@ from textwrap import dedent
 
 import pytest
 
+from scripts import quality_adapter_lib
 from scripts.quality_adapter_lib import load_quality_adapter
 from scripts.quality_policy_defaults import (
     DEFAULT_CHANGED_LINE_MUTATION_GATE,
@@ -83,6 +84,44 @@ def test_nose_inventory_paths_reject_repo_escape(tmp_path: Path) -> None:
         for error in payload["errors"]
     )
     assert payload["data"]["nose_inventory_paths"] == []
+
+
+def test_nose_inventory_paths_null_keeps_the_default_scope(tmp_path: Path) -> None:
+    errors: list[str] = []
+
+    assert quality_adapter_lib.adapter_validators.nose_inventory_paths(None, errors) is None
+    assert errors == []
+
+    payload = _resolve(tmp_path, "nose_inventory_paths: null\n")
+
+    assert payload["valid"]
+    assert payload["data"]["nose_inventory_paths"] == []
+
+
+def test_nose_inventory_paths_rejects_empty_entries() -> None:
+    errors: list[str] = []
+
+    assert quality_adapter_lib.adapter_validators.nose_inventory_paths([""], errors) is None
+    assert errors == ["nose_inventory_paths must be a list of non-empty strings"]
+
+
+@pytest.mark.parametrize("value", ["not-a-list", "[1]"])
+def test_nose_inventory_paths_rejects_non_string_lists(tmp_path: Path, value: str) -> None:
+    payload = _resolve(tmp_path, f"nose_inventory_paths: {value}\n")
+
+    assert not payload["valid"]
+    assert "nose_inventory_paths must be a list of strings" in payload["errors"]
+    assert payload["data"]["nose_inventory_paths"] == []
+
+
+def test_version_validator_rejects_non_integer() -> None:
+    errors: list[str] = []
+    validated: dict = {}
+
+    quality_adapter_lib.adapter_validators.validate_version_field({"version": "one"}, validated, errors)
+
+    assert validated == {}
+    assert errors == ["version must be an integer"]
 
 
 # ---------------------------------------------------------------------------
