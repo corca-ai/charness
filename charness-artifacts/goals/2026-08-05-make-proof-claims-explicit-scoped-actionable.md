@@ -16,9 +16,9 @@ runs the activation command.
 - Current slice intent: verify that the completed local tracks retain separate
   owners, readers, evidence identities, and non-claims before any later
   publication or remote issue boundary.
-- Next action: run the locked local proof bundle, validate all current carriers
-  and critique/goal artifacts, then prepare an honest per-issue disposition
-  packet without implying remote success.
+- Next action: finish the final claims reread over the repaired goal, retro, and
+  #506 carrier, then run the verification-lock closeout without implying remote
+  success.
 - Slice B acceptance envelope: one semantic owner; quality maps
   `pass`/`fail`/`unestablished`, closeout preserves
   `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
@@ -37,7 +37,8 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: Slices A–D are recorded and the goal is active. No push,
+- History boundary: Slices A–E are recorded locally and the goal is active
+  pending final claims closeout. No push,
   release, or remote issue close is implied by the local matrix or by saving
   this artifact. Slice B's implementation and repaired-surface review are
   recorded locally; broad/final proof and each external track remain separately
@@ -232,7 +233,7 @@ helper-owned; neither is absorbed into the #502 receipt or a universal gate.
 | --- | --- | --- | --- | --- |
 | A | Reconcile the five live issues and lock the shared claim dimensions | The common pattern is plausible, but scope and reader position must be proven before five fixes become five new contracts | Live reads, producer/consumer/evidence map, issue inclusion matrix, owner decision, false-unification risks, bounded pre-mortem | completed |
 | B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | completed |
-| C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | in_progress |
+| C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | completed |
 | D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | completed |
 | E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | in_progress |
 
@@ -282,17 +283,20 @@ Routing: critique — run the decision pre-mortem and repaired proof-surface
 reviews.
 Routing: quality — own validation cadence, proof-surface risk, and local/remote
 proof separation.
+Routing: debug — selected because the final record repair included a stale-claim
+ RCA-style correction and bound closeout evidence.
 Routing: impl — implement only the smallest owner/binding slice after the
 contract matrix is locked.
 Routing: issue — read and independently carry the selected issue closeouts.
 Routing: retro — review waste and disposition any recurring pattern after the
 goal.
+Routing: achieve — selected as the owner skill for this active goal's final artifact binding, disposition evidence, and complete-flip closeout.
 Gather: n/a — issue identity is read through the repo's GitHub adapter and all
 other context is repo-local.
 Release: n/a — no release surface is intended during shaping.
-Issue closeout: #491, #496, #502, #504, #506 — final carrier, delegated critique,
-distinct behavior verdict, and adapter readback are pending activation and must
-be completed independently per issue.
+Issue closeout: #491, #496, #502, #504, #506 — local carriers and distinct
+behavior dispositions are recorded independently; remote issue readback and
+any close call remain separate future boundaries.
 
 ## Discuss Before Activation
 
@@ -304,8 +308,8 @@ decision rather than a preselected manifest or new gate.
 
 ## Slice Log
 
-Slices A and B are complete; the following report is the execution archive. The
-active frame above is the control panel for Slice C.
+Slices A–D are complete; the following report is the execution archive. The
+active frame above is the control panel for Slice E.
 
 ### Slice 1: Lock the five-track proof matrix
 
@@ -327,7 +331,7 @@ active frame above is the control panel for Slice C.
 - Why this approach: The live issue's duplicated prose was a consumer-ownership problem, not a reason to unify unrelated verdict vocabularies. One shared model with producer-owned adapters keeps semantics centralized while leaving quality and closeout state decisions local.
 - Commits: `c5519bfb` (`feat: make proof receipts actionable`); source/plugin generated export is synchronized and committed.
 - What changed: Added `scripts/proof_receipt.py` and its plugin export; routed `run-quality.sh` through the quality adapter with explicit `CHARNESS_QUALITY_RECEIPT_JSON` / `--receipt-json=PATH` opt-in; attached closeout receipts in `--json`; routed the closeout final line through the shared renderer; added semantic and subprocess-focused tests.
-- Targeted verification: The exact focused command over `test_proof_receipt.py`, `test_quality_runner.py`, `test_quality_runner_runtime_aggregate.py`, `test_run_slice_closeout_surface_obligations.py`, and `test_slice_closeout_broad_gate.py` passed 92 tests after moving explicit-filter no-match detection after all queue declarations and counting only actual explicit selections, including forced-opt-in counterexamples. `bash -n`, `py_compile`, `git diff --check`, and source/plugin parity passed for the changed runtime files. The durable review record is `charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md`.
+- Targeted verification: The exact focused command over `test_proof_receipt.py`, `test_quality_runner.py`, `test_quality_runner_runtime_aggregate.py`, `test_run_slice_closeout_surface_obligations.py`, and `test_slice_closeout_broad_gate.py` passed 101 tests in 31.90 seconds at the final test HEAD after moving explicit-filter no-match detection after all queue declarations, counting only actual explicit selections, and adding receipt-contract branch coverage. `bash -n`, `py_compile`, `git diff --check`, and source/plugin parity passed for the changed runtime files. The durable review record is `charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md`.
 - Fresh-eye review: Round 1 used three unnamed Codex bounded reviewers with distinct semantic, shell/runtime, and closeout/export lenses; all boundary verifies were clean. Round 2 read the repaired surface with the same three lenses and found three real issues (closeout cause precedence visibility, blank error fallback, and an explicit filter that could pass with zero scope); all were repaired. A later claims review found the zero-match check was placed before later queue declarations; that placement repair is recorded as accepted-unreviewed under the two-round cap. The durable artifact records each reviewer identity and the clean boundary checks; it does not claim a third proof-surface round.
 - Alternatives rejected: Rejected a universal status enum, durable telemetry store, swallowed JSON-write failure, and a zero-scope green for an explicit label filter. Kept optional receipt-write failure separate from the gate's actual exit code while reporting it before the terminal human line.
 - Non-claims: No broad quality gate, changed-line mutation proof, remote CI, plugin installation readback, issue carrier validation, delegated issue-resolution critique, issue close, push, or release is claimed by this slice.
@@ -387,6 +391,11 @@ active frame above is the control panel for Slice C.
   focused `ruff check`, and `git diff --check` passed. Explicit-window,
   stale/default refusal, parent-attribution, and no-write semantics remain
   bounded to the helper's local behavior.
+- #506 carrier: `charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md`
+  records the observed stale-default-window problem, producer/consumer owner,
+  focused behavior verdict, prior delegated structural disposition review, and
+  the durable blocker that the remote issue remains OPEN. It makes no issue-
+  close or host-invocation claim.
 - Fresh-eye evidence: #491 reuses the delegated semantic-question application;
   #504 reuses its causal/final carrier review; #506 uses its own boundary test
   suite and helper-owned review contract. No proof-surface verdict logic
@@ -395,6 +404,44 @@ active frame above is the control panel for Slice C.
   release, or universal claim/reference/boundary schema.
 - Next step: run Slice E's locked local proof bundle and independent
   disposition checks.
+
+### Slice 5: Cross-track local proof and final disposition repair
+
+- Objective: Prove the five local tracks together without turning the umbrella
+  into a shared runtime or closure transaction, then have a distinct observer
+  audit the goal's own final claims.
+- Why this approach: The North Star makes a final proof record an irreversible
+  evidence boundary. The quality gate, per-track focused tests, carriers, and a
+  separate claims observer each answer a different question; none is allowed
+  to substitute for the others.
+- Local proof: `./scripts/run-quality.sh --read-only` passed 85 checks and 0
+  failures in 124.6 seconds, including the focused changed-line mutation
+  consumer in 121.4 seconds. The independent full coverage consumer passed
+  7,108 tests with 79 deselected, no blocking files, and `ok: true` against
+  `origin/main`. The exact #502 five-file focused command passed 101 tests in
+  31.90 seconds after the final receipt-branch tests were committed.
+- Cross-track evidence: #491 remains a reviewer-owned claim disposition;
+  #496's existing local carrier and 85-test proof remain valid; #502's receipt
+  owner and 101-test proof are current; #504's 29-test no-write proof remains
+  current; and #506 now has the specific local carrier
+  `charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md` with a
+  durable remote-open blocker. The quality record is
+  `charness-artifacts/quality/2026-08-05-proof-claims.md`; the bound retro is
+  `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`.
+- Fresh-eye repair: The first final claims reviewer
+  (`019fcf33-2eec-7960-b4c3-9aa31ddc1638`, window
+  `cross-track-final-claims-20260805`) found three blockers: stale final/retro
+  sections, the missing #506 carrier, and the old #502 count. The parent is
+  repaired all three before the post-form rereads; a later packet-binding repair
+  was then required, and no same-agent substitute
+  or remote success claim is made.
+- Non-claims: The local bundle does not prove remote CI, installed-host or
+  provider behavior, issue closure, release publication, or a universal proof
+  schema. #491/#496/#502/#504/#506 remain independently bounded even when the
+  quality gate runs them in one local process.
+- Next step: run the final claims reread against this repaired artifact set,
+  verify the boundary window, then complete the goal only if the closeout
+  evidence gate passes.
 
 ## Context Sources
 
@@ -471,21 +518,43 @@ only declared drift was the parent edit to this draft after the snapshot.
 
 ## Final Verification
 
-Slices A–C have run their recorded local proof. The broader goal still has no
-push, release, remote CI claim, issue close, or Cautilus evaluation; those are
-separate later boundaries.
+Slices A–E have run their recorded local proof. The final local gate and
+changed-line coverage are green, and the exact focused counts are current at
+HEAD. The first independent claims review found and named three stale-record
+blockers; the goal remains active until the repaired goal, carrier, and bound
+retro are reread by a fresh observer and the verification-lock closeout passes.
+No push, release, remote CI claim, issue close, or Cautilus evaluation is made;
+those remain separate later boundaries.
+Retro: charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
+Host log probe: skipped: host-log-not-exposed: this Codex session exposes no
+goal-scoped host transcript or metric window, so no per-goal token, time, or
+tool-call total is claimed.
+Disposition review: charness-artifacts/critique/2026-08-05-proof-claims-final-claims-review.md
 
 ## User Verification Instructions
 
-Read the issue inclusion/exclusion table and `## Discuss Before Activation`.
-Confirm the five-issue bundle, or name the issue(s) to remove, before running:
+Read the issue inclusion/exclusion table, the quality record, the #506 local
+carrier, and the bound retro. The local proof is scoped to the named tests and
+recorded non-claims. Remote issue state remains OPEN and is not changed by this
+goal. Any later issue close must use that issue's own carrier, delegated
+resolution critique, distinct behavior verdict, and adapter readback.
 
-`/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
-
-Nothing runs merely because this draft exists.
+The activation command for historical context was:
+`/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`.
 
 ## Auto-Retro
 
-No goal slices have run, so no waste or improvement disposition exists yet.
-Any future retro must classify each improvement as applied, a tracked issue, or
-an explicit no-improvement disposition.
+Retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
+records the measured gate/runtime signals, stale-record repair, North Star
+misapplication, counterfactuals, and sibling search.
+
+Disposition review: pending final claims reread of the repaired goal and its
+bound retro.
+
+applied: exact focused test recount and receipt-contract branch tests.
+applied: per-track #506 carrier plus quality/probe synchronization.
+issue #505 (recurs: gate-baseline-runtime and over-slice closeout cost): retain
+current proof floors while the separate runtime track owns structural remedy.
+
+Structural follow-up: issue #505 (recurs: gate-baseline-runtime and over-slice
+closeout cost).

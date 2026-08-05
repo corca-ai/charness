@@ -1,0 +1,22 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-04T23:59:06Z",
+  "prepared_for": "2026-08-05-proof-claims-goal-closeout",
+  "changed_ref": null,
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 1,
+  "ok": true
+}

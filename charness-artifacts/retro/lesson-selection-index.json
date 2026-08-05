@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 439,
-  "candidate_count": 1813,
+  "source_artifact_count": 441,
+  "candidate_count": 1821,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1450,6 +1450,84 @@
       ]
     },
     {
+      "candidate_id": "current_focus:08961cd1cf64",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the five-track local proof goal after #502 implementation, #496 re-verification, #491/#504/#506 independent dispositions, and the final quality/mutation bundle.",
+      "normalized_key": "this retro reviews the five track local proof goal after 502 implementation 496 re",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro reviews the five-track local proof goal after #502 implementation, #496 re-verification, #491/#504/#506 independent dispositions, and the final quality/mutation bundle."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:d929f5e66bf3",
+      "kind": "next_improvement",
+      "lesson": "`applied: add receipt-contract branch tests so changed-line mutation coverage cannot stop at an uncovered proof branch`.",
+      "normalized_key": "applied add receipt contract branch tests so changed line mutation coverage cannot stop at",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: add receipt-contract branch tests so changed-line mutation coverage cannot stop at an uncovered proof branch`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:506e01c02823",
+      "kind": "next_improvement",
+      "lesson": "`applied: keep the #506 local carrier and quality proof record bound to the active goal; leave remote closure as an explicit durable blocker`.",
+      "normalized_key": "applied keep the 506 local carrier and quality proof record bound to the active",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: keep the #506 local carrier and quality proof record bound to the active goal; leave remote closure as an explicit durable blocker`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:7f80bb5df768",
       "kind": "next_improvement",
       "lesson": "applied — persist each bounded review's delivery and boundary receipt before citing it in the goal; this run's critique and claims records are the model.",
@@ -1476,6 +1554,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:e85ec9b2588a",
+      "kind": "next_improvement",
+      "lesson": "`applied: run the exact focused count after the last test edit and require a claims reread after final carrier edits`.",
+      "normalized_key": "applied run the exact focused count after the last test edit and require a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`applied: run the exact focused count after the last test edit and require a claims reread after final carrier edits`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:abc06fae33a5",
       "kind": "next_improvement",
       "lesson": "applied — worker-coverage proof now asserts distinct worker identities and exported coverage rather than an optional output banner.",
@@ -1498,6 +1602,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "applied — worker-coverage proof now asserts distinct worker identities and exported coverage rather than an optional output banner."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1aa76782c9fa",
+      "kind": "next_improvement",
+      "lesson": "gate-baseline: `issue #505 (recurs: gate-baseline-runtime and over-slice closeout cost); retain current proof floors while that separate track owns runtime design`.",
+      "normalized_key": "gate baseline issue 505 recurs gate baseline runtime and over slice closeout cost retain",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "gate-baseline: `issue #505 (recurs: gate-baseline-runtime and over-slice closeout cost); retain current proof floors while that separate track owns runtime design`."
         }
       ]
     },
@@ -1554,6 +1684,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:c924f6e06352",
+      "kind": "repeat_trap",
+      "lesson": "Gate-baseline runtime (measured, necessary for this proof but still debt): the full direct coverage producer took 837.60s for 7,108 tests, followed by context-JSON serialization. The configured quality gate itself passed in 124.6s, but recurring local telemetry independently records over-budget pytest/closeout families. This cost is routed to existing issue #505, not absorbed as a reason to weaken proof.",
+      "normalized_key": "gate baseline runtime measured necessary for this proof but still debt the full direct",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Gate-baseline runtime (measured, necessary for this proof but still debt): the full direct coverage producer took 837.60s for 7,108 tests, followed by context-JSON serialization. The configured quality gate itself passed in 124.6s, but recurring local telemetry independently records over-budget pytest/closeout families. This cost is routed to existing issue #505, not absorbed as a reason to weaken proof."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:5ec62b578d4c",
       "kind": "repeat_trap",
       "lesson": "Gate-baseline runtime (strong, measured): the focused mutation phase still costs 76.8s median after the repair. The old 120.6s median was not necessary safety cost; it was duplicated scheduling policy in the producer. The remaining cost is proof-bearing work and stays routed to #505, not removed.",
@@ -1576,6 +1732,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Gate-baseline runtime (strong, measured): the focused mutation phase still costs 76.8s median after the repair. The old 120.6s median was not necessary safety cost; it was duplicated scheduling policy in the producer. The remaining cost is proof-bearing work and stays routed to #505, not removed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:e14ce41d01d3",
+      "kind": "repeat_trap",
+      "lesson": "Polling waste (proxy): repeated short waits were required while the coverage producer serialized a multi-gigabyte context report. No host metric source records a per-goal tool-call total, so this is a workflow-shape observation, not a measured token claim.",
+      "normalized_key": "polling waste proxy repeated short waits were required while the coverage producer serialized a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Polling waste (proxy): repeated short waits were required while the coverage producer serialized a multi-gigabyte context report. No host metric source records a per-goal tool-call total, so this is a workflow-shape observation, not a measured token claim."
         }
       ]
     },
@@ -1654,6 +1836,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Verification (strong, necessary): three-before/three-after receipts, the worker-level coverage probe, and the dirty-tree non-claim prevented a fast but false conclusion. They are not treated as waste."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d634e4117bb1",
+      "kind": "repeat_trap",
+      "lesson": "Workflow waste (strong): the first final claims review caught stale `Final Verification`/`Auto-Retro` text, a missing #506 carrier, and the old #502 test count. The stale text survived because closeout editing followed the first green bundle instead of a describe-first final-record pass. The repair is to complete the goal record and rerun the claims observer after every final carrier or test-count change.",
+      "normalized_key": "workflow waste strong the first final claims review caught stale final verification auto retro",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Workflow waste (strong): the first final claims review caught stale `Final Verification`/`Auto-Retro` text, a missing #506 carrier, and the old #502 test count. The stale text survived because closeout editing followed the first green bundle instead of a describe-first final-record pass. The repair is to complete the goal record and rerun the claims observer after every final carrier or test-count change."
         }
       ]
     },
