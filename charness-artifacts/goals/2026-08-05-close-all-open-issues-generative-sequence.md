@@ -1,17 +1,18 @@
 # Achieve Goal: 현재 열린 17개 이슈를 다음 작업을 가능하게 만드는 순서로 닫기
 
-Status: draft
+Status: active
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md`
+Activation time: 2026-08-05T04:54:43Z
 
-이 파일은 사용자가 activation command를 실행하기 전까지 실행되지 않는 draft goal이다.
+이 파일은 activation record가 작성된 뒤 active goal scratchpad로 실행 내역과 증거를 보존한다.
 
 ## Active Operating Frame
 
-- Current disposition: draft shaping complete; activation 전 사용자 확인과 live snapshot 재검증이 남아 있다.
-- Current slice: 2026-08-05 GitHub snapshot의 열린 이슈 17건에 대한 preferred generative sequence를 저장했다.
-- Current slice intent: 각 이슈의 JTBD를 보존하면서 먼저 뒤의 검증을 싸고 정확하게 만드는 계약과 proof surface를 고정한다. 구현·이슈 closeout은 activation 뒤에만 시작한다.
-- Next action: `Discuss Before Activation`의 결정을 확인한 뒤 `/goal @charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md`로 활성화한다.
+- Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
+- Current slice: activation preflight complete; #468 is the next issue-specific slice.
+- Current slice intent: preserve #468's JTBD while testing the named-remedy premise and turning the result into a reusable premise-reverification contract before later remedy design.
+- Next action: classify and causally review #468, then choose the smallest contract change whose downstream decision observable can be verified.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -153,9 +154,13 @@ Generative benefit field: each closed row names one later issue whose design, ev
 
 ## Activation Record
 
-Activation record status: not recorded during shaping; the artifact is intentionally inert.
+Activation record status: recorded — 2026-08-05T04:54:43Z.
 
-Before `/goal`, record in this section: confirmation of the four queue decisions; the live issue snapshot and `comments_read: true` evidence; whether newly opened/closed issues were accepted or excluded by re-scope; the selected issue backend/carrier route; and the operator's explicit choice about strict stop versus authorized re-rank. The record must be written before activation, not inferred from the command itself.
+- Live scope evidence: `gh issue list --repo corca-ai/charness --state open --limit 100 --json number,title,state,url` returned exactly #468, #480, #482, #483, #484, #491, #496, #502, #503, #504, #505, #506, #507, #508, #509, #510, and #511. No shaping-snapshot issue was removed and no additional open issue appeared; no re-scope was required.
+- Fresh issue reads: `python3 skills/public/issue/scripts/issue_tool.py read --repo corca-ai/charness --number <n>` was run for all 17 numbers. Every result was `state: OPEN`, `comments_read: true`, and selected backend `gh`; no issue was designed from a missing or partial read.
+- Queue decisions confirmed: #468 uses premise-reverification; activation-time live scope is authoritative; a blocked issue may be followed by an explicitly recorded re-rank row while the blocked issue remains OPEN; direct-commit/auto-close is the default carrier route. PR, release, tag, version bump, and Cautilus remain out of scope.
+- Carrier route: selected backend `gh`; default route is a direct-to-default commit carrying explicit close keywords and the classification ledger, followed by `verify-closeout --expect-state CLOSED`; manual fallback is allowed only if the adapter reports auto-close unavailable or failed after remote verification.
+- Ordering decision: start with #468 and stop or re-rank only through the blocked-row schema in `## Slice Log`; strict sequence remains the default. The four activation discussions are resolved as `CONFIRMED` in `## Discuss Before Activation` and `## Operator Decision Queue`.
 
 ## Context Sources
 

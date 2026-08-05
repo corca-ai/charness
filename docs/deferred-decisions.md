@@ -23,6 +23,33 @@ Impact surfaces:
 Reopen trigger:
 ```
 
+## Named Remedy Premise Contract
+
+A remedy recorded in a deferred decision is a hypothesis, not an implementation
+plan. Before shaping work around a named remedy, the next resolver must inspect
+the current owner and first reader of the channel the remedy assumes, then run
+or read the smallest evidence that can establish whether that channel exists
+and behaves as described. A historical sentence is not a current capability.
+
+Record the result in the decision entry before implementation begins:
+
+```text
+Named remedy premise:
+- Remedy: <the proposed repair, quoted or named>
+- Premise: <the current fact the repair depends on>
+- Evidence channel: <file read, command, fixture, or live readback>
+- Observation: <what the current channel actually establishes>
+- Downstream decision delta: <the later remedy, scope, order, or stop decision changed by this result>
+- Status: verified | falsified | narrowed | withdrawn | not-run
+```
+
+`Downstream decision delta` is the acceptance boundary: if the observation
+does not change or falsify a later remedy decision, the premise check has not
+yet earned a slice. `not-run` is an explicit non-claim, not permission to
+implement the named remedy. This is a review convention, not a new mechanical
+blocking floor; the owning issue, reviewer, and closeout record decide whether
+the evidence is sufficient for the boundary at hand.
+
 ## Closed Decisions (2026-04-10)
 
 ### D1. Shared Packaging Canonical Source
@@ -526,6 +553,13 @@ Reopen trigger:
   hosts an exemption-list pattern for a different gate (`exemption_list_path`). The shape is
   precedented; the wiring is absent. This does not change the deferral — it corrects what
   the deferred work COSTS, which is the thing a future session would have mis-scoped.
+- Named remedy premise:
+  - Remedy: move the exemption declaration from the workflow into the adapter.
+  - Premise: an adapter-declared exemption channel already exists for this reader.
+  - Evidence channel: read `ci_local_gate_parity_lib.py` and the quality adapter contract.
+  - Observation: the reader accepts workflow text only; the adapter has related fields but no exemption input.
+  - Downstream decision delta: keep the deferral, but reshape the remedy from a rewire into a new adapter seam with precedence rules.
+  - Status: falsified
 - Reopen trigger: a CI/local parity escape that this repo's own green did not catch; or S31 being worked, since moving the exemption to the adapter changes what "evaluated" can mean; or a third charness workflow landing.
 
 ### D46. Should an uninterpreted adapter-YAML line REFUSE the adapter, or only warn?
@@ -639,6 +673,13 @@ Reopen trigger:
   STRONGER self-declaration than the `required_release_surfaces` list [D48](#d48-should-an-absent-release-surface-be-drift-without-a-self-authored-declaration)
   objects to: it would decide whether the gate may fire on a field at all, from inside
   the audited repo. Found by the 2026-08-01 bounded plan critique before it was built.
+- Named remedy premise:
+  - Remedy: qualify generic inventory tokens with a distinctiveness field in `inventory-consumer-fields.json`.
+  - Premise: the declaration can distinguish the fields whose incidental prose caused the false engagement.
+  - Evidence channel: read the inventory declaration and the five cited consumer citations across four artifacts.
+  - Observation: every cited engagement uses ordinary-English field names; declaring them non-distinctive spares the reviews, while declaring them distinctive makes the rule a measured-zero no-op.
+  - Downstream decision delta: withdraw this remedy, keep the marker refusal unarmed, and require a different contract if the issue is reopened.
+  - Status: withdrawn
 - **Executed measurement replacing the hand counts (2026-08-01).** New script
   [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py), recorded
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
@@ -760,6 +801,13 @@ Reopen trigger:
   portable to live; and the listing-mode variant puts the channel behind a NEW
   self-declared adapter field, so it could not have broken the class it claimed to break.
   Found by the 2026-08-01 bounded plan critique before any of it was built.
+- Named remedy premise:
+  - Remedy: derive the expected release-surface set from sync command output.
+  - Premise: the sync output names every generated surface in the vocabulary consumed by `current_release.py`.
+  - Evidence channel: read `sync_root_plugin_manifests.py` output fields and `current_release.py` surface vocabulary.
+  - Observation: sync reports the plugin root as a directory, omits two surfaces, and uses no path-to-key mapping for the release vocabulary.
+  - Downstream decision delta: withdraw the derivation repair; retain declared-only status with explicit uncorroborated publish refusal.
+  - Status: withdrawn
 - Why now: found while closing sweep row S35 on 2026-08-01. The repair is an instance of
   the class the sweep catalogues: a self-declared field inside the repo being judged
   decides whether the floor fires, and deleting those four adapter lines disarms it with
