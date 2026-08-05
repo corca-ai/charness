@@ -25,7 +25,7 @@
 ## Next Session
 
 1. Read the active goal, [current quality posture](../charness-artifacts/quality/latest.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and the implementation/operating contracts.
-2. Read the final #508 carrier, goal, quality, handoff, and proof records; the distinct closeout-claims review must be rebound after this re-rank and remain explicitly local-only.
+2. Read the final #508 carrier, goal, quality, handoff, and proof records; the canonical closeout-claims review artifact must name the current packet and identity, and remains explicitly local-only.
 3. Continue #509's issue-specific live read and causal review locally. Keep #508 OPEN until the single final push supplies independent remote evidence and the closeout floor is satisfied; do not infer that boundary from #509's local proof.
 4. Keep the complete #508 disposition, carrier, and claims review bound in the goal and this handoff; keep the goal active until all scoped issues are independently dispositioned.
 

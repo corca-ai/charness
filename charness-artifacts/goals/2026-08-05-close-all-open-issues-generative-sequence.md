@@ -393,12 +393,12 @@ Activation verification: the 17-issue live snapshot had `comments_read: true` fo
 
 Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
 Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md
+Disposition review: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md` is canonical; it must name the current claims packet and identity before its PASS is relied on.
 
 ## User Verification Instructions
 
 1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, #511, #504, #496, and #491 are verified closed, while #508 is locally implemented but OPEN and the goal remains active for the 8 remaining issues.
-2. The distinct #508 closeout-claims review must be rebound after the 2026-08-06 re-rank and remain PASS only for the local carrier, goal, quality, handoff, and proof records; preserve #508 as OPEN/local-only-by-contract while #509 proceeds locally.
+2. The distinct #508 closeout-claims review is authoritative only when its canonical artifact names the current packet and identity; it covers only the local carrier, goal, quality, handoff, and proof records. Preserve #508 as OPEN/local-only-by-contract while #509 proceeds locally.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact. Push is intentionally deferred until the final publish boundary unless a closeout floor makes an earlier remote carrier unavoidable.
 

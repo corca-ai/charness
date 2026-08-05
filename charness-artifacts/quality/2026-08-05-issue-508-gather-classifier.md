@@ -65,9 +65,10 @@ validators, and `git diff --check` passed. No Cautilus evaluation was run.
 - Delegated Review: executed — two unnamed bounded fresh-eye code rounds ran
   with distinct reviewer contexts; round 1 found matrix/packet gaps, round 2
   found separator overreach, and the final repair is explicitly accepted-
-  unreviewed under the two-round cap. A separate closeout-claims review then
-  returned PASS for the local carrier/goal/handoff record; remote publish and
-  GitHub CLOSED readback remain pending.
+  unreviewed under the two-round cap. A separate closeout-claims review is
+  recorded at `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md`;
+  its current packet and identity are authoritative only as named in that
+  artifact. Remote publish and GitHub CLOSED readback remain pending.
 - Slow-gate lenses (fixture-economics, parallel-critical-path,
   duplicated-proof): executed through quality planning; the only new duplicate
   family was removed and the dirty mutation warning remains explicit.
