@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 443,
-  "candidate_count": 1830,
+  "source_artifact_count": 445,
+  "candidate_count": 1838,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1164,6 +1164,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:00a1111f0eac",
+      "kind": "current_focus",
+      "lesson": "This retro covers the local proof and structural quality work after the #508/#509 sequence reached its final local publish boundary.",
+      "normalized_key": "this retro covers the local proof and structural quality work after the 508 509",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the local proof and structural quality work after the #508/#509 sequence reached its final local publish boundary."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:cf5a75913b49",
       "kind": "next_improvement",
       "lesson": "a gate refusing a change whose owning reference still describes the old behaviour — issue #491.",
@@ -1294,6 +1320,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:3fbc0c4d9de4",
+      "kind": "next_improvement",
+      "lesson": "run a controlled isolated-vs-contended runtime sample before any budget retune; freeze quality/critique packet identity before broad review; invoke the mutation-coverage suggestion helper before assembling a focused producer command.",
+      "normalized_key": "run a controlled isolated vs contended runtime sample before any budget retune freeze quality",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run a controlled isolated-vs-contended runtime sample before any budget retune; freeze quality/critique packet identity before broad review; invoke the mutation-coverage suggestion helper before assembling a focused producer command."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ac67e983413d",
+      "kind": "next_improvement",
+      "lesson": "strengthen the quality workflow's runtime profile and mutation producer discovery so the operator receives a complete evidence command, while keeping both as advisory or existing-gate reuse until evidence earns a floor.",
+      "normalized_key": "strengthen the quality workflow s runtime profile and mutation producer discovery so the operator",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "strengthen the quality workflow's runtime profile and mutation producer discovery so the operator receives a complete evidence command, while keeping both as advisory or existing-gate reuse until evidence earns a floor."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:74c62ddc2839",
+      "kind": "next_improvement",
+      "lesson": "this retro, the final critique packet, and the next-session draft goal must remain in the handoff; preserve #508/#509 as OPEN/local-only until an independent remote observer verifies the final push and each closeout floor.",
+      "normalized_key": "this retro the final critique packet and the next session draft goal must remain",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "this retro, the final critique packet, and the next-session draft goal must remain in the handoff; preserve #508/#509 as OPEN/local-only until an independent remote observer verifies the final push and each closeout floor."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:caf238d47e92",
       "kind": "next_improvement",
       "lesson": "verify the reviewer boundary the MOMENT the reviewer returns, before any parent write. Missed once this run, costing that window its proof.",
@@ -1342,6 +1446,110 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Four dup-ratchet hard blocks, none of them new duplication** — every one a span shift bringing a pre-existing boilerplate parallel over the threshold."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c65934e1d729",
+      "kind": "repeat_trap",
+      "lesson": "mutation-producer-selection: the #509 proof needed an explicit focused producer command because the standing suggestion path did not surface every relevant producer test. The existing helper is useful; the waste is manual sequencing and should be addressed in the next workflow slice rather than by weakening a mutation floor now.",
+      "normalized_key": "mutation producer selection the 509 proof needed an explicit focused producer command because the",
+      "recurrence_class": "mutation-producer-selection",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "mutation-producer-selection: the #509 proof needed an explicit focused producer command because the standing suggestion path did not surface every relevant producer test. The existing helper is useful; the waste is manual sequencing and should be addressed in the next workflow slice rather than by weakening a mutation floor now."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2c53fdd5a072",
+      "kind": "repeat_trap",
+      "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record.",
+      "normalized_key": "proof surface review binding the first critique packet bound the wrong incomplete reviewed input",
+      "recurrence_class": "proof-surface-review-binding",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:490052814d4a",
+      "kind": "repeat_trap",
+      "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself.",
+      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
+      "recurrence_class": "runtime-budget-contention",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:7da26eeb8939",
+      "kind": "repeat_trap",
+      "lesson": "The fresh-eye rounds, source/plugin parity check, and focused regression proof were necessary safety work at a proof-surface boundary, not waste. No host metric supports claiming a token or wall-clock improvement from this session.",
+      "normalized_key": "the fresh eye rounds source plugin parity check and focused regression proof were necessary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The fresh-eye rounds, source/plugin parity check, and focused regression proof were necessary safety work at a proof-surface boundary, not waste. No host metric supports claiming a token or wall-clock improvement from this session."
         }
       ]
     },

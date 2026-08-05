@@ -636,7 +636,6 @@ queue_selected "validate-retro-lesson-index" python3 scripts/build_retro_lesson_
 queue_selected "validate-quality-artifact" python3 scripts/validate_quality_artifact.py --repo-root "$REPO_ROOT"
 queue_selected "validate-attention-state-visibility" python3 scripts/validate_attention_state_visibility.py --repo-root "$REPO_ROOT" --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support
 queue_selected "validate-inventory-consumption" python3 scripts/validate_inventory_consumption.py --repo-root "$REPO_ROOT"
-queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
 queue_selected "check-inventory-declaration-coverage" python3 scripts/check_inventory_declaration_coverage.py --repo-root "$REPO_ROOT"
 # BLOCKING by operator decision (2026-08-02), promoted after one advisory run:
 # a documented command that cannot run is a wrong answer that escapes silently.
@@ -710,10 +709,13 @@ queue_selected "check-markdown" ./scripts/check-markdown.sh
 # No barrier here: `flush_phase` is not fail-fast (every phase runs regardless of
 # an earlier failure), so a barrier between independent gates buys output grouping
 # and nothing else — while the gates below wait on the slowest gate above. The
-# barriers that stay are the ones that carry a real dependency: `doc-duplicates`
-# hands its drift JSON to `dup-ratchet`, `check-seed-fixture-budget` needs pytest's
-# temp tree to be settled (see its comment below), and `check-runtime-budget` reads
-# the samples every earlier phase recorded.
+# barriers that stay carry a real dependency: `doc-duplicates` hands its drift
+# JSON to `dup-ratchet`, `check-seed-fixture-budget` needs pytest's temp tree to be
+# settled (see its comment below), and `check-runtime-budget` reads the samples
+# every earlier phase recorded. The inventory declaration drift check is the one
+# measured scheduling exception: its own subprocess fan-out makes its runtime
+# sample sensitive to the first phase's CPU load, so it runs alone after this
+# phase drains and is flushed before unrelated gates resume.
 queue_selected "check-secrets" ./scripts/check-secrets.sh
 queue_selected "check-supply-chain" python3 scripts/check_supply_chain.py --repo-root "$REPO_ROOT"
 queue_selected "check-github-actions" python3 scripts/check_github_actions.py --repo-root "$REPO_ROOT"
@@ -788,6 +790,9 @@ queue_selected "specdown" bash -c "command -v specdown >/dev/null || { echo \"sp
 queue_selected "run-evals" python3 scripts/run_evals.py --repo-root "$REPO_ROOT"
 queue_selected "doc-duplicates" python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root "$REPO_ROOT" --require-nose --json-out "$RUN_QUALITY_TMPDIR/doc-duplicates.json"
 
+flush_phase || OVERALL_RC=$?
+
+queue_selected "validate-inventory-consumption-declaration" python3 scripts/validate_inventory_consumption_declaration.py --repo-root "$REPO_ROOT"
 flush_phase || OVERALL_RC=$?
 
 # Boy-scout duplicate ratchet (item 5, slice 2). Runs in the broad path only (this

@@ -4,8 +4,8 @@
       "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json",
       "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"
     ],
-    "current_corpus": "Refreshed on 2026-08-05 after the #508 quality record changed the checked-in quality corpus: shallow 118 artifacts / 196 presence-only mentions; recursive 136 artifacts / 269 presence-only mentions.",
-    "date": "2026-08-05",
+    "current_corpus": "Refreshed on 2026-08-06 after the runtime phase-isolation quality record changed the checked-in quality corpus: shallow 119 artifacts / 190 presence-only mentions; recursive 137 artifacts / 263 presence-only mentions.",
+    "date": "2026-08-06",
     "does_not_license": "Measures THIS repo's checked-in quality artifacts. Says nothing about a consumer repo's corpus. Evidence that arming costs this repo N, not that arming is free anywhere else. The refused artifacts are not all ones the default runner reaches -- the gate is normally handed latest.md only -- so 'would refuse 3 citations across 2 artifacts' is not 'would redden the next quality run'. Nothing was armed and no frozen artifact was rewritten.",
     "first_executed_number_was_wrong": {
       "after_fix": {
@@ -24,15 +24,15 @@
       "consequence": "the buggy run supported 'the toll is smaller than D47 recorded'. Corrected, the artifact count moves 3 -> 4, closer to the hand count's 5 but still below it. Found by the round-1 bounded review before the number was trusted.",
       "what": "the first cut of the marker test used `[^`]*field[^`]*`, which matches the GAP BETWEEN two adjacent code spans, so a bare English mention sitting between two unrelated spans scored as marked"
     },
-    "known_false_positives_not_repaired": "`markers_for` treats a field name inside ANY backticked span as a citation, so a backticked PATH or flag containing the name as a hyphen-delimited token (`advisory-interpretation-contract.md`, `--paths`) scores as marked. Underscores are safe. Bias runs the same way as the repaired bug -- it inflates marked. Verified inert on today's corpus (those artifacts cite no inventory declaring that field), so the numbers above stand, but one new artifact quoting `--paths` while citing inventory_nose_clones.py would flip a refusal silently. Also unmodelled: lines with an odd number of backticks (a wrapped span's continuation line inverts code/prose -- zero live instances found) and fenced code blocks (pasted `status: ok` output scores a colon marker; fences exist only under --recursive). Marker attribution is per LINE, not per occurrence, matching the sibling's current line-granular 196. Raised by the round-2 bounded review and recorded rather than repaired: round 2 is the review cap.",
+    "known_false_positives_not_repaired": "`markers_for` treats a field name inside ANY backticked span as a citation, so a backticked PATH or flag containing the name as a hyphen-delimited token (`advisory-interpretation-contract.md`, `--paths`) scores as marked. Underscores are safe. Bias runs the same way as the repaired bug -- it inflates marked. Verified inert on today's corpus (those artifacts cite no inventory declaring that field), so the numbers above stand, but one new artifact quoting `--paths` while citing inventory_nose_clones.py would flip a refusal silently. Also unmodelled: lines with an odd number of backticks (a wrapped span's continuation line inverts code/prose -- zero live instances found) and fenced code blocks (pasted `status: ok` output scores a colon marker; fences exist only under --recursive). Marker attribution is per LINE, not per occurrence, matching the sibling's current line-granular 190. Raised by the round-2 bounded review and recorded rather than repaired: round 2 is the review cap.",
     "recursive_variant": {
-      "artifacts_citing_a_declared_inventory": 41,
+      "artifacts_citing_a_declared_inventory": 40,
       "artifacts_refused_by_the_marker_rule": [
         "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
         "charness-artifacts/quality/2026-07-13-quality-review.md",
         "charness-artifacts/quality/history/2026-06-11-quality-review.md"
       ],
-      "artifacts_scanned": 136,
+      "artifacts_scanned": 137,
       "citations_refused_by_the_marker_rule": [
         {
           "engaged_today": [
@@ -116,18 +116,17 @@
         }
       ],
       "corpus": "charness-artifacts/quality",
-      "field_mentions_carrying_a_value_marker": 223,
-      "field_mentions_clearing_todays_floor": 261,
-      "field_mentions_presence_only": 269,
+      "field_mentions_carrying_a_value_marker": 217,
+      "field_mentions_clearing_todays_floor": 255,
+      "field_mentions_presence_only": 263,
       "field_mentions_without_a_marker": 38,
       "marker_kinds": {
-        "assign": 105,
+        "assign": 99,
         "backtick": 187,
         "colon": 36
       },
       "pre_contract_citations_skipped": [],
       "recursive": true,
-      "refused_citation_count": 5,
       "rows": [
         {
           "engaged_today": [
@@ -1219,30 +1218,9 @@
           "lost_to_the_marker_rule": [],
           "path": "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
           "required": 2
-        },
-        {
-          "engaged_today": [
-            "checked_skill_count",
-            "finding_status",
-            "heuristic_finding_count",
-            "host_surface_reference_count",
-            "prose_review_status",
-            "scope_status"
-          ],
-          "engaged_with_a_marker": [
-            "checked_skill_count",
-            "finding_status",
-            "heuristic_finding_count",
-            "host_surface_reference_count",
-            "prose_review_status",
-            "scope_status"
-          ],
-          "inventory": "inventory_skill_ergonomics.py",
-          "lost_to_the_marker_rule": [],
-          "path": "charness-artifacts/quality/latest.md",
-          "required": 2
         }
-      ]
+      ],
+      "refused_citation_count": 5
     },
     "repo_head_at_run": "2ac38decc6cdaa6721dc93167fddc410367acd4f",
     "synchronized_after": "Added the #508 quality record and refreshed the quality pointer; regenerated both marker variants from the repository-owned measurement script.",
@@ -1251,12 +1229,12 @@
     "why": "docs/deferred-decisions.md D47 recorded '51 of 169 mentions unmarked' and 'refuses 5 checked-in reviews' as HAND measurements. This is the executed replacement. The original 169 was NOT hand-derived -- the sibling floor measurement produced it -- which is why the 2026-08-01 run reported a presence-only total that reproduced it exactly. The current synchronized corpus measurement is 196.",
     "worktree": "dirty: #508 quality record is being synchronized after the post-commit standing gate exposed corpus drift"
   },
-  "artifacts_citing_a_declared_inventory": 33,
+  "artifacts_citing_a_declared_inventory": 32,
   "artifacts_refused_by_the_marker_rule": [
     "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
     "charness-artifacts/quality/2026-07-13-quality-review.md"
   ],
-  "artifacts_scanned": 118,
+  "artifacts_scanned": 119,
   "citations_refused_by_the_marker_rule": [
     {
       "engaged_today": [
@@ -1308,12 +1286,12 @@
     }
   ],
   "corpus": "charness-artifacts/quality",
-  "field_mentions_carrying_a_value_marker": 159,
-  "field_mentions_clearing_todays_floor": 188,
-  "field_mentions_presence_only": 196,
+  "field_mentions_carrying_a_value_marker": 153,
+  "field_mentions_clearing_todays_floor": 182,
+  "field_mentions_presence_only": 190,
   "field_mentions_without_a_marker": 29,
   "marker_kinds": {
-    "assign": 93,
+    "assign": 87,
     "backtick": 129,
     "colon": 31
   },
@@ -2010,28 +1988,6 @@
       "inventory": "inventory_skill_ergonomics.py",
       "lost_to_the_marker_rule": [],
       "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
-      "required": 2
-    },
-    {
-      "engaged_today": [
-        "checked_skill_count",
-        "finding_status",
-        "heuristic_finding_count",
-        "host_surface_reference_count",
-        "prose_review_status",
-        "scope_status"
-      ],
-      "engaged_with_a_marker": [
-        "checked_skill_count",
-        "finding_status",
-        "heuristic_finding_count",
-        "host_surface_reference_count",
-        "prose_review_status",
-        "scope_status"
-      ],
-      "inventory": "inventory_skill_ergonomics.py",
-      "lost_to_the_marker_rule": [],
-      "path": "charness-artifacts/quality/latest.md",
       "required": 2
     }
   ]

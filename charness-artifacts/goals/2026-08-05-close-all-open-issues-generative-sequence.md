@@ -11,8 +11,8 @@ Activation time: 2026-08-05T04:54:43Z
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
 - Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b. #508 remains OPEN as a locally verified local-only-by-contract disposition; #509 is locally implemented and carrier-validated, also remains OPEN under the same publish boundary.
-- Current slice intent: preserve #508's explicit local/remote boundary, record the user's local-proof re-rank authorization, and complete #509's local causal-review/design/verification record without claiming either issue CLOSED.
-- Next action: keep #508 and #509 OPEN with their issue-specific carriers, critiques, and local behavior verdicts; defer the one final push, remote CI, and GitHub closeout readbacks until the final publish boundary. Do not start #510 without a new recorded re-rank.
+- Current slice intent: preserve #508/#509 local/remote boundaries and repair the quality runner's contended runtime measurement without claiming either issue CLOSED.
+- Next action: bind the final local quality/critique/retro/handoff records, run the locked closeout and pre-push gate, then perform exactly one final push. Read remote CI and issue state independently afterward; do not start #510 without a new recorded re-rank.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -340,6 +340,43 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - GitHub readback: not run; #509 remains OPEN. No remote CI, provider roundtrip, live-network, installed-host, Cautilus, or `verify-closeout --expect-state CLOSED` claim is made.
 - Generative benefit: #508's classifier/persistence seam and mutation evidence supplied the adjacent gather fixture and exposed the need to include the classifier's trace-quality tests in the focused mutation producer; #509 now lowers #510's persistence failure risk without inheriting its route-negotiation closeout.
 - Next: keep #508 and #509 OPEN/local-only-by-contract, preserve the single final push boundary, and do not begin #510 without a new re-rank authorization.
+
+### Slice 12: runtime-budget phase isolation and final local quality proof
+
+- Objective: make the declaration runtime budget measure its own validator rather
+  than first-phase CPU contention, then prepare the single final publish boundary
+  and next-session goal without claiming remote or CLOSED state.
+- Reshape decision: `local-plan only` — the runner owns phase scheduling, so the
+  declaration gate now runs after the first phase drains and flushes before later
+  gates. No validator semantics, budget floor, or broad scheduler was changed.
+- What changed: synchronized `scripts/run-quality.sh` with
+  `plugins/charness/scripts/run-quality.sh`; added behavioral proof for first
+  drain, immediate post-gate flush, runtime-record order, and failure receipt;
+  refreshed the D47 inventory probes and docs after the new quality record changed
+  the measured corpus; persisted a goal-bound retro, quality record, handoff, and
+  inert next-session draft goal.
+- Critique: `charness-artifacts/critique/2026-08-06-critique-review.md`; two
+  unnamed bounded reviewer rounds returned findings with clean boundary
+  fingerprints. The repaired packet now binds the current runner/test identity.
+- Targeted proof: focused runner/aggregate suite 54 passed; D47/spec-evidence
+  regression suite 78 passed; ten sequential isolated declaration runs passed in
+  7.1–7.7s; no budget change was made.
+- Broad local proof: `./scripts/run-quality.sh --read-only` passed 85/85 in
+  59.5s, including runtime budget, critique, retro, artifact, packaging, and
+  changed-line mutation checks.
+- Verification-locked closeout completed its deterministic checks, broad pytest
+  (41.0s), and changed-line mutation consumer. The prior Python path lacking a
+  current reviewer snapshot was checked with parity against `origin/main` and
+  returned zero repairs and no uncomparable files.
+- Non-claims: #508 and #509 remain OPEN/local-only-by-contract; no push, remote
+  CI, installed-host/provider behavior, issue CLOSED readback, release tag, or
+  Cautilus evaluation is claimed yet.
+- Generative benefit: the isolated runtime sample removes the previous false
+  signal from the final publish gate and leaves controlled A/B measurement plus
+  mutation producer selection as the next session's explicit improvement.
+- Next: run locked closeout, commit once, pass the exact pre-push gate, push once,
+  and independently read CI/#508/#509; then activate the prepared draft goal if
+  the next sequence still matches the live backlog.
 
 ## Activation Record
 

@@ -1,1 +1,1 @@
-2026-08-05-issue-508-gather-classifier.md
+2026-08-06-runtime-phase-isolation.md

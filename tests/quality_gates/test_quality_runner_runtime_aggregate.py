@@ -4,7 +4,12 @@ import json
 import sys
 from pathlib import Path
 
-from .support import clone_quality_runner_repo, run_shell_script, write_executable
+from .support import (
+    assert_quality_receipt,
+    clone_quality_runner_repo,
+    run_shell_script,
+    write_executable,
+)
 
 
 def _capture_run_quality_runtime_records(repo: Path) -> Path:
@@ -108,6 +113,131 @@ def _capture_run_quality_runtime_records(repo: Path) -> Path:
 
 def _read_runtime_records(log_path: Path) -> list[dict[str, object]]:
     return [json.loads(line) for line in log_path.read_text(encoding="utf-8").splitlines()]
+
+
+def _install_inventory_declaration_phase_probe(repo: Path) -> Path:
+    """Make the two labels observable so phase isolation is tested behaviorally."""
+    events = repo / "phase-events.jsonl"
+    event_literal = repr(str(events))
+    write_executable(
+        repo / "scripts" / "validate_skills.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import time",
+                "from pathlib import Path",
+                f"events = Path({event_literal})",
+                "with events.open('a', encoding='utf-8') as handle:",
+                "    handle.write('first-start\\n')",
+                "time.sleep(0.15)",
+                "with events.open('a', encoding='utf-8') as handle:",
+                "    handle.write('first-end\\n')",
+                "",
+            ]
+        ),
+    )
+    write_executable(
+        repo / "scripts" / "validate_inventory_consumption_declaration.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import os",
+                "import sys",
+                "from pathlib import Path",
+                f"events = Path({event_literal})",
+                "with events.open('a', encoding='utf-8') as handle:",
+                "    handle.write('declaration-start\\n')",
+                "seen = events.read_text(encoding='utf-8').splitlines()",
+                "if 'first-end' not in seen:",
+                "    print('declaration gate started before the first phase drained')",
+                "    raise SystemExit(41)",
+                "if os.environ.get('QUALITY_FAIL_LABEL') == 'validate-inventory-consumption-declaration':",
+                "    print('quality failure output from validate-inventory-consumption-declaration')",
+                "    raise SystemExit(1)",
+                "with events.open('a', encoding='utf-8') as handle:",
+                "    handle.write('declaration-end\\n')",
+                "",
+            ]
+        ),
+    )
+    write_executable(
+        repo / "skills" / "public" / "quality" / "scripts" / "check_dup_ratchet.py",
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "from pathlib import Path",
+                f"events = Path({event_literal})",
+                "seen = events.read_text(encoding='utf-8').splitlines()",
+                "if 'declaration-end' not in seen:",
+                "    print('next phase started before the isolated declaration gate drained')",
+                "    raise SystemExit(42)",
+                "with events.open('a', encoding='utf-8') as handle:",
+                "    handle.write('next-start\\n')",
+                "",
+            ]
+        ),
+    )
+    return events
+
+
+def test_inventory_declaration_gate_runs_after_first_phase_drains(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    events = _install_inventory_declaration_phase_probe(repo)
+    runtime_log = _capture_run_quality_runtime_records(repo)
+    env["CHARNESS_QUALITY_LABELS"] = (
+        "validate-skills,validate-inventory-consumption-declaration,dup-ratchet"
+    )
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+
+    assert result.returncode == 0, result.stderr
+    assert events.read_text(encoding="utf-8").splitlines() == [
+        "first-start",
+        "first-end",
+        "declaration-start",
+        "declaration-end",
+        "next-start",
+    ]
+    assert [record["label"] for record in _read_runtime_records(runtime_log)] == [
+        "validate-skills",
+        "validate-inventory-consumption-declaration",
+        "dup-ratchet",
+    ]
+    runner = (repo / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    declaration_queue = runner.index(
+        'queue_selected "validate-inventory-consumption-declaration"'
+    )
+    first_flush = runner.rfind("flush_phase || OVERALL_RC=$?", 0, declaration_queue)
+    second_flush = runner.index("flush_phase || OVERALL_RC=$?", declaration_queue)
+    next_gate = runner.index('queue_selected "dup-ratchet"', declaration_queue)
+    assert first_flush >= 0
+    assert declaration_queue < second_flush < next_gate
+
+
+def test_inventory_declaration_failure_remains_a_quality_failure(
+    tmp_path: Path, seeded_quality_runner_repo: Path
+) -> None:
+    repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
+    _install_inventory_declaration_phase_probe(repo)
+    receipt_path = repo / "receipt.json"
+    env["CHARNESS_QUALITY_LABELS"] = "validate-skills,validate-inventory-consumption-declaration"
+    env["QUALITY_FAIL_LABEL"] = "validate-inventory-consumption-declaration"
+    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
+
+    result = run_shell_script(repo / "scripts" / "run-quality.sh", "--read-only", cwd=repo, env=env)
+
+    assert result.returncode == 1
+    assert "FAIL validate-inventory-consumption-declaration" in result.stdout
+    assert_quality_receipt(
+        repo,
+        result,
+        status="fail",
+        passed=1,
+        failed=1,
+        adverse_subjects=["validate-inventory-consumption-declaration"],
+    )
 
 
 def test_run_quality_records_full_aggregate_runtime_status(
