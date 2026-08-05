@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95d and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
-- Current slice intent: record the verified #496 hollow-refill lifecycle boundary and its typed deferred-work disposition; the next slice is #491's live semantic-reference read and reviewer-owned decision.
-- Next action: re-read live #491 with comments and bind its semantic-reference JTBD to the current goal before remedy design.
+- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
+- Current slice intent: record the verified #491 semantic-reference decision and its reviewer-owned boundary; the next slice is #508's live gather-classifier read.
+- Next action: re-read live #508 with comments and bind its gather-classifier JTBD to the current goal before remedy design.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -90,8 +90,8 @@ Activation time: 2026-08-05T04:54:43Z
 | 5 | #511 | nose inventory의 scanned/missing/error/inapplicable contract | adapter/root 설정이 안정된 뒤 false clean zero를 없애고 quality advisory를 실제로 읽을 수 있게 한다. | `src`/`scripts`/`worker` fixture, absent-root payload, consumer interpretation, advisory non-blocking proof | CLOSED; adapter readback verified |
 | 6 | #504 | retro persistence의 owning goal binding | 이 긴 goal의 closeout memory가 다른 goal에 붙는 churn을 막고, 뒤 slice의 evidence ownership을 고정한다. | goal-aware write/readback, session-mode preservation, distinct critique, GitHub close proof | CLOSED; adapter readback verified |
 | 7 | #496 | hollow refill report의 inert-default policy/semantics | 독립적인 mutation report 판단을 공통 schema나 runtime 정책으로 오염시키지 않고, 기존 local evidence를 현재 HEAD에서 정리한다. | positive/negative/axis-control matrix, plugin parity, issue-specific disposition | CLOSED; adapter readback verified |
-| 8 | #491 | semantic reference drift를 reviewer-owned decision으로 reshape | portability sweep 전에 “gate인가 reviewer question인가”를 결정해 의미론을 noisy static gate로 만들지 않는다. | three claim-family reads, copy-paste behavior check, bounded reviewer verdict | planned |
-| 9 | #508 | gather classifier의 token-aware login-wall 판정 | gather route의 첫 판정을 바로잡아 정상 Markdown이 blocked로 분류되지 않게 한다. | `design intent` controls, real login fixture, classifier/route trace, fresh-eye review | planned |
+| 8 | #491 | semantic reference drift를 reviewer-owned decision으로 reshape | portability sweep 전에 “gate인가 reviewer question인가”를 결정해 의미론을 noisy static gate로 만들지 않는다. | three claim-family reads, copy-paste behavior check, bounded reviewer verdict | CLOSED; adapter readback verified |
+| 9 | #508 | gather classifier의 token-aware login-wall 판정 | gather route의 첫 판정을 바로잡아 정상 Markdown이 blocked로 분류되지 않게 한다. | `design intent` controls, real login fixture, classifier/route trace, fresh-eye review | planned; next |
 | 10 | #509 | auto-derived URL slug의 normalization/persistence | 정상적으로 얻은 representation이 dated-record writer에서 다시 실패하지 않게 persistence branch를 안정화한다. | uppercase/percent-encoded URL fixtures, digest retention, disposable execute/readback | planned |
 | 11 | #510 | content-negotiated Markdown acquisition route | classifier와 persistence branch가 안전해진 뒤 public URL에 Markdown representation을 먼저 요청한다. | Accept negotiation, route/representation trace, joined end-to-end record readback, fresh-eye review | planned |
 | 12 | #480 | `<authoring-repo>/` resolver를 docs/artifacts까지 확장 | portability reader가 실제 authoring tree를 읽게 해 다음 shared/package sweep의 ruler를 만든다. | authoring docs/artifacts positive/negative cases, source/plugin matrix | planned |
@@ -136,7 +136,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 - Routing: `retro` — goal closeout의 waste, decision, transferable improvement를 owning goal에 binding한다.
 - Gather: n/a — shaping에는 새 public source URL을 사용하지 않았고, GitHub issue source of truth는 `issue` adapter가 읽었다.
 - Release: n/a — 이 draft는 version/install-manifest/release publish를 하지 않는다.
-- Issue closeout: planned for #480, #482, #483, #484, #491, #505, #508, #509, and #510; #468, #496, #502, #503, #504, #506, #507, and #511 are independently closed, and every issue requires its own carrier, `validate-closeout-draft`, delegated critique, distinct `Behavior #N:` verdict or typed disposition, and `verify-closeout --expect-state CLOSED`.
+- Issue closeout: planned for #480, #482, #483, #484, #505, #508, #509, and #510; #468, #491, #496, #502, #503, #504, #506, #507, and #511 are independently closed, and every issue requires its own carrier, `validate-closeout-draft`, delegated critique, distinct `Behavior #N:` verdict or typed disposition, and `verify-closeout --expect-state CLOSED`.
 
 ## Discuss Before Activation
 
@@ -144,7 +144,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 
 ## Slice Log
 
-Execution has started after activation. #468, #503, #506, #502, #507, #511, #504, and #496 have independently verified carriers and GitHub CLOSED readbacks; the 9 remaining rows stay planned and are not substituted by this log.
+Execution has started after activation. #468, #503, #506, #502, #507, #511, #504, #496, and #491 have independently verified carriers and GitHub CLOSED readbacks; the 8 remaining rows stay planned and are not substituted by this log.
 
 Execution row schema: `issue` · live-read identity/time · selected/blocked/closed disposition · frozen SHA · reshape decision (`local-plan only` or authorized tracker edit) · carrier path+SHA · critique path · distinct behavior channel/verdict or typed disposition · GitHub adapter readback · non-claim · next unblock action. A blocked row must also name the open state, missing proof, owner/action, and explicit re-rank authorization before any later issue is started.
 
@@ -289,6 +289,22 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Generative benefit: confirmed #504's contribution — its owning-goal evidence boundary gave this closeout a durable owner for the hollow-refill packet and quality record. #496 now lowers #491's context cost by separating historical producer evidence from the current operator/lifecycle boundary; #491 is next and will confirm or falsify whether that narrower ownership keeps semantic-reference judgment reviewer-owned.
 - Metrics: 75 focused tests; local quality 86/0 after carrier and D47/probe synchronization; pre-push quality 85/0; remote Quality Core `31003204282` passed both jobs; GitHub issue #496 adapter readback is CLOSED.
 
+### Slice 9: #491 semantic-reference drift closed as a reviewer-owned decision
+
+- Objective: Preserve the three observed semantic-reference claim families, repair the shipped first-reader command and stale current-behavior references, and publish and verify #491 CLOSED without inventing a universal semantic meta-gate.
+- Live read and frozen target: #491 was read through the GitHub adapter with `comments_read: true` while OPEN and zero comments; the implementation target was frozen at `730c6e36a175025eb97437b52a81725088648025`. The three claim families were the lifecycle fence/refusal vocabulary, bootstrap status/report vocabulary, and the copy-paste `append_slice_log.py` invocation.
+- Reshape decision: `local-plan only` — preserve the issue's semantic-reference JTBD and evidence, repair the stale first-reader and current slug/lifecycle descriptions, and make the bounded semantic question reviewer-owned. No universal manifest, whole-corpus literal matcher, or semantic meta-gate was introduced.
+- Commits: `05726f15c1fc9effd2e06e72ca9429d57f26f1ee` — `Close #491 — keep semantic-reference review reviewer-owned`; pushed to `origin/main` before the issue closeout readback, with no gate bypass.
+- What changed/proof: The goal-artifact example now uses a quoted JSON heredoc and `--fields-file`; lifecycle and goal references describe slug coercion and total-loss rejection accurately; historical `refilled_subkeys` provenance is kept separate from the current bootstrap report; the reviewer packet now requires bounded candidate discovery, first-reader verification, and explicit not-applicable/insufficient-evidence dispositions.
+- Carrier: `charness-artifacts/issue/2026-08-05-issue-491-decision.md` (SHA256 `54f8319f92605e0f70a92b72da51eb1dfddbaa2c698c68cf739753c5ec0fab26`); `validate-closeout-draft` returned `draft_verified` for `decision-needed` direct-commit classification.
+- Targeted verification: 37 focused input-channel/reference tests passed; the D47 measurement/consumption suite passed 73 tests; source/plugin parity and critique-artifact validation passed; the initial carrier-inclusive broad read-only gate passed 84 checks with 0 failures; the final quality-record gate passed 85/0; verification-locked local closeout passed the broad instrumented suite and changed-line mutation consumer.
+- Critique: `charness-artifacts/critique/2026-08-05-issue-491-resolution-critique.md`; two unnamed bounded rounds ran with clean boundary fingerprints. Round two found the stale slug/coercion references and overbroad wording; parent repairs are recorded as accepted-unreviewed under the two-round cap.
+- Distinct behavior: `Behavior #491: first-reader-reference-channel` — an independent reader read the source/plugin goal-artifact blocks and direct helper help, confirmed the `--fields-file` invocation and absence of lossy prose flags, and separately read the current slug/coercion language. This is distinct from the focused tests that produced the repairs.
+- Remote boundary: independent readback of GitHub Quality Core run `31008443698` at https://github.com/corca-ai/charness/actions/runs/31008443698 reported `success` for both Core deterministic gates and changed-line mutation coverage against `05726f15c1fc9effd2e06e72ca9429d57f26f1ee`; `verify-closeout --expect-state CLOSED --commit-ref 05726f15c1fc9effd2e06e72ca9429d57f26f1ee` returned `status: verified` and read issue #491 CLOSED at https://github.com/corca-ai/charness/issues/491.
+- Alternatives rejected: Did not add a universal semantic gate, claim installed-host/provider/live-agent behavior, bypass pre-push, use `--no-verify`, or run Cautilus.
+- Generative benefit: confirmed #496's contribution — separating historical producer provenance from the current lifecycle boundary reduced the semantic-reference repair's context cost. #491 now lowers #508's future review cost by making first-reader verification and bounded non-applicability explicit without creating a noisy portability gate.
+- Metrics: 37 focused tests; D47 suite 73 passed; broad read-only 84/0; verification-locked broad instrumented suite 7152 passed with changed-line mutation consumer passing; remote Quality Core `31008443698` passed both jobs; GitHub issue #491 adapter readback is CLOSED.
+
 ## Activation Record
 
 Activation record status: recorded — 2026-08-05T04:54:43Z.
@@ -352,18 +368,18 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed eight slices: #468, #503, #506, #502, #507, #511, #504, and #496 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
+Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed nine slices: #468, #503, #506, #502, #507, #511, #504, #496, and #491 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
 
-Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, and `31003204282` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, and #496's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
-Retro: not run — the active goal still has 9 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: #468, #503, #506, #502, #507, #511, #504, and #496 verified; #491 is next; the remaining 9 issues stay planned and unclaimed.
+Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
+Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
+Disposition review: #468, #491, #502, #503, #504, #506, #507, #511, and #496 verified; #508 is next; the remaining 8 issues stay planned and unclaimed.
 
 ## User Verification Instructions
 
-1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, #511, #504, and #496 are verified closed, while the goal remains active for the 9 remaining issues.
-2. Before #491 remedy design, re-read its live issue/comments and bind the semantic-reference JTBD to the current goal.
+1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, #511, #504, #496, and #491 are verified closed, while the goal remains active for the 8 remaining issues.
+2. Before #508 remedy design, re-read its live issue/comments and bind the gather-classifier JTBD to the current goal.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
-4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact.
+4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact. Push is intentionally deferred until the final publish boundary unless a closeout floor makes an earlier remote carrier unavoidable.
 
 ## Auto-Retro
 

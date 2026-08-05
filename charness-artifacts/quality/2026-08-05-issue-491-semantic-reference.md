@@ -15,18 +15,21 @@ packages and 93 host-surface hits; those are advisory and outside this slice.
 Focused input-channel and achieve-reference proof passed 37 tests, and the D47
 measurement/consumption suite passed 73 tests. Source/plugin parity passed for
 both references and `upsert_goal.py`; `git diff --check` is clean. The broad
-read-only quality gate passed 84 checks with 0 failures; its changed-line
-mutation consumer remained `UNPROVEN` until verification-locked closeout. The
-prepared critique packet and resolution critique are present.
+read-only quality gate passed 85 checks with 0 failures; the verification-locked
+closeout passed the changed-line mutation consumer locally. Independent remote
+Quality Core run `31008443698` passed both Core deterministic gates and
+changed-line mutation coverage for carrier commit
+`05726f15c1fc9effd2e06e72ca9429d57f26f1ee`. The prepared critique packet and
+resolution critique are present.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json`;
   timing capture is missing for this docs-and-focused-tests slice. <!-- reproduction-source -->
 - runtime hot spots: not applicable; no standing gate or runtime policy changed.
-- coverage gate: broad read-only quality passed 84/0, but changed-line mutation
-  coverage is still unproven until the verification-locked closeout; remote CI
-  is not yet established for this uncommitted slice.
+- coverage gate: broad read-only quality passed 85/0; verification-locked local
+  and independent remote changed-line mutation coverage both passed for the
+  carrier commit.
 - evaluator depth: deterministic-gates-only; no Cautilus grant or live agent
   behavior claim is in scope.
 
@@ -48,7 +51,8 @@ prepared critique packet and resolution critique are present.
 
 ## Missing
 
-- No remote CI, installed-host readback, or GitHub issue state readback yet.
+- Installed-host readback, provider roundtrip, and live-agent behavior remain
+  unproven and outside this slice's contract.
 - No mechanical full-corpus reference manifest or literal semantic matcher;
   current evidence does not justify one.
 
@@ -86,16 +90,16 @@ prepared critique packet and resolution critique are present.
 - `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary`
 - python3 -m pytest -q tests/quality_gates/test_achieve_before_activation.py tests/quality_gates/test_append_slice_log_input_channel.py tests/quality_gates/test_upsert_goal_input_channel.py — 37 passed.
 - python3 -m pytest -q -n 0 tests/quality_gates/test_inventory_consumption.py tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py tests/test_inventory_marker_rule_measurement.py — 73 passed.
-- `./scripts/run-quality.sh --read-only` — 84 passed, 0 failed, 1 changed-line mutation consumer UNPROVEN.
+- `./scripts/run-quality.sh --read-only` — 85 passed, 0 failed after the quality-record closeout update; the earlier pre-closeout run was 84 passed, 0 failed with the changed-line mutation consumer UNPROVEN.
 - source/plugin `cmp -s` parity for repaired references and helper.
 - `git diff --check`.
 
 ## Recommended Next Quality Moves
 
-- active — capability_needed=issue-closeout; next_center=the #491 carrier and
-  distinct reader/reference verdict; transformation=carry the three-row claim
-  ledger into closeout; proof_boundary=issue readback plus focused behavior
-  channel; enforcement_posture=advisory.
+- active — capability_needed=issue-closeout; next_center=#508 live read and
+  gather-classifier decision; transformation=bind the login-wall JTBD to the
+  current goal; proof_boundary=issue adapter readback plus issue-specific
+  behavior channel; enforcement_posture=advisory.
 - passive until recurrence evidence exists — capability_needed=recurrence evidence; next_center=stable
   owner-to-reference mapping; transformation=measure false-fire cost before
   proposing a narrow matcher; proof_boundary=another real semantic escape;
