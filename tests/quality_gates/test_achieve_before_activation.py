@@ -4,10 +4,19 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 ACHIEVE = ROOT / "skills" / "public" / "achieve"
+PLUGIN_ACHIEVE = ROOT / "plugins" / "charness" / "skills" / "achieve"
 
 
 def _norm(path: Path) -> str:
     return " ".join(path.read_text(encoding="utf-8").split())
+
+
+def _append_slice_command(text: str) -> str:
+    start = text.index("# Append one slice report to the Slice Log.")
+    section = text[start:]
+    command_start = section.index('python3 "$SKILL_DIR/scripts/append_slice_log.py"')
+    command = section[command_start:]
+    return command.split("\n\n", 1)[0]
 
 
 # lifecycle.md was split by phase (lifecycle-before.md / lifecycle-during.md /
@@ -137,6 +146,32 @@ def test_long_goal_efficiency_contract_is_explicit() -> None:
     assert "Cached input alone is not a waste conclusion" in lifecycle
     assert "actual waste from this run" in lifecycle
     assert "Do not include routine publication/push prompts by default" in lifecycle
+
+
+def test_append_slice_reference_uses_the_file_channel_for_prose() -> None:
+    """#491: the first-reader example must not reintroduce shell-loss flags."""
+    source = (ACHIEVE / "references" / "goal-artifact.md").read_text(encoding="utf-8")
+    plugin = (PLUGIN_ACHIEVE / "references" / "goal-artifact.md").read_text(encoding="utf-8")
+
+    assert source == plugin
+    command = _append_slice_command(source)
+    assert "--fields-file /tmp/slice-fields.json" in command
+    for prose_flag in ("--name", "--objective", "--verification", "--test-pressure"):
+        assert prose_flag not in command
+
+
+def test_slug_references_describe_coercion_and_total_loss_rejection() -> None:
+    """#491: references must match resolve_supplied_slug's current boundary."""
+    source_goal = (ACHIEVE / "references" / "goal-artifact.md").read_text(encoding="utf-8")
+    plugin_goal = (PLUGIN_ACHIEVE / "references" / "goal-artifact.md").read_text(encoding="utf-8")
+    source_during = (ACHIEVE / "references" / "lifecycle-during.md").read_text(encoding="utf-8")
+    plugin_during = (PLUGIN_ACHIEVE / "references" / "lifecycle-during.md").read_text(encoding="utf-8")
+
+    for text in (source_goal, plugin_goal, source_during, plugin_during):
+        normalized = " ".join(text.split())
+        assert "slug is resolved with `slugify` and rejected" in normalized
+        assert "only when no usable characters survive" in normalized
+        assert "rejected unless it already" not in normalized
 
 
 def test_timebox_goal_contract_is_explicit() -> None:

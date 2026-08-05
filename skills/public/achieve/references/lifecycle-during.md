@@ -194,11 +194,12 @@ can catch it — by the time `argv` exists, there is nothing left to compare aga
 
 Only genuinely free prose needs the file. `upsert_goal.py`'s prose keys are `title`
 and `goal-body`; its `--slug`, `--date` and `--status` stay flags because each one
-REFUSES a damaged value instead of absorbing it — the status is a closed enum, the
-date is anchored, and a slug is rejected unless it already equals the kebab-case
-form that becomes the filename. Building `argv` as a list protects prose from the
-shell but not from these shape rules, so the helper applies them to the value
-whatever channel delivered it.
+has a shape rule — the status is a closed enum, the date is anchored, and a slug is
+resolved with `slugify` and rejected only when no usable characters survive. A
+usable slug may be coerced into the filename form rather than preserving the
+caller's spelling. Building `argv` as a list protects prose from the shell but not
+from these shape rules, so the helper applies them to the value whatever channel
+delivered it.
 
 Two safe channels, one unsafe one:
 

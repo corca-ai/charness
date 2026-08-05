@@ -1,0 +1,136 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-05T12:37:26Z",
+  "prepared_for": "#491 final reviewer-owned semantic-reference decision closeout",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- plugins/charness/shared/references/reviewer-packet-semantic-question.md\n- plugins/charness/skills/achieve/references/goal-artifact.md\n- plugins/charness/skills/achieve/references/lifecycle-during.md\n- plugins/charness/skills/achieve/scripts/upsert_goal.py\n- skills/public/achieve/references/goal-artifact.md\n- skills/public/achieve/references/lifecycle-during.md\n- skills/public/achieve/scripts/upsert_goal.py\n- skills/shared/references/reviewer-packet-semantic-question.md\n- tests/quality_gates/test_achieve_before_activation.py\n- charness-artifacts/critique/2026-08-05-issue-491-decision-packet.json\n- charness-artifacts/critique/2026-08-05-issue-491-decision-packet.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/upsert_goal.py, skills/shared/references/reviewer-packet-semantic-question.md\n  derived matches: plugins/charness/shared/references/reviewer-packet-semantic-question.md, plugins/charness/skills/achieve/references/goal-artifact.md, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/upsert_goal.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/shared/references/reviewer-packet-semantic-question.md, charness-artifacts/critique/2026-08-05-issue-491-decision-packet.md\n  derived matches: plugins/charness/shared/references/reviewer-packet-semantic-question.md, plugins/charness/skills/achieve/references/goal-artifact.md, plugins/charness/skills/achieve/references/lifecycle-during.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/shared/references/reviewer-packet-semantic-question.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/upsert_goal.py, skills/shared/references/reviewer-packet-semantic-question.md\n  derived matches: plugins/charness/shared/references/reviewer-packet-semantic-question.md, plugins/charness/skills/achieve/references/goal-artifact.md, plugins/charness/skills/achieve/references/lifecycle-during.md, plugins/charness/skills/achieve/scripts/upsert_goal.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/upsert_goal.py, skills/shared/references/reviewer-packet-semantic-question.md\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/achieve/references/goal-artifact.md, skills/public/achieve/references/lifecycle-during.md, skills/public/achieve/scripts/upsert_goal.py, skills/shared/references/reviewer-packet-semantic-question.md\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-issue-491-decision-packet.json, charness-artifacts/critique/2026-08-05-issue-491-decision-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_achieve_before_activation.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/achieve/scripts/upsert_goal.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "730c6e36a175025eb97437b52a81725088648025",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/critique-adapter.yaml",
+      "charness-artifacts/critique/2026-08-04-slice-b-semantic-question.md",
+      "charness-artifacts/critique/slice-b-semantic-question-application.md",
+      "charness-artifacts/gather/2026-08-04-goal-issue-sources.md",
+      "charness-artifacts/quality/2026-08-05-proof-claims.md",
+      "skills/public/achieve/references/goal-artifact.md",
+      "skills/public/achieve/references/lifecycle-before.md",
+      "skills/public/achieve/references/lifecycle-during.md",
+      "skills/public/achieve/scripts/append_slice_log.py",
+      "skills/public/achieve/scripts/upsert_goal.py",
+      "skills/public/quality/references/bootstrap-posture.md",
+      "skills/shared/references/reviewer-packet-semantic-question.md",
+      "tests/quality_gates/test_achieve_before_activation.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/critique-adapter.yaml",
+        "content_sha256": "6eb1277f58fa10628e43ac65ea0adddd788a3904cc98899b857af18e592840d8"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-04-slice-b-semantic-question.md",
+        "content_sha256": "3d203c65dc518dc27bb9f9a769fb9b945a4215805ac98853194f12cb00c6d7f1"
+      },
+      {
+        "path": "charness-artifacts/critique/slice-b-semantic-question-application.md",
+        "content_sha256": "7c89dd1e85c7d2d70050f010c143111202d9245ffe17dd34a517d740e6997c17"
+      },
+      {
+        "path": "charness-artifacts/gather/2026-08-04-goal-issue-sources.md",
+        "content_sha256": "dea31638b1161d7e0b40f142b4f33421f86ec45f47c5dba6e59eb5c1809ce78c"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+        "content_sha256": "2b3773259c7d5e341a0621e1eacc0bbe7f893440885ae48c3e5272a98d126021"
+      },
+      {
+        "path": "skills/public/achieve/references/goal-artifact.md",
+        "content_sha256": "93f8a418e3f3b1b134863d379cffa0a889a1a400d39dcd9bdb81e0949a72d1df"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-before.md",
+        "content_sha256": "61ebb8bddbba776c6b18ed44e86dbc6146bde502b8229bc9c04d8568897c5d0d"
+      },
+      {
+        "path": "skills/public/achieve/references/lifecycle-during.md",
+        "content_sha256": "366265cc4ae726101d279ea5b71d00627bf6cd5f2fdbf9c89f99e98256340204"
+      },
+      {
+        "path": "skills/public/achieve/scripts/append_slice_log.py",
+        "content_sha256": "fdf590b0ea92e3f57bf1322e8f97712be98a833fd243c5f3f390ff1a31971ccd"
+      },
+      {
+        "path": "skills/public/achieve/scripts/upsert_goal.py",
+        "content_sha256": "e9d0c5cce54063e894e0e4d28556123a061cae290e696e4211aaf8ae7bd738a6"
+      },
+      {
+        "path": "skills/public/quality/references/bootstrap-posture.md",
+        "content_sha256": "97e5262e0ac19cdab3748ee0088900bc6d9fedf7f967b2d87c4c8afc0a86c1b8"
+      },
+      {
+        "path": "skills/shared/references/reviewer-packet-semantic-question.md",
+        "content_sha256": "80a831997129c64ebef6114272a8880c34c5bfe7bc6fca6aa9e44f3494aa9fa3"
+      },
+      {
+        "path": "tests/quality_gates/test_achieve_before_activation.py",
+        "content_sha256": "6297f75fc202b1a8b4ee4d3fb9b688b857172a18f4ec079abf1f9be8654cddb5"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "96ab1aab683bde1da04955590567f36eb408f60b968f0e6d981b97627c1a98f2",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "be309552caab5fb59d1d316b76ceb2cf4fa4a2fcbb7844cba2b4df6d9d6d9860"
+  }
+}

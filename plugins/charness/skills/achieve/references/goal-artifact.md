@@ -143,11 +143,11 @@ as a list with no shell, or use `--fields-file <json>`, which both
 for the FIELD NAMES and stay valid for short identifier-free values.
 
 `upsert_goal.py`'s prose fields are `title` and `goal-body`. `--slug`, `--date`
-and `--status` stay flags because each refuses a damaged value rather than
-absorbing it: the status is a closed enum, the date is anchored, and the slug is
-rejected unless it is already the kebab-case form that becomes the filename
-(`slugify` would otherwise silently coerce it into a DIFFERENT valid filename).
-See `SKILL.md` and `lifecycle-during.md`.
+and `--status` stay flags because each has a shape rule: the status is a closed
+enum, the date is anchored, and the slug is resolved with `slugify` and rejected
+only when no usable characters survive. A usable slug may be coerced into the
+filename form rather than preserving the caller's spelling. See `SKILL.md` and
+`lifecycle-during.md`.
 
 ```bash
 # Scaffold a new goal (status draft), or update only the status of an existing one.
@@ -163,10 +163,17 @@ python3 "$SKILL_DIR/scripts/upsert_goal.py" --repo-root . \
 # Append one slice report to the Slice Log.
 # Use --test-pressure when the slice adds or expands tests, to carry a cheap
 # duplicate-pressure sample forward instead of rediscovering the debt at closeout.
+cat > /tmp/slice-fields.json <<'JSON'
+{
+  "name": "Inventory local risk",
+  "objective": "Map the full unpushed surface",
+  "verification": "git diff --stat origin/main..HEAD",
+  "test-pressure": "adjacent duplicates 23.2% vs 22% gate; +2 runtime tests this slice"
+}
+JSON
 python3 "$SKILL_DIR/scripts/append_slice_log.py" --repo-root . \
-  --slug acme-184-push-confidence --date 2026-05-26 --name "Inventory local risk" \
-  --objective "Map the full unpushed surface" --verification "git diff --stat origin/main..HEAD" \
-  --test-pressure "adjacent duplicates 23.2% vs 22% gate; +2 runtime tests this slice"
+  --slug acme-184-push-confidence --date 2026-05-26 \
+  --fields-file /tmp/slice-fields.json
 
 # Flip status as the run progresses (draft -> active -> blocked/complete).
 # No title needed: an existing artifact's heading and body are never rewritten.

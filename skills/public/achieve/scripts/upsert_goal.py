@@ -28,11 +28,10 @@ def _load_fields_file(path: Path) -> dict[str, str]:
 
     The field set is deliberately NOT `append_slice_log.py`'s. Only `title` and
     `goal-body` are free prose. `--status` is a closed enum and `--date` an ISO date,
-    both of which refuse loudly when a shell damages them; `--slug` is coerced by
-    `goal_artifact_lib.slugify` rather than validated, so this helper refuses a slug
-    that would not survive that coercion unchanged (see `_resolve_slug`) instead of
-    writing a different filename than the caller asked for. Mirroring the other
-    helper's whole surface for symmetry would add flags with nothing to fix.
+    both of which refuse loudly when a shell damages them; `--slug` is resolved
+    through `goal_artifact_lib.slugify` and refuses only total loss to the fallback
+    (see `_resolve_slug`). Mirroring the other helper's whole surface for symmetry
+    would add flags with nothing to fix.
     """
     return goal_cli.load_fields_file(path, known=set(_PROSE_FIELDS))
 

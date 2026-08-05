@@ -34,6 +34,14 @@ change and compare it with the counterexample:
   repair a control that cannot distinguish the changed outcome.
 - If the comparison cannot be made, record `unproven — defer`; do not approve it
   as though a clean-tree result were proof.
+- For a behavior-changing helper or command, first record the bounded candidate
+  search and scope. When that change has a reader-facing or copy-paste reference
+  in scope, identify the first reader and verify that its demonstrated invocation
+  preserves the claimed behavior. Disposition each discovered reference as
+  updated, not applicable, or insufficient evidence with a reason. If no such
+  reference is in scope, record `not applicable` with the search scope; if the
+  reader cannot be checked, record `insufficient evidence` or `unproven — defer`
+  rather than treating the helper's own tests as proof of reference safety.
 
 These are reviewer dispositions, not an automated semantic gate.
 
