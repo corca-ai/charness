@@ -55,8 +55,8 @@ and `git diff --check` passed. No Cautilus evaluation was run.
 
 ## Advisory
 
-- structural review result (artifact: `charness-artifacts/critique/2026-08-05-issue-508-resolution-critique.md`): existing focused tests, standing quality, and the two-round proof-surface critique are sufficient; no new universal classifier gate is justified by this one recurrence.
-- prose review result (command: `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary`): support/gather trigger boundaries and progressive disclosure were unchanged; the ergonomics inventory's host-surface hits are ambient portability prompts, not this target's defect.
+- structural review result: artifact=`charness-artifacts/critique/2026-08-05-issue-508-resolution-critique.md`; existing focused tests, standing quality, and the two-round proof-surface critique are sufficient; no new universal classifier gate is justified by this one recurrence.
+- prose review result: scope_status=scanned; finding_status=heuristics_present; prose_review_status=required; checked_skill_count=22; heuristic_finding_count=16; host_surface_reference_count=93; support/gather trigger boundaries and progressive disclosure were unchanged, and the ergonomics inventory's host-surface hits are ambient portability prompts rather than this target's defect (command: `python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root . --summary`).
 - dup-ratchet result (command: `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary`): reported `status: clean`,
   `new_code_family_count: 0`, and no hard or boy-scout block.
 
