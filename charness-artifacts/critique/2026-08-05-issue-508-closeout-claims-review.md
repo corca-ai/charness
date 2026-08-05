@@ -89,7 +89,8 @@ boundary fingerprints were clean for all review windows.
 PASS — #508's local claims are current and internally consistent. The
 implementation carrier is `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the
 quality/probe carrier and local proof head are
-`2f3fe3984b14f91487762dbe37e7edf91b722aba`; current local HEAD is
-`561eeb8a8dba792eb9ef996100c4066efae7b152`; and the records explicitly do not
-claim remote CI, push, live/provider acquisition, installed-host behavior,
-Cautilus, distinct external behavior, or GitHub `CLOSED` readback.
+`2f3fe3984b14f91487762dbe37e7edf91b722aba`. Subsequent commits only carry
+quality/claims/disposition records; no source mutation-pool content changed
+after the proof head. The records explicitly do not claim remote CI, push,
+live/provider acquisition, installed-host behavior, Cautilus, distinct external
+behavior, or GitHub `CLOSED` readback.
