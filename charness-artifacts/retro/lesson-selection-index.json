@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 441,
-  "candidate_count": 1821,
+  "source_artifact_count": 443,
+  "candidate_count": 1830,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1424,6 +1424,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:b6300cc48f5f",
+      "kind": "current_focus",
+      "lesson": "This retro covers the proof-boundary work represented by the 26 commits from `556dfee6` through `9b3f9ec8` on the local branch.",
+      "normalized_key": "this retro covers the proof boundary work represented by the 26 commits from 556dfee6",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the proof-boundary work represented by the 26 commits from `556dfee6` through `9b3f9ec8` on the local branch."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:580038510dfc",
       "kind": "current_focus",
       "lesson": "This retro reviews the completed implementation slice that moved focused changed-line mutation coverage onto the canonical standing pytest runner.",
@@ -1472,6 +1498,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retro reviews the five-track local proof goal after #502 implementation, #496 re-verification, #491/#504/#506 independent dispositions, and the final quality/mutation bundle."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5418ff0d2751",
+      "kind": "next_improvement",
+      "lesson": "add a small `resolve-pickup-target` helper or equivalent handoff-generation check; it should prevent activation text from pointing at a completed goal and should not become a new completion gate.",
+      "normalized_key": "add a small resolve pickup target helper or equivalent handoff generation check it should",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add a small `resolve-pickup-target` helper or equivalent handoff-generation check; it should prevent activation text from pointing at a completed goal and should not become a new completion gate."
         }
       ]
     },
@@ -1606,6 +1658,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:12d4f03fae36",
+      "kind": "next_improvement",
+      "lesson": "do not create a third goal artifact. Reuse the existing #502 draft only after explicitly reshaping it to standalone implementation/revalidation scope, or create one successor artifact whose scope says the local implementation is historical and remote/issue proof is still pending.",
+      "normalized_key": "do not create a third goal artifact reuse the existing 502 draft only after",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "do not create a third goal artifact. Reuse the existing #502 draft only after explicitly reshaping it to standalone implementation/revalidation scope, or create one successor artifact whose scope says the local implementation is historical and remote/issue proof is still pending."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:1aa76782c9fa",
       "kind": "next_improvement",
       "lesson": "gate-baseline: `issue #505 (recurs: gate-baseline-runtime and over-slice closeout cost); retain current proof floors while that separate track owns runtime design`.",
@@ -1658,6 +1736,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:c90f6a27b263",
+      "kind": "next_improvement",
+      "lesson": "issue routing: keep #508–#510 as a separate gather bug family, #507 as an adapter-bootstrap bug, #503/#505 as runtime debt, and #480/#482/#483/#484 as portability/reachability work. Do not mix them into the next proof closeout.",
+      "normalized_key": "issue routing keep 508 510 as a separate gather bug family 507 as an",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue routing: keep #508–#510 as a separate gather bug family, #507 as an adapter-bootstrap bug, #503/#505 as runtime debt, and #480/#482/#483/#484 as portability/reachability work. Do not mix them into the next proof closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ab3ce82c245d",
+      "kind": "next_improvement",
+      "lesson": "make the first slice a read-only identity/carrier triage. It must re-read the live issue, resolve the selected goal's status, map the current implementation and proof to one exact revision, and classify each issue as fix now, closeout-only, deferred, or needs operator decision before code work.",
+      "normalized_key": "make the first slice a read only identity carrier triage it must re read",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make the first slice a read-only identity/carrier triage. It must re-read the live issue, resolve the selected goal's status, map the current implementation and proof to one exact revision, and classify each issue as fix now, closeout-only, deferred, or needs operator decision before code work."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:577a6effac00",
+      "kind": "repeat_trap",
+      "lesson": "**Activation-target drift (strong, avoidable):** the session spent a cascade of commits binding, rebinding, reopening, and correcting proof and goal records before the handoff/goal status contradiction was made explicit. The new pre-activation binding behavior caught the contradiction before external damage, but the source-of-truth check came too late. This repeats the prior retro's stale-record lesson rather than eliminating its cause.",
+      "normalized_key": "activation target drift strong avoidable the session spent a cascade of commits binding rebinding",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Activation-target drift (strong, avoidable):** the session spent a cascade of commits binding, rebinding, reopening, and correcting proof and goal records before the handoff/goal status contradiction was made explicit. The new pre-activation binding behavior caught the contradiction before external damage, but the source-of-truth check came too late. This repeats the prior retro's stale-record lesson rather than eliminating its cause."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:58e8dbd1a6ea",
       "kind": "repeat_trap",
       "lesson": "Closeout orchestration (moderate): two claims-review attempts had to be repeated because the boundary and delivery evidence was not persisted before citation. The next closeout should create those records immediately after each returned review and before updating the goal.",
@@ -1706,6 +1862,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Gate-baseline runtime (measured, necessary for this proof but still debt): the full direct coverage producer took 837.60s for 7,108 tests, followed by context-JSON serialization. The configured quality gate itself passed in 124.6s, but recurring local telemetry independently records over-budget pytest/closeout families. This cost is routed to existing issue #505, not absorbed as a reason to weaken proof."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:724920b23110",
+      "kind": "repeat_trap",
+      "lesson": "**Gate-baseline runtime (measured structural debt, not a reason to weaken proof):** the recurring 447.03s pytest median and 48 over-slice records belong to the separate #503/#505 runtime tracks. Treating this as necessary safety cost would hide a real quality debt; shrinking the proof floor would be the wrong repair.",
+      "normalized_key": "gate baseline runtime measured structural debt not a reason to weaken proof the recurring",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Gate-baseline runtime (measured structural debt, not a reason to weaken proof):** the recurring 447.03s pytest median and 48 over-slice records belong to the separate #503/#505 runtime tracks. Treating this as necessary safety cost would hide a real quality debt; shrinking the proof floor would be the wrong repair."
         }
       ]
     },
@@ -1788,6 +1970,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:0faecfd73b8e",
+      "kind": "repeat_trap",
+      "lesson": "The second fresh-eye round, mutation coverage, source/plugin parity, and separate issue-boundary records were **not waste**. They are the required different-observer/different-channel work at proof and irreversible boundaries. No evidence supports calling that safety work redundant.",
+      "normalized_key": "the second fresh eye round mutation coverage source plugin parity and separate issue boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The second fresh-eye round, mutation coverage, source/plugin parity, and separate issue-boundary records were **not waste**. They are the required different-observer/different-channel work at proof and irreversible boundaries. No evidence supports calling that safety work redundant."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:4bfe12a801f2",
       "kind": "repeat_trap",
       "lesson": "The telemetry recurrence is broader than this slice. Existing open #505 is the structural destination; no new issue is filed for the same runtime class.",
@@ -1810,6 +2018,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The telemetry recurrence is broader than this slice. Existing open #505 is the structural destination; no new issue is filed for the same runtime class."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8aa2206c31fa",
+      "kind": "repeat_trap",
+      "lesson": "**Triage lock came after umbrella shaping (moderate, avoidable):** the five issues share a planning vocabulary but not one first reader, owner, falsifier, or closure channel. A large coordination goal was shaped before the current issue inventory and completed-goal status were reconciled. The local outcome stayed honest, but the operator now has to choose between competing goal artifacts.",
+      "normalized_key": "triage lock came after umbrella shaping moderate avoidable the five issues share a planning",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+      "latest_source_date": "2026-08-05",
+      "age_days": 3,
+      "recency_weight": 0.9548,
+      "alpha": 0.12,
+      "selection_weight": 0.9548,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-05-session-retro.md",
+          "date": "2026-08-05",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Triage lock came after umbrella shaping (moderate, avoidable):** the five issues share a planning vocabulary but not one first reader, owner, falsifier, or closure channel. A large coordination goal was shaped before the current issue inventory and completed-goal status were reconciled. The local outcome stayed honest, but the operator now has to choose between competing goal artifacts."
         }
       ]
     },
