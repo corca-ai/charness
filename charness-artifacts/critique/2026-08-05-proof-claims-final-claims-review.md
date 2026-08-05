@@ -86,7 +86,7 @@ reread is required against that fixed target.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — three unnamed one-shot Codex claims reviewers returned their
+parent-delegated — four unnamed one-shot Codex claims reviewers returned their
 findings in the parent context. The parent boundary snapshot windows were
 `cross-track-final-claims-20260805` and
 `cross-track-final-claims-repair-20260805`; the fixed-target round used
