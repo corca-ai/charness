@@ -93,8 +93,8 @@ STUB_PHRASE_RE = re.compile(
 #     `- Runtime hotspot ranking excludes samples older than 14 days` engages `ranking`
 #     and `excludes` on incidental prose. MEASURED, and re-derivable — run
 #     `scripts/measure_inventory_marker_rule.py` against
-#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 179 presence-only
-#     field mentions, 171 clear this floor, and 46 of those carry no value marker at all.
+#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 173 presence-only
+#     field mentions, 165 clear this floor, and 46 of those carry no value marker at all.
 #     Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse the sampled
 #     incidental cases — not all of them, since a marker can appear in prose too — costing
 #     5 refused citations across 4 checked-in artifacts. It is deferred as D47.

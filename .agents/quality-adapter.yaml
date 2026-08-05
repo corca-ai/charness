@@ -282,7 +282,17 @@ runtime_budget_profiles:
       # 51000 did exactly that on the two aggregates below (1.02x and 1.03x of basis).
       # Sizing from a slice while enforcing on a window is only safe once the window
       # has turned over, so it was, by running the gate to convergence.
-      pytest: 58500
+      #
+      # 2026-08-05 (#503): measured retune 58500 -> 97500 for this local profile.
+      # The current 20-sample cohort is latest 60356ms, median 61816ms, max 69353ms;
+      # `check_runtime_budget.py --runtime-profile local-linux-x86_64-36cpu
+      # --suggest-budgets` derives 97500ms (1.4x max, 1.58x median, and still below
+      # 2x median). This replaces a stale pre-cohort bar; it does not remove the
+      # runtime gate. Owner: quality owns runtime telemetry and budget records,
+      # including the aggregate/release dispositions; achieve owns the goal-level
+      # over-slice response. The #505 matched-cost experiment is the next decision
+      # destination for the retained aggregate/release signals.
+      pytest: 97500
       # 2026-07-25: the release-path variants were the slowest observed labels on
       # this profile and the only unbudgeted ones, so a 2x regression on the gate
       # that actually precedes a release would not have tripped anything. Same

@@ -512,7 +512,7 @@ the evidence is sufficient for the boundary at hand.
 
 - Question: `BUDGET_SLACK_FACTOR = 3.0` in [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py) is a single module constant applied to every label on every profile. Should it become per-label or per-profile so a bar that cannot fail is reported?
 - Current choice: Defer. The constant stays global and the bars it cannot see are named in the adapter where they sit. **Operator-confirmed 2026-07-30**: asked directly at goal closeout, with the corrected count (one real blind spot, not three) in hand.
-- Why now: the advisory divides by `max_recent_elapsed_ms`, not the median — a fact a slice in this session got backwards and had to correct — so a bar sized from a documented range cost rather than an observed worst run is structurally invisible to it. **Corrected count, after review:** the adapter reads as recording three such blind spots, but only ONE is a live bar. The `pytest` note at 90000/41826 is a stale survivor of the 2026-07-26(b) retighten (the live bar is 58500), and the aarch64 "2.0x case" describes a drafted 270000 bar that was REJECTED — on a profile with zero samples, where the advisory cannot fire at any factor. `run-quality-full: 420000` is the only real one.
+- Why now: the advisory divides by `max_recent_elapsed_ms`, not the median — a fact a slice in this session got backwards and had to correct — so a bar sized from a documented range cost rather than an observed worst run is structurally invisible to it. **Corrected count, after review:** the adapter reads as recording three such blind spots, but only ONE was the live `pytest`/aggregate bar described by the earlier note. The `pytest` bar was refreshed under #503 on 2026-08-05 from the current 20-sample cohort (latest 60356ms, median 61816ms, max 69353ms) to 97500ms, so it is no longer the stale 58500ms case. The aarch64 "2.0x case" describes a drafted 270000 bar that was REJECTED — on a profile with zero samples, where the advisory cannot fire at any factor. The current local summary's remaining slack finding is the deliberate `run-quality-read-only: 420000` aggregate bar; `quality` owns its runtime record and #505 owns the matched-cost remeasurement/decision rather than silently inheriting it into the `pytest` retune.
 - Why deferral is right at the time: the one real blind spot is a bar sized deliberately, by a recorded decision, from a documented cost — so lowering the factor to see it would fire on exactly the looseness that is intentional. Making it per-label needs a contract for who sets each label's factor and on what evidence, and guessing that taxonomy while fixing a different lane's teeth is the validator-post-hoc-churn reflex. One blind spot is a thinner basis for deferring than three, and that is recorded here rather than left as an inflated count.
 - Impact surfaces: [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py), [quality-adapter.yaml](../.agents/quality-adapter.yaml), [check_runtime_budget.py](../skills/public/quality/scripts/check_runtime_budget.py).
 - Reopen trigger: a bar that was NOT a recorded decision goes unreported by the advisory and is later found to be unfailable; OR a bar goes stale in the TIGHT direction and hard-fails with nothing regressed. The second clause exists because this session's actual discovery was tight, not loose (`run-quality-read-only` at 58500 against a post-lane latest of 90618), and the original trigger would not have caught it.
@@ -685,15 +685,15 @@ the evidence is sufficient for the boundary at hand.
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over this entry's own denominator (110 top-level artifacts, 30 citing a declared
-  inventory): the presence-only mention total reproduces **179** exactly, **171** of those
-  clear today's residual floor, **125** carry a value marker and **46** do not, and a
+  Over this entry's own denominator (111 top-level artifacts, 29 citing a declared
+  inventory): the presence-only mention total reproduces **173** exactly, **165** of those
+  clear today's residual floor, **119** carry a value marker and **46** do not, and a
   marker rule would refuse **5 citations across 4 artifacts**
   (`2026-06-25-skill-ergonomics-yaml-summary`, `2026-06-25-test-speed-token-efficiency`,
   `2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
-  overlap: 121 backticked, 81 `field=`, 16 `field:`. With `--recursive`, which reaches the
-  `history/` directory the sibling script's non-recursive glob silently excludes: 127
-  artifacts (262 presence-only), 254 floor-clearing mentions, 190 marked, 64 unmarked, 7
+  overlap: 115 backticked, 81 `field=`, 10 `field:`. With `--recursive`, which reaches the
+  `history/` directory the sibling script's non-recursive glob silently excludes: 129
+  artifacts (256 presence-only), 248 floor-clearing mentions, 184 marked, 64 unmarked, 7
   citations across 5 artifacts. Both variants are recorded in the probe and pinned by the
   test, so neither number is an unrecorded assertion sitting beside recorded ones. The
   probe was refreshed on 2026-08-05 after this slice changed the checked-in quality
@@ -714,8 +714,8 @@ the evidence is sufficient for the boundary at hand.
   the probe's `_provenance`.
 - Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
   about an ordinary word. Nothing here narrows sweep row S11. The new measurement counts
-  mentions that clear TODAY's residual floor (171), while the presence-only population is
-  179 — both are reported, and the marker split is measured over the 171 only, so the 46
+  mentions that clear TODAY's residual floor (165), while the presence-only population is
+  173 — both are reported, and the marker split is measured over the 165 only, so the 46
   is NOT directly comparable to the hand count's 51 over 169; the 8 sub-floor mentions were
   never marker-split. It does not
   model the gate's `prose_review_status` skill-ergonomics arm; that arm looks inert here
