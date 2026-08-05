@@ -17,6 +17,7 @@ from __future__ import annotations
 import json
 import shlex
 import subprocess
+from collections.abc import Sequence
 from pathlib import Path
 from typing import Callable
 
@@ -130,6 +131,7 @@ def produce_command_coverage(
     run_command: Callable[[Path, str, str], dict[str, object]],
     phase: str = "verify",
     extra_pytest_targets: list[str] | tuple[str, ...] = (),
+    include_paths: Sequence[str] | None = None,
 ) -> dict[str, object]:
     """Run a pytest command under plain coverage and stamp the freshness marker."""
     data_file, rcfile, env = _sampling.prepare_plain_coverage(repo_root, coverage_json)
@@ -144,8 +146,11 @@ def produce_command_coverage(
         result["mutation_coverage_extra_pytest_targets"] = list(extra_pytest_targets)
     result["produced_mutation_coverage"] = False
     if result.get("returncode") == 0:
+        combine_kwargs = {"show_contexts": False}
+        if include_paths:
+            combine_kwargs["include_paths"] = list(include_paths)
         _sampling.combine_and_export_coverage(
-            repo_root, rcfile, data_file, coverage_json, env, show_contexts=False
+            repo_root, rcfile, data_file, coverage_json, env, **combine_kwargs
         )
         fingerprint = _changed_files.write_coverage_fingerprint_marker(
             repo_root, coverage_json, base_sha

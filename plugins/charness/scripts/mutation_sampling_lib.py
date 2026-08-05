@@ -9,6 +9,7 @@ import re
 import shlex
 import subprocess
 import sys
+from collections.abc import Sequence
 from pathlib import Path
 
 from scripts.mutation_line_coverage_lib import (
@@ -146,6 +147,7 @@ def combine_and_export_coverage(
     env: dict[str, str],
     *,
     show_contexts: bool,
+    include_paths: Sequence[str] | None = None,
 ) -> None:
     # stdout=DEVNULL: coverage's "Combined N files" / "Wrote JSON report" info
     # lines would otherwise pollute a `run_slice_closeout.py --json` payload when
@@ -160,6 +162,12 @@ def combine_and_export_coverage(
         *(["--show-contexts"] if show_contexts else []),
         "--data-file", str(data_file), "-o", str(coverage_json),
     ]
+    paths = [path for path in include_paths or () if path]
+    if paths:
+        # coverage.py treats --include as a single-valued option. Repeating it
+        # silently keeps only the last path, which would make earlier mapped
+        # changed files look uncovered to the consumer.
+        json_command.extend(["--include", ",".join(paths)])
     subprocess.run(json_command, cwd=repo_root, check=True, env=env, stdout=subprocess.DEVNULL)
 
 

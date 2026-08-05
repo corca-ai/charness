@@ -361,6 +361,10 @@ def main(argv: list[str] | None = None) -> int:
             coverage_json=coverage_json,
             run_command=_run_command,
             phase="verify",
+            # The focused test run stays unchanged. The consumer only needs
+            # coverage for mapped changed files, so exporting the whole source
+            # tree is avoidable serialization work on this lane.
+            include_paths=mapped,
         )
     except subprocess.CalledProcessError as exc:
         # A producer that DIED proved nothing. Reporting 0 here would reinstate the

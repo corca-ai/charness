@@ -146,6 +146,38 @@ def test_focused_command_is_none_when_no_test_is_mapped(gate) -> None:
     assert gate._focused_pytest_command(_recommendation(mapped_tests_by_file={})) is None
 
 
+def test_focused_producer_exports_only_mapped_changed_files(gate, monkeypatch) -> None:
+    import subprocess
+
+    captured: dict = {}
+    monkeypatch.setattr(
+        gate._suggest,
+        "build_recommendation",
+        lambda *_a, **_k: _recommendation(
+            status="recommended",
+            changed_pool_files=["scripts/mapped.py"],
+            unmapped_changed_pool_files=[],
+        ),
+    )
+
+    def fake_produce(*_args, **kwargs):
+        captured.update(kwargs)
+        return {"returncode": 0}
+
+    monkeypatch.setattr(gate._producer, "produce_command_coverage", fake_produce)
+    monkeypatch.setattr(Path, "is_file", lambda _self: True)
+    monkeypatch.setattr(
+        gate.subprocess,
+        "run",
+        lambda *_a, **_k: subprocess.CompletedProcess(
+            [], 0, json.dumps({"ok": True, "blocking": []}), ""
+        ),
+    )
+
+    assert gate.main(["--repo-root", str(ROOT), "--base-sha", "b" * 40, "--json"]) == 0
+    assert captured["include_paths"] == ["scripts/mapped.py"]
+
+
 def test_run_command_surfaces_stdout_on_failure(gate, tmp_path, capsys) -> None:
     """pytest reports failures on STDOUT. Surfacing only stderr left the operator with
     `the producer failed (exit 1)` and no failing test name — and a gate whose failure

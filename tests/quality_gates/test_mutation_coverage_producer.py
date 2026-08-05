@@ -233,6 +233,65 @@ def test_produce_command_coverage_emits_json_and_marker(tmp_path: Path, monkeypa
     assert marker.read_text(encoding="utf-8").strip() == changed_pool_fingerprint(repo, base)
 
 
+def test_produce_command_coverage_can_export_only_requested_paths(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_coverage_producer as prod
+
+    repo, base = _seed_repo(tmp_path)
+    cov = repo / "reports" / "mutation" / "test-coverage.json"
+    captured: dict = {}
+
+    def fake_run(repo_root, command, phase):
+        return {"phase": phase, "command": command, "returncode": 0, "stdout": "", "stderr": ""}
+
+    def fake_combine(
+        repo_root, rcfile, data_file, coverage_json, env, *, show_contexts, include_paths=None
+    ):
+        captured["show_contexts"] = show_contexts
+        captured["include_paths"] = include_paths
+        Path(coverage_json).write_text('{"files": {}}', encoding="utf-8")
+
+    monkeypatch.setattr(prod._sampling, "combine_and_export_coverage", fake_combine)
+
+    prod.produce_command_coverage(
+        repo,
+        "python3 -m pytest -q tests/quality_gates/test_mutation_coverage_producer.py",
+        base_sha=base,
+        coverage_json=cov,
+        run_command=fake_run,
+        include_paths=["scripts/foo.py", "scripts/bar.py"],
+    )
+
+    assert captured == {
+        "show_contexts": False,
+        "include_paths": ["scripts/foo.py", "scripts/bar.py"],
+    }
+
+
+def test_combine_export_preserves_all_include_paths_in_coverage_argv(tmp_path: Path, monkeypatch) -> None:
+    from scripts import mutation_sampling_lib as sampling
+
+    commands: list[list[str]] = []
+
+    def fake_run(command, **kwargs):
+        commands.append(command)
+
+    monkeypatch.setattr(sampling.subprocess, "run", fake_run)
+    sampling.combine_and_export_coverage(
+        tmp_path,
+        tmp_path / "coverage.rc",
+        tmp_path / ".coverage",
+        tmp_path / "coverage.json",
+        {},
+        show_contexts=False,
+        include_paths=["scripts/foo.py", "scripts/bar.py"],
+    )
+
+    json_command = commands[1]
+    include_index = json_command.index("--include")
+    assert json_command[include_index + 1] == "scripts/foo.py,scripts/bar.py"
+    assert json_command.count("--include") == 1
+
+
 def test_produce_broad_coverage_skips_emit_on_failure(tmp_path: Path, monkeypatch) -> None:
     from scripts import mutation_coverage_producer as prod
 
