@@ -24,12 +24,19 @@ run the planner before broad gates or fixes. Missing binary handling follows
 # Required Tools: rg
 python3 "$SKILL_DIR/scripts/resolve_adapter.py" --repo-root .
 python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root .
+# A conflict is preserved by default; authorize a named rewrite only when intended:
+python3 "$SKILL_DIR/scripts/bootstrap_adapter.py" --repo-root . --migrate
 python3 "$SKILL_DIR/scripts/resolve_quality_artifact.py" --repo-root . --intent record
 python3 "$SKILL_DIR/scripts/plan_quality_run.py" --repo-root .
 # For a target-skill review, add: --target-skill <skill-id>
 rg --files .
 git status --short
 ```
+
+Bootstrap is lifecycle-aware: normalized-equivalent adapters are silent
+no-ops, conflicts preserve the existing adapter and emit exact requested
+surfaces plus a next action, and `--migrate` is the explicit rewrite boundary
+that retains existing comments.
 
 ## Workflow
 

@@ -5,7 +5,12 @@ installed state, not only produce review notes.
 
 The bootstrap helper should:
 
-- write or refresh `<repo-root>/.agents/quality-adapter.yaml` idempotently
+- write `<repo-root>/.agents/quality-adapter.yaml` when it is absent, and keep a
+  normalized-equivalent existing adapter byte-stable
+- preserve an existing adapter on conflict and emit the exact requested surface,
+  requested change, reason, and next action
+- require explicit `--migrate` before rewriting a conflicting adapter
+- retain existing comments during migration and report every migration change
 - preserve explicit operator-owned command groups when they already exist
 - infer concept paths and preset lineage from the repo surface
 - avoid materializing language-specific defaults, such as pytest reference
@@ -21,6 +26,22 @@ Default report path:
 The report is repo state when committed, so paths in it must be repo-root
 relative. Use absolute paths only for transient stdout diagnostics.
 
+## Lifecycle modes
+
+There are three bootstrap outcomes:
+
+- `unchanged`: normalized intent matches; no adapter write or advisory occurs,
+  including when only comments or YAML formatting differ
+- `conflict`: the existing adapter is preserved byte-for-byte; the report carries
+  `requested_changes`, and the advisory names each surface, requested change,
+  reason, and next action
+- `migrated`: `--migrate` explicitly authorizes the requested changes; the report
+  carries `migration_changes` and `comments_preserved`
+
+Absent or deliberately disabled surfaces are not installed merely because a
+default exists. Review a `conflict` report before choosing `--migrate`; the
+default bootstrap command never treats detection as authorization.
+
 Status meanings:
 
 - `installed`: the repo already had a repo-owned command or helper and the
@@ -35,8 +56,8 @@ Status meanings:
   did not set every key inside it, so the merge refilled the rest from the preset.
   **A kept-but-partial block is `augmented`, never `preserved`.** It used to report
   `preserved` while the merge was refilling, which asserted the opposite of what
-  happened; the report now names the refilled sub-keys in `refilled_subkeys` and in
-  the customization warning. A sub-key counts as refilled when it is absent, blank,
+  happened; the conflict or migration report names the requested surface and value.
+  A sub-key counts as refilled when it is absent, blank,
   or written with a type the merge does not accept — all three are the operator's
   value being silently discarded, and only the first looks like a deletion. That
   three-way rule is `coverage_floor_policy` and `prompt_asset_policy`, whose merges are
@@ -66,9 +87,9 @@ deliberately_absent:
 ```
 
 Bootstrap then leaves those fields out of the adapter and drops the matching
-deferred-setup prompt. The reason lives in the same field as the signal on purpose:
-the adapter is re-serialized from data, so a rationale kept in a YAML comment is
-destroyed by the same rewrite it was meant to explain.
+deferred-setup prompt. The reason lives in the same field as the signal on purpose.
+Ordinary bootstrap preserves the adapter and its comments; explicit migration
+retains existing comment text in a dedicated comment block.
 
 Rules:
 
@@ -90,22 +111,10 @@ alter what every field means at resolution time and break consumers that index t
 So a resolved adapter carries the default value alongside the declaration, plus:
 
 - `deliberately_absent` — the declaration itself, so it survives resolution
-- `refilled_subkeys` — `{<field>: [<sub-key>, ...]}` for every kept-but-partial
-  policy block, emitted alongside the `augmented` status. Only present when a rewrite
-  actually refilled something, so its absence means nothing was refilled, not that the
-  key was forgotten. A NESTED block the operator partially wrote reports its refilled
-  leaves dotted (`report_paths.sample_md`); a nested block refilled WHOLE reports its
-  block name alone, because naming every leaf under it says less, not more.
-  **Look for this in the BOOTSTRAP report (`.charness/quality/bootstrap.json`), not on
-  a resolved adapter** — unlike the other entries in this section it is an account of
-  one rewrite, not a declaration that survives resolution.
-  **Two dotted namespaces live in this file and they are not the same.**
-  `refilled_subkeys` leaves are FIELD-RELATIVE (`report_paths.sample_md`, under a
-  `mutation_testing` key) and are a report granularity only — nothing parses them back
-  into a key path. `deliberately_absent_unasserted_paths` keys below are
-  FIELD-PREFIXED (`<field>.<key>`) and ARE parsed by consumers. Neither is a
-  `deliberately_absent` declaration vocabulary; declaring a single sub-key absent
-  remains impossible.
+- `requested_changes` / `migration_changes` — per-surface lifecycle evidence in
+  the bootstrap report. Each entry names the current value, requested value,
+  reason, and next action; migration uses the same ledger after explicit
+  authorization.
 
 **`deliberately_absent` names whole FIELDS only.** There is no way to declare a
 single sub-key absent on purpose: the closest available move is to drop the whole

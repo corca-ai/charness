@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from scripts.adapter_lib import load_yaml, render_yaml_mapping
+from scripts.adapter_lib import render_yaml_mapping
 
 
 def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str]) -> str:
@@ -81,13 +81,3 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
     # place the intent has teeth: every branch above still computes a value, so
     # filtering at render is what keeps a deleted key deleted (#481).
     return render_yaml_mapping([(key, value) for key, value in items if key not in deliberately_absent])
-
-
-def diff_is_defaulted_only(existing_text: str, rendered_text: str, statuses: dict[str, str]) -> bool:
-    existing = load_yaml(existing_text)
-    rendered = load_yaml(rendered_text)
-    if not isinstance(existing, dict) or not isinstance(rendered, dict):
-        return False
-    if any(key not in rendered or rendered[key] != value for key, value in existing.items()):
-        return False
-    return all(key in existing or statuses.get(key) in {"defaulted", "deferred"} for key in rendered)

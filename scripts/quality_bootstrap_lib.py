@@ -1,12 +1,10 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, plan_generated_write
-from scripts.path_portability_lib import repo_relative
-from scripts.quality_bootstrap_absence import describe_intent_loss, load_deliberately_absent
+from scripts.adapter_lib import load_yaml_file_report, uninterpreted_warnings
+from scripts.quality_bootstrap_absence import load_deliberately_absent
 from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
@@ -14,12 +12,6 @@ from scripts.quality_bootstrap_detect import (
     detect_preflight_commands,
     detect_preset_lineage,
     detect_security_commands,
-)
-from scripts.quality_bootstrap_render import (
-    diff_is_defaulted_only as _diff_is_defaulted_only,
-)
-from scripts.quality_bootstrap_render import (
-    render_bootstrap_adapter,
 )
 from scripts.quality_policy_defaults import (
     DEFAULT_COVERAGE_FLOOR_POLICY,
@@ -188,7 +180,13 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     if adapter_path is None:
         defaults["_explicit_fields"] = set()
         return defaults
-    raw = load_yaml_file(adapter_path)
+    raw, uninterpreted = load_yaml_file_report(adapter_path)
+    if uninterpreted:
+        details = "; ".join(uninterpreted_warnings(uninterpreted))
+        raise BootstrapValidationError(
+            f"{adapter_path}: cannot bootstrap an adapter with uninterpreted YAML lines; "
+            f"repair the adapter before rerunning bootstrap ({details})"
+        )
     if not isinstance(raw, dict):
         defaults["_explicit_fields"] = set()
         return defaults
@@ -494,58 +492,3 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     # report, and every consumer of this function already ignores `_`-prefixed keys.
     final["_subkey_refills"] = subkey_refills
     return final, field_statuses, deferred_setup
-
-
-def bootstrap_quality_adapter(
-    *, repo_root: Path, output_path: Path, report_path: Path, dry_run: bool
-) -> dict[str, Any]:
-    adapter_path = output_path if output_path.is_absolute() else repo_root / output_path
-    resolved_report_path = report_path if report_path.is_absolute() else repo_root / report_path
-    final_data, field_statuses, deferred_setup = build_bootstrap_state(repo_root)
-    adapter_text = render_bootstrap_adapter(final_data, field_statuses)
-    existing_text = adapter_path.read_text(encoding="utf-8") if adapter_path.is_file() else None
-
-    # Decide what a real run WOULD do before branching on dry_run. A dry run that skips
-    # the comparison cannot tell a would-be rewrite from a would-be no-op, so it warned
-    # about destroying comments that a real run leaves untouched — a warning that cries
-    # wolf on every plan is one an operator stops reading.
-    plan = plan_generated_write(
-        existing_text,
-        adapter_text,
-        also_unchanged_when=existing_text is not None
-        and _diff_is_defaulted_only(existing_text, adapter_text, field_statuses),
-    )
-    would_do = {"absent": "written", "unchanged": "unchanged", "differs": "updated"}[plan]
-
-    if dry_run:
-        adapter_status = "dry-run"
-    else:
-        adapter_status = would_do
-        if would_do in {"written", "updated"}:
-            adapter_path.parent.mkdir(parents=True, exist_ok=True)
-            adapter_path.write_text(adapter_text, encoding="utf-8")
-
-    report = {
-        "adapter_path": repo_relative(repo_root, adapter_path),
-        "adapter_status": adapter_status,
-        "artifact_path": str(Path(final_data["output_dir"]) / "latest.md"),
-        "report_path": repo_relative(repo_root, resolved_report_path),
-        "preset_lineage": final_data["preset_lineage"],
-        "field_statuses": field_statuses,
-        "deferred_setup": deferred_setup,
-        "deliberately_absent": dict(final_data.get("deliberately_absent") or {}),
-    }
-    if dry_run:
-        report["would_do"] = would_do
-    # `written` means there was no prior file, so there is no operator intent to lose.
-    if would_do == "updated":
-        report.update(describe_intent_loss(
-            existing_text, adapter_text, field_statuses,
-            subkey_refills=final_data.get("_subkey_refills") or {},
-        ))
-    if absence_warnings := final_data.get("_absence_warnings"):
-        report["absence_warnings"] = list(absence_warnings)
-    if not dry_run:
-        resolved_report_path.parent.mkdir(parents=True, exist_ok=True)
-        resolved_report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
-    return report

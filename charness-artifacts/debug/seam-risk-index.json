@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 112,
-  "indexed_artifact_count": 100,
+  "source_artifact_count": 113,
+  "indexed_artifact_count": 101,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
-    "external-seam": 8,
+    "external-seam": 10,
     "host-disproves-local": 2,
-    "none": 38,
+    "none": 37,
     "operator-visible-recovery": 22,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 84,
+    "monitor": 85,
     "none": 11
   },
   "entries": [
@@ -1366,6 +1366,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-05-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "generated YAML serializer to consumer-owned adapter; bootstrap planner,",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-05-issue-507-quality-adapter-lifecycle.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-05-debug-review.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1410,16 +1424,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-502-quality-summary-owner",
+      "interrupt_id": "none",
       "risk_classes": [
-        "none"
+        "external-seam"
       ],
-      "seam": "runner receipt arguments -> proof renderer -> truncated stdout reader",
+      "seam": "generated YAML serializer to consumer-owned adapter; bootstrap planner,",
       "generalization_pressure": "monitor",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "none",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-05-issue-507-quality-adapter-lifecycle.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

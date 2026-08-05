@@ -10,13 +10,13 @@
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
     "worktree": "dirty: cross-track quality proof artifacts are being finalized"
   },
-  "artifacts": 112,
+  "artifacts": 113,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 112,
+    "not-claimed": 113,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -28,8 +28,8 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 319,
-    "median": 44,
+    "count": 325,
+    "median": 45,
     "min": 7
   },
   "rows": [
@@ -1289,6 +1289,33 @@
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-05",
       "path": "charness-artifacts/quality/latest.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-05",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-05",
+      "path": "charness-artifacts/quality/2026-08-05-issue-502-quality-summary-owner.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-05",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-05",
+      "path": "charness-artifacts/quality/2026-08-05-issue-503-runtime-budget.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "uncommitted",
+      "declared_date": "2026-08-05",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-05",
+      "path": "charness-artifacts/quality/2026-08-05-issue-507-quality-adapter-lifecycle.md"
     }
   ]
 }

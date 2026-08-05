@@ -20,12 +20,48 @@ def strip_inline_comment(value: str) -> str:
     the report says it was kept. Only space-hash starts a YAML comment, so a value
     like ``a#b`` is left alone.
     """
-    if _is_quoted_scalar(value):
-        return value
-    for index, char in enumerate(value):
-        if char == "#" and (index == 0 or value[index - 1] in " \t"):
-            return value[:index].strip()
+    if (index := inline_comment_start(value)) is not None:
+        return value[:index].strip()
     return value
+
+
+def inline_comment_start(value: str) -> int | None:
+    """Return the first YAML comment marker outside a leading quoted scalar.
+
+    A quoted scalar may be followed by a valid trailing comment, for example
+    ``"https://example.test/a # fragment" # annotation``. The previous
+    space-hash scan treated the hash inside the scalar as the comment and
+    truncated the value before bootstrap or resolution could inspect it.
+    Plain scalars may contain apostrophes, so quote tracking begins only when
+    the value itself begins with a quote.
+    """
+    leading = len(value) - len(value.lstrip())
+    candidate = value[leading:]
+    quote = candidate[0] if candidate[:1] in {"'", '"'} else None
+    escaped = False
+    index = leading + 1 if quote is not None else leading
+    while index < len(value):
+        char = value[index]
+        if quote is not None:
+            if quote == '"' and escaped:
+                escaped = False
+                index += 1
+                continue
+            if quote == '"' and char == "\\":
+                escaped = True
+                index += 1
+                continue
+            if char == quote:
+                if quote == "'" and index + 1 < len(value) and value[index + 1] == "'":
+                    index += 2
+                    continue
+                quote = None
+            index += 1
+            continue
+        if char == "#" and (index == 0 or value[index - 1] in " \t"):
+            return index
+        index += 1
+    return None
 
 
 def _coerce_scalar(value: str) -> Any:

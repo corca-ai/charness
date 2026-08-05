@@ -1,1 +1,1 @@
-2026-08-05-issue-502-quality-summary-owner.md
+2026-08-05-debug-review-followup.md

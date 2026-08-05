@@ -22,8 +22,9 @@ REPO_ROOT = SKILL_RUNTIME.repo_root_from_skill_script(__file__)
 
 
 _scripts_quality_bootstrap_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lib")
+_scripts_quality_bootstrap_lifecycle_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.quality_bootstrap_lifecycle")
 BootstrapValidationError = _scripts_quality_bootstrap_lib_module.BootstrapValidationError
-bootstrap_quality_adapter = _scripts_quality_bootstrap_lib_module.bootstrap_quality_adapter
+bootstrap_quality_adapter = _scripts_quality_bootstrap_lifecycle_module.bootstrap_quality_adapter
 
 
 def main() -> None:
@@ -32,6 +33,11 @@ def main() -> None:
     parser.add_argument("--output", type=Path, default=Path(".agents/quality-adapter.yaml"), help="Path to write the generated quality adapter YAML")
     parser.add_argument("--report-path", type=Path, default=Path(".charness/quality/bootstrap.json"), help="Path to write the bootstrap report JSON")
     parser.add_argument("--dry-run", action="store_true", help="Plan the bootstrap without writing the adapter or report")
+    parser.add_argument(
+        "--migrate",
+        action="store_true",
+        help="Explicitly authorize a conflicting adapter rewrite and retain existing comments",
+    )
     args = parser.parse_args()
 
     report = bootstrap_quality_adapter(
@@ -39,6 +45,7 @@ def main() -> None:
         output_path=args.output,
         report_path=args.report_path,
         dry_run=args.dry_run,
+        migrate=args.migrate,
     )
     sys.stdout.write(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True) + "\n")
     # Reverting an operator's customization silently is the failure this guards. The

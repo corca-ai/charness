@@ -50,10 +50,14 @@ def _adapter(repo: Path) -> Path:
     return repo / ".agents" / "quality-adapter.yaml"
 
 
-def _bootstrap(repo: Path) -> dict:
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+def _bootstrap(repo: Path, *extra: str) -> dict:
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo), *extra)
     assert result.returncode == 0, result.stderr
     return json.loads(result.stdout)
+
+
+def _change(payload: dict, surface: str) -> dict:
+    return next(change for change in payload["requested_changes"] if change["surface"] == surface)
 
 
 def test_declared_absence_is_not_refilled_with_defaults(tmp_path: Path) -> None:
@@ -90,7 +94,7 @@ def test_rationale_survives_a_second_bootstrap(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     _adapter(repo).write_text(CUSTOMIZED_ADAPTER, encoding="utf-8")
 
-    _bootstrap(repo)
+    _bootstrap(repo, "--migrate")
     after_first = _adapter(repo).read_text(encoding="utf-8")
     second = _bootstrap(repo)
 
@@ -111,155 +115,6 @@ def test_adapter_without_the_field_is_unaffected(tmp_path: Path) -> None:
     assert "deliberately_absent" not in _adapter(repo).read_text(encoding="utf-8")
     assert payload["field_statuses"]["coverage_floor_policy"] == "defaulted"
     assert "deliberately-absent" not in payload["field_statuses"].values()
-
-
-def test_rewrite_announces_the_comments_it_cannot_keep(tmp_path: Path) -> None:
-    """A generator that cannot honor a customization says so; it does not revert quietly."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(
-        "# this gate deliberately does not exist here\n# declaring it sends the next session hunting\n"
-        + CUSTOMIZED_ADAPTER,
-        encoding="utf-8",
-    )
-
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
-
-    assert payload["comments_dropped"] == 2
-    assert "deliberately_absent" in payload["customization_warning"]
-    assert "WARN:" in result.stderr
-
-
-def test_comment_claim_is_not_made_when_there_were_no_comments(tmp_path: Path) -> None:
-    """The two claims are independent: no comments means no COMMENT claim, and nothing more.
-
-    This used to assert total silence, which is what made the refill claim
-    self-silencing — the first rewrite strips every comment, so from then on a
-    refilled deletion was reverted with the tool saying nothing.
-    """
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(CUSTOMIZED_ADAPTER, encoding="utf-8")
-
-    payload = _bootstrap(repo)
-
-    assert "comments_dropped" not in payload
-    assert "comment line(s)" not in payload.get("customization_warning", "")
-    # ...but the refill claim is still owed, because this rewrite did refill.
-    assert payload["refilled_fields"]
-
-
-def test_contradictory_absence_declaration_is_refused(tmp_path: Path) -> None:
-    """Declared absent AND set is ambiguous; guessing either way would be a silent choice."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(
-        CUSTOMIZED_ADAPTER + "coverage_floor_policy:\n  fail_below_pct: 10.0\n", encoding="utf-8"
-    )
-
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-
-    assert result.returncode == 1
-    assert "is also set in this adapter" in result.stderr
-
-
-def test_absence_without_a_reason_is_refused(tmp_path: Path) -> None:
-    """A reasonless absence is indistinguishable from an oversight to the next reader."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text("deliberately_absent:\n  security_commands: \"\"\n" + CUSTOMIZED_ADAPTER.replace(
-        "deliberately_absent:\n  coverage_floor_policy: this repo uses neither lefthook nor CI\n"
-        "  coverage_fragile_margin_pp: no coverage tooling here\n"
-        "  security_commands: no repo-owned security helper exists\n",
-        "",
-    ), encoding="utf-8")
-
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-
-    assert result.returncode == 1
-    assert "must say why" in result.stderr
-
-
-def test_structural_field_cannot_be_declared_absent(tmp_path: Path) -> None:
-    """Declaring these absent yields an unresolvable adapter, not a customization."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text("deliberately_absent:\n  output_dir: not needed\n", encoding="utf-8")
-
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-
-    assert result.returncode == 1
-    assert "structural" in result.stderr
-
-
-def test_inline_comment_does_not_swallow_the_operators_value(tmp_path: Path) -> None:
-    """A trailing comment used to be parsed into the value, so the value was dropped,
-    the default silently won, and the report still called the field `preserved`."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(
-        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
-        "coverage_fragile_margin_pp: 2.0  # widened for the flaky suite\n",
-        encoding="utf-8",
-    )
-
-    payload = _bootstrap(repo)
-
-    assert payload["field_statuses"]["coverage_fragile_margin_pp"] == "preserved"
-    assert "coverage_fragile_margin_pp: 2.0\n" in _adapter(repo).read_text(encoding="utf-8")
-    # The comment itself is still destroyed by the rewrite, so it must be announced.
-    assert payload["comments_dropped"] == 1
-
-
-def test_unrecognized_absence_declaration_is_warned_not_silently_honored(tmp_path: Path) -> None:
-    """A typo'd field name would otherwise look declared while still being refilled."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(
-        CUSTOMIZED_ADAPTER.replace("coverage_floor_policy:", "coverage_flor_policy:"), encoding="utf-8"
-    )
-
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
-    payload = json.loads(result.stdout)
-
-    assert result.returncode == 0, result.stderr
-    assert any("coverage_flor_policy" in warning for warning in payload["absence_warnings"])
-    assert "WARN:" in result.stderr
-    # The real field kept its default, which is exactly what the warning is about.
-    assert payload["field_statuses"]["coverage_floor_policy"] == "defaulted"
-
-
-def test_loss_warning_names_only_fields_it_actually_wrote(tmp_path: Path) -> None:
-    """Listing every unset field buries the one that matters and trains the warning away."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text("# a comment worth keeping\n" + CUSTOMIZED_ADAPTER, encoding="utf-8")
-
-    payload = _bootstrap(repo)
-    rewritten = _adapter(repo).read_text(encoding="utf-8")
-    warning = payload["customization_warning"]
-
-    assert "refilled" in warning
-    for field in payload["refilled_fields"]:
-        assert f"\n{field}:" in f"\n{rewritten}", f"{field} was named but never written"
-    # Fields the renderer drops as empty must not be named.
-    assert "vendored_paths" not in payload["refilled_fields"]
-
-
-def test_empty_absence_declaration_is_accepted(tmp_path: Path) -> None:
-    """`deliberately_absent: {}` is legal YAML and obviously means "nothing declared"."""
-    repo = seed_quality_repo(tmp_path)
-    _adapter(repo).write_text(
-        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\ndeliberately_absent: {}\n",
-        encoding="utf-8",
-    )
-
-    payload = _bootstrap(repo)
-
-    assert payload["deliberately_absent"] == {}
-
-
-def test_fresh_repo_write_makes_no_intent_loss_claim(tmp_path: Path) -> None:
-    """There is no prior file, so there is no operator intent to report losing."""
-    repo = seed_quality_repo(tmp_path)
-
-    payload = _bootstrap(repo)
-
-    assert payload["adapter_status"] == "written"
-    assert "comments_dropped" not in payload
 
 
 def test_resolution_carries_the_declaration_and_names_where_it_does_not_bite(tmp_path: Path) -> None:
@@ -332,11 +187,10 @@ def test_a_partially_deleted_block_is_reported_augmented_and_names_its_refills(t
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
-    refilled = payload["refilled_subkeys"]["coverage_floor_policy"]
-    assert "lefthook_path" in refilled, "the sub-key the operator deleted must be named"
-    assert "fail_below_pct" not in refilled, "a sub-key the operator DID set is not a refill"
+    change = _change(payload, "coverage_floor_policy")
+    assert "lefthook_path" in change["requested_value"], "the sub-key the operator deleted must be named"
+    assert change["current_value"]["fail_below_pct"] == 90.0
     warning = payload["customization_warning"]
-    assert "sub-key(s) of `coverage_floor_policy`" in warning
     assert "lefthook_path" in warning
 
 
@@ -359,7 +213,7 @@ def test_a_blank_sub_key_value_is_a_refill_too(tmp_path: Path) -> None:
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
-    assert "lefthook_path" in payload["refilled_subkeys"]["coverage_floor_policy"]
+    assert "lefthook_path" in _change(payload, "coverage_floor_policy")["requested_value"]
 
 
 def test_a_wrong_typed_sub_key_the_merge_drops_is_a_refill_too(tmp_path: Path) -> None:
@@ -381,7 +235,7 @@ def test_a_wrong_typed_sub_key_the_merge_drops_is_a_refill_too(tmp_path: Path) -
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
-    assert "min_statements_threshold" in payload["refilled_subkeys"]["coverage_floor_policy"]
+    assert "min_statements_threshold" in _change(payload, "coverage_floor_policy")["requested_value"]
 
 
 def test_an_int_written_against_a_float_default_is_not_a_refill(tmp_path: Path) -> None:
@@ -398,7 +252,9 @@ def test_an_int_written_against_a_float_default_is_not_a_refill(tmp_path: Path) 
 
     payload = _bootstrap(repo)
 
-    assert "fail_below_pct" not in payload["refilled_subkeys"]["coverage_floor_policy"]
+    change = _change(payload, "coverage_floor_policy")
+    assert change["current_value"]["fail_below_pct"] == 80
+    assert change["requested_value"]["fail_below_pct"] == 80.0
 
 
 def test_the_prompt_asset_policy_sibling_reports_its_refills_too(tmp_path: Path) -> None:
@@ -419,9 +275,9 @@ def test_the_prompt_asset_policy_sibling_reports_its_refills_too(tmp_path: Path)
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["prompt_asset_policy"] == "augmented"
-    refilled = payload["refilled_subkeys"]["prompt_asset_policy"]
-    assert "source_globs" in refilled and "exemption_globs" in refilled
-    assert "min_multiline_chars" not in refilled
+    requested = _change(payload, "prompt_asset_policy")["requested_value"]
+    assert "source_globs" in requested and "exemption_globs" in requested
+    assert requested["min_multiline_chars"] == 40
 
 
 def test_a_block_replaced_by_a_scalar_reports_every_sub_key(tmp_path: Path) -> None:
@@ -439,7 +295,7 @@ def test_a_block_replaced_by_a_scalar_reports_every_sub_key(tmp_path: Path) -> N
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["coverage_floor_policy"] == "augmented"
-    assert "fail_below_pct" in payload["refilled_subkeys"]["coverage_floor_policy"]
+    assert "fail_below_pct" in _change(payload, "coverage_floor_policy")["requested_value"]
 
 
 def test_a_fully_specified_block_is_still_preserved_and_claims_nothing(tmp_path: Path) -> None:
@@ -497,8 +353,14 @@ def test_comment_counter_agrees_with_the_parser_on_apostrophes(tmp_path: Path) -
 
     payload = _bootstrap(repo)
 
-    assert payload["comments_dropped"] >= 1
+    assert payload["adapter_status"] == "conflict"
+    assert "renamed upstream, keep this" in _adapter(repo).read_text(encoding="utf-8")
+    assert "comments_dropped" not in payload
     assert "customization_warning" in payload
+
+    migrated = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
+    assert migrated.returncode == 0, migrated.stderr
+    assert "renamed upstream, keep this" in _adapter(repo).read_text(encoding="utf-8")
 
 
 def test_declaring_a_rendered_field_absent_is_not_called_a_typo(tmp_path: Path) -> None:
@@ -799,10 +661,10 @@ def test_refill_is_reported_even_when_the_adapter_has_no_comments(tmp_path: Path
 
     payload = _bootstrap(repo)
 
+    assert payload["adapter_status"] == "conflict"
     assert "comments_dropped" not in payload
-    assert payload["refilled_fields"], "a rewrite that refilled defaults must say so"
-    assert "coverage_floor_policy" in payload["refilled_fields"]
-    assert "absent ON PURPOSE" in payload["customization_warning"]
+    assert payload["requested_changes"]
+    assert "--migrate" in payload["customization_warning"]
 
 
 def test_a_converged_adapter_still_says_nothing(tmp_path: Path) -> None:
@@ -836,11 +698,10 @@ def test_a_rewrite_that_reverts_nothing_says_nothing(tmp_path: Path) -> None:
     result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     payload = json.loads(result.stdout)
 
-    assert payload["adapter_status"] == "updated"
-    assert "refilled_fields" not in payload
-    assert "comments_dropped" not in payload
-    assert "customization_warning" not in payload
-    assert result.stderr == ""
+    assert payload["adapter_status"] == "conflict"
+    assert "concept_paths" in {change["surface"] for change in payload["requested_changes"]}
+    assert "--migrate" in payload["customization_warning"]
+    assert "WARN:" in result.stderr
 
 
 def test_a_partially_written_nested_block_names_its_leaves_end_to_end(tmp_path: Path) -> None:
@@ -867,15 +728,12 @@ def test_a_partially_written_nested_block_names_its_leaves_end_to_end(tmp_path: 
     payload = _bootstrap(repo)
 
     assert payload["field_statuses"]["mutation_testing"] == "augmented"
-    refilled = payload["refilled_subkeys"]["mutation_testing"]
-    assert "report_paths.sample_md" in refilled, "the refilled nested leaf must be named"
-    assert "report_paths.log" in refilled
-    assert "report_paths.summary_md" not in refilled, "the operator wrote this one"
-    assert "report_paths" not in refilled, "the coarse block name is replaced, not added to"
-    warning = payload["customization_warning"]
-    assert "sub-key(s) of `mutation_testing`" in warning
-    assert "report_paths.sample_md" in warning
-    assert "do not drop the whole `mutation_testing` block" in warning
+    change = _change(payload, "mutation_testing")
+    assert change["requested_value"]["report_paths"]["sample_md"]
+    assert change["requested_value"]["report_paths"]["log"]
+    assert change["requested_value"]["report_paths"]["summary_md"] == "custom/summary.md"
+    assert change["current_value"]["report_paths"]["summary_md"] == "custom/summary.md"
+    assert "--migrate" in payload["customization_warning"]
 
 
 def test_issue_496_suppresses_only_the_two_inert_command_leaves(tmp_path: Path) -> None:
@@ -888,15 +746,10 @@ def test_issue_496_suppresses_only_the_two_inert_command_leaves(tmp_path: Path) 
     )
 
     payload = _bootstrap(repo)
-    refilled = payload["refilled_subkeys"]["mutation_testing"]
-    assert "commands.dry_run" not in refilled
-    assert "commands.sample" not in refilled
-    assert "commands" not in refilled
-    warning = payload["customization_warning"]
-    assert "commands.dry_run" not in warning
-    assert "commands.sample" not in warning
-    assert "do not drop the whole `mutation_testing` block" in warning
-    assert "closest available move is to drop the WHOLE block" not in warning
+    change = _change(payload, "mutation_testing")
+    assert change["current_value"]["commands"]["full"] == "pytest --mutate"
+    assert change["requested_value"]["commands"]["sample"] == ""
+    assert "--migrate" in payload["customization_warning"]
     rewritten = _adapter(repo).read_text(encoding="utf-8")
     assert "full: pytest --mutate" in rewritten
     assert "summary: python3 scripts/summarize.py" in rewritten
@@ -911,10 +764,9 @@ def test_mutation_command_filter_keeps_missing_required_slot_reportable(tmp_path
     )
 
     payload = _bootstrap(repo)
-    refilled = payload["refilled_subkeys"]["mutation_testing"]
-    assert "commands.dry_run" not in refilled
-    assert "commands.sample" not in refilled
-    assert "commands.summary" in refilled
+    requested = _change(payload, "mutation_testing")["requested_value"]["commands"]
+    assert requested["full"] == "pytest --mutate"
+    assert requested["summary"] == ""
 
 
 def test_explicit_empty_command_slots_are_not_reclassified(tmp_path: Path) -> None:
@@ -928,11 +780,9 @@ def test_explicit_empty_command_slots_are_not_reclassified(tmp_path: Path) -> No
     )
 
     payload = _bootstrap(repo)
-    command_refills = [
-        name for name in payload.get("refilled_subkeys", {}).get("mutation_testing", [])
-        if name.startswith("commands.")
-    ]
-    assert command_refills == []
+    requested = _change(payload, "mutation_testing")["requested_value"]["commands"]
+    assert requested["dry_run"] == ""
+    assert requested["sample"] == ""
 
 
 def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_path: Path) -> None:
@@ -944,10 +794,8 @@ def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_pat
     )
 
     payload = _bootstrap(repo)
-    refilled = payload["refilled_subkeys"]["prompt_asset_policy"]
-    assert "exemption_globs" in refilled
-    warning = payload["customization_warning"]
-    assert "do not drop the whole `prompt_asset_policy` block" in warning
+    assert "exemption_globs" in _change(payload, "prompt_asset_policy")["requested_value"]
+    assert "--migrate" in payload["customization_warning"]
 
 
 def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -> None:
@@ -1015,4 +863,4 @@ def test_mutation_testing_validates_where_the_other_policies_refill(tmp_path: Pa
 
     payload = _bootstrap(repo)
 
-    assert "report_paths" in payload["refilled_subkeys"]["mutation_testing"]
+    assert "report_paths" in _change(payload, "mutation_testing")["requested_value"]

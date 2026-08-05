@@ -125,7 +125,7 @@ def test_quality_bootstrap_adapter_records_installed_and_inferred_fields(tmp_pat
     assert resolved["data"]["preflight_commands"] == ["python3 scripts/validate_maintainer_setup.py --repo-root ."]
 
 
-def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_path: Path) -> None:
+def test_quality_bootstrap_conflicts_when_defaulted_fields_are_missing(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert first.returncode == 0, first.stderr
@@ -144,8 +144,11 @@ def test_quality_bootstrap_short_circuits_when_only_defaulted_fields_added(tmp_p
     second = _run_quality_bootstrap_adapter("--repo-root", str(repo))
     assert second.returncode == 0, second.stderr
     payload = json.loads(second.stdout)
-    assert payload["adapter_status"] == "unchanged"
+    assert payload["adapter_status"] == "conflict"
     assert payload["field_statuses"]["public_spec_implementation_guard_min_lines"] == "defaulted"
+    assert "public_spec_implementation_guard_min_lines" in {
+        change["surface"] for change in payload["requested_changes"]
+    }
     assert adapter_path.read_text(encoding="utf-8") == trimmed
 
 
@@ -184,10 +187,10 @@ def test_quality_bootstrap_rewrite_keeps_unknown_fields(tmp_path: Path) -> None:
         encoding="utf-8",
     )
 
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["adapter_status"] == "updated"
+    assert payload["adapter_status"] == "migrated"
     assert payload["field_statuses"]["consumer_owned_gate"] == "preserved"
     rewritten = adapter_path.read_text(encoding="utf-8")
     assert "consumer_owned_gate:" in rewritten
@@ -198,10 +201,10 @@ def test_quality_bootstrap_adapter_preserves_existing_explicit_commands(tmp_path
     repo = seed_quality_repo(tmp_path)
     write_explicit_quality_adapter(repo)
 
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["adapter_status"] == "updated"
+    assert payload["adapter_status"] == "migrated"
     preserved_keys = (
         "gate_commands", "coverage_fragile_margin_pp", "coverage_floor_policy", "specdown_smoke_patterns",
         "spec_pytest_reference_format", "prompt_asset_roots", "recommendation_defaults_version", "adapter_review_sources",
@@ -326,10 +329,10 @@ def test_quality_bootstrap_rewrite_preserves_explicit_falsy_fields(tmp_path: Pat
         encoding="utf-8",
     )
 
-    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["adapter_status"] == "updated"
+    assert payload["adapter_status"] == "migrated"
     assert payload["field_statuses"]["preset_version"] == "preserved"
     assert payload["field_statuses"]["spec_pytest_reference_format"] == "preserved"
     rewritten = adapter_path.read_text(encoding="utf-8")
@@ -495,10 +498,10 @@ def test_quality_bootstrap_ignores_prose_specdown_documents_and_preserves_explic
     (docs / "contract.spec.md").write_text("# Prose contract\n", encoding="utf-8")
     write_explicit_quality_adapter(repo)
 
-    first = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+    first = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
     assert first.returncode == 0, first.stderr
     payload = json.loads(first.stdout)
-    assert payload["adapter_status"] == "updated"
+    assert payload["adapter_status"] == "migrated"
     assert "python-quality" in payload["preset_lineage"]
     assert "specdown-quality" not in payload["preset_lineage"]
     assert payload["field_statuses"]["preset_lineage"] == "augmented"

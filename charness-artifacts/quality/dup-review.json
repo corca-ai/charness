@@ -2036,6 +2036,48 @@
       "reviewed_at": "2026-08-04",
       "surface": "code",
       "note": "portable import preamble shared by scripts/bootstrap_runtime.py and the standalone markdown-preview renderer. The renderer must remain directly executable in both the source and exported plugin layouts, so importing a shared bootstrap would add the coupling that this preamble establishes. The family surfaced when the renderer gained its independent PTY probe imports; no new shared behavior was introduced."
+    },
+    {
+      "class": "intentional",
+      "id": "0dd0a2267d136d73",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "short lifecycle/report branch shared by independent quality adapter surfaces; the quality bootstrap owns migration authorization and the sibling helpers own different consumer contracts, so extracting the tiny idiom would couple verdict owners without removing behavior duplication."
+    },
+    {
+      "class": "intentional",
+      "id": "1b518cbab6e42d3d",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "small local helper branch shared by unrelated standalone commands; the quality adapter lifecycle must remain directly importable in source and exported layouts, and a shared formatter would hide independent refusal/report semantics."
+    },
+    {
+      "class": "intentional",
+      "id": "239b1c221a081f14",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "two-line comment-preservation boundary shared with an unrelated subprocess/path helper; the quality lifecycle's comment parser is load-bearing for quoted and list-valued YAML, so extracting the incidental shape would couple unrelated owners."
+    },
+    {
+      "class": "intentional",
+      "id": "2b952852d5c1e0f5",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "small JSON/YAML lifecycle setup shape shared by independent command owners; the quality bootstrap report is a consumer-owned output contract and should not import another command's formatter merely to erase two lines."
+    },
+    {
+      "class": "intentional",
+      "id": "5b81e034f4f4419b",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "short value-normalization helper shape shared with a separate inventory library; the quality adapter's semantic conflict vocabulary is intentionally local to its lifecycle boundary."
+    },
+    {
+      "class": "intentional",
+      "id": "8c465ddf2715dcca",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "quality adapter bootstrap and markdown-preview scaffold are parallel generated-writer lifecycles with different payloads, force policies, comment-retention requirements, and reports. A shared runner would couple two independent consumer-owned boundaries; the duplication is deliberate and each path has its own focused tests."
     }
   ],
   "fixable_ceiling": 0,
