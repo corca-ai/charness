@@ -398,7 +398,7 @@ Disposition review: charness-artifacts/critique/2026-08-05-issue-508-closeout-cl
 ## User Verification Instructions
 
 1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, #511, #504, #496, and #491 are verified closed, while #508 is locally implemented but OPEN and the goal remains active for the 8 remaining issues.
-2. The distinct #508 closeout-claims review is PASS over the local carrier, goal, quality, handoff, and proof records; preserve that review binding and do not start #509 before #508's own final publish/closeout boundary.
+2. The distinct #508 closeout-claims review must be rebound after the 2026-08-06 re-rank and remain PASS only for the local carrier, goal, quality, handoff, and proof records; preserve #508 as OPEN/local-only-by-contract while #509 proceeds locally.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact. Push is intentionally deferred until the final publish boundary unless a closeout floor makes an earlier remote carrier unavoidable.
 
