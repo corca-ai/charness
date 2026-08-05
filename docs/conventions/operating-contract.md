@@ -105,8 +105,9 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     *Claims Review* owns the release form. Not per-commit: the unit is a
     closeout RECORD, not a diff, and firing it per-diff is how a floor becomes
     ceremony.
-- **Run `reviewer_boundary_fingerprint.py verify --before` the moment the
-  reviewer returns, BEFORE any parent write.** A verify run after the parent has
+- **Run `reviewer_boundary_fingerprint.py verify --before <snapshot-path>
+  --window-id <id>` the moment the reviewer returns, BEFORE any parent write.**
+  A verify run after the parent has
   started folding findings reports `boundary-drift` and can only be resolved by
   declaring the parent's own paths — which downgrades the attestation from "the
   tree did not move" to "the parent says it moved these files". Measured

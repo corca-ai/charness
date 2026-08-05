@@ -45,6 +45,19 @@ def _snapshot(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 
 
 def _verify(repo: Path, *args: str) -> tuple[int, dict]:
+    result = run_script(
+        SCRIPT,
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
+        *args,
+    )
+    return result.returncode, json.loads(result.stdout)
+
+
+def _verify_default(repo: Path, *args: str) -> tuple[int, dict]:
     result = run_script(SCRIPT, "verify", "--repo-root", str(repo), *args)
     return result.returncode, json.loads(result.stdout)
 
@@ -169,7 +182,14 @@ def test_corrupt_snapshot_file_exits_two(tmp_path: Path) -> None:
     snap_file = repo / ".charness" / "reviewer-boundary" / "snapshot.json"
     snap_file.write_text("{not json", encoding="utf-8")
 
-    result = run_script(SCRIPT, "verify", "--repo-root", str(repo))
+    result = run_script(
+        SCRIPT,
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        str(snap_file),
+    )
     assert result.returncode == 2, result.stdout + result.stderr
     assert json.loads(result.stdout)["ok"] is False
 
@@ -325,12 +345,33 @@ def test_verify_refuses_a_snapshot_from_another_window(tmp_path: Path) -> None:
     repo = _repo(tmp_path)
     _snapshot(repo, "--window-id", "round-1")
 
-    code, payload = _verify(repo, "--window-id", "round-2")
+    code, payload = _verify_default(repo, "--window-id", "round-2")
     assert code == 2, payload
     assert payload["ok"] is False
     assert "round-1" in payload["error"] and "round-2" in payload["error"]
 
-    code, payload = _verify(repo, "--window-id", "round-1")
+    code, payload = _verify_default(repo, "--window-id", "round-1")
+    assert code == 0, payload
+    assert payload["window"]["id"] == "round-1"
+
+
+def test_default_verify_requires_explicit_snapshot_identity(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    _snapshot(repo, "--window-id", "round-1")
+
+    code, payload = _verify_default(repo)
+    assert code == 2, payload
+    assert payload["ok"] is False
+    assert "default snapshot" in payload["error"]
+    assert "round-1" in payload["error"]
+    assert "--window-id" in payload["error"]
+
+
+def test_explicit_before_path_can_verify_without_window_id(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    _snapshot(repo, "--window-id", "round-1")
+
+    code, payload = _verify(repo)
     assert code == 0, payload
     assert payload["window"]["id"] == "round-1"
 
@@ -374,7 +415,14 @@ def test_non_utf8_filename_does_not_crash_the_rail(tmp_path: Path) -> None:
     with open(raw, "wb") as handle:
         handle.write(b"x\n")
 
-    result = run_script(SCRIPT, "verify", "--repo-root", str(repo))
+    result = run_script(
+        SCRIPT,
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
+    )
     assert result.returncode == 1, result.stdout + result.stderr
     payload = json.loads(result.stdout)
     assert payload["ok"] is False

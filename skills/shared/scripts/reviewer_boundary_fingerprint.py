@@ -282,6 +282,22 @@ def _cmd_verify(args: argparse.Namespace) -> int:
         return 2
 
     window = before.get("window") or {}
+    if args.before is None and not args.window_id:
+        # The canonical path is convenient for capture but is shared by every
+        # review round.  Without an explicit window id, a stale default would
+        # still produce a plausible drift/clean verdict for the wrong interval.
+        snapshot_window = window.get("id") or "none (snapshot predates window binding)"
+        print(json.dumps({
+            "ok": False,
+            "error": (
+                f"default snapshot {before_path} is ambiguous: it records review window "
+                f"{snapshot_window}; verify with --window-id <id> or an explicit --before "
+                "<snapshot-path>"
+            ),
+            "before_path": before_path,
+            "window": window,
+        }))
+        return 2
     if args.window_id and window.get("id") != args.window_id:
         # Refusing beats answering: a snapshot from another window certifies a
         # different interval, so its drift says nothing about this review.
@@ -361,7 +377,14 @@ def main(argv: list[str] | None = None) -> int:
 
     verify = subparsers.add_parser("verify", help="Diff the current fingerprint against a prior snapshot.")
     verify.add_argument("--repo-root", default=".", help="Repository root (default: .)")
-    verify.add_argument("--before", default=None, help="Snapshot path to compare against (default: .charness/reviewer-boundary/snapshot.json)")
+    verify.add_argument(
+        "--before",
+        default=None,
+        help=(
+            "Explicit snapshot path to compare against; when omitted, "
+            "--window-id is required (default path: .charness/reviewer-boundary/snapshot.json)"
+        ),
+    )
     verify.add_argument("--window-id", default=None, help="Review window this verify certifies; a snapshot from another window is refused")
     verify.add_argument("--parent-path", action="append", default=None,
                         help="Exact repo-relative path (as git prints it) whose WORKTREE content the "

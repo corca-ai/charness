@@ -200,7 +200,14 @@ def test_verify_does_not_overwrite_the_captured_baseline(tmp_path: Path) -> None
     run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
 
     target.write_text("def verdict(x):\n    return False\n", encoding="utf-8")
-    run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "verify", "--repo-root", str(repo))
+    run_script(
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
+    )
 
     baseline = _parity.source_at_review_snapshot(repo, "scripts/gate.py")
     assert baseline is not None
@@ -369,7 +376,12 @@ def test_the_snapshot_blobs_are_not_reported_as_reviewer_drift(tmp_path: Path) -
 
     run_script("skills/shared/scripts/reviewer_boundary_fingerprint.py", "snapshot", "--repo-root", str(repo))
     verify = run_script(
-        "skills/shared/scripts/reviewer_boundary_fingerprint.py", "verify", "--repo-root", str(repo)
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py",
+        "verify",
+        "--repo-root",
+        str(repo),
+        "--before",
+        str(repo / ".charness" / "reviewer-boundary" / "snapshot.json"),
     )
 
     payload = json.loads(verify.stdout)

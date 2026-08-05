@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 110,
-  "indexed_artifact_count": 98,
+  "source_artifact_count": 111,
+  "indexed_artifact_count": 99,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
     "external-seam": 8,
     "host-disproves-local": 2,
-    "none": 36,
+    "none": 37,
     "operator-visible-recovery": 22,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 82,
+    "monitor": 83,
     "none": 11
   },
   "entries": [
@@ -1366,6 +1366,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-05-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "reviewer-boundary helper to snapshot files and closeout callers",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this dated debug record",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-05-quality-adapter-silent-revert.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1386,7 +1400,7 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "local persistence helper to generated plugin and t-events adapter",
+      "seam": "reviewer-boundary helper to snapshot files and closeout callers",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
