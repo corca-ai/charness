@@ -65,8 +65,9 @@ validators, and `git diff --check` passed. No Cautilus evaluation was run.
 - Delegated Review: executed — two unnamed bounded fresh-eye code rounds ran
   with distinct reviewer contexts; round 1 found matrix/packet gaps, round 2
   found separator overreach, and the final repair is explicitly accepted-
-  unreviewed under the two-round cap. A separate closeout-claims review remains
-  required before the overall goal completion flip.
+  unreviewed under the two-round cap. A separate closeout-claims review then
+  returned PASS for the local carrier/goal/handoff record; remote publish and
+  GitHub CLOSED readback remain pending.
 - Slow-gate lenses (fixture-economics, parallel-critical-path,
   duplicated-proof): executed through quality planning; the only new duplicate
   family was removed and the dirty mutation warning remains explicit.
@@ -84,8 +85,8 @@ validators, and `git diff --check` passed. No Cautilus evaluation was run.
 
 ## Recommended Next Quality Moves
 
-- active — capability_needed=closeout claims; next_center=read the final quality, critique, and goal claims through a distinct observer; transformation=verify each measured disposition against its cited record; proof_boundary=closeout-claims reviewer; enforcement_posture=advisory.
-- completed — capability_needed=changed-line mutation proof; next_center=carrier commit `2f3fe398`; transformation=produced and consumed locked mutation coverage; proof_boundary=post-commit mutation consumer; enforcement_posture=existing-gate.
+- active — capability_needed=remote CI and GitHub readback; next_center=the final publish boundary; transformation=run the gated publish when authorized, read remote CI through a distinct observer, and verify the issue carrier through the adapter; proof_boundary=remote CI plus `verify-closeout --expect-state CLOSED`; enforcement_posture=existing-gate-reuse.
+- passive — because changed-line mutation proof is complete; capability_needed=fresh focused coverage only if the source mutation pool changes; next_center=the current proof head `2f3fe398`; transformation=preserve the locked producer/consumer evidence; proof_boundary=post-commit mutation consumer; enforcement_posture=existing-gate.
 - passive — capability_needed=live provider recurrence; next_center=recorded public response; transformation=expand marker vocabulary only when a real recurrence justifies it; proof_boundary=provider roundtrip; enforcement_posture=no-gate because local fixtures cannot establish that need.
 
 ## History
