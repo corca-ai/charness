@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #507 is CLOSED through the GitHub adapter at 90bc1f9e; #502 is CLOSED at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
-- Current slice intent: preserve consumer-owned quality adapter intent by making ordinary bootstrap a normalized no-op or conflict advisory, with comment-retaining rewrites available only through explicit migration.
-- Next action: re-read live #511 with comments and classify its nose-inventory boundary against the now-stable adapter lifecycle before remedy design.
+- Current slice: #511 is CLOSED through the GitHub adapter at d4d61304; its implementation is at 0b97980f, coverage repair at e16e0503, final proof record at 0a02d940, and durable closeout body at d4d61304. #507 is CLOSED at 90bc1f9e; #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
+- Current slice intent: make filesystem-backed quality inventories disclose scope and query status before counts can be treated as measurements, while preserving the adapter-owned roots and structured quality receipt boundary established by #502/#507.
+- Next action: re-read live #504 with comments and bind its retro-persistence contract to this goal before remedy design.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -87,7 +87,7 @@ Activation time: 2026-08-05T04:54:43Z
 | 2 | #506 | reviewer boundary의 stale default-window refusal | 모든 후속 proof-surface review가 오래된 window를 읽고도 통과하는 일을 먼저 막는다. 임시로는 explicit `--before`와 matching `--window-id`를 강제한다. | current-HEAD stale-window refusal, 26 helper + 45 parity tests, snapshot/verify fingerprints, remote CI, closeout carrier | CLOSED; adapter readback verified |
 | 3 | #502 | `run-quality.sh` summary의 structured owner/consumer contract | quality/proof reader가 format drift를 test sanding으로 오해하지 않게 하는 공통 receipt spine이다. 현재 issue의 17 consumer 주장과 local matrix 차이를 먼저 재검증한다. | producer-reader inventory, focused proof, bundle/final broad proof, carrier, distinct behavior verdict | CLOSED; adapter readback verified |
 | 4 | #507 | quality adapter bootstrap의 no-op/preserve/explicit migration 경계 | 기존 consumer 설정과 comment를 덮는 destructive seam을 안정화해 이후 quality 검증의 입력을 믿을 수 있게 한다. #481의 deliberate-absence 범위와 겹치지 않는 lifecycle 잔여를 확인했다. | disposable consumer readback, no-op byte/comment preservation, conflict/migration cases, export parity | CLOSED; adapter readback verified |
-| 5 | #511 | nose inventory의 scanned/missing/error/inapplicable contract | adapter/root 설정이 안정된 뒤 false clean zero를 없애고 quality advisory를 실제로 읽을 수 있게 한다. | `src`/`scripts`/`worker` fixture, absent-root payload, consumer interpretation, advisory non-blocking proof | planned; next |
+| 5 | #511 | nose inventory의 scanned/missing/error/inapplicable contract | adapter/root 설정이 안정된 뒤 false clean zero를 없애고 quality advisory를 실제로 읽을 수 있게 한다. | `src`/`scripts`/`worker` fixture, absent-root payload, consumer interpretation, advisory non-blocking proof | CLOSED; adapter readback verified |
 | 6 | #504 | retro persistence의 owning goal binding | 이 긴 goal의 closeout memory가 다른 goal에 붙는 churn을 막고, 뒤 slice의 evidence ownership을 고정한다. | goal-aware write/readback, session-mode preservation, distinct critique, GitHub close proof | planned |
 | 7 | #496 | hollow refill report의 inert-default policy/semantics | 독립적인 mutation report 판단을 공통 schema나 runtime 정책으로 오염시키지 않고, 기존 local evidence를 현재 HEAD에서 정리한다. | positive/negative/axis-control matrix, plugin parity, issue-specific disposition | planned |
 | 8 | #491 | semantic reference drift를 reviewer-owned decision으로 reshape | portability sweep 전에 “gate인가 reviewer question인가”를 결정해 의미론을 noisy static gate로 만들지 않는다. | three claim-family reads, copy-paste behavior check, bounded reviewer verdict | planned |
@@ -136,7 +136,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 - Routing: `retro` — goal closeout의 waste, decision, transferable improvement를 owning goal에 binding한다.
 - Gather: n/a — shaping에는 새 public source URL을 사용하지 않았고, GitHub issue source of truth는 `issue` adapter가 읽었다.
 - Release: n/a — 이 draft는 version/install-manifest/release publish를 하지 않는다.
-- Issue closeout: planned for #480, #482, #483, #484, #491, #496, #504, #505, #508, #509, #510, and #511; #468, #502, #503, #506, and #507 are independently closed, and every issue requires its own carrier, `validate-closeout-draft`, delegated critique, distinct `Behavior #N:` verdict or typed disposition, and `verify-closeout --expect-state CLOSED`.
+- Issue closeout: planned for #480, #482, #483, #484, #491, #496, #504, #505, #508, #509, and #510; #468, #502, #503, #506, #507, and #511 are independently closed, and every issue requires its own carrier, `validate-closeout-draft`, delegated critique, distinct `Behavior #N:` verdict or typed disposition, and `verify-closeout --expect-state CLOSED`.
 
 ## Discuss Before Activation
 
@@ -144,7 +144,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 
 ## Slice Log
 
-Execution has started after activation. #468, #503, #506, #502, and #507 have independently verified carriers and GitHub CLOSED readbacks; the 12 remaining rows stay planned and are not substituted by this log.
+Execution has started after activation. #468, #503, #506, #502, #507, and #511 have independently verified carriers and GitHub CLOSED readbacks; the 11 remaining rows stay planned and are not substituted by this log.
 
 Execution row schema: `issue` · live-read identity/time · selected/blocked/closed disposition · frozen SHA · reshape decision (`local-plan only` or authorized tracker edit) · carrier path+SHA · critique path · distinct behavior channel/verdict or typed disposition · GitHub adapter readback · non-claim · next unblock action. A blocked row must also name the open state, missing proof, owner/action, and explicit re-rank authorization before any later issue is started.
 
@@ -242,6 +242,22 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Generative benefit: confirmed the planned quality-spine benefit from #502 — the structured quality receipt owner made #507's input boundary explicit; #507 now lowers #511's risk by ensuring its inventory reads a stable adapter intent instead of a bootstrap rewrite.
 - Metrics: focused 131 tests total; locked local closeout and pre-push passed; remote Quality Core 30987189942 passed both jobs; GitHub issue #507 adapter readback is CLOSED.
 
+### Slice 6: #511 nose inventory scope and receipt contract closed
+
+- Objective: Make the nose inventory distinguish requested, scanned, missing, partial, query-error, and inapplicable outcomes before publishing and verifying #511 CLOSED.
+- Live read and frozen target: #511 was re-read through the GitHub adapter with comments after #507; the consumer shape had to support a `src/scripts/worker` layout without Charness-specific default roots, disclose absent optional roots, and keep advisory findings non-blocking.
+- Reshape decision: `local-plan only` — preserve the issue's JTBD and evidence, classify the defect as a scope/query/receipt contract failure, and keep the tracker body unchanged.
+- Commits: 0b97980f9f8820076feb0f5a9d9733f1a62fba53 — fix: make nose inventory scope explicit and adapter-driven; e16e05037faea6beef894b311ad1528d52654131 — test: cover nose inventory scope receipts; 0a02d940e6622742c8ef494ab4147e75b06b44e4 — docs: record issue 511 mutation proof; d4d61304c549ba39a4007ec7e0a9ba2c40a93ecc — durable closeout body. All were pushed through the applicable pre-push gate.
+- What changed: Added adapter-owned root resolution and receipt statuses, filtered/disclosed absent optional defaults, refused partial baselines and query errors, rejected unsafe adapter paths, restricted quality receipts to measured PASS phases, synchronized source/plugin/docs, and refreshed both D47 probes after the durable quality record changed the corpus.
+- Carrier: `charness-artifacts/issue/2026-08-05-issue-511-closeout-commit-message.md`; `validate-closeout-draft` returned `draft_verified` for direct-commit bug classification. Durable published body: `charness-artifacts/issue/2026-08-05-issue-511-closeout-body.md`.
+- Targeted verification: the coverage-repair suite passed 136 tests; the D47 probe/measurement suite passed 60 tests; the verification-locked closeout passed broad standing pytest and all deterministic gates; the resolved-base changed-line consumer analyzed 5/5 eligible files with `blocking: []`; the local pre-push quality gate passed 85 checks with 0 failures.
+- Critique: `charness-artifacts/critique/2026-08-05-issue-511-resolution-critique.md`; causal, contract, and two implementation fresh-eye rounds had clean boundary fingerprints, with the final Windows-root repair accepted-unreviewed under the two-round cap.
+- Distinct behavior: the verification-locked closeout plus resolved-base changed-line readback and pre-push gate were distinct from the focused scope/receipt tests that produced the implementation. Remote Quality Core run `30996843171` independently passed both jobs for 0a02d940; final durable-body head d4d61304 was independently verified by run `30998209731`, which also passed both jobs.
+- Remote boundary: `verify-closeout --expect-state CLOSED --commit-ref 0b97980f` returned `status: verified` with issue state CLOSED at https://github.com/corca-ai/charness/issues/511.
+- Alternatives rejected: Did not treat absent roots as zero-count evidence, force a consumer repository to adopt Charness paths, redesign the duplication floor, bypass pre-push, use `--no-verify`, run Cautilus, or claim private consumer/installed-host/provider roundtrips.
+- Generative benefit: confirmed the #507 contribution — stable adapter intent made the inventory's root-resolution diagnosis legible; #511 now gives #504 a measured quality-artifact corpus and explicit receipt semantics rather than a false clean zero.
+- Metrics: repair suite 136 passed; D47 suite 60 passed; local verification-locked closeout completed; local pre-push 85/0; remote Quality Core `30996843171` completed successfully in 18m19s and `30998209731` completed successfully in 1m35s; GitHub issue #511 adapter readback is CLOSED.
+
 ## Activation Record
 
 Activation record status: recorded — 2026-08-05T04:54:43Z.
@@ -305,16 +321,16 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed five slices: #468, #503, #506, #502, and #507 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
+Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed six slices: #468, #503, #506, #502, #507, and #511 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
 
-Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, and `30987189942` independently verified both deterministic and changed-line mutation jobs for #506, #502, and #507 respectively. Non-claims remain for remote CI on earlier slices, installed-host behavior, provider roundtrip, release, or live-agent behavior.
+Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, and `30998209731` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, and #511's implementation and final durable-body heads. Non-claims remain for remote CI on earlier slices, installed-host behavior, provider roundtrip, release, or live-agent behavior.
 Retro: not run — the active goal still has 12 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: #468, #503, #506, #502, and #507 verified; #511 is next; the remaining 12 issues stay planned and unclaimed.
+Disposition review: #468, #503, #506, #502, #507, and #511 verified; #504 is next; the remaining 11 issues stay planned and unclaimed.
 
 ## User Verification Instructions
 
-1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, and #507 are verified closed, while the goal remains active for the 12 remaining issues.
-2. Before #511 remedy design, re-read its live issue/comments and classify the nose-inventory contract against the now-stable quality adapter lifecycle.
+1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, and #511 are verified closed, while the goal remains active for the 11 remaining issues.
+2. Before #504 remedy design, re-read its live issue/comments and bind the retro-persistence contract to this owning goal.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact.
 
