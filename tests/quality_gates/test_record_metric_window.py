@@ -40,17 +40,35 @@ def _goal_text(window: str = "") -> str:
     )
 
 
-def test_record_metric_window_inserts_under_final_verification() -> None:
+def test_record_metric_window_appends_under_final_verification() -> None:
     updated = gal.record_metric_window(
         _goal_text(),
         started_at="2026-06-03T00:00:00Z",
         completed_at="2026-06-03T03:42:00Z",
         codex_session_file="charness-artifacts/rollout.jsonl",
     )
-    assert "## Final Verification\n\nHost metric window: started_at=2026-06-03T00:00:00Z" in updated
+    assert "## Final Verification\n\nAll slices verified.\n\nHost metric window: started_at=2026-06-03T00:00:00Z" in updated
     assert "completed_at=2026-06-03T03:42:00Z" in updated
     assert "All slices verified." in updated  # existing body preserved
     assert "## Auto-Retro" in updated
+
+
+def test_record_metric_window_preserves_exact_match_author_fill_sequence() -> None:
+    source = _goal_text().replace("All slices verified.", "Author placeholder.")
+    recorded = gal.record_metric_window(
+        source,
+        started_at="2026-06-03T00:00:00Z",
+        completed_at="2026-06-03T03:42:00Z",
+        codex_session_file="r.jsonl",
+    )
+
+    authored = recorded.replace(
+        "## Final Verification\n\nAuthor placeholder.",
+        "## Final Verification\n\nAuthor evidence filled.",
+    )
+    assert "Author placeholder." not in authored
+    assert "Author evidence filled." in authored
+    assert authored.count("Host metric window:") == 1
 
 
 def test_record_metric_window_is_idempotent_and_replaces_in_place() -> None:

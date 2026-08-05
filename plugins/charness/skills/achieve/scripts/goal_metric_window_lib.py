@@ -98,11 +98,13 @@ def record_metric_window(
     codex_session_file: str | None = None,
     claude_session_file: str | None = None,
 ) -> str:
-    """Insert or replace the `Host metric window:` line under `## Final Verification`.
+    """Append or replace the `Host metric window:` line in `## Final Verification`.
 
     Idempotent: a second call with the same values returns identical text, and a
     call with new values replaces the existing line in place rather than stacking
-    a second window the probe would have to disambiguate.
+    a second window the probe would have to disambiguate. When the section already
+    has authored content, append after it so an exact-match authoring pass remains
+    valid after the helper runs.
     """
     line = render_metric_window_line(
         started_at=started_at,
@@ -121,7 +123,7 @@ def record_metric_window(
         heading_line_end = len(text) if newline == -1 else newline + 1
         section_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
         existing_body = text[heading_line_end:section_end].strip("\n")
-        body = f"{line}\n\n{existing_body}" if existing_body else line
+        body = f"{existing_body}\n\n{line}" if existing_body else line
         suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
         return f"{text[:heading_line_end]}\n{body}{suffix}"
     raise ValueError("artifact has no `## Final Verification` section")

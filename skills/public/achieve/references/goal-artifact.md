@@ -371,7 +371,10 @@ python3 "$SKILL_DIR/scripts/record_metric_window.py" --goal-path <artifact> \
 ```
 
 The host adapter supplies the timestamps and rollout-file path it can prove; the
-portable helper only writes them, idempotently, under `## Final Verification`.
+portable helper only writes them, idempotently, after existing authored content
+under `## Final Verification`. Because the authored content remains a contiguous
+prefix, it is safe to fill or exact-match-replace that content either before or
+after invoking the helper.
 Then run the `retro` host-log probe with `--goal-path <artifact>` so host signals
 are filtered to that window. If the source lacks timestamps or a session file,
 say `unavailable` rather than presenting a thread-wide audit as a goal total.
