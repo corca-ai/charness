@@ -21,6 +21,7 @@ from route_public_fetch_routes import (  # noqa: E402
 )
 from route_stage_catalog import (  # noqa: E402
     FALLBACK_ORDER,
+    content_negotiated_markdown_stage,
     direct_stage,
     domain_stage,
     reader_fallback_stages,
@@ -63,9 +64,10 @@ def acquisition_plan_for_route(route_id: str) -> list[dict[str, object]]:
             | {
                 "when": "Use raw Reddit page only after RSS/JSON cannot satisfy the request.",
             },
+            content_negotiated_markdown_stage(),
             *terminal_stages(),
         ]
-    plan: list[dict[str, object]] = [direct_stage()]
+    plan: list[dict[str, object]] = [direct_stage(), content_negotiated_markdown_stage()]
     if route_id in {
         "twitter-syndication",
         "hacker-news-firebase",

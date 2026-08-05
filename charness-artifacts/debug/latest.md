@@ -1,1 +1,1 @@
-2026-08-05-issue-508-gather-classifier-debug.md
+2026-08-06-issue-510-markdown-negotiation-debug.md

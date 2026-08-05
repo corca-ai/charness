@@ -6,8 +6,17 @@ from typing import Sequence
 
 from url_reader import read_url
 
+HTML_ACCEPT = "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"
+MARKDOWN_ACCEPT = "text/markdown"
 
-def read_direct(url: str, *, timeout: int, direct_response_file: Path | None) -> tuple[str, str | None]:
+
+def read_direct(
+    url: str,
+    *,
+    timeout: int,
+    direct_response_file: Path | None,
+    accept: str = HTML_ACCEPT,
+) -> tuple[str, str | None]:
     if direct_response_file is not None:
         return direct_response_file.read_text(encoding="utf-8"), None
     return read_url(
@@ -15,7 +24,7 @@ def read_direct(url: str, *, timeout: int, direct_response_file: Path | None) ->
         timeout=timeout,
         headers={
             "User-Agent": "Mozilla/5.0 (compatible; charness-web-fetch/1.0)",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept": accept,
         },
     )
 

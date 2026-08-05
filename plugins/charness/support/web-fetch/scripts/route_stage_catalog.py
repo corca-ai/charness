@@ -2,6 +2,7 @@ from __future__ import annotations
 
 FALLBACK_ORDER = (
     "direct-public-fetch",
+    "content-negotiated-markdown",
     "domain-specific-route",
     "impersonated-public-fetch",
     "defuddle-reader-extraction",
@@ -25,6 +26,15 @@ def direct_stage() -> dict[str, object]:
         None,
         "Start here for public URLs unless a stronger domain route is known.",
         "classify-fetch-response",
+    )
+
+
+def content_negotiated_markdown_stage() -> dict[str, object]:
+    return stage(
+        "content-negotiated-markdown",
+        None,
+        "After a direct login wall or Markdown-looking URL, try the same public URL with an explicit Markdown Accept header.",
+        "classify-fetch-response plus representation and route trace",
     )
 
 

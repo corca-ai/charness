@@ -20,6 +20,7 @@ import acquire_public_url_io  # noqa: E402
 import acquire_public_url_payloads  # noqa: E402
 import browser_fallback_stages  # noqa: E402
 import impersonated_fetch_stage  # noqa: E402
+import markdown_negotiation_stage  # noqa: E402
 import patchright_headless_stage  # noqa: E402
 import reddit_source  # noqa: E402
 import twitter_exact_source  # noqa: E402
@@ -57,6 +58,7 @@ _invalid_scheme_payload = acquire_public_url_payloads.invalid_scheme_payload
 _payload_for = acquire_public_url_payloads.payload_for
 _read_direct = acquire_public_url_io.read_direct
 _run_command = acquire_public_url_io.run_command
+_MARKDOWN_ACCEPT = acquire_public_url_io.MARKDOWN_ACCEPT
 
 # Best-effort SIGTERM/SIGINT/atexit teardown of a live agent-browser session
 # only. SIGKILL is backstopped by the runtime-guard reaper; the raw host
@@ -314,12 +316,24 @@ def acquire(args: argparse.Namespace) -> dict[str, object]:
         )
     )
     direct_attempt = attempts[-1]
-    if route.get("route_id") != "reddit-feed":
-        _run_domain_specific_route(args, route, attempts)
     if direct_attempt.status == "invalid-proof":
         return _payload_for(args, route, attempts, "error")
     if _direct_attempt_sufficient(route, direct_attempt, proof_required=proof_required):
         return _payload_for(args, route, attempts, "success")
+    markdown_payload = markdown_negotiation_stage.try_stage(
+        args,
+        route,
+        attempts,
+        direct_attempt,
+        proof_required=proof_required,
+        read_direct=_read_direct,
+        markdown_accept=_MARKDOWN_ACCEPT,
+        payload_for=_payload_for,
+    )
+    if markdown_payload is not None:
+        return markdown_payload
+    if route.get("route_id") != "reddit-feed":
+        _run_domain_specific_route(args, route, attempts)
     youtube_browser_payload = _try_youtube_browser_payload(args, route, attempts, proof_required=proof_required)
     if youtube_browser_payload is not None:
         return youtube_browser_payload

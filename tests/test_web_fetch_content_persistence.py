@@ -3,6 +3,8 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -16,6 +18,66 @@ def run_helper(script: str, *args: str) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
     )
+
+
+class _MarkdownNegotiationHandler(BaseHTTPRequestHandler):
+    accepts: list[str] = []
+
+    def do_GET(self) -> None:  # noqa: N802
+        accept = self.headers.get("Accept", "")
+        self.accepts.append(accept)
+        if "text/markdown" in accept:
+            body = b"# Public Markdown\nmarkdown body\n"
+        else:
+            body = b"<html><body><h1>Sign in</h1><p>Please login to continue.</p></body></html>"
+        self.send_response(200)
+        self.send_header("Content-Type", "text/markdown; charset=utf-8" if "text/markdown" in accept else "text/html")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, _format: str, *_args: object) -> None:
+        return
+
+
+def test_gather_public_url_negotiates_markdown_after_html_login_wall(tmp_path: Path) -> None:
+    _MarkdownNegotiationHandler.accepts = []
+    server = HTTPServer(("127.0.0.1", 0), _MarkdownNegotiationHandler)
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        url = f"http://127.0.0.1:{server.server_port}/article"
+        result = run_helper(
+            "skills/public/gather/scripts/gather_public_url.py",
+            "--repo-root",
+            str(tmp_path),
+            "--url",
+            url,
+            "--expect-text",
+            "markdown body",
+            "--browser-mode",
+            "off",
+            "--slug",
+            "negotiated-markdown",
+            "--date",
+            "2026-08-06",
+            "--persist-extracted-content",
+            "--execute",
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["acquisition_disposition"] == "success"
+    assert payload["final_status"] == "success"
+    assert payload["content_persistence"] == "extracted"
+    assert payload["acquisition"]["selected_attempt"]["stage_id"] == "content-negotiated-markdown"
+    assert "text/markdown" in _MarkdownNegotiationHandler.accepts
+    record = Path(payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
+    assert "markdown body" in record
 
 
 def test_gather_public_url_does_not_persist_raw_json_response(tmp_path: Path) -> None:

@@ -145,6 +145,102 @@ def test_acquire_returns_youtube_browser_payload(monkeypatch, tmp_path: Path) ->
     assert apu.acquire(args) is expected
 
 
+def _markdown_retry_args(tmp_path: Path) -> SimpleNamespace:
+    return SimpleNamespace(
+        url="https://example.com/article",
+        repo_root=tmp_path,
+        intent="single",
+        browser_mode="off",
+        timeout=1,
+        direct_response_file=None,
+        domain_route_response_file=None,
+        live_domain_route=False,
+        expect_text=["markdown body"],
+        expect_regex=[],
+        expect_json_field=[],
+        include_selected_content=False,
+        selected_content_max_chars=200_000,
+    )
+
+
+def test_acquire_retries_public_markdown_after_direct_login_wall(monkeypatch, tmp_path: Path) -> None:
+    args = _markdown_retry_args(tmp_path)
+    calls: list[str | None] = []
+
+    def fake_read_direct(url: str, *, timeout: int, direct_response_file: Path | None, accept: str = apu.acquire_public_url_io.HTML_ACCEPT):
+        calls.append(accept if direct_response_file is None else "seeded")
+        if accept == apu.acquire_public_url_io.MARKDOWN_ACCEPT:
+            return "# Public Markdown\nmarkdown body", None
+        return "<html><body>Sign in to continue</body></html>", None
+
+    monkeypatch.setattr(apu, "_read_direct", fake_read_direct)
+    monkeypatch.setattr(apu, "_run_domain_specific_route", lambda *_args, **_kwargs: None)
+
+    payload = apu.acquire(args)
+
+    assert calls == [apu.acquire_public_url_io.HTML_ACCEPT, apu.acquire_public_url_io.MARKDOWN_ACCEPT]
+    assert payload["disposition"] == "success"
+    assert payload["selected_attempt"]["stage_id"] == "content-negotiated-markdown"
+    markdown_attempt = payload["attempts"][1]
+    assert markdown_attempt["details"]["representation"] == "markdown"
+    assert markdown_attempt["details"]["route"] == "content-negotiated-markdown"
+    assert markdown_attempt["details"]["trigger"] == "direct-login-wall"
+
+
+def test_acquire_keeps_failed_markdown_retry_blocked(monkeypatch, tmp_path: Path) -> None:
+    args = _markdown_retry_args(tmp_path)
+
+    def fake_read_direct(url: str, *, timeout: int, direct_response_file: Path | None, accept: str = apu.acquire_public_url_io.HTML_ACCEPT):
+        return "<html><body>Sign in to continue</body></html>", None
+
+    monkeypatch.setattr(apu, "_read_direct", fake_read_direct)
+    monkeypatch.setattr(apu, "_run_domain_specific_route", lambda *_args, **_kwargs: None)
+
+    payload = apu.acquire(args)
+
+    assert payload["disposition"] == "blocked"
+    assert [attempt["stage_id"] for attempt in payload["attempts"]][:2] == [
+        "direct-public-fetch",
+        "content-negotiated-markdown",
+    ]
+    assert payload["attempts"][1]["details"]["representation"] == "markdown"
+
+
+def test_acquire_retries_markdown_before_domain_route_failure(monkeypatch, tmp_path: Path) -> None:
+    args = _markdown_retry_args(tmp_path)
+    args.url = "https://news.ycombinator.com/item?id=123"
+    calls: list[str | None] = []
+
+    def fake_read_direct(url: str, *, timeout: int, direct_response_file: Path | None, accept: str = apu.acquire_public_url_io.HTML_ACCEPT):
+        calls.append(accept if direct_response_file is None else "seeded")
+        return "<html><body>Sign in to continue</body></html>", None
+
+    def domain_error(_args, _route, attempts) -> None:
+        attempts.append(AcquisitionAttempt(stage_id="domain-specific-route", tool_id="curl", status="error"))
+
+    monkeypatch.setattr(apu, "_read_direct", fake_read_direct)
+    monkeypatch.setattr(apu, "_run_domain_specific_route", domain_error)
+
+    payload = apu.acquire(args)
+
+    assert calls == [apu.acquire_public_url_io.HTML_ACCEPT, apu.acquire_public_url_io.MARKDOWN_ACCEPT]
+    assert payload["disposition"] == "degraded"
+    assert [attempt["stage_id"] for attempt in payload["attempts"]][:3] == [
+        "direct-public-fetch",
+        "content-negotiated-markdown",
+        "domain-specific-route",
+    ]
+
+
+def test_route_plan_places_markdown_before_domain_fallback() -> None:
+    stage_ids = [
+        stage["stage_id"]
+        for stage in apu.route_for_url("https://news.ycombinator.com/item?id=123")["acquisition_plan"]
+    ]
+    assert stage_ids.index("direct-public-fetch") < stage_ids.index("content-negotiated-markdown")
+    assert stage_ids.index("content-negotiated-markdown") < stage_ids.index("domain-specific-route")
+
+
 def test_route_public_fetch_maps_github_to_grant_or_cli_strategy() -> None:
     result = run_helper(
         "skills/support/web-fetch/scripts/route_public_fetch.py",
