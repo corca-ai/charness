@@ -17,8 +17,9 @@ historical critique artifacts validate with current packet bindings; the
 resolution critique and closeout draft returned valid/delegated and
 `draft_verified`. A standalone real CLI fixture readback returned conflict,
 preserved adapter bytes, safe migration guidance, no dotted hollow-leaf
-surfaces, and stderr warning output. Remote CI and issue readback are pending
-the carrier commit and publish; they are not claimed here.
+surfaces, and stderr warning output. Remote Quality Core run `31003204282`
+passed both jobs, and the GitHub adapter read back #496 `CLOSED` with the
+carrier commit `be4e65df746e84c79cb005b9fe8f1eb5da9d0d50`.
 
 ## Runtime Signals
 
@@ -57,8 +58,6 @@ the carrier commit and publish; they are not claimed here.
 
 ## Missing
 
-- Remote Quality Core and GitHub issue state readback are intentionally pending
-  the commit/push boundary.
 - Installed-host, provider, and live-agent rendering behavior remain
   unobservable in this repository and are not claimed.
 
@@ -98,7 +97,8 @@ the carrier commit and publish; they are not claimed here.
 - `python3 scripts/validate_critique_artifacts.py --repo-root . --paths charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md --include-worktree` — passed.
 - `issue_tool.py validate-closeout-draft --classification deferred-work` — `draft_verified`.
 - Standalone temporary-repository invocation of `skills/public/quality/scripts/bootstrap_adapter.py` — conflict, no dotted command surfaces, migration guidance, stderr warning, adapter preserved.
-- Remote Quality Core and `verify-closeout --expect-state CLOSED` — pending publish; no remote claim yet.
+- `gh run view 31003204282 --repo corca-ai/charness --json status,conclusion,headSha,jobs,url` — independently read `success` for both Core deterministic gates and changed-line mutation coverage at the pushed carrier head.
+- `python3 skills/public/issue/scripts/issue_tool.py verify-closeout --repo corca-ai/charness --number 496 --classification deferred-work --carrier direct-commit --commit-ref be4e65df746e84c79cb005b9fe8f1eb5da9d0d50 --body-file charness-artifacts/issue/2026-08-05-issue-496-closeout-body.md --expect-state CLOSED --repo-root .` — `status: verified`, state `CLOSED`.
 
 ## Recommended Next Quality Moves
 
@@ -114,3 +114,10 @@ the carrier commit and publish; they are not claimed here.
 ## History
 
 - [Previous quality review](history/2026-07-19-portable-proof-path-learning-review.md)
+
+## Published Boundary
+
+- Remote Quality Core: `31003204282` — `success`; both jobs passed, including changed-line mutation coverage. Run: https://github.com/corca-ai/charness/actions/runs/31003204282
+- GitHub issue: #496 `CLOSED`; adapter readback: https://github.com/corca-ai/charness/issues/496
+- Carrier commit: `be4e65df746e84c79cb005b9fe8f1eb5da9d0d50`
+- Remaining non-claims: installed-host, provider, and live-agent behavior; Cautilus was not invoked.

@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-05T11:35:25Z",
-  "prepared_for": "issue #496 resolution closeout at current HEAD",
+  "generated_at": "2026-08-05T12:17:06Z",
+  "prepared_for": "current #496 closeout after durable-surface sync",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n- tests/quality_gates/test_quality_bootstrap_absence.py\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_quality_bootstrap_absence.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n- charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md\n- charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md, charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\nPlanned sync commands before validators:\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "a10eb22a59584c9a8fdfb209d14dfc5fc02381d0",
+    "base_head": "be4e65df746e84c79cb005b9fe8f1eb5da9d0d50",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md",
@@ -79,7 +79,7 @@
       },
       {
         "path": "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
-        "content_sha256": "2db6c184e3e28bcd741be0fc72c2ea70432fefcaa9a3acf6f610acf0802132dc"
+        "content_sha256": "cb15d30bf5c03324cf3921fbb9b0aa5d4c526421f92d99f3782f95d7ae3063b7"
       },
       {
         "path": "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
@@ -107,10 +107,10 @@
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "staged_patch_sha256": "c1798789b2131e96b996ef3281c306884681f386c57285b24a8773107d3900fe",
-    "unstaged_patch_sha256": "ff8111a2ee96372c13189c6a5d969ff76d3f8eb2271bd25d3ac974f87f68777d",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "295d0a2c3c6d33f8a87bafa8aaf5b17c50bf39792a12b17da26382bf2a50df4a",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "c43c8fd174f56645db7f77add466d083ac6d7c5cf1789d6d148ee230ac7da180"
+    "identity_sha256": "ca1fecb8283faf5482c7218a3f9c66330a89cc920f2f90f4447b9b312410ea5d"
   }
 }

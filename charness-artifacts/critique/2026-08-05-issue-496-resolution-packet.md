@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-05T11:35:25Z
-- **Prepared for**: issue #496 resolution closeout at current HEAD
+- **Generated**: 2026-08-05T12:17:06Z
+- **Prepared for**: current #496 closeout after durable-surface sync
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `c43c8fd174f56645db7f77add466d083ac6d7c5cf1789d6d148ee230ac7da180`
+- **Reviewed input identity**: `ca1fecb8283faf5482c7218a3f9c66330a89cc920f2f90f4447b9b312410ea5d`
 - **Reviewed paths**: 9
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,24 +28,27 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md
-- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md
+- charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md
 - charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json
 - charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
-- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md
-- tests/quality_gates/test_quality_bootstrap_absence.py
+- charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md
+- charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md
+- charness-artifacts/quality/sloc-inventory/latest.json
+- docs/handoff.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md
+  source matches: charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md, charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md, docs/handoff.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
+- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.
+  source matches: charness-artifacts/quality/sloc-inventory/latest.json
+  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
+  source matches: charness-artifacts/critique/2026-08-05-issue-496-resolution-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- repo-python: Repo-owned Python code and tests.
-  source matches: tests/quality_gates/test_quality_bootstrap_absence.py
-  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
+
+Planned sync commands before validators:
+- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json
 ```
 
 ## Non-Goals For This Contract

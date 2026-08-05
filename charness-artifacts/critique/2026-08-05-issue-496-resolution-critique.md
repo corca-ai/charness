@@ -60,8 +60,8 @@ untagged file hashes, returned `current` for the packet identities.
 ## Reviewed Input Identity
 
 - Packet path: charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json
-- Packet SHA256: 0cee9b9c915998febd70c67cf62787352387528ea9b0470fd9314c5fa7bf45d8
-- Identity SHA256: c43c8fd174f56645db7f77add466d083ac6d7c5cf1789d6d148ee230ac7da180
+- Packet SHA256: d7120129a6cb19a03d8b708c1c945cbd6ac37bac149c21e6dc275d900877f78c
+- Identity SHA256: ca1fecb8283faf5482c7218a3f9c66330a89cc920f2f90f4447b9b312410ea5d
 - Repository verifier: `verify_reviewed_input_identity` returned `(True, 'current')`.
 - Historical packet/artifact binding also returned `(True, 'current')` after its
   packet was regenerated and its canonical ownership heading restored.
@@ -86,9 +86,11 @@ dotted `commands.*` requested surfaces, `warning_has_migrate=true`,
 `adapter_preserved=true`. This is the channel named by `Behavior #496` in the
 closeout carrier.
 
-## Pre-Close Action
+## Closeout Action
 
-Create the deferred-work carrier with the full ledger, bind `Behavior #496` to
-the distinct CLI readback above, validate the draft, and only then publish and
-read back the remote issue state. No remote closure, installed-host behavior,
-provider behavior, release behavior, or Cautilus evaluation is claimed here.
+The deferred-work carrier was created with the full ledger, `Behavior #496` was
+bound to the distinct CLI readback above, and the draft validated before
+publication. Remote Quality Core run `31003204282` independently passed both
+jobs, and the GitHub adapter read back issue #496 `CLOSED` through
+`verify-closeout --expect-state CLOSED`. Installed-host behavior, provider
+behavior, release behavior, and Cautilus evaluation remain unclaimed.
