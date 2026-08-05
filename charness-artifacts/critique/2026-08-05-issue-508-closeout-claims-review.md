@@ -42,6 +42,10 @@ locally without claiming the external issue-close boundary.
   pending-review wording with the current remote-publish disposition. The
   sixth validator-aware claims window returned PASS against v5 and confirmed
   that the repaired quality record is valid and current.
+- The seventh claims window was regenerated after the explicit #508 local-only
+  re-rank and returned HOLD because this durable review artifact still named
+  v5 and still said #509 was blocked. The reviewed inputs and packet identity
+  were current; this artifact binding was the remaining repair.
 - The remaining external boundary is intentional and is not a defect in the
   local closeout record: one final gated push, independent remote evidence,
   distinct behavior proof, and GitHub `CLOSED` readback are still pending.
@@ -51,9 +55,10 @@ locally without claiming the external issue-close boundary.
 - F1 | bin: act-before-ship | evidence: strong | ref: `2026-08-05-issue-508-closeout-claims-packet-packet.json` | action: fix | note: first claims window was held because all six reviewed-input hashes were stale after parent record repairs; repaired by generating the v2 packet and rebinding the review
 - F2 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md:28` | action: fix | note: the runtime section retained a mutation-deferred sentence after the proof passed; repaired to the final base/head and zero-blocker result
 - F3 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:389` | action: fix | note: bind the final disposition review to its own artifact path; the previous prose summary was parsed as an evidence path
-- F4 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN and #509 remains blocked until the final publish/remote closeout boundary
+- F4 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN/local-only-by-contract while #509 is permitted to proceed locally; final publish/remote closeout remains deferred
 - F5 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md` | action: document | note: the carrier is locally validated and committed, but its `Closes #508` effect is intentionally unproven until the single final push and post-push readback
 - F6 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md` | action: fix | note: the quality artifact's recommended move card used the obsolete `completed` prefix and said the claims review was still required; both were repaired before the v5 review
+- F7 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md:80-118` | action: fix | note: rebind this canonical review from v5 to the current v7 packet and remove the obsolete claim that #509 is blocked; a fresh-eye pass remains required after the repair
 
 ## Reviewer Tier Evidence
 
@@ -71,25 +76,27 @@ disposition binding changed, a fourth validator-aware distinct reviewer
 returned PASS after the v3 packet and review artifact repair, and a fifth
 validator-aware distinct reviewer (Fermat) returned PASS after the v4 carrier
 binding, and a sixth validator-aware distinct reviewer (Kepler) returned PASS
-after the quality-state repair and v5 packet binding. Parent-side boundary
-fingerprints were clean for all review windows; the v5 window returned
-`verdict: clean` with `drift: []`.
+after the quality-state repair and v5 packet binding. The seventh reviewer
+returned HOLD because this artifact had not yet been rebound from v5 to v7;
+that repair is recorded below and needs one fresh-eye read before PASS. Parent-
+side boundary fingerprints were clean for all review windows; the v7 window
+returned `verdict: clean` with `drift: []`.
 
 ## Packet Consumed
 
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v5-packet.json`
-- Packet SHA256: `8dfda6f7c69786485cc2c0b7b12e83500b9e9f784361d5eddbf437420496ee19`
-- Identity SHA256: `acabaa905ea861af93f1a3b50e90b087f0d9078ef9f1426730cdeb3ebed31d1b`
-- Prior packet: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v4-packet.json` — superseded by the repaired quality-state binding in v5.
+- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
+- Packet SHA256: `0aec433d8a9a7bfc593a53b0fd59c70f3c924729bb56b8ca98a49f0f58a8065f`
+- Identity SHA256: `3ee34509ec6862acee6e925aed980644b34a597dbc74e1bcbaa7782a08dbafe8`
+- Prior packet: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v6-packet.json` — superseded by the v7 reviewed-input binding and the v7 canonical-artifact repair.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v5-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v5-packet.json`
-- Packet SHA256: `8dfda6f7c69786485cc2c0b7b12e83500b9e9f784361d5eddbf437420496ee19`
-- Identity SHA256: `acabaa905ea861af93f1a3b50e90b087f0d9078ef9f1426730cdeb3ebed31d1b`
+- Packet consumed: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
+- Packet SHA256: `0aec433d8a9a7bfc593a53b0fd59c70f3c924729bb56b8ca98a49f0f58a8065f`
+- Identity SHA256: `3ee34509ec6862acee6e925aed980644b34a597dbc74e1bcbaa7782a08dbafe8`
 
-The repository identity verifier returned `(True, "current")` for the v5
+The repository identity verifier returned `(True, "current")` for the v7
 packet. The raw packet SHA is intentionally distinct from the mode-tagged
 `sha256-v2` identity digest.
 
@@ -105,8 +112,10 @@ packet. The raw packet SHA is intentionally distinct from the mode-tagged
 
 ## Verdict
 
-PASS — #508's local claims and direct-commit carrier are current and internally
-consistent. The implementation carrier is
+HOLD — #508's local claims and direct-commit carrier are current and internally
+consistent, and the v7 packet is current, but this artifact has just been
+rebound from the stale v5 record and must receive one fresh-eye verification
+before it can say PASS. The implementation carrier is
 `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the quality/probe carrier and
 local proof head are `2f3fe3984b14f91487762dbe37e7edf91b722aba`; the quality
 state repair is `346eb69d`; and the
@@ -115,5 +124,5 @@ The carrier is `carrier_verified` locally, while the live issue remains OPEN.
 The typed `Behavior #508: local-only-by-contract` disposition is based on the
 distinct 39-test channel and does not imply remote CI, push, live/provider
 acquisition, installed-host behavior, Cautilus, distinct external behavior, or
-GitHub `CLOSED` readback. #509 remains blocked until that external boundary is
-actually completed.
+GitHub `CLOSED` readback. #509 is permitted to proceed locally under the
+recorded re-rank; the external boundary remains deferred.
