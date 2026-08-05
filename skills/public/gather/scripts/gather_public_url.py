@@ -8,7 +8,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import unquote, urlparse
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 SUPPORT_ACQUIRE = SCRIPT_DIR.parents[2] / "support" / "web-fetch" / "scripts" / "acquire_public_url.py"
@@ -43,9 +43,9 @@ def _run_json(command: list[str], *, input_text: str | None = None) -> dict[str,
 def _slug_from_url(url: str) -> str:
     parsed = urlparse(url)
     host = (parsed.netloc or "public-url").lower().replace("www.", "", 1)
-    path = "/".join(part for part in parsed.path.split("/") if part)
+    path = "/".join(part for part in unquote(parsed.path).split("/") if part).lower()
     identity = "-".join(part for part in (host, path) if part)
-    safe = "".join(ch if ch.isalnum() else "-" for ch in identity).strip("-")
+    safe = "".join(ch if ch.isascii() and ch.isalnum() else "-" for ch in identity).strip("-")
     safe = "-".join(part for part in safe.split("-") if part)
     digest = hashlib.sha256(url.encode("utf-8")).hexdigest()[:8]
     return f"{safe or 'public-url'}-{digest}"

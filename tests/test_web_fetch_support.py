@@ -581,6 +581,62 @@ def test_gather_public_url_default_slug_distinguishes_same_host_urls(tmp_path: P
     assert second_record.is_file()
 
 
+def test_gather_public_url_normalizes_encoded_uppercase_default_slug(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://wiki.g15e.com/pages/AOP%20and%20CSS.md",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["status"] == "updated"
+    assert payload["record_status"] == "updated"
+    record_path = Path(payload["write_record"]["record_artifact_path"])
+    assert record_path.name == "2026-05-16-wiki-g15e-com-pages-aop-and-css-md-e0a17463.md"
+    assert record_path.is_file()
+    assert "# Gathered Public URL" in record_path.read_text(encoding="utf-8")
+
+
+def test_gather_public_url_reduces_encoded_non_ascii_default_slug_to_ascii(tmp_path: Path) -> None:
+    direct = tmp_path / "direct.html"
+    direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
+
+    result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/pages/%E3%83%86%E3%82%B9%E3%83%88.md",
+        "--direct-response-file",
+        str(direct),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--execute",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    record_path = Path(payload["write_record"]["record_artifact_path"])
+    assert record_path.name == "2026-05-16-example-com-pages-md-d38ce516.md"
+    assert record_path.is_file()
+    assert "# Gathered Public URL" in record_path.read_text(encoding="utf-8")
+
+
 def test_acquire_public_url_accepts_weak_direct_success_without_positive_proof(tmp_path: Path) -> None:
     direct = tmp_path / "direct.html"
     direct.write_text("<html><body>" + ("useful content " * 120) + "</body></html>", encoding="utf-8")
