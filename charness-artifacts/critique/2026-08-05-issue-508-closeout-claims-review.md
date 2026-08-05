@@ -46,6 +46,10 @@ locally without claiming the external issue-close boundary.
   re-rank and returned HOLD because this durable review artifact still named
   v5 and still said #509 was blocked. The reviewed inputs and packet identity
   were current; this artifact binding was the remaining repair.
+- The repaired-artifact fresh-eye window returned PASS against v7. It verified
+  the exact packet SHA and current identity, #508 OPEN/local-only-by-contract,
+  the authorized #509 local re-rank, and the preserved one-final-push
+  boundary.
 - The remaining external boundary is intentional and is not a defect in the
   local closeout record: one final gated push, independent remote evidence,
   distinct behavior proof, and GitHub `CLOSED` readback are still pending.
@@ -58,7 +62,7 @@ locally without claiming the external issue-close boundary.
 - F4 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN/local-only-by-contract while #509 is permitted to proceed locally; final publish/remote closeout remains deferred
 - F5 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md` | action: document | note: the carrier is locally validated and committed, but its `Closes #508` effect is intentionally unproven until the single final push and post-push readback
 - F6 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md` | action: fix | note: the quality artifact's recommended move card used the obsolete `completed` prefix and said the claims review was still required; both were repaired before the v5 review
-- F7 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md:80-118` | action: fix | note: rebind this canonical review from v5 to the current v7 packet and remove the obsolete claim that #509 is blocked; a fresh-eye pass remains required after the repair
+- F7 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md:80-118` | action: fix | note: rebound this canonical review from v5 to the current v7 packet, removed the obsolete claim that #509 is blocked, and received the repaired-artifact fresh-eye PASS
 
 ## Reviewer Tier Evidence
 
@@ -78,8 +82,8 @@ validator-aware distinct reviewer (Fermat) returned PASS after the v4 carrier
 binding, and a sixth validator-aware distinct reviewer (Kepler) returned PASS
 after the quality-state repair and v5 packet binding. The seventh reviewer
 returned HOLD because this artifact had not yet been rebound from v5 to v7;
-that repair is recorded below and needs one fresh-eye read before PASS. Parent-
-side boundary fingerprints were clean for all review windows; the v7 window
+the repaired-artifact reviewer (Galileo) then returned PASS. Parent-side
+boundary fingerprints were clean for all review windows; the v7 windows
 returned `verdict: clean` with `drift: []`.
 
 ## Packet Consumed
@@ -112,10 +116,8 @@ packet. The raw packet SHA is intentionally distinct from the mode-tagged
 
 ## Verdict
 
-HOLD — #508's local claims and direct-commit carrier are current and internally
-consistent, and the v7 packet is current, but this artifact has just been
-rebound from the stale v5 record and must receive one fresh-eye verification
-before it can say PASS. The implementation carrier is
+PASS — #508's local claims and direct-commit carrier are current and internally
+consistent. The implementation carrier is
 `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the quality/probe carrier and
 local proof head are `2f3fe3984b14f91487762dbe37e7edf91b722aba`; the quality
 state repair is `346eb69d`; and the
@@ -125,4 +127,5 @@ The typed `Behavior #508: local-only-by-contract` disposition is based on the
 distinct 39-test channel and does not imply remote CI, push, live/provider
 acquisition, installed-host behavior, Cautilus, distinct external behavior, or
 GitHub `CLOSED` readback. #509 is permitted to proceed locally under the
-recorded re-rank; the external boundary remains deferred.
+recorded re-rank; the external boundary remains deferred. The repaired-artifact
+fresh-eye reviewer returned PASS with a clean boundary fingerprint.
