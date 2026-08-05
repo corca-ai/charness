@@ -3,9 +3,9 @@ Date: 2026-08-05
 
 ## Decision Under Review
 
-Whether the #508 local implementation slice, its goal/handoff/quality claims,
-and its local proof can be recorded as complete locally without claiming the
-external issue-close boundary.
+Whether the #508 local implementation slice, its direct-commit carrier, its
+goal/handoff/quality claims, and its local proof can be recorded as complete
+locally without claiming the external issue-close boundary.
 
 ## Failure Angles
 
@@ -33,6 +33,11 @@ external issue-close boundary.
   identity verifier, confirmed the v3 packet is current, and rechecked the
   bound disposition path, proof/current-head distinction, non-claims, and
   strict sequence.
+- The fifth validator-aware claims window returned PASS after the local direct-
+  commit carrier and goal/handoff binding were added. It verified the v4 packet
+  under `sha256-v2`, confirmed the carrier is `draft_verified`/`carrier_verified`
+  at local commit `f81170c9`, and confirmed that the typed local behavior
+  disposition does not imply GitHub closure.
 - The remaining external boundary is intentional and is not a defect in the
   local closeout record: one final gated push, independent remote evidence,
   distinct behavior proof, and GitHub `CLOSED` readback are still pending.
@@ -43,6 +48,7 @@ external issue-close boundary.
 - F2 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md:28` | action: fix | note: the runtime section retained a mutation-deferred sentence after the proof passed; repaired to the final base/head and zero-blocker result
 - F3 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:389` | action: fix | note: bind the final disposition review to its own artifact path; the previous prose summary was parsed as an evidence path
 - F4 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN and #509 remains blocked until the final publish/remote closeout boundary
+- F5 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md` | action: document | note: the carrier is locally validated and committed, but its `Closes #508` effect is intentionally unproven until the single final push and post-push readback
 
 ## Reviewer Tier Evidence
 
@@ -56,23 +62,29 @@ external issue-close boundary.
 
 parent-delegated — the first unnamed claims reviewer returned HOLD, the second
 distinct reviewer returned PASS, the third returned HOLD after the goal
-disposition binding changed, and a fourth validator-aware distinct reviewer
-returned PASS after the v3 packet and review artifact repair. Parent-side
-boundary fingerprints were clean for all review windows.
+disposition binding changed, a fourth validator-aware distinct reviewer
+returned PASS after the v3 packet and review artifact repair, and a fifth
+validator-aware distinct reviewer (Fermat) returned PASS after the v4 carrier
+binding. Parent-side boundary fingerprints were clean for all review windows;
+the v4 window returned `verdict: clean` with `drift: []`.
 
 ## Packet Consumed
 
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
-- Packet SHA256: `d2de6128b8c7eedb4a596d3d08d1ccbb5fdad8693c3a9e5ae0cd33c9aba8ae69`
-- Identity SHA256: `7e4eea2edbfed2c34243aece94685d4255624daa9f9844a7ab93028580a9bd2d`
-- Prior HOLD packet: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-packet.json` — stale identity repaired; it is not the current binding.
+- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v4-packet.json`
+- Packet SHA256: `d61b46f2473aff2312f218d8e2305729d549d2e28879fa80791dded7bb08b6e6`
+- Identity SHA256: `bbd47158dca0037975400781c45633765035d7be7caa229ed4e6cc1d4268c768`
+- Prior packet: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json` — superseded by the carrier/goal/handoff binding in v4.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
-- Packet SHA256: `d2de6128b8c7eedb4a596d3d08d1ccbb5fdad8693c3a9e5ae0cd33c9aba8ae69`
-- Identity SHA256: `7e4eea2edbfed2c34243aece94685d4255624daa9f9844a7ab93028580a9bd2d`
+- Packet consumed: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v4-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v4-packet.json`
+- Packet SHA256: `d61b46f2473aff2312f218d8e2305729d549d2e28879fa80791dded7bb08b6e6`
+- Identity SHA256: `bbd47158dca0037975400781c45633765035d7be7caa229ed4e6cc1d4268c768`
+
+The repository identity verifier returned `(True, "current")` for the v4
+packet. The raw packet SHA is intentionally distinct from the mode-tagged
+`sha256-v2` identity digest.
 
 ## Boundary Ownership
 
@@ -86,11 +98,14 @@ boundary fingerprints were clean for all review windows.
 
 ## Verdict
 
-PASS — #508's local claims are current and internally consistent. The
-implementation carrier is `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the
-quality/probe carrier and local proof head are
-`2f3fe3984b14f91487762dbe37e7edf91b722aba`. Subsequent commits only carry
-quality/claims/disposition records; no source mutation-pool content changed
-after the proof head. The records explicitly do not claim remote CI, push,
-live/provider acquisition, installed-host behavior, Cautilus, distinct external
-behavior, or GitHub `CLOSED` readback.
+PASS — #508's local claims and direct-commit carrier are current and internally
+consistent. The implementation carrier is
+`2ac38decc6cdaa6721dc93167fddc410367acd4f`; the quality/probe carrier and
+local proof head are `2f3fe3984b14f91487762dbe37e7edf91b722aba`; and the
+validated direct-commit carrier is `f81170c9eb133bc4a48bf984100a1d93eed8566f`.
+The carrier is `carrier_verified` locally, while the live issue remains OPEN.
+The typed `Behavior #508: local-only-by-contract` disposition is based on the
+distinct 39-test channel and does not imply remote CI, push, live/provider
+acquisition, installed-host behavior, Cautilus, distinct external behavior, or
+GitHub `CLOSED` readback. #509 remains blocked until that external boundary is
+actually completed.

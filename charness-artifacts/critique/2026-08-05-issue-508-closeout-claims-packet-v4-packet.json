@@ -1,0 +1,106 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-05T14:51:02Z",
+  "prepared_for": "Issue #508 local closeout claims review after carrier binding",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- (none — clean working tree)\n\nOwning surfaces:\n- (no surfaces matched the changed paths)\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "f81170c9eb133bc4a48bf984100a1d93eed8566f",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-08-05-issue-508-implementation-final-binding-v2-packet.json",
+      "charness-artifacts/critique/2026-08-05-issue-508-resolution-critique.md",
+      "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+      "charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md",
+      "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
+      "charness-artifacts/spec/2026-08-05-issue-508-gather-classifier-contract.md",
+      "docs/handoff.md"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-08-05-issue-508-implementation-final-binding-v2-packet.json",
+        "content_sha256": "aebda5e24d8e53fb0f463985cc4907336131ed1014c8ced90a23e44fc8f84111"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-05-issue-508-resolution-critique.md",
+        "content_sha256": "3ee4549ec8e6a347d2273e7c377672a194f77a464b68a4ddffe2a55435cdb17e"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+        "content_sha256": "2d4f0841b5f19533fabd1c2c268041138902f403153b7f46779b9c2ce663f3de"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md",
+        "content_sha256": "4ffc38eb073a2f7af1d9b522f6d7d5da88941b0a9764c66772fb7f08d0c93b17"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
+        "content_sha256": "d163ad5c3a550b839db4e0d947de79ec99ac9572f0e2b7a47ff851f04400575a"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-05-issue-508-gather-classifier-contract.md",
+        "content_sha256": "e3929a07d080101045f8042a2d6dc5fb4c01aaccdee1a826bd3a663bfef3e89c"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "f89a58c80f3b28d28c2432028fddd82eb44fca2f92fa50267bb1e62a754640fe"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "bbd47158dca0037975400781c45633765035d7be7caa229ed4e6cc1d4268c768"
+  }
+}
