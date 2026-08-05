@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b. #508 remains OPEN as a locally verified local-only-by-contract disposition; #509 is locally implemented and carrier-validated, also remains OPEN under the same publish boundary.
-- Current slice intent: preserve #508/#509 local/remote boundaries and repair the quality runner's contended runtime measurement without claiming either issue CLOSED.
-- Next action: bind the final local quality/critique/retro/handoff records, run the locked closeout and pre-push gate, then perform exactly one final push. Read remote CI and issue state independently afterward; do not start #510 without a new recorded re-rank.
+- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b, and #508/#509 were independently read CLOSED before this run. #512, #513, #505, #510, #480, #484, #482, and #483 remain OPEN remotely; #512/#513/#505 now have local carriers ready under the one-push boundary.
+- Current slice intent: preserve the #505 local/remote boundary after a proof-preserving focused mutation export improvement; continue the remaining six current issue slices without claiming any of them CLOSED before the final publish.
+- Next action: continue #510, then #480 → #484 → #482 → #483; after all carriers and local gates are ready, run one final full gate and exactly one push. Read remote CI and every issue state independently afterward.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -405,6 +405,18 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Off-goal findings: No new issue filed. No claim about a consumer Lefthook failure run, Husky/simple-git-hooks behavior, provider/install behavior, remote CI, release, tag, version bump, or Cautilus. Consumer final-order/log proof is a valid deferred non-claim.
 - Lessons carried forward: Guidance must distinguish config guarantees from consumer acceptance, and every no-log fallback must be self-contained under truncation. Next unblock action: continue with #505 after re-reading live state and its deferred-work boundary, keeping all carriers local until one final push/readback.
 - Metrics: Focused 27 tests passed; final pre-commit completed all listed checks. No remote CI or GitHub CLOSED readback is claimed for this local row.
+
+### Slice 15: #505 focused mutation coverage export — local carrier ready
+
+- Objective: Make the local mutation/quality-gate runtime actionable without weakening changed-line coverage, failure visibility, boundary contracts, or the existing proof floor.
+- Live read: issue #505 was OPEN with `comments_read: true` and no comments. The quality planner classified it as deferred-work; the resolution brief continued inline with no open decisions.
+- Commits: `672fc745ae3f90b2e6b38bf72c1e8c826e509fc5` — implementation; `8f46f57f8a33b16ffd0cdee1a415f3e843ffe614` — carrier and durable quality/critique records. Carrier SHA256 `d62646db68fa2690db0715511dba7b89c099ee6c88431649f193a6f7a8c8c6c8`.
+- What changed: The focused producer still runs the exact mapper-selected tests, but exports coverage JSON only for mapped changed pool paths. The export uses one comma-separated coverage.py `--include` argument so multiple files remain covered; broad closeout callers remain unfiltered and the freshness marker remains after successful export. Source/plugin mirrors are synchronized.
+- Measured proof: same combined coverage data exported in `9.54s` and `6,746,080` bytes without a filter versus `0.31s` and `34,158` bytes for the four changed paths. The clean focused producer/consumer roundtrip took `30.00s`, returned `0`/`clean`, and analyzed `4/4`; the focused regression suite passed 57 tests. These timings are export-phase evidence; no proof-floor or test-scope reduction is claimed.
+- Critique: `charness-artifacts/critique/2026-08-06-issue-505-focused-export-resolution-critique.md`; first named coverage-scope review found the repeated-include multi-file blocker, the repaired-surface review returned clean, and both reviewer-boundary windows verified clean. Quality record: `charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md`.
+- Carrier: `charness-artifacts/issue/2026-08-06-issue-505-closeout-commit-message.md`; `validate-closeout-draft` returned `draft_verified`. `Behavior #505: local-only-by-contract` is a distinct producer/consumer roundtrip channel from the focused pytest suite.
+- GitHub readback: not run; #505 remains OPEN by design until the single final push. No remote CI, installed-host, provider, release, tag, version-bump, or Cautilus claim is made.
+- Generative benefit: the focused lane now removes repository-wide JSON export work while retaining the broad final backstop, lowering final quality/push pressure for the remaining issue bundle without moving a correctness floor. Next: continue #510 and keep the remaining carriers local until the one final publish boundary.
 
 ## Activation Record
 
