@@ -79,6 +79,8 @@ Then load only the references needed for the detected state:
 - installable CLI / plugin / agent-facing local surface: `references/probe-surface.md`
 - repo wants durable retrospective pickup: `references/retro-memory-seam.md`
 - optional adapter, policy, or runtime seams: `references/bootstrap-seams.md`
+- detected Lefthook configuration or hook-failure visibility request:
+  `references/hook-failure-visibility.md`
 
 ## Workflow
 
@@ -191,6 +193,7 @@ stays in `references/normalization-flow.md`.
 - `references/probe-surface.md`
 - `references/retro-memory-seam.md`
 - `references/bootstrap-seams.md`
+- `references/hook-failure-visibility.md`
 - `references/github-actions-defaults.md`
 - `references/operator-acceptance-synthesis.md`
 - `../../shared/references/agent-assessment-invariant.md`

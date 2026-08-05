@@ -106,6 +106,7 @@ Notes:
 - `prepare.skip_if_doctor_passes` defaults to `true`; pass `--force` to bypass.
 - `doctor.checks` extends the canonical baseline. Each check is an `argv` invocation with optional `expect_exit_code` (default 0) and `next_action_hint` surfaced on failure.
 - `doctor.disable_canonical_checks` opts out of a canonical check by id (`git_common_dir`, `hooks_path`, `lefthook_shim`, `husky_dir`). Use only when you genuinely do not use that hook surface.
+- `prepare.commands` are worktree setup commands, not lefthook hook commands. For consumer lefthook `pre-commit`/`pre-push` entries, apply the [hook failure visibility contract](../skills/public/setup/references/hook-failure-visibility.md): declare `fail_text`, retain a stable failure log for long gates, and avoid output-filter pipelines.
 
 ## Canonical doctor checks
 

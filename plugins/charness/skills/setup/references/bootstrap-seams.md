@@ -88,6 +88,17 @@ Use `$SKILL_DIR/scripts/seed_worktree_adapter.py` so `charness worktree prepare`
 can install dependencies and re-register hooks per worktree. Worktree runtime
 behavior stays with the worktree command surface.
 
+## Hook Failure Visibility
+
+When a consumer uses lefthook, route hook output guidance through
+`hook-failure-visibility.md`. Every `pre-commit` and `pre-push` command should
+declare an actionable `fail_text`; diagnostic gates should preserve raw
+stdout/stderr in a provisioned stable stage-specific failure log. Do not pipe a
+gate through `tail` or `head`, because the final filter can hide the gate's exit
+status. Husky and simple-git-hooks need their own native guidance. This
+Lefthook contract belongs to the consumer's hook configuration, not to
+Charness's worktree adapter `prepare.commands`.
+
 ## T-Events
 
 When the repo wants to capture T-loop events such as `skill_invoked`,
