@@ -15,16 +15,15 @@ separate closeout evidence; no Cautilus evaluation was run under its ask-before-
 Focused producer/consumer tests, adapter resolution, inventory declarations,
 source/plugin parity, lint, shellcheck, the D47 probe refresh, and the locked
 closeout packet are the current deterministic gates. Broad pytest and fresh
-mutation coverage are green, but the first committed-range changed-line producer
-found three uncovered changed surfaces; targeted coverage repairs are now in the
-worktree and the final producer must be rerun. Remote CI remains required before
-issue close.
+mutation coverage are green; the final committed-range changed-line consumer
+proved all five eligible changed files with zero blockers. Remote CI remains
+required before issue close.
 
 ## Runtime Signals
 
 - runtime source: structured metrics from `.charness/quality/runtime-signals.json`; no fresh timing capture was required for this focused scope slice. <!-- reproduction-source -->
 - runtime hot spots: not measured; focused proof is subprocess and test-suite output.
-- coverage gate: focused tests and locked broad pytest passed; the first committed-range mutation consumer identified concrete uncovered lines, and the repair suite is green while the final changed-line proof remains pending.
+- coverage gate: focused tests and locked broad pytest passed; the repair suite is green, and the resolved-base committed-range consumer proved 5/5 eligible files with zero blockers.
 - evaluator depth: deterministic-gates-only; Cautilus was not invoked under its ask-before-run contract.
 
 ## Healthy
@@ -46,6 +45,9 @@ issue close.
 - The post-commit mutation consumer named three changed quality surfaces and their
   exact uncovered lines; the repair adds in-process scope/receipt coverage and
   adapter-validator edge assertions without changing the gate.
+- The final committed-range readback analyzed all five eligible changed files with
+  `blocking: []`; the resolved merge-base SHA was used because the freshness marker
+  is keyed by that exact base argument.
 
 ## Weak
 
@@ -54,9 +56,6 @@ issue close.
 
 ## Missing
 
-- Final changed-line mutation coverage is pending the repair producer; the first
-  committed-range run correctly blocked three files instead of accepting a false
-  green.
 - Remote CI and an independent GitHub readback remain pending.
 
 ## Deferred
@@ -96,10 +95,11 @@ issue close.
 - `python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main --reuse-coverage --require-fresh-coverage` — first committed-range run blocked `adapter_validators.py`, `inventory_nose_clones.py`, and `nose_inventory_scope_lib.py` at the exact lines recorded in its JSON payload.
 - python3 -m pytest tests/quality_gates/test_quality_nose_scope_inprocess.py tests/quality_gates/test_quality_adapter_block_rejections.py tests/quality_gates/test_quality_nose_advisory.py tests/test_nose_inprocess_coverage.py tests/quality_gates/test_quality_runner_nose_scope.py — 136 passed after the coverage repair.
 - Targeted mutant proof: inverted `nose_inventory_scope_lib.py:232` from `return 1` to `return 0`; `test_quality_nose_scope_inprocess.py::test_error_exit_code_is_nonzero` failed (`assert 0 == 1`), then the exact line was restored. No gate was weakened.
+- python3 scripts/check_changed_line_mutation_coverage.py — resolved-base committed-range readback: 5 eligible files analyzed, blocking=0; the symbolic `origin/main` form was stale under the content-fingerprint contract, so the resolved merge-base SHA was used.
 
 ## Recommended Next Quality Moves
 
-- active — capability_needed=final changed-line proof after the coverage repair; next_center=closeout verification; transformation=run the committed-range producer, commit the repair bundle, rerun the consumer, push through the pre-push gate, and read back remote CI; proof_boundary=remote CI plus GitHub issue readback; enforcement_posture=existing-gate-reuse.
+- active — capability_needed=remote CI and GitHub readback; next_center=closeout verification; transformation=push through the pre-push gate, read back remote CI, and close the issue through the adapter; proof_boundary=remote CI plus GitHub issue readback; enforcement_posture=existing-gate-reuse.
 - passive — capability_needed=private consumer roundtrip because the repository is unavailable; next_center=consumer fixture; transformation=repeat the scope matrix when available; proof_boundary=consumer readback; enforcement_posture=no-gate because local evidence cannot claim private behavior.
 
 ## History
