@@ -95,6 +95,26 @@ records are reviewed inputs. The rebound verification-lock closeout then
 completed with all deterministic checks and the standing pytest lane passing;
 only the independent reread remains pending.
 
+### Round 7 — rebound closeout consistency check
+
+Reviewer `019fcf53-304c-7551-a36d-43b372f3165e`, window
+`cross-track-final-claims-rebound-final-20260805`, found one blocker: the goal
+also named the verification-lock closeout as pending while this ledger named
+only the reread. The packet identity, local claims, ownership, and non-claims
+were valid. The parent ran the rebound verification-lock closeout; all
+deterministic checks and the standing pytest lane passed, and the packet was
+rebound to the resulting state.
+
+### Round 8 — final state acceptance
+
+Reviewer `019fcf57-153d-7920-b130-cf043ca83c85`, window
+`cross-track-final-claims-final-state-20260805`, found no blockers. It
+confirmed the packet identity, all five input hashes, the active goal with
+only the independent reread pending, the passed rebound lock, coherent local
+evidence, distinct ownership, and explicit remote/host/publication/issue-close
+non-claims. Its advisory was to record the reread before the complete flip; the
+parent applied that acceptance in the goal and carrier.
+
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage claims review.
@@ -105,13 +125,16 @@ only the independent reread remains pending.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — five unnamed one-shot Codex claims reviewers returned their
+parent-delegated — eight unnamed one-shot Codex claims reviewers returned their
 findings in the parent context. The parent boundary snapshot windows were
 `cross-track-final-claims-20260805` and
 `cross-track-final-claims-repair-20260805`; the fixed-target round used
 `cross-track-final-claims-final-20260805` and
 `cross-track-final-claims-final-reread-20260805`; all were read-only.
-The new packet binding awaits one final read-only pass.
+The packet-binding and final-state windows
+`cross-track-final-claims-post-acceptance-20260805`,
+`cross-track-final-claims-rebound-final-20260805`, and
+`cross-track-final-claims-final-state-20260805` were also read-only.
 
 ## Boundary Ownership
 
@@ -121,7 +144,7 @@ The new packet binding awaits one final read-only pass.
 - Owning surface: the active goal owns the cross-track claim and non-claim
   narrative; issue carriers own their local dispositions; remote issue state
   remains owned by the issue adapter.
-- Verdict: owned-correctly pending final packet reread.
+- Verdict: owned-correctly.
 
 ## Accepted Non-Claims
 
@@ -134,5 +157,9 @@ The new packet binding awaits one final read-only pass.
 
 ## Verdict
 
-Pending final reread of the packet bound to the committed acceptance records.
-No production or proof-surface logic is changed by this review.
+PASS — the local cross-track proof claim is complete and bounded. The pinned
+packet, local quality/mutation evidence, per-track dispositions, verification-
+lock closeout, and final fresh-eye acceptance are bound; remote CI,
+host/provider behavior, issue closure, publication, release, and universal
+proof claims remain explicitly unclaimed. No production or proof-surface
+logic is changed by this review.
