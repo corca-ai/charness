@@ -1,6 +1,6 @@
 {
   "_provenance": {
-    "baseline_check": "The current measurement is refreshed over 111 checked-in quality artifacts after the #503 quality record changed the corpus; no detached-tree validator comparison is claimed.",
+    "baseline_check": "The current measurement is refreshed over 112 checked-in quality artifacts after the #503 and #502 quality records changed the corpus; no detached-tree validator comparison is claimed.",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-05",
@@ -10,13 +10,13 @@
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
     "worktree": "dirty: cross-track quality proof artifacts are being finalized"
   },
-  "artifacts": 111,
+  "artifacts": 112,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 111,
+    "not-claimed": 112,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -28,7 +28,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 317,
+    "count": 319,
     "median": 44,
     "min": 7
   },

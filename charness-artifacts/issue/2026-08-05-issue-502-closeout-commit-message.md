@@ -1,0 +1,15 @@
+fix: centralize quality runner summary assertions
+
+Closes #502
+Classification: bug
+Jtbd: Maintainers need quality-runner tests to prove the semantic verdict and keep an operator-facing final summary actionable when the summary format changes.
+Boundary: `scripts/proof_receipt.py` remains the presentation owner; `tests/quality_gates/support.py` is the structured semantic consumer seam for runner tests; exact renderer/CLI and final-line delivery tests remain presentation-boundary proofs.
+Resolution Brief: After causal review, move runner tests from copied summary prose to the existing structured quality receipt, preserving exact renderer and terminal delivery pins and adding probes for receipt-write failure and unavailable recovery logs.
+Implementation: `run_shell_script` automatically gives `run-quality.sh` runner tests a receipt path; `assert_quality_receipt` verifies surface, status, counts, actual subprocess exit code, adverse subjects and recovery objects, and unproven subjects; focused tests cover success, failure, mixed recovery, blocked receipt writes, unavailable log recovery, renderer/CLI output, and final-line delivery.
+Root Cause: The runner tests duplicated the renderer's summary prose across historical consumers even though `proof_receipt.py` already centralized rendering, so a presentation change looked like consumer test sanding and the old assertions did not own all semantic receipt fields.
+Debug Artifact: charness-artifacts/debug/2026-08-05-issue-502-quality-summary-owner.md
+Siblings: decision: same class, fix now for the runner-test consumers (proof: `assert_quality_receipt` is used by the runner suite and the focused contract suite passes 72 tests); decision: intentional separate presentation boundary for `scripts/proof_receipt.py` renderer/CLI output and final-line delivery (proof: exact renderer/CLI assertions and truncation probes remain green); decision: intentional separate surface, defer `run_slice_closeout.py` (proof: causal sibling review and its focused verdict tests show a distinct closeout contract); decision: diagnostic-only, defer external CI/log-viewer truncation (proof: local tests make no external observer claim).
+Prevention: New runner assertions must use `assert_quality_receipt`; exact prose assertions remain only where the renderer or delivery boundary is the behavior under test, and the broad read-only gate remains the enforcement backstop.
+Critique #502: charness-artifacts/critique/2026-08-05-issue-502-resolution-critique.md
+Behavior #502: Confirmed through the distinct focused pytest and full `./scripts/run-quality.sh --read-only` behavior channel — 72 focused tests and 85 broad gates passed with 0 failures, separately from this commit carrier and the later GitHub CLOSED adapter readback.
+AI-provenance: Agent-authored direct-commit carrier; causal review, quality review, repaired-surface critique, four bounded resolution-critique reviewers, boundary verifies, synchronized measurement probes, and deterministic gates are recorded above and in the bound artifacts.

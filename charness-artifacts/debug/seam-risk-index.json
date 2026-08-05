@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 111,
-  "indexed_artifact_count": 99,
+  "source_artifact_count": 112,
+  "indexed_artifact_count": 100,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
     "external-seam": 8,
     "host-disproves-local": 2,
-    "none": 37,
+    "none": 38,
     "operator-visible-recovery": 22,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 83,
+    "monitor": 84,
     "none": 11
   },
   "entries": [
@@ -1380,6 +1380,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-05-issue-502-quality-summary-owner.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-502-quality-summary-owner",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "runner receipt arguments -> proof renderer -> truncated stdout reader",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-05-quality-adapter-silent-revert.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1396,15 +1410,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "none",
+      "interrupt_id": "issue-502-quality-summary-owner",
       "risk_classes": [
         "none"
       ],
-      "seam": "reviewer-boundary helper to snapshot files and closeout callers",
+      "seam": "runner receipt arguments -> proof renderer -> truncated stdout reader",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "this dated debug record",
+      "handoff_artifact": "none",
       "forced": false
     }
   ],

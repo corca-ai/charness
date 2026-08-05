@@ -21,6 +21,8 @@ import pytest
 
 from tests.repo_copy import clone_seeded_charness_repo
 
+from .support import assert_quality_receipt
+
 ROOT = Path(__file__).resolve().parents[2]
 
 
@@ -36,12 +38,36 @@ def gate_repo(tmp_path: Path, seeded_charness_git_repo: Path) -> Path:
     return clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
 
 
-def _run_gate(repo: Path) -> subprocess.CompletedProcess:
+def _run_gate(
+    repo: Path,
+    *,
+    receipt_path: Path | None = None,
+    labels: str = "validate-retro-artifact",
+    fail_label: str | None = None,
+) -> subprocess.CompletedProcess:
+    env = {**os.environ, "CHARNESS_QUALITY_LABELS": labels}
+    if receipt_path is not None:
+        env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
+    if fail_label is not None:
+        env["QUALITY_FAIL_LABEL"] = fail_label
     return subprocess.run(
         ["./scripts/run-quality.sh"],
         cwd=repo, capture_output=True, text=True,
-        env={**os.environ, "CHARNESS_QUALITY_LABELS": "validate-retro-artifact"},
+        env=env,
     )
+
+
+def test_run_quality_preserves_gate_exit_when_receipt_write_fails(gate_repo: Path) -> None:
+    probe = gate_repo / "charness-artifacts" / "retro" / "2026-08-04-receipt-write-probe-retro.md"
+    probe.parent.mkdir(parents=True, exist_ok=True)
+    probe.write_text("# Session Retro\nDate: 2026-08-04\n\n## Context\n\nProbe.\n", encoding="utf-8")
+    blocked = gate_repo / "receipt-target"
+    blocked.mkdir()
+    result = _run_gate(gate_repo, receipt_path=blocked)
+
+    assert result.returncode == 1
+    assert "proof receipt: could not write" in result.stderr
+    assert result.stdout.splitlines()[-1].startswith("Quality summary:"), result.stdout
 
 
 def test_run_quality_summary_names_its_failing_checks(gate_repo: Path) -> None:
@@ -158,8 +184,9 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
     stale.write_text("STALE OUTPUT FROM AN EARLIER RUN\n", encoding="utf-8")
     stale.chmod(0o400)
 
+    receipt_path = gate_repo / "receipt.json"
     try:
-        result = _run_gate(gate_repo)
+        result = _run_gate(gate_repo, receipt_path=receipt_path)
     finally:
         stale.chmod(0o600)
 
@@ -172,3 +199,12 @@ def test_a_log_copy_that_fails_warns_instead_of_promising_a_stale_file(gate_repo
     assert "(FAILED: validate-retro-artifact [log unavailable])" in result.stdout
     assert "quality-failure-logs/validate-retro-artifact.log" not in result.stdout
     assert stale.read_text(encoding="utf-8").startswith("STALE"), "the stale file was not overwritten"
+    assert_quality_receipt(
+        gate_repo,
+        result,
+        status="fail",
+        passed=0,
+        failed=1,
+        adverse_subjects=["validate-retro-artifact"],
+        adverse_recoveries=[{"status": "unavailable", "reason": "full output could not be copied"}],
+    )

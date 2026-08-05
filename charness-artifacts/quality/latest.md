@@ -1,1 +1,1 @@
-2026-08-05-issue-503-runtime-budget.md
+2026-08-05-issue-502-quality-summary-owner.md

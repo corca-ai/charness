@@ -73,14 +73,44 @@ def skill_package_text(skill_id: str) -> str:
 def run_shell_script(
     script: Path, *args: str, cwd: Path | None = None, env: dict[str, str] | None = None
 ) -> subprocess.CompletedProcess[str]:
+    run_env = env
+    if script.name == "run-quality.sh" and cwd is not None:
+        run_env = {**(env or os.environ), "CHARNESS_QUALITY_RECEIPT_JSON": str(cwd / "receipt.json")}
     return subprocess.run(
         ["/bin/bash", str(script), *args],
         cwd=cwd or ROOT,
         check=False,
         capture_output=True,
         text=True,
-        env=env,
+        env=run_env,
     )
+
+
+def assert_quality_receipt(
+    repo: Path,
+    result: subprocess.CompletedProcess[str],
+    *,
+    status: str,
+    passed: int,
+    failed: int,
+    adverse_subjects: list[str] | None = None,
+    adverse_recoveries: list[dict[str, object]] | None = None,
+    unproven_subjects: list[str] | None = None,
+) -> None:
+    """Assert the runner contract through its structured proof receipt."""
+    receipt_path = repo / "receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    assert receipt["surface"] == "quality"
+    assert receipt["status"] == status
+    assert receipt["details"]["passed"] == passed
+    assert receipt["details"]["failed"] == failed
+    assert receipt["effective_exit_code"] == result.returncode
+    assert [subject["subject"] for subject in receipt["adverse_subjects"]] == (
+        adverse_subjects or []
+    )
+    if adverse_recoveries is not None:
+        assert [subject["recovery"] for subject in receipt["adverse_subjects"]] == adverse_recoveries
+    assert receipt["unproven_subjects"] == (unproven_subjects or [])
 
 
 def write_executable(path: Path, content: str) -> None:

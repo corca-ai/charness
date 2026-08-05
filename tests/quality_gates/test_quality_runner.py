@@ -11,6 +11,7 @@ from scripts.run_standing_pytest import choose_xdist_workers
 
 from .support import (
     ROOT,
+    assert_quality_receipt,
     clone_quality_runner_repo,
     run_shell_script,
     write_executable,
@@ -29,7 +30,7 @@ def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, s
     assert "validate-profiles" not in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
     assert "quality success output from check-markdown" not in result.stdout
-    assert "Quality summary: 4 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=4, failed=0)
 
 
 def test_run_quality_explicit_receipt_contains_scope_and_actual_exit(
@@ -73,7 +74,14 @@ def test_run_quality_rejects_explicit_filter_without_a_matching_check(
 
     assert result.returncode == 2
     assert "matched no queued checks" in result.stderr
-    assert "0 passed, 1 failed (FAILED: explicit label filter [log unavailable])" in result.stdout
+    assert_quality_receipt(
+        repo,
+        result,
+        status="fail",
+        passed=0,
+        failed=1,
+        adverse_subjects=["explicit label filter"],
+    )
 
 
 @pytest.mark.parametrize(
@@ -302,7 +310,9 @@ def test_run_quality_replays_only_failing_command_logs(tmp_path: Path, seeded_qu
     assert "--- check-markdown output ---" in result.stdout
     assert "quality failure output from check-markdown" in result.stdout
     assert "quality success output from validate-skills" not in result.stdout
-    assert "Quality summary: 3 passed, 1 failed" in result.stdout
+    assert_quality_receipt(
+        repo, result, status="fail", passed=3, failed=1, adverse_subjects=["check-markdown"]
+    )
 
 
 def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -312,7 +322,7 @@ def test_run_quality_can_select_command_docs_gate(tmp_path: Path, seeded_quality
     assert result.returncode == 0, result.stderr
     assert "PASS check-command-docs" in result.stdout
     assert "quality success output from check-command-docs" not in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -341,7 +351,7 @@ def test_run_quality_replays_passing_attention_logs(tmp_path: Path, seeded_quali
         assert "--- validate-skill-ergonomics output ---" in result.stdout
         assert f"{attention_token}: skill_ergonomics_gate_rules is empty" in result.stdout
         assert "quality success output from validate-skill-ergonomics" in result.stdout
-        assert "Quality summary: 1 passed, 0 failed" in result.stdout
+        assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_surfaces_usage_episode_report(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -397,7 +407,7 @@ def test_run_quality_keeps_passing_non_attention_logs_quiet(tmp_path: Path, seed
     assert "--- validate-skill-ergonomics output ---" not in result.stdout
     assert "NOTE: skill_ergonomics_gate_rules is empty" not in result.stdout
     assert "quality success output from validate-skill-ergonomics" not in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -406,7 +416,7 @@ def test_run_quality_can_select_cautilus_proof_gate(tmp_path: Path, seeded_quali
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
     assert result.returncode == 0, result.stderr
     assert "PASS validate-cautilus-proof" in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_can_select_agent_browser_runtime_hygiene(
@@ -418,7 +428,7 @@ def test_run_quality_can_select_agent_browser_runtime_hygiene(
     assert result.returncode == 0, result.stderr
     assert "PASS agent-browser-runtime-baseline" in result.stdout
     assert "PASS agent-browser-runtime-hygiene" in result.stdout
-    assert "Quality summary: 2 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=2, failed=0)
 
 
 def test_run_quality_skips_agent_browser_runtime_hygiene_by_default(
@@ -466,7 +476,14 @@ def test_run_quality_stops_when_agent_browser_runtime_baseline_fails(
     assert result.returncode == 1
     assert "FAIL agent-browser-runtime-baseline" in result.stdout
     assert "validate-skills" not in result.stdout
-    assert "Quality summary: 0 passed, 1 failed" in result.stdout
+    assert_quality_receipt(
+        repo,
+        result,
+        status="fail",
+        passed=0,
+        failed=1,
+        adverse_subjects=["agent-browser-runtime-baseline"],
+    )
     assert "agent-browser runtime baseline failed" in result.stderr
 
 
@@ -546,7 +563,7 @@ def test_run_quality_enforces_ci_local_gate_parity_inventory(
 
     assert result.returncode == 0, result.stderr
     assert "PASS inventory-ci-local-gate-parity" in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_enforces_gitignore_scan_hygiene_inventory(
@@ -577,7 +594,7 @@ def test_run_quality_enforces_gitignore_scan_hygiene_inventory(
 
     assert result.returncode == 0, result.stderr
     assert "PASS inventory-gitignore-scan-hygiene" in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_enforces_current_pointer_write_scan(
@@ -590,7 +607,7 @@ def test_run_quality_enforces_current_pointer_write_scan(
 
     assert result.returncode == 0, result.stderr
     assert "PASS check-current-pointer-writes" in result.stdout
-    assert "Quality summary: 1 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=1, failed=0)
 
 
 def test_run_quality_verbose_replays_success_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
@@ -618,7 +635,7 @@ def test_run_quality_review_replays_logs_and_enables_online_links(
     assert "--- check-links-external output ---" in result.stdout
     assert "quality success output from check-links-external" in result.stdout
     assert "link online=1" in result.stdout
-    assert "Quality summary: 2 passed, 0 failed" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=2, failed=0)
 
 
 def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
@@ -779,12 +796,13 @@ def test_an_optin_gate_that_established_nothing_is_neither_passed_nor_failed(
     # Not a failure: exit 3 must not turn a lane that deliberately has no teeth
     # here into a blocker. The point is to remove the green, not add a block.
     assert result.returncode == 0, result.stderr
-    assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
-    assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
-    assert (
-        f"1 passed, 0 failed, 1 UNPROVEN (UNPROVEN: {_UNPROVEN_LABEL}) "
-        "(ran; established nothing, or only part of its scope)"
-        in result.stdout
+    assert_quality_receipt(
+        repo,
+        result,
+        status="unestablished",
+        passed=1,
+        failed=0,
+        unproven_subjects=[_UNPROVEN_LABEL],
     )
     # The reason is always shown. A bare `UNPROVEN <label>` line is the same
     # unexplained verdict in a new word, and this message carries no WARNING
@@ -812,6 +830,14 @@ def test_an_optin_gate_with_a_partial_scope_is_also_neither_passed_nor_failed(
     assert f"FAIL {_UNPROVEN_LABEL}" not in result.stdout
     assert f"PASS {_UNPROVEN_LABEL}" not in result.stdout
     assert "analyzed only 1 of 2 changed files" in result.stdout
+    assert_quality_receipt(
+        repo,
+        result,
+        status="unestablished",
+        passed=1,
+        failed=0,
+        unproven_subjects=[_UNPROVEN_LABEL],
+    )
 
 
 def test_exit_four_from_a_gate_that_did_not_opt_in_still_fails(
@@ -855,7 +881,10 @@ def test_exit_three_from_a_gate_that_did_not_opt_in_still_fails(
     # The name and verified recovery path travel WITH the count: the summary is the
     # last line, the one every truncation preserves, so a reader who saw only it can
     # still act.
-    assert "1 passed, 1 failed (FAILED: validate-skills [log: " in result.stdout
+    assert_quality_receipt(
+        repo, result, status="fail", passed=1, failed=1, adverse_subjects=["validate-skills"],
+        adverse_recoveries=[{"status": "available", "path": ".charness/quality-failure-logs/validate-skills.log"}],
+    )
 
 
 def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
@@ -869,7 +898,7 @@ def test_the_unproven_column_is_absent_when_every_gate_established_its_scope(
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
 
     assert result.returncode == 0, result.stderr
-    assert "Quality summary: 2 passed, 0 failed, total" in result.stdout
+    assert_quality_receipt(repo, result, status="pass", passed=2, failed=0)
     assert "UNPROVEN" not in result.stdout
 
 
@@ -879,26 +908,21 @@ def test_a_real_failure_is_still_a_failure_next_to_an_unproven_gate(
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
     _stub_gate(repo, _UNPROVEN_GATE_SCRIPT, 3, "this run analyzed nothing")
     _stub_gate(repo, "check_doc_links.py", 1, "broken link")
-    receipt_path = repo / "receipt.json"
     env["CHARNESS_QUALITY_LABELS"] = f"{_UNPROVEN_LABEL},check-doc-links"
-    env["CHARNESS_QUALITY_RECEIPT_JSON"] = str(receipt_path)
 
     result = run_shell_script(repo / "scripts" / "run-quality.sh", cwd=repo, env=env)
 
     assert result.returncode != 0
-    assert f"UNPROVEN {_UNPROVEN_LABEL}" in result.stdout
-    assert "FAIL check-doc-links" in result.stdout
-    # Both names travel with both counts, so a truncated read can act on either.
-    assert (
-        "0 passed, 1 failed (FAILED: check-doc-links [log: "
-        f".charness/quality-failure-logs/check-doc-links.log]), 1 UNPROVEN "
-        f"(UNPROVEN: {_UNPROVEN_LABEL})"
-    ) in result.stdout
-    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
-    assert receipt["status"] == "fail"
-    assert receipt["effective_exit_code"] == result.returncode
-    assert receipt["unproven_subjects"] == [_UNPROVEN_LABEL]
-    assert receipt["adverse_subjects"][0]["subject"] == "check-doc-links"
+    assert_quality_receipt(
+        repo,
+        result,
+        status="fail",
+        passed=0,
+        failed=1,
+        adverse_subjects=["check-doc-links"],
+        adverse_recoveries=[{"status": "available", "path": ".charness/quality-failure-logs/check-doc-links.log"}],
+        unproven_subjects=[_UNPROVEN_LABEL],
+    )
 
 
 def test_the_real_runtime_recorder_accepts_every_status_the_runner_emits() -> None:
