@@ -10,8 +10,8 @@ remote publication and issue closure outside the local claim.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/proof-claims-final-packet.json`
-- Packet SHA256: `83fcdd8e1b5cf02366bd9f1d62e6599377a44fae86cc5c169e4f92d1102a4748`
-- Identity SHA256: `c155d86a5989474187de013d710ef6790bf64e8ee8f8c8046624f59d1c95acff`
+- Packet SHA256: `95bea6e910ee674f00147f79a225b08793292bdcfc7609701a4210694cf30ab6`
+- Identity SHA256: `6db03cbb41ad5071b6fa29b3486af4548a2cb84267abde2ecd1918ac2725ac0e`
 - Goal: `charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 - Quality record: `charness-artifacts/quality/2026-08-05-proof-claims.md`
 - Bound retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
@@ -65,6 +65,17 @@ identity was stale for the repaired input set. The packet was regenerated as
 reviewed paths and `origin/main..HEAD`. The commit-bound packet now has the
 identity recorded above; a final reread is required against that exact packet.
 
+### Round 4 — fixed-target packet reread
+
+Reviewer `019fcf46-3eb3-7b22-9208-77c6939ff386`, window
+`cross-track-final-claims-final-20260805`, confirmed the closeout forms,
+local claims, independent tracks, and explicit non-claims. It found one
+binding blocker: `origin/main..HEAD` had resolved to the prior commit after
+the packet-binding commit, so the packet identity was stale at the current
+HEAD even though all five declared input hashes matched. The boundary verify
+was clean. The parent pinned the packet to `origin/main..d82e906d`; one final
+reread is required against that fixed target.
+
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage claims review.
@@ -75,11 +86,12 @@ identity recorded above; a final reread is required against that exact packet.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — two unnamed one-shot Codex claims reviewers returned their
+parent-delegated — three unnamed one-shot Codex claims reviewers returned their
 findings in the parent context. The parent boundary snapshot windows were
 `cross-track-final-claims-20260805` and
-`cross-track-final-claims-repair-20260805`; the second round was read-only and
-made no file changes. A final post-form reread is required before completion.
+`cross-track-final-claims-repair-20260805`; the fixed-target round used
+`cross-track-final-claims-final-20260805` and was read-only. A final reread is
+required before completion.
 
 ## Boundary Ownership
 
