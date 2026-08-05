@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b. #508 is implemented and locally verified, but remains OPEN pending its carrier's final publish and closeout boundary.
-- Current slice intent: complete #508's token-aware gather classifier locally, preserve the explicit local/remote boundary, and do not advance to #509 before #508 is independently closed.
-- Next action: hold #508 OPEN with its locally validated carrier and claims review until the single final push can supply remote evidence and the closeout readback; do not start #509 before that boundary.
+- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b. #508 is implemented and locally verified, remains OPEN, and is now a recorded local-only-by-contract blocked disposition; #509 is the re-ranked local slice.
+- Current slice intent: preserve #508's explicit local/remote boundary, record the user's local-proof re-rank authorization, and run #509's causal-review/design/verification locally without claiming either issue CLOSED.
+- Next action: keep #508 OPEN with its locally validated carrier and claims review while starting #509 from a fresh live read and causal review; defer the one final push, remote CI, and GitHub closeout readbacks until the final publish boundary.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -92,7 +92,7 @@ Activation time: 2026-08-05T04:54:43Z
 | 7 | #496 | hollow refill report의 inert-default policy/semantics | 독립적인 mutation report 판단을 공통 schema나 runtime 정책으로 오염시키지 않고, 기존 local evidence를 현재 HEAD에서 정리한다. | positive/negative/axis-control matrix, plugin parity, issue-specific disposition | CLOSED; adapter readback verified |
 | 8 | #491 | semantic reference drift를 reviewer-owned decision으로 reshape | portability sweep 전에 “gate인가 reviewer question인가”를 결정해 의미론을 noisy static gate로 만들지 않는다. | three claim-family reads, copy-paste behavior check, bounded reviewer verdict | CLOSED; adapter readback verified |
 | 9 | #508 | gather classifier의 token-aware login-wall 판정 | gather route의 첫 판정을 바로잡아 정상 Markdown이 blocked로 분류되지 않게 한다. | `design intent` controls, real login fixture, classifier/route trace, fresh-eye review | local implementation/proof complete; publish pending |
-| 10 | #509 | auto-derived URL slug의 normalization/persistence | 정상적으로 얻은 representation이 dated-record writer에서 다시 실패하지 않게 persistence branch를 안정화한다. | uppercase/percent-encoded URL fixtures, digest retention, disposable execute/readback | planned |
+| 10 | #509 | auto-derived URL slug의 normalization/persistence | 정상적으로 얻은 representation이 dated-record writer에서 다시 실패하지 않게 persistence branch를 안정화한다. | uppercase/percent-encoded URL fixtures, digest retention, disposable execute/readback | local slice in progress after #508 re-rank |
 | 11 | #510 | content-negotiated Markdown acquisition route | classifier와 persistence branch가 안전해진 뒤 public URL에 Markdown representation을 먼저 요청한다. | Accept negotiation, route/representation trace, joined end-to-end record readback, fresh-eye review | planned |
 | 12 | #480 | `<authoring-repo>/` resolver를 docs/artifacts까지 확장 | portability reader가 실제 authoring tree를 읽게 해 다음 shared/package sweep의 ruler를 만든다. | authoring docs/artifacts positive/negative cases, source/plugin matrix | planned |
 | 13 | #484 | `skills/shared/**` portable package boundary | #480의 reader position을 shared shipped tree에도 적용해 unmarked-tree 판정의 구조적 빈틈을 닫는다. | shared package root cases, source/export parity, verdict-surface fresh-eye round | planned |
@@ -125,6 +125,11 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
   Why deferred: 없음 — blocked issue는 여전히 OPEN으로 남기고, missing proof·non-claim·unblock owner/action·re-rank authorization을 기록해야 한다.
   Unblock action: blocked row를 먼저 작성한 뒤에만 다음 slice를 시작한다.
   Revisit trigger: 첫 blocked external/live boundary.
+- Decision: CONFIRMED — 2026-08-06 사용자의 `508 로컬 프루프로` 지시를 #508의 명시적 local-only re-rank authorization으로 기록하고 #509 로컬 slice를 시작한다.
+  Owner: operator instruction received in this session
+  Why deferred: #508의 missing proof는 final push, independent remote CI/readback, carrier publish, and `verify-closeout --expect-state CLOSED`이다. 현재 push는 사용자의 one-final-push 지시에 따라 보류하며, #508을 CLOSED로 세지 않는다.
+  Unblock action: #508 owner/action은 final publish boundary에서 한 번의 push 뒤 remote CI를 다른 observer/channel로 읽고, carrier와 GitHub CLOSED readback을 issue adapter로 검증하는 것이다. 그 전까지 #508은 OPEN/local-only-by-contract로 유지한다.
+  Revisit trigger: final publish boundary 또는 #509의 causal review가 ordering premise를 반증할 때.
 
 ## Coordination Cues
 
@@ -318,7 +323,8 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Non-claims: no live failing-URL success claim, installed-plugin claim, provider roundtrip claim, remote CI claim, or Cautilus evaluation claim.
 - Generative benefit: #491's first-reader and semantic-boundary decision lowered #508's review cost; #508's explicit classifier/gather seam and token matrix now lower the design risk for #509/#510 without inheriting their future closeout.
 - Claims review: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md` returned PASS for the local records and explicitly preserves the remote boundary/non-claims.
-- Next: keep #508 as the current slice and do not start #509 until #508's own final remote/closeout floor is met.
+- Re-rank record (2026-08-06): disposition `blocked / OPEN / local-only-by-contract`; missing proof is final push, independent remote CI/readback, and `verify-closeout --expect-state CLOSED`; owner/action is the operator at the final publish boundary. The user's `508 로컬 프루프로` instruction explicitly authorizes the local typed disposition and re-ranks the next local slice to #509. This does not authorize a remote close, does not claim #508 CLOSED, and does not move the push boundary.
+- Next: keep #508 OPEN with its non-claims while #509 proceeds through its own live read, causal review, local implementation, and distinct local behavior proof.
 
 ## Activation Record
 
@@ -383,7 +389,7 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed nine CLOSED slices: #468, #503, #506, #502, #507, #511, #504, #496, and #491 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback. #508 has a locally implemented and verified slice, but is not yet a CLOSED slice.
+Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed nine CLOSED slices: #468, #503, #506, #502, #507, #511, #504, #496, and #491 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback. #508 has a locally implemented and verified slice, but is not yet a CLOSED slice; its re-rank to a local-only blocked disposition is explicitly recorded above.
 
 Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
 Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
