@@ -1,11 +1,13 @@
 # Issue #508 Local Closeout Claims Review
 Date: 2026-08-05
+Last rebound: 2026-08-06 — packet v8 after the #509 local slice record
 
 ## Decision Under Review
 
 Whether the #508 local implementation slice, its direct-commit carrier, its
-goal/handoff/quality claims, and its local proof can be recorded as complete
-locally without claiming the external issue-close boundary.
+goal/handoff/quality claims, and its local proof can remain complete locally
+after the explicitly authorized #509 re-rank and local slice, without claiming
+either issue's external close boundary.
 
 ## Failure Angles
 
@@ -15,6 +17,9 @@ locally without claiming the external issue-close boundary.
   installed-host, or GitHub closeout evidence.
 - The goal could advance to #509 or mark #508 closed before the one-push remote
   boundary, distinct behavior proof, and adapter readback exist.
+- A reviewer could compare the packet's mode-tagged `sha256-v2` content digests
+  with raw file SHA-256 values and report a false stale-input finding; the
+  repository identity verifier must own this check.
 
 ## Counterweight Pass
 
@@ -50,9 +55,17 @@ locally without claiming the external issue-close boundary.
   the exact packet SHA and current identity, #508 OPEN/local-only-by-contract,
   the authorized #509 local re-rank, and the preserved one-final-push
   boundary.
+- After #509's local carrier, behavior proof, goal slice log, handoff, and
+  gather dogfood decision were recorded, packet v8 was generated over the same
+  seven #508 claim inputs. Locke initially returned HOLD by comparing raw file
+  SHA-256 values to `sha256-v2` content digests. The repository's canonical
+  `verify_reviewed_input_identity` returned `(True, 'current')`, and a second
+  fresh-eye reviewer, Halley, re-read the packet and all seven inputs and
+  returned PASS against identity `63c22fe061339e754b12c0aaf3e26019262f9281f1855bdd10b158a694af9233`.
+  Both reviewer windows had clean parent boundary fingerprints.
 - The remaining external boundary is intentional and is not a defect in the
-  local closeout record: one final gated push, independent remote evidence,
-  distinct behavior proof, and GitHub `CLOSED` readback are still pending.
+  local closeout record: one final gated push, independent remote evidence for
+  each issue, and GitHub `CLOSED` readbacks are still pending.
 
 ## Structured Findings
 
@@ -63,6 +76,7 @@ locally without claiming the external issue-close boundary.
 - F5 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/issue/2026-08-05-issue-508-closeout-commit-message.md` | action: document | note: the carrier is locally validated and committed, but its `Closes #508` effect is intentionally unproven until the single final push and post-push readback
 - F6 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md` | action: fix | note: the quality artifact's recommended move card used the obsolete `completed` prefix and said the claims review was still required; both were repaired before the v5 review
 - F7 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md:80-118` | action: fix | note: rebound this canonical review from v5 to the current v7 packet, removed the obsolete claim that #509 is blocked, and received the repaired-artifact fresh-eye PASS
+- F8 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md` | action: document | note: #509's local implementation, carrier, distinct execute/readback verdict, and local closeout are complete, but #509 remains OPEN/local-only-by-contract; its external publish boundary is separate from #508's.
 
 ## Reviewer Tier Evidence
 
@@ -82,36 +96,43 @@ validator-aware distinct reviewer (Fermat) returned PASS after the v4 carrier
 binding, and a sixth validator-aware distinct reviewer (Kepler) returned PASS
 after the quality-state repair and v5 packet binding. The seventh reviewer
 returned HOLD because this artifact had not yet been rebound from v5 to v7;
-the repaired-artifact reviewer (Galileo) then returned PASS. Parent-side
-boundary fingerprints were clean for all review windows; the v7 windows
-returned `verdict: clean` with `drift: []`.
+the repaired-artifact reviewer (Galileo) then returned PASS. For v8, Locke
+returned HOLD on an invalid raw-SHA comparison; the canonical identity check
+was current, and the repaired fresh-eye reviewer (Halley) returned PASS after
+re-reading the packet and seven inputs. Parent-side boundary fingerprints were
+clean for every cited window, including v8 repair.
 
 ## Packet Consumed
 
-- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
-- Packet SHA256: `0aec433d8a9a7bfc593a53b0fd59c70f3c924729bb56b8ca98a49f0f58a8065f`
-- Identity SHA256: `3ee34509ec6862acee6e925aed980644b34a597dbc74e1bcbaa7782a08dbafe8`
-- Prior packet: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v6-packet.json` — superseded by the v7 reviewed-input binding and the v7 canonical-artifact repair.
+- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v8-packet.json`
+- Packet SHA256: `e21fd9fc0fde42b808ecfc1fd15681341db20018de371554d1ab6f13f1e0e8a8`
+- Identity SHA256: `63c22fe061339e754b12c0aaf3e26019262f9281f1855bdd10b158a694af9233`
+- Prior packet: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json` — superseded by the v8 reviewed-input binding after the #509 local slice was recorded.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v7-packet.json`
-- Packet SHA256: `0aec433d8a9a7bfc593a53b0fd59c70f3c924729bb56b8ca98a49f0f58a8065f`
-- Identity SHA256: `3ee34509ec6862acee6e925aed980644b34a597dbc74e1bcbaa7782a08dbafe8`
+- Packet consumed: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v8-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-06-issue-508-closeout-claims-packet-v8-packet.json`
+- Packet SHA256: `e21fd9fc0fde42b808ecfc1fd15681341db20018de371554d1ab6f13f1e0e8a8`
+- Identity SHA256: `63c22fe061339e754b12c0aaf3e26019262f9281f1855bdd10b158a694af9233`
 
-The repository identity verifier returned `(True, "current")` for the v7
-packet. The raw packet SHA is intentionally distinct from the mode-tagged
-`sha256-v2` identity digest.
+The repository `verify_reviewed_input_identity` verifier returned
+`(True, "current")` for the v8 packet, and Halley's fresh-eye review confirmed
+the same result. The raw packet SHA is intentionally distinct from the
+mode-tagged `sha256-v2` identity digest; raw per-file SHA comparison is not the
+packet contract.
 
 ## Boundary Ownership
 
-- Producer: the local implementation carrier, verification-locked closeout,
-  quality record, and goal/handoff state produce the local disposition claims.
-- Consumer: the final operator deciding whether #508 can advance to remote
-  publish and GitHub issue closeout.
-- Owning surface: the goal and quality records own local claim wording; the
-  GitHub adapter and remote observer own external closeout state.
+- Producer: the local #508 implementation carrier, verification-locked
+  closeout, quality record, and goal/handoff state produce the #508 local
+  disposition; the adjacent #509 carrier and proof produce only #509's local
+  disposition.
+- Consumer: the final operator deciding whether either issue can advance to
+  remote publish and GitHub issue closeout.
+- Owning surface: the goal and quality records own local claim wording; each
+  issue carrier and behavior verdict stays issue-specific; the GitHub adapter
+  and remote observer own external closeout state.
 - Verdict: owned-correctly
 
 ## Verdict
@@ -120,12 +141,15 @@ PASS — #508's local claims and direct-commit carrier are current and internall
 consistent. The implementation carrier is
 `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the quality/probe carrier and
 local proof head are `2f3fe3984b14f91487762dbe37e7edf91b722aba`; the quality
-state repair is `346eb69d`; and the
-validated direct-commit carrier is `f81170c9eb133bc4a48bf984100a1d93eed8566f`.
-The carrier is `carrier_verified` locally, while the live issue remains OPEN.
-The typed `Behavior #508: local-only-by-contract` disposition is based on the
-distinct 39-test channel and does not imply remote CI, push, live/provider
-acquisition, installed-host behavior, Cautilus, distinct external behavior, or
-GitHub `CLOSED` readback. #509 is permitted to proceed locally under the
-recorded re-rank; the external boundary remains deferred. The repaired-artifact
-fresh-eye reviewer returned PASS with a clean boundary fingerprint.
+state repair is `346eb69d`; and the validated direct-commit carrier is
+`f81170c9eb133bc4a48bf984100a1d93eed8566f`. The carrier is
+`carrier_verified` locally, while the live issue remains OPEN. The typed
+`Behavior #508: local-only-by-contract` disposition is based on the distinct
+39-test channel and does not imply remote CI, push, live/provider acquisition,
+installed-host behavior, Cautilus, distinct external behavior, or GitHub
+`CLOSED` readback. #509 is separately recorded as locally implemented,
+carrier-validated, and OPEN/local-only-by-contract under the authorized
+re-rank; its `Behavior #509` direct CLI execute/readback evidence does not
+upgrade #508's boundary. The v8 canonical identity is current and Halley's
+repaired-artifact fresh-eye reviewer returned PASS with a clean boundary
+fingerprint.
