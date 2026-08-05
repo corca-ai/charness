@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-05T00:25:42Z
+- **Generated**: 2026-08-05T00:28:50Z
 - **Prepared for**: 2026-08-05-proof-claims-final-claims-review
-- **Changed ref**: `origin/main..480dc537`
+- **Changed ref**: `origin/main..1f8dae2c`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `6b6b56a0dcf52401b07d7b720adbbb69058c01af9ca7e09adc865c7f71092dd2`
+- **Reviewed input identity**: `47a68e0d8255db0b9ac8b77c82e68630ab085131ff620520561bd2fefda76888`
 - **Reviewed paths**: 5
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,7 +28,7 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 - **Section ok**: True
 
 ```text
-Changed paths for ref `origin/main..480dc537`:
+Changed paths for ref `origin/main..1f8dae2c`:
 - charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md
 - charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json
 - charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md

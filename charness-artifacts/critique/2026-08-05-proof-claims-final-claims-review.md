@@ -10,8 +10,8 @@ remote publication and issue closure outside the local claim.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/proof-claims-final-packet.json`
-- Packet SHA256: `1a23c05faa049371d371db0a0272b0a69ae55eb2cb80f4fec18ac455d3c7cbfd`
-- Identity SHA256: `6b6b56a0dcf52401b07d7b720adbbb69058c01af9ca7e09adc865c7f71092dd2`
+- Packet SHA256: `228453b96aff9c884f807c6a652a07fe7182d44b28f4907a6885488c1c0c493b`
+- Identity SHA256: `47a68e0d8255db0b9ac8b77c82e68630ab085131ff620520561bd2fefda76888`
 - Goal: `charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 - Quality record: `charness-artifacts/quality/2026-08-05-proof-claims.md`
 - Bound retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
@@ -89,7 +89,7 @@ clean. Its only advisory was to record this acceptance in the goal and #506
 ### Round 6 — post-acceptance packet binding
 
 The parent committed the accepted goal and #506 carrier, then regenerated this
-packet against fixed target `origin/main..480dc537`. The packet identity is
+packet against fixed target `origin/main..1f8dae2c`. The packet identity is
 recorded above; a final reread is required because those committed acceptance
 records are reviewed inputs.
 
