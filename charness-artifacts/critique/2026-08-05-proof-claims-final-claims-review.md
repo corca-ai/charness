@@ -10,8 +10,8 @@ remote publication and issue closure outside the local claim.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/proof-claims-final-packet.json`
-- Packet SHA256: `79dd6c91cd653965ebe7d9c3c2e806ef84cec93e3d633951da147dc79ab026cd`
-- Identity SHA256: `ea5e1668b5b4d7627d9ef0b0c85e4b6e679d4e262c9b41ae4974f634086adc98`
+- Packet SHA256: `39bef05276295bd113be8f00d894ea0964cd3f2b9661472225c9be8ca2270e9c`
+- Identity SHA256: `1f20f1da03cfebd685f9fa6f6d5c2ee677714616aeaedd88b8a5b02fa8fea379`
 - Goal: `charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 - Quality record: `charness-artifacts/quality/2026-08-05-proof-claims.md`
 - Bound retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
@@ -114,6 +114,8 @@ only the independent reread pending, the passed rebound lock, coherent local
 evidence, distinct ownership, and explicit remote/host/publication/issue-close
 non-claims. Its advisory was to record the reread before the complete flip; the
 parent applied that acceptance in the goal and carrier.
+The parent then completed the local-only goal flip and rebound the packet to
+fixed target `origin/main..867dbb5e`; no remote claim was added.
 
 ## Reviewer Tier Evidence
 
