@@ -109,9 +109,9 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
   Why deferred: 없음 — 원래 issue history/JTBD는 보존하고 contract가 실제 후속 remedy decision을 바꿨거나 premise를 반증하는 observable을 요구한다.
   Unblock action: activation 직전 #468 live read와 첫 causal review로 보존 범위와 observable을 고정한다.
   Revisit trigger: activation 직전 #468 live read와 첫 causal review. #468의 closeout은 단순한 새 문장 추가가 아니라, 그 contract가 적어도 한 후속 remedy decision을 바꿨거나 기존 제안의 premise를 반증했다는 observable을 요구한다.
-- Decision: PENDING EXPLANATION — external route는 activation blocker가 아니다. 기본 route는 issue adapter가 선택한 closeout 방식이며, PR/release/tag/version bump는 이 goal에 포함하지 않는다.
-  Owner: settled by current Boundaries; operator may override before the first carrier
-  Why deferred: “carrier route”는 이슈를 실제 GitHub 상태로 전달하는 방법이다. 기본은 `direct-commit`/auto-close(커밋에 close keyword와 closeout ledger를 싣고, push 후 adapter로 CLOSED를 다시 읽음)이며, PR은 별도 승인이 필요해 기본 범위에서 제외한다. auto-close를 쓸 수 없을 때만 adapter가 허용하는 manual fallback을 사용한다.
+- Decision: CONFIRMED — external route는 activation blocker가 아니다. 기본 route는 `direct-commit`/auto-close이며, PR/release/tag/version bump는 이 goal에 포함하지 않는다.
+  Owner: operator confirmed in this session
+  Why deferred: 없음 — 커밋에 close keyword와 closeout ledger를 싣고 push 후 adapter로 CLOSED를 다시 읽는다. auto-close가 지원되지 않거나 실패할 때만 adapter가 허용하는 manual fallback을 사용한다.
   Unblock action: first carrier 전에 selected backend, carrier route, and `validate-closeout-draft` shape를 re-read하고 그 결과를 Slice Log에 기록한다.
   Revisit trigger: first issue carrier를 만들기 전.
 - Decision: CONFIRMED — activation 시점의 live open issue set을 실제 범위로 삼는다.
@@ -139,7 +139,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 
 ## Discuss Before Activation
 
-- Discuss before activation: unresolved — confirmed in this session: #468 reshape, activation-time live snapshot as scope, and re-rank allowed after a blocked-row record. Still to confirm after this explanation: the carrier route. The default is to preserve each issue's JTBD, treat tracker edits as separately authorized writes, use `direct-commit`/auto-close through the issue adapter when its closeout floor passes, keep PR/release/cautilus out of scope, and use manual fallback only when the adapter says auto-close is unavailable.
+- Discuss before activation: CONFIRMED — #468 reshape, activation-time live snapshot as scope, re-rank allowed after a blocked-row record, and `direct-commit`/auto-close as the default carrier route are confirmed. PR/release/cautilus remain out of scope; manual fallback is allowed only when the adapter says auto-close is unavailable or failed. Activation still requires a fresh live issue read and a written Activation Record.
 
 ## Slice Log
 
@@ -171,7 +171,7 @@ Before `/goal`, record in this section: confirmation of the four queue decisions
 ## Interview Decisions
 
 - Mode: artifact-only shaping. The user asked to create a goal, not to start executing it; implementation and GitHub closeout begin only after `/goal` activation. Rejected alternative: starting #511 or #502 immediately would consume an external workflow before the user reviewed the broad scope.
-- Session confirmation (2026-08-05): the operator agreed to reshape #468 into the premise-reverification contract, use the activation-time live issue set as scope, and permit recorded re-rank after a blocked issue. The carrier route remains pending explanation; its default is direct-commit/auto-close, not PR.
+- Session confirmation (2026-08-05): the operator agreed to reshape #468 into the premise-reverification contract, use the activation-time live issue set as scope, permit recorded re-rank after a blocked issue, and use direct-commit/auto-close as the default carrier route; PR is excluded and manual fallback is conditional.
 - Scope: 17-issue snapshot at shaping time, with an activation-time live refresh. Axis: issue-state/time. Rejected alternative: silently including future issues would make the goal's semantic input drift without a re-shape record.
 - Ordering: quality/proof spine first, then independent judgment, gather, portability, and final cost measurement. Axis: subsystem/verification dependency. Rejected alternative: issue number order, newest-first order, or “quickest close first,” because those do not create conditions for later correctness.
 - Reshape: preserve observed problem, JTBD, and evidence; reshape only the fix-unit, boundary, carrier, or sequence. Axis: issue classification (bug, deferred-work, decision-needed); the classification may change only after live read and causal/brief review.
