@@ -11,6 +11,7 @@ WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
 
 import acquire_public_url as apu  # noqa: E402
+import classify_fetch_response as cfr  # noqa: E402
 import route_public_fetch_routes as rpf_routes  # noqa: E402
 from acquisition_trace_lib import AcquisitionAttempt  # noqa: E402
 
@@ -238,6 +239,32 @@ def test_classify_fetch_response_reports_login_wall() -> None:
     payload = json.loads(result.stdout)
     assert payload["status"] == "login-wall"
     assert "clean-stop" in payload["fallback_candidates"]
+
+
+def test_classify_fetch_response_token_aware_login_markers() -> None:
+    long_content = " useful content" * 120
+    cases = (
+        ("design intent", "success", []),
+        ("Design in the AI era", "success", []),
+        ("Sign in", "login-wall", ["sign in"]),
+        ("Please log in", "login-wall", ["log in"]),
+        ("sign-in", "login-wall", ["sign in"]),
+        ("log-in", "login-wall", ["log in"]),
+        ("login", "login-wall", ["login"]),
+        ("로그인", "login-wall", ["로그인"]),
+        ("loginpage", "success", []),
+        ("로그인페이지", "success", []),
+        ("assign-in", "success", []),
+        ("sign--in", "success", []),
+        ("sign - in", "success", []),
+        ("log---in", "success", []),
+        ("Sign <span>in</span>", "login-wall", ["sign in"]),
+    )
+
+    for marker, expected_status, expected_matched_signals in cases:
+        result = cfr.classify(f"<html><body>{marker}{long_content}</body></html>")
+        assert result["status"] == expected_status, marker
+        assert result["matched_signals"] == expected_matched_signals, marker
 
 
 def test_classify_fetch_response_reports_partial_content_for_og_only_page() -> None:

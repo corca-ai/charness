@@ -14,11 +14,11 @@ WHITESPACE_RE = re.compile(r"\s+")
 JSONP_OR_ASSIGNMENT_RE = re.compile(r"^[A-Za-z_$][\w$]*(?:\.[A-Za-z_$][\w$]*)*\s*(?:=|\()\s*[\[{]")
 XSSI_PREFIXES = (")]}',", ")]}'", "while(1);", "for(;;);")
 
-LOGIN_PATTERNS = (
-    "sign in",
-    "log in",
-    "login",
-    "로그인",
+LOGIN_MARKER_REGEXES = (
+    ("sign in", re.compile(r"(?<!\w)sign(?:\s+|-)in(?!\w)")),
+    ("log in", re.compile(r"(?<!\w)log(?:\s+|-)in(?!\w)")),
+    ("login", re.compile(r"(?<!\w)login(?!\w)")),
+    ("로그인", re.compile(r"(?<!\w)로그인(?!\w)")),
 )
 HARD_CAPTCHA_PATTERNS = (
     "captcha",
@@ -71,6 +71,19 @@ def extract_text(raw: str) -> str:
     unescaped = html.unescape(raw)
     without_tags = TAG_RE.sub(" ", unescaped)
     return WHITESPACE_RE.sub(" ", without_tags).strip()
+
+
+def _matched_login_markers(text: str) -> list[str]:
+    folded = text.casefold()
+    return [label for label, pattern in LOGIN_MARKER_REGEXES if pattern.search(folded)]
+
+
+def _captcha_patterns(lowered: str, text_length: int) -> tuple[str, ...]:
+    if any(pattern in lowered for pattern in HARD_CAPTCHA_PATTERNS):
+        return HARD_CAPTCHA_PATTERNS
+    if any(pattern in lowered for pattern in SOFT_CAPTCHA_PATTERNS) and text_length < 1000:
+        return SOFT_CAPTCHA_PATTERNS
+    return ()
 
 
 def _looks_like_json_response(raw: str) -> bool:
@@ -198,14 +211,14 @@ def classify(
         matched.extend(f"{item['type']}:{item['value']}" for item in proof_errors)
         signals.append("invalid-proof")
         next_step = "Fix the proof input before trusting this acquisition."
-    elif any(pattern in lowered for pattern in HARD_CAPTCHA_PATTERNS):
-        matched.extend(pattern for pattern in HARD_CAPTCHA_PATTERNS if pattern in lowered)
+    elif (captcha_patterns := _captcha_patterns(lowered, text_length)):
+        matched.extend(pattern for pattern in captcha_patterns if pattern in lowered)
         status = "captcha"
         confidence = "none"
         signals.append("captcha")
         next_step = "Try the next fallback route or stop with the bot-block noted."
-    elif any(pattern in lowered for pattern in LOGIN_PATTERNS):
-        matched.extend(pattern for pattern in LOGIN_PATTERNS if pattern in lowered)
+    elif (matched_login_markers := _matched_login_markers(text)):
+        matched.extend(matched_login_markers)
         status = "login-wall"
         confidence = "none"
         signals.append("login-wall")
@@ -216,12 +229,6 @@ def classify(
         confidence = "none"
         signals.append("bot-challenge")
         next_step = "Try read-only browser rendering or stop with the challenge recorded."
-    elif any(pattern in lowered for pattern in SOFT_CAPTCHA_PATTERNS) and text_length < 1000:
-        matched.extend(pattern for pattern in SOFT_CAPTCHA_PATTERNS if pattern in lowered)
-        status = "captcha"
-        confidence = "none"
-        signals.append("captcha")
-        next_step = "Try the next fallback route or stop with the bot-block noted."
     elif any(pattern in lowered for pattern in EMPTY_SPA_PATTERNS):
         matched.extend(pattern for pattern in EMPTY_SPA_PATTERNS if pattern in lowered)
         status = "empty-spa"

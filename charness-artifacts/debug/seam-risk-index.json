@@ -3,11 +3,11 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 114,
-  "indexed_artifact_count": 102,
+  "source_artifact_count": 115,
+  "indexed_artifact_count": 103,
   "risk_class_counts": {
     "contract-freeze-risk": 29,
-    "external-seam": 11,
+    "external-seam": 12,
     "host-disproves-local": 2,
     "none": 37,
     "operator-visible-recovery": 22,
@@ -15,7 +15,7 @@
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 86,
+    "monitor": 87,
     "none": 11
   },
   "entries": [
@@ -1422,6 +1422,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-05-issue-508-gather-classifier-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "gather-508-token-aware-login-wall",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "public response classifier -> gather disposition -> durable asset writer",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-05-issue-508-gather-classifier-contract.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-05-quality-adapter-silent-revert.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1438,15 +1452,15 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "quality-511-default-scope",
+      "interrupt_id": "gather-508-token-aware-login-wall",
       "risk_classes": [
         "external-seam"
       ],
-      "seam": "default-root resolver -> `nose query` -> advisory payload -> quality",
+      "seam": "public response classifier -> gather disposition -> durable asset writer",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-08-05-issue-511-nose-inventory-contract.md",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-05-issue-508-gather-classifier-contract.md",
       "forced": true
     }
   ],

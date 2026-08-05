@@ -1,1 +1,1 @@
-2026-08-05-debug-review-followup-2.md
+2026-08-05-issue-508-gather-classifier-debug.md

@@ -369,6 +369,69 @@ def test_gather_public_url_persists_extracted_content_when_requested(tmp_path: P
     assert "selected_content" not in trace_json
 
 
+def test_gather_public_url_persists_design_intent_and_blocks_real_login(tmp_path: Path) -> None:
+    readable = tmp_path / "readable.html"
+    readable.write_text(
+        "<html><head><title>Design in the AI era</title></head><body>"
+        "<p>design intent</p>" + ("useful content " * 120) + "</body></html>",
+        encoding="utf-8",
+    )
+    readable_result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(tmp_path),
+        "--url",
+        "https://example.com/design",
+        "--direct-response-file",
+        str(readable),
+        "--browser-mode",
+        "off",
+        "--slug",
+        "design-intent",
+        "--date",
+        "2026-05-16",
+        "--persist-extracted-content",
+        "--max-extracted-content-chars",
+        "240",
+        "--execute",
+    )
+    assert readable_result.returncode == 0, readable_result.stderr
+    readable_payload = json.loads(readable_result.stdout)
+    assert readable_payload["final_status"] == "success"
+    assert readable_payload["content_persistence"] == "extracted"
+    readable_record = Path(readable_payload["write_record"]["record_artifact_path"]).read_text(encoding="utf-8")
+    assert "design intent" in readable_record
+    assert "Design in the AI era" in readable_record
+
+    blocked_root = tmp_path / "blocked"
+    login = blocked_root / "login.html"
+    login.parent.mkdir(parents=True)
+    login.write_text(
+        "<html><body><h1>Sign <span>in</span></h1>" + ("useful content " * 120) + "</body></html>",
+        encoding="utf-8",
+    )
+    blocked_result = run_helper(
+        "skills/public/gather/scripts/gather_public_url.py",
+        "--repo-root",
+        str(blocked_root),
+        "--url",
+        "https://example.com/private",
+        "--direct-response-file",
+        str(login),
+        "--browser-mode",
+        "off",
+        "--date",
+        "2026-05-16",
+        "--persist-extracted-content",
+        "--execute",
+    )
+    assert blocked_result.returncode == 1
+    blocked_payload = json.loads(blocked_result.stdout)
+    assert blocked_payload["final_status"] == "login-wall"
+    assert blocked_payload["write_record"] is None
+    assert not (blocked_root / "charness-artifacts" / "gather" / "latest.md").exists()
+
+
 def test_gather_public_url_does_not_write_error_acquisition(tmp_path: Path) -> None:
     result = run_helper(
         "skills/public/gather/scripts/gather_public_url.py",
