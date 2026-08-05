@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-05T00:09:35Z
+- **Generated**: 2026-08-05T00:14:17Z
 - **Prepared for**: 2026-08-05-proof-claims-final-claims-review
 - **Changed ref**: `origin/main..HEAD`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `27f24a615467f66d669aecc69bf643cd7aafdb2e52a866a94fa5e789f36b5c47`
+- **Reviewed input identity**: `c155d86a5989474187de013d710ef6790bf64e8ee8f8c8046624f59d1c95acff`
 - **Reviewed paths**: 5
 - **Sections**: 3
 - **Overall ok**: True
@@ -34,6 +34,7 @@ Changed paths for ref `origin/main..HEAD`:
 - charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md
 - charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json
 - charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md
+- charness-artifacts/critique/2026-08-05-proof-claims-final-claims-review.md
 - charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json
 - charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json
 - charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md
@@ -41,13 +42,20 @@ Changed paths for ref `origin/main..HEAD`:
 - charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md
 - charness-artifacts/critique/broader-proof-claims-goal-packet.json
 - charness-artifacts/critique/broader-proof-claims-goal-packet.md
+- charness-artifacts/critique/proof-claims-final-packet.json
+- charness-artifacts/critique/proof-claims-final-packet.md
 - charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md
 - charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md
+- charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md
 - charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json
 - charness-artifacts/probe/2026-08-01-inventory-marker-rule.json
 - charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json
 - charness-artifacts/quality/2026-08-05-proof-claims.md
 - charness-artifacts/quality/latest.md
+- charness-artifacts/retro/2026-08-04-235906-packet.json
+- charness-artifacts/retro/2026-08-04-235906-packet.md
+- charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
+- charness-artifacts/retro/lesson-selection-index.json
 - docs/deferred-decisions.md
 - docs/handoff.md
 - plugins/charness/scripts/proof_receipt.py
@@ -74,14 +82,19 @@ Owning surfaces:
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md, charness-artifacts/critique/broader-proof-claims-goal-packet.md, charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md, charness-artifacts/quality/2026-08-05-proof-claims.md, charness-artifacts/quality/latest.md, docs/deferred-decisions.md, docs/handoff.md
+  source matches: charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-claims-final-claims-review.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md, charness-artifacts/critique/broader-proof-claims-goal-packet.md, charness-artifacts/critique/proof-claims-final-packet.md, charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md, charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md, charness-artifacts/issue/2026-08-05-issue-506-local-disposition.md, charness-artifacts/quality/2026-08-05-proof-claims.md, charness-artifacts/quality/latest.md, charness-artifacts/retro/2026-08-04-235906-packet.md, charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md, docs/deferred-decisions.md, docs/handoff.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md, charness-artifacts/critique/broader-proof-claims-goal-packet.json, charness-artifacts/critique/broader-proof-claims-goal-packet.md
+  source matches: charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-critique.md, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.json, charness-artifacts/critique/2026-08-05-handoff-proof-verdict-goal-packet.md, charness-artifacts/critique/2026-08-05-proof-claims-final-claims-review.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-boundary-receipt.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.json, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique-packet.md, charness-artifacts/critique/2026-08-05-proof-verdict-contracts-goal-critique.md, charness-artifacts/critique/2026-08-05-slice-b-proof-receipt.md, charness-artifacts/critique/broader-proof-claims-goal-packet.json, charness-artifacts/critique/broader-proof-claims-goal-packet.md, charness-artifacts/critique/proof-claims-final-packet.json, charness-artifacts/critique/proof-claims-final-packet.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 - probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.
   source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json, charness-artifacts/probe/2026-08-01-inventory-marker-rule.json, charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json
   verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool "$path" >/dev/null || exit $?; done
+- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
+  source matches: charness-artifacts/retro/2026-08-04-235906-packet.json, charness-artifacts/retro/2026-08-04-235906-packet.md, charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
+  derived matches: charness-artifacts/retro/lesson-selection-index.json
+  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
+  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
   derived matches: plugins/charness/scripts/proof_receipt.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/run_slice_closeout.py, plugins/charness/scripts/slice_closeout_reporting.py, plugins/charness/scripts/validate_inventory_consumption.py
   verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json
@@ -95,6 +108,7 @@ Owning surfaces:
 
 Planned sync commands before validators:
 - python3 scripts/sync_root_plugin_manifests.py --repo-root .
+- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract

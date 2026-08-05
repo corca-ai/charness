@@ -10,8 +10,8 @@ remote publication and issue closure outside the local claim.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/proof-claims-final-packet.json`
-- Packet SHA256: `7dcfaea7578942fb4fb41b896e606cb2affa82ac8b27c7ff1ce2d0014f618bc4`
-- Identity SHA256: `27f24a615467f66d669aecc69bf643cd7aafdb2e52a866a94fa5e789f36b5c47`
+- Packet SHA256: `83fcdd8e1b5cf02366bd9f1d62e6599377a44fae86cc5c169e4f92d1102a4748`
+- Identity SHA256: `c155d86a5989474187de013d710ef6790bf64e8ee8f8c8046624f59d1c95acff`
 - Goal: `charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 - Quality record: `charness-artifacts/quality/2026-08-05-proof-claims.md`
 - Bound retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
@@ -62,8 +62,8 @@ routing, slice statuses, current 101-test receipt, and non-claims. It found one
 blocker: the cited critique packet omitted the committed quality record and its
 identity was stale for the repaired input set. The packet was regenerated as
 `charness-artifacts/critique/proof-claims-final-packet.json` with explicit
-reviewed paths and `origin/main..HEAD`; a final reread is required against that
-exact packet.
+reviewed paths and `origin/main..HEAD`. The commit-bound packet now has the
+identity recorded above; a final reread is required against that exact packet.
 
 ## Reviewer Tier Evidence
 
