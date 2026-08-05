@@ -91,7 +91,9 @@ clean. Its only advisory was to record this acceptance in the goal and #506
 The parent committed the accepted goal and #506 carrier, then regenerated this
 packet against fixed target `origin/main..1f8dae2c`. The packet identity is
 recorded above; a final reread is required because those committed acceptance
-records are reviewed inputs.
+records are reviewed inputs. The rebound verification-lock closeout then
+completed with all deterministic checks and the standing pytest lane passing;
+only the independent reread remains pending.
 
 ## Reviewer Tier Evidence
 

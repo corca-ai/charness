@@ -17,7 +17,8 @@ runs the activation command.
   owners, readers, evidence identities, and non-claims before any later
   publication or remote issue boundary.
 - Next action: complete the post-acceptance fresh-eye reread of the rebound
-  packet, then rerun the verification-lock closeout before the complete flip.
+  packet, then perform the complete flip; the rebound verification-lock
+  closeout has already passed.
 - Slice B acceptance envelope: one semantic owner; quality maps
   `pass`/`fail`/`unestablished`, closeout preserves
   `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
@@ -441,10 +442,10 @@ frame above records the completed local-only disposition for Slice E.
   provider behavior, issue closure, release publication, or a universal proof
   schema. #491/#496/#502/#504/#506 remain independently bounded even when the
   quality gate runs them in one local process.
-- Closeout: an earlier final claims reread and boundary verify passed, but the
-  accepted goal/carrier records required a rebound packet. The current ledger
-  keeps completion pending that distinct reread and its verification-lock
-  closeout. No remote success claim is made.
+- Closeout: an earlier final claims reread and boundary verify passed, the
+  accepted goal/carrier records were rebound, and the verification-lock
+  closeout passed on that rebound state. The current ledger keeps completion
+  pending the distinct post-acceptance reread. No remote success claim is made.
 
 ## Context Sources
 
@@ -526,8 +527,8 @@ changed-line coverage are green, and the exact focused counts are current at
 the locked proof target. The first independent claims review found and named
 three stale-record blockers; an earlier repaired-surface reread found no
 blockers, after which the accepted goal and carrier were committed and the
-packet was rebound. The post-acceptance reread and final verification-lock
-closeout remain required before the complete flip.
+packet was rebound. The rebound verification-lock closeout passed; the
+post-acceptance reread remains required before the complete flip.
 No push, release, remote CI claim, issue close, or Cautilus evaluation is made;
 those remain separate later boundaries.
 Retro: charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
