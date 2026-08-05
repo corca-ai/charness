@@ -1,1 +1,1 @@
-2026-08-05-issue-511-nose-inventory.md
+2026-08-05-issue-504-retro-persistence.md
