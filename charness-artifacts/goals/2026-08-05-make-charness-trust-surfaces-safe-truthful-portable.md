@@ -1,6 +1,6 @@
 # Achieve Goal: Make Charness trust surfaces safe, truthful, and portable
 
-Status: draft
+Status: blocked
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-charness-trust-surfaces-safe-truthful-portable.md`
 
@@ -9,13 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
+- Current slice: pre-activation boundary blocked on the handoff confirmation.
+- Current slice intent: verify whether the #507-first trust-surfaces umbrella
+  is the intended pursuit; no implementation or external side effect may start
+  until the operator resolves the handoff boundary. Once active, this names
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-05-make-charness-trust-surfaces-safe-truthful-portable.md`; begin with #507 after confirming the draft is still intended.
+- Next action: do not run this artifact's top Activation line. Resolve the
+  handoff's target choice and stale target state first: the broader
+  `make-proof-claims-explicit-scoped-actionable.md` artifact is currently
+  complete, while `make-proof-verdicts-contract-owned.md` remains draft; this
+  #507-first artifact stays blocked until the operator selects and
+  authorizes the correct current target.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -151,17 +157,26 @@ state, not completion claims.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+- Decision: confirm the intended umbrella before activation
+- Owner: operator
+- Why deferred: `docs/handoff.md` explicitly forbids activation or
+  implementation until the five-issue proof-boundary umbrella is confirmed.
+- Unblock action: explicitly resolve the handoff choice. If the five-issue
+  umbrella is still intended, reconcile why its target artifact is already
+  `Status: complete`; otherwise choose the #502-focused artifact at
+  `charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md`
+  and activate only that draft. Do not activate this #507-first artifact.
+- Revisit trigger: the operator's explicit confirmation.
 
-Queue item form:
+## Remaining Boundary Matrix
 
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Lane: activation / selected umbrella confirmation | classification: approval-required | next: operator resolves the five-issue target choice and the already-complete broader target before authorizing any goal
+- Lane: remote CI proof | classification: dispositioned | next: no remote lane requested before activation; run only if a selected track requires it
+- Lane: consumer checkout proof | classification: dispositioned | next: no consumer lane requested before activation; bind it to the owning track if needed
+- Lane: GitHub push / publication | classification: dispositioned | next: no push or publication requested before activation
+- Lane: issue closeout | classification: dispositioned | next: no issue closeout before a selected track meets its independent floor
+- Lane: release publish | classification: dispositioned | next: no release surface is in scope before a selected track proves it necessary
+- Lane: external apply | classification: dispositioned | next: no live apply is planned by default
 
 ## Coordination Cues
 
@@ -211,9 +226,25 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: CONFIRMED — use the broad umbrella with #507 first; #507 must deliver the three preservation/migration outcomes, while every later issue gets its own fix, evidence-backed deferral, or named blocker row. Preserve #507's existing values and comments, and make each advisory state the exact requested change and reason. No external side effect or issue close is implied by activation.
+- Discuss before activation: UNRESOLVED — the handoff requires explicit confirmation of #491/#496/#502/#504/#506, but its prescribed broader target is already `Status: complete`; the #502-focused target is still draft. Resolve that target-state conflict and explicitly choose the authorized artifact before any activation or implementation. This #507-first artifact must remain blocked until then.
 
 ## Slice Log
+
+### Pre-activation blocker
+
+- Blocker: the handoff requires explicit confirmation of the broader
+  proof-boundary umbrella before this goal can be activated or implemented.
+- Paths attempted: read the current handoff and goal; ran
+  `python3 /home/hwidong/.codex/plugins/cache/local/charness/3.2.0/skills/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-08-05-make-charness-trust-surfaces-safe-truthful-portable.md --pursue-ready`;
+  ran `python3 -m pytest -q tests/quality_gates/test_quality_bootstrap.py tests/quality_gates/test_quality_bootstrap_absence.py` (70 passed);
+  and compared the five source/plugin helpers byte-for-byte. These are
+  current-session observations with stdout not captured into a dedicated proof
+  artifact; they do not authorize activation or implementation.
+- Non-claims: no implementation, issue closeout, push, release, Cautilus
+  evaluation, remote CI, or live proof was run.
+- Safe next action: wait for the operator's explicit target selection and
+  resolution of the stale broader-goal status, then activate only the
+  authorized current target.
 
 ## Context Sources
 
@@ -310,10 +341,11 @@ Disposition review: not applicable before activation — create the final indepe
 
 ## User Verification Instructions
 
-At the next session, run the activation line at the top of this file. Start by
-reading `## Closeout Binding Plan`, then verify #507's current consumer evidence
-before changing bootstrap behavior. Review each later track independently; do
-not close an issue or claim remote proof merely because local tests pass.
+At the next session, do not run this file's activation line while it is blocked.
+Read `docs/handoff.md`, verify whether the broader target's `Status: complete`
+is still authoritative, and explicitly select the current authorized target.
+Only after that selection should the corresponding goal be activated; do not
+close an issue or claim remote proof merely because local tests pass.
 
 ## Auto-Retro
 
