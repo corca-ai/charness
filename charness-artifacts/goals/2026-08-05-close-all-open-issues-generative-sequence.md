@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #468 local carrier complete at d2ec4f58, but its conditional pre-push boundary refused on the measured pytest runtime budget; #468 remains OPEN.
-- Current slice intent: use the recorded #468 external-boundary non-claim to re-rank into #503's measured recurring-cost owner/decision slice without weakening the refusing gate.
-- Next action: read and resolve #503 against the current runtime cohort, then choose the smallest measured owner/budget contract that lets the unchanged proof surface make an honest decision.
+- Current slice: #503 is CLOSED through the GitHub adapter at b5d956998df4284659c39b55d5ef99b9b470d71e; #468 is also CLOSED at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
+- Current slice intent: carry #503's confirmed runtime-owner/probe-synchronization benefit into the next proof-surface boundary while preserving explicit non-claims for remote CI and installed behavior.
+- Next action: re-read live #506 with comments and inspect the current stale default-window refusal at HEAD b5d95699 before remedy design.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -24,7 +24,7 @@ Activation time: 2026-08-05T04:54:43Z
 
 ## Non-Goals
 
-- 지금 이 shaping 단계에서 코드를 구현하거나 GitHub 이슈를 닫지 않는다.
+- 각 실행 slice의 carrier와 GitHub readback을 독립적으로 검증하며, 아직 disposition되지 않은 이슈를 닫힌 것으로 세지 않는다.
 - 17개 이슈를 새 umbrella issue 하나로 대체하거나, 원래 문제가 사라지는 식으로 이슈 본문을 다시 쓰지 않는다. reshape는 문제·JTBD·증거를 보존한 채 범위, carrier, 순서만 명확히 한다.
 - 로컬 테스트의 green을 GitHub CLOSED, remote CI, 설치된 plugin, provider roundtrip의 증거로 간주하지 않는다.
 - closeout floor, distinct observer/channel, fresh-eye review, source/plugin parity를 런타임 단축을 위해 약화하지 않는다.
@@ -83,8 +83,8 @@ Activation time: 2026-08-05T04:54:43Z
 
 | Seq | Issue | Reshaped closeout unit | Why now / generative contribution | Expected evidence | Status |
 | ---: | --- | --- | --- | --- | --- |
-| 1 | #468 | deferred remedy를 premise-reverification contract로 reshape | 오래된 “named remedy”를 그대로 구현하지 않게 모든 뒤 slice의 설계 경계를 만든다. | premise read/run record, durable contract, decision/closeout critique, distinct readback | blocked at remote publish/readback; local carrier complete |
-| 2 | #506 | reviewer boundary의 stale default-window refusal | 모든 후속 proof-surface review가 오래된 window를 읽고도 통과하는 일을 먼저 막는다. 임시로는 explicit `--before`와 matching `--window-id`를 강제한다. | current-HEAD stale-window refusal, 24-test revalidation, snapshot/verify fingerprint, closeout carrier | re-ranked after #503 |
+| 1 | #468 | deferred remedy를 premise-reverification contract로 reshape | 오래된 “named remedy”를 그대로 구현하지 않게 모든 뒤 slice의 설계 경계를 만든다. | premise read/run record, durable contract, decision/closeout critique, distinct readback | CLOSED; adapter readback verified |
+| 2 | #506 | reviewer boundary의 stale default-window refusal | 모든 후속 proof-surface review가 오래된 window를 읽고도 통과하는 일을 먼저 막는다. 임시로는 explicit `--before`와 matching `--window-id`를 강제한다. | current-HEAD stale-window refusal, 24-test revalidation, snapshot/verify fingerprint, closeout carrier | next after #503 |
 | 3 | #502 | `run-quality.sh` summary의 structured owner/consumer contract | quality/proof reader가 format drift를 test sanding으로 오해하지 않게 하는 공통 receipt spine이다. 현재 issue의 17 consumer 주장과 local matrix 차이를 먼저 재검증한다. | producer-reader inventory, focused proof, bundle/final broad proof, carrier, distinct behavior verdict | planned |
 | 4 | #507 | quality adapter bootstrap의 no-op/preserve/explicit migration 경계 | 기존 consumer 설정과 comment를 덮는 destructive seam을 안정화해 이후 quality 검증의 입력을 믿을 수 있게 한다. #481과의 regression/partial-repair/duplicate 분류를 먼저 한다. | disposable consumer readback, no-op byte/comment preservation, conflict/migration cases, export parity | planned |
 | 5 | #511 | nose inventory의 scanned/missing/error/inapplicable contract | adapter/root 설정이 안정된 뒤 false clean zero를 없애고 quality advisory를 실제로 읽을 수 있게 한다. | `src`/`scripts`/`worker` fixture, absent-root payload, consumer interpretation, advisory non-blocking proof | planned |
@@ -98,7 +98,7 @@ Activation time: 2026-08-05T04:54:43Z
 | 13 | #484 | `skills/shared/**` portable package boundary | #480의 reader position을 shared shipped tree에도 적용해 unmarked-tree 판정의 구조적 빈틈을 닫는다. | shared package root cases, source/export parity, verdict-surface fresh-eye round | planned |
 | 14 | #482 | COMMAND carrier의 consumer-layout resolution | reader/tree 모델이 고정된 뒤 command text만의 path predicate를 별도로 고쳐 false unreachable을 줄인다. | consumer-layout positive/negative command cases, distinct command-carrier proof | planned |
 | 15 | #483 | non-Markdown asset carrier corpus | markdown-only ruler가 고정된 뒤 JSON/YAML/template를 typed carrier로 확장한다. 다른 portability issue와 proof를 섞지 않는다. | Markdown/JSON/YAML/executable-template fixtures, bounded corpus claim, second review if repaired | planned |
-| 16 | #503 | recurring slow gate/over-slice telemetry의 owner/decision | 구조적 proof surface가 안정된 뒤 비용을 재측정해 “느리다”를 owner 없는 반복 보고로 남기지 않는다. | current cohort/percentiles, owner/budget or intentional-retention decision, distinct readback | next; explicitly re-ranked after #468 gate refusal |
+| 16 | #503 | recurring slow gate/over-slice telemetry의 owner/decision | 구조적 proof surface가 안정된 뒤 비용을 재측정해 “느리다”를 owner 없는 반복 보고로 남기지 않는다. | current cohort/percentiles, owner/budget or intentional-retention decision, distinct readback | CLOSED; adapter readback verified |
 | 17 | #505 | final mutation/quality runtime experiment | #502 이후 최종 runner를 기준으로 측정해야 하므로 마지막에 proof floor을 보존하는 실험을 한다. | matched full-command timing, phase/node map, unchanged failure visibility, final gate proof | planned |
 
 Implementation grouping is allowed for #480/#484 and for #508–#510, but closure order is still one issue at a time: the shared implementation is not a shared closeout, and a later issue does not inherit an earlier issue's behavioral verdict.
@@ -166,6 +166,20 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Lessons carried forward: A valid carrier and local green proof do not establish GitHub CLOSED. Re-rank authorization is exercised explicitly: #468 remains OPEN with remote publish/readback missing, and #503 is next because it owns the measured runtime decision.
 - Metrics: Pre-push full quality elapsed 135.0s; pytest latest 60356ms, recent median 61816ms, recent max 69353ms; no remote CI or issue CLOSED readback was obtained.
 
+### Slice 2: #503 runtime-cost owner and measured budget closed
+
+- Objective: Give recurring gate and over-slice telemetry an owner and measured decision, then publish and verify #503 CLOSED.
+- Why this approach: #468's refusing pre-push gate identified #503 as the next generative unblock; the stale pytest bar and ownerless recurring signals were directly actionable from current telemetry.
+- Commits: b5d956998df4284659c39b55d5ef99b9b470d71e — quality: assign recurring runtime cost owners; pushed to origin/main after the full pre-push gate passed.
+- What changed: Retuned the local pytest budget 58500ms -> 97500ms from the current 20-sample cohort; assigned quality ownership to runtime telemetry/budgets, achieve ownership to goal-level over-slice response, and #505 as the aggregate/release matched-cost destination; synchronized D47, probes, producer comment, and plugin mirror.
+- Alternatives rejected: Did not bypass pre-push, use --no-verify, weaken proof floors, retune unmatched aggregate/release bars, or claim Cautilus/remote CI proof.
+- Targeted verification: validate-closeout-draft was draft_verified; bounded fresh-eye semantic review had a clean boundary on the repaired proposal; quality artifact, critique, adapter, docs, 60 measurement tests, and spec-evidence checks passed; full pre-push quality passed 85/85; GitHub adapter verify-closeout read #503 CLOSED and also completed #468 CLOSED readback.
+- Test duplication pressure: No production test was added. Existing measurement tests were re-run after the new quality artifact changed the pinned corpus: 60 passed; the first push refusal exposed and required synchronizing the two probes and D47 together rather than sanding the assertions.
+- Critique: charness-artifacts/critique/2026-08-05-issue-503-resolution.md; the first fresh-eye window was quarantined on boundary drift, the second bounded reviewer returned the repaired semantic surface with a clean fingerprint, and deterministic artifact/probe repairs were validated afterward.
+- Off-goal findings: None. The stale D47/probe refusal was an in-goal consequence of adding the durable #503 quality artifact; no new issue was silently added.
+- Lessons carried forward: #503 confirmed the generative benefit hypothesized after #468: a runtime refusal became a measured owner/decision contract, and the probe gate made corpus synchronization observable. This lowers the decision cost for #506's proof-window slice and preserves #505 as the later matched-cost experiment. No remote CI or installed-host behavior is claimed.
+- Metrics: Pre-push full quality: 85 passed, 0 failed, 128.5s; pytest 66.3s; changed-line mutation coverage 125.4s. Remote main advanced to b5d95699; adapter readbacks independently verified #468 and #503 CLOSED. Next: re-read live #506 with comments and inspect the current stale default-window refusal at HEAD b5d95699 before any remedy design.
+
 ## Activation Record
 
 Activation record status: recorded — 2026-08-05T04:54:43Z.
@@ -229,17 +243,17 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Draft verification: all 17 current issue reads returned OPEN with `comments_read: true`; no implementation, issue close, push, remote CI, release, or live provider proof was performed during shaping. Final closeout fields remain intentionally unclaimed until activation and execution.
+Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed two slices: #468 and #503 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
 
-Retro: not run — this is artifact shaping only; no execution work unit exists to retrospect.
-Host log probe: n/a — no active goal run or host-level live proof was requested during shaping.
-Disposition review: not run — no slice or issue carrier exists yet.
+Remote boundary non-claims: no remote CI/check-run, installed-host, provider roundtrip, release, or live-agent behavior proof was read. The full pre-push gate passed locally and is not remote CI evidence.
+Retro: not run — the active goal still has 15 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
+Disposition review: #468 and #503 verified; #506 is next; remaining issues stay planned and unclaimed.
 
 ## User Verification Instructions
 
-1. Review the 17 shaping-snapshot issue numbers, the preferred sequence, and the items in `## Operator Decision Queue`.
-2. If the default reshape/side-effect boundaries are acceptable, write an `Activation Record` that resolves the queue, records the live activation snapshot, and marks the discussion summary `CONFIRMED`; only then run the exact `Activation:` command at the top of this file.
-3. On activation, expect a fresh GitHub read; if the issue set changed, reshape this draft before executing a slice. Nothing in this shaping turn has closed an issue.
+1. Continue from `## Active Operating Frame` and `## Slice Log`; #468 and #503 are verified closed, while the goal remains active for the 15 remaining issues.
+2. Before #506 remedy design, re-read its live issue/comments and record the current-HEAD stale-window refusal with the required fingerprint boundary.
+3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact.
 
 ## Auto-Retro
