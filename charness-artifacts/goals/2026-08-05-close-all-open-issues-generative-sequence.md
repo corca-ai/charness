@@ -386,7 +386,7 @@ Activation verification: the 17-issue live snapshot had `comments_read: true` fo
 
 Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
 Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: #468, #491, #502, #503, #504, #506, #507, #511, and #496 verified; #508's local implementation and verification are complete but it remains OPEN pending its distinct claims review and final publish boundary; the remaining seven issues stay planned and unclaimed, and #509 does not start before #508 closeout.
+Disposition review: charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md
 
 ## User Verification Instructions
 

@@ -22,9 +22,17 @@ external issue-close boundary.
   parent repairs, and the quality runtime section still said mutation proof was
   deferred. Both findings were repaired; the packet was regenerated from the
   final six reviewed inputs.
-- The second claims window returned PASS. It independently verified the current
-  packet binding, carrier/head claims, local proof claims, explicit non-claims,
-  and strict sequence state.
+- The second claims window returned PASS against the v2 packet, but its durable
+  record became stale when the goal's bound disposition-review line was repaired.
+- The third claims window returned HOLD: it correctly noticed that this review
+  artifact still named the v2 packet and proof head, but it compared the
+  packet's mode-tagged `sha256-v2` content digest with the packet's raw file SHA.
+  The review artifact was repaired to the v3 packet and to the distinction
+  between proof head and current local HEAD.
+- The fourth validator-aware claims window returned PASS. It used the repository
+  identity verifier, confirmed the v3 packet is current, and rechecked the
+  bound disposition path, proof/current-head distinction, non-claims, and
+  strict sequence.
 - The remaining external boundary is intentional and is not a defect in the
   local closeout record: one final gated push, independent remote evidence,
   distinct behavior proof, and GitHub `CLOSED` readback are still pending.
@@ -33,7 +41,8 @@ external issue-close boundary.
 
 - F1 | bin: act-before-ship | evidence: strong | ref: `2026-08-05-issue-508-closeout-claims-packet-packet.json` | action: fix | note: first claims window was held because all six reviewed-input hashes were stale after parent record repairs; repaired by generating the v2 packet and rebinding the review
 - F2 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md:28` | action: fix | note: the runtime section retained a mutation-deferred sentence after the proof passed; repaired to the final base/head and zero-blocker result
-- F3 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN and #509 remains blocked until the final publish/remote closeout boundary
+- F3 | bin: act-before-ship | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:389` | action: fix | note: bind the final disposition review to its own artifact path; the previous prose summary was parsed as an evidence path
+- F4 | bin: valid-but-defer | evidence: strong | ref: `charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md:313-320` | action: document | note: #508 remains OPEN and #509 remains blocked until the final publish/remote closeout boundary
 
 ## Reviewer Tier Evidence
 
@@ -45,24 +54,25 @@ external issue-close boundary.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — the first unnamed claims reviewer returned HOLD, and a
-second distinct unnamed reviewer returned PASS after the packet and quality
-record repairs. Parent-side boundary fingerprints were clean for both review
-windows.
+parent-delegated — the first unnamed claims reviewer returned HOLD, the second
+distinct reviewer returned PASS, the third returned HOLD after the goal
+disposition binding changed, and a fourth validator-aware distinct reviewer
+returned PASS after the v3 packet and review artifact repair. Parent-side
+boundary fingerprints were clean for all review windows.
 
 ## Packet Consumed
 
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v2-packet.json`
-- Packet SHA256: `412b5a14a3a8943d8ba4b9ad592f4147520fc8c90c22167bb38142a0a0fa2d0e`
-- Identity SHA256: `e9d4233b29ecc64f1a0ef75bc3cb4515473ecfa5f4a6a8935c654c574d3ccc5d`
+- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
+- Packet SHA256: `d2de6128b8c7eedb4a596d3d08d1ccbb5fdad8693c3a9e5ae0cd33c9aba8ae69`
+- Identity SHA256: `7e4eea2edbfed2c34243aece94685d4255624daa9f9844a7ab93028580a9bd2d`
 - Prior HOLD packet: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-packet.json` — stale identity repaired; it is not the current binding.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v2-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v2-packet.json`
-- Packet SHA256: `412b5a14a3a8943d8ba4b9ad592f4147520fc8c90c22167bb38142a0a0fa2d0e`
-- Identity SHA256: `e9d4233b29ecc64f1a0ef75bc3cb4515473ecfa5f4a6a8935c654c574d3ccc5d`
+- Packet consumed: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
+- Packet path: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-packet-v3-packet.json`
+- Packet SHA256: `d2de6128b8c7eedb4a596d3d08d1ccbb5fdad8693c3a9e5ae0cd33c9aba8ae69`
+- Identity SHA256: `7e4eea2edbfed2c34243aece94685d4255624daa9f9844a7ab93028580a9bd2d`
 
 ## Boundary Ownership
 
@@ -76,10 +86,10 @@ windows.
 
 ## Verdict
 
-PASS — the local #508 claims are internally consistent and packet-bound. The
+PASS — #508's local claims are current and internally consistent. The
 implementation carrier is `2ac38decc6cdaa6721dc93167fddc410367acd4f`; the
-quality/probe carrier and current HEAD are
-`2f3fe3984b14f91487762dbe37e7edf91b722aba`; the standing read-only suite and
-changed-line mutation consumer passed locally; and the records explicitly do
-not claim remote CI, push, live/provider acquisition, installed-host behavior,
+quality/probe carrier and local proof head are
+`2f3fe3984b14f91487762dbe37e7edf91b722aba`; current local HEAD is
+`561eeb8a8dba792eb9ef996100c4066efae7b152`; and the records explicitly do not
+claim remote CI, push, live/provider acquisition, installed-host behavior,
 Cautilus, distinct external behavior, or GitHub `CLOSED` readback.
