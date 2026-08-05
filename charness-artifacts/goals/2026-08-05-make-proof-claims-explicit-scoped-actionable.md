@@ -1,6 +1,6 @@
 # Achieve Goal: Make proof claims explicit, scoped, and actionable
 
-Status: active
+Status: complete
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 
@@ -9,16 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: active local-first planning/evidence-coordination goal;
+- Current disposition: complete local-first planning/evidence-coordination goal;
   the five selected issues remain independent tracks with separate proof and
   closure boundaries.
 - Current slice: E — cross-track proof and independent issue disposition.
 - Current slice intent: verify that the completed local tracks retain separate
   owners, readers, evidence identities, and non-claims before any later
   publication or remote issue boundary.
-- Next action: finish the final claims reread over the repaired goal, retro, and
-  #506 carrier, then run the verification-lock closeout without implying remote
-  success.
+- Next action: retain the local proof bundle and use each track's own boundary
+  before any later remote publication or issue-close action.
 - Slice B acceptance envelope: one semantic owner; quality maps
   `pass`/`fail`/`unestablished`, closeout preserves
   `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
@@ -37,8 +36,8 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: Slices A–E are recorded locally and the goal is active
-  pending final claims closeout. No push,
+- History boundary: Slices A–E are recorded locally and the goal is complete
+  for its local-only scope. No push,
   release, or remote issue close is implied by the local matrix or by saving
   this artifact. Slice B's implementation and repaired-surface review are
   recorded locally; broad/final proof and each external track remain separately
@@ -235,7 +234,7 @@ helper-owned; neither is absorbed into the #502 receipt or a universal gate.
 | B | Implement the substantive terminal-receipt owner (#502) | This is the only selected track with a new shared implementation need: duplicated verdict prose and ambiguous recovery evidence | Per-run semantic receipt/producer adapters, focused last-line and subprocess exit tests, second repaired-surface review | completed |
 | C | Re-verify and disposition the existing #496 semantic repair | The local behavior is already repaired; reopening its predicate would repeat settled work | Existing positive/negative controls, current source/plugin parity, distinct behavior evidence, issue carrier or durable blocker | completed |
 | D | Resolve the independent claim/binding tracks (#491, #504, #506) | Reference claims, goal-bound retros, and reviewer snapshots have different readers and owners | #491 corpus/claim decision, #504 closeout proof, #506 explicit-window/default refusal proof; no universal schema | completed |
-| E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | in_progress |
+| E | Cross-track proof and independent issue disposition | Shared vocabulary is not shared behavior; each issue needs its own boundary evidence | Broad locked quality/mutation proof, per-issue behavior verdicts, delegated critiques, adapter readbacks or durable blockers | completed |
 
 ## Operator Decision Queue
 
@@ -308,8 +307,8 @@ decision rather than a preselected manifest or new gate.
 
 ## Slice Log
 
-Slices A–D are complete; the following report is the execution archive. The
-active frame above is the control panel for Slice E.
+Slices A–E are complete; the following report is the execution archive. The
+frame above records the completed local-only disposition for Slice E.
 
 ### Slice 1: Lock the five-track proof matrix
 
@@ -431,17 +430,20 @@ active frame above is the control panel for Slice E.
 - Fresh-eye repair: The first final claims reviewer
   (`019fcf33-2eec-7960-b4c3-9aa31ddc1638`, window
   `cross-track-final-claims-20260805`) found three blockers: stale final/retro
-  sections, the missing #506 carrier, and the old #502 count. The parent is
+  sections, the missing #506 carrier, and the old #502 count. The parent
   repaired all three before the post-form rereads; a later packet-binding repair
   was then required, and no same-agent substitute
-  or remote success claim is made.
+  or remote success claim is made. The pinned final reread by reviewer
+  `019fcf4a-a82c-7843-908c-0671403c9de0` in window
+  `cross-track-final-claims-final-reread-20260805` found no blockers, and its
+  boundary verify was clean.
 - Non-claims: The local bundle does not prove remote CI, installed-host or
   provider behavior, issue closure, release publication, or a universal proof
   schema. #491/#496/#502/#504/#506 remain independently bounded even when the
   quality gate runs them in one local process.
-- Next step: run the final claims reread against this repaired artifact set,
-  verify the boundary window, then complete the goal only if the closeout
-  evidence gate passes.
+- Closeout: the final claims reread and boundary verify passed; the
+  verification-lock closeout was run before this complete flip. No remote
+  success claim is made.
 
 ## Context Sources
 
@@ -520,9 +522,10 @@ only declared drift was the parent edit to this draft after the snapshot.
 
 Slices A–E have run their recorded local proof. The final local gate and
 changed-line coverage are green, and the exact focused counts are current at
-HEAD. The first independent claims review found and named three stale-record
-blockers; the goal remains active until the repaired goal, carrier, and bound
-retro are reread by a fresh observer and the verification-lock closeout passes.
+the locked proof target. The first independent claims review found and named
+three stale-record blockers; the repaired goal, carrier, and bound retro were
+reread by a fresh observer, whose final pass found no blockers. The
+verification-lock closeout also passed for this local scope.
 No push, release, remote CI claim, issue close, or Cautilus evaluation is made;
 those remain separate later boundaries.
 Retro: charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
@@ -548,8 +551,7 @@ Retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
 records the measured gate/runtime signals, stale-record repair, North Star
 misapplication, counterfactuals, and sibling search.
 
-Disposition review: pending final claims reread of the repaired goal and its
-bound retro.
+Disposition review: charness-artifacts/critique/2026-08-05-proof-claims-final-claims-review.md
 
 applied: exact focused test recount and receipt-contract branch tests.
 applied: per-track #506 carrier plus quality/probe synchronization.
