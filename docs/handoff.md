@@ -2,74 +2,43 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** do not activate the completed five-issue umbrella or the
-  existing #502 draft unchanged. The current draft target is
-  [the all-open issue generative-sequence goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
-  Before activation, live-read the issue set again, confirm `comments_read: true`,
-  resolve the draft's operator decision queue, and write its Activation Record.
-  The draft's shaping snapshot has 17 OPEN issues: #468, #480, #482, #483,
-  #484, #491, #496, and #502–#511. Nothing is activated, implemented, pushed,
-  or closed by this handoff.
+- **Next pickup:** continue the active all-open issue generative-sequence goal at [the goal artifact](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md); do not reactivate an older umbrella or the #502 draft.
+- First read the goal's Active Operating Frame, current quality record, and recent lessons, then live-read #511 through the issue adapter with comments before designing a remedy.
 
 ## Continuation Capability
 
-- A terminal verdict is a proof surface: its last retained line must state the
-  real outcome, actionable subject, and trustworthy recovery evidence. Keep
-  semantic facts separate from the observed spelling or transport that exposed
-  them. A false-positive control only controls the axis it varies; write the
-  invariant and an axis-varying counterexample before adding a guard.
-- Run the broad suite per meaningful slice, not only at closeout. Proof-surface
-  repairs owe a second bounded fresh-eye round that reads the repaired surface.
+- Every issue close requires its own carrier, delegated critique, distinct behavioral verdict, conditional pre-push/remote proof, and GitHub adapter readback with `verify-closeout --expect-state CLOSED`.
+- Proof-surface verdict-logic repairs require the bounded repaired-surface review round and clean reviewer boundary fingerprints; source/plugin parity must be synchronized before verification.
+- Keep local, remote, installed-host, provider, and Cautilus claims separate. Cautilus remains ask-before-run and was not executed for #507.
 
 ## Current State
 
-- Local branch is ahead of `origin/main` with unpushed documentation, artifact,
-  and proof-receipt implementation commits; read the live `git log` for the
-  current HEAD. The completed umbrella records the local implementation and
-  proof, but no remote CI, issue closure, release, or installed-host claim.
-- Live shaping snapshot: #468, #480, #482, #483, #484, #491, #496, #502,
-  #503, #504, #505, #506, #507, #508, #509, #510, and #511 were OPEN. Local
-  artifacts may provide historical implementation/proof evidence, but none is
-  remote issue closure. Re-read GitHub at activation; additions or removals
-  require an explicit re-scope in the goal artifact.
+- The active goal has independently verified CLOSED slices #468, #503, #506, #502, and #507; 12 planned issues remain: #480, #482, #483, #484, #491, #496, #504, #505, #508, #509, #510, and #511.
+- #507 commit `90bc1f9ec681b013f60075fb76fca5546a72099d` is on `origin/main`. GitHub Quality Core run `30987189942` passed both core deterministic and changed-line mutation jobs; issue #507 readback is CLOSED.
+- #507 established normalized no-op, conflict-preserving advisory, and explicit comment-retaining migration for quality adapter bootstrap. Its detailed debug/spec/quality/critique evidence lives in the goal-linked artifacts.
+- The next planned slice is #511: nose inventory must distinguish scanned, missing, error, and inapplicable outcomes without a false clean zero.
 
 ## Next Session
 
-1. Read the goal draft, handoff, North Star, recent lessons, and current
-   quality record; then live-read every open issue selected by the activation
-   snapshot through the issue adapter.
-2. Resolve the goal's queue: default reshape of #468, live-snapshot scope,
-   strict close versus explicitly authorized re-rank, and the settled carrier
-   route. Write the Activation Record before `/goal`.
-3. Start with #468, then #506, #502, #507, and #511 unless current differential
-   evidence changes the preferred order. Treat #506 as a prerequisite for later
-   fresh-eye proof, and keep #508–#510 and #480/#484/#482/#483 as distinct issue
-   closeouts even where implementation is shared.
-4. Any issue close requires that issue's carrier, delegated critique, distinct
-   behavior proof, and adapter readback; local green proof never stands in for
-   remote CI or issue closure. A blocked issue cannot be silently skipped.
+1. Read the active goal, [current quality posture](../charness-artifacts/quality/latest.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and the implementation/operating contracts.
+2. Run the live #511 issue read with comments and compare its requested contract with the now-stable quality adapter lifecycle and existing implementation.
+3. For a bug, establish a falsifiable debug hypothesis before design; for verdict-logic changes, plan the required bounded fresh-eye rounds. Sync source and plugin exports before gates.
+4. Implement the smallest honest #511 slice, prove it through the quality/closeout workflow, and close it only after its own carrier, critique, distinct behavior channel, remote evidence, and adapter readback satisfy the floor.
+5. Append the complete #511 disposition to the goal and refresh this handoff before the next pickup; keep the goal active until all scoped issues are independently dispositioned.
 
 ## Discuss
 
-- Confirm the preferred #468 reshape: a premise-reverification contract that
-  preserves the original JTBD and must change or falsify at least one downstream
-  remedy decision; do not reactivate the old umbrella or #502 draft unchanged.
-- Confirm that the activation-time live issue set is authoritative and that any
-  additions/removals require a recorded re-scope rather than silent drift.
-- Decide strict sequential close versus an explicitly recorded re-rank when a
-  predecessor is blocked; either choice must preserve an open-state/non-claim
-  row and an unblock owner/action.
-- Keep cross-surface parity as review-matrix facts, not identical prose, status
-  vocabulary, or a shared closure transaction; keep `unproven` and `blocked`
-  distinct.
-
-Refresh non-claims: the new all-open goal is still draft and has not been
-activated. The local proof does not establish remote CI or issue closure for any
-issue in its snapshot. No push, issue close, release, Cautilus evaluation, or
-installed-host proof was run for this goal.
+- No new user decision is required for the next pickup: the standing conditional approval covers `git push` and issue close once their gates pass. PR, release, tag, version bump, and Cautilus evaluation remain out of scope.
+- Preserve strict sequence by default. If #511 is externally blocked, record its OPEN state, missing proof, owner/action, and explicit re-rank authorization before moving on.
 
 ## References
 
-- [all-open goal draft](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md) · [broader goal](../charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md) · [goal pre-mortem](../charness-artifacts/critique/2026-08-05-broader-proof-claims-goal-pre-mortem.md) · [#502-focused fallback](../charness-artifacts/goals/2026-08-05-make-proof-verdicts-contract-owned.md)
-- [North Star](./design-north-star.md) · [recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [quality review](../charness-artifacts/quality/latest.md) · [remote check readback](../charness-artifacts/probe/2026-08-05-f29009bd-remote-check-readback.json) · [#502](https://github.com/corca-ai/charness/issues/502) · [#504 draft](../charness-artifacts/goals/2026-08-05-close-504-through-distinct-remote-proof.md)
+- [Active goal and slice ledger](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md)
+- [Current quality posture](../charness-artifacts/quality/latest.md)
+- [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
+- [Implementation discipline](./conventions/implementation-discipline.md) · [operating contract](./conventions/operating-contract.md)
+- [Issue #511](https://github.com/corca-ai/charness/issues/511)
+
+- Refresh kept: #507's commit, remote CI, CLOSED readback, the 12-issue open set, and #511 as the next action because each changes the next operator's first move; see the [active goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
+
+- Refresh non-claims: private consumer roundtrip, installed-machine behavior, provider behavior, live-agent behavior, release publication, and Cautilus execution remain unproven or out of scope; see the [quality record](../charness-artifacts/quality/latest.md).
