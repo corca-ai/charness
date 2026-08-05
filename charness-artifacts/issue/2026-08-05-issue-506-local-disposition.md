@@ -75,8 +75,8 @@ distinct-observer requirement with a same-agent reread and does not merge
 
 ## Fresh-observer boundary
 
-The final independent claims reread for the goal completed with no blockers in
-window `cross-track-final-claims-final-reread-20260805`; its boundary verify
-was clean. This accepts the carrier for the goal's local proof only. The
-remote issue remains OPEN and still requires its own later resolution critique
-and adapter readback.
+An earlier independent claims reread completed with no blockers in window
+`cross-track-final-claims-final-reread-20260805`; its boundary verify was
+clean. The goal then committed an acceptance update and rebound its packet, so
+the post-acceptance reread remains pending. The remote issue remains OPEN and
+still requires its own later resolution critique and adapter readback.

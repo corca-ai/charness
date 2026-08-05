@@ -1,6 +1,6 @@
 # Achieve Goal: Make proof claims explicit, scoped, and actionable
 
-Status: complete
+Status: active
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 
@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current disposition: complete local-first planning/evidence-coordination goal;
+- Current disposition: active local-first planning/evidence-coordination goal;
   the five selected issues remain independent tracks with separate proof and
   closure boundaries.
 - Current slice: E — cross-track proof and independent issue disposition.
 - Current slice intent: verify that the completed local tracks retain separate
   owners, readers, evidence identities, and non-claims before any later
   publication or remote issue boundary.
-- Next action: retain the local proof bundle and use each track's own boundary
-  before any later remote publication or issue-close action.
+- Next action: complete the post-acceptance fresh-eye reread of the rebound
+  packet, then rerun the verification-lock closeout before the complete flip.
 - Slice B acceptance envelope: one semantic owner; quality maps
   `pass`/`fail`/`unestablished`, closeout preserves
   `completed`/`failed`/`blocked`/`planned`/`noop`; each adverse subject carries
@@ -36,8 +36,8 @@ runs the activation command.
   owner, reader-facing next action, tests, non-claims, and all source/derived
   surfaces. A verdict-rendering change owes a second bounded review round after
   repairs, capped at two rounds.
-- History boundary: Slices A–E are recorded locally and the goal is complete
-  for its local-only scope. No push,
+- History boundary: Slices A–E are recorded locally and the goal is active
+  pending the post-acceptance packet reread. No push,
   release, or remote issue close is implied by the local matrix or by saving
   this artifact. Slice B's implementation and repaired-surface review are
   recorded locally; broad/final proof and each external track remain separately
@@ -441,9 +441,10 @@ frame above records the completed local-only disposition for Slice E.
   provider behavior, issue closure, release publication, or a universal proof
   schema. #491/#496/#502/#504/#506 remain independently bounded even when the
   quality gate runs them in one local process.
-- Closeout: the final claims reread and boundary verify passed; the
-  verification-lock closeout was run before this complete flip. No remote
-  success claim is made.
+- Closeout: an earlier final claims reread and boundary verify passed, but the
+  accepted goal/carrier records required a rebound packet. The current ledger
+  keeps completion pending that distinct reread and its verification-lock
+  closeout. No remote success claim is made.
 
 ## Context Sources
 
@@ -523,9 +524,10 @@ only declared drift was the parent edit to this draft after the snapshot.
 Slices A–E have run their recorded local proof. The final local gate and
 changed-line coverage are green, and the exact focused counts are current at
 the locked proof target. The first independent claims review found and named
-three stale-record blockers; the repaired goal, carrier, and bound retro were
-reread by a fresh observer, whose final pass found no blockers. The
-verification-lock closeout also passed for this local scope.
+three stale-record blockers; an earlier repaired-surface reread found no
+blockers, after which the accepted goal and carrier were committed and the
+packet was rebound. The post-acceptance reread and final verification-lock
+closeout remain required before the complete flip.
 No push, release, remote CI claim, issue close, or Cautilus evaluation is made;
 those remain separate later boundaries.
 Retro: charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md
