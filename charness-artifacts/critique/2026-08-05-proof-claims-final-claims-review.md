@@ -10,8 +10,8 @@ remote publication and issue closure outside the local claim.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/proof-claims-final-packet.json`
-- Packet SHA256: `95bea6e910ee674f00147f79a225b08793292bdcfc7609701a4210694cf30ab6`
-- Identity SHA256: `6db03cbb41ad5071b6fa29b3486af4548a2cb84267abde2ecd1918ac2725ac0e`
+- Packet SHA256: `1a23c05faa049371d371db0a0272b0a69ae55eb2cb80f4fec18ac455d3c7cbfd`
+- Identity SHA256: `6b6b56a0dcf52401b07d7b720adbbb69058c01af9ca7e09adc865c7f71092dd2`
 - Goal: `charness-artifacts/goals/2026-08-05-make-proof-claims-explicit-scoped-actionable.md`
 - Quality record: `charness-artifacts/quality/2026-08-05-proof-claims.md`
 - Bound retro: `charness-artifacts/retro/2026-08-05-proof-claims-goal-retro.md`
@@ -76,6 +76,23 @@ HEAD even though all five declared input hashes matched. The boundary verify
 was clean. The parent pinned the packet to `origin/main..d82e906d`; one final
 reread is required against that fixed target.
 
+### Round 5 — final acceptance reread
+
+Reviewer `019fcf4a-a82c-7843-908c-0671403c9de0`, window
+`cross-track-final-claims-final-reread-20260805`, found no blockers. It
+confirmed that the pinned packet identity and all five input hashes remain
+current, the Fresh-Eye count matches Rounds 1–4, and the goal's local proof,
+independent ownership, and non-claims are coherent. The boundary verify was
+clean. Its only advisory was to record this acceptance in the goal and #506
+  carrier, which the parent applied.
+
+### Round 6 — post-acceptance packet binding
+
+The parent committed the accepted goal and #506 carrier, then regenerated this
+packet against fixed target `origin/main..480dc537`. The packet identity is
+recorded above; a final reread is required because those committed acceptance
+records are reviewed inputs.
+
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage claims review.
@@ -86,12 +103,13 @@ reread is required against that fixed target.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — four unnamed one-shot Codex claims reviewers returned their
+parent-delegated — five unnamed one-shot Codex claims reviewers returned their
 findings in the parent context. The parent boundary snapshot windows were
 `cross-track-final-claims-20260805` and
 `cross-track-final-claims-repair-20260805`; the fixed-target round used
-`cross-track-final-claims-final-20260805` and was read-only. A final reread is
-required before completion.
+`cross-track-final-claims-final-20260805` and
+`cross-track-final-claims-final-reread-20260805`; all were read-only.
+The new packet binding awaits one final read-only pass.
 
 ## Boundary Ownership
 
@@ -101,7 +119,7 @@ required before completion.
 - Owning surface: the active goal owns the cross-track claim and non-claim
   narrative; issue carriers own their local dispositions; remote issue state
   remains owned by the issue adapter.
-- Verdict: owned-correctly pending final form/reread.
+- Verdict: owned-correctly pending final packet reread.
 
 ## Accepted Non-Claims
 
@@ -114,5 +132,5 @@ required before completion.
 
 ## Verdict
 
-Blocked pending the explicit After-phase bindings and one final fresh-eye
-reread. No production or proof-surface logic is changed by this review.
+Pending final reread of the packet bound to the committed acceptance records.
+No production or proof-surface logic is changed by this review.
