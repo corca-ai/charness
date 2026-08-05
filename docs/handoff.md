@@ -3,7 +3,7 @@
 ## Workflow Trigger
 
 - **Next pickup:** continue the active all-open issue generative-sequence goal at [the goal artifact](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md); do not reactivate an older umbrella or the #502 draft.
-- First read the goal's Active Operating Frame, current quality record, and recent lessons, then continue #508's local carrier/closeout work; its live issue read and remedy design are already recorded.
+- First read the goal's Active Operating Frame, current quality record, and recent lessons, then continue #508's publish-pending closeout; its live issue read, remedy design, carrier, and local draft validation are recorded.
 
 ## Continuation Capability
 
@@ -20,14 +20,14 @@
 - #504 established opt-in owning-goal binding for retro persistence while preserving goal-free session/release mode. Implementation `9768f95d` plus defensive coverage `c655e9aa` were carried by verified closeout `5372631a`; focused proof is recorded in the [dated quality record](../charness-artifacts/quality/2026-08-05-issue-504-retro-persistence.md), remote Quality Core `30999412722` passed both jobs, and issue readback is CLOSED with `local-only-by-contract` behavior.
 - #496 is CLOSED at carrier commit `be4e65df746e84c79cb005b9fe8f1eb5da9d0d50`; remote Quality Core run `31003204282` passed both jobs and the adapter readback verified `CLOSED`. Its current lifecycle boundary, historical producer provenance, and typed behavior verdict are recorded in the [dated quality record](../charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md).
 - #491 is CLOSED at carrier commit `05726f15c1fc9effd2e06e72ca9429d57f26f1ee`; remote Quality Core run `31008443698` passed both jobs and the adapter readback verified `CLOSED`. Its semantic-reference boundary, first-reader proof, and reviewer-owned decision are recorded in the [dated quality record](../charness-artifacts/quality/2026-08-05-issue-491-semantic-reference.md).
-- The current slice is #508: its local carrier and verification-locked mutation proof are complete; finish the distinct closeout-claims review, then hold #508 before starting #509.
+- The current slice is #508: its direct-commit carrier is locally `draft_verified`, its verification-locked mutation proof and distinct claims review are complete, and the live issue remains OPEN; hold #508 before starting #509.
 
 ## Next Session
 
 1. Read the active goal, [current quality posture](../charness-artifacts/quality/latest.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and the implementation/operating contracts.
-2. Read the final #508 goal, quality, handoff, and proof records through a distinct closeout-claims reviewer and record that verdict.
+2. Read the final #508 carrier, goal, quality, handoff, and proof records; the distinct closeout-claims review is PASS and is bound at the [claims review](../charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md).
 3. Keep #508 OPEN until the single final push supplies independent remote evidence and the closeout floor is satisfied; do not start #509 before that readback.
-4. Append the complete #508 disposition to the goal and refresh this handoff before the next pickup; keep the goal active until all scoped issues are independently dispositioned.
+4. Keep the complete #508 disposition, carrier, and claims review bound in the goal and this handoff; keep the goal active until all scoped issues are independently dispositioned.
 
 ## Discuss
 
@@ -43,6 +43,6 @@
 - [Implementation discipline](./conventions/implementation-discipline.md) · [operating contract](./conventions/operating-contract.md)
 - [Issue #491](https://github.com/corca-ai/charness/issues/491)
 
-- Refresh kept: #491's carrier `05726f15`, remote CI run `31008443698`, CLOSED readback, the eight-issue unresolved set, and #508's local implementation/publish-pending state because each changes the next operator's first move; see the [active goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
+- Refresh kept: #491's carrier `05726f15`, remote CI run `31008443698`, CLOSED readback, the eight-issue unresolved set, and #508's locally validated carrier/claims-review/publish-pending state because each changes the next operator's first move; see the [active goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
 
 - Refresh non-claims: private consumer roundtrip, installed-machine behavior, provider behavior, live-agent behavior, release publication, and Cautilus execution remain unproven or out of scope; see the [quality record](../charness-artifacts/quality/latest.md).
