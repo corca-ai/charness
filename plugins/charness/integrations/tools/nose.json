@@ -89,7 +89,7 @@
   },
   "host_notes": [
     "`nose` is REQUIRED (>=0.17.0) in Charness quality: code clone families stay advisory (refactoring candidates), and the Markdown engine backs the doc near-duplicate review that replaced the bespoke difflib gate. Findings are advisory; tool absence fails closed.",
-    "Code clones: `nose query <root> all top=20 sort=extractability --mode syntax,semantic,near --min-size 24 --format json` per scope root (scripts, skills/public, skills/support), merged by `inventory_nose_clones.py`; 0.13.3 removed `nose scan` and `query` takes one path per call.",
+    "Code clones: `inventory_nose_clones.py` resolves optional defaults (scripts, skills/public, skills/support), adapter-owned `nose_inventory_paths`, or explicit `--path` roots before running one `nose query --root ... all top=20 sort=extractability --mode syntax,semantic,near --min-size 24 --format json`; missing and partial roots remain visible and are not a completed scan.",
     "Doc near-duplicates: `nose query . --exclude 'plugins/**' --exclude 'charness-artifacts/**' --format json` and read the top-level `markdown` array (advisory `inventory_doc_duplicates.py` with its own drift baseline)."
   ]
 }

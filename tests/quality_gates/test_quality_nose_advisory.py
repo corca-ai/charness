@@ -13,11 +13,9 @@ from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_nose_clones.py"
 
-# nose 0.13.3 removed `nose scan`; the advisory now runs `nose query <path> all
-# top=N sort=K --format json` per scope root (one path per call) and merges the
-# families, deduped by `id`. These end-to-end tests drive a fake `nose` that speaks
-# the query contract. Multi-root scanning means the fake is invoked once per root
-# (scripts / skills/public / skills/support), so families carry an `id` to dedupe.
+# nose 0.13.3 removed `nose scan`; the advisory now runs one `nose query` over
+# resolved `--root` paths and preserves the requested/scanned/missing scope.
+# These end-to-end tests drive a fake `nose` that speaks the query contract.
 
 
 def _make_nose(bin_dir: Path, body: str) -> None:
@@ -40,43 +38,178 @@ def _make_nose(bin_dir: Path, body: str) -> None:
     nose.chmod(0o755)
 
 
-def _run(script_args: list[str], bin_dir: Path | None) -> subprocess.CompletedProcess:
+def _run(
+    script_args: list[str], bin_dir: Path | None, *, check: bool = True, seed_default_roots: bool = True
+) -> subprocess.CompletedProcess:
+    repo_root = Path(script_args[script_args.index("--repo-root") + 1])
+    if seed_default_roots:
+        for root in ("scripts", "skills/public", "skills/support"):
+            (repo_root / root).mkdir(parents=True, exist_ok=True)
     if bin_dir is None:
         env = {**os.environ, "PATH": "/nonexistent-empty-bin", "NOSE_BIN": ""}
     else:
         env = {**os.environ, "PATH": f"{bin_dir}:{os.environ.get('PATH', '')}", "NOSE_BIN": ""}
     return subprocess.run(
         [sys.executable, str(SCRIPT), *script_args],
-        cwd=ROOT, check=True, capture_output=True, text=True, env=env,
+        cwd=ROOT, check=check, capture_output=True, text=True, env=env,
     )
 
 
 def test_nose_advisory_reports_missing_without_failing(tmp_path: Path) -> None:
-    result = _run(["--repo-root", str(tmp_path)], bin_dir=None)
-    assert result.returncode == 0
+    result = _run(["--repo-root", str(tmp_path)], bin_dir=None, check=False)
+    assert result.returncode == 3
     assert "ADVISORY: nose missing" in result.stdout
+
+
+def test_nose_advisory_filters_absent_default_roots_and_marks_partial_scope(tmp_path: Path) -> None:
+    (tmp_path / "src").mkdir()
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "worker").mkdir()
+    bin_dir = tmp_path / "bin"
+    _make_nose(
+        bin_dir,
+        """
+        if args[0] == "query":
+            roots = [args[index + 1] for index, value in enumerate(args) if value == "--root"]
+            assert roots == ["scripts"]
+            print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": []}))
+        """,
+    )
+    result = _run(
+        ["--repo-root", str(tmp_path), "--json"],
+        bin_dir,
+        check=False,
+        seed_default_roots=False,
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 4
+    assert payload["status"] == "clean"
+    assert payload["scope_status"] == "partial"
+    assert payload["requested_paths"] == ["scripts", "skills/public", "skills/support"]
+    assert payload["scanned_paths"] == ["scripts"]
+    assert payload["missing_paths"] == ["skills/public", "skills/support"]
+
+
+def test_nose_advisory_reports_inapplicable_without_querying(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    _make_nose(
+        bin_dir,
+        """
+        if args[0] == "query":
+            raise AssertionError("query must not run without a valid root")
+        """,
+    )
+    result = _run(
+        ["--repo-root", str(tmp_path), "--json"],
+        bin_dir,
+        check=False,
+        seed_default_roots=False,
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 3
+    assert payload["status"] == "inapplicable"
+    assert payload["scope_status"] == "inapplicable"
+    assert payload["scanned_paths"] == []
+    assert payload["missing_paths"] == ["scripts", "skills/public", "skills/support"]
+
+
+def test_nose_advisory_does_not_write_baseline_for_inapplicable_scope(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    _make_nose(bin_dir, """if args[0] == "query": raise AssertionError("query must not run")""")
+    result = _run(
+        ["--repo-root", str(tmp_path), "--write-baseline", "--json"],
+        bin_dir,
+        check=False,
+        seed_default_roots=False,
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 3
+    assert payload["status"] == "inapplicable"
+    assert not (tmp_path / "charness-artifacts/quality/nose-baseline.json").exists()
+
+
+def test_nose_advisory_honors_adapter_configured_paths(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / "src").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nlanguage: en\noutput_dir: charness-artifacts/quality\n"
+        "nose_inventory_paths:\n  - src\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    _make_nose(
+        bin_dir,
+        """
+        if args[0] == "query":
+            roots = [args[index + 1] for index, value in enumerate(args) if value == "--root"]
+            assert roots == ["src"]
+            print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": []}))
+        """,
+    )
+    result = _run(
+        ["--repo-root", str(tmp_path), "--json"],
+        bin_dir,
+        check=False,
+        seed_default_roots=False,
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert payload["status"] == "clean"
+    assert payload["scope_status"] == "scanned"
+    assert payload["requested_paths"] == ["src"]
+
+
+def test_nose_advisory_explicit_path_overrides_invalid_adapter_scope(tmp_path: Path) -> None:
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / "src").mkdir()
+    (tmp_path / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: consumer\nlanguage: en\noutput_dir: charness-artifacts/quality\n"
+        "nose_inventory_paths:\n  - ../outside\n",
+        encoding="utf-8",
+    )
+    bin_dir = tmp_path / "bin"
+    _make_nose(
+        bin_dir,
+        """
+        if args[0] == "query":
+            roots = [args[index + 1] for index, value in enumerate(args) if value == "--root"]
+            assert roots == ["src"]
+            print(json.dumps({"schema_version": 3, "tool_version": "0.13.3", "families": []}))
+        """,
+    )
+    result = _run(
+        ["--repo-root", str(tmp_path), "--path", "src", "--json"],
+        bin_dir,
+        check=False,
+        seed_default_roots=False,
+    )
+    payload = json.loads(result.stdout)
+    assert result.returncode == 0
+    assert payload["status"] == "clean"
+    assert payload["requested_paths"] == ["src"]
 
 
 def test_nose_advisory_missing_json_preserves_scope_filters(tmp_path: Path) -> None:
     result = _run(
         ["--repo-root", str(tmp_path), "--exclude", "**/resolve_adapter.py",
          "--ignore-file", "nose.ignore.json", "--json"],
-        bin_dir=None,
+        bin_dir=None, check=False,
     )
     payload = json.loads(result.stdout)
     assert payload["status"] == "missing"
     assert payload["excludes"] == ["**/resolve_adapter.py"]
     assert payload["ignore_file"] == "nose.ignore.json"
-    assert payload["scope"] == {}
+    assert payload["scope"]["scope_status"] == "missing-tool"
+    assert payload["scanned_paths"] == ["scripts", "skills/public", "skills/support"]
     assert payload["ranking"] == {}
 
 
 def test_nose_advisory_summary_yaml_matches_json(tmp_path: Path) -> None:
     args = ["--repo-root", str(tmp_path), "--summary"]
-    yaml_result = _run(args, bin_dir=None)
-    json_result = _run([*args, "--json"], bin_dir=None)
+    yaml_result = _run(args, bin_dir=None, check=False)
+    json_result = _run([*args, "--json"], bin_dir=None, check=False)
 
-    assert yaml_result.returncode == json_result.returncode == 0
+    assert yaml_result.returncode == json_result.returncode == 3
     assert yaml.safe_load(yaml_result.stdout) == json.loads(json_result.stdout)
 
 
@@ -100,7 +233,7 @@ def test_nose_advisory_uses_installed_binary(tmp_path: Path) -> None:
     )
     payload = json.loads(_run(["--repo-root", str(tmp_path), "--json"], bin_dir).stdout)
     assert payload["status"] == "findings"
-    assert payload["family_count"] == 1  # same id across 3 roots -> deduped
+    assert payload["family_count"] == 1  # one family survives the normalized query payload
     assert payload["total_dup_lines"] == 12  # two 6-line spans, derived
     assert payload["tool_version"] == "0.13.3"
     assert payload["families"][0]["sample_locations"][0]["file"] == "scripts/a.py"

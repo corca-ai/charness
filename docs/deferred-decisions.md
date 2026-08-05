@@ -685,16 +685,16 @@ the evidence is sufficient for the boundary at hand.
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over this entry's own denominator (112 top-level artifacts, 29 citing a declared
-  inventory): the presence-only mention total reproduces **173** exactly, **165** of those
-  clear today's residual floor, **119** carry a value marker and **46** do not, and a
-  marker rule would refuse **5 citations across 4 artifacts**
-  (`2026-06-25-skill-ergonomics-yaml-summary`, `2026-06-25-test-speed-token-efficiency`,
-  `2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
-  overlap: 115 backticked, 81 `field=`, 10 `field:`. With `--recursive`, which reaches the
-  `history/` directory the sibling script's non-recursive glob silently excludes: 130
-  artifacts (256 presence-only), 248 floor-clearing mentions, 184 marked, 64 unmarked, 7
-  citations across 5 artifacts. Both variants are recorded in the probe and pinned by the
+  Over this entry's own denominator (114 top-level artifacts, 29 citing a declared
+  inventory): the presence-only mention total reproduces **170** exactly, **162** of those
+  clear today's residual floor, **133** carry a value marker and **29** do not, and a
+  marker rule would refuse **3 citations across 2 artifacts**
+  (`2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
+  overlap: 116 backticked, 81 `field=`, 24 `field:`. With `--recursive`, which reaches the
+  `history/` directory the sibling script's non-recursive glob silently excludes: 132
+  artifacts (243 presence-only), 235 floor-clearing mentions, 197 marked, 38 unmarked, 5
+  citations across 3 artifacts (`2026-06-26-five-pass-boundary`, `2026-07-13`,
+  `history/2026-06-11`). Both variants are recorded in the probe and pinned by the
   test, so neither number is an unrecorded assertion sitting beside recorded ones. The
   probe was refreshed on 2026-08-05 after this slice changed the checked-in quality
   corpus; `quality/latest.md` now points to a review that cites no declared inventory.
@@ -714,8 +714,8 @@ the evidence is sufficient for the boundary at hand.
   the probe's `_provenance`.
 - Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
   about an ordinary word. Nothing here narrows sweep row S11. The new measurement counts
-  mentions that clear TODAY's residual floor (165), while the presence-only population is
-  173 — both are reported, and the marker split is measured over the 165 only, so the 46
+  mentions that clear TODAY's residual floor (162), while the presence-only population is
+  170 — both are reported, and the marker split is measured over the 162 only, so the 29
   is NOT directly comparable to the hand count's 51 over 169; the 8 sub-floor mentions were
   never marker-split. It does not
   model the gate's `prose_review_status` skill-ergonomics arm; that arm looks inert here

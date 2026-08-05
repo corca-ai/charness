@@ -2,6 +2,111 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "0616e9e330a5adf2",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The code and Markdown nose inventories independently render advisory payloads with similar bounded status/scope fields, but they are separate executable producers with different family and heading semantics. A shared renderer would couple the portable inventories and hide contract-specific evidence fields."
+    },
+    {
+      "class": "intentional",
+      "id": "57506d788714a245",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The new nose_inventory_paths adapter validator shares the existing list-shape validation idiom with adapter_lib, but adds a scope-specific traversal/absolute-path contract. Keeping the field validator beside the other quality-adapter validators makes the owning policy explicit; extracting a generic list validator would not capture the path semantics."
+    },
+    {
+      "class": "intentional",
+      "id": "590b14d1cd50a7ac",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The scope payload helper keeps parallel status branches explicit so inapplicable, missing-tool, partial, and error outcomes retain distinct machine-readable contracts. The repeated shape is the auditable boundary under test, not extractable business logic."
+    },
+    {
+      "class": "intentional",
+      "id": "5acd09553c421d74",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The scope library repeats small return payloads for adapter errors and incomplete baseline writes because those branches differ in authority and whether scanning was attempted. A shared formatter would make the failure distinction less visible; focused #511 tests cover both."
+    },
+    {
+      "class": "intentional",
+      "id": "617745f7764f5f02",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The adapter validator's explicit invalid-input branch shares a small shape with an unrelated Markdown-preview validator. Both are local field validators with different contracts; a cross-skill helper would couple portable packages for an idiomatic refusal path."
+    },
+    {
+      "class": "intentional",
+      "id": "a8f3604c3ed28763",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The newly added adapter-validator entry participates in the repository's pre-existing adapter-resolution/reporting family across many independent skills. The shared shape is portable adapter status plumbing; centralizing it would create a broad cross-skill dependency and is outside #511."
+    },
+    {
+      "class": "intentional",
+      "id": "b1be708a80843471",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "Two scope-library branches deliberately use the same compact status payload shape while differing in the requested-root state they disclose. The local repetition keeps the inapplicable/error boundary visible and is covered by the scope matrix."
+    },
+    {
+      "class": "intentional",
+      "id": "dcd1dcad8f7b2767",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The adapter validator additions surfaced alongside a broad pre-existing two-line validation idiom shared by unrelated adapter and policy modules. This is common local validation boilerplate, not a new extractable contract; the #511 field remains owned by quality adapter validation."
+    },
+    {
+      "class": "intentional",
+      "id": "39b7f3745f737e0a",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "inventory_nose_clones.py repeats compact scope/status payload assembly across missing-tool, inapplicable, partial, and query-error outcomes. Each branch owns a distinct terminal contract and returns before the next external operation; extracting a generic status builder would hide which outcome owns the no-scan, unproven, or failed-query verdict. The branch matrix is pinned by the #511 focused scope and runner tests."
+    },
+    {
+      "class": "intentional",
+      "id": "58f891da8b205ffd",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "inventory_nose_clones.py repeats explicit terminal status payload fields in separate scope branches. The repetition keeps missing-tool, inapplicable, and partial-scope behavior locally legible and prevents a shared formatter from collapsing distinct exit and receipt semantics; focused #511 tests cover each branch."
+    },
+    {
+      "class": "intentional",
+      "id": "5f59eade34536004",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The nose inventory's partial-scope and query-error paths deliberately repeat a small payload skeleton while differing in whether a query ran and whether the wrapper is unproven or failed. A helper would obscure that producer/consumer distinction; the #511 matrix tests both outcomes."
+    },
+    {
+      "class": "intentional",
+      "id": "68ad3a0ff9c4b7dd",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "Scope resolution and baseline refusal use parallel local diagnostics for distinct incomplete-scope cases. These are deliberately adjacent to the owning branch so an operator can see why no scan or baseline write occurred; centralizing them would make the quality verdict less auditable."
+    },
+    {
+      "class": "intentional",
+      "id": "c1f1d693f0dabfdc",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "inventory_nose_clones.py and inventory_doc_duplicates.py independently render advisory inventory summaries with similar bounded fields. They are separate directly executable quality producers with different scope and finding semantics; a shared renderer would couple portable inventories and hide their contract-specific fields."
+    },
+    {
+      "class": "intentional",
+      "id": "e41ae07624c29ee5",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "The nose producer keeps the successful full-scan and partial-scan result branches explicit because both may report clean/findings while only one is measured. This parallelism is the issue's core invariant, and extracting it would risk losing the scope-status distinction; focused tests pin both."
+    },
+    {
+      "class": "intentional",
+      "id": "e8079ade923f41ed",
+      "reviewed_at": "2026-08-05",
+      "surface": "code",
+      "note": "Two short CLI exit-code assignments in inventory_nose_clones.py are parallel by design: they preserve the visible mapping from non-scan status to the wrapper's unproven exit contract. A helper would add indirection without reducing semantic duplication."
+    },
+    {
+      "class": "intentional",
       "id": "003780cc89f2ccfd",
       "reviewed_at": "2026-08-01",
       "surface": "code",

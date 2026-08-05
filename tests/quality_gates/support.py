@@ -275,6 +275,7 @@ QUALITY_RUNTIME_STUBS = (
     ("inventory-gitignore-scan-hygiene", "inventory_gitignore_scan_hygiene.py"),
     ("check-runtime-budget", "check_runtime_budget.py"),
     ("doc-duplicates", "inventory_doc_duplicates.py"),
+    ("inventory-nose-clones", "inventory_nose_clones.py"),
     ("dup-ratchet", "check_dup_ratchet.py"),
 )
 QUALITY_SHELL_STUBS = (

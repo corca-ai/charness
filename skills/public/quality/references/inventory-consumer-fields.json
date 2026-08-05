@@ -90,15 +90,18 @@
     },
     "inventory_nose_clones.py": {
       "non_headline_fields": [
-        "status",
-        "advisory",
+        "scope_status",
+        "requested_paths",
+        "scanned_paths",
+        "missing_paths",
+        "command",
+        "exit_code",
+        "cli_exit_code",
+        "stderr",
+        "ranking",
         "family_count",
         "families",
-        "excludes",
-        "ignore_file",
-        "paths",
-        "ranking",
-        "scope",
+        "version_skew",
         "notes"
       ]
     },

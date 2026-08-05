@@ -1,1 +1,1 @@
-2026-08-05-issue-507-quality-adapter-lifecycle.md
+2026-08-05-issue-511-nose-inventory.md

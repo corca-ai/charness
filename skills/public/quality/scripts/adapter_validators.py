@@ -7,12 +7,84 @@ or None, appending human-readable errors to the shared list.
 from __future__ import annotations
 
 import re
+from pathlib import PurePosixPath, PureWindowsPath
 from typing import Any
 
+from scripts.adapter_lib import optional_string, optional_string_list
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
 
 RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
 DEFAULT_STARTUP_PROBE_TIMEOUT_SECONDS = 20
+
+STRING_FIELDS = (
+    "repo",
+    "language",
+    "output_dir",
+    "preset_id",
+    "preset_version",
+    "customized_from",
+    "recommendation_defaults_version",
+    "runtime_profile_default",
+)
+LIST_FIELDS = (
+    "preset_lineage",
+    "prompt_asset_roots",
+    "adapter_review_sources",
+    "acknowledged_recommendations",
+    "gate_design_review_globs",
+    "product_surfaces",
+    "nose_inventory_paths",
+    "skill_ergonomics_skill_paths",
+    "skill_ergonomics_runtime_install_skill_paths",
+    "vendored_paths",
+    "cli_skill_surface_probe_commands",
+    "cli_skill_surface_command_docs",
+    "cli_skill_surface_skill_paths",
+    "cli_skill_surface_change_globs",
+    "canonical_markdown_surfaces",
+    "public_spec_section_exemptions",
+    "public_spec_pointer_proof_markers",
+    "concept_paths",
+    "preflight_commands",
+    "gate_commands",
+    "review_commands",
+    "security_commands",
+)
+
+
+def validate_version_field(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    version = data.get("version")
+    if isinstance(version, int):
+        validated["version"] = version
+    elif version is not None:
+        errors.append("version must be an integer")
+
+
+def apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    for field in STRING_FIELDS:
+        value = optional_string(data.get(field), field, errors)
+        if value is not None:
+            validated[field] = value
+
+
+def apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    for field, validator in (
+        ("runtime_budgets", runtime_budgets),
+        ("runtime_budget_profiles", runtime_budget_profiles),
+        ("startup_probes", startup_probes),
+        ("command_timing_log", command_timing_log),
+        ("quality_phases", quality_phases),
+    ):
+        value = validator(data.get(field), errors)
+        if value is not None:
+            validated[field] = value
+
+
+def apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
+    for field in LIST_FIELDS:
+        items = optional_string_list(data.get(field), field, errors)
+        if items is not None:
+            validated[field] = items
 
 
 def runtime_budgets(value: Any, errors: list[str]) -> dict[str, int] | None:
@@ -243,6 +315,34 @@ def _validate_lint_directive(
 
 def skill_ergonomics_gate_rules(value: Any, errors: list[str]) -> list[str] | None:
     return validate_skill_ergonomics_gate_rules(value, errors)
+
+
+def nose_inventory_paths(value: Any, errors: list[str]) -> list[str] | None:
+    """Validate the clone-inventory scope as non-escaping repo-relative paths."""
+    if value is None:
+        return None
+    if not isinstance(value, list) or not all(isinstance(item, str) and item for item in value):
+        errors.append("nose_inventory_paths must be a list of non-empty strings")
+        return None
+    invalid = [
+        item
+        for item in value
+        if (
+            PurePosixPath(item).is_absolute()
+            or PureWindowsPath(item).is_absolute()
+            or PureWindowsPath(item).drive
+            or PureWindowsPath(item).root
+            or ".." in PurePosixPath(item).parts
+            or ".." in PureWindowsPath(item).parts
+        )
+    ]
+    if invalid:
+        errors.append(
+            "nose_inventory_paths entries must be non-empty repo-relative paths without '..': "
+            + ", ".join(repr(item) for item in invalid)
+        )
+        return []
+    return list(value)
 
 
 def quality_phases(value: Any, errors: list[str]) -> list[dict[str, Any]] | None:

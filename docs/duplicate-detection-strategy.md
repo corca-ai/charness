@@ -98,18 +98,21 @@ quality phase (`inventory-nose-clones`).
 For Charness, the initial maintainer-local 2026-06-04 observation surfaced
 meaningful refactoring candidates, especially repeated skill-runtime bootstrap
 blocks and adapter resolver shapes. nose 0.13.3 removed the deprecated
-`nose scan`, and `nose query` takes one path root per call, so the advisory runs
-one query per scope root and merges the families (deduped by `family_id`):
+`nose scan`; the current query contract takes all resolved scope roots through
+repeatable `--root` flags in one invocation, and the advisory preserves the
+requested/scanned/missing scope in its payload. Consumer repos may configure
+`nose_inventory_paths` in the quality adapter or pass repeatable `--path` values:
 
 ```sh
-# what inventory_nose_clones.py runs, per root (scripts / skills/public / skills/support):
-nose query scripts all top=20 sort=extractability \
+# what inventory_nose_clones.py runs for the portable defaults:
+nose query --root scripts --root skills/public --root skills/support \
+  all top=20 sort=extractability \
   --mode syntax,semantic,near --min-size 24 --format json
 ```
 
 Prefer the wrapper [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
-over a hand-run query: it loops the roots, merges, and applies the id-set drift
-baseline. Use repeatable `--exclude <glob>` (for example,
+over a hand-run query: it resolves scope, applies the id-set drift baseline, and
+refuses to represent an incomplete scope as a completed scan. Use repeatable `--exclude <glob>` (for example,
 `--exclude '**/resolve_adapter.py'`) or a structured `--ignore-file <file>` for
 focused follow-up scans after classifying intentional boilerplate; do not treat
 filters as proof that the excluded duplication was resolved.

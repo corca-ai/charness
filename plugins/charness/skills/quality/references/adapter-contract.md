@@ -127,6 +127,13 @@ recommendations.
 contextual recommendations, migration gaps, acknowledgement gaps, and brittle
 hard-gate smells.
 
+`nose_inventory_paths` is an optional list of non-empty, repo-relative source
+roots for the code-clone advisory. An omitted or empty list keeps the portable
+defaults; configured roots replace those defaults, and an explicit CLI
+`--path` takes precedence for one run. Absolute paths and `..` escapes are
+invalid. The inventory reports requested, scanned, and missing roots so a
+consumer cannot mistake a partial or inapplicable scope for a completed scan.
+
 `product_surfaces` declares repo shape, not a universal burden. When it contains
 both `installable_cli` and `bundled_skill`, quality runs the CLI plus
 bundled-skill disclosure inventory before same-agent prose review. Use

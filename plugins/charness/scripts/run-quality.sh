@@ -81,6 +81,7 @@ declare -a PHASE_METAS=()
 declare -a COMPLETED_LABELS=()
 declare -a COMPLETED_ELAPSED_MS=()
 declare -a COMPLETED_STATUSES=()
+declare -a MEASURED_LABELS=()
 
 TOTAL_PASSES=0
 TOTAL_FAILURES=0
@@ -142,7 +143,7 @@ UNESTABLISHED_EXIT=3
 # not the push decision. Same opt-in discipline as 3 -- a label joins this list
 # after its own exit-code contract has been read, never by global reinterpretation.
 PARTIAL_EXIT=4
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage"
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -454,6 +455,7 @@ flush_phase() {
     COMPLETED_ELAPSED_MS+=("$elapsed_ms")
     COMPLETED_STATUSES+=("$status")
     if [[ "$status" == "pass" ]]; then
+      MEASURED_LABELS+=("$label")
       TOTAL_PASSES=$((TOTAL_PASSES + 1))
     elif [[ "$status" == "unestablished" ]]; then
       TOTAL_UNESTABLISHED=$((TOTAL_UNESTABLISHED + 1))
@@ -535,7 +537,7 @@ print_final_summary() {
   local -a receipt_args=(--status "$status" --effective-exit-code "$OVERALL_RC" \
     --passed "$TOTAL_PASSES" --failed "$TOTAL_FAILURES" --elapsed "$(format_elapsed "$elapsed_ms")")
   local scope_label unproven_label i
-  for scope_label in "${COMPLETED_LABELS[@]}"; do
+  for scope_label in "${MEASURED_LABELS[@]}"; do
     receipt_args+=(--measured-scope "$scope_label")
   done
   for i in "${!FAILED_RECEIPT_SUBJECTS[@]}"; do
@@ -849,7 +851,7 @@ fi
 if [[ -f "$REPO_ROOT/skills/public/quality/scripts/inventory_nose_clones.py" ]]; then
   queue_selected "inventory-nose-clones" python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root "$REPO_ROOT"
 else
-  queue_selected "inventory-nose-clones" bash -c 'echo "ADVISORY: inventory_nose_clones.py unavailable; skipping optional clone-family inventory."'
+  queue_selected "inventory-nose-clones" bash -c 'echo "ADVISORY: inventory_nose_clones.py unavailable; clone-family inventory is unproven."; exit 3'
 fi
 flush_phase || OVERALL_RC=$?
 

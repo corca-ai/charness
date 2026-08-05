@@ -601,11 +601,15 @@ def test_build_query_command_empty_paths_raises() -> None:
 
 
 def _args(tmp_path: Path, **overrides) -> SimpleNamespace:
+    seed_paths = overrides.pop("_seed_paths", True)
     base = dict(
         repo_root=tmp_path, path=[], exclude=[], ignore_file=None, write_baseline=False,
         baseline=None, mode=inv.DEFAULT_MODE, min_size=24, top=20, sort="extractability",
     )
     base.update(overrides)
+    if seed_paths:
+        for value in base["path"] or inv.DEFAULT_PATHS:
+            (tmp_path / value).mkdir(parents=True, exist_ok=True)
     return SimpleNamespace(**base)
 
 
@@ -615,6 +619,7 @@ def test_payload_for_args_missing_nose(monkeypatch, tmp_path: Path) -> None:
     assert payload["status"] == "missing"
     assert payload["families"] == []
     assert len(payload["notes"]) == 2
+    assert payload["scope_status"] == "missing-tool"
 
 
 def _collected(families: list, **overrides) -> dict:
@@ -749,11 +754,11 @@ def test_print_human_findings_warns_on_version_skew(capsys) -> None:
 def test_main_json_and_human(monkeypatch, tmp_path: Path, capsys) -> None:
     monkeypatch.setattr(inv, "resolve_nose_bin", lambda: None)
     monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path), "--json"])
-    assert inv.main() == 0
+    assert inv.main() == 3
     assert json.loads(capsys.readouterr().out)["status"] == "missing"
 
     monkeypatch.setattr(sys, "argv", ["inv", "--repo-root", str(tmp_path)])
-    assert inv.main() == 0
+    assert inv.main() == 3
     assert "nose missing" in capsys.readouterr().out
 
 

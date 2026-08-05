@@ -63,6 +63,28 @@ def _resolve(tmp_path: Path, block: str) -> dict:
     return load_quality_adapter(repo)
 
 
+def test_nose_inventory_paths_reject_repo_escape(tmp_path: Path) -> None:
+    payload = _resolve(
+        tmp_path,
+        dedent(
+            """\
+            nose_inventory_paths:
+              - ../consumer-src
+              - /tmp/outside
+              - ..\\windows-src
+              - C:\\outside
+              - \\windows-root
+            """
+        ),
+    )
+    assert not payload["valid"]
+    assert any(
+        "nose_inventory_paths entries must be non-empty repo-relative paths" in error
+        for error in payload["errors"]
+    )
+    assert payload["data"]["nose_inventory_paths"] == []
+
+
 # ---------------------------------------------------------------------------
 # mutation_testing sub-mapping rejections
 

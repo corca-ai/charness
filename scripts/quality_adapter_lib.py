@@ -30,39 +30,6 @@ from scripts.quality_policy_defaults import (
     validate_standing_doc_provenance,
 )
 
-STRING_FIELDS = (
-    "repo",
-    "language",
-    "output_dir",
-    "preset_id",
-    "preset_version",
-    "customized_from",
-    "recommendation_defaults_version",
-    "runtime_profile_default",
-)
-LIST_FIELDS = (
-    "preset_lineage",
-    "prompt_asset_roots",
-    "adapter_review_sources",
-    "acknowledged_recommendations",
-    "gate_design_review_globs",
-    "product_surfaces",
-    "skill_ergonomics_skill_paths",
-    "skill_ergonomics_runtime_install_skill_paths",
-    "vendored_paths",
-    "cli_skill_surface_probe_commands",
-    "cli_skill_surface_command_docs",
-    "cli_skill_surface_skill_paths",
-    "cli_skill_surface_change_globs",
-    "canonical_markdown_surfaces",
-    "public_spec_section_exemptions",
-    "public_spec_pointer_proof_markers",
-    "concept_paths",
-    "preflight_commands",
-    "gate_commands",
-    "review_commands",
-    "security_commands",
-)
 ARTIFACT_FILENAME = "latest.md"
 ARTIFACT_CLASS = "history"
 
@@ -143,6 +110,7 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "acknowledged_recommendations": [],
         "gate_design_review_globs": [],
         "product_surfaces": [],
+        "nose_inventory_paths": [],
         "skill_ergonomics_skill_paths": [],
         "skill_ergonomics_runtime_install_skill_paths": [],
         "vendored_paths": [],
@@ -171,41 +139,6 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "changed_line_mutation_gate": copy.deepcopy(DEFAULT_CHANGED_LINE_MUTATION_GATE),
         "dup_ratchet": copy.deepcopy(DEFAULT_DUP_RATCHET),
     }
-
-
-def _validate_version_field(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
-    version = data.get("version")
-    if isinstance(version, int):
-        validated["version"] = version
-    elif version is not None:
-        errors.append("version must be an integer")
-
-
-def _apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
-    for field in STRING_FIELDS:
-        value = optional_string(data.get(field), field, errors)
-        if value is not None:
-            validated[field] = value
-
-
-def _apply_runtime_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
-    runtime_budgets = adapter_validators.runtime_budgets(data.get("runtime_budgets"), errors)
-    if runtime_budgets is not None:
-        validated["runtime_budgets"] = runtime_budgets
-    runtime_budget_profiles = adapter_validators.runtime_budget_profiles(
-        data.get("runtime_budget_profiles"), errors
-    )
-    if runtime_budget_profiles is not None:
-        validated["runtime_budget_profiles"] = runtime_budget_profiles
-    startup_probes = adapter_validators.startup_probes(data.get("startup_probes"), errors)
-    if startup_probes is not None:
-        validated["startup_probes"] = startup_probes
-    command_timing_log = adapter_validators.command_timing_log(data.get("command_timing_log"), errors)
-    if command_timing_log is not None:
-        validated["command_timing_log"] = command_timing_log
-    quality_phases = adapter_validators.quality_phases(data.get("quality_phases"), errors)
-    if quality_phases is not None:
-        validated["quality_phases"] = quality_phases
 
 
 def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
@@ -257,7 +190,7 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
     if skill_ergonomics_gate_rules is not None:
         validated["skill_ergonomics_gate_rules"] = skill_ergonomics_gate_rules
 
-    _apply_runtime_fields(data, validated, errors)
+    adapter_validators.apply_runtime_fields(data, validated, errors)
 
     domain_language_contract = data.get("domain_language_contract")
     if domain_language_contract is None:
@@ -266,13 +199,6 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
         errors.append("domain_language_contract must be a mapping")
         return
     validated["domain_language_contract"] = dict(domain_language_contract)
-
-
-def _apply_list_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
-    for field in LIST_FIELDS:
-        items = optional_string_list(data.get(field), field, errors)
-        if items is not None:
-            validated[field] = items
 
 
 def _apply_mutation_testing(
@@ -475,8 +401,8 @@ def validate_quality_adapter_data(
     errors: list[str] = []
     warnings: list[str] = []
     validated = infer_quality_defaults(repo_root)
-    _validate_version_field(data, validated, errors)
-    _apply_string_fields(data, validated, errors)
+    adapter_validators.validate_version_field(data, validated, errors)
+    adapter_validators.apply_string_fields(data, validated, errors)
     configured_artifact_class = data.get("artifact_class")
     if configured_artifact_class is None:
         validated["artifact_class"] = ARTIFACT_CLASS
@@ -485,7 +411,10 @@ def validate_quality_adapter_data(
     else:
         errors.append("artifact_class must be one of: current, history, rolling")
     _apply_policy_fields(data, validated, errors)
-    _apply_list_fields(data, validated, errors)
+    adapter_validators.apply_list_fields(data, validated, errors)
+    nose_inventory_paths = adapter_validators.nose_inventory_paths(validated.get("nose_inventory_paths"), errors)
+    if nose_inventory_paths is not None:
+        validated["nose_inventory_paths"] = nose_inventory_paths
     _apply_mutation_testing(data, validated, errors, warnings)
     _apply_standing_doc_provenance(data, validated, errors, warnings)
     _apply_changed_line_mutation_gate(data, validated, errors, warnings)

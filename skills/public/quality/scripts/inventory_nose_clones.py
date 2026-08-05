@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import argparse
 import runpy
-import shlex
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -27,34 +26,12 @@ nose_baseline = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_baseline_
 nose_report = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_report_lib")
 nose_fingerprint = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_fingerprint_lib")
 nose_tool = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_tool_lib")
+nose_scope = _SKILL_RUNTIME.load_local_skill_module(__file__, "nose_inventory_scope_lib")
+
 DEFAULT_BASELINE_REL = nose_baseline.DEFAULT_BASELINE_REL
-
-DEFAULT_PATHS = ("scripts", "skills/public", "skills/support")
-# nose 0.5 makes --mode REPLACE the default channels (syntax,semantic) rather
-# than add to them, so every channel we want must be listed explicitly.
-# syntax+semantic+near is a superset of the 0.5 default, so this requests
-# strictly more coverage, never less — no silent channel drop under 0.5.
+DEFAULT_PATHS = nose_scope.DEFAULT_PATHS
 DEFAULT_MODE = "syntax,semantic,near"
-# A baseline must record EVERY family; the display `--top` would truncate the
-# enumeration and leave the rest to re-flag as drift forever. Enumerate the full
-# set when writing (high top=, no nose --baseline), independent of --top.
-WRITE_BASELINE_TOP = 1_000_000
-
-
-def _portable_path(repo_root: Path, path: Path) -> str:
-    try:
-        return path.resolve().relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(path)
-
-
-def resolve_nose_bin() -> str | None:
-    return nose_tool.resolve_nose_bin()
-
-
-# Advisory interpretation contract (see skills/shared/references/
-# advisory-interpretation-contract.md): this inference-layer proxy self-declares
-# its blind spots and the question the consumer must answer before acting.
+WRITE_BASELINE_TOP = nose_scope.WRITE_BASELINE_TOP
 INTERPRETATION = {
     "measures": "lexical clone families (near-duplicate code spans) at/above the scan threshold",
     "proxy_for": "refactorable duplication debt that a shared helper could remove",
@@ -70,162 +47,74 @@ INTERPRETATION = {
 }
 
 
-def _representative_command(nose_bin: str, roots: list[str], args: argparse.Namespace, excludes: list[str], ignore_file: str | None) -> str:
-    """The actual `nose query` command. nose 0.14.0 `--root/-r` takes every scope
-    root in one invocation, so this IS the single command the resolver runs."""
-    return shlex.join(
-        nose_report.build_query_command(
-            nose_bin, roots or ["."], mode=args.mode, min_size=args.min_size, top=args.top,
-            sort=args.sort, exclude=excludes, ignore_file=ignore_file,
-        )
-    )
+def resolve_nose_bin() -> str | None:
+    return nose_tool.resolve_nose_bin()
+
+
+def _portable_path(repo_root: Path, path: Path) -> str:
+    try:
+        return path.resolve().relative_to(repo_root).as_posix()
+    except ValueError:
+        return str(path)
 
 
 def payload_for_args(args: argparse.Namespace) -> dict[str, Any]:
-    repo_root = args.repo_root.resolve()
-    roots = [str(path) for path in (args.path or DEFAULT_PATHS)]
-    excludes = list(args.exclude or [])
-    ignore_file = args.ignore_file
-    baseline = nose_baseline.resolve_baseline(
-        write_baseline=args.write_baseline, baseline=args.baseline, repo_root=repo_root
+    return nose_scope.payload_for_args(
+        args,
+        baseline=nose_baseline,
+        report=nose_report,
+        fingerprint=nose_fingerprint,
+        load_repo_module=_SKILL_RUNTIME.load_repo_module_from_skill_script,
+        script_path=__file__,
+        resolve_nose_bin=resolve_nose_bin,
+        interpretation=INTERPRETATION,
     )
-    nose_bin = resolve_nose_bin()
-    if nose_bin is None:
-        return {
-            "status": "missing",
-            "advisory": True,
-            "repo_root": str(repo_root),
-            "paths": roots,
-            "excludes": excludes,
-            "ignore_file": ignore_file,
-            "baseline": baseline,
-            "scope": {},
-            "ranking": {},
-            "tool_version": "",
-            "family_count": 0,
-            "families": [],
-            "notes": [
-                "nose is missing; install per integrations/tools/nose.json to run the clone-family advisory.",
-                "nose is now required (>=0.13.3): document near-duplicate review runs through inventory_doc_duplicates.py (Markdown families), not a difflib fallback.",
-            ],
-        }
-    # Writing a baseline enumerates EVERY family (full top); a read uses the
-    # display --top for ranking. A truncated write would re-flag the rest forever.
-    scan_top = WRITE_BASELINE_TOP if args.write_baseline else args.top
-    collected = nose_report.collect_families(
-        repo_root, nose_bin, roots, mode=args.mode, min_size=args.min_size,
-        top=scan_top, sort=args.sort, exclude=excludes, ignore_file=ignore_file,
-    )
-    command = _representative_command(nose_bin, roots, args, excludes, ignore_file)
-    families = collected["families"]
-    if args.write_baseline:
-        if collected["status"] == "error":
-            return {
-                "status": "error", "advisory": True, "repo_root": str(repo_root),
-                "paths": roots, "baseline": baseline, "command": command,
-                "stderr": collected["stderr"],
-                "notes": ["nose query errored; baseline not written. Review manually."],
-            }
-        fingerprints = {family.get("family_fingerprint") for family in families}
-        return nose_baseline.write_baseline_payload(
-            repo_root, baseline, {fp for fp in fingerprints if fp}, roots,
-            tool_version=collected.get("tool_version", ""),
-            algo_version=nose_fingerprint.FINGERPRINT_ALGO_VERSION,
-        )
-    if collected["status"] == "error":
-        return {
-            "status": "error",
-            "advisory": True,
-            "repo_root": str(repo_root),
-            "paths": roots,
-            "excludes": excludes,
-            "ignore_file": ignore_file,
-            "baseline": baseline,
-            "scope": collected.get("scope", {}),
-            "ranking": {},
-            "command": command,
-            "exit_code": collected["exit_code"],
-            "tool_version": collected.get("tool_version", ""),
-            "family_count": 0,
-            "families": [],
-            "stderr": collected["stderr"],
-            "notes": ["nose inventory error; review manually."],
-        }
-    baseline_ids = nose_baseline.load_baseline_ids(repo_root, baseline)
-    if baseline_ids is not None:
-        drift = [family for family in families if family.get("family_fingerprint") not in baseline_ids]
-    else:
-        drift = families
-    summaries = [nose_report.family_summary(family) for family in drift]
-    # Scanner-version skew: a baseline written under a different nose version makes
-    # its accepted ids stale, so today's families read as drift even with zero new
-    # duplication. Surface "re-baseline", not a flood of false findings.
-    skew = (
-        nose_report.tool_version_skew(
-            nose_baseline.load_baseline_tool_version(repo_root, baseline),
-            collected.get("tool_version", ""),
-        )
-        if baseline_ids is not None
-        else None
-    )
-    notes = [
-        "nose findings are refactoring candidates, not standing quality failures.",
-        "Review only extractable non-bootstrap families before changing code; do not chase every reported family.",
-        "Map each reviewed family to a structural response (machine-owned consistency for intentional duplication, owned extraction, generated-surface ownership, or design review) per the quality inventory-dispatch reference.",
-        "Never treat total_dup_lines as a reduction target or a cross-scanner-version trend; re-baseline per scanner version.",
-    ]
-    if skew:
-        notes.insert(0, f"WARNING: {skew}")
-    return {
-        "status": "findings" if summaries else "clean",
-        "advisory": True,
-        "repo_root": str(repo_root),
-        "paths": roots,
-        "excludes": excludes,
-        "ignore_file": ignore_file,
-        "baseline": baseline if baseline_ids is not None else None,
-        "scope": collected.get("scope", {}),
-        "ranking": collected.get("ranking", {}),
-        "command": command,
-        "exit_code": collected["exit_code"],
-        "tool_version": collected.get("tool_version", ""),
-        "version_skew": skew,
-        "family_count": len(summaries),
-        "total_dup_lines": sum(int(summary.get("dup_lines") or 0) for summary in summaries),
-        "families": summaries,
-        "stderr": collected["stderr"],
-        "interpretation": dict(INTERPRETATION),
-        "notes": notes,
-    }
 
 
-def print_human(payload: dict[str, Any]) -> None:
+cli_exit_code_for_payload = nose_scope.cli_exit_code_for_payload
+
+
+def _print_non_scan(payload: dict[str, Any]) -> bool:
     status = payload["status"]
     if status == "missing":
         print("ADVISORY: nose missing; clone-family inventory skipped. Install per integrations/tools/nose.json.")
-        return
+        if payload.get("missing_paths"):
+            print(f"SCOPE: missing requested roots ({', '.join(payload['missing_paths'])}).")
+        return True
+    if status == "inapplicable":
+        missing = ", ".join(str(path) for path in payload.get("missing_paths", [])) or "none"
+        print(
+            "ADVISORY: nose clone inventory inapplicable; no requested scan root exists. "
+            f"missing_paths={missing}"
+        )
+        return True
     if status == "error":
         print(f"ADVISORY: nose inventory error; review manually. {payload.get('stderr', '')}")
-        return
+        return True
     if status == "baseline-written":
         count = payload.get("code_family_count")
         suffix = f" ({count} code family_ids accepted)" if isinstance(count, int) else ""
         print(f"nose baseline written: {payload.get('baseline')}{suffix}.")
+        return True
+    return False
+
+
+def print_human(payload: dict[str, Any]) -> None:
+    if _print_non_scan(payload):
         return
     version_label = payload.get("tool_version") or "unknown"
     print(
-        f"nose clone advisory (nose {version_label}): {status}; {payload['family_count']} families, "
+        f"nose clone advisory (nose {version_label}): {payload['status']}; {payload['family_count']} families, "
         f"{payload['total_dup_lines']} duplicated lines in reported families."
     )
-    skew = payload.get("version_skew")
-    if skew:
-        print(f"WARNING: {skew}")
+    if payload.get("version_skew"):
+        print(f"WARNING: {payload['version_skew']}")
     ranking = payload.get("ranking")
     if isinstance(ranking, dict):
-        total_families = ranking.get("total_families")
-        shown_families = ranking.get("shown_families")
-        if isinstance(total_families, int) and isinstance(shown_families, int) and total_families != shown_families:
-            print(f"RANKING: showing {shown_families} of {total_families} ranked families.")
+        total = ranking.get("total_families")
+        shown = ranking.get("shown_families")
+        if isinstance(total, int) and isinstance(shown, int) and total != shown:
+            print(f"RANKING: showing {shown} of {total} ranked families.")
     baseline = payload.get("baseline")
     if baseline:
         print(
@@ -241,23 +130,27 @@ def print_human(payload: dict[str, Any]) -> None:
         if ignore_file:
             parts.append(f"ignore_file={ignore_file}")
         print(f"SCOPE: filtered scan ({'; '.join(parts)}). Excluded findings are not resolved.")
+    if payload.get("scope_status") == "partial":
+        print(
+            "SCOPE: partial scan; missing requested roots are not covered. "
+            f"scanned={', '.join(payload.get('scanned_paths', []))}; "
+            f"missing={', '.join(payload.get('missing_paths', []))}"
+        )
     for index, family in enumerate(payload["families"][:5], start=1):
         samples = ", ".join(
-            f"{item['file']}:{item['start_line']}-{item['end_line']}"
-            for item in family["sample_locations"][:3]
+            f"{item['file']}:{item['start_line']}-{item['end_line']}" for item in family["sample_locations"][:3]
         )
         print(
-            f"ADVISORY: nose family #{index}: members={family['members']} "
-            f"dup_lines={family['dup_lines']} shared_lines={family['shared_lines']} "
-            f"params={family['params']} samples={samples}"
+            f"ADVISORY: nose family #{index}: members={family['members']} dup_lines={family['dup_lines']} "
+            f"shared_lines={family['shared_lines']} params={family['params']} samples={samples}"
         )
     interpretation = payload.get("interpretation")
     if isinstance(interpretation, dict):
         print(
             "INTERPRETATION (inference-layer proxy, not a verdict): "
-            f"measures {interpretation['measures']}; proxy for "
-            f"{interpretation['proxy_for']}; blind spots: {interpretation['blind_spots']}. "
-            f"Consumer must answer first: {interpretation['interpretation_question']}"
+            f"measures {interpretation['measures']}; proxy for {interpretation['proxy_for']}; "
+            f"blind spots: {interpretation['blind_spots']}. Consumer must answer first: "
+            f"{interpretation['interpretation_question']}"
         )
 
 
@@ -269,7 +162,16 @@ def summarize(payload: dict[str, Any], *, sample_limit: int = 5) -> dict[str, An
         "advisory": payload.get("advisory", True),
         "repo_root": payload.get("repo_root"),
         "paths": payload.get("paths", []),
+        "requested_paths": payload.get("requested_paths", []),
+        "scanned_paths": payload.get("scanned_paths", []),
+        "missing_paths": payload.get("missing_paths", []),
+        "scope_status": payload.get("scope_status"),
+        "scope": payload.get("scope", {}),
         "baseline": payload.get("baseline"),
+        "command": payload.get("command", ""),
+        "exit_code": payload.get("exit_code", 0),
+        "cli_exit_code": payload.get("cli_exit_code", 0),
+        "stderr": payload.get("stderr", ""),
         "tool_version": payload.get("tool_version", ""),
         "family_count": payload.get("family_count", payload.get("code_family_count", 0)),
         "total_dup_lines": payload.get("total_dup_lines", 0),
@@ -294,17 +196,14 @@ def main() -> int:
     parser.add_argument("--sort", default="extractability", choices=("extractability", "value", "sites"), help="Ranking field for reported families (extractability, value, or sites; default: extractability)")
     parser.add_argument("--baseline", help=f"Accepted-baseline file (repo-relative) of already-recorded families; only new/changed are reported. Defaults to {DEFAULT_BASELINE_REL} when it exists.")
     parser.add_argument("--write-baseline", action="store_true", help="Write current families to the baseline and exit (accept today's state); re-baseline per scanner version.")
-    add_output_args(
-        parser,
-        summary_help="Emit compact YAML clone-family counts and samples for triage",
-        detail_help="Emit the full clone-family advisory payload as YAML",
-    )
+    add_output_args(parser, summary_help="Emit compact YAML clone-family counts and samples for triage", detail_help="Emit the full clone-family advisory payload as YAML")
     args = parser.parse_args()
-
     payload = payload_for_args(args)
+    cli_exit_code = cli_exit_code_for_payload(payload)
+    payload["cli_exit_code"] = cli_exit_code
     if not emit_selected(payload, args, summarize=summarize):
         print_human(payload)
-    return 0
+    return cli_exit_code
 
 
 if __name__ == "__main__":

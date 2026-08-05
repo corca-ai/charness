@@ -88,16 +88,17 @@ STUB_PHRASE_RE = re.compile(
 #     at all.` scores 18 after every declared field is stripped — above the floor. This
 #     refuses a stub, not a lie, which is sweep row S11's class.
 #   * A field whose NAME is an ordinary English word defeats the floor entirely. The
-#     declaration file gives `inventory_nose_clones.py` the fields `scope`, `status`,
-#     `notes`, `paths`, `ranking`, `advisory`, `excludes`, `families`; the real corpus line
-#     `- Runtime hotspot ranking excludes samples older than 14 days` engages `ranking`
-#     and `excludes` on incidental prose. MEASURED, and re-derivable — run
+#     declaration file gives `inventory_nose_clones.py` fields such as `scope_status`,
+#     `requested_paths`, `ranking`, `family_count`, `families`, and `notes`; the real
+#     corpus line `- Runtime hotspot ranking excludes samples older than 14 days` engages
+#     `ranking` on incidental prose. MEASURED, and re-derivable — run
 #     `scripts/measure_inventory_marker_rule.py` against
-#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 173 presence-only
-#     field mentions, 165 clear this floor, and 46 of those carry no value marker at all.
-#     Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse the sampled
-#     incidental cases — not all of them, since a marker can appear in prose too — costing
-#     5 refused citations across 4 checked-in artifacts. It is deferred as D47.
+#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 170
+#     presence-only field mentions, 162 clear this floor, and 29 of those carry no value
+#     marker at all. Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse
+#     the sampled incidental cases — not all of them, since a marker can appear in prose
+#     too — costing 3 refused citations across 2 checked-in artifacts. It is deferred as
+#     D47.
 #     (The 51-of-169 and "5 reviews" figures this comment used to carry were hand counts;
 #     the executed run lowers the artifact count to 4.)
 #

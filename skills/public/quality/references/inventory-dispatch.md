@@ -197,7 +197,12 @@ For external/runtime capability slices, treat readiness-only proof (`surface`,
 - code clone-family advisory:
   `$SKILL_DIR/scripts/inventory_nose_clones.py --repo-root . --summary`
   (`--exclude <glob>` is repeatable for focused review; `--ignore-file <file>`
-  applies a structured nose ignore file)
+  applies a structured nose ignore file). The default roots are optional: the
+  inventory reports `requested_paths`, `scanned_paths`, `missing_paths`, and
+  `scope_status`. Configure `nose_inventory_paths` in the quality adapter for
+  source roots outside the defaults, or pass repeatable `--path` values for a
+  one-run override. Treat `partial`, `inapplicable`, `missing-tool`, and
+  `error` as non-scan outcomes, not clean clone inventories.
 
 When dual implementation smell is real, require one honest contract: parity
 harness, canonical side plus deletion/wrapper plan, or intentional divergence
