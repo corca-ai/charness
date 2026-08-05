@@ -24,6 +24,9 @@ _REMAINING_SECTIONS = (
     "## Off-Goal Findings\n\n## Final Verification\n\n"
     "## User Verification Instructions\n\n## Auto-Retro\n\n"
     "## Context Sources\n\n## Interview Decisions\n\n## Plan Critique Findings\n"
+    "\n## Closeout Binding Plan\n"
+    "- Reviewed inputs: fixture\n- Frozen target: fixture\n- Fresh-eye: fixture\n"
+    "- Verification lock: fixture\n- Complete flip: fixture\n"
 )
 
 

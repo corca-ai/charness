@@ -158,6 +158,8 @@ def test_auto_drafted_artifact_has_all_required_sections(
     )
     for section in goal_lib.REQUIRED_SECTIONS:
         assert f"## {section}" in text, section
+    for section in goal_lib.CLOSEOUT_PLAN_SECTIONS:
+        assert f"## {section}" in text, section
     assert "## Active Operating Frame" in text
     assert "run `/achieve @charness-artifacts/goals/2026-05-28-test.md`" in text
 

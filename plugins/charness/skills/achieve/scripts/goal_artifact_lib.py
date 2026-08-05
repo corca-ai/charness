@@ -85,6 +85,11 @@ PORTABILITY_SECTIONS = (
     "Plan Critique Findings",
 )
 
+# Draft activation also carries the closeout binding plan. Historical active or
+# complete artifacts remain readable; new draft pursuit must name the plan.
+CLOSEOUT_PLAN_SECTIONS = ("Closeout Binding Plan",)
+CLOSEOUT_PLAN_FIELDS = _pursue.CLOSEOUT_PLAN_FIELDS
+
 # The Before-phase placeholder marker moved with the readiness concept to
 # `goal_artifact_pursue.UNSHAPED_MARKER` — its only reader. Left as ONE
 # definition rather than a second copy here: a repair that duplicates a rule
@@ -310,7 +315,11 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
     """
     return _pursue.pursue_readiness(
         text,
-        required_sections=REQUIRED_SECTIONS + PORTABILITY_SECTIONS,
+        required_sections=(
+            REQUIRED_SECTIONS
+            + PORTABILITY_SECTIONS
+            + (CLOSEOUT_PLAN_SECTIONS if read_status(text) == "draft" else ())
+        ),
         status=read_status(text),
         deploy_vocab=deploy_vocab,
         mask_fences=_mask_fences,

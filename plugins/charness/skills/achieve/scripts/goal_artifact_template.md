@@ -129,6 +129,17 @@ Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
 
+## Closeout Binding Plan
+
+Shape these minimum fields before activation and keep them current. The field
+check proves shape only; closeout workflows prove the values and identities:
+
+- Reviewed inputs: name semantic goal/issue/quality inputs; retro, packet, reviewer, and lock records are terminal evidence.
+- Frozen target: commit the semantic baseline, then bind the packet to that exact commit SHA.
+- Fresh-eye: name a distinct reviewer and a different observer/evidence channel.
+- Verification lock: name the lock command and evidence location; semantic input edits require rebinding.
+- Complete flip: record packet/reviewer/lock evidence, then write terminal status/evidence bookkeeping outside the reviewed identity.
+
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.

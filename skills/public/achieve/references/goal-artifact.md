@@ -112,6 +112,14 @@ rejected-alternatives reason.
 Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance.
 
+## Closeout Binding Plan
+
+Before activation, name semantic goal/issue/quality inputs, fixed commit target,
+fresh-eye reviewer and distinct evidence channel, verification lock, and the
+terminal-record rule. Retro, packet, reviewer, lock, and status records are
+terminal evidence, not semantic inputs; a later semantic-input edit invalidates
+the lock and requires rebinding.
+
 ## Off-Goal Findings
 
 ## Final Verification

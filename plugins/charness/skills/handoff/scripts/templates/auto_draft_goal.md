@@ -71,6 +71,14 @@ Queue item form:
 
 {plan_critique}
 
+## Closeout Binding Plan
+
+- Reviewed inputs: *To be filled by the achieve Before-phase interview.*
+- Frozen target: *To be filled by the achieve Before-phase interview.*
+- Fresh-eye: *To be filled by the achieve Before-phase interview.*
+- Verification lock: *To be filled by the achieve Before-phase interview.*
+- Complete flip: *To be filled by the achieve Before-phase interview.*
+
 ## Off-Goal Findings
 
 ## Final Verification

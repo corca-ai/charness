@@ -29,10 +29,15 @@ def _with_required_sections(body: str) -> str:
     present = {match.group(1).strip() for match in gal._H2.finditer(gal._mask_fences(body))}
     missing = [
         section
-        for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
+        for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS + gal.CLOSEOUT_PLAN_SECTIONS
         if section not in present
     ]
-    return body + "".join(f"\n## {section}\n" for section in missing)
+    chunks: list[str] = []
+    for section in missing:
+        chunks.append(f"\n## {section}\n")
+        if section in gal.CLOSEOUT_PLAN_SECTIONS:
+            chunks.append("".join(f"- {field} fixture value\n" for field in gal.CLOSEOUT_PLAN_FIELDS))
+    return body + "".join(chunks)
 
 
 def test_pursue_readiness_flags_unshaped_auto_draft() -> None:
@@ -60,6 +65,89 @@ def test_pursue_readiness_passes_when_shaped() -> None:
     assert report["pursue_ready"] is True
     assert report["placeholder_count"] == 0
     assert report["discussion_required"] is False
+
+
+def test_pursue_readiness_requires_closeout_binding_plan_for_draft() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n"
+        + "".join(f"\n## {section}\n" for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+    )
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is False
+    assert report["missing_sections"] == list(gal.CLOSEOUT_PLAN_SECTIONS)
+    assert "Closeout Binding Plan" in report["reason"]
+
+
+def test_pursue_readiness_requires_minimum_closeout_binding_fields() -> None:
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n"
+        + "".join(f"\n## {section}\n" for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+        + "\n## Closeout Binding Plan\n- Reviewed inputs: fixture\n"
+    )
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is False
+    assert report["closeout_plan_missing_fields"] == [
+        "Frozen target:",
+        "Fresh-eye:",
+        "Verification lock:",
+        "Complete flip:",
+    ]
+    assert "minimum plan fields" in report["reason"]
+
+
+def test_pursue_readiness_rejects_duplicate_closeout_binding_plans() -> None:
+    shaped = _with_required_sections(
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n"
+    ) + "\n## Closeout Binding Plan\n" + "".join(
+        f"- {field} second value\n" for field in gal.CLOSEOUT_PLAN_FIELDS
+    )
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is False
+    assert report["closeout_plan_duplicate"] is True
+    assert "more than once" in report["reason"]
+
+
+def test_pursue_readiness_rejects_markdown_only_closeout_values() -> None:
+    shaped = _with_required_sections(
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n"
+    ).replace("- Reviewed inputs: fixture value", "- Reviewed inputs: **")
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is False
+    assert "Reviewed inputs:" in report["closeout_plan_missing_fields"]
+
+
+def test_pursue_readiness_accepts_emphasized_closeout_labels() -> None:
+    shaped = _with_required_sections(
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n"
+    ).replace("- Reviewed inputs:", "- **Reviewed inputs:**")
+
+    report = gal.pursue_readiness(shaped)
+
+    assert report["pursue_ready"] is True
+
+
+@pytest.mark.parametrize("status", ["active", "blocked", "complete"])
+def test_pursue_readiness_keeps_legacy_non_draft_artifacts_heading_compatible(status: str) -> None:
+    legacy = (
+        f"# Achieve Goal: T\n\nStatus: {status}\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n"
+        + "".join(f"\n## {section}\n" for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+    )
+
+    report = gal.pursue_readiness(legacy)
+
+    assert report["pursue_ready"] is True
+    assert report["missing_sections"] == []
 
 
 def test_pursue_readiness_warns_on_generic_draft_frame() -> None:
@@ -322,7 +410,7 @@ def test_pursue_readiness_refuses_when_an_unclosed_fence_makes_the_reading_open(
         "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n```md\n"
         + "".join(
             f"## {section}\n"
-            for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
+            for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS + gal.CLOSEOUT_PLAN_SECTIONS
         )
     )  # the fence is never closed
 

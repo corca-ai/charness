@@ -39,10 +39,8 @@ lifecycle instead of starting a new one.
 ## Workflow
 
 `achieve` runs one goal as three phases. `check_goal_artifact.py` emits a
-`phase_brief` naming the goal's current-phase file (one of the three phase
-files `references/lifecycle.md` points to) plus `references/goal-artifact.md`
-depth; read that phase file, not the full three-phase contract, and follow the
-brief's `closeout_handoff` note when starting closeout.
+`phase_brief` naming the current-phase file plus `references/goal-artifact.md`
+depth; read that file, not the full contract, and follow its `closeout_handoff` note.
 
 1. Before — shape and save.
    - interview from prose with a few high-leverage questions; if the request is
@@ -52,7 +50,9 @@ brief's `closeout_handoff` note when starting closeout.
    - establish outcome, non-goals, boundaries, user acceptance, verification
      plan, outcome capability or failed capability, proof cost,
      test-duplication pressure, slice sequence, critique plan, stop conditions,
-     reporting expectations, and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
+     reporting expectations, closeout binding plan (minimum fields: semantic
+     inputs, fixed target/SHA, fresh-eye channel, lock evidence, terminal-record
+     rule), and timebox fields (`Timebox:`, `Activation time:`, `Closeout reserve:`, `Done-early policy: continue_next_improvement`)
    - replace all `To be filled by the achieve Before-phase` placeholders; any
      leftover marker leaves the goal unshaped to `--pursue-ready`, and so does a
      MISSING required/portability heading (an artifact whose sections were never
@@ -103,6 +103,7 @@ brief's `closeout_handoff` note when starting closeout.
    - **closeout preflight (describe-first):** before drafting closeout evidence,
      run `describe_goal_closeout_shape.py --goal-path <artifact>` for this goal's
      conditional missing-line set in one pass, then verify once (not flip-serially)
+   - bind closeout in order: freeze semantic inputs -> packet at fixed SHA -> fresh-eye -> verification lock -> terminal record
    - run the final quality gate or documented substitute; if a broad
      duplicate/pressure gate fails, classify new-slice-local versus accumulated
      suite debt and name the smallest structural cleanup
@@ -139,8 +140,7 @@ brief's `closeout_handoff` note when starting closeout.
 
 ## Coordination
 
-`achieve` reuses existing skills and must keep each useful standalone. See
-`references/coordination.md` for the per-skill roles and the `handoff` boundary.
+`achieve` reuses existing skills and must keep each useful standalone; see `references/coordination.md` for per-skill roles and the `handoff` boundary.
 
 - `ideation`/`spec` upstream; `impl` for slices; `debug` before bug fixes;
   `quality` for verification cadence; `issue` for off-goal findings and staging
@@ -150,9 +150,7 @@ brief's `closeout_handoff` note when starting closeout.
 
 ## Output Shape
 
-- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with
-  `## Active Operating Frame` plus the audit sections in
-  `references/goal-artifact.md`
+- a goal artifact under `charness-artifacts/goals/<yyyy-mm-dd-slug>.md` with `## Active Operating Frame` plus audit sections in `references/goal-artifact.md`
 - a `## Operator Decision Queue` section for deferrable operator-only decisions
 - `Status` is one of draft / active / blocked / complete
 - an explicit `/goal @...` activation line
@@ -165,6 +163,7 @@ brief's `closeout_handoff` note when starting closeout.
   for hidden availability facts) and, at completion, `Routing:` / `Gather:`
   / `Release:` / `Issue closeout:` evidence (or an `n/a — <reason>` opt-out)
   whenever the matching closeout floor is triggered
+- a `## Closeout Binding Plan` with minimum fields shaped before activation; semantic values and final identity remain closeout proof
 
 ## Guardrails
 

@@ -27,6 +27,7 @@ Establish:
   `references/coordination.md` *Resolving A Tracked Issue*
 - stop conditions
 - reporting expectations
+- closeout binding plan: semantic inputs, fixed target, fresh-eye channel, lock evidence, and terminal-record rule
 
 Ask a small number of high-leverage questions. Do not interrogate the user for
 detail that a strong default or the request wording already settles.

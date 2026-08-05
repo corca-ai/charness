@@ -24,6 +24,17 @@ UNSHAPED_MARKER = re.compile(r"to be filled by the achieve before-phase", re.IGN
 
 _H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 
+# Activation checks only the minimum shape of this plan. It deliberately does
+# not judge SHA values, reviewer quality, or proof truth; those stay with the
+# closeout evidence and fresh-eye workflows.
+CLOSEOUT_PLAN_FIELDS = (
+    "Reviewed inputs:",
+    "Frozen target:",
+    "Fresh-eye:",
+    "Verification lock:",
+    "Complete flip:",
+)
+
 #: What a ``pursue_readiness`` verdict does NOT establish, carried in the payload
 #: so the caller reads the answer's scope from the answer instead of re-deriving
 #: it from the flag's help text. The full ``check_goal`` sweep is what covers these.
@@ -31,6 +42,7 @@ SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",
     "closeout evidence",
+    "closeout binding values and final packet identity",
     "section CONTENT (headings are checked; what is under them is not)",
 )
 
@@ -42,6 +54,8 @@ def _reason(
     balanced: bool,
     discussion: dict[str, Any],
     discussion_warning: str,
+    closeout_plan_missing_fields: list[str],
+    closeout_plan_duplicate: bool,
     activation_ready: bool,
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
@@ -60,8 +74,9 @@ def _reason(
     """
     if activation_ready:
         return (
-            "shaped: no Before-phase placeholders remain and every required/portability "
-            "heading is present; safe to pursue via `/goal` -- heading PRESENCE only, "
+            "shaped: no Before-phase placeholders remain, every required/portability heading is present, "
+            "and the closeout-plan heading/minimum binding fields are present; safe to pursue via `/goal` -- "
+            "field shape only, "
             "section content not checked"
         )
     clauses: list[str] = []
@@ -83,6 +98,16 @@ def _reason(
             "(" + ", ".join(missing_sections) + ") -- an artifact whose sections were never "
             "written carries no placeholder marker either, so run the achieve Before-phase "
             "(`/achieve @<file>`) before `/goal`"
+        )
+    if closeout_plan_missing_fields:
+        clauses.append(
+            "incomplete: Closeout Binding Plan field(s) absent or empty ("
+            + ", ".join(closeout_plan_missing_fields)
+            + ") -- fill the minimum plan fields before `/goal`"
+        )
+    if closeout_plan_duplicate:
+        clauses.append(
+            "incomplete: Closeout Binding Plan appears more than once -- keep one unambiguous plan before `/goal`"
         )
     if discussion_warning:
         clauses.append(
@@ -145,12 +170,40 @@ def pursue_readiness(
     disposition = draft_frame_disposition(text, status=status, masked=masked)
     present = {match.group(1).strip() for match in _H2.finditer(masked)}
     missing_sections = [section for section in required_sections if section not in present]
+    closeout_plan_missing_fields: list[str] = []
+    closeout_plan_duplicate = False
+    if "Closeout Binding Plan" in required_sections:
+        headings = list(_H2.finditer(masked))
+        closeout_headings = [
+            heading
+            for heading in headings
+            if heading.group(1).strip() == "Closeout Binding Plan"
+        ]
+        closeout_plan_duplicate = len(closeout_headings) > 1
+        if len(closeout_headings) == 1:
+            heading = closeout_headings[0]
+            index = headings.index(heading)
+            section_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
+            body = masked[heading.end():section_end]
+            for field in CLOSEOUT_PLAN_FIELDS:
+                field_pattern = re.compile(
+                    rf"^[ \t>*-]*[`*_~]*{re.escape(field)}[`*_~]*[ \t]+(.+)$",
+                    re.MULTILINE,
+                )
+                match = field_pattern.search(body)
+                if match is None or not re.sub(r"[\s`*_~\[\](){}<>#|:-]+", "", match.group(1)):
+                    closeout_plan_missing_fields.append(field)
     # `shape_ready` keeps its established meaning (no Before-phase marker) so the
     # placeholder signal stays readable on its own; completeness is a separate
     # dimension that gates activation alongside it.
     shape_ready = not placeholders
     activation_ready = (
-        shape_ready and balanced and not missing_sections and discussion["discussion_ready"]
+        shape_ready
+        and balanced
+        and not missing_sections
+        and not closeout_plan_missing_fields
+        and not closeout_plan_duplicate
+        and discussion["discussion_ready"]
     )
     discussion_warning = (
         "Consequential activation decisions are surfaced but unresolved. "
@@ -164,6 +217,8 @@ def pursue_readiness(
         "shape_ready": shape_ready,
         "sections_complete": not missing_sections,
         "missing_sections": missing_sections,
+        "closeout_plan_missing_fields": closeout_plan_missing_fields,
+        "closeout_plan_duplicate": closeout_plan_duplicate,
         # False means the heading facts above were read from a FAIL-OPEN mask (the
         # raw text, fenced examples included), so they are not established.
         "sections_reading_established": balanced,
@@ -177,6 +232,8 @@ def pursue_readiness(
             balanced=balanced,
             discussion=discussion,
             discussion_warning=discussion_warning,
+            closeout_plan_missing_fields=closeout_plan_missing_fields,
+            closeout_plan_duplicate=closeout_plan_duplicate,
             activation_ready=activation_ready,
         ),
         "activation_discussion_warning": discussion_warning,
