@@ -1,1 +1,1 @@
-2026-08-05-issue-504-retro-persistence.md
+2026-08-05-issue-496-hollow-refill.md

@@ -10,7 +10,26 @@ the repaired verdict surface. The implementation is now present: a narrow
 mutation-command inert-leaf filter plus a safe nested warning remedy, with
 generated source/plugin parity and end-to-end tests.
 
-## Decision Under Review
+## Current-state supersession (2026-08-05)
+
+This critique records the pre-#507 lifecycle contract for the `e7bc7eaf`
+repair. The later lifecycle refactor moved the operator-facing entry surface to
+`skills/public/quality/scripts/bootstrap_adapter.py` and kept the semantic
+conflict/advisory/migration-authorization mechanics in
+`quality_bootstrap_lifecycle.py`: ordinary bootstrap now preserves the existing
+adapter and reports a top-level `mutation_testing` conflict, while `--migrate`
+is the explicit write authorization. The current #496 closeout therefore uses
+the conflict/advisory behavior as the user-facing proof and does not claim that
+`_subkey_refills` feeds the removed `describe_intent_loss` consumer or that a
+leaf-warning accompanies an automatic rewrite. The original narrow allowlist
+and its direct tests remain implementation provenance and a typed dead-but-
+deferred cleanup, not a separate current warning channel.
+
+All sections below this note are historical evidence for the pre-#507 repair;
+their present-tense producer, consumer, warning, and rewrite language is not a
+description of the current operator path.
+
+## Historical decision under review (pre-#507)
 
 Whether the smallest honest #496 repair is to suppress only omitted
 `mutation_testing.commands.dry_run` and `.sample` leaves whose defaults are
@@ -20,14 +39,14 @@ Success means the exact issue fixture keeps real `full`/`summary` commands,
 does not report the hollow leaves, and never recommends discarding the block;
 #493's non-inert nested reporting remains unchanged.
 
-## Diff Scope
+## Historical diff scope (pre-#507)
 
 Implemented in `scripts/quality_bootstrap_lib.py`,
 `scripts/quality_bootstrap_absence.py`, their generated plugin mirrors, and
 focused quality tests. The gathered issue, debug record, goal, and refreshed
 packet bind the semantic invariant and axis-varying counterexample.
 
-## Failure Angles
+## Historical failure angles (pre-#507)
 
 - Jackson: a generic empty-value filter would solve a convenient syntax rather
   than the named #496 harm and could hide non-inert empty policy settings.
@@ -37,7 +56,7 @@ packet bind the semantic invariant and axis-varying counterexample.
 - Gawande: the exact bootstrap consumer must prove real commands survive,
   fresh adapters stay silent, and source/plugin execution remains aligned.
 
-## Counterweight Pass
+## Historical counterweight pass (pre-#507)
 
 - Act Before Ship: use an exact path/value allowlist for only the two inert
   command leaves; repair the nested remedy; add the end-to-end and axis-varying
@@ -49,7 +68,7 @@ packet bind the semantic invariant and axis-varying counterexample.
 - Valid but Defer: sub-key `deliberately_absent` syntax is a separate contract
   decision; the safer warning is enough for this issue.
 
-## Structured Findings
+## Historical structured findings (pre-#507)
 
 - F1 | bin: act-before-ship | evidence: strong | ref: scripts/quality_policy_merge.py:27 | action: fix | note: scope inert suppression to exact mutation command leaf paths and the empty-string default, never the generic recursive helper.
 - F2 | bin: act-before-ship | evidence: strong | ref: scripts/quality_bootstrap_absence.py:176 | action: fix | note: nested refill warnings must not tell operators to drop a whole block containing real configuration.
@@ -80,18 +99,24 @@ folded as a cap-limited round-2 repair accepted-unreviewed (no third round).
 
 - Packet consumed: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md
 - Packet path: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json
-- Packet SHA256: 4b561dc83243e68782e43ef2893fad90c2bae37e1272abb5a03a411cb92c208b
-- Identity SHA256: 86c7d22a4a64773a6d52bfaa3a88b0af516ed617528579f3a15aa2e585d6fe75
+- Packet SHA256: ad49f66fc141e1255a05843900733209e1408b96508ea08ce1e5a49c1e07838c
+- Identity SHA256: 720e5e39fda4babd131cb424aebbb6d6653ede1f8eba90d5e061ab12276c70d7
 
 ## Boundary Ownership
 
-- Producer: `refilled_policy_subkeys` derives nested refill names and
-  `quality_bootstrap_lib` carries them into the report; `describe_intent_loss`
-  renders the operator warning.
-- Consumer: the quality maintainer/operator reading the bootstrap JSON/stderr
-  and the rewritten adapter.
-- Owning surface: quality policy merge/report contract, with the warning
-  renderer owning the remediation wording.
+Historical record; current split noted.
+
+- Historical producer: `refilled_policy_subkeys` derives nested refill names
+  and `quality_bootstrap_lib` carries them into the report;
+  `describe_intent_loss` rendered the former operator warning.
+- Current operator surface: `skills/public/quality/scripts/bootstrap_adapter.py`.
+  Current conflict/advisory/migration mechanics: `quality_bootstrap_lifecycle.py`.
+- Current user-facing consumer: the maintainer/operator reading the top-level
+  conflict advisory and preserved adapter; the former leaf-warning consumer is
+  not on this path.
+- Owning surface: the bootstrap adapter entrypoint plus the lifecycle conflict
+  contract, with the historical report producer retained only as deferred
+  implementation provenance.
 - Verdict: owned-correctly
 
 ## Defect Class Cross-Link
@@ -100,7 +125,7 @@ The recurring proxy-to-semantic-invariant trap is recorded in
 `charness-artifacts/retro/recent-lessons.md`; this slice applies its rule to a
 field-aware predicate and axis-varying counterexample.
 
-## Pre-Merge Action
+## Historical pre-merge action (pre-#507)
 
 F1–F4 are implemented and locally proven. The generic helper remains reusable;
 the exception is applied at the mutation policy boundary. Focused proof covers

@@ -25,6 +25,7 @@ from scripts.quality_adapter_lib import (
     names_a_filesystem_location,
     path_bearing_entries,
 )
+from scripts.quality_bootstrap_lib import build_bootstrap_state
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
 from .support import ROOT
@@ -749,7 +750,17 @@ def test_issue_496_suppresses_only_the_two_inert_command_leaves(tmp_path: Path) 
     change = _change(payload, "mutation_testing")
     assert change["current_value"]["commands"]["full"] == "pytest --mutate"
     assert change["requested_value"]["commands"]["sample"] == ""
-    assert "--migrate" in payload["customization_warning"]
+    warning = payload["customization_warning"]
+    assert "--migrate" in warning
+    assert "review `mutation_testing`" in warning
+    assert "commands.dry_run" not in warning
+    assert "commands.sample" not in warning
+    assert "drop the whole" not in warning.lower()
+    assert all(not surface.startswith("commands.") for surface in (item["surface"] for item in payload["requested_changes"]))
+    state, _, _ = build_bootstrap_state(repo)
+    refills = state["_subkey_refills"]["mutation_testing"]
+    assert "commands.dry_run" not in refills
+    assert "commands.sample" not in refills
     rewritten = _adapter(repo).read_text(encoding="utf-8")
     assert "full: pytest --mutate" in rewritten
     assert "summary: python3 scripts/summarize.py" in rewritten
@@ -767,6 +778,8 @@ def test_mutation_command_filter_keeps_missing_required_slot_reportable(tmp_path
     requested = _change(payload, "mutation_testing")["requested_value"]["commands"]
     assert requested["full"] == "pytest --mutate"
     assert requested["summary"] == ""
+    state, _, _ = build_bootstrap_state(repo)
+    assert "commands.summary" in state["_subkey_refills"]["mutation_testing"]
 
 
 def test_explicit_empty_command_slots_are_not_reclassified(tmp_path: Path) -> None:
@@ -783,6 +796,10 @@ def test_explicit_empty_command_slots_are_not_reclassified(tmp_path: Path) -> No
     requested = _change(payload, "mutation_testing")["requested_value"]["commands"]
     assert requested["dry_run"] == ""
     assert requested["sample"] == ""
+    state, _, _ = build_bootstrap_state(repo)
+    refills = state["_subkey_refills"]["mutation_testing"]
+    assert "commands.dry_run" not in refills
+    assert "commands.sample" not in refills
 
 
 def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_path: Path) -> None:
@@ -796,6 +813,8 @@ def test_prompt_asset_empty_scope_remains_reportable_and_warning_is_safe(tmp_pat
     payload = _bootstrap(repo)
     assert "exemption_globs" in _change(payload, "prompt_asset_policy")["requested_value"]
     assert "--migrate" in payload["customization_warning"]
+    state, _, _ = build_bootstrap_state(repo)
+    assert "exemption_globs" in state["_subkey_refills"]["prompt_asset_policy"]
 
 
 def test_plugin_bootstrap_matches_source_for_issue_496_fixture(tmp_path: Path) -> None:

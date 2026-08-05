@@ -4,6 +4,18 @@ Date: 2026-08-04
 Status: locally closed; remote issue remains open and out of scope
 Issue: https://github.com/corca-ai/charness/issues/496
 
+## Current-state supersession (2026-08-05)
+
+This historical local carrier predates the #507 quality-bootstrap lifecycle
+refactor. Its producer/consumer and proof-matrix language below describes the
+then-current leaf-warning path, not the current ordinary-bootstrap behavior.
+Today `skills/public/quality/scripts/bootstrap_adapter.py` is the
+operator-facing entry surface, while `quality_bootstrap_lifecycle.py` owns the
+semantic-difference, byte-preserving `conflict` advisory, and explicit
+`--migrate` write authorization mechanics. The current #496 closeout uses that
+top-level conflict contract as its behavioral proof; it does not claim a
+leaf-warning or automatic-rewrite path.
+
 ## Closeout scope
 
 This is a local proof carrier for the independent #496 hollow-refill track. It
@@ -14,7 +26,7 @@ consumers. It makes no predicate recommendation for, or other claim about,
 supplies no predicate recommendation to #496; that track remains independently
 bounded and locally closed under its own carrier.
 
-## Producer, consumer, and owner
+## Historical producer, consumer, and owner (pre-#507)
 
 - Producer: `_mark_subkey_refills` in `scripts/quality_bootstrap_lib.py` carries
   the generic nested refill names into the quality bootstrap report. The
@@ -27,7 +39,7 @@ bounded and locally closed under its own carrier.
 - Owner: Charness quality/bootstrap maintainer. The generic recursive helper
   remains reusable and is not assigned the semantic policy exception.
 
-## Semantic invariant and axis-varying counterexample
+## Historical semantic invariant and axis-varying counterexample (pre-#507)
 
 The report may suppress only the two named omitted mutation command leaves that
 are known no-op defaults; it must continue reporting omitted command defaults
@@ -39,7 +51,7 @@ The axis-varying counterexample is a partial `prompt_asset_policy` whose
 but it defines the scan boundary and must remain reportable. This rules out a
 generic empty-value predicate.
 
-## Reproduction and repair
+## Historical reproduction and repair (pre-#507)
 
 The gathered issue fixture was:
 
@@ -54,7 +66,7 @@ Before repair, the producer reported `commands.dry_run` and
 inert leaf, retains `full` and `summary` in the rewritten adapter, and gives
 leaf-level review guidance that explicitly preserves configured siblings.
 
-## Proof matrix
+## Historical proof matrix (pre-#507)
 
 - Positive: exact full+summary fixture suppresses only the two omitted inert
   leaves; source and shipped plugin entrypoints produce the same complete JSON
@@ -77,7 +89,7 @@ leaf-level review guidance that explicitly preserves configured siblings.
   round-2 repair is recorded accepted-unreviewed under the repository's
   two-round cap; no third review is claimed.
 
-## Exact changed paths
+## Historical exact changed paths (pre-#507)
 
 - `scripts/quality_bootstrap_lib.py`
 - `scripts/quality_bootstrap_absence.py`
@@ -93,7 +105,7 @@ leaf-level review guidance that explicitly preserves configured siblings.
 - `charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md`
 - `charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md`
 
-## Residuals and reopen trigger
+## Historical residuals and reopen trigger (pre-#507)
 
 - The generic helper still reports empty values elsewhere; no universal
   semantic-inertness taxonomy is claimed.
@@ -106,7 +118,7 @@ leaf-level review guidance that explicitly preserves configured siblings.
   named command slot carries operator intent, if a warning still recommends
   destructive whole-block removal, or if source/plugin payload parity diverges.
 
-## Fresh-observer acceptance
+## Historical fresh-observer acceptance (pre-#507)
 
 Accepted by delegated fresh-eye reviewer Helmholtz
 (`019fca72-094b-7721-8d21-6fd732d557e9`) after the carrier wording repair. The

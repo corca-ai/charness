@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-05T11:35:05Z
-- **Prepared for**: slice E #496 hollow-refill semantic repair
+- **Generated**: 2026-08-05T11:35:25Z
+- **Prepared for**: issue #496 resolution closeout at current HEAD
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `720e5e39fda4babd131cb424aebbb6d6653ede1f8eba90d5e061ab12276c70d7`
-- **Reviewed paths**: 10
+- **Reviewed input identity**: `c43c8fd174f56645db7f77add466d083ac6d7c5cf1789d6d148ee230ac7da180`
+- **Reviewed paths**: 9
 - **Sections**: 3
 - **Overall ok**: True
 
@@ -28,6 +28,8 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
+- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json
+- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md
 - charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md
 - charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json
 - charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
@@ -36,10 +38,10 @@ Changed paths for working tree:
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md
+  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
+  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 - repo-python: Repo-owned Python code and tests.
   source matches: tests/quality_gates/test_quality_bootstrap_absence.py

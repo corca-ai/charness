@@ -1,26 +1,26 @@
 {
   "_provenance": {
-    "baseline_check": "The current measurement is refreshed over 114 checked-in quality artifacts after the #511 quality record and inventory declaration changed the corpus; no detached-tree validator comparison is claimed.",
+    "baseline_check": "The current measurement is refreshed over 116 checked-in quality artifacts after the #496 quality record and pointer changed the corpus; no detached-tree validator comparison is claimed.",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-05",
-    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 4 artifacts and deferred as D47.",
-    "repo_head_at_run": "0b97980f9f8820076feb0f5a9d9733f1a62fba53",
-    "synchronized_after": "Added the #511 quality record's coverage-repair ledger and refreshed the quality pointer; regenerated both marker variants from the repository-owned script.",
+    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here \u2014 its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 4 artifacts and deferred as D47.",
+    "repo_head_at_run": "a10eb22a59584c9a8fdfb209d14dfc5fc02381d0",
+    "synchronized_after": "Added the #496 quality record and refreshed the quality pointer; regenerated both marker variants from the repository-owned scripts.",
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
-    "worktree": "dirty: cross-track quality proof artifacts are being finalized"
+    "worktree": "dirty: issue #496 carrier and cross-track quality proof artifacts are being finalized"
   },
-  "artifacts": 114,
+  "artifacts": 116,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 114,
+    "not-claimed": 116,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 186,
+    "count": 178,
     "median": 30,
     "min": 0,
     "p5": 5
@@ -28,7 +28,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 329,
+    "count": 331,
     "median": 45,
     "min": 7
   },
@@ -1252,6 +1252,15 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
+      "commit_state": "uncommitted",
+      "declared_date": "2026-08-05",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-05",
+      "path": "charness-artifacts/quality/2026-08-05-issue-496-hollow-refill.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
       "commit_state": "dated",
       "declared_date": "2026-08-05",
       "exemption": "not-claimed",
@@ -1274,6 +1283,15 @@
       "declared_date": "2026-08-05",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-05",
+      "path": "charness-artifacts/quality/2026-08-05-issue-504-retro-persistence.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-05",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-05",
       "path": "charness-artifacts/quality/2026-08-05-issue-507-quality-adapter-lifecycle.md"
     },
     {
@@ -1286,7 +1304,7 @@
         }
       },
       "claims_pre_contract_exemption": false,
-      "commit_state": "dirty",
+      "commit_state": "dated",
       "declared_date": "2026-08-05",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-05",
@@ -1318,16 +1336,9 @@
       "path": "charness-artifacts/quality/2026-08-05-quality-review.md"
     },
     {
-      "citations": {
-        "inventory_nose_clones.py": {
-          "engaged_presence_only": 7,
-          "engaged_with_a_value": 7,
-          "lost_to_the_floor": [],
-          "required": 2
-        }
-      },
+      "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "dated",
+      "commit_state": "dirty",
       "declared_date": "2026-08-05",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-05",

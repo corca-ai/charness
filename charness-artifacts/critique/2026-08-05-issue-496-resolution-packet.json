@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-05T11:35:05Z",
-  "prepared_for": "slice E #496 hollow-refill semantic repair",
+  "generated_at": "2026-08-05T11:35:25Z",
+  "prepared_for": "issue #496 resolution closeout at current HEAD",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n- tests/quality_gates/test_quality_bootstrap_absence.py\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_quality_bootstrap_absence.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md\n- charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json\n- charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n- charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n- tests/quality_gates/test_quality_bootstrap_absence.py\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md, charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.json, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-packet.md, charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.json, charness-artifacts/critique/2026-08-05-issue-496-resolution-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_quality_bootstrap_absence.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n\n",
       "ok": true,
       "errors": []
     },
@@ -58,64 +58,59 @@
     "base_head": "a10eb22a59584c9a8fdfb209d14dfc5fc02381d0",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
-      "charness-artifacts/debug/2026-08-04-debug-review-followup-2.md",
+      "charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md",
       "charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md",
-      "charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md",
-      "plugins/charness/scripts/quality_bootstrap_absence.py",
+      "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+      "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
       "plugins/charness/scripts/quality_bootstrap_lib.py",
-      "scripts/quality_bootstrap_absence.py",
+      "plugins/charness/scripts/quality_bootstrap_lifecycle.py",
       "scripts/quality_bootstrap_lib.py",
-      "tests/quality_gates/test_quality_bootstrap.py",
-      "tests/quality_gates/test_quality_bootstrap_absence.py",
-      "tests/quality_gates/test_quality_policy_merge.py"
+      "scripts/quality_bootstrap_lifecycle.py",
+      "tests/quality_gates/test_quality_bootstrap_absence.py"
     ],
     "reviewed_content": [
       {
-        "path": "charness-artifacts/debug/2026-08-04-debug-review-followup-2.md",
-        "content_sha256": "19bff8c07b53b4d4ba5082e4b203b781b0033766ef3e093fd7769e3a5e95b3ec"
+        "path": "charness-artifacts/critique/2026-08-04-slice-e-496-hollow-refill-semantic-repair-critique.md",
+        "content_sha256": "22dc691b86cbd24166d18f2e5b2f932852ea8897581530726a48508a08dae6f7"
       },
       {
         "path": "charness-artifacts/gather/2026-08-04-issue-496-hollow-refill.md",
         "content_sha256": "0b9b9b8c871fd872377fbbe4f1d4e4aa4ae89d5ed0ea2d08f22142acc0a169b2"
       },
       {
-        "path": "charness-artifacts/goals/2026-08-04-make-recurring-closeout-cost-actionable.md",
-        "content_sha256": "fc55098295bd586becb382af3a1f5a24de1ce83ece8cc221a7ca7fde4b5871b7"
+        "path": "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+        "content_sha256": "2db6c184e3e28bcd741be0fc72c2ea70432fefcaa9a3acf6f610acf0802132dc"
       },
       {
-        "path": "plugins/charness/scripts/quality_bootstrap_absence.py",
-        "content_sha256": "9cd54ed3e324316ec261960245a94dfa21e541689af584f6c5cda33b62bd9039"
+        "path": "charness-artifacts/issue/2026-08-04-issue-496-local-closeout.md",
+        "content_sha256": "8710283579f0107a2278b52a024105648496a0b43d6de2b2f0f6129c07e5f57c"
       },
       {
         "path": "plugins/charness/scripts/quality_bootstrap_lib.py",
         "content_sha256": "f006f7aed30717c34d04240b3340ac9f97a9e35d2a174a6fe6c55c7e8a48b821"
       },
       {
-        "path": "scripts/quality_bootstrap_absence.py",
-        "content_sha256": "9cd54ed3e324316ec261960245a94dfa21e541689af584f6c5cda33b62bd9039"
+        "path": "plugins/charness/scripts/quality_bootstrap_lifecycle.py",
+        "content_sha256": "42480d5a1f92c4322ac84319093be085aef38c063c034af156868547eae3701d"
       },
       {
         "path": "scripts/quality_bootstrap_lib.py",
         "content_sha256": "f006f7aed30717c34d04240b3340ac9f97a9e35d2a174a6fe6c55c7e8a48b821"
       },
       {
-        "path": "tests/quality_gates/test_quality_bootstrap.py",
-        "content_sha256": "36c46b5775c73be2bce44eece48ed41dc4c8f3f7fbdd4cd47e9f0c69a822a4dc"
+        "path": "scripts/quality_bootstrap_lifecycle.py",
+        "content_sha256": "42480d5a1f92c4322ac84319093be085aef38c063c034af156868547eae3701d"
       },
       {
         "path": "tests/quality_gates/test_quality_bootstrap_absence.py",
         "content_sha256": "19b53b4f0c3277ae699e318c09f3d4773667d39eab4af09c708fc23e92066909"
-      },
-      {
-        "path": "tests/quality_gates/test_quality_policy_merge.py",
-        "content_sha256": "34bba1fb061ac558c0153213319fe6667ae2bcecf0bab25cd2ab695ebc81d600"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "staged_patch_sha256": "2a58a269f0dfe163676326d8a6bc074e72ee4c4391bea5aed0af2a619f20c401",
-    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "c1798789b2131e96b996ef3281c306884681f386c57285b24a8773107d3900fe",
+    "unstaged_patch_sha256": "ff8111a2ee96372c13189c6a5d969ff76d3f8eb2271bd25d3ac974f87f68777d",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "720e5e39fda4babd131cb424aebbb6d6653ede1f8eba90d5e061ab12276c70d7"
+    "identity_sha256": "c43c8fd174f56645db7f77add466d083ac6d7c5cf1789d6d148ee230ac7da180"
   }
 }
