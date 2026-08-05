@@ -378,6 +378,20 @@ Generative benefit field: each closed row names one later issue whose design, ev
   and independently read CI/#508/#509; then activate the prepared draft goal if
   the next sequence still matches the live backlog.
 
+### Slice 13: #512 metric-window ordering — local carrier ready
+
+- Objective: Resolve the remaining supported metric-helper ordering failure so an exact-match Final Verification author fill remains valid after helper execution, while keeping issue #512 explicitly local-only until the final umbrella publish.
+- Why this approach: The live GitHub read selected #512 as the first current open issue because its helper/section-fill seam can make the next closeout sequence deterministic. Causal review narrowed the issue to the metric writer; serial refusal and soft-wrap claims were already covered and were not reimplemented.
+- Commits: 824fce4e1aa88c0acfb17ce808074a93ff68b5f8 — fix: preserve authored goal closeout bodies; carrier SHA256 c5d81a68e2e97dc94e01e565c64b0c10ae51a7bbd3ca8dac43fff84a7e8ff9aa.
+- What changed: Appended Host metric window after existing authored Final Verification content; synchronized public reference and generated plugin mirror; added exact-match author-fill regression; recorded debug RCA, final critique packet/record, and direct-commit closeout carrier.
+- Alternatives rejected: Rejected a consumer-side workaround, broad parser refactor, provider/install claims, and bundling already-covered aggregation or soft-wrap work. No manual GitHub close and no push were performed before the umbrella final boundary.
+- Targeted verification: Live read was #512 OPEN with comments_read true and zero comments. Causal fresh-eye review and four resolution-critique reviewers returned findings with clean boundary fingerprints. Focused metric/probe/render suite passed 46 tests; debug and critique validators passed; validate-closeout-draft returned draft_verified; staged plugin mirror drift and pre-commit passed. GitHub readback remains OPEN by design until the one final push.
+- Test duplication pressure: Added one minimal sequence regression for the reported helper-then-exact-match failure; retained existing insertion, replacement, idempotence, CLI, attention, and probe tests without lowering a floor.
+- Critique: charness-artifacts/critique/2026-08-06-issue-512-metric-window-ordering-code-critique.md; three named angle reviewers plus a separate counterweight were parent-delegated, findings-received, and boundary-verified clean. Final packet is charness-artifacts/critique/2026-08-06-issue-512-final-review-packet.json with packet SHA256 fc2254422732b8482e22f696fd0b991050a1c718ac4a693f82484a0f1db96bc2 and identity SHA256 e725896886a1c28fbc7fe584c73ab20bd3da45972b530277a0285f2388ea2d30.
+- Off-goal findings: No new issue filed. No claim about Ceal/provider/install behavior, remote CI, release, tag, version bump, or Cautilus. The adjacent global metric-line matching concern is recorded as valid-but-defer in the critique.
+- Lessons carried forward: A helper that mutates authored evidence must preserve the author's stable prefix; the smallest detector is a producer-then-exact-fill fixture. Next unblock action: continue the live generative sequence with #513, keep each carrier local, then run one final full gate/push and per-issue remote readback.
+- Metrics: Focused 46 tests passed; pre-commit completed with all listed checks passing. No remote CI or GitHub CLOSED readback is claimed for this local row.
+
 ## Activation Record
 
 Activation record status: recorded — 2026-08-05T04:54:43Z.
