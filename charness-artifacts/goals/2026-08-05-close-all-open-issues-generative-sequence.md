@@ -10,9 +10,9 @@ Activation time: 2026-08-05T04:54:43Z
 ## Active Operating Frame
 
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #503 is CLOSED through the GitHub adapter at b5d956998df4284659c39b55d5ef99b9b470d71e; #468 is also CLOSED at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
-- Current slice intent: carry #503's confirmed runtime-owner/probe-synchronization benefit into the next proof-surface boundary while preserving explicit non-claims for remote CI and installed behavior.
-- Next action: re-read live #506 with comments and inspect the current stale default-window refusal at HEAD b5d95699 before remedy design.
+- Current slice: #506 is CLOSED through the GitHub adapter at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657; #503 is CLOSED at b5d956998df4284659c39b55d5ef99b9b470d71e and #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b.
+- Current slice intent: carry #506's explicit reviewer-window identity contract into the next quality/proof reader boundary while preserving the deliberate explicit-path compatibility seam.
+- Next action: re-read live #502 with comments and inspect its current producer/consumer receipt contract at HEAD b70d9a21 before remedy design.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -65,7 +65,7 @@ Activation time: 2026-08-05T04:54:43Z
 
 ### High-Confidence Checks
 
-- `#506`을 먼저 닫기 전 stale default-window refusal을 현재 HEAD에서 읽는다. 그 뒤 `#502 → #507 → #511`은 quality/proof 결과의 첫 reader와 error/inapplicable semantics를 확인하는 별도 proof packet을 갖고, bounded reviewer들은 snapshot/verify fingerprint rail을 사용한다.
+- `#506`은 현재 HEAD에서 stale default-window refusal을 읽고 닫았다. 다음 `#502 → #507 → #511`은 quality/proof 결과의 첫 reader와 error/inapplicable semantics를 확인하는 별도 proof packet을 갖고, bounded reviewer들은 snapshot/verify fingerprint rail을 사용한다.
 - 각 이슈는 이미 존재하는 remediation와 closed sibling을 먼저 대조한다. 특히 #507은 #481과의 관계를 regression·partial repair·duplicate 중 하나로 분류하고, #506은 #461이 닫은 broader axis와 default-path 잔여를 구분한다.
 - `#504` closeout은 goal identity가 맞는 retro인지 확인하고, session-level retro mode를 깨지 않는다.
 - `#508 → #509 → #510`은 preferred path다. hard dependency는 #508의 classifier 판정과 #510의 route join, #509의 persistence branch가 end-to-end에서 합쳐지는 것으로 기록하고, 각 branch의 독립 fixture도 허용한다. legitimate `design intent`, real login wall, uppercase/encoded URL, Markdown negotiation, dated-record persistence를 각각 fixture로 갖는다.
@@ -84,7 +84,7 @@ Activation time: 2026-08-05T04:54:43Z
 | Seq | Issue | Reshaped closeout unit | Why now / generative contribution | Expected evidence | Status |
 | ---: | --- | --- | --- | --- | --- |
 | 1 | #468 | deferred remedy를 premise-reverification contract로 reshape | 오래된 “named remedy”를 그대로 구현하지 않게 모든 뒤 slice의 설계 경계를 만든다. | premise read/run record, durable contract, decision/closeout critique, distinct readback | CLOSED; adapter readback verified |
-| 2 | #506 | reviewer boundary의 stale default-window refusal | 모든 후속 proof-surface review가 오래된 window를 읽고도 통과하는 일을 먼저 막는다. 임시로는 explicit `--before`와 matching `--window-id`를 강제한다. | current-HEAD stale-window refusal, 24-test revalidation, snapshot/verify fingerprint, closeout carrier | next after #503 |
+| 2 | #506 | reviewer boundary의 stale default-window refusal | 모든 후속 proof-surface review가 오래된 window를 읽고도 통과하는 일을 먼저 막는다. 임시로는 explicit `--before`와 matching `--window-id`를 강제한다. | current-HEAD stale-window refusal, 26 helper + 45 parity tests, snapshot/verify fingerprints, remote CI, closeout carrier | CLOSED; adapter readback verified |
 | 3 | #502 | `run-quality.sh` summary의 structured owner/consumer contract | quality/proof reader가 format drift를 test sanding으로 오해하지 않게 하는 공통 receipt spine이다. 현재 issue의 17 consumer 주장과 local matrix 차이를 먼저 재검증한다. | producer-reader inventory, focused proof, bundle/final broad proof, carrier, distinct behavior verdict | planned |
 | 4 | #507 | quality adapter bootstrap의 no-op/preserve/explicit migration 경계 | 기존 consumer 설정과 comment를 덮는 destructive seam을 안정화해 이후 quality 검증의 입력을 믿을 수 있게 한다. #481과의 regression/partial-repair/duplicate 분류를 먼저 한다. | disposable consumer readback, no-op byte/comment preservation, conflict/migration cases, export parity | planned |
 | 5 | #511 | nose inventory의 scanned/missing/error/inapplicable contract | adapter/root 설정이 안정된 뒤 false clean zero를 없애고 quality advisory를 실제로 읽을 수 있게 한다. | `src`/`scripts`/`worker` fixture, absent-root payload, consumer interpretation, advisory non-blocking proof | planned |
@@ -144,7 +144,7 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 
 ## Slice Log
 
-Execution has started after activation. #468 has a local carrier but remains OPEN because its standing conditional push approval was withdrawn by the runtime-budget gate; see Slice 1 below. The 17 rows above are plan state, not substitutes for per-issue closeout.
+Execution has started after activation. #468, #503, and #506 have independently verified carriers and GitHub CLOSED readbacks; the 14 remaining rows stay planned and are not substituted by this log.
 
 Execution row schema: `issue` · live-read identity/time · selected/blocked/closed disposition · frozen SHA · reshape decision (`local-plan only` or authorized tracker edit) · carrier path+SHA · critique path · distinct behavior channel/verdict or typed disposition · GitHub adapter readback · non-claim · next unblock action. A blocked row must also name the open state, missing proof, owner/action, and explicit re-rank authorization before any later issue is started.
 
@@ -179,6 +179,34 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Off-goal findings: None. The stale D47/probe refusal was an in-goal consequence of adding the durable #503 quality artifact; no new issue was silently added.
 - Lessons carried forward: #503 confirmed the generative benefit hypothesized after #468: a runtime refusal became a measured owner/decision contract, and the probe gate made corpus synchronization observable. This lowers the decision cost for #506's proof-window slice and preserves #505 as the later matched-cost experiment. No remote CI or installed-host behavior is claimed.
 - Metrics: Pre-push full quality: 85 passed, 0 failed, 128.5s; pytest 66.3s; changed-line mutation coverage 125.4s. Remote main advanced to b5d95699; adapter readbacks independently verified #468 and #503 CLOSED. Next: re-read live #506 with comments and inspect the current stale default-window refusal at HEAD b5d95699 before any remedy design.
+
+### Slice 3: #506 stale default-window identity closed
+
+- Objective: Make the canonical default reviewer snapshot refuse an unqualified verify, then publish and verify #506 CLOSED.
+- Why this approach: #503's measured owner/probe contract lowered the cost of the next proof-surface decision; #506 was the planned prerequisite for all later bounded review evidence.
+- Commits: b70d9a21eb7d5c5d5ba8c72271e6652e78f17657 — fix: require identity for default reviewer snapshots; pushed to origin/main after the full pre-push gate passed.
+- What changed: Default-path verification now requires `--window-id` or refuses with the resolved snapshot path/window; explicit `--before` remains an identity-bearing compatibility path. Source/plugin mirror, focused helper/parity tests, operating contract, debug artifact, issue carrier, critique packet, critique record, and seam-risk index were synchronized.
+- Alternatives rejected: Did not bypass any gate, weaken parent/reviewer attribution, require a window for noncanonical explicit paths, redesign parity_harness, or add canonical-path alias detection after the counterweight classified that as over-worry for this slice.
+- Targeted verification: Causal review and repaired-surface review completed with clean boundary fingerprints; 71 focused helper/parity tests passed; locked broad standing pytest passed; full pre-push quality passed 85/85; remote Quality Core run 30979850501 passed both jobs; `verify-closeout --expect-state CLOSED` returned `status: verified` for #506.
+- Test duplication pressure: Two focused identity/compatibility tests were added; existing attribution, malformed-snapshot, legacy, and parity cases were retained without lowering a floor.
+- Critique: `charness-artifacts/critique/2026-08-05-issue-506-resolution-critique.md`; three angle reviewers and a separate counterweight returned inline, all four boundary verifies were clean, and the two-round verdict-logic obligation was satisfied.
+- Off-goal findings: None. Installed-host/provider roundtrip, Cautilus execution, release, PR, tag, and version-bump claims remain non-claims.
+- Lessons carried forward: #503's measured ownership benefit was confirmed as generative: it reduced the #506 diagnosis/decision cost. #506 now removes stale-default ambiguity before the next proof-surface slice while keeping explicit path selection deliberate. Next: #502.
+- Metrics: Locked broad pytest 44.3s; pre-push quality 85 passed/0 failed with pytest 47.5s; remote Quality Core completed in about 1m24s; GitHub adapter readback reports #506 CLOSED.
+
+### Slice 3: #506 stale default-window identity closed
+
+- Objective: Make reviewer-boundary verification refuse an unqualified canonical snapshot unless its review-window identity is explicit, then publish and verify #506 CLOSED.
+- Why this approach: #503 made runtime/proof ownership measurable; #506 was the next proof-boundary slice in the planned sequence because later fresh-eye claims must not rest on a stale default window. The causal review confirmed that optional-only window binding was the root cause.
+- Commits: b70d9a21eb7d5c5d5ba8c72271e6652e78f17657 — fix: require identity for default reviewer snapshots; pushed to origin/main after the full pre-push gate passed.
+- What changed: The helper now refuses default-path verify without --window-id and emits an actionable path/window error; explicit --before remains usable for deliberately selected and legacy snapshots. Synchronized the checked-in plugin mirror, focused tests, operating contract, debug artifact, issue carrier, critique packet, critique record, and seam-risk index.
+- Alternatives rejected: Did not bypass pre-commit/pre-push, use --no-verify, weaken parent/reviewer attribution, require a window id for noncanonical explicit paths, redesign parity_harness, or add canonical-path alias detection after the counterweight classified that as over-worry for this slice.
+- Targeted verification: Causal review, repaired-surface verdict-logic review, and four delegated resolution-critique windows all returned clean boundary fingerprints. Focused helper/parity behavior passed 71 tests (26 helper plus 45 parity); locked run_slice_closeout passed all deterministic checks and broad standing pytest; full pre-push quality passed 85/85. GitHub Quality Core run 30979850501 passed both Core deterministic gates and Changed-line mutation coverage. issue_tool verify-closeout with the exact commit and --expect-state CLOSED returned status verified; distinct behavior was the focused helper/parity test channel.
+- Test duplication pressure: Two focused default-identity/explicit-path tests were added while existing parent-attribution, malformed-snapshot, and parity cases were preserved; no test floor was reduced or duplicated beyond the affected helper/parity contract.
+- Critique: charness-artifacts/critique/2026-08-05-issue-506-resolution-critique.md; three angle reviewers and a separate counterweight ran parent-delegated with four clean boundary verifies. The second repaired-surface review found no verdict blocker; its documentation minor was fixed before critique and accepted under the two-round cap.
+- Off-goal findings: None. Remote CI was read through GitHub as required; installed-host/provider roundtrip, Cautilus execution, release, PR, tag, and version-bump claims remain out of scope.
+- Lessons carried forward: Confirmed the generative sequence: #503's measured ownership/probe synchronization reduced the decision cost for #506, and #506 now removes stale-default ambiguity before the next proof-surface slice. The explicit-path boundary remains a deliberate compatibility contract. Next planned issue: #502, which will establish the quality summary producer/reader contract before #507/#511.
+- Metrics: Working-tree locked closeout: broad standing pytest passed in 44.3s; pre-push run-quality summary 85 passed, 0 failed, pytest 47.5s; remote Quality Core run 30979850501 completed in about 1m24s with both jobs successful; GitHub issue #506 adapter readback is CLOSED at https://github.com/corca-ai/charness/issues/506.
 
 ## Activation Record
 
@@ -243,16 +271,16 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed two slices: #468 and #503 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
+Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed three slices: #468, #503, and #506 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback.
 
-Remote boundary non-claims: no remote CI/check-run, installed-host, provider roundtrip, release, or live-agent behavior proof was read. The full pre-push gate passed locally and is not remote CI evidence.
-Retro: not run — the active goal still has 15 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: #468 and #503 verified; #506 is next; remaining issues stay planned and unclaimed.
+Remote boundary evidence: GitHub Quality Core run `30979850501` independently verified both deterministic and changed-line mutation jobs for #506. Non-claims remain for remote CI on earlier slices, installed-host behavior, provider roundtrip, release, or live-agent behavior.
+Retro: not run — the active goal still has 14 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
+Disposition review: #468, #503, and #506 verified; #502 is next; remaining issues stay planned and unclaimed.
 
 ## User Verification Instructions
 
-1. Continue from `## Active Operating Frame` and `## Slice Log`; #468 and #503 are verified closed, while the goal remains active for the 15 remaining issues.
-2. Before #506 remedy design, re-read its live issue/comments and record the current-HEAD stale-window refusal with the required fingerprint boundary.
+1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, and #506 are verified closed, while the goal remains active for the 14 remaining issues.
+2. Before #502 remedy design, re-read its live issue/comments and record the current-HEAD producer/consumer receipt contract with the required fingerprint boundary.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact.
 
