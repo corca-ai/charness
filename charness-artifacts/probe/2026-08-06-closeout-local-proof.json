@@ -1,20 +1,20 @@
 {
   "kind": "charness.closeout-local-proof",
   "schema_version": 1,
-  "proof_run_target_sha": "c98b244e",
+  "proof_run_target_sha": "32a3f8e45c85a9ab144b3b8943b7ecb382f034f1",
   "ledger_scope": "This receipt is committed after the proof run; the proof target is named explicitly because the receipt itself is evidence bookkeeping, not the code under test.",
   "verification_lock": {
     "command": "python3 scripts/run_slice_closeout.py --repo-root . --base --verification-lock --refresh-broad-pytest-proof",
     "status": "passed",
     "standing_pytest": "passed",
     "proof_store": ".charness/closeout/broad-pytest-proof.json",
-    "proof_store_sha256": "9a73b598135dbacd1686d702445b4b6de78263d584d2f92245cfea3c0fa90c4d"
+    "proof_store_sha256": "3966223c14176d0662657733bd520e8de60db0497f271665d1c8621b66cb1f94"
   },
   "mutation_coverage": {
     "command": "python3 scripts/run_slice_closeout.py --repo-root . --base --verification-lock --refresh-broad-pytest-proof --produce-mutation-coverage --mutation-coverage-command 'pytest -q tests/quality_gates/test_closeout_bundle.py tests/quality_gates/test_retro_handoff_wiring.py'",
     "focused_tests": "40 passed",
     "coverage_report": "reports/mutation/test-coverage.json",
-    "coverage_report_sha256": "0dd8b4c7ee2c4ec089be2390b0d07865c61946072a1a7426256ac65d92002f70",
+    "coverage_report_sha256": "a14476dd6391983d20efa02492aedfe8695b1edb92521f4570e495119c32aedb",
     "freshness_fingerprint": "2c1ad770b772d02e662bfb38a77d4ca09e5295c9073ee0f6a3f475f732775c57",
     "consumer": "python3 scripts/check_changed_line_mutation_coverage.py --repo-root . --base-sha origin/main --reuse-coverage --require-fresh-coverage",
     "consumer_status": "passed"
