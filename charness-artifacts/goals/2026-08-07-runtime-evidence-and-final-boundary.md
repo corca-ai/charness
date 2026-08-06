@@ -1,6 +1,6 @@
 # Achieve Goal: 다음 세션: 런타임 증거와 installed-host nose 검증
 
-Status: draft
+Status: complete
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md`
 
@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md` after confirming the
-  runtime and installed-host `nose` proof boundary is still intended.
+- Current slice: Slice 3 — local closeout and baton refresh, complete.
+- Current slice intent: bind the reused runtime A/B packet and the installed-host
+  `nose` receipts into one durable evidence packet, reconcile the delegated
+  closeout-claims findings, and validate the goal and current pointers without
+  starting a publish or issue phase. Distinct bounded reviewers have returned;
+  the repaired state has final readiness disposition.
+- Next action: none — local closeout is complete; any broader runtime or
+  provider boundary requires a separate goal and observer.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -58,10 +58,12 @@ runs the activation command.
 
 - The runtime decision names the existing controlled A/B packet or an honest
   residual non-claim, with no threshold change justified by correlation alone.
-- The installed-host packet records `charness tool doctor nose --no-write-locks`
-  before installation, `charness tool install nose --dry-run`, the chosen
-  supported install path, `nose --version`, post-install doctor, `charness
-  tool sync-support nose`, and one `inventory_nose_clones.py --json` result.
+- The installed-host packet records the pre-install doctor command
+  `charness tool doctor nose --no-write-locks` and dry run
+  `charness tool install nose --dry-run`.
+- It also records the supported install path, `nose --version`, post-install
+  doctor, `charness tool sync-support nose`, and one
+  `inventory_nose_clones.py --json` result.
 - The packet states source checkout, installed checkout, host, timestamp,
   return codes, and what each observation does not prove.
 - The next generative sequence and any unresolved capability boundary remain
@@ -100,71 +102,22 @@ runs the activation command.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Reconcile runtime evidence | Reuse the controlled phase-isolation packet and decide whether any new measurement is needed before touching the budget. | Runtime packet identity, phase samples, units, and explicit non-claim or measured disposition. | planned |
-| 2 | Installed-host `nose` proof | Close the remaining optional real-host checklist with the supported tool lifecycle and a distinct installed-host evidence channel. | Doctor/install/version/sync/inventory receipts, host identity, return codes, and PATH result. | planned |
-| 3 | Local closeout and baton refresh | Bind the runtime and `nose` packets, quality posture, retro, and handoff without starting a publish or issue-closeout phase. | Validated artifacts, clean local closeout, updated non-claims, and next-session proposal. | planned |
+| 1 | Reconcile runtime evidence | Reuse the controlled phase-isolation packet and decide whether any new measurement is needed before touching the budget. | Runtime packet identity, phase samples, units, and explicit non-claim or measured disposition. | completed |
+| 2 | Installed-host `nose` proof | Close the remaining optional real-host checklist with the supported tool lifecycle and a distinct installed-host evidence channel. | Doctor/install/version/sync/inventory receipts, host identity, return codes, and PATH result. | completed |
+| 3 | Local closeout and baton refresh | Bind the runtime and `nose` packets, quality posture, retro, and handoff without starting a publish or issue-closeout phase. | Validated artifacts, clean local closeout, updated non-claims, and next-session proposal. | completed |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
-- Decision: an installed-host `nose` installation may mutate the local tool
-  environment, but it must use a manifest-supported path and remain separate
-  from publish/provider claims.
-  Owner: operator
-  Why deferred: this draft is inert and activation is the explicit decision to
-  run the installed-host proof.
-  Unblock action: activate this goal; stop if the supported installer requires
-  elevated privilege or an unapproved provider write.
-  Revisit trigger: the `nose` dry-run or install command reports a new side
-  effect boundary.
+none — the supported host install completed without an elevated-privilege,
+provider-write, release, push, or issue decision needing operator input.
 
 ## Coordination Cues
 
-Phase-appropriate routing for this run, chosen from installed skill metadata and
-model judgment — never a hard-coded phase-to-skill list here. Use the catalog
-only for hidden availability facts. `achieve` owns this slot and the floors
-below. Fill during the run:
-
-- **Routing** — choose the skill for the current phase or boundary from installed
-  metadata/model judgment, and record the route. At completion, recorded
-  implementation / debug / quality / issue work needs this `Routing:` evidence
-  or a `Routing: n/a — <reason>` opt-out.
-- **Gather step** — when `## Context Sources` names an external source
-  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
-  gathered asset, or write `Gather: n/a — <reason>` when no external context
-  applies.
-- **Release step** — when this run touches a release surface (a version bump or
-  install-manifest edit), add a `Release:` line here pointing at the release
-  proof, or write `Release: n/a — <reason>`.
-- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
-  an `Issue closeout:` line naming the close-intended issue numbers, carrier
-  (`direct-commit`, PR body, release commit, or manual fallback), and
-  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
-  tracked issue appears in `## Context Sources` as context only, use
-  `Issue closeout: n/a — <reason>`.
-
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
-
-- `Routing: quality → hotl → prove → handoff/retro — runtime evidence, installed-host proof, closeout verification, and durable learning.`
-- `Gather: n/a — no new public source is needed.`
-- `Release: n/a — no version/tag/public release target is supplied.`
-- `Issue closeout: n/a — #508/#509 are already CLOSED and this goal performs no issue write or closeout.`
+Routing: impl — selected from installed skill metadata and model judgment for
+task-completing artifact/contract work; quality and retro were supporting phases.
+Gather: n/a — no new public source is needed; context was repo-local or host receipts.
+Release: n/a — v3.3.0 was already published; this goal changed no release surface.
+Issue closeout: n/a — this goal performs no issue write or closeout; issue state is context only.
 
 ## Discuss Before Activation
 
@@ -183,23 +136,68 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Runtime evidence reconciliation
+
+- Objective: Reuse the controlled same-host A/B packet and make the runtime disposition explicit before any budget or scheduler decision.
+- Why this approach: The existing packet already compares six isolated and six same-affinity contended samples; a new measurement would duplicate evidence without a changed decision boundary.
+- Commits: No production commit; the active goal frame and slice record are the only local state changes so far.
+- What changed: Reused [the controlled runtime A/B packet](../quality/2026-08-06-runtime-ab-evidence.md); no runtime code, gate, threshold, or scheduler surface changed.
+- Alternatives rejected: Rejected a fresh one-host sample, a 15.500s budget retune, and a broad scheduler claim because the existing controlled packet is sufficient for the current non-claim and none would add the required causal or cross-host evidence.
+- Targeted verification: python3 skills/public/quality/scripts/render_runtime_summary.py --repo-root . --detail; python3 -m pytest -q tests/quality_gates/test_quality_runner.py tests/quality_gates/test_quality_runner_runtime_aggregate.py (54 passed in 22.62s); python3 scripts/suggest_mutation_coverage_command.py --repo-root . (noop: no eligible mutation-pool files changed).
+- Test duplication pressure: Not applicable — no tests were added or expanded; the existing focused runner suite was re-run as the behavioral check.
+- Critique: No code or verdict logic changed. The existing runtime packet records measurement-only review status; a bounded fresh-eye review remains required before any implementation or budget decision.
+- Off-goal findings: Provider freshness, cross-host runtime behavior, live-agent behavior, Cautilus, release, push, and issue operations remain outside this goal.
+- Lessons carried forward: A controlled packet can justify preserving a threshold without justifying a new threshold. Keep measured contention sensitivity separate from exact-runner causality.
+- Metrics: Runtime profile local-linux-x86_64-36cpu; isolated median 6531 ms; synthetic-contended median 10463 ms; delta 3932 ms; ratio 1.60x; both arms 6/6 zero returns.
+
+### Slice 2: Installed-host nose proof
+
+- Objective: Execute the manifest-supported nose lifecycle and bind source checkout, installed checkout, host, timestamps, return codes, PATH, and advisory inventory disposition.
+- Why this approach: The release record left this optional real-host checklist as the remaining local evidence boundary, and the active goal explicitly authorizes the supported installer path.
+- Commits: No production commit; the durable [evidence packet](../probe/2026-08-06-runtime-evidence-and-nose.md) is prepared.
+- What changed: Added the runtime/installed-host evidence packet and updated the active goal frame/plan; the installed host was refreshed through the manifest-supported nose installer.
+- Alternatives rejected: Rejected treating the pre-installed binary as sufficient, claiming source/install parity from version alone, or rewriting the nose baseline after a scanner-version skew warning.
+- Targeted verification: Pre-install doctor ready; dry-run exposed the upstream nose-cli-installer.sh route and v0.20.0; supported install returned 0 and installed nose 0.20.0; nose --version returned 0; post-install doctor ready with >=0.17.0 matched; sync-support skipped as integration-only; inventory_nose_clones.py --json scanned all declared roots with exit 0 and advisory findings.
+- Test duplication pressure: Not applicable — no tests were added or expanded; focused existing runner tests were already recorded in Slice 1.
+- Critique: The first distinct bounded closeout-claims review confirmed the
+  packet's substantive claims and found stale pointer narratives and missing
+  goal binding. The final readiness review read the repaired surfaces, returned
+  PASS, and its boundary fingerprint was clean.
+- Off-goal findings: The installed checkout SHA 7eed13ec differs from source 8047a614; provider, remote CI, release parity, and issue state are not inferred. The nose 0.19.0 baseline skew is retained as an advisory non-claim.
+- Lessons carried forward: Host proof must preserve pre/post tool state and the observer identity. A successful install and doctor prove installed capability, not checkout parity or scanner-baseline freshness.
+- Metrics: Host narnia; source SHA 8047a614; installed SHA 7eed13ec; nose 0.20.0; probe window 2026-08-06T10:17:20Z–10:17:31Z; installer exit 0; inventory exit 0; inventory 9 families/1302 duplicated lines; baseline warning 0.19.0 -> 0.20.0.
+
+### Slice 3: Local closeout and final disposition
+
+- Objective: Bind the runtime and installed-host packets, reconcile all current narratives, and leave an auditable final disposition without starting a publish or issue phase.
+- Why this approach: The closeout boundary requires evidence identity, current-pointer freshness, a distinct claims observer, and persisted retro dispositions before the goal can flip complete.
+- Commits: No commit yet; the final closeout commit is the publish step for this local repo work.
+- What changed: Added the goal-bound host packet, current quality record, goal-bound retro and handoff refresh; added the closeout pointer-reconciliation contract and the disposition review plus canonical critique packet.
+- Alternatives rejected: Rejected treating successful local commands as terminal green, filing an issue for the pointer recurrence, widening the runtime budget claim, or starting a release/provider/Cautilus phase.
+- Targeted verification: Final readiness reviewer returned PASS with a clean boundary fingerprint; python3 scripts/validate_current_pointer_freshness.py --repo-root . passed; focused runner, artifact validators, doc-authoring preflight, and changed-surface closeout checks are recorded in the quality record.
+- Test duplication pressure: Not applicable — no production code or verdict logic changed; the existing focused runner suite remains the behavioral check.
+- Critique: The final disposition review records three delegated review windows, the two repair findings, the final PASS, reviewer tier evidence, packet identity, and boundary ownership.
+- Off-goal findings: Provider freshness, cross-host runtime behavior, live-agent behavior, remote CI, release parity, Cautilus execution, issue operations, and push remain explicit non-claims.
+- Lessons carried forward: Current-pointer reconciliation is now an operating-contract closeout requirement; retain the distinction between supported installer execution, installed capability, and source/install parity.
+- Metrics: No new runtime sample was collected; the retained packet and host receipts remain the evidence sources.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
 the originating context by following them in order.
 
-1. `docs/design-north-star.md` — judgment on reversible work; distinct observer
+1. [docs/design-north-star.md](../../docs/design-north-star.md) — judgment on reversible work; distinct observer
    and evidence channel at push/issue boundaries; teeth only where wrong answers
    escape.
-2. `docs/handoff.md` — current release boundary, installed-host non-claims, and
+2. [docs/handoff.md](../../docs/handoff.md) — current release boundary, installed-host non-claims, and
    next-session routing.
-3. `charness-artifacts/quality/2026-08-06-runtime-phase-isolation.md` — runtime
+3. [charness-artifacts/quality/2026-08-06-runtime-phase-isolation.md](../quality/2026-08-06-runtime-phase-isolation.md) — runtime
    evidence, healthy/weak/missing/deferred classification, and next moves.
-4. `charness-artifacts/retro/2026-08-06-session-retro.md` — measured waste,
+4. [charness-artifacts/retro/2026-08-06-session-retro.md](../retro/2026-08-06-session-retro.md) — measured waste,
    North Star mapping, sibling scan, and workflow improvements.
-5. `charness-artifacts/critique/2026-08-06-critique-review.md` — repaired
+5. [charness-artifacts/critique/2026-08-06-critique-review.md](../critique/2026-08-06-critique-review.md) — repaired
    phase-isolation review and reviewer-boundary evidence.
-6. `charness-artifacts/release/latest.md` — the exact real-host `nose` checklist
+6. [charness-artifacts/release/latest.md](../release/latest.md) — the exact real-host `nose` checklist
    and the release-time installed-vs-repo evidence already recorded.
 
 ## Interview Decisions
@@ -263,28 +261,23 @@ Issues or deferred findings discovered during the run.
 
 ## Final Verification
 
-Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
-retro / host-log probe / disposition-review artifact) or an explicit
-`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
-`TODO` / `<path>` / `TBD` until you do.
-
-Retro: `charness-artifacts/retro/2026-08-06-session-retro.md` (current session
-learning; the activated run must bind its own closeout retro)
-Host log probe: skipped: not-required-for-draft — no host-level goal closeout is
-claimed before activation
-Disposition review: pending activation — no current goal completion is claimed
+Retro: /home/hwidong/codes/charness/charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md
+Host log probe: /home/hwidong/codes/charness/charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md
+Disposition review: /home/hwidong/codes/charness/charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md
+Local verification: goal, quality, retro, handoff, current-pointer, mirror-parity,
+and changed-surface validators passed. Focused runner: 54 passed — source:
+[current quality record](../quality/2026-08-06-runtime-evidence-and-nose.md).
+Current-pointer freshness: passed — command:
+[scripts/validate_current_pointer_freshness.py](../../scripts/validate_current_pointer_freshness.py)
+with `--repo-root .`.
+Closeout state: impl-local plus host-local capability proof; provider, remote-CI,
+cross-host, live-agent, release-parity, Cautilus, and issue proof remain non-claims.
 
 ## User Verification Instructions
 
-Review this draft, then activate with:
-`/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md`.
-After activation, verify the runtime packet and the installed-host `nose`
-doctor/install/version/sync/inventory receipts before accepting completion.
+Review the bound [runtime and installed-host evidence packet](../probe/2026-08-06-runtime-evidence-and-nose.md), the [goal-bound retro](../retro/2026-08-06-runtime-evidence-and-final-boundary.md), and the [disposition review](../critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md). Confirm the explicit non-claims before accepting completion.
 
 ## Auto-Retro
 
-Retro dispositions: planned — the activated goal must record whether the
-runtime packet was reused, whether the `nose` capability was proven, and which
-non-claims remain.
-Structural follow-up: planned — runtime budget attribution, provider freshness,
-and cross-host evidence remain deferred unless a later goal activates them.
+Retro dispositions: applied: added and validated the runtime/installed-host packet, current quality record, goal-bound retro, and handoff refresh.
+Structural follow-up: applied: added the closeout pointer-reconciliation contract to [docs/conventions/operating-contract.md](../../docs/conventions/operating-contract.md) and verified it with `python3 scripts/validate_current_pointer_freshness.py --repo-root .`.

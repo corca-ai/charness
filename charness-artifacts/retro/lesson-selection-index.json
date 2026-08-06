@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 447,
-  "candidate_count": 1840,
+  "source_artifact_count": 448,
+  "candidate_count": 1847,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1164,6 +1164,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:86b3f7bf6d41",
+      "kind": "current_focus",
+      "lesson": "This retro covers the active goal's runtime evidence reconciliation, the manifest-supported installed-host `nose` lifecycle, and the closeout repair that followed a bounded claims review.",
+      "normalized_key": "this retro covers the active goal s runtime evidence reconciliation the manifest supported installed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the active goal's runtime evidence reconciliation, the manifest-supported installed-host `nose` lifecycle, and the closeout repair that followed a bounded claims review."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:60cd8e31cd25",
       "kind": "current_focus",
       "lesson": "This retro covers the full closeout of the active umbrella sequence: the local quality repairs after #508/#509, the final portability carriers, the one final publish, and the independent remote readbacks.",
@@ -1238,6 +1264,84 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a standalone-import check for every module in a package, generalizing the one-pair guard already committed — issue #492."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:0b4ee027d021",
+      "kind": "next_improvement",
+      "lesson": "applied: add the explicit runtime/installed-host evidence packet and current quality record; no new blocking floor was added.",
+      "normalized_key": "applied add the explicit runtime installed host evidence packet and current quality record no",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: add the explicit runtime/installed-host evidence packet and current quality record; no new blocking floor was added."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ef9b2827e1f5",
+      "kind": "next_improvement",
+      "lesson": "applied: bind a host-proof packet, run the bounded claims review, then reconcile goal/quality/retro/handoff pointers before closeout.",
+      "normalized_key": "applied bind a host proof packet run the bounded claims review then reconcile goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: bind a host-proof packet, run the bounded claims review, then reconcile goal/quality/retro/handoff pointers before closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:6ae9d4a4354b",
+      "kind": "next_improvement",
+      "lesson": "applied: persist this goal-bound retro and refresh the handoff with the next boundary and explicit non-claims.",
+      "normalized_key": "applied persist this goal bound retro and refresh the handoff with the next boundary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: persist this goal-bound retro and refresh the handoff with the next boundary and explicit non-claims."
         }
       ]
     },
@@ -1424,6 +1528,32 @@
       ]
     },
     {
+      "candidate_id": "class:7f8e23a21261",
+      "kind": "repeat_trap",
+      "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet.",
+      "normalized_key": "closeout authoring rework the initial goal and packet used bare internal references and wrapped",
+      "recurrence_class": "closeout-authoring-rework",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "closeout-authoring-rework: the initial goal and packet used bare internal references and wrapped inline code. The authoring preflight caught these before the slice closeout, so the cost was small but the same gate should be run before drafting the final packet."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:ac277e2c6585",
       "kind": "repeat_trap",
       "lesson": "Closeout readback was retried after an initial invocation omitted the required expected-state argument and a shell loop treated a quoted record as one word. The corrected explicit per-issue calls passed; the retry was process waste, not evidence weakness.",
@@ -1502,6 +1632,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:652855dcda67",
+      "kind": "repeat_trap",
+      "lesson": "No token, wall-clock, or tool-call efficiency conclusion is claimed: the host log does not expose a goal-scoped cost measurement for this window.",
+      "normalized_key": "no token wall clock or tool call efficiency conclusion is claimed the host log",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "No token, wall-clock, or tool-call efficiency conclusion is claimed: the host log does not expose a goal-scoped cost measurement for this window."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:2c53fdd5a072",
       "kind": "repeat_trap",
       "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record.",
@@ -1550,6 +1706,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d16dd802152d",
+      "kind": "repeat_trap",
+      "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written.",
+      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
+      "recurrence_class": "stale-current-pointer-at-closeout",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
         }
       ]
     },

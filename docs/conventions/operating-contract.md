@@ -105,8 +105,9 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
     *Claims Review* owns the release form. Not per-commit: the unit is a
     closeout RECORD, not a diff, and firing it per-diff is how a floor becomes
     ceremony.
-- **Run `reviewer_boundary_fingerprint.py verify --before <snapshot-path>
-  --window-id <id>` the moment the reviewer returns, BEFORE any parent write.**
+- **Run the reviewer boundary command**
+  `reviewer_boundary_fingerprint.py verify --before <snapshot-path> --window-id <id>`
+  the moment the reviewer returns, BEFORE any parent write.
   A verify run after the parent has
   started folding findings reports `boundary-drift` and can only be resolved by
   declaring the parent's own paths — which downgrades the attestation from "the
@@ -261,6 +262,14 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   #249). So `## Next Session` carries only the cross-issue judgment the tracker
   cannot express — coupling, sequencing rationale, the recommended first move —
   not a complete, frequently-stale list that duplicates the tracker.
+- **Closeout pointer reconciliation is a contract, not reviewer-only cleanup.**
+  After writing a dated quality, retro, probe, or goal-bound record, the
+  closeout owner refreshes every affected current pointer and runs
+  `python3 scripts/validate_current_pointer_freshness.py --repo-root .` before
+  the final disposition review. A stale-pointer finding remains a closeout
+  blocker until the canonical record, pointer, and handoff/goal references
+  agree; the closeout evidence names this validator. The validator detects
+  pointer drift but does not assert the semantic truth of the records.
 - **Wire retro improvements at closeout, do not just record them.** When a
   session ran a retro, the closeout handoff write must reflect its
   `Next Improvements` in `## Next Session` (or apply the cheap ones, or file an
