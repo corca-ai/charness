@@ -328,7 +328,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
-Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (pending bounded claims review over the locked local proof and current handoff).
+Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts remain a separate boundary).
 
 ## User Verification Instructions
 
