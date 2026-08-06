@@ -26,27 +26,34 @@
   `31062451122` for the published head completed successfully in both jobs.
 - The remote open-issue query after publish returned empty; #508 and #509 were
   already independently CLOSED before the final eight-carrier bundle.
-- The next goal now covers the full structural set: slice manifest, premise
+- The active goal now covers the full structural set: slice manifest, premise
   preflight, final-bundle preflight, runtime attribution, mutation producer
   discovery, and immutable publish-ledger reconciliation.
+- Slice 6 is implemented and reconciles the captured snapshot through
+  `python3 scripts/publish_state_ledger.py --repo-root .`; source/plugin
+  validator files are byte-identical, and the focused ledger behavior is
+  covered by `python3 -m pytest -q
+  tests/quality_gates/test_publish_state_ledger.py`. The ledger is offline and
+  source-claim bound; it does not refresh providers or perform writes.
 - Detailed evidence lives in the [completed goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md),
   [session retro](../charness-artifacts/retro/2026-08-06-session-retro.md), and
   [claims review](../charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md).
 
+<!-- charness-publish-state-claim:post-push-operational-proof -->
+```json
+{"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
+```
+
 ## Next Session
 
-1. Activate the expanded post-push operational-proof goal after reading its
-   boundaries and the current quality/recent-lessons surfaces.
-2. Freeze the current head, issue/CI readback, reader-root matrix, and first
-   slice manifest; use premise preflight before designing any remedy.
-3. Run final-bundle preflight in dry-run mode and verify it selects sync,
-   artifact, critique, behavior, and gate surfaces without manual reconstruction.
-4. Measure isolated versus contended runtime with repeated unit-labelled
-   samples, and make mutation producer discovery emit a complete command set.
-5. Implement the immutable publish ledger and reconcile its output into goal and
-   handoff state. Keep issue/CI/provider ownership separate.
-6. Run source/plugin parity, fresh-eye review, and the full applicable gate
-   before considering any separately authorized publish.
+1. Read the active goal's Slice 7 closeout frame, quality posture, recent
+   lessons, and North Star.
+2. Run the final-bundle preflight dry run and the strongest applicable local
+   quality gate over the integrated six-slice state.
+3. Validate the ledger in human and JSON modes, inspect the closeout/retro
+   dispositions, and refresh this handoff with the final proof paths.
+4. Do not push, release, tag, run Cautilus, or claim installed/provider
+   behavior; any future publish needs its own explicit gated phase.
 
 ## Discuss
 

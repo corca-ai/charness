@@ -154,3 +154,13 @@ installed-consumer execution, or remote behavior is being added here.
 The Slice 2 premise-preflight contract is now the implementation target; this
 carry-forward remains a lifecycle binding only and does not reopen the
 resolved Markdown work.
+
+## Interrupt Carry-Forward Refresh (Slice 6, 2026-08-06)
+
+The forced `gather-510-markdown-representation-selection` interrupt remains
+resolved by the paired local transport and gather-persistence fixtures. Slice 6
+is an unrelated local publish-state evidence seam: it does not retry providers,
+change Markdown negotiation, claim installed-consumer behavior, or make a
+remote write. The existing live-provider and remote-CI non-claims remain in
+force while immutable ledger reconciliation proceeds against the captured
+post-push manifest.

@@ -1,0 +1,20 @@
+{
+  "kind": "charness.publish-state-ledger",
+  "schema_version": 1,
+  "manifest": {
+    "path": "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json",
+    "sha256": "a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34"
+  },
+  "sources": {
+    "goal": {
+      "path": "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+      "block_id": "post-push-operational-proof",
+      "sha256": "80403baf47dd32d2a026eb6874e77e5f6aaa84e104cd0aac3fd24f06d73196bb"
+    },
+    "handoff": {
+      "path": "docs/handoff.md",
+      "block_id": "post-push-operational-proof",
+      "sha256": "80403baf47dd32d2a026eb6874e77e5f6aaa84e104cd0aac3fd24f06d73196bb"
+    }
+  }
+}

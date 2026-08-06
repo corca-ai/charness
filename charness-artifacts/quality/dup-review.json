@@ -2,6 +2,41 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "059c8578bee19e5a",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The publish-state ledger's reconciled/refused human renderer keeps the status branch explicit at its operator boundary, while the unchanged command-doc, prose-pin, and ubiquitous-language validators own parallel terminal rendering. These branches expose different verdict contracts; extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction."
+    },
+    {
+      "class": "intentional",
+      "id": "1190bcd05d674cea",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The publish-state ledger and final-bundle planner each keep their direct-execution runtime-bootstrap import preamble local. Both are portable proof CLIs with independently owned module imports; centralizing the short preamble would add indirection without removing the per-entrypoint portability contract."
+    },
+    {
+      "class": "intentional",
+      "id": "7e5aeb01ebedf33e",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The ledger, final-bundle evidence, slice-manifest, and sync producers independently hash byte files at their own evidence boundaries. This standard-library two-line idiom is shared plumbing across separate proof owners, not a common verdict helper worth coupling."
+    },
+    {
+      "class": "intentional",
+      "id": "c18254bd675f7bb1",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The ledger, premise preflight, and slice-manifest validators each convert untrusted JSON values into locally owned mapping contracts with different error types and field semantics. The repeated mapping guard is small boundary plumbing; extracting it would couple independent validators."
+    },
+    {
+      "class": "intentional",
+      "id": "d225f44b7ca36ae4",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The ledger, premise preflight, and slice-manifest validators each enforce their own SHA/string shape at a schema-owned field boundary. Although the regex-and-error pattern is similar, the refusal contracts and accepted evidence fields differ, so a shared validator would obscure ownership rather than reduce meaningful duplication."
+    },
+    {
+      "class": "intentional",
       "id": "1ed587c63a0eebb0",
       "reviewed_at": "2026-08-06",
       "surface": "code",

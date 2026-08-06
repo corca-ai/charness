@@ -1,5 +1,5 @@
 {
-  "artifacts": 124,
+  "artifacts": 129,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
@@ -17,7 +17,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 354,
+    "count": 365,
     "median": 45,
     "min": 7
   },

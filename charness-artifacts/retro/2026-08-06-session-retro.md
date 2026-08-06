@@ -149,6 +149,78 @@ proof record whose identity was not yet durable.
   that same SHA. That is why the next session starts from remote readback
   commands, not from the local green.
 
+## Current Slice Addendum — Post-Push Operational-Proof Goal
+
+This bounded addendum records the Slice 6/7 continuation after the umbrella
+closeout above. The changed surface was an offline publish-state ledger whose
+verdict could be consumed by a later operator, so the North Star's distinct
+observer and distinct-channel rules applied in full.
+
+### Evidence
+
+- The first implementation review found that whole-document source hashes
+  made ordinary goal/handoff prose changes invalidate an unchanged claim, and
+  that the refusal tests did not cover the matrix deeply enough.
+- The repaired implementation binds each source locator to canonical sorted
+  compact JSON for the marked claim; a surrounding-prose regression passes.
+  The second review confirmed that boundary and found two additional repairs:
+  structured unreadable-manifest refusal and the exact broad source-invalid
+  field from the contract.
+- The final focused ledger suite passed 26 tests. Source/plugin parity,
+  packaging, handoff, doc links, and the checked-in ledger readback passed.
+- `mine_closeout_telemetry.py --detail` read 1,410 local records and surfaced
+  four recurring waste items. This is a repo-local cost signal only; it does
+  not justify weakening or moving proof, and it says nothing about other repos.
+
+### Waste and Critical Decisions
+
+- Waste: the source digest was initially attached to the whole Markdown file,
+  a boundary that the source owner did not actually promise to keep immutable.
+  A fresh reader exposed the mismatch before closeout.
+- Waste: the refusal matrix was written more precisely than its first tests,
+  requiring a second review to enumerate missing code/field cases. The repair
+  narrowed the implementation to the contract instead of adding a second
+  policy layer.
+- Decision: retain the ledger as one captured snapshot, not a live provider
+  refresh, history database, or external-write workflow. Keep CI/issues in the
+  manifest and claims in the goal/handoff blocks.
+
+### North Star and Expert Counterfactual
+
+P4/P5 held after repair: the validator's green is provisional, the independent
+reviewer was a different observer, and the refusal fixtures are a different
+evidence channel from the source code that produced the verdict. The failure
+signature caught here was a proof surface whose claimed immutable boundary was
+broader than its actual owner boundary.
+
+Engelbart's system-improving lens would have designed the claim digest, source
+marker, fixture convention, and review packet as one H+LAM+T loop from the
+start. That would have made the mutable-document versus immutable-claim
+distinction explicit before implementation. The next workflow improvement is
+to freeze the semantic packet and ask the reviewer to vary the surrounding
+representation while holding the source-owned fact constant.
+
+### Next Improvements and Sibling Search
+
+- workflow: make source-owned claim boundaries explicit before choosing a
+  digest; require one fixture that changes surrounding representation without
+  changing the semantic claim.
+- capability: add a small reusable canonical-claim digest helper only if a
+  second source-bound record needs the same contract; otherwise keep this
+  helper local to avoid a generic framework.
+- memory: keep the refusal matrix's exact field spelling in the spec, tests,
+  and operator output; record round-2 repairs as accepted-unreviewed at the
+  two-round cap.
+- same layer: publish-state source blocks | decision: fixed in this slice |
+  proof: canonical-claim digest plus surrounding-prose fixture | follow-up:
+  none — owner boundary is now mechanical
+- abstraction up: generic evidence/artifact hashing | decision: valid follow-up
+  outside the slice | proof: no second consumer currently exists | follow-up:
+  reopen only when a second source-bound record is proposed
+- specialization down: source claim parser and refusal renderer | decision:
+  fixed in this slice | proof: 26 focused tests and human/JSON refusal parity |
+  follow-up: none
+
 ## Sibling Search
 
 - same layer: `scripts/run-quality.sh` phase orchestration | decision: same waste, fix now | proof: focused probe and runtime-record order assert first drain, isolated declaration completion, and next-phase start
