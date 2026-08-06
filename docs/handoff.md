@@ -14,7 +14,7 @@
 ## Current State
 
 - The closeout bundle and retro-to-handoff validator are included in release commit `7bf3893b` for `v3.4.0`; the locked local proof target is recorded separately at [the local proof ledger](../charness-artifacts/probe/2026-08-06-closeout-local-proof.json), and the final claims/disposition identity is bound by the tracked critique carrier.
-- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring, final claims review, and release critique are recorded. The post-publish verification receipt is [the release observer probe](../charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json).
+- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring, final claims review, and release critique are recorded. The post-publish verification receipts are [the release observer probe](../charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json) and [the remote CI readback](../charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json).
 - The publish-state claim below remains a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a current version or tag claim. The release record separately binds `v3.4.0` to tag SHA `7bf3893b`, and the post-publish bookkeeping is committed at `c34b3dc0`.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
@@ -25,8 +25,8 @@
 ## Next Session
 
 1. Read the [closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), its [quality record](../charness-artifacts/quality/latest.md), [release record](../charness-artifacts/release/latest.md), and [release notes](../charness-artifacts/release/v3.4.0-notes.md).
-2. Treat `v3.4.0` publication, the unauthenticated HTTP release observation, install refresh, `charness version`, and `charness doctor` readbacks as completed receipts; do not rerun publication for this slice.
-3. Keep provider, installed-consumer beyond the recorded readback, remote-CI, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
+2. Treat `v3.4.0` publication, the unauthenticated HTTP release observation, remote CI, install refresh, `charness version`, and `charness doctor` readbacks as completed receipts; do not rerun publication for this slice.
+3. Keep provider, installed-consumer beyond the recorded readback, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
 
 ## Discuss
 

@@ -47,6 +47,14 @@ Advanced `charness` toward release `3.4.0` (tag `v3.4.0`) through the repo-owned
 - Published release body audit: `clean` (advisory; never blocks a publish).
 - No mutable source-tree pointers found (2832 body bytes).
 
+## Remote CI Readback
+
+- Durable observer record: `charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json`.
+- Workflow: `Quality Core` run `31111004866` for `main` commit `76e96fe9`.
+- Core deterministic gates: `success`.
+- Changed-line mutation coverage (push/PR mirror): `success`.
+- Observer/channel: GitHub Actions service via the GitHub Actions API, distinct from the `git push origin main` exit status.
+
 ## Lifecycle Usage Capture
 
 - Lifecycle capture status: `appended`.

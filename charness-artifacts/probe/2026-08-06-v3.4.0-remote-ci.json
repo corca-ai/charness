@@ -1,0 +1,41 @@
+{
+  "kind": "charness.remote-ci-readback",
+  "schema_version": 1,
+  "observed_at": "2026-08-06T14:30:43Z",
+  "target": {
+    "branch": "main",
+    "head_sha": "76e96fe99c67dc0184ffb44df0eefe067d1e9b1b",
+    "remote_ref": "refs/heads/main"
+  },
+  "workflow": {
+    "name": "Quality Core",
+    "run_id": 31111004866,
+    "url": "https://github.com/corca-ai/charness/actions/runs/31111004866",
+    "status": "completed",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "name": "Core deterministic gates",
+        "job_id": 92648487170,
+        "conclusion": "success"
+      },
+      {
+        "name": "Changed-line mutation coverage (push/PR mirror)",
+        "job_id": 92648486980,
+        "conclusion": "success"
+      }
+    ]
+  },
+  "observer": "GitHub Actions service",
+  "channel": "GitHub Actions API via gh run view",
+  "distinct_from_push": true,
+  "push_channel": "git push origin main exit status",
+  "remote_refs_observed": {
+    "main": "76e96fe99c67dc0184ffb44df0eefe067d1e9b1b",
+    "v3.4.0": "7bf3893b62ef9901017979c705c47e81770cf503"
+  },
+  "non_claims": [
+    "This is remote CI evidence for the pushed main commit, not installed-consumer, provider, host-window, Cautilus, or public-release proof.",
+    "Public release visibility and installed version/doctor readbacks are recorded by the separate release observer artifact."
+  ]
+}

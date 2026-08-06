@@ -9,15 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — lock local proof and the distinct claims/disposition
-  boundary before any external release effect.
-- Current slice intent: consume the repaired retro-to-handoff wiring contract,
-  run broad verification against the locked evidence, and record the delegated
-  claims review. The closeout-only handoff refresh is now applied and must be
-  rebound into the final packet before release.
-- Next action: prepare the verification lock and final claims-review inputs;
-  record the final claims/disposition result, then derive release state only
-  after every local receipt remains bound to the final commit.
+- Current slice: Slice 5 — publish, read back, and reconcile the final release
+  boundary.
+- Current slice intent: carry the locked local proof through the delegated
+  claims/release critiques, publish the additive release through the repo-owned
+  helper, verify remote CI and the public/install surfaces through distinct
+  channels, and reconcile the session baton.
+- Next action: preserve the terminal receipts, push the baton bookkeeping
+  commit under the conditioned gate, and mark this goal complete.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -248,8 +247,9 @@ applies.
   The exact blocked-plan target `scripts/closeout_bundle_lib.py:254` was
   manually mutated, its focused test failed, and the original line was
   restored; the durable proof is recorded in the Slice 1 critique.
-- Review boundary: the handoff refresh has a clean bounded fresh-eye review;
-  the distinct final claims/disposition review is the remaining local reader.
+- Review boundary: the handoff refresh, final claims/disposition, and 3.4.0
+  release critique all have clean bounded fresh-eye reviews; the release
+  observer and remote CI readbacks use distinct channels.
 - Non-claims: no Cautilus evaluation, behavior-channel execution, provider or
   installed-consumer proof, remote CI readback, push, tag, release publication,
   or release readback has occurred in this slice.
@@ -328,7 +328,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
-Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts remain a separate boundary).
+Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately).
+Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (GitHub Actions Quality Core success for `76e96fe9`, including core deterministic gates and changed-line mutation coverage; distinct from the push channel).
+Release readback: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json (unauthenticated HTTP release observation, installed refresh, `charness version`, and `charness doctor` readbacks).
 
 ## User Verification Instructions
 
@@ -341,6 +343,7 @@ Confirm that no local green was promoted to provider, cross-host, or Cautilus pr
 Retro dispositions: applied — the packet-rebinding workflow is recorded in the
 Slice 3 critique packet, the aggregate diagnostic proposal is filed as D52, and
 the memory item is persisted by the goal-bound retro and lesson-selection index.
-Structural follow-up: applied for the retro-to-handoff validator and
-closeout-only handoff refresh; the final claims/disposition reader is in
-progress, while external release boundaries remain separate.
+Structural follow-up: applied for the retro-to-handoff validator,
+closeout-only handoff refresh, final claims/disposition reader, and release
+notes/probe discoverability repairs; external release receipts are recorded
+with distinct observer/channel evidence.
