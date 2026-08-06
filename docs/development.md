@@ -50,6 +50,39 @@ when proving local edits. Paths under
 `~/.codex/plugins/cache/local/charness/<version>/...` are host cache internals
 and may rotate after plugin updates.
 
+## Closeout Bundle and Handoff Validation
+
+The closeout bundle is an opt-in repo-local direct script, not a top-level
+`charness` command. Run its no-write plan first with the manifest, bundle id,
+critique path, and behavior channel that belong to the frozen slice:
+
+```bash
+python3 scripts/closeout_bundle.py --help
+python3 scripts/closeout_bundle.py \
+  --manifest <slice-manifest.json> \
+  --bundle-id <bundle-id> \
+  --critique-path <critique.md> \
+  --behavior-channel 'behavior=<operator proof command>'
+```
+
+Add `--execute` only after inspecting the plan. A completed run writes a
+repository-relative receipt intended for check-in at
+`charness-artifacts/goals/<bundle-id>.json` by default, or at the explicit
+`--receipt-path`. Behavior channels are recorded rather than run; the result is
+local deterministic evidence only.
+
+To check that retro follow-ups are wired into the next-session handoff, run:
+
+```bash
+python3 scripts/validate_retro_handoff_wiring.py --help
+python3 scripts/validate_retro_handoff_wiring.py --repo-root . \
+  --goal-path <goal.md> --retro-path <retro.md> --handoff-path docs/handoff.md
+```
+
+This validator checks path identity, the handoff's retro citation, and exact
+recurrence markers. It does not judge prose disposition quality or establish
+fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
+
 ## Proof-Only Non-Managed Checkout
 
 If you deliberately want to prove install behavior from a non-managed checkout,

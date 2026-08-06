@@ -40,7 +40,14 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--critique-path", action="append", required=True)
     parser.add_argument("--behavior-channel", action="append", required=True)
     parser.add_argument("--execute", action="store_true", help="Run the bounded local phases; default is a no-write plan.")
-    parser.add_argument("--receipt-path", type=Path, help="Checked-in JSON receipt path; only written after a completed execute.")
+    parser.add_argument(
+        "--receipt-path",
+        type=Path,
+        help=(
+            "Repository-relative JSON receipt path intended for check-in; only written after a completed execute. "
+            "Default: charness-artifacts/goals/<bundle-id>.json."
+        ),
+    )
     return parser
 
 
