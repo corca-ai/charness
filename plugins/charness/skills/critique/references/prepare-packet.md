@@ -20,7 +20,7 @@ The prepare runner fires when:
   signal — repos with no critique adapter or no declared sections see
   no behavior change)
 - the runner is invoked explicitly via
-  `python3 skills/public/critique/scripts/prepare_packet.py --repo-root .`
+  `python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root .`
 
 The `critique` bootstrap runs the runner before spawning reviewers when the
 adapter declares sections. Parent workflows may still prepare a packet earlier,
@@ -44,7 +44,7 @@ identifier (override via runner `--slug` flag).
 For committed-diff critique, invoke the runner with `--changed-ref`:
 
 ```bash
-python3 skills/public/critique/scripts/prepare_packet.py \
+python3 "$SKILL_DIR/scripts/prepare_packet.py" \
   --repo-root . \
   --prepared-for "HEAD" \
   --changed-ref HEAD^..HEAD
@@ -53,8 +53,8 @@ python3 skills/public/critique/scripts/prepare_packet.py \
 For the common one-commit or endpoint-range cases, use the aliases:
 
 ```bash
-python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --commit HEAD
-python3 skills/public/critique/scripts/prepare_packet.py --repo-root . --range main..HEAD
+python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --commit HEAD
+python3 "$SKILL_DIR/scripts/prepare_packet.py" --repo-root . --range main..HEAD
 ```
 
 Use repeatable `--reviewed-path <repo-relative-path>` arguments when the review

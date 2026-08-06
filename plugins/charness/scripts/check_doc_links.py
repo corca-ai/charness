@@ -26,6 +26,8 @@ resolve_relative_link = _markdown_doc_scan.resolve_relative_link
 ABSOLUTE_LINK = _markdown_doc_scan.ABSOLUTE_LINK
 BARE_LINK = _markdown_doc_scan.BARE_LINK
 INERT_LINK = _markdown_doc_scan.INERT_LINK
+_portable_command_carrier = import_repo_module(__file__, "scripts.portable_command_carrier")
+iter_unportable_command_targets = _portable_command_carrier.iter_unportable_command_targets
 
 DOC_GLOBS = (
     "README.md",
@@ -359,44 +361,13 @@ def iter_unresolved_command_targets(
     doc: Path,
     known_repo_paths: set[str] | None = None,
 ) -> list[tuple[int, str]]:
-    """Repo-owned script targets named by documented commands that do not exist.
-
-    Asserts the property the surrounding prose claims -- that a documented
-    command names a runnable affordance -- rather than the proxy that the doc
-    merely mentions a filename. Both carriers count: a fenced block and an
-    inline-code span rot identically, and the backtick checker waves any span
-    containing whitespace through, so `python3 scripts/x.py --flag` is invisible
-    to it. Placeholder-bearing targets (`<repo-root>/...`, `scripts/<name>.py`)
-    are the escape for commands that only resolve in a consuming repo.
-
-    ``known_repo_paths`` keeps the resolution on the same file listing the rest of
-    the gate uses; without it an untracked target passes locally and fails CI.
-    """
-    matches: list[tuple[int, str]] = []
-    package_root = portable_skill_package_root(root, doc)
-
-    def resolves(rel_posix: str) -> bool:
-        if known_repo_paths is not None:
-            return rel_posix in known_repo_paths
-        return (root / rel_posix).exists()
-
-    for lineno, line, in_fence in iter_doc_lines(doc):
-        carriers = [line] if in_fence else [span.group(1) for span in BACKTICK_CONTENT_RE.finditer(line)]
-        for carrier in carriers:
-            for match in COMMAND_TARGET_RE.finditer(carrier):
-                candidate = match.group(1)
-                if "<" in candidate or ">" in candidate:
-                    continue
-                if not looks_like_repo_reference(candidate):
-                    continue
-                if resolves(candidate):
-                    continue
-                if package_root is not None:
-                    packaged = (package_root.relative_to(root) / candidate).as_posix()
-                    if resolves(packaged):
-                        continue
-                matches.append((lineno, candidate))
-    return matches
+    """Compatibility wrapper for the command-carrier module's missing-target check."""
+    return _portable_command_carrier.iter_unresolved_command_targets(
+        root,
+        doc,
+        portable_skill_package_root(root, doc),
+        known_repo_paths,
+    )
 
 
 AUTHORING_REPO_PHRASE = "authoring-repo-internal"
@@ -583,6 +554,22 @@ def main() -> int:
                 f"{doc}: fenced command target(s) {refs} do not exist; a documented command must "
                 "name a runnable script, or use a `<repo-root>/...` placeholder when it only "
                 "resolves in a consuming repo"
+            )
+        unportable = iter_unportable_command_targets(
+            root, doc, portable_skill_package_root(root, doc), known_repo_paths
+        )
+        if unportable:
+            refs = ", ".join(
+                f"`{candidate}` (line {lineno}; expected `<plugin-dir>/{shipped}`; "
+                f"{'exported' if shipped_exists else 'export missing'})"
+                for lineno, candidate, shipped, shipped_exists in unportable[:3]
+            )
+            if len(unportable) > 3:
+                refs += ", ..."
+            raise ValidationError(
+                f"{doc}: command target(s) {refs} use the authoring-only kind-bearing layout; "
+                "use `$SKILL_DIR/...` for this skill's own scripts or `<plugin-dir>/...` "
+                "for another shipped package"
             )
     print("Validated markdown links.")
     return 0

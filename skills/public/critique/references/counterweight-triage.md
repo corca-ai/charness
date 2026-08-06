@@ -115,7 +115,7 @@ gate (late) catches it.
 # emit the starter stub (rendered template) for a new critique record
 python3 scripts/check_artifact_surface_preflight.py --type critique --emit-stub
 # or the full scaffold contract as a JSON payload (template + write path + validator command):
-python3 skills/public/critique/scripts/scaffold_critique_artifact.py --repo-root .
+python3 "$SKILL_DIR/scripts/scaffold_critique_artifact.py" --repo-root .
 # inspect required shape for an existing file + its current verdict:
 python3 scripts/check_artifact_surface_preflight.py --path <critique-artifact>
 ```

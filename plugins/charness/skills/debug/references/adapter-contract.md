@@ -47,7 +47,7 @@ To change the location, override `output_dir` in the adapter.
 To scaffold the canonical artifact body and validator hint from the repo root:
 
 ```bash
-python3 skills/public/debug/scripts/scaffold_debug_artifact.py --repo-root .
+python3 "$SKILL_DIR/scripts/scaffold_debug_artifact.py" --repo-root .
 ```
 
 Use the returned `validator_command` instead of assuming the consumer repo has a

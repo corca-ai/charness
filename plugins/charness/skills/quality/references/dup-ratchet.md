@@ -128,7 +128,7 @@ CLI always prints one `ADVISORY (reduction): family OLD shrank to NEW ...` line
 naming the one-command scoped accept that folds it into the baseline:
 
 ```bash
-python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . \
+python3 "$SKILL_DIR/scripts/check_dup_ratchet.py" --repo-root . \
   --accept-rotation OLD_FINGERPRINT=NEW_FINGERPRINT
 ```
 

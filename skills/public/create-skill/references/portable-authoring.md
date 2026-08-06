@@ -383,7 +383,7 @@ Checked by the `argparse_missing_help` skill-ergonomics rule (opt-in via
 `skill_ergonomics_gate_rules`) in
 `<plugin-dir>/skills/quality/scripts/validate_skill_ergonomics.py`; survey the whole
 repo with
-`python3 skills/public/quality/scripts/inventory_skill_ergonomics.py --repo-root .`.
+`python3 <plugin-dir>/skills/quality/scripts/inventory_skill_ergonomics.py --repo-root .`.
 
 ## Cross-Skill Propagation Rule
 

@@ -208,7 +208,8 @@ def resolve_script(
         # In a `skills/shared/**` reference `$SKILL_DIR` is the *consuming* skill's
         # directory, which always sits at `skills/<kind>/<name>`. Only the depth
         # matters for the `../../shared/scripts/...` form these references use.
-        anchor = package_root or shared_reference_anchor(root, doc)
+        is_shared_doc = doc.relative_to(root).parts[:2] == ("skills", "shared")
+        anchor = shared_reference_anchor(root, doc) if is_shared_doc else package_root
         if anchor is None:
             return None, "skill-dir-outside-a-skill-package"
         options = [_repo_relative(root, anchor / skill_relative)]

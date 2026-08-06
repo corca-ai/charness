@@ -37,7 +37,7 @@ closeout_publication:
   default_mode: handoff-only
   issue_closeout_carrier: direct-commit
   require_draft_validation: true
-  draft_validation_command_template: "python3 skills/public/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number {issue_number} --classification {classification} --carrier direct-commit --commit-message-file {commit_message_file}"
+  draft_validation_command_template: "python3 <plugin-dir>/skills/issue/scripts/issue_tool.py validate-closeout-draft --repo-root . --repo corca-ai/charness --number {issue_number} --classification {classification} --carrier direct-commit --commit-message-file {commit_message_file}"
   require_post_publication_verify: true
   publish_requires_user_confirmation: true
 auto_retro:

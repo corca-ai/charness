@@ -58,7 +58,7 @@ is not automatically a good adapter.
 Run:
 
 ```bash
-python3 skills/public/narrative/scripts/review_adapter.py --repo-root .
+python3 "$SKILL_DIR/scripts/review_adapter.py" --repo-root .
 ```
 
 Treat these as repair-before-rewrite findings for first-touch surfaces:

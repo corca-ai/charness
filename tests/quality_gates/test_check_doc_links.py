@@ -670,6 +670,70 @@ def test_shared_unmarked_repo_path_is_refused(tmp_path: Path, monkeypatch, capsy
     assert "unmarked-tree" in result.stderr
 
 
+def test_a_shipped_skill_command_cannot_use_the_authoring_kind_layout(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = _portable_repo(
+        tmp_path,
+        "Run `python3 skills/public/demo/scripts/helper.py --help`.\n",
+        extra={
+            "skills/public/demo/scripts/helper.py": "#!/usr/bin/env python3\n",
+            "plugins/charness/skills/demo/scripts/helper.py": "#!/usr/bin/env python3\n",
+        },
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "authoring-only kind-bearing layout" in result.stderr
+    assert "<plugin-dir>/skills/demo/scripts/helper.py" in result.stderr
+
+
+def test_a_shipped_skill_command_may_use_skill_dir_placeholder(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = _portable_repo(
+        tmp_path,
+        'Run `python3 "$SKILL_DIR/scripts/helper.py" --help`.\n',
+        extra={"skills/public/demo/scripts/helper.py": "#!/usr/bin/env python3\n"},
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+
+
+def test_an_authoring_skill_command_is_rejected_when_export_omits_target(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = _portable_repo(
+        tmp_path,
+        "Run `python3 skills/public/demo/scripts/helper.py --help`.\n",
+        extra={"skills/public/demo/scripts/helper.py": "#!/usr/bin/env python3\n"},
+    )
+    (repo / "plugins" / "charness").mkdir(parents=True)
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "export missing" in result.stderr
+
+
+def test_an_authoring_skill_command_is_rejected_without_plugin_directory(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = _portable_repo(
+        tmp_path,
+        "Run `python3 skills/public/demo/scripts/helper.py --help`.\n",
+        extra={"skills/public/demo/scripts/helper.py": "#!/usr/bin/env python3\n"},
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "export missing" in result.stderr
+
+
 def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> None:
     """`docs/handoff.md` means the same file in EVERY tree, so it needs no marker.
 

@@ -60,8 +60,8 @@ test file cannot hide behind unchanged row counts.
 Validate examples and repo-emitted payloads with:
 
 ```bash
-python3 skills/public/quality/scripts/validate_boundary_bypass_payload.py \
-  --input skills/public/quality/references/boundary-bypass-payload.example.json
+python3 "$SKILL_DIR/scripts/validate_boundary_bypass_payload.py" \
+  --input "$SKILL_DIR/references/boundary-bypass-payload.example.json"
 ```
 
 ## Ratchet Policy
