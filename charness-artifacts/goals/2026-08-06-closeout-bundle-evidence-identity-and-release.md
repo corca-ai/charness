@@ -110,8 +110,13 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 
 ## Operator Decision Queue
 
-none — the user explicitly requested that push and release be the final phase;
-the release preflight will derive the version and carrier before any side effect.
+- #516 remains OPEN: current `HEAD` passes its four reported ledger tests and
+  the full suite, but the historical `79ea3447…` baseline was not replayed and
+  the required causal fresh-eye reviewer could not be spawned on this host.
+  Its durable diagnosis is
+  `charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md`.
+- #515 remains a distinct quality-routing boundary, not silently satisfied by
+  #517's semantic disclosure contract; #514 remains deferred work.
 
 ## Coordination Cues
 

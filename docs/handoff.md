@@ -11,6 +11,7 @@
 - The closeout goal and its execution contract own packet identity, pointer freshness, pre-review authoring order, and retro-to-handoff wiring.
 - The `v3.4.0` release phase recorded its pre-push quality gate, tag/publication, distinct HTTP observer, install refresh, version/doctor readbacks, and clean post-publish commit boundary.
 - Issue #517 is closed through the direct-commit carrier in `00656c5a`; its closeout draft, delegated resolution critique, distinct behavior proof, and GitHub state readback are verified. The follow-up bookkeeping is recorded through `5df4fb61`.
+- New issue review: #516's exact four reported ledger failures pass at current `HEAD` (and the full ledger suite is 27/27); the stale-regression diagnosis is recorded in [the #516 debug artifact](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md), but it remains OPEN pending historical-SHA replay and causal fresh-eye review. #515 remains a distinct quality-routing boundary, and #514 remains deferred work.
 
 ## Current State
 
@@ -30,7 +31,8 @@
 2. Treat `v3.4.0` publication, the unauthenticated HTTP release observation, remote CI, install refresh, `charness version`, and `charness doctor` readbacks as completed receipts; do not rerun publication for this slice.
 3. Read the [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md) and carry its markers into the next decision. Recurrence-class: closeout-diagnostic-visibility; Recurrence-class: release-proof-identity-churn.
 4. Read the #517 closeout and, if needed, the final state of Quality Core run `31115253605` for push SHA `5df4fb61`; do not promote the in-progress mutation job to a green claim until its conclusion is read back.
-5. Keep provider, installed-consumer beyond the recorded readback, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
+5. Keep #516 open until its historical SHA is replayed or a delegated causal reviewer supplies the missing evidence; read its debug artifact before continuing. #515 and #514 are separate boundaries.
+6. Keep provider, installed-consumer beyond the recorded readback, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
 
 ## Discuss
 
