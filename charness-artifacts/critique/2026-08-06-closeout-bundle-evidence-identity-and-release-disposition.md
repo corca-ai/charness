@@ -18,7 +18,7 @@ claim provisional until its own receipts exist.
 
 ## Counterweight Pass
 
-- The rebound packet was regenerated with `--commit HEAD`, all 32 reviewed
+- The rebound packet was regenerated with `--commit fce91da0`, all 32 reviewed
   inputs matched, and the identity verifier returned `(True, "current")`.
 - The fresh-eye reviewer confirmed that the local ledger carries the locked
   proof hash, mutation report hash, freshness fingerprint, consumer status, and
@@ -45,10 +45,11 @@ claim provisional until its own receipts exist.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated; the unnamed bounded reviewer returned the current rebound
-packet findings, and the shared-worktree boundary verified clean:
+parent-delegated; the final unnamed bounded reviewer (agent
+`019fd763-b0fa-7d73-847b-3613b8f66087`) returned SHIP for the fixed target,
+and the shared-worktree boundary verified clean:
 `{"ok": true, "verdict": "clean", "drift": [], "head_moved": false}` for
-`closeout-final-claims-rebound`.
+`closeout-final-claims-fixed-target`.
 
 ## Reviewed Input Identity
 

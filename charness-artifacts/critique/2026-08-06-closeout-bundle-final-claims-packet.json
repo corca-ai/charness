@@ -1,0 +1,233 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-06T14:03:24Z",
+  "prepared_for": "final closeout bundle evidence identity and release claims",
+  "changed_ref": "fce91da0",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `fce91da0`:\n- charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md, charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "fce91da0",
+    "resolved_changed_ref": [
+      "fce91da0e7ffb724bfe66f5e660b0946d01a535b"
+    ],
+    "base_head": "fce91da0e7ffb724bfe66f5e660b0946d01a535b",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md",
+      "charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md",
+      "charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md",
+      "charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md",
+      "charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md",
+      "charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md",
+      "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
+      "charness-artifacts/probe/2026-08-06-closeout-local-proof.json",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/quality/sloc-inventory/latest.json",
+      "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.md",
+      "charness-artifacts/retro/recent-lessons.md",
+      "charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md",
+      "docs/deferred-decisions.md",
+      "docs/design-north-star.md",
+      "docs/handoff.md",
+      "plugins/charness/scripts/closeout_bundle.py",
+      "plugins/charness/scripts/closeout_bundle_lib.py",
+      "plugins/charness/scripts/validate_retro_handoff_wiring.py",
+      "scripts/check_changed_line_mutation_coverage.py",
+      "scripts/closeout_bundle.py",
+      "scripts/closeout_bundle_lib.py",
+      "scripts/mutation_changed_files_lib.py",
+      "scripts/mutation_coverage_producer.py",
+      "scripts/run_slice_closeout.py",
+      "scripts/validate_critique_artifacts.py",
+      "scripts/validate_retro_handoff_wiring.py",
+      "tests/quality_gates/test_changed_line_mutation_coverage.py",
+      "tests/quality_gates/test_closeout_bundle.py",
+      "tests/quality_gates/test_mutation_changed_line_targets.py",
+      "tests/quality_gates/test_retro_handoff_wiring.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md",
+        "content_sha256": "88474dccefacb0e13450cb3b112f41c48633e9ceccc1775f15a2fa9a61a922f0"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md",
+        "content_sha256": "dff48355ce7bcb4494c37c23ba37a4ae153db2ee6295bb1ccc9aa9a896f67603"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md",
+        "content_sha256": "9bb79b9ada906cf3f8ea06704767629ce61b8575b7adf1409ac6b3bf8cc82393"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md",
+        "content_sha256": "19ff4ac17de4dd15392ca22b5d6f3f7fd3983dbc16c2f20a062baabb9e146868"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md",
+        "content_sha256": "39c8f63561422cbf2284db4c3485ef672af4973b6b64592df4d39d5b24fc8740"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md",
+        "content_sha256": "04e129ea49764cf841682bcadc3cdd91d3934ce7810ff41b648d278cde3a3fd9"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
+        "content_sha256": "3744a2c9b95e8544b72dd956e96811b063472f763fd8f88c00a3e7221303dbbd"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-06-closeout-local-proof.json",
+        "content_sha256": "57ba24f2432b8f9fbcad919f283f980604b59c57e3e969078d4b826837265c91"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "c56484fd9bfb0e97f5a262d6bbdcc645004b25469e571d4947bccc6c2d21eb43"
+      },
+      {
+        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
+        "content_sha256": "79734ea1201659a78323c5a65fad7893dcc8021dc18471c610b39724e42d12a2"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+        "content_sha256": "7f4f5ddd75f412e13e986448b597ecedf64ebe9c1a2fad9f7aaff56149bb6148"
+      },
+      {
+        "path": "charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.md",
+        "content_sha256": "5a9b93012832fcfa075b949f04a37282a2640f24e9512ddd4a96ddfee2479b68"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "2191150eda960266dc26bd18ee2e1a74ae51bc2c55422618ab95e6523fe60852"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md",
+        "content_sha256": "6cd1b167fd7103cf3da212ee448ca322c6fec5593aea4180117e242cead3488d"
+      },
+      {
+        "path": "docs/deferred-decisions.md",
+        "content_sha256": "d54b55c180cbac55bee2d8b6f3673a2ea66529a4717a5789177b6578b11e889a"
+      },
+      {
+        "path": "docs/design-north-star.md",
+        "content_sha256": "473619205549eb5b2b5cd76f70c3addcc2672f5bb5ec51a4741447c2eddf66d6"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "b1ab0fb3282e328c0d852c16bab21d899fe70a9ef0ad1d8b2a0b64630b4887bf"
+      },
+      {
+        "path": "plugins/charness/scripts/closeout_bundle.py",
+        "content_sha256": "85cdf987263a655ecb049a33c41ff0724f9529b60357595129e269e2197ca95e"
+      },
+      {
+        "path": "plugins/charness/scripts/closeout_bundle_lib.py",
+        "content_sha256": "359a95f31adcfb0e85dc115cb2201be6e8352a74b9d7b6ee25adfd17f4c95e6a"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_retro_handoff_wiring.py",
+        "content_sha256": "9d2ee31d847f463cdfd2eec3cd6d707469756f6cded0da91b0d56ba46dc9ee6b"
+      },
+      {
+        "path": "scripts/check_changed_line_mutation_coverage.py",
+        "content_sha256": "d744ac0b7d93be1070a2a5157b0e88a11180ef90f81b72e5677f9e73d67d1276"
+      },
+      {
+        "path": "scripts/closeout_bundle.py",
+        "content_sha256": "85cdf987263a655ecb049a33c41ff0724f9529b60357595129e269e2197ca95e"
+      },
+      {
+        "path": "scripts/closeout_bundle_lib.py",
+        "content_sha256": "359a95f31adcfb0e85dc115cb2201be6e8352a74b9d7b6ee25adfd17f4c95e6a"
+      },
+      {
+        "path": "scripts/mutation_changed_files_lib.py",
+        "content_sha256": "cb119dbcb2b940646ddb36c239847e929446e4d12e3f4e1b5410e4fe6c425eca"
+      },
+      {
+        "path": "scripts/mutation_coverage_producer.py",
+        "content_sha256": "dc024f6c053f3c8edcbd59fe96f65c492c74bd7775b5b0d4687af84126371710"
+      },
+      {
+        "path": "scripts/run_slice_closeout.py",
+        "content_sha256": "4bb95d7c51c57385410be4f16e74227e28db0710a5ce7f88412f2ea2c4edc88b"
+      },
+      {
+        "path": "scripts/validate_critique_artifacts.py",
+        "content_sha256": "2b9925b885e603bbad7a63daafcf766b4cdfd959b80d8fdcc96b59c8dc27528a"
+      },
+      {
+        "path": "scripts/validate_retro_handoff_wiring.py",
+        "content_sha256": "9d2ee31d847f463cdfd2eec3cd6d707469756f6cded0da91b0d56ba46dc9ee6b"
+      },
+      {
+        "path": "tests/quality_gates/test_changed_line_mutation_coverage.py",
+        "content_sha256": "25949df7d9158ec3a7e842e2547e521985edaf5aff18ec05e6727a5eb57e4f2b"
+      },
+      {
+        "path": "tests/quality_gates/test_closeout_bundle.py",
+        "content_sha256": "0082547124e66d6d967f35063f5689c0a551730e0ff0b7a9cc4707c577dfc7b7"
+      },
+      {
+        "path": "tests/quality_gates/test_mutation_changed_line_targets.py",
+        "content_sha256": "ea8603280bdd49768fe22b0b862a6571b052f9caa0364887fadf751315bf2e6d"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_handoff_wiring.py",
+        "content_sha256": "5db08ea18faf5c5dd5a7fd871b6398f5aa3bda40aa9895a08cea3f8c80cc9503"
+      }
+    ],
+    "reviewed_patch_sha256": "735b99846eb69f2dae163a4fe8e2a5182edf3a4c9d4256d94285f2a0590bd674",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "3cc25cf3192e86d3a97a9546dc90c2d51b4ce5a01c5c085fc378b7ac04b20e78"
+  }
+}
