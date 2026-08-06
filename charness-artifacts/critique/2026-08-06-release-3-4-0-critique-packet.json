@@ -1,0 +1,203 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-06T14:13:36Z",
+  "prepared_for": "pre-release critique for Charness 3.4.0 after release-surface repairs",
+  "changed_ref": "d9a6baa4",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `d9a6baa4`:\n- .agents/release-adapter.yaml\n- charness-artifacts/release/v3.4.0-notes.md\n- docs/development.md\n- plugins/charness/scripts/closeout_bundle.py\n- scripts/closeout_bundle.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/closeout_bundle.py\n  derived matches: plugins/charness/scripts/closeout_bundle.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/release/v3.4.0-notes.md, docs/development.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- adapters: Repo-local adapter contracts and adapter helper libraries.\n  source matches: .agents/release-adapter.yaml\n  verify: python3 scripts/validate_adapters.py --repo-root .\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/closeout_bundle.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/closeout_bundle.py\n  derived matches: plugins/charness/scripts/closeout_bundle.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/closeout_bundle.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "d9a6baa4",
+    "resolved_changed_ref": [
+      "d9a6baa4327a1df04fa41959ddc8f3cbdc0e0426"
+    ],
+    "base_head": "d9a6baa4327a1df04fa41959ddc8f3cbdc0e0426",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/release-adapter.yaml",
+      ".claude-plugin/marketplace.json",
+      ".codex/marketplace.json",
+      "charness",
+      "charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md",
+      "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
+      "charness-artifacts/probe/2026-08-06-closeout-local-proof.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/release/v3.4.0-notes.md",
+      "docs/design-north-star.md",
+      "docs/development.md",
+      "docs/generated/cli-reference.md",
+      "docs/handoff.md",
+      "docs/host-packaging.md",
+      "docs/operator-acceptance.md",
+      "packaging/charness.json",
+      "plugins/charness/.claude-plugin/plugin.json",
+      "plugins/charness/.codex-plugin/plugin.json",
+      "plugins/charness/scripts/closeout_bundle.py",
+      "plugins/charness/scripts/closeout_bundle_lib.py",
+      "plugins/charness/scripts/validate_retro_handoff_wiring.py",
+      "scripts/closeout_bundle.py",
+      "scripts/closeout_bundle_lib.py",
+      "scripts/validate_retro_handoff_wiring.py",
+      "tests/quality_gates/test_closeout_bundle.py",
+      "tests/quality_gates/test_retro_handoff_wiring.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/release-adapter.yaml",
+        "content_sha256": "a42222cec8e33061b23258d0e1876bc9eb109cb56d8fe4b2a2e4fe9f53add317"
+      },
+      {
+        "path": ".claude-plugin/marketplace.json",
+        "content_sha256": "f605a893313a5743b204fcf1475f947d2ca0b012a4d05d575ea1a927479a77eb"
+      },
+      {
+        "path": ".codex/marketplace.json",
+        "content_sha256": null
+      },
+      {
+        "path": "charness",
+        "content_sha256": "aa811a3036f9ff970f808cbd30fcce27aed8c84e0f852bad8d2389c10ffd130f"
+      },
+      {
+        "path": "charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md",
+        "content_sha256": "6448c1652af7782fa9f32a7a92eb88c91959c3cc73cdc5dfa0b53d8f5d50c6b0"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
+        "content_sha256": "3744a2c9b95e8544b72dd956e96811b063472f763fd8f88c00a3e7221303dbbd"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-06-closeout-local-proof.json",
+        "content_sha256": "57ba24f2432b8f9fbcad919f283f980604b59c57e3e969078d4b826837265c91"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "e3ec16ac43fee8176500191e113ae8b2f768ada1834110d0ac4d4cca2d03b2b9"
+      },
+      {
+        "path": "charness-artifacts/release/v3.4.0-notes.md",
+        "content_sha256": "a7535ad6875fd9b0f9befc4791c3c6100c1fda605a92c1c16af2463d6244116b"
+      },
+      {
+        "path": "docs/design-north-star.md",
+        "content_sha256": "473619205549eb5b2b5cd76f70c3addcc2672f5bb5ec51a4741447c2eddf66d6"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "eda85b7d11bce6619aa552e42614539a3b00b42e92a1c05868746abed1070d80"
+      },
+      {
+        "path": "docs/generated/cli-reference.md",
+        "content_sha256": "7b9eae2012a1992f9deb12bc5aaa115af338ab4fae19cd6633afb216273eb182"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "b1ab0fb3282e328c0d852c16bab21d899fe70a9ef0ad1d8b2a0b64630b4887bf"
+      },
+      {
+        "path": "docs/host-packaging.md",
+        "content_sha256": "11928ecf2fd9cc44ef59d786f1c587d2961d93f286947972212e205f7afc973f"
+      },
+      {
+        "path": "docs/operator-acceptance.md",
+        "content_sha256": "3bafa2bae81c0f374ff3f99df871c53491e900708d53968c3dc221dc84956b17"
+      },
+      {
+        "path": "packaging/charness.json",
+        "content_sha256": "2eae43712d0ac0ad87a9f4e81afcf9e60c7dab90ed7b630d6d114b8914a486e0"
+      },
+      {
+        "path": "plugins/charness/.claude-plugin/plugin.json",
+        "content_sha256": "00227fbac7fbb178035befea903cc84985c9393bfd0c32d61a86a52edf2e46fb"
+      },
+      {
+        "path": "plugins/charness/.codex-plugin/plugin.json",
+        "content_sha256": "575cbc9bed81e8a7cd2c81ef37cc973ec6b23a217b66870ae29f5a2e8d044463"
+      },
+      {
+        "path": "plugins/charness/scripts/closeout_bundle.py",
+        "content_sha256": "37aadf2633c96449af564f39f4a605d9177486e1757127f68965e946fe5bd499"
+      },
+      {
+        "path": "plugins/charness/scripts/closeout_bundle_lib.py",
+        "content_sha256": "359a95f31adcfb0e85dc115cb2201be6e8352a74b9d7b6ee25adfd17f4c95e6a"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_retro_handoff_wiring.py",
+        "content_sha256": "9d2ee31d847f463cdfd2eec3cd6d707469756f6cded0da91b0d56ba46dc9ee6b"
+      },
+      {
+        "path": "scripts/closeout_bundle.py",
+        "content_sha256": "37aadf2633c96449af564f39f4a605d9177486e1757127f68965e946fe5bd499"
+      },
+      {
+        "path": "scripts/closeout_bundle_lib.py",
+        "content_sha256": "359a95f31adcfb0e85dc115cb2201be6e8352a74b9d7b6ee25adfd17f4c95e6a"
+      },
+      {
+        "path": "scripts/validate_retro_handoff_wiring.py",
+        "content_sha256": "9d2ee31d847f463cdfd2eec3cd6d707469756f6cded0da91b0d56ba46dc9ee6b"
+      },
+      {
+        "path": "tests/quality_gates/test_closeout_bundle.py",
+        "content_sha256": "0082547124e66d6d967f35063f5689c0a551730e0ff0b7a9cc4707c577dfc7b7"
+      },
+      {
+        "path": "tests/quality_gates/test_retro_handoff_wiring.py",
+        "content_sha256": "5db08ea18faf5c5dd5a7fd871b6398f5aa3bda40aa9895a08cea3f8c80cc9503"
+      }
+    ],
+    "reviewed_patch_sha256": "f51737107d474d31c1d2e1027c6ec02a6cc439963a72b6e66112a952e0f8ef1d",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "6b5a41fd1e0d82f3f105808dbdf375260556f9dc5ed89f24fbb140a0f7a2d9db"
+  }
+}
