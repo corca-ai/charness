@@ -135,3 +135,12 @@ boundary: live provider negotiation, installed-consumer behavior, and remote
 CI remain unverified. Future provider-specific discovery remains the named
 follow-up; unrelated portability slices may continue without reopening this
 resolved contract.
+
+## Interrupt Carry-Forward Refresh (2026-08-06)
+
+The current risk-interrupt planner requires this handoff artifact to be touched
+in the slice that resumes ordinary implementation. The resolved observation is
+unchanged: paired local transport and gather-persistence fixtures prove the
+bounded Markdown stage, while live provider negotiation, installed-consumer
+behavior, and remote CI remain non-claims. This refresh authorizes unrelated
+local evidence work to continue without reopening issue #510.

@@ -2267,6 +2267,41 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "The handoff parser and goal-draft CLI entrypoints share the timeout/argument/output lifecycle shape but own different pipeline contracts and operator actions. Keeping these standalone surfaces local preserves their distinct refusal and payload semantics."
+    },
+    {
+      "class": "intentional",
+      "id": "0bfd54f2563138af",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Reader-root and source/plugin parity validation intentionally keep parallel loops local: one validates owned reader roots and captured/current identity modes, while the other validates derived-file equality. A shared loop would hide different manifest fields and refusal codes behind a generic schema helper; both contracts are covered by the focused slice suite."
+    },
+    {
+      "class": "intentional",
+      "id": "2e6e18e44ccc5bd8",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The repository-boundary try/relative_to guard is the small standalone path-safety idiom used by direct scripts and the manifest validator. It is portability boilerplate with different owning entrypoints; extracting it would create a cross-script dependency for two lines."
+    },
+    {
+      "class": "intentional",
+      "id": "38fae250ba1dde05",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The manifest validator's compact repository-entry refusal branches share an idiom-sized shape with unrelated validators. Their paths and evidence contracts are independently owned; a common formatter would couple refusal semantics without removing the checks."
+    },
+    {
+      "class": "intentional",
+      "id": "7f2afc700c4874d3",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The CLI's direct-execution sys.path/runtime bootstrap is intentional portable-script boilerplate shared across quality commands. It preserves standalone plugin/source-checkout execution and is not a domain helper to centralize."
+    },
+    {
+      "class": "intentional",
+      "id": "fcc3b3de194ba795",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The manifest library's standard-library import block is a small portability idiom shared with an unrelated surfaces library. The modules have separate owners and no shared import contract; extraction would add coupling without reducing semantic duplication."
     }
   ],
   "fixable_ceiling": 0,

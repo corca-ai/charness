@@ -1,0 +1,268 @@
+from __future__ import annotations
+
+import copy
+import json
+import shutil
+import subprocess
+import sys
+from pathlib import Path
+
+import pytest
+
+import scripts.slice_manifest_lib as slice_manifest_lib
+from scripts.slice_manifest_lib import ManifestError, validate_manifest
+from tests.repo_copy import clone_seeded_charness_repo
+
+ROOT = Path(__file__).resolve().parents[2]
+MANIFEST = ROOT / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
+SOURCE_ROOT = ROOT
+SOURCE_MANIFEST = MANIFEST
+
+
+def _load() -> dict:
+    return json.loads(MANIFEST.read_text(encoding="utf-8"))
+
+
+@pytest.fixture
+def fixture_path(tmp_path: Path, seeded_charness_git_repo: Path, monkeypatch: pytest.MonkeyPatch):
+    repo = clone_seeded_charness_repo(tmp_path, seeded_charness_git_repo)
+    for relative in (
+        "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+        "charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md",
+    ):
+        source = SOURCE_ROOT / relative
+        destination = repo / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    data = json.loads(SOURCE_MANIFEST.read_text(encoding="utf-8"))
+    seed_head = subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=repo, text=True).strip()
+    data["target"]["sha"] = seed_head
+    data["carrier"]["sha"] = seed_head
+    data["premise"]["published_target_sha"] = seed_head
+    data["premise"]["local_head_sha"] = seed_head
+    data["premise"]["remote_observation"]["sha"] = seed_head
+    data["ci_readback"]["head_sha"] = seed_head
+    for job in data["ci_readback"]["jobs"]:
+        job["head_sha"] = seed_head
+    data["remote_readback"]["target_sha"] = seed_head
+    data["remote_readback"]["open_issues"]["target_sha"] = seed_head
+    manifest = repo / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
+    manifest.parent.mkdir(parents=True, exist_ok=True)
+    (repo / ".charness").mkdir(parents=True, exist_ok=True)
+    manifest.write_text(json.dumps(data), encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "ROOT", repo)
+    monkeypatch.setattr(sys.modules[__name__], "MANIFEST", manifest)
+    return repo / ".charness" / f"slice_manifest_test_{tmp_path.name}.json"
+
+
+def _write_fixture(fixture: Path, data: dict) -> Path:
+    fixture.write_text(json.dumps(data), encoding="utf-8")
+    return fixture
+
+
+def test_committed_baseline_manifest_is_valid() -> None:
+    result = validate_manifest(ROOT, MANIFEST)
+    assert result["status"] == "structurally-valid-captured-record"
+    assert result["target_sha"] == "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5"
+    assert result["ci_run_id"] == 31062451122
+    assert result["captured_open_issue_count"] == 0
+    assert result["live_revalidation"] == "not-run"
+
+
+def test_current_identity_mode_and_parity_check_are_opt_in() -> None:
+    result = validate_manifest(ROOT, MANIFEST, verify_current=True)
+    assert result["status"] == "structurally-valid-captured-record"
+
+
+def test_captured_validation_does_not_rehash_frozen_files(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(slice_manifest_lib, "_sha256_file", lambda path: pytest.fail(f"unexpected current read: {path}"))
+    result = validate_manifest(ROOT, MANIFEST)
+    assert result["status"] == "structurally-valid-captured-record"
+
+
+@pytest.mark.parametrize(
+    ("path", "value", "code"),
+    [
+        (("target", "sha"), "e7c3e1b3", "invalid_identity"),
+        (("target", "sha"), "main", "invalid_identity"),
+        (("carrier", "sha"), "0" * 40, "identity_mismatch"),
+        (("ci_readback", "head_sha"), "0" * 40, "identity_mismatch"),
+    ],
+)
+def test_identity_mismatches_refuse(fixture_path: Path, path: tuple[str, ...], value: str, code: str) -> None:
+    data = _load()
+    current = data
+    for key in path[:-1]:
+        current = current[key]
+    current[path[-1]] = value
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == code
+
+
+def test_stale_current_reader_identity_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["reader_roots"][0]["identity_mode"] = "current"
+    data["reader_roots"][0]["identity_sha256"] = "0" * 64
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "stale_reader_root"
+
+
+def test_missing_captured_issue_readback_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["remote_readback"]["open_issues"]["status"] = "live"
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "uncaptured_evidence"
+
+
+def test_source_plugin_parity_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["parity_pairs"][0]["identity_mode"] = "current"
+    data["parity_pairs"][0]["source"] = "packaging/charness.json"
+    data["parity_pairs"][0]["derived"] = "README.md"
+    data["parity_pairs"][0]["source_sha256"] = "0" * 64
+    data["parity_pairs"][0]["derived_sha256"] = "0" * 64
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture, verify_current=True)
+    assert caught.value.code == "parity_mismatch"
+
+
+def test_fixture_mutation_does_not_change_committed_manifest() -> None:
+    before = _load()
+    changed = copy.deepcopy(before)
+    changed["slice_id"] = "changed"
+    assert _load() == before
+    assert changed["slice_id"] != before["slice_id"]
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        (("premise", "remote_observation", "repository"), "other/repo"),
+        (("ci_readback", "repository"), "other/repo"),
+        (("ci_readback", "remote_ref"), "refs/heads/other"),
+        (("remote_readback", "remote_ref"), "refs/heads/other"),
+        (("remote_readback", "open_issues", "target_sha"), "0" * 40),
+        (("remote_readback", "open_issues", "repository"), "other/repo"),
+    ],
+)
+def test_remote_observer_identity_mismatch_refuses(fixture_path: Path, field: tuple[str, ...], value: str) -> None:
+    data = _load()
+    current = data
+    for key in field[:-1]:
+        current = current[key]
+    current[field[-1]] = value
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "identity_mismatch"
+
+
+def test_critique_identity_mismatch_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["critique"]["reviewed_identity_sha256"] = "0" * 64
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture, verify_current=True)
+    assert caught.value.code == "unbound_critique"
+
+
+def test_empty_owner_reference_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["reader_roots"][0]["owner"] = "#missing"
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "invalid_owner"
+
+
+def test_nonexistent_owner_anchor_refuses(fixture_path: Path) -> None:
+    data = _load()
+    data["reader_roots"][0]["owner"] = "packaging/charness.json#source.missing"
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "invalid_owner"
+
+
+def test_non_ancestor_local_capture_head_refuses(fixture_path: Path) -> None:
+    data = _load()
+    empty_tree = subprocess.check_output(["git", "mktree"], cwd=ROOT, input="", text=True).strip()
+    unrelated = subprocess.check_output(["git", "commit-tree", empty_tree, "-m", "unrelated fixture"], cwd=ROOT, text=True).strip()
+    data["premise"]["local_head_sha"] = unrelated
+    fixture = _write_fixture(fixture_path, data)
+    with pytest.raises(ManifestError) as caught:
+        validate_manifest(ROOT, fixture)
+    assert caught.value.code == "identity_mismatch"
+
+
+def test_cli_refuses_manifest_outside_repo_as_json(tmp_path: Path) -> None:
+    external = tmp_path / "manifest.json"
+    external.write_text("{}", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/validate_slice_manifest.py"),
+            "--repo-root",
+            str(ROOT),
+            "--manifest",
+            str(external),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["error"]["code"] == "unsafe_path"
+    assert result.stderr == ""
+
+
+def test_cli_plugin_layout_names_source_checkout_boundary() -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "plugins/charness/scripts/validate_slice_manifest.py"),
+            "--repo-root",
+            str(ROOT / "plugins/charness"),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "missing_manifest" in result.stdout
+    assert "source-checkout-only" in result.stdout
+    assert "--manifest" in result.stdout
+
+
+def test_cli_refuses_manifest_directory_as_json(tmp_path: Path) -> None:
+    isolated_root = tmp_path / "repo"
+    isolated_root.mkdir()
+    manifest_dir = isolated_root / "manifest-dir"
+    manifest_dir.mkdir()
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"),
+            "--repo-root",
+            str(isolated_root),
+            "--manifest",
+            str(manifest_dir),
+            "--json",
+        ],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["error"]["code"] == "invalid_manifest_path"

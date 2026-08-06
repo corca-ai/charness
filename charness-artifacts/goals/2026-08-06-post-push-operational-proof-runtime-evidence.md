@@ -1,6 +1,6 @@
 # Achieve Goal: 푸시 이후 증거·slice 실행·런타임 비용의 구조적 개선
 
-Status: draft
+Status: active
 Created: 2026-08-06
 Activation: `/goal @charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md`
 
@@ -9,14 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md` after confirming the draft is
-  still intended.
+- Current slice: Slice 1 — frozen published baseline and slice-manifest contract.
+- Current slice intent: bind the exact published target, captured CI/issue
+  context, owner-anchored source/plugin roots, explicit captured-vs-current
+  validation, and a bounded fresh-eye record before later preflight slices.
+- Next action: finish the focused surface checks and `run_slice_closeout.py
+  --skip-broad-pytest`, then commit the verified slice; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -122,7 +120,7 @@ runs the activation command.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | draft |
+| 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | implementation complete; closeout pending |
 | 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | draft |
 | 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | draft |
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | draft |
@@ -203,6 +201,20 @@ applies.
 
 ## Slice Log
 
+### Slice 1: Freeze published baseline and slice-manifest contract
+
+- Objective: Bind the published target, captured remote proof, owner-anchored reader roots, and source/plugin parity for later evidence slices.
+- Why this approach: Later preflight and ledger work needs one stable identity record instead of reconstructing target and surface state manually.
+- Commits: Closeout commit for Slice 1; recorded before commit because the slice log is part of the supported artifact state.
+- What changed: Added the checked-in slice manifest, offline validator and CLI, source/plugin mirror, 24 focused regressions, durable design and implementation critique records, and the captured-vs-current verification boundary.
+- Alternatives rejected: Deferred live refresh, command execution, scheduler/orchestration, installed/provider proof, and a second packaging ownership registry to later named slices.
+- Targeted verification: Focused pytest: 24 passed; manifest CLI captured validation and --verify-current passed; checked-in plugin missing-manifest boundary and help guidance passed; source/plugin files are byte-identical; packet and critique artifact bindings validate.
+- Test duplication pressure: Changed-scope nose clone sample scanned scripts and tests: advisory findings only, no new slice-specific family; baseline scanner version skew (0.19.0 to 0.20.0) was recorded and not re-baselined.
+- Critique: Design critique passed with a clean boundary fingerprint. Implementation review round 1 found repairs; the required round 2 found and drove repairs for frozen evidence, target/ref binding, CI naming/non-claim, owner anchors, and structured path errors. The capped round-2 repairs are recorded accepted-unreviewed; no third round is claimed.
+- Off-goal findings: No new issue, release, push, provider installation, Cautilus evaluation, or runtime-budget decision was performed.
+- Lessons carried forward: Keep captured records frozen by default, make current revalidation opt-in, bind every remote claim to repository/ref/SHA, and make source-checkout-only limits visible at the operator boundary.
+- Metrics: 5 reader roots; 3 parity pairs; target e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5; CI run 31062451122; captured open issues 0.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -260,6 +272,40 @@ itself so a fresh session sees the design space, not only the closed point.
 Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
+
+## Closeout Binding Plan
+
+- Reviewed inputs: the published baseline SHA and its remote `origin/main`
+  readback, exact-head GitHub Actions run and jobs, live open-issue readback,
+  this goal's semantic sections, the runtime/quality records, mutation-producer
+  helper and tests, source/plugin/export inventories, and each slice's fixed
+  proof packet. Slice logs, retro, critique packet, reviewer boundary
+  fingerprints, lock receipts, and terminal status are derived evidence, not
+  semantic inputs.
+- Frozen target: bind the first manifest and all later slice packets to the
+  exact published SHA read back from `origin/main`; bind implementation slices
+  to their exact local commit or worktree fingerprint before proof. Any
+  semantic-input, generated-surface, or target-SHA change invalidates the lock
+  and requires rebinding.
+- Fresh-eye: use an unnamed bounded reviewer context with a boundary
+  fingerprint; a proof-surface verdict-logic repair requires a second bounded
+  round over the repaired surface, capped at two rounds. Use GitHub Actions and
+  issue-adapter readbacks as distinct external observers, not as a substitute
+  for the reviewer.
+- Distinct evidence channel: the manifest/preflight behavior must be exercised
+  by fixtures or direct artifact observation that did not create the identity
+  under review; runtime claims come from repeated labeled samples; remote CI
+  and issue claims come from exact-SHA readbacks rather than the publish command.
+- Verification lock: record focused proof, source/plugin parity, the applicable
+  `run_slice_closeout.py` lock and quality-gate outputs, plus the final ledger
+  reconciliation artifact. A broad lock is taken only after critique repairs
+  are complete; later semantic edits require a fresh lock.
+- Complete flip: write terminal evidence and `Status: complete` only after the
+  manifest, preflight, bundle, runtime, producer, and ledger acceptance rows
+  are each proven or explicitly dispositioned, all required fresh-eye review
+  and gates pass, the bound retro/disposition evidence exists, and a final
+  validator reads the reconciled state. The terminal record must not be used as
+  its own semantic input.
 
 ## Off-Goal Findings
 

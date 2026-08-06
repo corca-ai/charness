@@ -1,0 +1,186 @@
+{
+  "kind": "charness.slice-manifest",
+  "schema_version": 1,
+  "repository": "corca-ai/charness",
+  "slice_id": "post-push-baseline",
+  "goal_path": "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+  "captured_at": "2026-08-06T02:14:03Z",
+  "premise": {
+    "status": "captured",
+    "published_target_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+    "local_head_sha": "ff3029112280470e341f00900438033f232cad35",
+    "remote_observation": {
+      "status": "captured",
+      "channel": "git-ls-remote",
+      "observed_at": "2026-08-06T02:14:03Z",
+      "repository": "corca-ai/charness",
+      "ref": "refs/heads/main",
+      "sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+      "command": [
+        "git",
+        "ls-remote",
+        "origin",
+        "refs/heads/main"
+      ]
+    }
+  },
+  "target": {
+    "kind": "published-baseline",
+    "ref": "origin/main",
+    "remote_repository": "corca-ai/charness",
+    "remote_ref": "refs/heads/main",
+    "sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5"
+  },
+  "carrier": {
+    "kind": "direct-commit",
+    "sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+    "relation_to_target": "equals_target"
+  },
+  "ci_readback": {
+    "status": "captured",
+    "channel": "github-actions-api-readback",
+    "non_claim": "captured CI status at target SHA only; operator, installed-consumer, provider, and runtime behavior are not claimed",
+    "repository": "corca-ai/charness",
+    "remote_ref": "refs/heads/main",
+    "workflow": "Quality Core",
+    "run_id": 31062451122,
+    "head_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+    "conclusion": "success",
+    "jobs": [
+      {
+        "id": 92493050969,
+        "name": "Core deterministic gates",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5"
+      },
+      {
+        "id": 92493050998,
+        "name": "Changed-line mutation coverage (push/PR mirror)",
+        "status": "completed",
+        "conclusion": "success",
+        "head_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5"
+      }
+    ]
+  },
+  "remote_readback": {
+    "repository": "corca-ai/charness",
+    "remote_ref": "refs/heads/main",
+    "target_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+    "actions_run_id": 31062451122,
+    "open_issues": {
+      "status": "captured",
+      "channel": "github-issue-cli-readback",
+      "observed_at": "2026-08-06T02:14:03Z",
+      "repository": "corca-ai/charness",
+      "remote_ref": "refs/heads/main",
+      "target_sha": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5",
+      "query": [
+        "gh",
+        "issue",
+        "list",
+        "--state",
+        "open",
+        "--limit",
+        "100",
+        "--json",
+        "number,state,title,url"
+      ],
+      "open_count": 0
+    }
+  },
+  "critique": {
+    "status": "captured",
+    "artifact_path": "charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md",
+    "packet_path": "charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md",
+    "packet_sha256": "6d7e6c6942f4fbe564f7f7289443880af83a6ab60d5456ce169c192f28a725fa",
+    "reviewed_packet_sha256": "59de83bfdc017d8fb82ee6294ec2da799054a81736855d2cef9d64687a508e7a",
+    "reviewed_identity_sha256": "18ebbe13e8824992a1a0d41a704f8e6015169c163e75e635805c2b0407ab19ef"
+  },
+  "reader_roots": [
+    {
+      "id": "authoring-skills",
+      "role": "source",
+      "path": "skills",
+      "identity_mode": "captured",
+      "owner": "packaging/charness.json#source.skills_dir",
+      "identity_paths": [
+        "packaging/charness.json",
+        ".agents/surfaces.json",
+        "skills/public/achieve/SKILL.md"
+      ],
+      "identity_sha256": "9590d70b6e3bfea6aab2778cce19bdf3bb0eb86f9c8e4b1104434c1b00736901"
+    },
+    {
+      "id": "exported-plugin-skills",
+      "role": "plugin",
+      "path": "plugins/charness/skills",
+      "identity_mode": "captured",
+      "owner": "packaging/charness.json#codex.repo_marketplace.checked_in_source_path",
+      "identity_paths": [
+        "plugins/charness/skills/achieve/SKILL.md"
+      ],
+      "identity_sha256": "6107d095816a6a2884a1d60b65a043e54afbbcaf1d1f7159c73ae19899826f5d"
+    },
+    {
+      "id": "authoring-scripts",
+      "role": "source",
+      "path": "scripts",
+      "identity_mode": "captured",
+      "owner": "scripts/packaging_lib.py#export_plugin_tree",
+      "identity_paths": [
+        "scripts/slice_manifest_lib.py",
+        "scripts/validate_slice_manifest.py"
+      ],
+      "identity_sha256": "045dd10ae2a8785730b3403bf71f9b479cf08ab876a47a052bc6c1b6bffdc1c4"
+    },
+    {
+      "id": "exported-plugin-scripts",
+      "role": "plugin",
+      "path": "plugins/charness/scripts",
+      "identity_mode": "captured",
+      "owner": "scripts/packaging_lib.py#export_plugin_tree",
+      "identity_paths": [
+        "plugins/charness/scripts/slice_manifest_lib.py",
+        "plugins/charness/scripts/validate_slice_manifest.py"
+      ],
+      "identity_sha256": "c89b2a70b7effef58e6d659db157c98c75e3feaeb1131b399ed1464d1a900c8f"
+    },
+    {
+      "id": "checked-in-consumer-plugin",
+      "role": "consumer",
+      "path": "plugins/charness",
+      "identity_mode": "captured",
+      "owner": "packaging/charness.json#codex.repo_marketplace.checked_in_source_path",
+      "identity_paths": [
+        "plugins/charness/.claude-plugin/plugin.json",
+        "plugins/charness/.codex-plugin/plugin.json"
+      ],
+      "identity_sha256": "8011873bfe18a92056ee4d67b17fff82b245faec1b3f5f91398573787d13982a"
+    }
+  ],
+  "parity_pairs": [
+    {
+      "source": "scripts/slice_manifest_lib.py",
+      "derived": "plugins/charness/scripts/slice_manifest_lib.py",
+      "identity_mode": "captured",
+      "source_sha256": "99ad19371d5253c3632edd189672b9189c0d36f1b0b5a406018fb9a143f85abf",
+      "derived_sha256": "99ad19371d5253c3632edd189672b9189c0d36f1b0b5a406018fb9a143f85abf"
+    },
+    {
+      "source": "scripts/validate_slice_manifest.py",
+      "derived": "plugins/charness/scripts/validate_slice_manifest.py",
+      "identity_mode": "captured",
+      "source_sha256": "e8e38f95a0400f8361909d606d91825610c9235285717159263102c31fadc249",
+      "derived_sha256": "e8e38f95a0400f8361909d606d91825610c9235285717159263102c31fadc249"
+    },
+    {
+      "source": "skills/public/achieve/SKILL.md",
+      "derived": "plugins/charness/skills/achieve/SKILL.md",
+      "identity_mode": "captured",
+      "source_sha256": "90ea72dee957202d42853669a805a53538cc27b32501efe35eceeae54f25e7c6",
+      "derived_sha256": "90ea72dee957202d42853669a805a53538cc27b32501efe35eceeae54f25e7c6"
+    }
+  ],
+  "consumer_scope": "checked-in-plugin-only; installed/provider execution is not claimed"
+}
