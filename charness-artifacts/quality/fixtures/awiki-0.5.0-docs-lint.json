@@ -17,9 +17,8 @@
     "largest_component_ratio": 0.825,
     "orphan_rate": 0.175,
     "content_coverage": 1.0,
-    "observed_result": "graph-findings",
-    "aggregate_verdict": "advisory-non-clean"
+    "observed_result": "graph-findings"
   },
-  "final_consumer": "pending: scripts/run_awiki_quality.py -> run-quality.sh -> quality artifact",
-  "non_claim": "This fixture proves the direct awiki observation only; it does not prove the Charness final-consumer route until the implementation slice runs it."
+  "final_consumer": null,
+  "non_claim": "This fixture proves the direct awiki observation only; it does not establish an aggregate verdict or prove the Charness final-consumer route until the implementation slice runs it."
 }

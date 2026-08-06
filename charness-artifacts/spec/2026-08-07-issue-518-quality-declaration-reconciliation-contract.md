@@ -22,19 +22,24 @@ Do not compress the lifecycle into one enum. Each row carries separate typed
 fields: `coverage` (`covered` or `unexamined`), `declaration_resolution`
 (`resolved` or `unresolved`), `applicability`
 (`applicable`, `inapplicable`, `unsupported`, or `empty-scope`), `execution`
-(`not-run`, `missing`, `tool-error`, `completed`, or `malformed`),
-`observed_result` (`graph-clean`, `graph-findings`, `unknown`, or `absent`),
-and `aggregate_verdict` (`clean`, `advisory-non-clean`, `failed`,
-`inapplicable`, `unsupported`, `deferred`, or `unexamined`). A declaration,
-producer-only payload, missing binary, empty scope, or exit-0 helper is never
-sufficient for `clean`.
+(`not-run`, `missing`, `tool-error`, `producer-error`, `completed`, or
+`malformed`), `evidence_binding` (`valid`, `missing`, `mismatched`,
+`malformed`, or `unknown`), `observed_result` (`graph-clean`,
+`graph-findings`, `unknown`, or `absent`), and a separately validated
+`deferral` record (`none` or `authorized`, with authority, scope, expiry,
+reason, and source identity). Only the final consumer owns
+`aggregate_verdict` (`clean`, `advisory-non-clean`, `failed`, `inapplicable`,
+`unsupported`, `deferred`, or `unexamined`). A declaration, producer-only
+payload, missing binary, empty scope, or exit-0 helper is never sufficient for
+`clean`.
 
 `awiki` is an external binary owned through `integrations/tools/awiki.json`.
 The manifest owns detection, healthcheck, install/update guidance, version
-observation, degradation, and `quality` intent discovery. The quality route owns
-the exact repository invocation `awiki lint -root docs -recursive`, its parsed
-result, and the final artifact disposition. The synchronized plugin projection
-must expose the same manifest and dependency membership.
+observation, degradation, and `quality` intent discovery. The quality route
+owns the exact repository invocation `awiki lint -root docs -recursive` and its
+parsed observation; the final consumer owns the final artifact disposition.
+The synchronized plugin projection must expose the same manifest and
+dependency membership.
 
 ## Current Slice
 
@@ -49,20 +54,25 @@ are implemented.
   vendor its implementation or hide installation in a casual command example.
 - Pin the host-controlled Rust install route to upstream tag `v0.5.0` at
   verified commit `f65f8c43dbf0300609bdfdf823c09cba370222c6`:
-  `cargo install --git https://github.com/corca-ai/awiki --tag v0.5.0
-  --locked awiki`. The manifest must carry the tag, commit, version, and
-  provenance-aware update command; a moving default branch is not reproducible.
+  `cargo install --git https://github.com/corca-ai/awiki --rev
+  f65f8c43dbf0300609bdfdf823c09cba370222c6 --locked awiki`. The manifest and
+  install receipt must carry both the human tag and immutable revision,
+  version, resolved binary identity, and provenance-aware update command; a
+  moving default branch or tag-only install is not reproducible.
 - Add the `awiki-docs-graph` phase to `run-quality.sh` and the docs-only
   pre-push selection. In full, read-only, and explicit-label modes it invokes
-  `scripts/run_awiki_quality.py --repo-root . --receipt
-  charness-artifacts/quality/receipts/awiki-latest.json`, which persists a
-  parsed receipt and raw-result digests. Use report-first policy for a valid
-  graph finding: preserve the tool exit code `1`, emit aggregate verdict
-  `advisory-non-clean`, and let the wrapper return success so a known docs
-  finding is visible without masquerading as a tool failure. Missing binary,
-  startup/tool error, malformed output, or no receipt returns failure and
-  aggregate verdict `failed`; no route may silently skip or collapse a graph
-  finding into clean.
+  `scripts/run_awiki_quality.py --repo-root . --receipt <receipt-path>`, which
+  persists invocation facts, parsed observation, raw stdout/stderr locators,
+  and digests. Full mode writes the tracked receipt and raw files under the
+  quality receipt directory; read-only and pre-push modes write an ephemeral
+  receipt/raw pair under the runner temporary directory and render before
+  cleanup, so read-only never mutates tracked quality artifacts. The route
+  owns no aggregate verdict. Use report-first policy for a valid graph finding:
+  preserve the tool exit code `1` in the receipt and let the wrapper return
+  success, but emit a typed phase `advisory` that the runner carries through
+  its semantic receipt and terminal renderer. Missing binary, startup/tool
+  error, producer-error, malformed output, or no receipt returns failure; no
+  route may silently skip or collapse a graph finding into clean.
 - Keep existing `check-doc-links`, `markdownlint`, `check-links-internal`, and
   `nose` document-duplicate review until a command-level overlap matrix proves
   that a candidate has the same scope, reader boundary, and verdict semantics.
@@ -71,7 +81,10 @@ are implemented.
 
 ## Verdict Algebra
 
-The #518 final consumer must apply this table after parsing the persisted
+The #518 final consumer is the sole aggregate-verdict and displayed-disposition
+owner. The route/runner may report only invocation facts and a typed observed
+receipt; a route-produced verdict cannot replace or bypass this fold. The
+final consumer must apply this table after parsing the persisted or ephemeral
 receipt. It asserts both the displayed disposition and the aggregate verdict:
 
 | Preconditions | Displayed disposition | Aggregate verdict |
@@ -80,17 +93,23 @@ receipt. It asserts both the displayed disposition and the aggregate verdict:
 | declaration resolved, unsupported language | unsupported | `unsupported` |
 | declaration resolved, inapplicable or empty scope | scope inapplicable | `inapplicable` |
 | applicable, execution not run | not run | `unexamined` |
-| applicable, binary missing or startup/tool error | tool failure | `failed` |
-| applicable, malformed/no receipt/unknown result | invalid evidence | `failed` |
-| applicable, completed, valid graph findings, tool exit 1 | graph findings (report-first) | `advisory-non-clean` |
-| applicable, completed, valid graph-clean result, tool exit 0 | graph clean | `clean` |
-| explicit owner-approved deferral | deferred | `deferred` |
+| applicable, binary missing, startup/tool error, or producer-error | tool failure | `failed` |
+| applicable, malformed/no receipt/unknown result or invalid evidence binding | invalid evidence | `failed` |
+| applicable, valid evidence binding, completed, valid graph findings, tool exit 1 | graph findings (report-first) | `advisory-non-clean` |
+| covered, resolved, applicable, valid evidence binding, completed, valid graph-clean result, tool exit 0 | graph clean | `clean` |
+| authorized deferral with no higher-precedence failure or invalid evidence | deferred | `deferred` |
 
-The healthy rule is exhaustive: only the final row for a valid completed
-applicable graph-clean result may be `clean`. `covered` is a coverage field,
-not permission to render a non-clean aggregate as clean. The current Charness
-run therefore maps to `execution=completed`, `observed_result=graph-findings`,
-`aggregate_verdict=advisory-non-clean`, with tool exit code `1` preserved.
+The fold is total and precedence-ordered: invalid/missing/mismatched evidence
+binding, malformed output, tool-error, or producer-error refuses first;
+unresolved/unexamined coverage then remains `unexamined`; unsupported or
+inapplicable scope remains its own disposition; an authorized deferral applies
+only when no higher-precedence failure exists; valid graph findings become
+`advisory-non-clean`; and only the complete `clean` tuple in the table may be
+`clean`. Contradictory or unknown tuples are `failed`, never inferred. The
+current direct Charness run records only `execution=completed`,
+`evidence_binding=unknown`, `observed_result=graph-findings`, and tool exit code
+`1`; it does not establish the final aggregate verdict until the implemented
+Charness final consumer reads its receipt.
 
 ## Probe Questions
 
@@ -131,9 +150,23 @@ run therefore maps to `execution=completed`, `observed_result=graph-findings`,
 
 ## Constraints
 
-- The final quality artifact must bind tool version, exact args, execution root,
-  exit code, parsed counts, result digest/locator, final consumer, and
-  unexamined axes.
+- `scripts/run_awiki_quality.py` owns only tool invocation and a versioned
+  observation receipt. Its receipt schema must bind tool version, exact args,
+  execution root, tool exit code, parsed counts, raw stdout/stderr locators and
+  digests, install provenance, and command/fixture identity. Full-mode raw
+  files are retained with the tracked receipt; read-only/pre-push raw files
+  are retained in the same temporary workspace until final rendering and are
+  not written to tracked artifacts.
+- `scripts/render_awiki_quality_artifact.py` is the concrete final consumer.
+  It accepts `--receipt <path> --output <path>`, validates schema/version,
+  command/root/tool/installation binding and raw digests, computes the sole
+  aggregate verdict from the algebra above, and refuses a missing, stale,
+  malformed, or digest-mismatched receipt. In full mode its output is consumed
+  by the tracked quality artifact; in read-only/pre-push mode its output is
+  ephemeral but must be printed as the final typed disposition before cleanup.
+- The final quality artifact must bind the renderer output, receipt identity,
+  tool version, exact args, execution root, exit code, parsed counts, result
+  digest/locator, final consumer, and unexamined axes.
 - The integration validator, plugin parity check, quality route, and focused
   tests must distinguish missing, failed, unsupported, and inapplicable states.
 - The #518 contract must compose with #515 routing/disclosure and #514 evidence
@@ -164,9 +197,18 @@ run therefore maps to `execution=completed`, `observed_result=graph-findings`,
   root/plugin projection parity)
 - `awiki --version` and `awiki lint -root docs -recursive` (baseline tool
   evidence only; preserve the observed failure)
-- `CHARNESS_QUALITY_LABELS=awiki-docs-graph ./scripts/run-quality.sh
-  --read-only --receipt-json=charness-artifacts/quality/receipts/quality-latest.json`
-  (integration: actual Charness quality route and final-reader input)
+- full-mode `CHARNESS_QUALITY_LABELS=awiki-docs-graph ./scripts/run-quality.sh
+  --full --receipt-json=charness-artifacts/quality/receipts/quality-latest.json`
+  plus the runner's explicit read-only/pre-push temporary-receipt test
+  (integration: actual Charness quality route without tracked-artifact
+  mutation in read-only mode)
+- `python3 scripts/render_awiki_quality_artifact.py --repo-root . --receipt
+  <mode-specific-receipt> --output <mode-specific-output>` and readback of its
+  typed disposition (integration: the final consumer, not the raw awiki
+  command)
+- focused runner/final-artifact tests prove full, read-only, explicit-label,
+  and docs-only pre-push selection; an exit-1 valid graph finding remains
+  `advisory-non-clean` in phase and final output, never `PASS`/`clean`.
 - focused quality-reader/final-artifact tests for all algebra rows, including
   missing, malformed, exit-1 valid findings, and clean awiki outcomes
   (unit/integration: disposition propagation)
@@ -206,9 +248,10 @@ run therefore maps to `execution=completed`, `observed_result=graph-findings`,
 
 Add `integrations/tools/awiki.json`, include `awiki` in the quality dependency
 installation/discovery list and plugin projection, implement
-`scripts/run_awiki_quality.py` plus its parser and persisted receipt at
-`charness-artifacts/quality/receipts/awiki-latest.json`, wire the
-`awiki-docs-graph` phase into `scripts/run-quality.sh` and the docs-only
-`.githooks/pre-push` selection, and make the final quality artifact consume
-that receipt. Then rerun the exact Charness awiki command in this repository
-and record the overlap matrix before any linter deletion.
+`scripts/run_awiki_quality.py` plus its parser and mode-specific receipt/raw
+retention, implement `scripts/render_awiki_quality_artifact.py` as the sole
+final fold, wire the `awiki-docs-graph` phase into `scripts/run-quality.sh` and
+the docs-only `.githooks/pre-push` selection, and add runner/final-reader
+fixtures for every algebra row and receipt-binding refusal. Then rerun the
+exact Charness awiki command in this repository through all promised modes and
+record the overlap matrix before any linter deletion.
