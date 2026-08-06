@@ -71,8 +71,8 @@ closeout is part of this release.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-prepublish-packet.json plus its Markdown render | action: document | note: record the JSON packet SHA `6469e74a4f392853d5d17a177dafebe0a01afeaeba65acee0905a78496f7d0f9` and Markdown render SHA `76abffe19202efae7ec4d93cb46a2f3105adf2786918dbc06b49aad63b95e137` separately.
-- F2 | bin: act-before-ship | evidence: strong | ref: charness-artifacts/release/v3.3.0-notes.md | action: document | note: publish authored reader-first notes with additive scope, helper semantics, update/version/doctor, rollback, and non-claims.
+- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-final-prepublish-v2-packet.json plus its Markdown render | action: document | note: the final critique is bound to JSON SHA `9d98db30e8555cb687f213d0a33d604bef071e97b2eab101350f8b39dfed0b6c`; its Markdown companion is separately `d3885c07913f690cf75f67fac72b8ae12edcf156566f7dfae4cf809260e21b22`.
+- F2 | bin: act-before-ship | evidence: strong | ref: charness-artifacts/release/v3.3.0-notes.md | action: document | note: authored reader-first notes now cover additive scope, helper semantics, update/version/doctor, plugin-surface rollback limits, and non-claims.
 - F3 | bin: act-before-ship | evidence: strong | ref: .agents/release-adapter.yaml and publish_release.py | action: fix | note: execute bump, sync, release quality, fresh-checkout probes, post-notes claims review, and distinct remote/public readbacks in order.
 - F4 | bin: bundle-anyway | evidence: moderate | ref: scripts/check_premise_preflight.py and premise_preflight_lib.py | action: document | note: make the intentional durable decision-record write explicit in operator notes; a future dry-run mode is not required for this release.
 - F5 | bin: over-worry | evidence: strong | ref: check_real_host_proof.py exact release range | action: defer | note: no configured real-host trigger matched the candidate range, so do not fabricate install/tool proof.
@@ -91,9 +91,12 @@ separate claims review against the final release record.
 ## Upgrade Path
 
 Operators run `charness update`, then `charness version` expecting `3.3.0` and
-`charness doctor`. The new helpers remain source-checkout workflow tools. To
-roll back, use a source checkout at `v3.2.0` and run the commands in
-`charness-artifacts/release/v3.3.0-notes.md`. No migration is required.
+`charness doctor`. The new helpers remain source-checkout workflow tools. The
+rollback commands in `charness-artifacts/release/v3.3.0-notes.md` are a
+plugin/workflow-surface rollback from a `v3.2.0` source checkout; because they
+use `--skip-cli-install`, they do not claim to downgrade the already-installed
+managed CLI. A full managed-CLI rollback remains outside this release's proof.
+No migration is required.
 
 ## Local / Remote Proof Status
 
@@ -117,18 +120,19 @@ roll back, use a source checkout at `v3.2.0` and run the commands in
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — Gawande, Minto, Raskin, and a separate counterweight
-reviewer read the same prepared packet. All four shared-worktree boundary
-fingerprints were clean: `release-3-3-0-gawande`, `release-3-3-0-minto`,
-`release-3-3-0-raskin`, and `release-3-3-0-counterweight`.
+parent-delegated — the repaired v2 release packet was read by Gawande, Minto,
+Raskin, and a separate counterweight reviewer. All four shared-worktree
+boundary fingerprints were clean: `release-3-3-0-v2-gawande`,
+`release-3-3-0-v2-minto`, `release-3-3-0-v2-raskin`, and
+`release-3-3-0-v2-counterweight`.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/release-3-3-0-prepublish-packet.md
-- Packet path: charness-artifacts/critique/release-3-3-0-prepublish-packet.json
-- Packet SHA256: 6469e74a4f392853d5d17a177dafebe0a01afeaeba65acee0905a78496f7d0f9
-- Identity SHA256: 14dbae6dbde1d7dffffffeb8c8da26869febd7bf1f85b75f3d2d65b5169b4494
-- Markdown companion SHA256: 76abffe19202efae7ec4d93cb46a2f3105adf2786918dbc06b49aad63b95e137
+- Packet consumed: charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md
+- Packet path: charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.json
+- Packet SHA256: 9d98db30e8555cb687f213d0a33d604bef071e97b2eab101350f8b39dfed0b6c
+- Identity SHA256: e18d1a69f2e5e38aedf111b3b1159e6eb5ece45bfd8f4b7cb2cbd61f7c247965
+- Markdown companion SHA256: d3885c07913f690cf75f67fac72b8ae12edcf156566f7dfae4cf809260e21b22
 
 ## Boundary Ownership
 
