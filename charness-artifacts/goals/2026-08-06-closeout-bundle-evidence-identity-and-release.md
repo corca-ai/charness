@@ -1,6 +1,6 @@
 # Achieve Goal: Build a closeout bundle, bind evidence identity, and publish the final release
 
-Status: active
+Status: complete
 Created: 2026-08-06
 Activation: `/goal @charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md`
 
@@ -111,14 +111,8 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 
 ## Operator Decision Queue
 
-- #516 is CLOSED: current `HEAD` passes its four reported ledger tests and the
-  full suite; its historical `79ea3447…` source-claim mismatch is confirmed by
-  the original remote log and the unnamed causal fresh-eye review, and the
-  repaired SHA has a successful remote mutation readback. Its durable diagnosis
-  is
-  `charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md`.
-- #515 remains a distinct quality-routing boundary, not silently satisfied by
-  #517's semantic disclosure contract; #514 remains deferred work.
+none — #516 closeout is complete; #515 remains a distinct quality-routing
+boundary and #514 remains deferred work, each requiring its own activation.
 
 ### Slice 7: Issue #516 mutation regression and packet portability
 
@@ -179,7 +173,7 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 
-Routing: achieve → gather → issue → quality → critique → debug — selected from installed skill metadata and the active goal's issue-resolution continuation.
+Routing: achieve → gather → issue → quality → critique → debug → impl — selected from installed skill metadata and the active goal's issue-resolution continuation.
 Gather: charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md — authenticated public-source readback persisted before implementation.
 Release: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json — release work already completed in the preceding boundary.
 Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. #516 — direct-commit carrier `9e2c390d`; draft validation and `verify-closeout --expect-state CLOSED` passed, GitHub state read back as CLOSED, and Quality Core run `31117396157` independently passed both core gates and changed-line mutation coverage.
@@ -390,7 +384,8 @@ retro / host-log probe / disposition-review artifact) or an explicit
 
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
-Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately).
+Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md
+Disposition note: bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately.
 Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed, but changed-line mutation coverage failed because a critique artifact used a machine-local absolute packet path. For #516's repo-relative repair, run `31117396157` at `9e2c390d` independently passed both core gates and changed-line mutation coverage.
 Release readback: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json (unauthenticated HTTP release observation, installed refresh, `charness version`, and `charness doctor` readbacks).
 
