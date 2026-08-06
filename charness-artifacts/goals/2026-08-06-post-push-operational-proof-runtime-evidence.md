@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — mutation producer discovery, ready to close.
-- Current slice intent: prove that the existing mutation producer helper selects every eligible changed Python file and that its focused standing targets pass without weakening the mutation floor.
-- Next action: run the pre-lock closeout, commit the fixture and quality packet, then shape the immutable-ledger slice; locked broad/mutation proof remains pending for the final bundle; do not push.
+- Current slice: Slice 6 — immutable publish-state ledger, next slice to shape.
+- Current slice intent: inspect the existing ledger/readback owners and define the smallest post-push reconciliation slice without initiating a new publish.
+- Next action: read the ledger, issue/CI adapter, and handoff contracts; verify their current premise before implementation; Slice 5 is committed, while locked broad/mutation proof and integrated closeout remain pending; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -121,8 +121,8 @@ runs the activation command.
 | 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | complete; committed |
 | 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | complete; committed |
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | complete; evidence committed |
-| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | ready to close |
-| 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | draft |
+| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | complete; committed |
+| 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | in progress |
 | 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | draft |
 
 ## Operator Decision Queue
@@ -264,7 +264,7 @@ applies.
 - Focused proof: the selected standing command passed 58 tests; the producer/mapping and manifest suites passed 54 tests; the manifest suite passed 24 tests after the fixture repair. Ruff, Python length, changed-surface inspection, quality-artifact validation, and current-pointer refresh passed.
 - Fresh-eye: an unnamed bounded reviewer independently confirmed the mapping, target command, and fixture semantics; parent boundary snapshot/verify for `slice5-producer-review-2` was clean with no drift.
 - Non-claims: this was an uninstrumented target proof. The freshness marker, locked mutation coverage, broad pytest, ledger, remote CI, installed/provider behavior, Cautilus, and push remain pending or out of scope.
-- Status: ready to close before commit; next slice is immutable publish-state ledger reconciliation.
+- Status: complete; commit `1f1de525` (`test: stabilize mutation producer target fixture`). Next slice is immutable publish-state ledger reconciliation.
 
 ## Context Sources
 
