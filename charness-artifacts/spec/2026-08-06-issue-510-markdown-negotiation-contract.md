@@ -144,3 +144,9 @@ unchanged: paired local transport and gather-persistence fixtures prove the
 bounded Markdown stage, while live provider negotiation, installed-consumer
 behavior, and remote CI remain non-claims. This refresh authorizes unrelated
 local evidence work to continue without reopening issue #510.
+
+## Interrupt Carry-Forward Refresh (Slice 2, 2026-08-06)
+
+Slice 2 is an unrelated local premise-preflight seam. It preserves the same
+resolved observation and non-claims; no Markdown negotiation, provider call,
+installed-consumer execution, or remote behavior is being added here.
