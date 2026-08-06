@@ -16,8 +16,8 @@ runs the activation command.
   claims review. The closeout-only handoff refresh is now applied and must be
   rebound into the final packet before release.
 - Next action: prepare the verification lock and final claims-review inputs;
-  keep external CI, provider, release, and host-session claims explicitly
-  unproven until their distinct receipts exist.
+  record the final claims/disposition result, then derive release state only
+  after every local receipt remains bound to the final commit.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -228,6 +228,29 @@ applies.
   bounded critique; its two overclaims were repaired and recorded in
   [the handoff critique](../critique/2026-08-06-closeout-handoff-refresh.md).
 
+### Slice 4: Locked local proof and final claims boundary
+
+- Objective: prove the committed closeout surfaces with the verification lock,
+  changed-line mutation consumer, and a distinct claims/disposition reader
+  before any push or release effect.
+- Committed proof target: `c98b244e` is the current immutable local target;
+  the preceding meaningful implementation/evidence commits are `45248b4e`,
+  `f4c7c5ca`, `9fea4a5d`, `e012a402`, and the generated SLOC sync commits
+  `a96a90cd`, `1ac8aa7b`, `7d34c3db`, and `c98b244e`.
+- Verification: `run_slice_closeout.py --base --verification-lock
+  --refresh-broad-pytest-proof` passed the structural, packaging, docs,
+  integration, quality, and full standing pytest gates. The final mutation
+  campaign also passed with the focused closeout/wiring suite (`40 passed`)
+  and `check_changed_line_mutation_coverage.py --require-fresh-coverage`.
+  The exact blocked-plan target `scripts/closeout_bundle_lib.py:254` was
+  manually mutated, its focused test failed, and the original line was
+  restored; the durable proof is recorded in the Slice 1 critique.
+- Review boundary: the handoff refresh has a clean bounded fresh-eye review;
+  the distinct final claims/disposition review is the remaining local reader.
+- Non-claims: no Cautilus evaluation, behavior-channel execution, provider or
+  installed-consumer proof, remote CI readback, push, tag, release publication,
+  or release readback has occurred in this slice.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -301,8 +324,8 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `TODO` / `<path>` / `TBD` until you do.
 
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
-Host log probe: not yet created — final push/release execution will record host receipts.
-Disposition review: not yet created — activation and closeout will run the bounded claims review.
+Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
+Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (pending bounded claims review over the locked local proof and current handoff).
 
 ## User Verification Instructions
 
@@ -315,6 +338,6 @@ Confirm that no local green was promoted to provider, cross-host, or Cautilus pr
 Retro dispositions: applied — the packet-rebinding workflow is recorded in the
 Slice 3 critique packet, the aggregate diagnostic proposal is filed as D52, and
 the memory item is persisted by the goal-bound retro and lesson-selection index.
-Structural follow-up: applied for the retro-to-handoff validator; the final
-claims/disposition reader, verification lock, and closeout-only handoff refresh
-remain planned boundaries.
+Structural follow-up: applied for the retro-to-handoff validator and
+closeout-only handoff refresh; the final claims/disposition reader is in
+progress, while external release boundaries remain separate.

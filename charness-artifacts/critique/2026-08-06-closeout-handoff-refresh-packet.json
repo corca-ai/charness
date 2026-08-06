@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-06T13:20:15Z",
-  "prepared_for": "closeout-only handoff refresh after bounded fresh-eye repairs",
+  "generated_at": "2026-08-06T13:46:03Z",
+  "prepared_for": "closeout-only handoff refresh after final verification evidence binding",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/probe/2026-08-01-inventory-marker-rule.json\n- docs/deferred-decisions.md\n- docs/handoff.md\n- plugins/charness/scripts/validate_retro_handoff_wiring.py\n- scripts/validate_retro_handoff_wiring.py\n- tests/quality_gates/test_retro_handoff_wiring.py\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/validate_retro_handoff_wiring.py\n  derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md, docs/deferred-decisions.md, docs/handoff.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json, charness-artifacts/probe/2026-08-01-inventory-marker-rule.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/validate_retro_handoff_wiring.py, tests/quality_gates/test_retro_handoff_wiring.py\n  derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/validate_retro_handoff_wiring.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md, charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.md, charness-artifacts/critique/2026-08-06-closeout-handoff-refresh.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "0be77d37468bab3a6cdbc5c4012e8437961a9d58",
+    "base_head": "c98b244eb0760201324c1c53786ceb2a513c7184",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
@@ -68,7 +68,7 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
-        "content_sha256": "4ceb162bea8b6c71a5b6146fb754d5fee3f5c96a4642f2cc1c9b15888ea36682"
+        "content_sha256": "29f0b3631db8b35f05366c5359bd69f3cbbd55cc46f93246556b2a99e6982385"
       },
       {
         "path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
@@ -88,14 +88,14 @@
       },
       {
         "path": "tests/quality_gates/test_retro_handoff_wiring.py",
-        "content_sha256": "740e5ceb00e4e2d3d9c222e41cd8cf3791dee9a524ac6ee268915e8b86db128c"
+        "content_sha256": "bf2197d05a3a34b67a39e6aa2f54b9eb2a491ff6d81c659a56dbff3823daa83f"
       }
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "48e9154bd9aa573db3c3efcd865d184de811fdec82a2fbcaffb402aafe55adcf",
+    "unstaged_patch_sha256": "12434ff5f12cad0a99380dd2c6be4010f298ddef0a7d3e15df1aee36979c75b7",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "ca72852150eaa4ec7e15a9ee59c62e02a4235d5673490e66753f45e6c3230edc"
+    "identity_sha256": "077f7d51e9dfae031aaec5b7c04d0a45f8983e2d530e32e2267f2dfc26b26f7e"
   }
 }

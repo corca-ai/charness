@@ -82,8 +82,8 @@ ordinary reversible-work gate without a separate contract slice and evidence.
 
 - Packet consumed: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json
 - Packet path: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json
-- Packet SHA256: 1aaadbfb12b8c0829cf2467d3f49172726bd1b941fa3a2e27e3848b461988603
-- Identity SHA256: 56006eda6e8181ce29ec9334a69edb54d279cee5c24fc0ae00dd606fdc8219fb
+- Packet SHA256: 62c97d99125709d35ed3d567d88d8494ded9c3f1fb1c8b3240ee03bbb740bb61
+- Identity SHA256: 7aec76148917ad80f6ed84afdd1a3fdf6fade4233b2f1219f1dabbebe08daebe
 
 ## Boundary Ownership
 

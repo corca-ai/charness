@@ -35,8 +35,8 @@ host-session receipts, or the final verification lock.
 
 - Packet consumed: charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json
 - Packet path: charness-artifacts/critique/2026-08-06-closeout-handoff-refresh-packet.json
-- Packet SHA256: 79dfb45c865ed371d114a731d704f1462b299014a41bfd9fee8df1e34fc6f780
-- Identity SHA256: ca72852150eaa4ec7e15a9ee59c62e02a4235d5673490e66753f45e6c3230edc
+- Packet SHA256: f04a4f5a2cd15dc40613a8409ac1c2addf977a1daa9236f4f31886e09f5bffd7
+- Identity SHA256: 077f7d51e9dfae031aaec5b7c04d0a45f8983e2d530e32e2267f2dfc26b26f7e
 
 ## Boundary Ownership
 
