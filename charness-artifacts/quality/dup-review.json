@@ -2,6 +2,41 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "1ed587c63a0eebb0",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The final-bundle evidence module keeps its two-line file hash helper local to the evidence-input boundary, while the unchanged manifest and sync helpers own their own byte hashes. This is a tiny standard-library idiom across independent producers; extracting it would widen the planner's helper ownership without unifying a verdict contract."
+    },
+    {
+      "class": "intentional",
+      "id": "353f2bbab8da535c",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The final-bundle planner and evidence module each construct the same four-field typed blocker because both are directly executable portable modules and must preserve their own refusal boundary without importing each other. The short dict literal is the shared output schema, not duplicated domain behavior worth a new cross-module dependency."
+    },
+    {
+      "class": "intentional",
+      "id": "80e081c349d539cd",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The final-bundle planner's repository-relative path guard is local boundary plumbing with its own BundleError contract. Similar two-line guards in premise and reviewed-input identity code deliberately map unsafe paths to different owners and refusal semantics; extracting them would couple independent proof surfaces."
+    },
+    {
+      "class": "intentional",
+      "id": "a549b7f526d975f1",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The final-bundle CLI keeps the repository-root/runtime-bootstrap preamble explicit like other directly executable repo scripts. This is portable entrypoint plumbing, not planner behavior; centralizing it would replace the per-script startup contract with an indirection every exported CLI still needs."
+    },
+    {
+      "class": "intentional",
+      "id": "fa452ae476fcdef5",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The final-bundle planner's small subprocess wrapper is intentionally local because it returns a BundleError and is used for candidate evidence, while the packaging validation script runs a different command contract. The repeated subprocess shape is idiomatic plumbing across independent owners, not extractable verdict logic."
+    },
+    {
+      "class": "intentional",
       "id": "0207688c81c33f11",
       "reviewed_at": "2026-08-06",
       "surface": "code",
