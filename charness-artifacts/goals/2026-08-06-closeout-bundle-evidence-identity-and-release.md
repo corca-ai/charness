@@ -233,8 +233,11 @@ applies.
 - Objective: prove the committed closeout surfaces with the verification lock,
   changed-line mutation consumer, and a distinct claims/disposition reader
   before any push or release effect.
-- Committed proof target: `c98b244e` is the current immutable local target;
-  the preceding meaningful implementation/evidence commits are `45248b4e`,
+- Committed proof target: `32a3f8e45c85a9ab144b3b8943b7ecb382f034f1` is the
+  immutable target on which the final verification lock and mutation campaign
+  ran; `80e85de0ee8e8d367db65ecec7aede50e2165e32` is the later receipt-binding
+  commit, which only updates the checked-in proof receipt. The preceding meaningful
+  implementation/evidence commits are `45248b4e`,
   `f4c7c5ca`, `9fea4a5d`, `e012a402`, and the generated SLOC sync commits
   `a96a90cd`, `1ac8aa7b`, `7d34c3db`, and `c98b244e`.
 - Verification: `run_slice_closeout.py --base --verification-lock
