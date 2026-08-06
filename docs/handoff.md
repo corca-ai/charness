@@ -2,20 +2,20 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** read the [active closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), then continue with `achieve` for its final claims review and release preflight.
+- **Next pickup:** read the [closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md) and [release record](../charness-artifacts/release/latest.md); the closeout/release slice is complete unless a new receipt or follow-up boundary is explicitly opened.
 - First read the [current quality posture](../charness-artifacts/quality/latest.md), [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and [North Star](./design-north-star.md).
 
 ## Continuation Capability
 
 - Keep local, provider, cross-host, remote-CI, release, Cautilus, and issue claims separate.
 - The closeout goal and its execution contract own packet identity, pointer freshness, pre-review authoring order, and retro-to-handoff wiring.
-- The final release phase still needs its own pre-push gate, distinct remote observer/channel, release readback, and clean commit-boundary evidence.
+- The `v3.4.0` release phase recorded its pre-push quality gate, tag/publication, distinct HTTP observer, install refresh, version/doctor readbacks, and clean post-publish commit boundary.
 
 ## Current State
 
-- The closeout bundle and retro-to-handoff validator are committed through `0be77d37`; the deterministic pre-lock result is time-bound to that commit. This refreshed handoff has passed its named wiring, handoff, pointer, and targeted fixture checks, but the final packet rebinding and verification lock remain open.
-- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring is locally validated, while the final closeout identity is still provisional until the verification lock runs.
-- The publish-state claim below is a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a version or tag claim. The release record separately binds `v3.3.0` to its tag SHA, and neither record claims that this new closeout goal has been released.
+- The closeout bundle and retro-to-handoff validator are included in release commit `7bf3893b` for `v3.4.0`; the locked local proof target is recorded separately at [the local proof ledger](../charness-artifacts/probe/2026-08-06-closeout-local-proof.json), and the final claims/disposition identity is bound by the tracked critique carrier.
+- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring, final claims review, and release critique are recorded. The post-publish verification receipt is [the release observer probe](../charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json).
+- The publish-state claim below remains a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a current version or tag claim. The release record separately binds `v3.4.0` to tag SHA `7bf3893b`, and the post-publish bookkeeping is committed at `c34b3dc0`.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -24,13 +24,13 @@
 
 ## Next Session
 
-1. Read the [active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), its [quality record](../charness-artifacts/quality/latest.md), and [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md).
-2. Run the distinct claims/disposition review and verification-locked closeout; preserve `recurrence-class: release-proof-identity-churn` and `recurrence-class: closeout-diagnostic-visibility` in the disposition evidence.
-3. Only after local gates pass, derive the release version/carrier, run the conditioned push, verify remote CI through a different observer/channel, publish, and read the release back distinctly.
+1. Read the [closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), its [quality record](../charness-artifacts/quality/latest.md), [release record](../charness-artifacts/release/latest.md), and [release notes](../charness-artifacts/release/v3.4.0-notes.md).
+2. Treat `v3.4.0` publication, the unauthenticated HTTP release observation, install refresh, `charness version`, and `charness doctor` readbacks as completed receipts; do not rerun publication for this slice.
+3. Keep provider, installed-consumer beyond the recorded readback, remote-CI, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
 
 ## Discuss
 
-- The user-authorized final push/release remains conditional on every local and release gate; stop before any external effect when a gate, version, carrier, or distinct observer is unresolved.
+- The user-authorized `v3.4.0` push/release completed only after the local gates, tracked critique, notes, tag/publication, and distinct readbacks; any later release is a new boundary.
 - Do not run Cautilus, provider roundtrips, or live-agent proof without a separate explicit boundary.
 
 ## References

@@ -195,10 +195,9 @@ DONE: update complete`
 
 ## Baton Reconcile
 
-- Baton reconcile observation: `stale` for `docs/handoff.md`.
+- Baton reconcile observation: `observed-current` for `docs/handoff.md`.
 - Just-published version: `3.4.0`.
-- Versions claimed by the baton's routing sections: `3.3.0`.
-- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `3.4.0`, or record an explicit n/a disposition in the release record, before ending the session.
+- Versions claimed by the baton's routing sections: `3.4.0`.
 - This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
 
 ## Release Observer Record
