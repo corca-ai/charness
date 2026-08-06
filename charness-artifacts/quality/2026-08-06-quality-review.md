@@ -24,11 +24,12 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 ## Runtime Signals
 
 - runtime source: structured runtime metrics from
-  `.charness/quality/runtime-signals.json`, plus
+  `.charness/quality/runtime-signals.json` <!-- reproduction-source -->, plus
   `charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md`.
 - runtime hot spots: no new runtime budget decision; the prior controlled A/B
   evidence remains host-local and advisory.
-- coverage gate: the locked producer emitted `reports/mutation/test-coverage.json`;
+- coverage gate: the locked producer emitted
+  `reports/mutation/test-coverage.json` <!-- reproduction-source -->;
   clean-tree changed-line consumption is the remaining commit-boundary proof.
 - evaluator depth: deterministic-gates-only; no Cautilus evaluation was run.
 
