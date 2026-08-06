@@ -361,6 +361,29 @@ def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_pa
     _manifest_raises("invalid_command_descriptor", slice_manifest_lib._validate_issue_readback, dict(issue, query=[]), issue_sha, "corca-ai/charness", "refs/heads/main")
     _manifest_raises("invalid_readback", slice_manifest_lib._validate_issue_readback, dict(issue, open_count=-1), issue_sha, "corca-ai/charness", "refs/heads/main")
 
+    empty_root = tmp_path / "empty-root"
+    empty_root.mkdir()
+    refused = subprocess.run(
+        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(empty_root)],
+        capture_output=True, text=True, check=False,
+    )
+    assert refused.returncode == 1
+    assert "slice-manifest: REFUSED [missing_manifest]" in refused.stderr
+    assert "source-checkout-only" in refused.stderr
+    manifest = repo / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
+    human = subprocess.run(
+        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(repo), "--manifest", str(manifest)],
+        capture_output=True, text=True, check=False,
+    )
+    assert human.returncode == 0
+    assert "structurally-valid-captured-record" in human.stdout
+    machine = subprocess.run(
+        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(repo), "--manifest", str(manifest), "--json"],
+        capture_output=True, text=True, check=False,
+    )
+    assert machine.returncode == 0
+    assert json.loads(machine.stdout)["status"] == "structurally-valid-captured-record"
+
 
 def test_manifest_critique_target_and_loader_error_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     repo = fixture_path.parents[1]
