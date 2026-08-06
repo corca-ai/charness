@@ -245,7 +245,7 @@ applies.
 
 - Objective: Compare the declaration validator under identical-affinity isolation and synthetic CPU contention before making any runtime-budget or scheduler decision.
 - Why this approach: Existing runtime records showed historical contention sensitivity but did not establish a controlled same-host cohort. A six-versus-six direct-command A/B reduces that uncertainty without rewriting standing runtime history.
-- Commits: pending Slice 4 evidence commit; the slice remains unpushed.
+- Commits: `bac7914f` (`docs: record controlled runtime evidence`); the slice remains unpushed.
 - What changed: Added `charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md` and promoted it to the quality current pointer; no validator, runner, budget, or scheduler code changed.
 - Controlled result: With `taskset -c 0-3`, six isolated samples had median 6531ms (6451–6615ms); six samples with four same-affinity CPU burners had median 10463ms (10275–10664ms), a +3932ms delta and 1.60x ratio; all 12 returned zero and validated 9 inventories.
 - Interpretation: The cohort supports contention sensitivity on this host and affinity slice, but synthetic workers are not the exact first-phase queue and one host cannot justify changing the 15.500s budget. Cross-host and exact-runner A/B remain missing.
