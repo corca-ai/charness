@@ -12,6 +12,11 @@ round repaired verdict logic.
 
 ## Execution
 
+- Fresh-eye pass: `scripts/publish_state_ledger.py` — round 1 found the
+  whole-document source-binding and refusal-matrix gaps; round 2 read the
+  repaired surface and found structured unreadable-manifest handling plus the
+  source-invalid field spelling mismatch. Both parent boundaries were clean;
+  round-2 repairs are accepted-unreviewed under the two-round cap.
 - Round 1: one unnamed, one-shot, read-only bounded reviewer inspected the
   source/plugin validator, tests, ledger, contract, goal, and handoff. The
   boundary fingerprint was clean. Findings: whole-document source hashing
