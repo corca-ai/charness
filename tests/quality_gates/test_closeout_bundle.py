@@ -283,6 +283,21 @@ def test_failed_payload_and_invalid_bundle_id_are_explicit() -> None:
         lib.build_plan(ROOT, **{**_args(), "bundle_id": "BAD"})
 
 
+def test_execute_returns_blocked_plan_without_running_commands(monkeypatch: pytest.MonkeyPatch) -> None:
+    blocked = {
+        "status": "blocked",
+        "preflight": {"planned_commands": [{"phase": "sync", "command": "python3 scripts/check-shell.sh"}]},
+    }
+    monkeypatch.setattr(lib, "build_plan", lambda *_args, **_kwargs: blocked)
+    result = lib.execute(
+        ROOT,
+        **_args(),
+        runner=lambda *_args, **_kwargs: (_ for _ in ()).throw(AssertionError("runner must not execute")),
+    )
+    assert result["status"] == "blocked"
+    assert result["mode"] == "execute"
+
+
 def test_execute_refuses_after_sync_or_preflight_failures(monkeypatch: pytest.MonkeyPatch) -> None:
     def build_initial(*_args: object, **_kwargs: object) -> dict[str, object]:
         return {
