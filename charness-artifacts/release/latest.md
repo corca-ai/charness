@@ -201,13 +201,24 @@ DONE: update complete`
 - `release_observer`: 0.001s
 - `issue_closeout`: 0.000s
 
+## Remote CI Verification
+
+- Remote `main` readback: `c86d13298cc70f9eab7a4ea249eeb27f58e16407`.
+- GitHub Actions Quality Core run: `31087834647` completed with `success` on
+  the post-publish verification commit.
+- Jobs independently read back as successful: `Core deterministic gates` and
+  `Changed-line mutation coverage (push/PR mirror)`.
+- Tag `v3.3.0` remains at release commit `7eed13ec9b819e6d581ea08ea244820579c08935`;
+  the post-publish verification commit is on `main` after the tag.
+- Observer channel: GitHub Actions API readback, distinct from the release
+  helper's push exit code.
+
 ## Baton Reconcile
 
-- Baton reconcile observation: `no_version_claim` for `docs/handoff.md`.
+- Baton reconcile observation: `observed-current` for `docs/handoff.md`.
 - Just-published version: `3.3.0`.
-- The baton's routing sections claim no release version.
-- RECONCILE REQUIRED: Reconcile `docs/handoff.md` (its `## Current State` / `## Next Session` routing sections) to the just-published `3.3.0`, or record an explicit n/a disposition in the release record, before ending the session.
-- This is an observation, not completion: the populated record forces the reconcile question; the release critique/retro reviewers judge the disposition.
+- The baton's routing sections now claim the published `3.3.0` release.
+- Reconciled in `docs/handoff.md`; future release or tag work still requires its own gated phase.
 
 ## Release Observer Record
 
