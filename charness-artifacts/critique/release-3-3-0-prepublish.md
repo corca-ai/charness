@@ -71,7 +71,7 @@ closeout is part of this release.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-final-prepublish-v2-packet.json plus its Markdown render | action: document | note: the final critique is bound to JSON SHA `9d98db30e8555cb687f213d0a33d604bef071e97b2eab101350f8b39dfed0b6c`; its Markdown companion is separately `d3885c07913f690cf75f67fac72b8ae12edcf156566f7dfae4cf809260e21b22`.
+- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-final-prepublish-v3-packet.json plus its Markdown render | action: document | note: the final critique is bound to JSON SHA `8d95671978e43043fd7e2f8395dca4174fcf6fa1b129dc2f3880a24e60837cc9`; its Markdown companion is separately `cfd138b3768978097beb9f0094e560aeff697e26578f097aeff9fca562d84c68`.
 - F2 | bin: act-before-ship | evidence: strong | ref: charness-artifacts/release/v3.3.0-notes.md | action: document | note: authored reader-first notes now cover additive scope, helper semantics, update/version/doctor, plugin-surface rollback limits, and non-claims.
 - F3 | bin: act-before-ship | evidence: strong | ref: .agents/release-adapter.yaml and publish_release.py | action: fix | note: execute bump, sync, release quality, fresh-checkout probes, post-notes claims review, and distinct remote/public readbacks in order.
 - F4 | bin: bundle-anyway | evidence: moderate | ref: scripts/check_premise_preflight.py and premise_preflight_lib.py | action: document | note: make the intentional durable decision-record write explicit in operator notes; a future dry-run mode is not required for this release.
@@ -107,6 +107,12 @@ No migration is required.
   tag, push, or public release mutation has occurred yet.
 - Real-host trigger: no configured release-time trigger matched the exact
   candidate range; this is a trigger result, not installed-host proof.
+- Reviewed-input binding resolution: the v3 packet uses `sha256-v2` in
+  `changed-ref` mode, so each reviewed path is bound to the bytes at the
+  captured target commit. `charness-artifacts/quality/latest.md` is a tracked
+  symlink; its bound bytes are the symlink target text, while the expanded
+  worktree pointer resolves to the named quality receipt. Independent review
+  confirmed this is pointer materialization, not target-input drift.
 - Required later observations: remote branch/CI, public release visibility,
   install refresh, version/doctor readback, and handoff baton reconciliation.
 
@@ -120,19 +126,19 @@ No migration is required.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — the repaired v2 release packet was read by Gawande, Minto,
-Raskin, and a separate counterweight reviewer. All four shared-worktree
-boundary fingerprints were clean: `release-3-3-0-v2-gawande`,
-`release-3-3-0-v2-minto`, `release-3-3-0-v2-raskin`, and
-`release-3-3-0-v2-counterweight`.
+parent-delegated — the current v3 release packet was read by Gawande, Minto,
+Raskin, and a separate counterweight reviewer. Two reviewers returned PASS;
+two raised a pointer-materialization concern, which was resolved by the
+canonical `sha256-v2` changed-ref verification described above. All four
+shared-worktree boundary fingerprints were clean: `release-3-3-0-v3-review-round`.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md
-- Packet path: charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.json
-- Packet SHA256: 9d98db30e8555cb687f213d0a33d604bef071e97b2eab101350f8b39dfed0b6c
-- Identity SHA256: e18d1a69f2e5e38aedf111b3b1159e6eb5ece45bfd8f4b7cb2cbd61f7c247965
-- Markdown companion SHA256: d3885c07913f690cf75f67fac72b8ae12edcf156566f7dfae4cf809260e21b22
+- Packet consumed: charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.md
+- Packet path: charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.json
+- Packet SHA256: 8d95671978e43043fd7e2f8395dca4174fcf6fa1b129dc2f3880a24e60837cc9
+- Identity SHA256: af19b38fa6326b104918cf149a024b677bc0798b82618052a781b76511948d6c
+- Markdown companion SHA256: cfd138b3768978097beb9f0094e560aeff697e26578f097aeff9fca562d84c68
 
 ## Boundary Ownership
 
