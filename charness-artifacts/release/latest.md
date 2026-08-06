@@ -1,14 +1,14 @@
 # Release Surface Check
-Date: 2026-08-04
+Date: 2026-08-06
 
 ## Scope
 
-Advanced `charness` toward release `3.2.0` (tag `v3.2.0`) through the repo-owned release helper.
+Advanced `charness` toward release `3.3.0` (tag `v3.3.0`) through the repo-owned release helper.
 
 ## Current Version
 
-- previous version: `3.1.1`
-- target version: `3.2.0`
+- previous version: `3.2.0`
+- target version: `3.3.0`
 - git branch: `main`
 - git remote: `origin`
 
@@ -16,41 +16,19 @@ Advanced `charness` toward release `3.2.0` (tag `v3.2.0`) through the repo-owned
 
 - `./scripts/run-quality.sh --release` passed before publish.
 - `current_release.py` reported no version drift across packaging and generated install surfaces.
-- local release-content commit: `2a652b18de280fa50d0f1e46f9caebe41c70755a`.
-- branch push was executed with normal pre-push gates and independently read back
-  through GitHub API/Actions.
+- initial release push carried the release branch update and tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch push: verified at exact SHA `2a652b18de280fa50d0f1e46f9caebe41c70755a`
-- tag push: verified at exact SHA `2a652b18de280fa50d0f1e46f9caebe41c70755a`
-- GitHub release record: published URL `https://github.com/corca-ai/charness/releases/tag/v3.2.0`
-- public release surface verification: confirmed by unauthenticated HTTPS page readback; REST API readback was rate-limited with HTTP 403 and is not claimed.
+- branch/tag push: complete
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v3.3.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
 - audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-- GitHub release publication: verified by the release helper at
-  `https://github.com/corca-ai/charness/releases/tag/v3.2.0`.
-- Distinct-channel public readback: unauthenticated `curl` page returned HTTP
-  200; the page contained `Charness 3.2.0` and `v3.2.0`.
-- REST API readback: unauthenticated `curl` returned HTTP 403, rate-limit
-  message; this is recorded as unavailable, not as release evidence.
-
-## Remote Branch and CI Readback
-
-- Branch observer: GitHub API `refs/heads/main` returned exact SHA
-  `2a652b18de280fa50d0f1e46f9caebe41c70755a`.
-- Commit observer: GitHub API `/commits/2a652b18de280fa50d0f1e46f9caebe41c70755a`
-  returned the same SHA.
-- CI workflow: `Quality Core`, run `30874005717`, head SHA
-  `2a652b18de280fa50d0f1e46f9caebe41c70755a`, completed `success`.
-- CI jobs: `Core deterministic gates` success and `Changed-line mutation
-  coverage (push/PR mirror)` success; the latter completed at
-  `2026-08-04T03:22:52Z`.
-- This readback is separate from the `git push` exit code and is the release
-  commit's remote CI proof.
+- GitHub release publication: expected after branch/tag push; not verified yet.
 
 ## Lifecycle Usage Capture
 
@@ -69,48 +47,60 @@ Advanced `charness` toward release `3.2.0` (tag `v3.2.0`) through the repo-owned
 - Input mode: `explicit_paths`.
 - Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
 - Closeout status: `written`.
-- Retro artifact: `charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md`.
+- Retro artifact: `charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md`.
 - Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
 - Surface hits: 2.
   - `checked-in-plugin-export`
   - `integrations-and-control-plane`
-- Path hits: 1.
-  - `skills/support/markdown-preview/scripts/markdown_preview_render.py`
-- Evaluated changed paths: 126.
-  - `.agents/critique-adapter.yaml`
+- Path hits: 6.
+  - `skills/support/web-fetch/scripts/acquire_public_url.py`
+  - `skills/support/web-fetch/scripts/acquire_public_url_io.py`
+  - `skills/support/web-fetch/scripts/classify_fetch_response.py`
+  - `skills/support/web-fetch/scripts/markdown_negotiation_stage.py`
+  - `skills/support/web-fetch/scripts/route_public_fetch.py`
+  - `skills/support/web-fetch/scripts/route_stage_catalog.py`
+- Evaluated changed paths: 605.
+  - `.agents/quality-adapter.yaml`
+  - `.agents/surfaces.json`
   - `.claude-plugin/marketplace.json`
-  - `charness-artifacts/critique/2026-08-03-211703-packet.json`
-  - `charness-artifacts/critique/2026-08-03-211703-packet.md`
-  - `charness-artifacts/critique/2026-08-03-221939-packet.json`
-  - `charness-artifacts/critique/2026-08-03-221939-packet.md`
-  - `charness-artifacts/critique/2026-08-03-222903-packet.json`
-  - `charness-artifacts/critique/2026-08-03-222903-packet.md`
-  - `charness-artifacts/critique/2026-08-03-223438-packet.json`
-  - `charness-artifacts/critique/2026-08-03-223438-packet.md`
-  - `charness-artifacts/critique/2026-08-03-225320-packet.json`
-  - `charness-artifacts/critique/2026-08-03-225320-packet.md`
-  - `charness-artifacts/critique/2026-08-04-critique-review.md`
-  - `charness-artifacts/critique/2026-08-04-decide-where-a-recurring-lesson-lives-disposition-review.md`
-  - `charness-artifacts/critique/2026-08-04-issue-497-500-501-resolution-critique.md`
-  - `charness-artifacts/critique/2026-08-04-issue-497-500-501-resolution-packet.json`
-  - `charness-artifacts/critique/2026-08-04-issue-497-500-501-resolution-packet.md`
-  - `charness-artifacts/critique/2026-08-04-make-recurring-closeout-cost-actionable-critique.md`
-  - `charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.json`
-  - `charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface-packet.md`
-  - ... 106 more
+  - `charness-artifacts/critique/2026-08-04-053842-packet.json`
+  - `charness-artifacts/critique/2026-08-04-053842-packet.md`
+  - `charness-artifacts/critique/2026-08-04-065640-packet.json`
+  - `charness-artifacts/critique/2026-08-04-065640-packet.md`
+  - `charness-artifacts/critique/2026-08-04-070908-packet.json`
+  - `charness-artifacts/critique/2026-08-04-070908-packet.md`
+  - `charness-artifacts/critique/2026-08-04-071431-packet.json`
+  - `charness-artifacts/critique/2026-08-04-071431-packet.md`
+  - `charness-artifacts/critique/2026-08-04-071725-packet.json`
+  - `charness-artifacts/critique/2026-08-04-071725-packet.md`
+  - `charness-artifacts/critique/2026-08-04-110830-packet.json`
+  - `charness-artifacts/critique/2026-08-04-110830-packet.md`
+  - `charness-artifacts/critique/2026-08-04-111122-packet.json`
+  - `charness-artifacts/critique/2026-08-04-111122-packet.md`
+  - `charness-artifacts/critique/2026-08-04-111233-packet.json`
+  - `charness-artifacts/critique/2026-08-04-111233-packet.md`
+  - `charness-artifacts/critique/2026-08-04-111554-packet.json`
+  - ... 585 more
 
 ## Real-Host Verification
 
-- No configured release-time real-host proof trigger matched this slice.
-- Evaluation scope: `evaluated`
+- Release-time real-host verification was triggered for this slice.
+- Real-host checklist items remain open until their executed proof is recorded.
 
 ## Real-Host Proof
 
-- No configured release-time real-host proof trigger matched this slice.
+- Release-time real-host proof is required for this slice.
+- On THIS maintainer/dev machine, run `charness update` after publish so the installed plugin at `~/.agents/src/charness` stays `== repo`, then re-verify with `charness doctor` (or `python3 scripts/doctor.py --repo-root . --json`) and a cited-check == repo-gate spot check; record the `charness update` output as executed proof. This closes the installed-vs-repo version-skew class.
+- Run `charness tool doctor nose --no-write-locks` before installing `nose` and confirm missing `nose` reports `doctor_disposition: advisory-install-needed`, not a blocking install failure.
+- Run `charness tool install nose --dry-run` and confirm it points at the upstream `nose-cli-installer.sh` release path and latest `v0.4.0` or newer metadata.
+- Install `nose` through the manifest-supported path (`charness tool install nose`, the upstream release installer, or `brew install corca-ai/tap/nose`), then verify `nose --version`.
+- Re-run `charness tool doctor nose --no-write-locks` and confirm the binary is detected on PATH.
+- Run `charness tool sync-support nose` and confirm it reports no materialized support skill requirement; `nose` is an integration-only validation binary consumed by the public `quality` skill.
+- Run `python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json` once with `nose` available and confirm findings, if any, are advisory refactoring candidates rather than standing quality failures.
 
 ## Review Proof
 
-- Review proof: `charness-artifacts/critique/2026-08-04-release-3-2-0-additive-operator-surface.md`.
+- Review proof: `charness-artifacts/critique/release-3-3-0-prepublish.md`.
 
 ## Requested Review Gate
 
@@ -121,29 +111,18 @@ Advanced `charness` toward release `3.2.0` (tag `v3.2.0`) through the repo-owned
 
 ## Install Refresh
 
-- Post-publish install refresh: `refreshed`; `charness update` returned 0 and
-  reported checkout, Codex source/cache, and installed surfaces at `3.2.0`.
-- Post-publish version readback: `charness version` returned `version: 3.2.0`.
-- Post-publish doctor readback: `charness doctor` returned 0 with checkout,
-  Codex source/cache, and target repo at `3.2.0`, with no cache drift.
+- Post-publish install refresh: pending final publish verification.
 
 ## Release Runtime
 
 - `requested_review_gate`: 0.002s
-- `cli_skill_surface_gate`: 1.819s
-- `quality_command`: 168.190s
-- `fresh_checkout_probes_initial`: 3.457s
-- `remote_branch_ci_readback`: recorded in this artifact and the public-readback artifact.
-- `public_release_readback`: recorded by unauthenticated HTTPS page; API channel unavailable (403).
-- `post_publish_install_refresh`: returned 0; installed surfaces refreshed.
-- `post_publish_version_readback`: returned 0.
-- `post_publish_doctor_readback`: returned 0.
+- `cli_skill_surface_gate`: 1.872s
+- `quality_command`: 81.944s
+- `fresh_checkout_probes_initial`: 3.711s
 
 ## Baton Reconcile
 
-- Baton reconcile observation: `n/a` — `docs/handoff.md` carries no release
-  version claim in its `## Current State` / `## Next Session` routing sections;
-  no version-specific reconcile was needed.
+- Baton reconcile observation: not recorded by this helper invocation.
 
 ## Fresh Checkout Probes
 
@@ -154,8 +133,7 @@ Advanced `charness` toward release `3.2.0` (tag `v3.2.0`) through the repo-owned
 
 ## Issue Closeout
 
-- Issue closeout verification: `not_requested`; remote issues #496 and #503
-  remain open and no issue-close phase was run.
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 

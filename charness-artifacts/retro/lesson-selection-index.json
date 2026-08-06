@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 445,
-  "candidate_count": 1839,
+  "source_artifact_count": 446,
+  "candidate_count": 1840,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1658,6 +1658,1286 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:40312d195e4d",
+      "kind": "repeat_trap",
+      "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
+      "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
+      "recurrence_class": null,
+      "source_count": 130,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
+          "date": "2026-06-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md",
+          "date": "2026-06-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md",
+          "date": "2026-06-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-20-0-release-auto-retro.md",
+          "date": "2026-06-05",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-21-0-release-auto-retro.md",
+          "date": "2026-06-05",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-22-0-release-auto-retro.md",
+          "date": "2026-06-05",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-23-0-release-auto-retro.md",
+          "date": "2026-06-05",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md",
+          "date": "2026-06-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md",
+          "date": "2026-06-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md",
+          "date": "2026-06-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
+          "date": "2026-06-07",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-28-0-release-auto-retro.md",
+          "date": "2026-06-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md",
+          "date": "2026-06-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-30-0-release-auto-retro.md",
+          "date": "2026-06-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-30-1-release-auto-retro.md",
+          "date": "2026-06-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-31-0-release-auto-retro.md",
+          "date": "2026-06-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-32-0-release-auto-retro.md",
+          "date": "2026-06-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-32-1-release-auto-retro.md",
+          "date": "2026-06-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-33-0-release-auto-retro.md",
+          "date": "2026-06-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-34-0-release-auto-retro.md",
+          "date": "2026-06-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-35-0-release-auto-retro.md",
+          "date": "2026-06-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-36-0-release-auto-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-38-0-release-auto-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md",
+          "date": "2026-06-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md",
+          "date": "2026-06-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md",
+          "date": "2026-06-12",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-42-0-release-auto-retro.md",
+          "date": "2026-06-12",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-43-0-release-auto-retro.md",
+          "date": "2026-06-12",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-44-0-release-auto-retro.md",
+          "date": "2026-06-12",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md",
+          "date": "2026-06-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md",
+          "date": "2026-06-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md",
+          "date": "2026-06-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md",
+          "date": "2026-06-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md",
+          "date": "2026-06-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md",
+          "date": "2026-06-15",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-50-2-release-auto-retro.md",
+          "date": "2026-06-16",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-51-0-release-auto-retro.md",
+          "date": "2026-06-16",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-51-1-release-auto-retro.md",
+          "date": "2026-06-16",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-52-0-release-auto-retro.md",
+          "date": "2026-06-16",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-1-release-auto-retro.md",
+          "date": "2026-06-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md",
+          "date": "2026-06-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md",
+          "date": "2026-06-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md",
+          "date": "2026-06-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md",
+          "date": "2026-06-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md",
+          "date": "2026-06-19",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md",
+          "date": "2026-06-20",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md",
+          "date": "2026-06-23",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md",
+          "date": "2026-06-23",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-2-release-auto-retro.md",
+          "date": "2026-06-23",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md",
+          "date": "2026-06-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md",
+          "date": "2026-06-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md",
+          "date": "2026-06-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md",
+          "date": "2026-06-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-5-release-auto-retro.md",
+          "date": "2026-06-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-8-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md",
+          "date": "2026-06-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md",
+          "date": "2026-06-28",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-02-v0-58-0-release-auto-retro.md",
+          "date": "2026-07-02",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-03-v0-59-0-release-auto-retro.md",
+          "date": "2026-07-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-03-v0-60-0-release-auto-retro.md",
+          "date": "2026-07-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md",
+          "date": "2026-07-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md",
+          "date": "2026-07-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md",
+          "date": "2026-07-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md",
+          "date": "2026-07-09",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md",
+          "date": "2026-07-10",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md",
+          "date": "2026-07-11",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md",
+          "date": "2026-07-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-6-release-auto-retro.md",
+          "date": "2026-07-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md",
+          "date": "2026-07-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md",
+          "date": "2026-07-14",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md",
+          "date": "2026-07-15",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md",
+          "date": "2026-07-15",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md",
+          "date": "2026-07-15",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md",
+          "date": "2026-07-16",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md",
+          "date": "2026-07-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md",
+          "date": "2026-07-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md",
+          "date": "2026-07-17",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md",
+          "date": "2026-07-18",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md",
+          "date": "2026-07-19",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md",
+          "date": "2026-07-19",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-0-release-auto-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md",
+          "date": "2026-07-20",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md",
+          "date": "2026-07-21",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-22-v2-4-3-release-auto-retro.md",
+          "date": "2026-07-22",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-5-0-release-auto-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-6-0-release-auto-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-7-0-release-auto-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md",
+          "date": "2026-07-25",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md",
+          "date": "2026-07-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md",
+          "date": "2026-07-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
+          "date": "2026-07-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a67395bdb3fa",
+      "kind": "next_improvement",
+      "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
+      "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
+      "recurrence_class": null,
+      "source_count": 10,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
+          "date": "2026-07-26",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
+          "date": "2026-08-04",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1d1a4aa0497b",
+      "kind": "repeat_trap",
+      "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
+      "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
+      "recurrence_class": null,
+      "source_count": 10,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
+          "date": "2026-07-26",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
+          "date": "2026-07-29",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
+          "date": "2026-07-31",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
+          "date": "2026-08-03",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
+          "date": "2026-08-04",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:31be134a0d8f",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v3.3.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v3 3 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v3.3.0`."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:b6300cc48f5f",
       "kind": "current_focus",
       "lesson": "This retro covers the proof-boundary work represented by the 26 commits from `556dfee6` through `9b3f9ec8` on the local branch.",
@@ -3188,1236 +4468,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "`truth-surface-rebinding` — the support repair changed reviewed truth surfaces after the release critique, so the candidate scope, critique packet, packet identity, and release evidence had to be rebound. The extra prep and packet refreshes were necessary once the repair was real, but the avoidable part was letting the release packet span an unfrozen support surface. Decision: same waste, fix now. Proof: the final packet identity and candidate scope were regenerated after the last reviewed repair."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:40312d195e4d",
-      "kind": "repeat_trap",
-      "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
-      "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
-      "recurrence_class": null,
-      "source_count": 129,
-      "independent_source_count": 1,
-      "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 4,
-      "recency_weight": 0.9402,
-      "alpha": 0.12,
-      "selection_weight": 0.9402,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
-          "date": "2026-06-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-18-0-release-auto-retro.md",
-          "date": "2026-06-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-04-v0-19-0-release-auto-retro.md",
-          "date": "2026-06-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-20-0-release-auto-retro.md",
-          "date": "2026-06-05",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-21-0-release-auto-retro.md",
-          "date": "2026-06-05",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-22-0-release-auto-retro.md",
-          "date": "2026-06-05",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-05-v0-23-0-release-auto-retro.md",
-          "date": "2026-06-05",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-0-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-24-1-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-06-v0-25-0-release-auto-retro.md",
-          "date": "2026-06-06",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-07-v0-27-0-release-auto-retro.md",
-          "date": "2026-06-07",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-28-0-release-auto-retro.md",
-          "date": "2026-06-08",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-29-0-release-auto-retro.md",
-          "date": "2026-06-08",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-30-0-release-auto-retro.md",
-          "date": "2026-06-08",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-30-1-release-auto-retro.md",
-          "date": "2026-06-08",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-08-v0-31-0-release-auto-retro.md",
-          "date": "2026-06-08",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-32-0-release-auto-retro.md",
-          "date": "2026-06-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-32-1-release-auto-retro.md",
-          "date": "2026-06-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-33-0-release-auto-retro.md",
-          "date": "2026-06-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-34-0-release-auto-retro.md",
-          "date": "2026-06-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-09-v0-35-0-release-auto-retro.md",
-          "date": "2026-06-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-36-0-release-auto-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-37-0-release-auto-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-38-0-release-auto-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-39-0-release-auto-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-10-v0-40-0-release-auto-retro.md",
-          "date": "2026-06-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-11-v0-41-0-release-auto-retro.md",
-          "date": "2026-06-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-41-1-release-auto-retro.md",
-          "date": "2026-06-12",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-42-0-release-auto-retro.md",
-          "date": "2026-06-12",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-43-0-release-auto-retro.md",
-          "date": "2026-06-12",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-12-v0-44-0-release-auto-retro.md",
-          "date": "2026-06-12",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-44-1-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-45-0-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-13-v0-46-0-release-auto-retro.md",
-          "date": "2026-06-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-47-0-release-auto-retro.md",
-          "date": "2026-06-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-48-0-release-auto-retro.md",
-          "date": "2026-06-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-49-0-release-auto-retro.md",
-          "date": "2026-06-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-14-v0-50-0-release-auto-retro.md",
-          "date": "2026-06-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-15-v0-50-1-release-auto-retro.md",
-          "date": "2026-06-15",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-50-2-release-auto-retro.md",
-          "date": "2026-06-16",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-51-0-release-auto-retro.md",
-          "date": "2026-06-16",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-51-1-release-auto-retro.md",
-          "date": "2026-06-16",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-16-v0-52-0-release-auto-retro.md",
-          "date": "2026-06-16",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-1-release-auto-retro.md",
-          "date": "2026-06-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-2-release-auto-retro.md",
-          "date": "2026-06-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-17-v0-52-3-release-auto-retro.md",
-          "date": "2026-06-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-4-release-auto-retro.md",
-          "date": "2026-06-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-18-v0-52-5-release-auto-retro.md",
-          "date": "2026-06-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-19-v0-52-6-release-auto-retro.md",
-          "date": "2026-06-19",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-20-v0-53-0-release-auto-retro.md",
-          "date": "2026-06-20",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-0-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-1-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-23-v0-54-2-release-auto-retro.md",
-          "date": "2026-06-23",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-0-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-1-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-55-2-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-25-v0-56-0-release-auto-retro.md",
-          "date": "2026-06-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-1-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-2-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-3-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-4-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-26-v0-56-5-release-auto-retro.md",
-          "date": "2026-06-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-6-release-auto-retro.md",
-          "date": "2026-06-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-7-release-auto-retro.md",
-          "date": "2026-06-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-8-release-auto-retro.md",
-          "date": "2026-06-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-27-v0-56-9-release-auto-retro.md",
-          "date": "2026-06-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-06-28-v0-57-0-release-auto-retro.md",
-          "date": "2026-06-28",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-02-v0-58-0-release-auto-retro.md",
-          "date": "2026-07-02",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-03-v0-59-0-release-auto-retro.md",
-          "date": "2026-07-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-03-v0-60-0-release-auto-retro.md",
-          "date": "2026-07-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-61-0-release-auto-retro.md",
-          "date": "2026-07-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-04-v0-62-0-release-auto-retro.md",
-          "date": "2026-07-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-v0-63-0-release-auto-retro.md",
-          "date": "2026-07-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-09-v0-63-1-release-auto-retro.md",
-          "date": "2026-07-09",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-64-0-release-auto-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-65-0-release-auto-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-10-v0-66-0-release-auto-retro.md",
-          "date": "2026-07-10",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-0-release-auto-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-1-release-auto-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-2-release-auto-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-3-release-auto-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-11-v0-66-4-release-auto-retro.md",
-          "date": "2026-07-11",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-0-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-1-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-2-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-3-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-4-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-13-v1-0-5-release-auto-retro.md",
-          "date": "2026-07-13",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-6-release-auto-retro.md",
-          "date": "2026-07-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-7-release-auto-retro.md",
-          "date": "2026-07-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-14-v1-0-8-release-auto-retro.md",
-          "date": "2026-07-14",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-10-release-auto-retro.md",
-          "date": "2026-07-15",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-11-release-auto-retro.md",
-          "date": "2026-07-15",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-15-v1-0-9-release-auto-retro.md",
-          "date": "2026-07-15",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-16-v1-1-0-release-auto-retro.md",
-          "date": "2026-07-16",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-17-v1-2-0-release-auto-retro.md",
-          "date": "2026-07-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-17-v1-3-0-release-auto-retro.md",
-          "date": "2026-07-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-17-v2-0-0-release-auto-retro.md",
-          "date": "2026-07-17",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-0-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-1-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-2-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-3-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-4-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-5-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-18-v2-1-6-release-auto-retro.md",
-          "date": "2026-07-18",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-0-release-auto-retro.md",
-          "date": "2026-07-19",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-19-v2-2-1-release-auto-retro.md",
-          "date": "2026-07-19",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-0-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-3-1-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-0-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-20-v2-4-1-release-auto-retro.md",
-          "date": "2026-07-20",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-21-v2-4-2-release-auto-retro.md",
-          "date": "2026-07-21",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-22-v2-4-3-release-auto-retro.md",
-          "date": "2026-07-22",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-5-0-release-auto-retro.md",
-          "date": "2026-07-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-6-0-release-auto-retro.md",
-          "date": "2026-07-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-7-0-release-auto-retro.md",
-          "date": "2026-07-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-8-0-release-auto-retro.md",
-          "date": "2026-07-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-25-v2-9-0-release-auto-retro.md",
-          "date": "2026-07-25",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-10-0-release-auto-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-0-release-auto-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
-          "date": "2026-07-29",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a67395bdb3fa",
-      "kind": "next_improvement",
-      "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
-      "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
-      "recurrence_class": null,
-      "source_count": 9,
-      "independent_source_count": 1,
-      "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 4,
-      "recency_weight": 0.9402,
-      "alpha": 0.12,
-      "selection_weight": 0.9402,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
-          "date": "2026-07-26",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
-          "date": "2026-07-29",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-          "date": "2026-08-04",
-          "section": "Next Improvements",
-          "generator": "release-trigger",
-          "kind": "next_improvement",
-          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:1d1a4aa0497b",
-      "kind": "repeat_trap",
-      "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
-      "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
-      "recurrence_class": null,
-      "source_count": 9,
-      "independent_source_count": 1,
-      "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-04",
-      "age_days": 4,
-      "recency_weight": 0.9402,
-      "alpha": 0.12,
-      "selection_weight": 0.9402,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
-          "date": "2026-07-26",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-2-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-v2-11-3-release-auto-retro.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-29-v2-12-0-release-auto-retro.md",
-          "date": "2026-07-29",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-0-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-31-v3-0-1-release-auto-retro.md",
-          "date": "2026-07-31",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-0-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-03-v3-1-1-release-auto-retro.md",
-          "date": "2026-08-03",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-04-v3-2-0-release-auto-retro.md",
-          "date": "2026-08-04",
-          "section": "Waste",
-          "generator": "release-trigger",
-          "kind": "repeat_trap",
-          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
         }
       ]
     },
