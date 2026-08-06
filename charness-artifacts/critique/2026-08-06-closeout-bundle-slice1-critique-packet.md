@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-06T12:23:24Z
-- **Prepared for**: closeout bundle slice 1 standalone critique
+- **Generated**: 2026-08-06T13:24:47Z
+- **Prepared for**: closeout bundle Slice 1 orchestration after current goal contract updates
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `7e5d7cff20a1987437c3e7485d9231cae7fc138f87fd3e297556cee45d7ef345`
+- **Reviewed input identity**: `0a9b69378b8b38fc3bac3dbb555342669f8c6577f571b61811632d3855aca995`
 - **Reviewed paths**: 8
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,12 +28,15 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md
+- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md
+  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
+- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
+  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md
+  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
 ```
 
 ## Non-Goals For This Contract

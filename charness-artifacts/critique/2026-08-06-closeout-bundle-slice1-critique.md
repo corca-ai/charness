@@ -61,8 +61,8 @@ reviewer returned findings, and each shared-worktree boundary verified clean.
 
 - Packet consumed: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json
 - Packet path: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json
-- Packet SHA256: e180301ea9ebf39ddd2db5b222ea339484d44aa229cc67fc71f9d321cc2c3cdb
-- Identity SHA256: 7e5d7cff20a1987437c3e7485d9231cae7fc138f87fd3e297556cee45d7ef345
+- Packet SHA256: e9fe80e893c8a87e6626eb3ca3ae229cb530f80d0b18bd5b433426a7c2296c1c
+- Identity SHA256: 0a9b69378b8b38fc3bac3dbb555342669f8c6577f571b61811632d3855aca995
 
 ## Boundary Ownership
 
@@ -70,3 +70,12 @@ reviewer returned findings, and each shared-worktree boundary verified clean.
 - Consumer: the closeout-bundle receipt and later verification/claims readers consume the bound evidence.
 - Owning surface: [closeout_bundle_lib.py](../../scripts/closeout_bundle_lib.py) owns orchestration-level ordering and receipt binding, while packet generation and identity reconstruction remain delegated owners.
 - Verdict: owned-correctly
+
+Fresh-eye pass: scripts/closeout_bundle.py — the bounded Slice 1 critique
+reviewed the CLI's ready/completed/refusal reporting; it is an orchestration
+surface, not an independent verdict about arbitrary consumer artifacts.
+
+Fresh-eye pass: scripts/closeout_bundle_lib.py — the bounded Slice 1 critique
+reviewed phase ordering, identity binding, command refusal, and receipt rules;
+the library owns orchestration status while delegated validators own artifact
+verdicts.

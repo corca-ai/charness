@@ -2,8 +2,8 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-06T12:23:24Z",
-  "prepared_for": "closeout bundle slice 1 standalone critique",
+  "generated_at": "2026-08-06T13:24:47Z",
+  "prepared_for": "closeout bundle Slice 1 orchestration after current goal contract updates",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "7af2ec02dd8f777dda06aafb2987ff44eaabf6b0",
+    "base_head": "a96a90cd32525af2a5fadb390fe4ae431bf3f2c9",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
@@ -70,11 +70,11 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
-        "content_sha256": "cf16a8e5418bd0f7ecdc32e24c49896e7cbcdd27e47182e8e33c55eef7e7ea79"
+        "content_sha256": "4ceb162bea8b6c71a5b6146fb754d5fee3f5c96a4642f2cc1c9b15888ea36682"
       },
       {
         "path": "charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md",
-        "content_sha256": "f21a9f1fc9c375735b7b2dc3af3aa789683fa54182e441eb1c6dc3da0fcd18ed"
+        "content_sha256": "8c209e80211681073b74eca24ddb36b23295ccd1123ad3f04db20f1b9c1cb67e"
       },
       {
         "path": "plugins/charness/scripts/closeout_bundle.py",
@@ -86,7 +86,7 @@
       },
       {
         "path": "scripts/boundary-bypass-exemptions.txt",
-        "content_sha256": "fbb0d87a59bcf66ef99f4c257b4836eb89e7e9adf67cc10bc97f7f09fdf0dd77"
+        "content_sha256": "47d928d618c9fba90a78c2bd6fe1b336e9f196a09c92fea43c82010a633c0661"
       },
       {
         "path": "scripts/closeout_bundle.py",
@@ -103,9 +103,9 @@
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "7e5c66c0cc990100a13aa1c64087a2422ba3cad4bbbbfed2e7d48b01cc6fd2b3",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "7e5d7cff20a1987437c3e7485d9231cae7fc138f87fd3e297556cee45d7ef345"
+    "identity_sha256": "0a9b69378b8b38fc3bac3dbb555342669f8c6577f571b61811632d3855aca995"
   }
 }
