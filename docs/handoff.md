@@ -82,6 +82,4 @@
 - [North Star](./design-north-star.md)
 
 - Refresh kept: the exact [next-goal path](../charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md), published-head address, CI readback command, and runtime/mutation first actions because each changes the next operator's first move.
-- Refresh non-claims: provider freshness, private consumer/provider roundtrip,
-  live-agent behavior, optional `nose` proof, and Cautilus execution remain
-  unproven or out of scope; see the [completed goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
+- Refresh non-claims: provider freshness, private consumer/provider roundtrip, live-agent behavior, optional `nose` proof, and Cautilus execution remain unproven or out of scope; see the [completed goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md).
