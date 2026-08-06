@@ -2,61 +2,43 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** read the [closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md) and [release record](../charness-artifacts/release/latest.md); the closeout/release slice is complete unless a new receipt or follow-up boundary is explicitly opened.
-- First read the [current quality posture](../charness-artifacts/quality/latest.md), [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and [North Star](./design-north-star.md).
+- **Next pickup:** read the [2026-08-07 session retro](../charness-artifacts/retro/2026-08-07-session-retro.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and [North Star](./design-north-star.md); then run the read-only identity/state scan, write the triage lock, decide ownership, and enter `quality` for #515 only if the boundary is Charness-owned.
+- Continue with `quality → issue` for #515 only after the ownership decision; Charness may prove routing/disclosure, not the consumer repo's browser, provider, or product behavior. The independent behavior channel is required before implementation closeout, not before quality planning. Keep #514 deferred until a second consumer of the same evidence-boundary contract or an explicitly accepted small, plan-only scope is recorded.
 
 ## Continuation Capability
 
-- Keep local, provider, cross-host, remote-CI, release, Cautilus, and issue claims separate.
-- The closeout goal and its execution contract own packet identity, pointer freshness, pre-review authoring order, and retro-to-handoff wiring.
-- The `v3.4.0` release phase recorded its pre-push quality gate, tag/publication, distinct HTTP observer, install refresh, version/doctor readbacks, and clean post-publish commit boundary.
-- Issue #517 is closed through the direct-commit carrier in `00656c5a`; its closeout draft, delegated resolution critique, distinct behavior proof, and GitHub state readback are verified. The follow-up bookkeeping is recorded through `5df4fb61`.
-- New issue review: #516's exact four reported ledger failures pass at current `HEAD` (and the full ledger suite is 27/27); its confirmed historical source-claim diagnosis and portability repair are recorded in [the #516 debug artifact](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md), with delegated causal review, successful remote mutation readback, and CLOSED state verified. #515 remains a distinct quality-routing boundary, and #514 remains deferred work.
+- Keep semantic coverage, proof execution, evidence identity, execution root, and external observation as separate claims.
+- At irreversible boundaries, a green gate, `CLOSED` state, or local artifact is provisional; require a different observer and evidence channel.
+- When a reviewed goal, packet, ledger, or handoff input changes, invalidate and regenerate dependent identity before broad verification.
 
 ## Current State
 
-- The closeout bundle and retro-to-handoff validator are included in release commit `7bf3893b` for `v3.4.0`; the locked local proof target is recorded separately at [the local proof ledger](../charness-artifacts/probe/2026-08-06-closeout-local-proof.json), and the final claims/disposition identity is bound by the tracked critique carrier.
-- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring, final claims review, and release critique are recorded. The post-publish verification receipts are [the release observer probe](../charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json) and [the remote CI readback](../charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json).
-- The #517 repair is in `5df4fb61`; its local verification and pre-push gate passed. Its first Quality Core run `31115253605` had Core deterministic gates pass but changed-line mutation fail on a machine-local absolute packet path. That path was repaired in #516 carrier `9e2c390d`; Quality Core run `31117396157` independently passed both Core deterministic gates and changed-line mutation coverage.
-- #516 is closed through direct-commit carrier `9e2c390d`; `validate-closeout-draft` and `verify-closeout --expect-state CLOSED` passed, and GitHub state is CLOSED/COMPLETED. The causal/debug and resolution-critique records are committed.
-- The publish-state claim below remains a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a current version or tag claim. The release record separately binds `v3.4.0` to tag SHA `7bf3893b`, and the post-publish bookkeeping is committed at `c34b3dc0`.
-
-<!-- charness-publish-state-claim:post-push-operational-proof -->
-```json
-{"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
-```
+- #516 and #517 are closed; do not reopen them from this review. Their detailed diagnosis and proof remain in the linked debug/critique artifacts.
+- #515 is open. Its consumer-repo comment reports local UI/sync repairs but explicitly leaves fresh-eye review blocked; this is not closeout-grade proof for Charness.
+- #514 is open and intentionally deferred: it proposes deterministic evidence assembly without weakening gates or building a monolithic orchestrator.
+- Quality Core run `31118030353` for head `0e469e917c6fa1b07f0351da639ac4431f519acc` failed during action download metadata with GitHub `Service Unavailable`; mutation was cancelled. Treat this as an external CI non-claim, not a repository-green or repository-red verdict.
+- The durable pattern analysis is [the session retro](../charness-artifacts/retro/2026-08-07-session-retro.md); the detailed #516 evidence is [the debug artifact](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md).
 
 ## Next Session
 
-1. Read the [closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), its [quality record](../charness-artifacts/quality/latest.md), [release record](../charness-artifacts/release/latest.md), and [release notes](../charness-artifacts/release/v3.4.0-notes.md).
-2. Treat `v3.4.0` publication, the unauthenticated HTTP release observation, remote CI, install refresh, `charness version`, and `charness doctor` readbacks as completed receipts; do not rerun publication for this slice.
-3. Read the [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md) and carry its markers into the next decision. Recurrence-class: closeout-diagnostic-visibility; Recurrence-class: release-proof-identity-churn.
-4. Read the #517 closeout, the terminal failure of run `31115253605`, and the successful #516 repair readback `31117396157`; keep their SHA identities distinct.
-5. Treat #516 as complete. #515 remains a distinct quality-routing/browser-provider boundary and #514 remains deferred work.
-6. Keep provider, installed-consumer beyond the recorded readback, host-window, Cautilus, and future release claims separate; any new proof needs its own observer/channel and artifact.
+1. Run `git status --short --branch`, inspect `gh run view 31118030353 --repo corca-ai/charness`, and read open issue states; do not infer current CI state from the push result.
+2. If the scan finds worktree/index/untracked evidence, identify its owning slice; allow read-only ownership planning, but finish its required commit/closeout or explicitly quarantine it before mutation or closeout. Write a triage lock with two columns: `historical fact` and `current behavior to prove`; after initial ownership triage, name the canonical owner, execution root, identity, final consumer, and unexamined axes for the surviving candidate.
+3. For #515, decide whether the next fix belongs in Charness quality routing/disclosure or the consumer repository. If Charness-owned, run the quality planner and bounded fresh-eye review before implementation; do not close on the existing comment or claim consumer product behavior from a Charness proof.
+4. For #514, search for a second consumer of the same owner/execution-root/identity/final-consumer contract only when a concrete candidate or accepted planning scope appears. If none exists, record it as deferred; if a small plan-only scope is explicitly accepted, record that decision and shape only the smallest evidence-boundary planner slice—never absorb consumer gates or readbacks into it.
+5. Before any issue closeout or publish boundary, freeze packet/ledger inputs, run focused ownership/containment checks, then broad verification, delegated resolution critique, closeout-draft validation, distinct-channel behavior verdict, and final state readback.
 
 ## Discuss
 
-- The user-authorized `v3.4.0` push/release completed only after the local gates, tracked critique, notes, tag/publication, and distinct readbacks; any later release is a new boundary.
-- Do not run Cautilus, provider roundtrips, or live-agent proof without a separate explicit boundary.
+- Treat recovered GitHub Actions as a future observation, not a standalone retry obligation; a new remote readback belongs to a later change or closeout boundary, and the failed setup run does not justify code changes or a claim of green.
+- Do not run Cautilus, provider/browser roundtrips, cross-host proof, release publication, or external writes without a newly scoped boundary.
 
 ## References
 
-- [Active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md)
-- [Execution contract](../charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md)
 - [Current quality posture](../charness-artifacts/quality/latest.md)
-- [Goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md)
-- [Release record](../charness-artifacts/release/latest.md)
-- [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [North Star](./design-north-star.md)
+- [#516 resolution critique](../charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md)
+- [#516 debug record](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md)
+- [#514](https://github.com/corca-ai/charness/issues/514)
+- [#515](https://github.com/corca-ai/charness/issues/515)
 
-- [Refresh kept](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md): the active closeout goal, prior published-state identity,
-  local-gate boundary, and exact retro recurrence obligations because each
-  changes the next action ([active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md),
-  [execution contract](../charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md),
-  [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md)).
-- [Refresh non-claims](../charness-artifacts/release/latest.md): new release publication, remote CI, provider freshness,
-  cross-host runtime, live-agent behavior, Cautilus execution, and issue writes
-  beyond the #516 closeout
-  remain unclaimed ([release record](../charness-artifacts/release/latest.md),
-  [handoff](./handoff.md)).
+Refresh kept: the next pickup, #515/#514 dispositions, evidence-boundary pattern, and current CI non-claim because each changes the next action.
+Refresh non-claims: #516/#517 implementation detail, prior release receipts, provider/cross-host behavior, and any current-head green verdict not proven by an independent run.

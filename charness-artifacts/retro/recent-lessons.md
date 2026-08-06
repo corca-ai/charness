@@ -7,8 +7,8 @@
 
 ## Repeat Traps
 
+- Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately. (source: `charness-artifacts/retro/2026-08-07-session-retro.md`; sources: 3)
 - **Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage ("four release publishes died to one shape"). (source: `charness-artifacts/retro/2026-07-27-session-retro.md`; sources: 3)
-- packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start. (source: `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`; sources: 2)
 - **Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning. (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`; sources: 2)
 - The broad verification, fresh-eye rounds, and carrier checks were necessary safety work at proof and issue boundaries, not waste. No host metric evidence supports a per-goal runtime or token comparison. (source: `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`)
 
@@ -34,4 +34,5 @@
 - `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`
 - `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`
 - `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`
+- `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`
