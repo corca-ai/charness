@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+import runpy
 import subprocess
 import sys
 from pathlib import Path
+
+import pytest
 
 from scripts import validate_retro_handoff_wiring as wiring
 
@@ -241,3 +244,72 @@ def test_plugin_copy_help_runs() -> None:
 
     assert result.returncode == 0, result.stderr
     assert "--goal-path" in result.stdout
+
+
+def test_helper_masks_fences_quotes_and_all_list_markers() -> None:
+    assert wiring._mask_fences(["before", "```", "inside", "```", "after"]) == [
+        "before", "", "", "", "after"
+    ]
+    assert wiring._authored_lines(["> quoted", "1. authored", "", "* own"]) == [
+        "", "1. authored", "", "* own"
+    ]
+    assert wiring._bullet_items(["> ignored", "1. first", "  continuation", "+ second"]) == [
+        "first continuation", "second"
+    ]
+
+
+def test_helper_path_and_link_edge_cases(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    assert wiring._repo_file(tmp_path, "missing.md", "demo")[2]
+    directory = tmp_path / "directory"
+    directory.mkdir()
+    assert wiring._repo_file(tmp_path, "directory", "demo")[2]
+    assert wiring._normalize_reference(
+        "../../outside.md", artifact_path=tmp_path / "retro" / "demo.md", repo_root=tmp_path
+    )[1]
+    paths, escaped = wiring._link_paths(
+        "[web](https://example.test) [mail](mailto:test@example.test) [local](../retro/demo.md) [bad](../../outside)",
+        handoff_path=tmp_path / HANDOFF,
+        repo_root=tmp_path,
+    )
+    assert paths == ["retro/demo.md"]
+    assert escaped == ["../../outside"]
+    monkeypatch.setattr(wiring.Path, "is_file", lambda _path: False)
+    with pytest.raises(ImportError, match="path normalizer"):
+        wiring._load_handoff_paths()
+
+
+def test_validate_wiring_rejects_invalid_paths_and_goal_escape(tmp_path: Path) -> None:
+    report = wiring.validate_wiring(
+        tmp_path,
+        goal_path="missing-goal.md",
+        retro_path="missing-retro.md",
+        handoff_path="missing-handoff.md",
+    )
+    assert report["status"] == "failed"
+    assert len(report["errors"]) == 3
+    _seed(tmp_path, retro_goal="../../../outside-goal.md")
+    escaped = _run(tmp_path)
+    assert any(error["code"] == "retro_goal_path_escape" for error in escaped["errors"])
+    (tmp_path / HANDOFF).write_text("# Demo Handoff\n", encoding="utf-8")
+    missing_next = _run(tmp_path)
+    assert any(error["code"] == "next_session_missing" for error in missing_next["errors"])
+
+
+def test_validate_wiring_main_and_source_entrypoint(tmp_path: Path, capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch) -> None:
+    _seed(tmp_path)
+    argv = [
+        "--repo-root", str(tmp_path), "--goal-path", GOAL,
+        "--retro-path", RETRO, "--handoff-path", HANDOFF,
+    ]
+    assert wiring.main(argv) == 0
+    assert '"status": "passed"' in capsys.readouterr().out
+    assert wiring.main([
+        "--repo-root", str(tmp_path), "--goal-path", "missing",
+        "--retro-path", RETRO, "--handoff-path", HANDOFF,
+    ]) == 1
+    assert '"status": "failed"' in capsys.readouterr().out
+    source = Path(__file__).resolve().parents[2] / "scripts/validate_retro_handoff_wiring.py"
+    monkeypatch.setattr(sys, "argv", [str(source), *argv])
+    with pytest.raises(SystemExit) as exc_info:
+        runpy.run_path(str(source), run_name="__main__")
+    assert exc_info.value.code == 0

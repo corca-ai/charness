@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts import closeout_bundle as cli
 from scripts import closeout_bundle_lib as lib
 
 from .support import ROOT, run_script
@@ -229,3 +230,166 @@ def test_post_sync_scope_drives_authoring_and_packet(monkeypatch: pytest.MonkeyP
     assert len(packet_calls) == 1
     assert "scripts/refreshed.py" in packet_calls[0]
     assert "scripts/initial.py" not in packet_calls[0]
+
+
+def test_command_validation_covers_runner_and_path_refusals() -> None:
+    with pytest.raises(lib.BundleError, match="shell-quotable"):
+        lib._command_argv("python3 'unterminated", repo_root=ROOT)
+    assert lib._command_argv("./scripts/check-shell.sh", repo_root=ROOT)[0] == "./scripts/check-shell.sh"
+    with pytest.raises(lib.BundleError, match="approved repo runner"):
+        lib._command_argv("perl scripts/check-shell.sh", repo_root=ROOT)
+    with pytest.raises(lib.BundleError, match="absolute path"):
+        lib._command_argv("python3 scripts/check-shell.sh /tmp/out", repo_root=ROOT)
+    with pytest.raises(lib.BundleError, match="repo-owned"):
+        lib._command_argv("python3 ../scripts/check-shell.sh", repo_root=ROOT)
+    with pytest.raises(lib.BundleError, match="repo-owned"):
+        lib._command_argv("python3 missing-closeout-script.py", repo_root=ROOT)
+    with pytest.raises(lib.BundleError, match="repo-owned"):
+        lib._command_argv("python3 scripts", repo_root=ROOT)
+
+
+def test_packet_payload_rejects_each_unusable_shape(tmp_path: Path) -> None:
+    cases = [
+        ({"returncode": 1, "stdout": "out", "stderr": "err"}, "generation failed"),
+        ({"returncode": 0, "stdout": "not json", "stderr": ""}, "did not return JSON"),
+        ({"returncode": 0, "stdout": json.dumps({"ok": False}), "stderr": ""}, "not ready"),
+        ({"returncode": 0, "stdout": json.dumps({"ok": True, "reviewed_input_binding": []}), "stderr": ""}, "input binding"),
+        ({"returncode": 0, "stdout": json.dumps({"ok": True, "reviewed_input_binding": {"usable": False}}), "stderr": ""}, "not usable"),
+        ({"returncode": 0, "stdout": json.dumps({"ok": True, "reviewed_input_binding": {"packet_path": 4}}), "stderr": ""}, "durable packet path"),
+        ({"returncode": 0, "stdout": json.dumps({"ok": True, "reviewed_input_binding": {"packet_path": "missing.json"}}), "stderr": ""}, "path is missing"),
+    ]
+    for result, message in cases:
+        with pytest.raises(lib.BundleError, match=message):
+            lib._packet_payload(tmp_path, result)
+    (tmp_path / "invalid.json").write_text("{}", encoding="utf-8")
+    invalid_packet = {
+        "returncode": 0,
+        "stdout": json.dumps({
+            "ok": True,
+            "reviewed_input_binding": {"packet_path": "invalid.json", "identity_sha256": "a" * 64},
+        }),
+        "stderr": "",
+    }
+    with pytest.raises(lib.BundleError, match="durable input identity"):
+        lib._packet_payload(tmp_path, invalid_packet)
+
+
+def test_failed_payload_and_invalid_bundle_id_are_explicit() -> None:
+    payload = {"status": "ready"}
+    phases: list[dict[str, object]] = []
+    result = lib._failed(payload, phases, "boom", detail="recorded")
+    assert result == {"status": "failed", "phases": phases, "error": "boom", "detail": "recorded"}
+    with pytest.raises(lib.BundleError, match="bundle-id"):
+        lib.build_plan(ROOT, **{**_args(), "bundle_id": "BAD"})
+
+
+def test_execute_refuses_after_sync_or_preflight_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    def build_initial(*_args: object, **_kwargs: object) -> dict[str, object]:
+        return {
+            "status": "ready",
+            "preflight": {"planned_commands": [{"phase": "sync", "command": "python3 scripts/check-shell.sh"}]},
+            "changed_paths": [],
+        }
+
+    monkeypatch.setattr(lib, "build_plan", build_initial)
+    monkeypatch.setattr(lib._preflight, "build_plan", lambda *_args, **_kwargs: {"status": "blocked"})
+    failed_sync = lib.execute(
+        ROOT,
+        **_args(),
+        runner=lambda argv, **_kwargs: subprocess.CompletedProcess(argv, 1, "", "sync failed"),
+    )
+    assert failed_sync["status"] == "failed"
+    assert "surface sync failed" in failed_sync["error"]
+
+    monkeypatch.setattr(lib, "build_plan", lambda *_args, **_kwargs: {
+        "status": "ready",
+        "preflight": {"planned_commands": [
+            {"phase": "sync", "command": "python3 scripts/check-shell.sh"},
+            {"phase": "closeout", "command": "python3 scripts/run_slice_closeout.py --verification-lock"},
+        ]},
+        "changed_paths": [],
+    })
+    blocked_after_sync = lib.execute(
+        ROOT,
+        **_args(),
+        runner=lambda argv, **_kwargs: subprocess.CompletedProcess(argv, 0, "", ""),
+    )
+    assert blocked_after_sync["status"] == "failed"
+    assert "post-sync" in blocked_after_sync["error"]
+
+
+def test_execute_refuses_pointer_and_authoring_failures(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(lib, "build_plan", lambda *_args, **_kwargs: {
+        "status": "ready", "preflight": {"planned_commands": []}, "changed_paths": [],
+    })
+    monkeypatch.setattr(lib._preflight, "build_plan", lambda *_args, **_kwargs: {"status": "ready", "planned_commands": []})
+    monkeypatch.setattr(lib, "_authoring_argv", lambda *_args: [["python3", "scripts/check-shell.sh"]])
+    calls: list[list[str]] = []
+
+    def fail_pointer(argv: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(argv)
+        return subprocess.CompletedProcess(argv, 1, "", "pointer failed")
+
+    pointer = lib.execute(ROOT, **_args(), runner=fail_pointer)
+    assert pointer["status"] == "failed"
+    assert "pointer freshness" in pointer["error"]
+
+    def fail_authoring(argv: list[str], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(argv)
+        if "validate_current_pointer_freshness.py" in argv[1]:
+            return subprocess.CompletedProcess(argv, 0, "", "")
+        return subprocess.CompletedProcess(argv, 1, "", "authoring failed")
+
+    monkeypatch.setattr(lib, "_authoring_argv", lambda *_args: [["python3", "scripts/check-shell.sh"]])
+    authoring = lib.execute(ROOT, **_args(), runner=fail_authoring)
+    assert authoring["status"] == "failed"
+    assert "authoring preflight" in authoring["error"]
+
+
+def test_execute_refuses_when_packet_has_no_verification_lock(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(lib, "build_plan", lambda *_args, **_kwargs: {
+        "status": "ready", "preflight": {"planned_commands": []}, "changed_paths": [],
+    })
+    plans = iter([
+        {"status": "ready", "planned_commands": []},
+        {"status": "ready", "planned_commands": []},
+    ])
+    monkeypatch.setattr(lib._preflight, "build_plan", lambda *_args, **_kwargs: next(plans))
+    monkeypatch.setattr(lib, "_authoring_argv", lambda *_args: [])
+    monkeypatch.setattr(lib, "_packet_payload", lambda *_args: {
+        "packet_sha256": "b" * 64,
+        "durable_identity_sha256": "a" * 64,
+        "reviewed_input_binding": {"packet_path": "packet.json", "reviewed_paths": []},
+    })
+    monkeypatch.setattr(lib._identity, "verify_reviewed_input_identity", lambda *_args: (True, ""))
+    packet_path = tmp_path / "packet.json"
+    packet_path.write_text(json.dumps({"reviewed_input_identity": {"identity_sha256": "a" * 64}}), encoding="utf-8")
+    result = lib.execute(
+        tmp_path,
+        **_args(),
+        runner=lambda argv, **_kwargs: subprocess.CompletedProcess(argv, 0, "", ""),
+    )
+    assert result["status"] == "failed"
+    assert "verification lock" in result["error"]
+
+
+def test_write_receipt_writes_completed_payload_and_rejects_escape(tmp_path: Path) -> None:
+    target = lib.write_receipt(tmp_path, {"status": "completed", "value": 1}, output_path=Path("nested/receipt.json"))
+    assert target == tmp_path / "nested/receipt.json"
+    assert json.loads(target.read_text(encoding="utf-8"))["value"] == 1
+    with pytest.raises(lib.BundleError, match="outside repository"):
+        lib.write_receipt(tmp_path, {"status": "completed"}, output_path=tmp_path.parent / "outside.json")
+
+
+def test_cli_main_covers_execute_receipt_and_exception(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+    monkeypatch.setattr(cli._lib, "execute", lambda *_args, **_kwargs: {"status": "completed"})
+    monkeypatch.setattr(cli._lib, "write_receipt", lambda repo_root, payload, *, output_path: repo_root / "receipt.json")
+    argv = [
+        "--repo-root", str(ROOT), "--manifest", str(MANIFEST), "--bundle-id", "closeout-cli-main",
+        "--critique-path", CRITIQUE, "--behavior-channel", "behavior=echo test", "--execute",
+    ]
+    assert cli.main(argv) == 0
+    assert "receipt_path" in capsys.readouterr().out
+    monkeypatch.setattr(cli._lib, "build_plan", lambda *_args, **_kwargs: (_ for _ in ()).throw(cli._lib.BundleError("blocked")))
+    assert cli.main(argv[:-1]) == 1
+    assert '"status": "blocked"' in capsys.readouterr().out
