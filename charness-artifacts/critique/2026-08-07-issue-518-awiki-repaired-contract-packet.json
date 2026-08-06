@@ -1,0 +1,163 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-06T22:37:59Z",
+  "prepared_for": "issue 518 repaired awiki verdict and three-issue source contract (round 2)",
+  "changed_ref": "16a4da1533ac12be701f25ce084aaeecbdd633e6",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `16a4da1533ac12be701f25ce084aaeecbdd633e6`:\n- charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md\n- charness-artifacts/quality/2026-08-07-quality-review.md\n- charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.json\n- charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.stdout.txt\n- charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md, charness-artifacts/quality/2026-08-07-quality-review.md, charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "16a4da1533ac12be701f25ce084aaeecbdd633e6",
+    "resolved_changed_ref": [
+      "16a4da1533ac12be701f25ce084aaeecbdd633e6"
+    ],
+    "base_head": "16a4da1533ac12be701f25ce084aaeecbdd633e6",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".githooks/pre-push",
+      "charness-artifacts/debug/2026-08-07-issue-518-quality-declaration-reconciliation-debug.md",
+      "charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md",
+      "charness-artifacts/quality/2026-08-07-quality-review.md",
+      "charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.json",
+      "charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.stdout.txt",
+      "charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md",
+      "docs/duplicate-detection-strategy.md",
+      "docs/handoff.md",
+      "integrations/tools/dependencies.json",
+      "integrations/tools/manifest.schema.json",
+      "plugins/charness/integrations/tools/dependencies.json",
+      "scripts/check-links-internal.sh",
+      "scripts/check-markdown.sh",
+      "scripts/check_doc_links.py",
+      "scripts/run-quality.sh",
+      "scripts/validate_quality_artifact.py",
+      "skills/public/quality/scripts/inventory_doc_duplicates.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".githooks/pre-push",
+        "content_sha256": "664a7ac1a94229f6dea15257eb1a3383026c777b2022f205e2fbdf4a8a1bf641"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-07-issue-518-quality-declaration-reconciliation-debug.md",
+        "content_sha256": "76790a5230e9cc702eadc331f055d4c5f28c14d742b92e6a85a5411412b24539"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md",
+        "content_sha256": "a4210914ebeab1d8f3197aa3360da00026878447410a5355e794de0a3a75f6ab"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-07-quality-review.md",
+        "content_sha256": "7c3ca8284ce5706d9499aaf6d7d639a33cadff2eb9125fa49452c0b92af8a4cd"
+      },
+      {
+        "path": "charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.json",
+        "content_sha256": "f5e8a2ccf71eb271f2336df60eb06be1f7114d2d1e59f1496c26a1bb1284a24a"
+      },
+      {
+        "path": "charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.stdout.txt",
+        "content_sha256": "53dd8860240719482b1fba39134bea811e1a3e294b926d5984dde33e64c0ddf1"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md",
+        "content_sha256": "0bb4f754ba4e42f7dab31fb1ff6e87d7b221bc69f278564736032aa3aa1f6017"
+      },
+      {
+        "path": "docs/duplicate-detection-strategy.md",
+        "content_sha256": "46374c62f2ee2381302e714cf3045210b0d6c003455c1edbab18960957ba618c"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "26d297d883c4626af5a1c06a68e72b7498719c51eaa1537995214ecc077042bc"
+      },
+      {
+        "path": "integrations/tools/dependencies.json",
+        "content_sha256": "315ac3c3ecc46b181d543b3e3faa2ba81c11e7cef7bca41ea97b296792d12329"
+      },
+      {
+        "path": "integrations/tools/manifest.schema.json",
+        "content_sha256": "0e4f07c105d94e7b39ca2c1a687eb99dc57bc9e3710977bd879023b3e6c826da"
+      },
+      {
+        "path": "plugins/charness/integrations/tools/dependencies.json",
+        "content_sha256": "315ac3c3ecc46b181d543b3e3faa2ba81c11e7cef7bca41ea97b296792d12329"
+      },
+      {
+        "path": "scripts/check-links-internal.sh",
+        "content_sha256": "fc790dffacc7dd4f4b72072b90911ed8d0b95ebb44a08bf05d71614f9e394fe0"
+      },
+      {
+        "path": "scripts/check-markdown.sh",
+        "content_sha256": "6bdae1fe4e7dabf556107ae303b4dcc7ab695ec3251cd562e8fd9ef250e3c38a"
+      },
+      {
+        "path": "scripts/check_doc_links.py",
+        "content_sha256": "fafd5a0b57a71558389e336c2d02321bc0ec9aa9f8a8c6c2fd33c766fde2912a"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "443d7216ee02b2f3cfc8f190796193ebd5c32801176dcce597ec78579cd7184a"
+      },
+      {
+        "path": "scripts/validate_quality_artifact.py",
+        "content_sha256": "384f927d91baa1238d3dd81c79e3e5f01a8d6c30c17e8f0aa6e05f8972338b91"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_doc_duplicates.py",
+        "content_sha256": "26c9a873dc526158b8d8ec1fb60276ad804dd77e9c1f6adb9c94697f270cf52e"
+      }
+    ],
+    "reviewed_patch_sha256": "c31e5d853c43bb2df922ce0ff31fa3247994db519db36f19da63b09292058e9a",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "7a8592d07add3f72b1f3902fb354e8ca866fbb5eefd8f9bdd8ce92dab981a980"
+  }
+}
