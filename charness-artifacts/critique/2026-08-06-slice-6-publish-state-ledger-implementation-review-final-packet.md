@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-06T07:08:54Z
+- **Generated**: 2026-08-06T07:27:21Z
 - **Prepared for**: Slice 6 publish-state ledger final implementation binding after all local repairs
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `296c3896e6a8647e3994572256d3c14ba41920d3a696a9bc53470bbe68b5d886`
+- **Reviewed input identity**: `c9ed5164d2feb0e3b00be1eb3b1c8e5b8e36e423013d48f315dbccb58bf01b46`
 - **Reviewed paths**: 7
 - **Sections**: 3
 - **Overall ok**: True
@@ -33,28 +33,15 @@ Changed paths for working tree:
 - charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md
 - charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md
 - charness-artifacts/quality/2026-08-06-quality-review.md
-- charness-artifacts/quality/sloc-inventory/latest.json
-- charness-artifacts/retro/2026-08-06-session-retro.md
-- docs/handoff.md
+- charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md, charness-artifacts/quality/2026-08-06-quality-review.md, charness-artifacts/retro/2026-08-06-session-retro.md, docs/handoff.md
+  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md, charness-artifacts/quality/2026-08-06-quality-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.
-  source matches: charness-artifacts/quality/sloc-inventory/latest.json
-  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md
+  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
-  source matches: charness-artifacts/retro/2026-08-06-session-retro.md
-  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
-  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
-
-Planned sync commands before validators:
-- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json
-- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract

@@ -50,9 +50,10 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 
 - The closeout proof is local and captured-snapshot bound; it does not prove
   current provider state, installed-host behavior, or a new remote CI run.
-- Quality delegated review is blocked because the host exposes no Agent tool;
-  the separate ledger implementation review contains the required two-round
-  fresh-eye evidence for the verdict surface.
+- The original quality delegated review was blocked because that session's host
+  exposed no Agent tool; the separate ledger implementation review contains the
+  required two-round fresh-eye evidence, and the current goal closeout records
+  an additional distinct claims review.
 - The broader `origin/main..HEAD` changed-line attempt blocked on historical
   lines outside the declared local slice boundary; that aggregate result is
   not claimed as a failure or substituted for the slice-bound proof.

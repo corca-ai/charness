@@ -89,8 +89,8 @@ under the cap rather than silently treated as reviewed.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json`
-- Packet SHA256: `9eb44e4fb0dad48eaca8ec38187799fab49aaec86413c546a45fc3bdb7449d28`
-- Identity SHA256: `296c3896e6a8647e3994572256d3c14ba41920d3a696a9bc53470bbe68b5d886`
+- Packet SHA256: `65b755ca3f108c089abfd326ef9708495f19ff29b10879b14fdfc5e0d9a473f8`
+- Identity SHA256: `c9ed5164d2feb0e3b00be1eb3b1c8e5b8e36e423013d48f315dbccb58bf01b46`
 - Round 1 prepared packet JSON SHA256:
   `ba9859fb0cadfa0b65f0a9cfae6a6075373c0964cb4556ed441584a6b0c98d84`
 - Round 1 prepared identity SHA256:

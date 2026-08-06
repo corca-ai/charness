@@ -281,7 +281,7 @@ applies.
 - Final-bundle proof: `python3 scripts/final_bundle_preflight.py ... --json` returned `ready` with zero blockers using the distinct ledger-focused behavior channel.
 - Verification lock: `python3 scripts/run_slice_closeout.py --repo-root . --base ff3029112280470e341f00900438033f232cad35 --verification-lock --produce-mutation-coverage --json` completed with effective exit `0`; the clean changed-line consumer passed for all 8 eligible Python pool files, and the fresh coverage fingerprint was consumed at the same `ff3029…` slice boundary.
 - Distinct-boundary note: an aggregate `origin/main..HEAD` changed-line attempt was also run and blocked on the broader historical range; it is recorded as a non-claim and does not replace the manifest-declared slice proof.
-- Non-claims: no provider refresh, installed-host roundtrip, new remote CI run, Cautilus evaluation, issue write/closeout, release/tag/version change, or push occurred; delegated quality review remained host-blocked because no Agent tool was exposed.
+- Non-claims: no provider refresh, installed-host roundtrip, new remote CI run, Cautilus evaluation, issue write/closeout, release/tag/version change, or push occurred; the original quality fan-out was host-blocked in its then-exposed session, while the distinct closeout-claims review is recorded separately for this final audit.
 - Status: complete; commits `1e5ab655`, `f5225617`, `e5d7ff9b`, `6d7cf1f7`, and `72139430` carry the regression and generated-inventory closeout state.
 
 ## Context Sources
@@ -389,7 +389,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 
 Retro: charness-artifacts/retro/2026-08-06-session-retro.md
 Host log probe: skipped: host-log-not-exposed: this runtime exposes no stable goal-scoped host session log; local closeout telemetry and structured quality artifacts were used instead.
-Disposition review: skipped: host-blocked-subagent: no Agent/subagent tool is exposed in this session; no same-agent substitute is claimed.
+Disposition review: charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md
 
 ## User Verification Instructions
 

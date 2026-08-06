@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-06T07:08:54Z",
+  "generated_at": "2026-08-06T07:27:21Z",
   "prepared_for": "Slice 6 publish-state ledger final implementation binding after all local repairs",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md\n- charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md\n- charness-artifacts/quality/2026-08-06-quality-review.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- charness-artifacts/retro/2026-08-06-session-retro.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md, charness-artifacts/quality/2026-08-06-quality-review.md, charness-artifacts/retro/2026-08-06-session-retro.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-06-session-retro.md\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md\n- charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md\n- charness-artifacts/quality/2026-08-06-quality-review.md\n- charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md, charness-artifacts/quality/2026-08-06-quality-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "7213943079e8999c8d2eb46bc7e6e65309510cba",
+    "base_head": "3a64fe55e19311717912bc57a48790030991bbfa",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
@@ -69,7 +69,7 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
-        "content_sha256": "24bfa4e739107d248f5743c8d09421d7022fa023b3fc36c9223c8bb703a80803"
+        "content_sha256": "84192569f50789eca2841bbad136c71b3b079322f2ec4ec233b6065cc4452dbd"
       },
       {
         "path": "charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json",
@@ -98,9 +98,9 @@
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "bed47f112b49997ce17c69c764d41abb26173aa1c59fedb0dfe3b44b30dffe7b",
+    "unstaged_patch_sha256": "64eb84c6892f218eb235df231d45d979b4e32c2450e2041385682ed9ac0779aa",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "296c3896e6a8647e3994572256d3c14ba41920d3a696a9bc53470bbe68b5d886"
+    "identity_sha256": "c9ed5164d2feb0e3b00be1eb3b1c8e5b8e36e423013d48f315dbccb58bf01b46"
   }
 }
