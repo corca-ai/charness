@@ -1,0 +1,372 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-06T09:00:35Z",
+  "prepared_for": "release-3.3.0-final-prepublish-v5",
+  "changed_ref": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5..add5f743",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5..add5f743`:\n- .agents/surfaces.json\n- charness-artifacts/critique/2026-08-06-020720-packet.json\n- charness-artifacts/critique/2026-08-06-020720-packet.md\n- charness-artifacts/critique/2026-08-06-021609-packet.json\n- charness-artifacts/critique/2026-08-06-021609-packet.md\n- charness-artifacts/critique/2026-08-06-022434-packet.json\n- charness-artifacts/critique/2026-08-06-022434-packet.md\n- charness-artifacts/critique/2026-08-06-030456-packet.json\n- charness-artifacts/critique/2026-08-06-030456-packet.md\n- charness-artifacts/critique/2026-08-06-031648-packet.json\n- charness-artifacts/critique/2026-08-06-031648-packet.md\n- charness-artifacts/critique/2026-08-06-032554-packet.json\n- charness-artifacts/critique/2026-08-06-032554-packet.md\n- charness-artifacts/critique/2026-08-06-033900-contract-final-packet.json\n- charness-artifacts/critique/2026-08-06-033900-contract-final-packet.md\n- charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.json\n- charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.md\n- charness-artifacts/critique/2026-08-06-040107-packet.json\n- charness-artifacts/critique/2026-08-06-040107-packet.md\n- charness-artifacts/critique/2026-08-06-041213-packet.json\n- charness-artifacts/critique/2026-08-06-041213-packet.md\n- charness-artifacts/critique/2026-08-06-041231-packet.json\n- charness-artifacts/critique/2026-08-06-041231-packet.md\n- charness-artifacts/critique/2026-08-06-041942-packet.json\n- charness-artifacts/critique/2026-08-06-041942-packet.md\n- charness-artifacts/critique/2026-08-06-050405-packet.json\n- charness-artifacts/critique/2026-08-06-050405-packet.md\n- charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md\n- charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md\n- charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.json\n- charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.md\n- charness-artifacts/critique/2026-08-06-post-split-ledger-packet.json\n- charness-artifacts/critique/2026-08-06-post-split-ledger-packet.md\n- charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.json\n- charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.md\n- charness-artifacts/critique/2026-08-06-slice-1-manifest-contract.md\n- charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md\n- charness-artifacts/critique/2026-08-06-slice-2-premise-contract.md\n- charness-artifacts/critique/2026-08-06-slice-2-premise-implementation-review.md\n- charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md\n- charness-artifacts/critique/2026-08-06-slice-3-final-bundle-implementation-review.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.json\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-critique.md\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.json\n- charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.md\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.json\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.json\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.md\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.json\n- charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.md\n- charness-artifacts/critique/release-3-3-0-prepublish-packet.json\n- charness-artifacts/critique/release-3-3-0-prepublish-packet.md\n- charness-artifacts/critique/release-3-3-0-prepublish.md\n- charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md\n- charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json\n- charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md\n- charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json\n- charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl\n- charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise-closed-issue-readback.json\n- charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise.json\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/probe/2026-08-01-inventory-marker-rule.json\n- charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md\n- charness-artifacts/quality/2026-08-06-quality-review.md\n- charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md\n- charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md\n- charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/latest.md\n- charness-artifacts/quality/sloc-inventory/latest.json\n- charness-artifacts/release/v3.3.0-notes.md\n- charness-artifacts/retro/2026-08-06-session-retro.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md\n- charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md\n- charness-artifacts/spec/2026-08-06-premise-preflight-contract.md\n- charness-artifacts/spec/2026-08-06-publish-state-ledger-contract.md\n- docs/handoff.md\n- plugins/charness/scripts/boundary-bypass-exemptions.txt\n- plugins/charness/scripts/check_premise_preflight.py\n- plugins/charness/scripts/final_bundle_preflight.py\n- plugins/charness/scripts/final_bundle_preflight_evidence.py\n- plugins/charness/scripts/final_bundle_preflight_lib.py\n- plugins/charness/scripts/premise_preflight_lib.py\n- plugins/charness/scripts/publish_state_ledger.py\n- plugins/charness/scripts/slice_manifest_lib.py\n- plugins/charness/scripts/validate_slice_manifest.py\n- scripts/boundary-bypass-exemptions.txt\n- scripts/check_premise_preflight.py\n- scripts/final_bundle_preflight.py\n- scripts/final_bundle_preflight_evidence.py\n- scripts/final_bundle_preflight_lib.py\n- scripts/premise_preflight_lib.py\n- scripts/publish_state_ledger.py\n- scripts/slice_manifest_lib.py\n- scripts/validate_slice_manifest.py\n- tests/quality_gates/test_final_bundle_preflight.py\n- tests/quality_gates/test_premise_preflight.py\n- tests/quality_gates/test_publish_state_ledger.py\n- tests/quality_gates/test_slice_manifest.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/boundary-bypass-exemptions.txt, scripts/check_premise_preflight.py, scripts/final_bundle_preflight.py, scripts/final_bundle_preflight_evidence.py, scripts/final_bundle_preflight_lib.py, scripts/premise_preflight_lib.py, scripts/publish_state_ledger.py, scripts/slice_manifest_lib.py, scripts/validate_slice_manifest.py\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/check_premise_preflight.py, plugins/charness/scripts/final_bundle_preflight.py, plugins/charness/scripts/final_bundle_preflight_evidence.py, plugins/charness/scripts/final_bundle_preflight_lib.py, plugins/charness/scripts/premise_preflight_lib.py, plugins/charness/scripts/publish_state_ledger.py, plugins/charness/scripts/slice_manifest_lib.py, plugins/charness/scripts/validate_slice_manifest.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-020720-packet.md, charness-artifacts/critique/2026-08-06-021609-packet.md, charness-artifacts/critique/2026-08-06-022434-packet.md, charness-artifacts/critique/2026-08-06-030456-packet.md, charness-artifacts/critique/2026-08-06-031648-packet.md, charness-artifacts/critique/2026-08-06-032554-packet.md, charness-artifacts/critique/2026-08-06-033900-contract-final-packet.md, charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.md, charness-artifacts/critique/2026-08-06-040107-packet.md, charness-artifacts/critique/2026-08-06-041213-packet.md, charness-artifacts/critique/2026-08-06-041231-packet.md, charness-artifacts/critique/2026-08-06-041942-packet.md, charness-artifacts/critique/2026-08-06-050405-packet.md, charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md, charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.md, charness-artifacts/critique/2026-08-06-post-split-ledger-packet.md, charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.md, charness-artifacts/critique/2026-08-06-slice-1-manifest-contract.md, charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-2-premise-contract.md, charness-artifacts/critique/2026-08-06-slice-2-premise-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md, charness-artifacts/critique/2026-08-06-slice-3-final-bundle-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-critique.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.md, charness-artifacts/critique/release-3-3-0-prepublish-packet.md, charness-artifacts/critique/release-3-3-0-prepublish.md, charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md, charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md, charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md, charness-artifacts/quality/2026-08-06-quality-review.md, charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md, charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md, charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md, charness-artifacts/quality/latest.md, charness-artifacts/release/v3.3.0-notes.md, charness-artifacts/retro/2026-08-06-session-retro.md, charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md, charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md, charness-artifacts/spec/2026-08-06-premise-preflight-contract.md, charness-artifacts/spec/2026-08-06-publish-state-ledger-contract.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- goal-evidence-json: Machine-readable evidence captured beside achieve goal artifacts.\n  source matches: charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json, charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json, charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl, charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise-closed-issue-readback.json, charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise.json\n  verify: for evidence_file in charness-artifacts/goals/*.json; do python3 -m json.tool \"$evidence_file\" >/dev/null || exit $?; done, python3 -c 'import json, pathlib; [json.loads(line) for path in pathlib.Path(\"charness-artifacts/goals\").glob(\"*.jsonl\") for line in path.read_text(encoding=\"utf-8\").splitlines() if line.strip()]', python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root . --goal-path charness-artifacts/goals/2026-06-04-nose-duplicate-refactoring.md\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-020720-packet.json, charness-artifacts/critique/2026-08-06-020720-packet.md, charness-artifacts/critique/2026-08-06-021609-packet.json, charness-artifacts/critique/2026-08-06-021609-packet.md, charness-artifacts/critique/2026-08-06-022434-packet.json, charness-artifacts/critique/2026-08-06-022434-packet.md, charness-artifacts/critique/2026-08-06-030456-packet.json, charness-artifacts/critique/2026-08-06-030456-packet.md, charness-artifacts/critique/2026-08-06-031648-packet.json, charness-artifacts/critique/2026-08-06-031648-packet.md, charness-artifacts/critique/2026-08-06-032554-packet.json, charness-artifacts/critique/2026-08-06-032554-packet.md, charness-artifacts/critique/2026-08-06-033900-contract-final-packet.json, charness-artifacts/critique/2026-08-06-033900-contract-final-packet.md, charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.json, charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.md, charness-artifacts/critique/2026-08-06-040107-packet.json, charness-artifacts/critique/2026-08-06-040107-packet.md, charness-artifacts/critique/2026-08-06-041213-packet.json, charness-artifacts/critique/2026-08-06-041213-packet.md, charness-artifacts/critique/2026-08-06-041231-packet.json, charness-artifacts/critique/2026-08-06-041231-packet.md, charness-artifacts/critique/2026-08-06-041942-packet.json, charness-artifacts/critique/2026-08-06-041942-packet.md, charness-artifacts/critique/2026-08-06-050405-packet.json, charness-artifacts/critique/2026-08-06-050405-packet.md, charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md, charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md, charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.json, charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.md, charness-artifacts/critique/2026-08-06-post-split-ledger-packet.json, charness-artifacts/critique/2026-08-06-post-split-ledger-packet.md, charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.json, charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.md, charness-artifacts/critique/2026-08-06-slice-1-manifest-contract.md, charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-2-premise-contract.md, charness-artifacts/critique/2026-08-06-slice-2-premise-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md, charness-artifacts/critique/2026-08-06-slice-3-final-bundle-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-critique.md, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.json, charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.json, charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.json, charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.md, charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.json, charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.md, charness-artifacts/critique/release-3-3-0-prepublish-packet.json, charness-artifacts/critique/release-3-3-0-prepublish-packet.md, charness-artifacts/critique/release-3-3-0-prepublish.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json, charness-artifacts/probe/2026-08-01-inventory-marker-rule.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-06-session-retro.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/check_premise_preflight.py, plugins/charness/scripts/final_bundle_preflight.py, plugins/charness/scripts/final_bundle_preflight_evidence.py, plugins/charness/scripts/final_bundle_preflight_lib.py, plugins/charness/scripts/premise_preflight_lib.py, plugins/charness/scripts/publish_state_ledger.py, plugins/charness/scripts/slice_manifest_lib.py, plugins/charness/scripts/validate_slice_manifest.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/check_premise_preflight.py, scripts/final_bundle_preflight.py, scripts/final_bundle_preflight_evidence.py, scripts/final_bundle_preflight_lib.py, scripts/premise_preflight_lib.py, scripts/publish_state_ledger.py, scripts/slice_manifest_lib.py, scripts/validate_slice_manifest.py, tests/quality_gates/test_final_bundle_preflight.py, tests/quality_gates/test_premise_preflight.py, tests/quality_gates/test_publish_state_ledger.py, tests/quality_gates/test_slice_manifest.py\n  derived matches: plugins/charness/scripts/check_premise_preflight.py, plugins/charness/scripts/final_bundle_preflight.py, plugins/charness/scripts/final_bundle_preflight_evidence.py, plugins/charness/scripts/final_bundle_preflight_lib.py, plugins/charness/scripts/premise_preflight_lib.py, plugins/charness/scripts/publish_state_ledger.py, plugins/charness/scripts/slice_manifest_lib.py, plugins/charness/scripts/validate_slice_manifest.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/check_premise_preflight.py, scripts/final_bundle_preflight.py, scripts/final_bundle_preflight_evidence.py, scripts/final_bundle_preflight_lib.py, scripts/premise_preflight_lib.py, scripts/publish_state_ledger.py, scripts/slice_manifest_lib.py, scripts/validate_slice_manifest.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5..add5f743",
+    "resolved_changed_ref": [
+      "add5f743f3f0d1e1276188357d446b89b6ba7014",
+      "^e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5"
+    ],
+    "base_head": "add5f743f3f0d1e1276188357d446b89b6ba7014",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      ".agents/surfaces.json",
+      "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+      "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json",
+      "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+      "charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json",
+      "charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl",
+      "charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise-closed-issue-readback.json",
+      "charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise.json",
+      "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+      "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+      "charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md",
+      "charness-artifacts/quality/2026-08-06-quality-review.md",
+      "charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md",
+      "charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md",
+      "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md",
+      "charness-artifacts/quality/dup-review.json",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/quality/sloc-inventory/latest.json",
+      "charness-artifacts/release/v3.3.0-notes.md",
+      "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md",
+      "charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md",
+      "charness-artifacts/spec/2026-08-06-premise-preflight-contract.md",
+      "charness-artifacts/spec/2026-08-06-publish-state-ledger-contract.md",
+      "docs/handoff.md",
+      "plugins/charness/scripts/boundary-bypass-exemptions.txt",
+      "plugins/charness/scripts/check_premise_preflight.py",
+      "plugins/charness/scripts/final_bundle_preflight.py",
+      "plugins/charness/scripts/final_bundle_preflight_evidence.py",
+      "plugins/charness/scripts/final_bundle_preflight_lib.py",
+      "plugins/charness/scripts/premise_preflight_lib.py",
+      "plugins/charness/scripts/publish_state_ledger.py",
+      "plugins/charness/scripts/slice_manifest_lib.py",
+      "plugins/charness/scripts/validate_slice_manifest.py",
+      "scripts/boundary-bypass-exemptions.txt",
+      "scripts/check_premise_preflight.py",
+      "scripts/final_bundle_preflight.py",
+      "scripts/final_bundle_preflight_evidence.py",
+      "scripts/final_bundle_preflight_lib.py",
+      "scripts/premise_preflight_lib.py",
+      "scripts/publish_state_ledger.py",
+      "scripts/slice_manifest_lib.py",
+      "scripts/validate_slice_manifest.py",
+      "tests/quality_gates/test_final_bundle_preflight.py",
+      "tests/quality_gates/test_premise_preflight.py",
+      "tests/quality_gates/test_publish_state_ledger.py",
+      "tests/quality_gates/test_slice_manifest.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "9c6c577808cdd2521952204934b3da2864c49cf51eae7ccc60282963eaaadd69"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md",
+        "content_sha256": "37b22dc8d2517f8fd97b3f261a8329db13033e101fbc83f47b61c53a270aeb13"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json",
+        "content_sha256": "a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+        "content_sha256": "dbfb10756fc25fb4b3898092e8a940f4b4fc115c696ef5d69a5b98d6bfa009ea"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json",
+        "content_sha256": "fc12e4da7614c8510da97a221d6418555f06a946dc0a59425fa9a92bc7f46573"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl",
+        "content_sha256": "d9d9e1365c6a497e262a3388f004cca378e0184696a93bdbff7c0ffa72c31002"
+      },
+      {
+        "path": "charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise-closed-issue-readback.json",
+        "content_sha256": "1fc07a9773d74590f7ccd7b72b9edfa88542517dc62f0010aa7ec8afdb0ebd25"
+      },
+      {
+        "path": "charness-artifacts/goals/fixtures/2026-08-06-slice-2-premise.json",
+        "content_sha256": "1b37ac602873eebc06f2b17eb222a968f3fc4e093d6fa84785045859c48f1118"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+        "content_sha256": "fba9d669f087992d73cd1bed74f4e21e4eaaf4b5b5fd2fe455856c30d847ff71"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+        "content_sha256": "979035da2b6711e31ccaf6ebd8b0254ee152ef416ebac329bd7d0685e13c6f62"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md",
+        "content_sha256": "03bd0587d3e82bf47733c3baeef6a90806e090e76d6f502ee2589f2cc5f72b1b"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-06-quality-review.md",
+        "content_sha256": "f4e405794c0c69f55ae48ef0f10e9442f2cb71698ec2ac65fa642a086e03bbd0"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md",
+        "content_sha256": "370546db1cd8b09ae8443b041d45e78a7ce4e826eafd50ea4a255d197ba70577"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md",
+        "content_sha256": "03bc712fc22f7837b604ade41a87f1a8f059496e1e5775f4c8708738ed341b75"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md",
+        "content_sha256": "1531bbbbd465af5e4a0f5595d998785b29d83e15ef81d13890646f01d1dd5bd2"
+      },
+      {
+        "path": "charness-artifacts/quality/dup-review.json",
+        "content_sha256": "3ef8cbb5debcb96e26a3585ef6ec4de64070f8ce6a16d40c882c1b8e02721a51"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "8f4d7a9cc66028d173fba6e7f81297375dd9ce6cfa7263d7e2bc15975cdd2493"
+      },
+      {
+        "path": "charness-artifacts/quality/sloc-inventory/latest.json",
+        "content_sha256": "3083886bcf027e0cc45ebf5e0c21162a669c0d1b9ca5bf398a81e7b8d0e51c10"
+      },
+      {
+        "path": "charness-artifacts/release/v3.3.0-notes.md",
+        "content_sha256": "caf06fe03a7ce0536e40c209ff2e16adfa27882fa3620813ec834d826dc8337e"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+        "content_sha256": "0b544432b38fd23553b849213501b64d0ac7e3fc1af1a544f0e8098534d8d4a1"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "7f0dd4e415e5a31448a381fdef2ba67da1b75ca6fe3ead0f814ad696d8a0ce39"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-06-final-bundle-preflight-contract.md",
+        "content_sha256": "601d4cea8ad6dbba4f1f3c96959843b910e89482922d1938fb1120a0e59cd422"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md",
+        "content_sha256": "b2ff0f69aad6b6b3f7e0b1a75272614a2f40c249d7aee058e924c35119cda115"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-06-premise-preflight-contract.md",
+        "content_sha256": "c2df89db272603933ddb4593898650c11bd082dc52ce2478e862c493e22e6bd8"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-06-publish-state-ledger-contract.md",
+        "content_sha256": "aadd9480cb85ead2b0150829618451c60723671901eebd06bec595dea88bff2b"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "34f182efeacd3d7c117616fd9557f91e6b7d4a7fee813eae9917b8517ee2dd49"
+      },
+      {
+        "path": "plugins/charness/scripts/boundary-bypass-exemptions.txt",
+        "content_sha256": "fbe05a0b3ceea76e45b2b6cf1adf14581672acaad33254b4d2df4cec656f9b0b"
+      },
+      {
+        "path": "plugins/charness/scripts/check_premise_preflight.py",
+        "content_sha256": "312f7d271caefb3b96d45baf0bb6427f4607ed79737725cd8537d266dd4ffe7c"
+      },
+      {
+        "path": "plugins/charness/scripts/final_bundle_preflight.py",
+        "content_sha256": "02bf9435b3ba062f9ac4fc54e610e0367a7f5f84643a5d94b2ecac3e7d96f2e2"
+      },
+      {
+        "path": "plugins/charness/scripts/final_bundle_preflight_evidence.py",
+        "content_sha256": "97299423b368df0ed7b2637767e4853684dd5f9e7cc9cd2ebe47ee730e10803a"
+      },
+      {
+        "path": "plugins/charness/scripts/final_bundle_preflight_lib.py",
+        "content_sha256": "47f6755220bfb401a19a100422384ce2887ae371ba24e6628ef68138eb57cf3f"
+      },
+      {
+        "path": "plugins/charness/scripts/premise_preflight_lib.py",
+        "content_sha256": "8934961e971cc0507ace81ee096c733dc64ef763e249d83dab014d4fdeeabd56"
+      },
+      {
+        "path": "plugins/charness/scripts/publish_state_ledger.py",
+        "content_sha256": "f7b56e09a78a2e6c7b3420ee3fa099ee6f96155ddbd9040e39cb2d04528b15e5"
+      },
+      {
+        "path": "plugins/charness/scripts/slice_manifest_lib.py",
+        "content_sha256": "99ad19371d5253c3632edd189672b9189c0d36f1b0b5a406018fb9a143f85abf"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_slice_manifest.py",
+        "content_sha256": "e8e38f95a0400f8361909d606d91825610c9235285717159263102c31fadc249"
+      },
+      {
+        "path": "scripts/boundary-bypass-exemptions.txt",
+        "content_sha256": "fbe05a0b3ceea76e45b2b6cf1adf14581672acaad33254b4d2df4cec656f9b0b"
+      },
+      {
+        "path": "scripts/check_premise_preflight.py",
+        "content_sha256": "312f7d271caefb3b96d45baf0bb6427f4607ed79737725cd8537d266dd4ffe7c"
+      },
+      {
+        "path": "scripts/final_bundle_preflight.py",
+        "content_sha256": "02bf9435b3ba062f9ac4fc54e610e0367a7f5f84643a5d94b2ecac3e7d96f2e2"
+      },
+      {
+        "path": "scripts/final_bundle_preflight_evidence.py",
+        "content_sha256": "97299423b368df0ed7b2637767e4853684dd5f9e7cc9cd2ebe47ee730e10803a"
+      },
+      {
+        "path": "scripts/final_bundle_preflight_lib.py",
+        "content_sha256": "47f6755220bfb401a19a100422384ce2887ae371ba24e6628ef68138eb57cf3f"
+      },
+      {
+        "path": "scripts/premise_preflight_lib.py",
+        "content_sha256": "8934961e971cc0507ace81ee096c733dc64ef763e249d83dab014d4fdeeabd56"
+      },
+      {
+        "path": "scripts/publish_state_ledger.py",
+        "content_sha256": "f7b56e09a78a2e6c7b3420ee3fa099ee6f96155ddbd9040e39cb2d04528b15e5"
+      },
+      {
+        "path": "scripts/slice_manifest_lib.py",
+        "content_sha256": "99ad19371d5253c3632edd189672b9189c0d36f1b0b5a406018fb9a143f85abf"
+      },
+      {
+        "path": "scripts/validate_slice_manifest.py",
+        "content_sha256": "e8e38f95a0400f8361909d606d91825610c9235285717159263102c31fadc249"
+      },
+      {
+        "path": "tests/quality_gates/test_final_bundle_preflight.py",
+        "content_sha256": "899f3b2ba91b68bca2fd1ce045f2e0368bc00fc21728091a9891c1c3497108d2"
+      },
+      {
+        "path": "tests/quality_gates/test_premise_preflight.py",
+        "content_sha256": "10f10b03e3be13747b2bb2b40d584cac9ba26ad055937d5b1c4d0d584984a99c"
+      },
+      {
+        "path": "tests/quality_gates/test_publish_state_ledger.py",
+        "content_sha256": "ea6b4dc4cfcceaf55bb6130b018830f4a5585f7465ed182068db2fb4386209b1"
+      },
+      {
+        "path": "tests/quality_gates/test_slice_manifest.py",
+        "content_sha256": "c0386baccd1f79ff71a09e7a0210859e3f737a430cabb7fd070d13dfbc4ec080"
+      }
+    ],
+    "reviewed_patch_sha256": "5a3d83bc2dd59989da50f91f7ae00c050665a0fc1c29530ed55b020046380cd2",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-06-020720-packet.json",
+      "charness-artifacts/critique/2026-08-06-020720-packet.md",
+      "charness-artifacts/critique/2026-08-06-021609-packet.json",
+      "charness-artifacts/critique/2026-08-06-021609-packet.md",
+      "charness-artifacts/critique/2026-08-06-022434-packet.json",
+      "charness-artifacts/critique/2026-08-06-022434-packet.md",
+      "charness-artifacts/critique/2026-08-06-030456-packet.json",
+      "charness-artifacts/critique/2026-08-06-030456-packet.md",
+      "charness-artifacts/critique/2026-08-06-031648-packet.json",
+      "charness-artifacts/critique/2026-08-06-031648-packet.md",
+      "charness-artifacts/critique/2026-08-06-032554-packet.json",
+      "charness-artifacts/critique/2026-08-06-032554-packet.md",
+      "charness-artifacts/critique/2026-08-06-033900-contract-final-packet.json",
+      "charness-artifacts/critique/2026-08-06-033900-contract-final-packet.md",
+      "charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.json",
+      "charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.md",
+      "charness-artifacts/critique/2026-08-06-040107-packet.json",
+      "charness-artifacts/critique/2026-08-06-040107-packet.md",
+      "charness-artifacts/critique/2026-08-06-041213-packet.json",
+      "charness-artifacts/critique/2026-08-06-041213-packet.md",
+      "charness-artifacts/critique/2026-08-06-041231-packet.json",
+      "charness-artifacts/critique/2026-08-06-041231-packet.md",
+      "charness-artifacts/critique/2026-08-06-041942-packet.json",
+      "charness-artifacts/critique/2026-08-06-041942-packet.md",
+      "charness-artifacts/critique/2026-08-06-050405-packet.json",
+      "charness-artifacts/critique/2026-08-06-050405-packet.md",
+      "charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md",
+      "charness-artifacts/critique/2026-08-06-post-push-operational-proof-runtime-evidence-closeout-claims-review.md",
+      "charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.json",
+      "charness-artifacts/critique/2026-08-06-post-ratchet-ledger-packet.md",
+      "charness-artifacts/critique/2026-08-06-post-split-ledger-packet.json",
+      "charness-artifacts/critique/2026-08-06-post-split-ledger-packet.md",
+      "charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.json",
+      "charness-artifacts/critique/2026-08-06-slice-1-final-proof-v8-packet.md",
+      "charness-artifacts/critique/2026-08-06-slice-1-manifest-contract.md",
+      "charness-artifacts/critique/2026-08-06-slice-1-manifest-implementation-review.md",
+      "charness-artifacts/critique/2026-08-06-slice-2-premise-contract.md",
+      "charness-artifacts/critique/2026-08-06-slice-2-premise-implementation-review.md",
+      "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md",
+      "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-implementation-review.md",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.md",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.json",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-packet.md",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review.md",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-critique.md",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.json",
+      "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-final-packet.md",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.json",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v2-packet.md",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.json",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v3-packet.md",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.json",
+      "charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.md",
+      "charness-artifacts/critique/release-3-3-0-prepublish-packet.json",
+      "charness-artifacts/critique/release-3-3-0-prepublish-packet.md",
+      "charness-artifacts/critique/release-3-3-0-prepublish.md"
+    ],
+    "identity_sha256": "2b26676f9ff20ac123deffb1ec749d32df49bbef6c4b4ce1d1e4a6c687519f74"
+  }
+}

@@ -71,7 +71,7 @@ closeout is part of this release.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-final-prepublish-v4-packet.json plus its Markdown render | action: document | note: the final critique is bound to JSON SHA `78917da0187b43b741eed27bf096a542e21e185ef64ecb0edeb604727abd207c`; its Markdown companion is separately `cfd138b3768978097beb9f0094e560aeff697e26578f097aeff9fca562d84c68`.
+- F1 | bin: act-before-ship | evidence: strong | ref: release-3-3-0-final-prepublish-v5-packet.json plus its Markdown render | action: document | note: the final critique is bound to JSON SHA `e5c80b53d088780b50f275571259da4279283ea5944cbee2345e566ca55f5664`; its Markdown companion is separately `003a416a6c92dc3032a59e152aaf2097cad4811f8368503fd77a1490d8ba05f0`.
 - F2 | bin: act-before-ship | evidence: strong | ref: charness-artifacts/release/v3.3.0-notes.md | action: document | note: authored reader-first notes now cover additive scope, helper semantics, update/version/doctor, plugin-surface rollback limits, and non-claims.
 - F3 | bin: act-before-ship | evidence: strong | ref: .agents/release-adapter.yaml and publish_release.py | action: fix | note: execute bump, sync, release quality, fresh-checkout probes, post-notes claims review, and distinct remote/public readbacks in order.
 - F4 | bin: bundle-anyway | evidence: moderate | ref: scripts/check_premise_preflight.py and premise_preflight_lib.py | action: document | note: make the intentional durable decision-record write explicit in operator notes; a future dry-run mode is not required for this release.
@@ -107,7 +107,7 @@ No migration is required.
   tag, push, or public release mutation has occurred yet.
 - Real-host trigger: no configured release-time trigger matched the exact
   candidate range; this is a trigger result, not installed-host proof.
-- Reviewed-input binding resolution: the v3 packet uses `sha256-v2` in
+- Reviewed-input binding resolution: the v5 packet uses `sha256-v2` in
   `changed-ref` mode, so each reviewed path is bound to the bytes at the
   captured target commit. `charness-artifacts/quality/latest.md` is a tracked
   symlink; its bound bytes are the symlink target text, while the expanded
@@ -126,19 +126,22 @@ No migration is required.
 
 ## Fresh-Eye Satisfaction
 
-parent-delegated — the current v3 release packet was read by Gawande, Minto,
+parent-delegated — the v3 release packet was read by Gawande, Minto,
 Raskin, and a separate counterweight reviewer. Two reviewers returned PASS;
 two raised a pointer-materialization concern, which was resolved by the
-canonical `sha256-v2` changed-ref verification described above. All four
-shared-worktree boundary fingerprints were clean: `release-3-3-0-v3-review-round`.
+canonical `sha256-v2` changed-ref verification described above. The v5 packet
+is the fixed-range rebind over the same reviewed source paths and content; the
+final claims review must read back this exact v5 identity before execution.
+All four shared-worktree boundary fingerprints were clean:
+`release-3-3-0-v3-review-round`.
 
 ## Reviewed Input Identity
 
-- Packet consumed: charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.md
-- Packet path: charness-artifacts/critique/release-3-3-0-final-prepublish-v4-packet.json
-- Packet SHA256: 78917da0187b43b741eed27bf096a542e21e185ef64ecb0edeb604727abd207c
-- Identity SHA256: 6a8a4f9ffefc3c8d824cba0001c046a59a5524ae14addb6ee12fcb9fab617c8c
-- Markdown companion SHA256: cfd138b3768978097beb9f0094e560aeff697e26578f097aeff9fca562d84c68
+- Packet consumed: charness-artifacts/critique/release-3-3-0-final-prepublish-v5-packet.md
+- Packet path: charness-artifacts/critique/release-3-3-0-final-prepublish-v5-packet.json
+- Packet SHA256: e5c80b53d088780b50f275571259da4279283ea5944cbee2345e566ca55f5664
+- Identity SHA256: 2b26676f9ff20ac123deffb1ec749d32df49bbef6c4b4ce1d1e4a6c687519f74
+- Markdown companion SHA256: 003a416a6c92dc3032a59e152aaf2097cad4811f8368503fd77a1490d8ba05f0
 
 ## Boundary Ownership
 
