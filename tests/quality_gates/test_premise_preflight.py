@@ -8,6 +8,7 @@ from typing import Any
 
 import pytest
 
+import scripts.premise_preflight_lib as premise_lib
 from scripts.premise_preflight_lib import PremiseError, run_preflight
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -363,3 +364,279 @@ def test_cli_returns_exit_two_for_invalid_issue_readback(tmp_path: Path) -> None
     )
     assert result.returncode == 2
     assert json.loads(result.stdout)["error"]["code"] == "invalid_issue_readback"
+
+
+@pytest.mark.parametrize("cli_path", [SOURCE_CLI, PLUGIN_CLI])
+def test_cli_human_mode_reports_accepted_and_refused_fixtures(tmp_path: Path, cli_path: Path) -> None:
+    repo, premise, issue, _ = _seed(tmp_path)
+    accepted = subprocess.run(
+        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert accepted.returncode == 0
+    assert "premise-preflight: ACCEPTED" in accepted.stdout
+
+    data = json.loads(issue.read_text())
+    del data["issue"]["comments"]
+    issue.write_text(json.dumps(data), encoding="utf-8")
+    refused = subprocess.run(
+        ["python3", str(cli_path), "--repo-root", str(repo), "--premise", str(premise), "--issue-readback", str(issue)],
+        cwd=ROOT, capture_output=True, text=True, check=False,
+    )
+    assert refused.returncode == 2
+    assert "premise-preflight: REFUSED" in refused.stderr
+
+
+def _raises(code: str, function: Any, *args: Any, **kwargs: Any) -> None:
+    with pytest.raises(PremiseError) as caught:
+        function(*args, **kwargs)
+    assert caught.value.code == code
+
+
+def test_premise_scalar_and_repository_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    _raises("invalid_premise", premise_lib._mapping, [], "field")
+    _raises("invalid_premise", premise_lib._string, "", "field")
+    _raises("invalid_premise", premise_lib._integer, -1, "field")
+    _raises("invalid_premise", premise_lib._hash, "bad", "field", premise_lib._SHA256_RE)
+    _raises("invalid_premise", premise_lib._timestamp, "", "field")
+    _raises("invalid_premise", premise_lib._timestamp, "2026-99-99T01:02:03Z", "field")
+    _raises("unsafe_path", premise_lib._relative_path, "../outside", "field")
+    _raises("unsafe_path", premise_lib._repo_path, tmp_path, "../outside", "field")
+
+    original_error = premise_lib._error
+    monkeypatch.setattr(premise_lib, "_error", lambda *_args: None)
+    with pytest.raises(AssertionError):
+        premise_lib._relative_path("../outside", "field")
+    monkeypatch.setattr(premise_lib, "_error", original_error)
+    class NaiveDateTime:
+        @classmethod
+        def fromisoformat(cls, _: str) -> Any:
+            return type("Naive", (), {"tzinfo": None})()
+    original_datetime = premise_lib._datetime.datetime
+    monkeypatch.setattr(premise_lib._datetime, "datetime", NaiveDateTime)
+    _raises("invalid_premise", premise_lib._timestamp, "2026-08-06T01:02:03Z", "field")
+    monkeypatch.setattr(premise_lib._datetime, "datetime", original_datetime)
+
+    missing = tmp_path / "missing.json"
+    _raises("missing_input", premise_lib._load_json, tmp_path, missing, "field")
+    _raises("unsafe_path", premise_lib._load_json, tmp_path, tmp_path.parent / "outside.json", "field")
+    invalid = tmp_path / "invalid.json"
+    invalid.write_text("{", encoding="utf-8")
+    _raises("invalid_json", premise_lib._load_json, tmp_path, invalid, "field")
+
+    monkeypatch.setattr(
+        premise_lib,
+        "_git_bytes",
+        lambda *_args: subprocess.CompletedProcess([], 1, stdout=b"", stderr=b"failed"),
+    )
+    _raises("invalid_git_state", premise_lib._index_paths, tmp_path)
+    monkeypatch.setattr(
+        premise_lib,
+        "_git",
+        lambda *_args: subprocess.CompletedProcess([], 1, stdout="", stderr="failed"),
+    )
+    _raises("invalid_git_state", premise_lib._current_head, tmp_path)
+    monkeypatch.setattr(
+        premise_lib,
+        "_git",
+        lambda *_args: subprocess.CompletedProcess([], 0, stdout="not-a-sha", stderr=""),
+    )
+    _raises("invalid_git_state", premise_lib._current_head, tmp_path)
+    monkeypatch.setattr(
+        premise_lib,
+        "_git",
+        lambda *_args: subprocess.CompletedProcess([], 1, stdout="", stderr="missing"),
+    )
+    _raises("invalid_git_state", premise_lib._commit_exists, tmp_path, "0" * 40, "field")
+
+    def blob_git(_: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        if args[0] == "ls-tree":
+            return subprocess.CompletedProcess([], 0, stdout="100644 file", stderr="")
+        if args[0] == "cat-file":
+            return subprocess.CompletedProcess([], 1, stdout="", stderr="missing")
+        return subprocess.CompletedProcess([], 1, stdout="", stderr="missing")
+    monkeypatch.setattr(premise_lib, "_git", blob_git)
+    _raises("invalid_premise", premise_lib._blob_bytes, tmp_path, "0" * 40, "file", "field")
+    def unreadable_blob_git(_: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        if args[0] == "ls-tree":
+            return subprocess.CompletedProcess([], 0, stdout="100644 file", stderr="")
+        if args[0] == "cat-file":
+            return subprocess.CompletedProcess([], 0, stdout="blob", stderr="")
+        return subprocess.CompletedProcess([], 1, stdout="", stderr="missing")
+    monkeypatch.setattr(premise_lib, "_git", unreadable_blob_git)
+    monkeypatch.setattr(premise_lib, "_git_bytes", lambda *_args: subprocess.CompletedProcess([], 1, stdout=b"", stderr=b"missing"))
+    _raises("invalid_premise", premise_lib._blob_bytes, tmp_path, "0" * 40, "file", "field")
+
+
+def test_premise_candidate_and_issue_error_branches(tmp_path: Path) -> None:
+    repo, premise, issue, candidate = _seed(tmp_path)
+    mutations = [
+        (lambda value: value.update(premise_id="!"), "invalid_premise"),
+        (lambda value: value.update(repository="invalid"), "invalid_premise"),
+        (lambda value: value.update(goal_path="missing.md"), "invalid_premise"),
+        (lambda value: value.update(slice_id="!"), "invalid_premise"),
+    ]
+    for mutate, code in mutations:
+        data = json.loads(json.dumps(candidate))
+        mutate(data)
+        _raises(code, premise_lib._validate_candidate_identity, repo, data)
+
+    data = json.loads(json.dumps(candidate))
+    data["issue"]["number"] = 0
+    _raises("invalid_premise", premise_lib._validate_candidate_identity, repo, data)
+    data = json.loads(json.dumps(candidate))
+    data["issue"]["expected_state"] = "CLOSED"
+    _raises("invalid_premise", premise_lib._validate_candidate_identity, repo, data)
+
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["protected"] = []
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["protected"].append(tree["protected"][0].copy())
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["protected"][0]["sha256"] = "0" * 64
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["expected_missing"] = "missing"
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["expected_missing"] = [tree["protected"][0]["path"]]
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["expected_missing"] = ["src/future.txt", "src/future.txt"]
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    tree = json.loads(json.dumps(candidate["tree"]))
+    tree["expected_missing"] = ["charness-artifacts/goals/example.md"]
+    _raises("invalid_premise", premise_lib._validate_candidate_tree, repo, tree)
+    invalid_kind = json.loads(json.dumps(candidate))
+    invalid_kind["kind"] = "wrong"
+    _raises("invalid_premise", premise_lib._validate_candidate, repo, invalid_kind)
+
+    normalized = premise_lib._validate_candidate(repo, candidate)
+    valid_issue = json.loads(issue.read_text())
+    issue_mutations = [
+        (lambda value: value.update(ok=False), {"repository": "acme/charness", "issue_number": 7}, "invalid_issue_readback"),
+        (lambda value: value.update(repo="other/repo"), normalized, "invalid_issue_readback"),
+        (lambda value: value.update(issue=[]), normalized, "invalid_issue_readback"),
+        (lambda value: value.update(number=True), {"repository": "acme/charness", "issue_number": True}, "invalid_issue_readback"),
+    ]
+    for mutate, issue_candidate, code in issue_mutations:
+        data = json.loads(json.dumps(valid_issue))
+        mutate(data)
+        _raises(code, premise_lib._validate_issue, repo, data, issue_candidate)
+    data = json.loads(json.dumps(valid_issue))
+    data["issue"]["number"] = True
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+    data = json.loads(json.dumps(valid_issue))
+    data["issue"]["number"] = 8
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+    data = json.loads(json.dumps(valid_issue))
+    data["issue"]["body"] = 3
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+    data = json.loads(json.dumps(valid_issue))
+    data["issue"]["body"] = None
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+    data = json.loads(json.dumps(valid_issue))
+    data["comment_count"] = 2
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+    data = json.loads(json.dumps(valid_issue))
+    data["issue"]["state"] = "BROKEN"
+    _raises("invalid_issue_readback", premise_lib._validate_issue, repo, data, normalized)
+
+
+def test_premise_history_and_write_error_branches(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo, premise, issue, candidate = _seed(tmp_path)
+    normalized = premise_lib._validate_candidate(repo, candidate)
+    issue_data = premise_lib._validate_issue(repo, json.loads(issue.read_text()), normalized)
+    observations, _ = premise_lib._protected_observations(repo, normalized)
+    record = premise_lib._record(repo, normalized, issue_data, normalized["captured_head_sha"], observations, [], status="accepted")
+
+    _raises("invalid_decision_history", premise_lib._history_hash, "bad", "field")
+    _raises("invalid_decision_history", premise_lib._history_git_sha, "bad", "field")
+    _raises("invalid_decision_history", premise_lib._history_path, "../bad", "field")
+    for mutation in (
+        lambda value: value.update(issue_observation=None),
+        lambda value: value.update(issue_observation={"number": 0}),
+        lambda value: value.update(issue_observation={"number": 1, "state": "BAD"}),
+    ):
+        value = json.loads(json.dumps(record))
+        mutation(value)
+        _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["issue_observation"]["comment_count"] = True
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"] = None
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"]["captured_head_sha"] = "bad"
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"]["protected"] = None
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"]["protected"] = [None]
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"]["expected_missing"] = [None]
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+    value = json.loads(json.dumps(record))
+    value["tree_observation"]["expected_missing"] = [{"path": "src/future.txt"}]
+    _raises("invalid_decision_history", premise_lib._history_observation, value, "record")
+
+    record_mutations = [
+        (None, "invalid_decision_history"),
+        ({**record, "kind": "bad"}, "invalid_decision_history"),
+        ({**record, "status": "unknown"}, "invalid_decision_history"),
+        ({**record, "premise_id": "!"}, "invalid_decision_history"),
+        ({**record, "attempt_id": "bad"}, "invalid_decision_history"),
+        ({**record, "repository": "bad"}, "invalid_decision_history"),
+        ({**record, "goal_path": "../bad"}, "invalid_decision_history"),
+        ({**record, "slice_id": "!"}, "invalid_decision_history"),
+        ({**record, "reason_codes": ["bad"]}, "invalid_decision_history"),
+        ({**record, "reason_codes": ["stale_tree", "already_shipped"]}, "invalid_decision_history"),
+        ({**record, "reasons": None}, "invalid_decision_history"),
+        ({**record, "status": "refused", "reason_codes": ["stale_tree"], "reasons": [{}]}, "invalid_decision_history"),
+        ({**record, "status": "refused", "reason_codes": [], "reasons": []}, "invalid_decision_history"),
+        ({**record, "non_claim": "changed"}, "invalid_decision_history"),
+    ]
+    for value, code in record_mutations:
+        _raises(code, premise_lib._validate_decision_record, repo, value, 0)
+
+    log = repo / ".fixture" / "history"
+    log.mkdir()
+    _raises("invalid_decision_history", premise_lib._read_decisions, repo, ".fixture/history")
+    log.rmdir()
+    log.write_text("\n", encoding="utf-8")
+    _raises("invalid_decision_history", premise_lib._read_decisions, repo, ".fixture/history")
+    monkeypatch.setattr(
+        premise_lib.Path,
+        "read_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("unreadable")),
+    )
+    _raises("invalid_decision_history", premise_lib._read_decisions, repo, ".fixture/history")
+    monkeypatch.undo()
+    monkeypatch.setattr(
+        premise_lib,
+        "_git",
+        lambda *_args: subprocess.CompletedProcess([], 1, stdout="", stderr="failed"),
+    )
+    _raises("invalid_git_state", premise_lib._marker_seen, repo, "issue-7-slice-2")
+
+    original_error = premise_lib._error
+    monkeypatch.setattr(premise_lib, "_error", lambda *_args: None)
+    with pytest.raises(AssertionError):
+        premise_lib._history_path("../bad", "field")
+    monkeypatch.setattr(premise_lib, "_error", original_error)
+
+    missing_candidate = {"protected": [{"path": "src/missing.txt", "sha256": "0" * 64}], "expected_missing": []}
+    _, drift = premise_lib._protected_observations(repo, missing_candidate)
+    assert drift is True
+    link = repo / ".fixture" / "append-link.jsonl"
+    link.symlink_to("future.jsonl")
+    _raises("decision_log_write_failed", premise_lib._append_decision, repo, ".fixture/append-link.jsonl", record)
+    link.unlink()
+    directory = repo / ".fixture" / "append-dir.jsonl"
+    directory.mkdir()
+    _raises("decision_log_write_failed", premise_lib._append_decision, repo, ".fixture/append-dir.jsonl", record)

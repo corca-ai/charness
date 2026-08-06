@@ -6,6 +6,7 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -277,3 +278,129 @@ def test_cli_refuses_manifest_directory_as_json(tmp_path: Path) -> None:
     assert result.returncode == 1
     payload = json.loads(result.stdout)
     assert payload["error"]["code"] == "invalid_manifest_path"
+
+
+def _manifest_raises(code: str, function: Any, *args: Any, **kwargs: Any) -> None:
+    with pytest.raises(ManifestError) as caught:
+        function(*args, **kwargs)
+    assert caught.value.code == code
+
+
+def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = ROOT
+    _manifest_raises("invalid_type", slice_manifest_lib._require_mapping, [], "field")
+    _manifest_raises("invalid_type", slice_manifest_lib._require_string, "", "field")
+    _manifest_raises("invalid_type", slice_manifest_lib._require_int, True, "field")
+    _manifest_raises("invalid_identity", slice_manifest_lib._require_sha, "bad", "field")
+    _manifest_raises("invalid_identity", slice_manifest_lib._require_sha, "bad", "field", kind="sha256")
+    _manifest_raises("unsafe_path", slice_manifest_lib._safe_repo_path, "a\\b", "field")
+    _manifest_raises("unsafe_path", slice_manifest_lib._safe_repo_path, "../bad", "field")
+    _manifest_raises("unsafe_path", slice_manifest_lib._safe_repo_path, "dir/", "field")
+    _manifest_raises("unsafe_path", slice_manifest_lib._repo_candidate, repo, "../outside", "field")
+    _manifest_raises("missing_path", slice_manifest_lib._require_repo_entry, repo, "missing", "field")
+    directory = tmp_path / "directory"
+    directory.mkdir()
+    _manifest_raises("invalid_root", slice_manifest_lib._require_repo_entry, tmp_path, "directory", "field", file_only=True)
+    _manifest_raises("missing_git_object", slice_manifest_lib._require_git_commit, repo, "0" * 40, "field")
+
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.py", "owner")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "#anchor", "owner")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.py#bad anchor", "owner")
+    invalid_json = repo / "owner.json"
+    invalid_json.write_text("{", encoding="utf-8")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.json#value", "owner")
+    invalid_python = repo / "owner.py"
+    invalid_python.write_text("def (\n", encoding="utf-8")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.py#value", "owner")
+    invalid_python.write_text("value = 1\n", encoding="utf-8")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.py#value", "owner")
+    text_owner = repo / "owner.txt"
+    text_owner.write_text("value\n", encoding="utf-8")
+    _manifest_raises("invalid_owner", slice_manifest_lib._validate_owner_ref, repo, "owner.txt#value", "owner")
+
+    observation = {
+        "status": "captured", "channel": "test", "observed_at": "now",
+        "repository": "acme/charness", "ref": "refs/heads/main", "sha": "a" * 40,
+        "command": ["git", "show"],
+    }
+    bad_observation = dict(observation, status="live")
+    _manifest_raises("uncaptured_evidence", slice_manifest_lib._validate_observation, repo, bad_observation, "obs", "a" * 40, "acme/charness", "refs/heads/main")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_observation, repo, dict(observation, ref="refs/heads/other"), "obs", "a" * 40, "acme/charness", "refs/heads/main")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_observation, repo, dict(observation, sha="b" * 40), "obs", "a" * 40, "acme/charness", "refs/heads/main")
+    _manifest_raises("invalid_command_descriptor", slice_manifest_lib._validate_observation, repo, dict(observation, command=[]), "obs", "a" * 40, "acme/charness", "refs/heads/main")
+
+    roots = _load()["reader_roots"][0]
+    _manifest_raises("invalid_reader_roots", slice_manifest_lib._validate_reader_roots, repo, [], verify_current=False)
+    _manifest_raises("duplicate_reader_root", slice_manifest_lib._validate_reader_roots, repo, [roots, roots], verify_current=False)
+    _manifest_raises("invalid_reader_role", slice_manifest_lib._validate_reader_roots, repo, [dict(roots, role="bad")], verify_current=False)
+    _manifest_raises("invalid_reader_root", slice_manifest_lib._validate_reader_roots, repo, [dict(roots, identity_mode="bad")], verify_current=False)
+    _manifest_raises("invalid_reader_root", slice_manifest_lib._validate_reader_roots, repo, [dict(roots, identity_paths=[])], verify_current=False)
+    duplicate_paths = dict(roots, identity_paths=[roots["identity_paths"][0], roots["identity_paths"][0]])
+    _manifest_raises("duplicate_identity_path", slice_manifest_lib._validate_reader_roots, repo, [duplicate_paths], verify_current=False)
+
+    pair = _load()["parity_pairs"][0]
+    _manifest_raises("invalid_parity", slice_manifest_lib._validate_parity, repo, [], verify_current=False)
+    _manifest_raises("invalid_parity", slice_manifest_lib._validate_parity, repo, [dict(pair, identity_mode="bad")], verify_current=False)
+    _manifest_raises("parity_mismatch", slice_manifest_lib._validate_parity, repo, [dict(pair, identity_mode="current", source_sha256="0" * 64)], verify_current=False)
+
+    ci = _load()["ci_readback"]
+    ci_sha = ci["head_sha"]
+    _manifest_raises("uncaptured_evidence", slice_manifest_lib._validate_ci_readback, dict(ci, status="live"), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("invalid_ci_readback", slice_manifest_lib._validate_ci_readback, dict(ci, non_claim="too narrow"), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_ci_readback, dict(ci, remote_ref="refs/heads/other"), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_ci_readback, dict(ci, head_sha="b" * 40), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("invalid_ci_readback", slice_manifest_lib._validate_ci_readback, dict(ci, run_id=0), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("unsuccessful_ci_readback", slice_manifest_lib._validate_ci_readback, dict(ci, conclusion="failure"), ci_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("incomplete_ci_readback", slice_manifest_lib._validate_ci_readback, dict(ci, jobs=[]), ci_sha, "corca-ai/charness", "refs/heads/main")
+    bad_job = dict(ci["jobs"][0], id=0)
+    _manifest_raises("invalid_ci_readback", slice_manifest_lib._validate_ci_readback, dict(ci, jobs=[bad_job]), ci_sha, "corca-ai/charness", "refs/heads/main")
+
+    issue = _load()["remote_readback"]["open_issues"]
+    issue_sha = issue["target_sha"]
+    _manifest_raises("uncaptured_evidence", slice_manifest_lib._validate_issue_readback, dict(issue, status="live"), issue_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("invalid_command_descriptor", slice_manifest_lib._validate_issue_readback, dict(issue, query=[]), issue_sha, "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("invalid_readback", slice_manifest_lib._validate_issue_readback, dict(issue, open_count=-1), issue_sha, "corca-ai/charness", "refs/heads/main")
+
+
+def test_manifest_critique_target_and_loader_error_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = ROOT
+    data = _load()
+    critique = dict(data["critique"], packet_path="different.md")
+    _manifest_raises("unbound_critique", slice_manifest_lib._validate_critique, repo, critique, verify_current=False)
+    critique = dict(data["critique"], status="live")
+    _manifest_raises("uncaptured_evidence", slice_manifest_lib._validate_critique, repo, critique, verify_current=False)
+
+    outside = tmp_path / "outside.json"
+    outside.write_text("{}", encoding="utf-8")
+    _manifest_raises("unsafe_path", slice_manifest_lib._load_manifest, repo, outside)
+    _manifest_raises("missing_manifest", slice_manifest_lib._load_manifest, repo, repo / "missing.json")
+    manifest_dir = repo / "manifest-dir"
+    manifest_dir.mkdir()
+    _manifest_raises("invalid_manifest_path", slice_manifest_lib._load_manifest, repo, manifest_dir)
+    malformed = repo / "malformed.json"
+    malformed.write_text("{", encoding="utf-8")
+    _manifest_raises("invalid_json", slice_manifest_lib._load_manifest, repo, malformed)
+    invalid_utf8 = repo / "invalid-utf8.json"
+    invalid_utf8.write_bytes(b"\xff")
+    _manifest_raises("invalid_json", slice_manifest_lib._load_manifest, repo, invalid_utf8)
+
+    target_data = _load()
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "target": dict(target_data["target"], remote_repository="other/repo")}, "corca-ai/charness")
+    _manifest_raises("invalid_target", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "target": dict(target_data["target"], kind="other")}, "corca-ai/charness")
+    _manifest_raises("invalid_carrier_relation", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "carrier": dict(target_data["carrier"], relation_to_target="other")}, "corca-ai/charness")
+    _manifest_raises("uncaptured_evidence", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "premise": dict(target_data["premise"], status="draft")}, "corca-ai/charness")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "premise": dict(target_data["premise"], published_target_sha="0" * 40)}, "corca-ai/charness")
+    unrelated = subprocess.check_output(["git", "commit-tree", subprocess.check_output(["git", "mktree"], cwd=repo, input="", text=True).strip(), "-m", "unrelated"], cwd=repo, text=True).strip()
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_target_and_premise, repo, {**target_data, "premise": dict(target_data["premise"], local_head_sha=unrelated)}, "corca-ai/charness")
+    _manifest_raises("identity_mismatch", slice_manifest_lib._validate_remote_readbacks, {**target_data, "remote_readback": dict(target_data["remote_readback"], actions_run_id=0)}, target_data["target"]["sha"], "corca-ai/charness", "refs/heads/main")
+    _manifest_raises("unsupported_schema", slice_manifest_lib.validate_manifest, repo, _write_fixture(fixture_path, {**target_data, "schema_version": 2}))
+    timestamp_fixture = _write_fixture(fixture_path, {**target_data, "captured_at": "2026-08-06T00:00:00"})
+    _manifest_raises("invalid_timestamp", slice_manifest_lib.validate_manifest, repo, timestamp_fixture)
+
+    original_read_text = slice_manifest_lib.Path.read_text
+    monkeypatch.setattr(slice_manifest_lib.Path, "read_text", lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("unreadable")))
+    _manifest_raises("unbound_critique", slice_manifest_lib._validate_critique, repo, data["critique"], verify_current=True)
+
+    critique = dict(data["critique"], packet_sha256="0" * 64)
+    monkeypatch.setattr(slice_manifest_lib.Path, "read_text", original_read_text)
+    _manifest_raises("stale_critique_packet", slice_manifest_lib._validate_critique, repo, critique, verify_current=True)

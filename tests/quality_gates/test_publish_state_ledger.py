@@ -295,3 +295,104 @@ def test_duplicate_source_marker_refuses(fixture_root: Path) -> None:
         ledger.reconcile(fixture_root, path)
     assert caught.value.code == "source_claim_invalid"
     assert caught.value.field == "sources.goal"
+
+
+def test_ledger_private_refusal_branches(fixture_root: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    invalid = tmp_path / "invalid.json"
+    invalid.write_text("{", encoding="utf-8")
+    for field, code in (("ledger", "invalid_ledger"), ("manifest", "manifest_missing"), ("other", "manifest_invalid")):
+        with pytest.raises(ledger.LedgerError) as caught:
+            ledger._read_json(invalid, field)
+        assert caught.value.code == code
+    invalid.write_text("[]", encoding="utf-8")
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_json(invalid, "ledger")
+    assert caught.value.code == "invalid_ledger"
+
+    with pytest.raises(ledger.LedgerError):
+        ledger._repo_path(fixture_root, "", "field")
+    with pytest.raises(ledger.LedgerError):
+        ledger._repo_path(fixture_root, "../outside", "field")
+    outside_target = tmp_path / "outside.txt"
+    outside_target.write_text("outside", encoding="utf-8")
+    (fixture_root / "escape.txt").symlink_to(outside_target)
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._repo_path(fixture_root, "escape.txt", "field")
+    assert caught.value.code == "invalid_ledger"
+    with pytest.raises(ledger.LedgerError):
+        ledger._repo_path(fixture_root, "missing.txt", "sources.goal.path")
+    with pytest.raises(ledger.LedgerError):
+        ledger._ledger_file(fixture_root, Path("missing-ledger.json"))
+    with pytest.raises(ledger.LedgerError):
+        ledger._ledger_file(fixture_root, Path("/tmp/outside-ledger.json"))
+    with pytest.raises(ledger.LedgerError):
+        ledger._require_object([], "field")
+    with pytest.raises(ledger.LedgerError):
+        ledger._require_sha("bad", "field", ledger.SHA256_RE, "hash")
+
+    path = _write_fixture(fixture_root)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    for mutate, field in (
+        (lambda value: value.update(extra=True), "ledger"),
+        (lambda value: value.update(kind="wrong"), "ledger.kind/schema_version"),
+        (lambda value: value["manifest"].update(extra=True), "manifest"),
+        (lambda value: value["sources"].pop("goal"), "sources"),
+        (lambda value: value["sources"]["goal"].update(block_id="wrong"), "sources.goal.block_id"),
+        (lambda value: value["sources"]["goal"].pop("sha256"), "sources.goal"),
+    ):
+        value = json.loads(json.dumps(payload))
+        mutate(value)
+        with pytest.raises(ledger.LedgerError) as caught:
+            ledger._validate_ledger_shape(fixture_root, value)
+        assert caught.value.field == field
+
+    source = fixture_root / "goal.md"
+    manifest_path = fixture_root / "fixture-manifest.json"
+    manifest_sha = _sha256(manifest_path)
+    locator = json.loads(path.read_text(encoding="utf-8"))["sources"]["goal"]
+
+    source.write_text("no marker\n", encoding="utf-8")
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_invalid"
+    shutil.copy2(ROOT / GOAL_REL, source)
+    source.write_text(f"{ledger.CLAIM_MARKER}\nnot fenced\n", encoding="utf-8")
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_invalid"
+    shutil.copy2(ROOT / GOAL_REL, source)
+
+    def refresh_locator() -> None:
+        match = ledger.CLAIM_RE.search(source.read_text(encoding="utf-8"))
+        assert match is not None
+        locator["sha256"] = ledger.canonical_claim_sha256(json.loads(match.group(1)))
+
+    _replace_claim(source, "fixture-manifest.json", manifest_sha, lambda claim: claim.update(published_sha="bad"))
+    refresh_locator()
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_mismatch"
+    shutil.copy2(ROOT / GOAL_REL, source)
+    _replace_claim(source, "fixture-manifest.json", manifest_sha, lambda claim: claim.update(issue_scope="other"))
+    refresh_locator()
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_mismatch"
+    shutil.copy2(ROOT / GOAL_REL, source)
+    _replace_claim(source, "fixture-manifest.json", manifest_sha, lambda claim: claim.update(captured_at=""))
+    refresh_locator()
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_invalid"
+
+    original_read_text = Path.read_text
+
+    def fail_source(candidate: Path, *args: Any, **kwargs: Any) -> str:
+        if candidate == source:
+            raise OSError("unreadable")
+        return original_read_text(candidate, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_source)
+    with pytest.raises(ledger.LedgerError) as caught:
+        ledger._read_claim(fixture_root, "goal", locator, manifest_path, manifest_sha)
+    assert caught.value.code == "source_claim_invalid"
