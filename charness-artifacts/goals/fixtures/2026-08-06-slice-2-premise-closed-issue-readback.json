@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "repo": "corca-ai/charness",
+  "number": 510,
+  "comments_read": true,
+  "comment_count": 0,
+  "issue": {
+    "number": 510,
+    "body": "synthetic closed issue fixture\n",
+    "comments": [],
+    "state": "CLOSED",
+    "updatedAt": "2026-08-06T01:20:31Z"
+  }
+}

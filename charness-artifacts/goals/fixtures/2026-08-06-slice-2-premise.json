@@ -1,0 +1,29 @@
+{
+  "kind": "charness.premise-preflight",
+  "schema_version": 1,
+  "premise_id": "issue-510-slice-2-proof",
+  "repository": "corca-ai/charness",
+  "goal_path": "charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md",
+  "slice_id": "slice-2-premise-preflight",
+  "decision_log": "charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl",
+  "issue": {
+    "number": 510,
+    "expected_state": "OPEN",
+    "captured": {
+      "body_sha256": "d69af96a3e02232eb0e3422a6f6f7a3472afed2a9deb8a5e4c4562d59e8d4424",
+      "comments_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "comment_count": 0,
+      "updated_at": "2026-08-06T01:20:31Z"
+    }
+  },
+  "tree": {
+    "captured_head_sha": "f5c88e9ca571ec453d80209444f858971a6d22c2",
+    "protected": [
+      {
+        "path": "scripts/slice_manifest_lib.py",
+        "sha256": "99ad19371d5253c3632edd189672b9189c0d36f1b0b5a406018fb9a143f85abf"
+      }
+    ],
+    "expected_missing": ["charness-artifacts/goals/2026-08-06-slice-2-premise-decisions.jsonl"]
+  }
+}

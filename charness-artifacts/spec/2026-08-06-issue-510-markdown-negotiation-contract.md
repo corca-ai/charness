@@ -150,3 +150,7 @@ local evidence work to continue without reopening issue #510.
 Slice 2 is an unrelated local premise-preflight seam. It preserves the same
 resolved observation and non-claims; no Markdown negotiation, provider call,
 installed-consumer execution, or remote behavior is being added here.
+
+The Slice 2 premise-preflight contract is now the implementation target; this
+carry-forward remains a lifecycle binding only and does not reopen the
+resolved Markdown work.

@@ -2,6 +2,69 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "0207688c81c33f11",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "premise_preflight_lib and slice_manifest_lib keep separate mapping validators because their error types and schema owners differ. The common dict guard is idiomatic boundary plumbing; extracting it would couple independent verdict contracts."
+    },
+    {
+      "class": "intentional",
+      "id": "3ba9cf87673ea820",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The premise preflight and reviewed-input identity modules independently hash byte payloads under separate ownership. This two-line standard-library helper is not a shared semantic contract and does not justify cross-surface coupling."
+    },
+    {
+      "class": "intentional",
+      "id": "52e2a3f86ad5d124",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The preflight keeps text-returning and byte-returning Git subprocess wrappers explicit so metadata and blob evidence cannot silently cross types. The broader matching family is common subprocess boilerplate across unrelated owners, not an extractable premise helper."
+    },
+    {
+      "class": "intentional",
+      "id": "5f26d18ced59185f",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Decision-history validation deliberately keeps protected-file rows and expected-missing rows as separate branches because their required evidence fields differ. A shared row formatter would obscure the audit schema distinction."
+    },
+    {
+      "class": "intentional",
+      "id": "626f4126df442a5c",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Premise and manifest validators each own a repository-boundary resolver with different symlink and error-code semantics. The repeated relative_to guard is small portability plumbing; sharing it would couple independent validators."
+    },
+    {
+      "class": "intentional",
+      "id": "6f4d3ab160a0feed",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "PremiseError and ManifestError intentionally keep their local structured error contracts beside their owning validators. The class plus raise helper shape is standard local plumbing, not shared domain behavior."
+    },
+    {
+      "class": "intentional",
+      "id": "bf64dd77dd3802c8",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The premise and manifest validators independently verify Git commits because they emit different domain errors and accept different captured-record schemas. A shared Git-object helper would widen ownership for a tiny idiom."
+    },
+    {
+      "class": "intentional",
+      "id": "d47e642f4c8ca1c7",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Candidate strings and historical strings use parallel validators but must map malformed input to different refusal codes. Keeping the history-specific wrapper local preserves the invalid-decision-history boundary."
+    },
+    {
+      "class": "intentional",
+      "id": "dd12381fd0b50fab",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Candidate path and historical path validation deliberately translate the shared safe-path failure into different schema-owned error codes. The short try/except shape is not semantic duplication worth coupling."
+    },
+    {
+      "class": "intentional",
       "id": "0616e9e330a5adf2",
       "reviewed_at": "2026-08-05",
       "surface": "code",
