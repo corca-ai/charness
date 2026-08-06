@@ -46,6 +46,17 @@ def fixture_path(tmp_path: Path, seeded_charness_git_repo: Path, monkeypatch: py
         job["head_sha"] = seed_head
     data["remote_readback"]["target_sha"] = seed_head
     data["remote_readback"]["open_issues"]["target_sha"] = seed_head
+    for reader_root in data["reader_roots"]:
+        reader_root["identity_sha256"] = slice_manifest_lib._root_identity_digest(
+            repo, reader_root["identity_paths"]
+        )
+    for parity_pair in data["parity_pairs"]:
+        parity_pair["source_sha256"] = slice_manifest_lib._sha256_file(
+            repo / parity_pair["source"]
+        )
+        parity_pair["derived_sha256"] = slice_manifest_lib._sha256_file(
+            repo / parity_pair["derived"]
+        )
     manifest = repo / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
     manifest.parent.mkdir(parents=True, exist_ok=True)
     (repo / ".charness").mkdir(parents=True, exist_ok=True)
@@ -69,7 +80,7 @@ def test_committed_baseline_manifest_is_valid() -> None:
     assert result["live_revalidation"] == "not-run"
 
 
-def test_current_identity_mode_and_parity_check_are_opt_in() -> None:
+def test_current_identity_mode_and_parity_check_are_opt_in(fixture_path: Path) -> None:
     result = validate_manifest(ROOT, MANIFEST, verify_current=True)
     assert result["status"] == "structurally-valid-captured-record"
 

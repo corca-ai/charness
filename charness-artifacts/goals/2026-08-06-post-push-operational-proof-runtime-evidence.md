@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — mutation producer discovery, next slice to shape.
-- Current slice intent: derive a complete candidate range, inventory artifacts and surfaces, bind critique inputs, require explicit behavior channels, and generate a dry-run command plan without executing it.
-- Next action: run the existing mutation producer suggestion path and inspect its complete producer set; Slices 3–4 are committed, while broad pytest, mutation proof, and the integrated locked closeout remain pending; do not push.
+- Current slice: Slice 5 — mutation producer discovery, ready to close.
+- Current slice intent: prove that the existing mutation producer helper selects every eligible changed Python file and that its focused standing targets pass without weakening the mutation floor.
+- Next action: run the pre-lock closeout, commit the fixture and quality packet, then shape the immutable-ledger slice; locked broad/mutation proof remains pending for the final bundle; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -121,7 +121,7 @@ runs the activation command.
 | 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | complete; committed |
 | 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | complete; committed |
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | complete; evidence committed |
-| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | in progress |
+| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | ready to close |
 | 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | draft |
 | 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | draft |
 
@@ -254,6 +254,17 @@ applies.
 - Test duplication pressure: No production or test code changed; no duplicate ratchet delta is claimed.
 - Alternatives rejected: No budget retune, scheduler generalization, standing-signal overwrite, Cautilus run, remote/installed/provider claim, push, or issue closeout was performed.
 - Metrics: 6 isolated samples; 6 synthetic-contended samples; 36 available CPUs; 4-CPU pinned affinity; isolated median 6531ms; contended median 10463ms; ratio 1.60x; 58 focused tests; no threshold change.
+
+### Slice 5: Mutation producer discovery
+
+- Objective: prove the existing changed-line mutation producer selection is complete for the current eligible pool, then preserve any residual as an explicit final-bundle boundary.
+- Why this approach: the helper already owns direct, imported-helper, and local-loader target discovery; reusing it avoids a second hand-maintained producer registry.
+- What changed: repaired `tests/quality_gates/test_slice_manifest.py` so its disposable seeded clone refreshes reader-root and parity hashes before current-identity assertions; added the durable quality packet `charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md` and promoted the quality current pointer.
+- Discovery result: merge-base `e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5`; 7 eligible changed Python files; 3 standing pytest targets; `unmapped_changed_pool_files: []`. The eighth changed `scripts/` path is the non-Python `boundary-bypass-exemptions.txt` and is outside the mutation pool.
+- Focused proof: the selected standing command passed 58 tests; the producer/mapping and manifest suites passed 54 tests; the manifest suite passed 24 tests after the fixture repair. Ruff, Python length, changed-surface inspection, quality-artifact validation, and current-pointer refresh passed.
+- Fresh-eye: an unnamed bounded reviewer independently confirmed the mapping, target command, and fixture semantics; parent boundary snapshot/verify for `slice5-producer-review-2` was clean with no drift.
+- Non-claims: this was an uninstrumented target proof. The freshness marker, locked mutation coverage, broad pytest, ledger, remote CI, installed/provider behavior, Cautilus, and push remain pending or out of scope.
+- Status: ready to close before commit; next slice is immutable publish-state ledger reconciliation.
 
 ## Context Sources
 
