@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 4 — controlled runtime diagnosis, next slice to shape.
+- Current slice: Slice 5 — mutation producer discovery, next slice to shape.
 - Current slice intent: derive a complete candidate range, inventory artifacts and surfaces, bind critique inputs, require explicit behavior channels, and generate a dry-run command plan without executing it.
-- Next action: shape Slice 4's isolated-vs-contended runtime evidence contract; Slice 3 is committed, while broad pytest, mutation proof, and the integrated locked closeout remain pending; do not push.
+- Next action: run the existing mutation producer suggestion path and inspect its complete producer set; Slices 3–4 are committed, while broad pytest, mutation proof, and the integrated locked closeout remain pending; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -120,8 +120,8 @@ runs the activation command.
 | 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | complete; committed |
 | 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | complete; committed |
 | 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | complete; committed |
-| 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | draft |
-| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | draft |
+| 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | complete; evidence committed |
+| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | in progress |
 | 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | draft |
 | 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | draft |
 
@@ -240,6 +240,20 @@ applies.
 - Alternatives rejected: Deferred command execution, shell parsing, live provider/CI refresh, installed-consumer proof, universal generated-asset registry, scheduler ownership, release/push, and runtime-budget changes.
 - Off-goal findings: The new JSONL goal-evidence surface coverage was required because the existing manifest left the persisted Slice 2 decision log unmatched; no issue write, issue closeout, release, Cautilus evaluation, push, remote CI claim, installed-host proof, or runtime-budget decision was performed.
 - Metrics: 12 focused tests; 2 implementation review rounds; 1 bounded reviewer per implementation round due host thread capacity; 67 full-range paths; 47 artifact inventory entries; 9 surfaces; 32 planned commands; dry-run status `ready`; pre-lock closeout status `completed` with broad pytest intentionally skipped; commit `9d306ac7`.
+
+### Slice 4: Controlled runtime diagnosis
+
+- Objective: Compare the declaration validator under identical-affinity isolation and synthetic CPU contention before making any runtime-budget or scheduler decision.
+- Why this approach: Existing runtime records showed historical contention sensitivity but did not establish a controlled same-host cohort. A six-versus-six direct-command A/B reduces that uncertainty without rewriting standing runtime history.
+- Commits: pending Slice 4 evidence commit; the slice remains unpushed.
+- What changed: Added `charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md` and promoted it to the quality current pointer; no validator, runner, budget, or scheduler code changed.
+- Controlled result: With `taskset -c 0-3`, six isolated samples had median 6531ms (6451–6615ms); six samples with four same-affinity CPU burners had median 10463ms (10275–10664ms), a +3932ms delta and 1.60x ratio; all 12 returned zero and validated 9 inventories.
+- Interpretation: The cohort supports contention sensitivity on this host and affinity slice, but synthetic workers are not the exact first-phase queue and one host cannot justify changing the 15.500s budget. Cross-host and exact-runner A/B remain missing.
+- Targeted verification: `validate_quality_artifact.py` passed; rolling current-pointer freshness passed; focused runtime, budget, summary, and runner aggregate tests passed (`58 passed`); the quality planner and timing command inventory were run before recording the artifact.
+- Critique: Measurement-only quality work was marked `Delegated Review: not_applicable`; no code or verdict logic changed. Any threshold, scheduler, or implementation change must receive a new bounded fresh-eye review against a fresh packet.
+- Test duplication pressure: No production or test code changed; no duplicate ratchet delta is claimed.
+- Alternatives rejected: No budget retune, scheduler generalization, standing-signal overwrite, Cautilus run, remote/installed/provider claim, push, or issue closeout was performed.
+- Metrics: 6 isolated samples; 6 synthetic-contended samples; 36 available CPUs; 4-CPU pinned affinity; isolated median 6531ms; contended median 10463ms; ratio 1.60x; 58 focused tests; no threshold change.
 
 ## Context Sources
 
