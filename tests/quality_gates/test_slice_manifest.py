@@ -287,7 +287,7 @@ def _manifest_raises(code: str, function: Any, *args: Any, **kwargs: Any) -> Non
 
 
 def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo = ROOT
+    repo = fixture_path.parents[1]
     _manifest_raises("invalid_type", slice_manifest_lib._require_mapping, [], "field")
     _manifest_raises("invalid_type", slice_manifest_lib._require_string, "", "field")
     _manifest_raises("invalid_type", slice_manifest_lib._require_int, True, "field")
@@ -363,7 +363,7 @@ def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_pa
 
 
 def test_manifest_critique_target_and_loader_error_branches(fixture_path: Path, tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    repo = ROOT
+    repo = fixture_path.parents[1]
     data = _load()
     critique = dict(data["critique"], packet_path="different.md")
     _manifest_raises("unbound_critique", slice_manifest_lib._validate_critique, repo, critique, verify_current=False)
