@@ -244,9 +244,118 @@ representation while holding the source-owned fact constant.
 - memory: carry the exact one-push boundary, carrier mapping, current-head CI
   query, and issue closeout verifier contract in the handoff and next goal.
 
+## Current Release Addendum — v3.3.0
+
+This addendum covers the release preparation, publication, post-publish proof,
+and final baton reconciliation completed in this session.
+
+### Evidence
+
+- The repo-local release workflow completed the `3.3.0` target; local release
+  quality and fresh-checkout probes passed.
+- Independent readbacks observed tag `v3.3.0` at `7eed13ec`, final remote
+  `main` at `8117f0be`, a non-draft GitHub release, public HTTP `200`, remote
+  CI runs `31087834647` and `31088158704` green, and installed version/doctor
+  state at `3.3.0` with source-cache drift `false`.
+- The final claims review passed after the packet was repaired to use a fixed
+  changed-ref and distinct JSON/Markdown companion hashes.
+- The first post-publish push was refused by
+  `check-references-link-inventory`; a wrapped handoff bullet was repaired,
+  and the retry passed `14` checks with `0` failures before CI was read back.
+- No adapter `metrics_commands` are configured, so this retro makes no token,
+  tool-count, or time-efficiency claim.
+
+### Waste
+
+- release-proof-identity-churn (recurrence-class: release-proof-identity-churn): the packet initially followed moving
+  `HEAD`, then became stale when review records were committed; a Markdown
+  companion hash was also transcribed incorrectly. The cost was multiple
+  regeneration, review, and commit cycles. The structural repair was a fixed
+  range ending at `add5f743` plus independently checked JSON/Markdown hashes;
+  final v5 claims review passed.
+- review-cycle-repair (recurrence-class: review-cycle-repair): fresh-eye
+  rounds caught stale critique binding, rollback wording, and final-bundle
+  path issues that should have been checked once before spawning the full
+  review set. The rounds were valuable safety work, but the avoidable repair
+  loops were waste.
+- postpublish-doc-gate-retry (recurrence-class: postpublish-doc-gate-retry): a wrapped `References` bullet was interpreted
+  as a linkless bullet by the docs gate, requiring one fix-and-push retry.
+- Independent review, pre-publish quality, public/CI/install readbacks, and the
+  refusal of an incomplete proof were necessary safety work, not waste.
+
+### Critical Decisions
+
+- Freeze the evidence packet's commit range and repair its identity instead of
+  weakening the review or accepting a moving reference.
+- Publish only through the repo-local release helper and keep publication,
+  public HTTP, CI, and installed-host observations separate.
+- Leave the optional real-host `nose` proof unclaimed rather than installing or
+  implying it without a scoped proof.
+- Reconcile the handoff and release record after publication; do not treat a
+  push exit code as CI or public-release evidence.
+
+### Trends vs Last Retro
+
+- The previous retro already named review-packet identity drift and manual
+  sequencing of mutation producers. This release repeated packet identity
+  drift, confirming a recurrence rather than a one-off.
+- This session added a fixed-range packet strategy and a second identity check
+  across JSON and Markdown; the post-publish docs gate exposed a narrower
+  reference-inventory formatting gap.
+
+### North Star Alignment
+
+- P4/P5 held through distinct fresh-eye, GitHub Actions, unauthenticated HTTP,
+  and installed doctor/version channels.
+- The weak point was allowing a moving packet reference and manual hash
+  transcription to survive into review; the preflight remained provisional
+  until the independent claims review repaired and re-read it.
+
+### Expert Counterfactuals
+
+- Engelbart: make packet production, critique scaffolding, and the commit
+  boundary one system-improving loop that emits an immutable range and both
+  companion hashes before reviewer spawn.
+- Gawande: add a pre-review checklist for fixed ref, JSON hash, Markdown hash,
+  final-bundle copy command, rollback scope, and clean worktree.
+
+### Next Improvements
+
+- workflow: freeze packet identity and run one range/hash/final-bundle check
+  before any fresh-eye review; use a fixed commit endpoint for evidence that
+  will itself be committed.
+- capability: add a release preflight that generates and validates the fixed
+  range plus JSON/Markdown pair, and lint handoff reference bullets before the
+  push gate.
+- memory: carry `release-proof-identity-churn`,
+  `postpublish-doc-gate-retry`, and the exact release readback commands into
+  the next session's first read set.
+
+## Sibling Search
+
+- same layer: release packet and critique binding | decision: same waste, fix
+  now | proof: final v5 used the repaired fixed range and passed claims review
+- abstraction up: release planner/preflight | decision: valid follow-up
+  outside the slice | proof: the current helper did not freeze packet
+  endpoints or cross-check both hashes | follow-up: deferred
+  `next-session-release-proof-freeze`
+- specialization down: handoff `References` inventory | decision: same waste,
+  fix now | proof: the pre-push gate rejected the wrapped bullet and the retry
+  passed `14/0`
+- mental-model siblings: generated current-pointer and packet surfaces |
+  decision: valid follow-up outside the slice | proof: no broader sibling
+  audit ran in this release slice | follow-up: deferred
+  `next-session-reference-inventory`
+
+## Portable Candidate
+
+- not portable: the fixed-range release packet binding depends on Charness's
+  release adapter and critique schema; the workflow principle is reusable, but
+  this implementation is repo-specific.
+
 ## Packet Consumed
 
-Packet Consumed: `charness-artifacts/retro/2026-08-06-session-retro-packet.md`
+Packet Consumed: `charness-artifacts/retro/2026-08-06-release-session-retro-packet-packet.md`
 
 ## Persisted
 
