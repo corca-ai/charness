@@ -700,6 +700,7 @@ queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.p
 # names a tree this repo builds -- so it can be checked, which is the whole
 # reason it was worth adopting (D50).
 queue_selected "check-plugin-dir-references" python3 scripts/check_plugin_dir_references.py --repo-root "$REPO_ROOT"
+queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugin_asset_command_carriers.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing

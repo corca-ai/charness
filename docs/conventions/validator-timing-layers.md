@@ -64,6 +64,7 @@ this audit; those rows are listed compressed.
 
 | Check (broad-gate label) | Ran before audit | Verdict | Reason |
 | --- | --- | --- | --- |
+| check-plugin-asset-command-carriers | broad only (new 2026-08-06) | stays | Typed JSON/YAML assets are a cross-surface sweep over shipped packages, and a carrier can become unreachable when either its authoring source or generated export changes; no single staged-file trigger scopes that relationship. Keep it at the bundle boundary, where the full tracked asset set and source/export layout are available. |
 | py-compile, ruff, check-python-lengths, validate-attention-state-visibility, validate-skills, run-evals, validate-skill-ergonomics, validate-profiles, validate-adapters, validate-presets, validate-integrations, check-doc-links, check-markdown, check-boundary-bypass-ratchet, staged mirror drift, skill-core headroom, artifact shape | commit-time + broad | already earlier | pulled by prior work; unchanged |
 | validate-packaging, validate-packaging-committed, validate-current-pointer-freshness, check-changed-line-mutation-coverage | pre-push + broad (now also CI) | already earlier | bundle-range semantics; pre-push is their natural earliest timing |
 | check-python-filenames | broad only | **pulled → commit-time** | <0.3s, deterministic, only a staged .py can flip it |

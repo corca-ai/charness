@@ -88,6 +88,6 @@
   },
   "host_notes": [
     "For this repo, `vulture` uses `[tool.vulture]` in `pyproject.toml`; the 80% primary pass is expected to be clean, not proof that no dead code exists.",
-    "Use `python3 skills/public/quality/scripts/run_dead_code_advisory.py --repo-root .` for the quality advisory pass; it also runs a 60% sweep for review candidates and likely framework-convention false positives."
+    "Use `python3 <plugin-dir>/skills/quality/scripts/run_dead_code_advisory.py --repo-root .` for the quality advisory pass; it also runs a 60% sweep for review candidates and likely framework-convention false positives."
   ]
 }
