@@ -43,5 +43,12 @@
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [North Star](./design-north-star.md)
 
-Refresh kept: the active closeout goal, prior published-state identity, local-gate boundary, and exact retro recurrence obligations because each changes the next action.
-Refresh non-claims: new release publication, remote CI, provider freshness, cross-host runtime, live-agent behavior, Cautilus execution, and issue writes.
+- [Refresh kept](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md): the active closeout goal, prior published-state identity,
+  local-gate boundary, and exact retro recurrence obligations because each
+  changes the next action ([active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md),
+  [execution contract](../charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md),
+  [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md)).
+- [Refresh non-claims](../charness-artifacts/release/latest.md): new release publication, remote CI, provider freshness,
+  cross-host runtime, live-agent behavior, Cautilus execution, and issue writes
+  remain unclaimed ([release record](../charness-artifacts/release/latest.md),
+  [handoff](./handoff.md)).
