@@ -9,12 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 6 — resolve issue #517's semantic surface-contract gap.
-- Current slice intent: carry the new quality disclosure floor through a
-  delegated resolution critique, verify the repaired proof surface, and close
-  the bug only after the direct-commit carrier and distinct behavior proof pass.
-- Next action: read back the final Quality Core result for push SHA `5df4fb61`
-  and reconcile the session baton without claiming any unfinished job.
+- Current slice: Slice 7 — resolve issue #516's mutation regression and packet-portability failure.
+- Current slice intent: preserve the confirmed historical source-claim cause,
+  repair the machine-local packet path, obtain a new remote mutation readback,
+  and close #516 only after its distinct behavior proof and carrier pass.
+- Next action: commit the portability repair, run the conditioned pre-push gate,
+  push, and read back a new Quality Core result for the repaired SHA without
+  claiming the failed prior run as green.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -107,16 +108,39 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 | 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | completed |
 | 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | completed |
 | 6 | Resolve issue #517's semantic surface-contract gap | The new quality issue is a direct recurrence of the closeout goal's receipt-versus-meaning boundary and was explicitly requested as follow-up work. | Gathered causal source, repaired quality artifact contract, root/plugin sync, delegated resolution critique, second proof-surface review, closeout carrier, and CLOSED readback. | completed |
+| 7 | Resolve issue #516's mutation regression and packet portability | The historical ledger mismatch is explained, while the first post-#517 remote run exposed a machine-local critique packet path that fails under a runner root. | Confirmed causal review, repo-relative packet repair, whole-tree validator proof, resolution critique, new remote mutation readback, closeout carrier, and CLOSED readback. | in_progress |
 
 ## Operator Decision Queue
 
 - #516 remains OPEN: current `HEAD` passes its four reported ledger tests and
-  the full suite, but the historical `79ea3447…` baseline was not replayed and
-  the required causal fresh-eye reviewer could not be spawned on this host.
-  Its durable diagnosis is
+  the full suite; its historical `79ea3447…` source-claim mismatch is confirmed
+  by the original remote log and the unnamed causal fresh-eye review. Its
+  durable diagnosis is
   `charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md`.
 - #515 remains a distinct quality-routing boundary, not silently satisfied by
   #517's semantic disclosure contract; #514 remains deferred work.
+
+### Slice 7: Issue #516 mutation regression and packet portability
+
+- Objective: resolve the historical mutation baseline alert without conflating
+  it with the current runner portability failure, then prove the repair through
+  a new remote mutation readback before closing the issue.
+- Causal evidence: run `31103691239` at `79ea3447…` failed on
+  `sources.handoff.claim` because handoff `7eed13ec…` disagreed with the
+  goal/manifest ledger target `e7c3e1b3…`; the delegated causal reviewer
+  confirmed this bounded cause and the clean review boundary.
+- Current remote evidence: run `31115253605` at `5df4fb61…` passed Core
+  deterministic gates but failed changed-line mutation because
+  `2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md` used
+  a machine-local absolute packet path. The owning field is repaired to a
+  repo-relative path; `validate_critique_artifacts.py --all` now passes 775
+  artifacts and the failing corpus test passes locally.
+- Critique: the pre-close resolution record is
+  `charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md`.
+  Three unnamed angle reviewers and one separate counterweight found the same
+  act-before-ship floor: update the diagnosis and wait for a new remote run.
+- Non-claims: no historical local checkout, dependency equivalence, provider,
+  cross-host, Cautilus, or post-repair remote success is claimed yet.
 
 ## Coordination Cues
 
@@ -152,10 +176,10 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 
-Routing: achieve → gather → issue → quality → critique — selected from installed skill metadata and the active goal's issue-resolution continuation.
+Routing: achieve → gather → issue → quality → critique → debug — selected from installed skill metadata and the active goal's issue-resolution continuation.
 Gather: charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md — authenticated public-source readback persisted before implementation.
 Release: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json — release work already completed in the preceding boundary.
-Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. Quality Core run `31115253605` independently observed the pushed SHA `5df4fb61`; core deterministic gates passed and changed-line mutation coverage was still in progress at the last readback.
+Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. #516 — direct-commit carrier and closeout draft pending; its resolution critique is recorded, the repo-relative repair passes local proof, and a new remote mutation readback is required before close.
 
 ## Discuss Before Activation
 
@@ -363,7 +387,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
 Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately).
-Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed and changed-line mutation coverage was still in progress at the last readback.
+Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed, but changed-line mutation coverage failed because a critique artifact used a machine-local absolute packet path. The repo-relative repair is pending a new gated push/readback.
 Release readback: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json (unauthenticated HTTP release observation, installed refresh, `charness version`, and `charness doctor` readbacks).
 
 ## User Verification Instructions

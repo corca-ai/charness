@@ -22,9 +22,17 @@ historical issue.
 - The exact four nodeids from the issue pass at current `HEAD`:
   `pytest -q tests/quality_gates/test_publish_state_ledger.py::test_valid_ledger_reconciles_captured_snapshot tests/quality_gates/test_publish_state_ledger.py::test_human_and_json_cli_modes_share_verdict 'tests/quality_gates/test_publish_state_ledger.py::test_refusal_matrix_rejects_one_factor_drift[open-issue-kwargs8-issues_not_empty-manifest.remote_readback.open_issues.open_count]' tests/quality_gates/test_publish_state_ledger.py::test_surrounding_source_prose_does_not_change_claim_binding` — 4 passed.
 - The complete ledger suite also passes: `pytest -q tests/quality_gates/test_publish_state_ledger.py` — 27 passed.
-- No historical-checkout reproduction or current remote mutation conclusion is
-  claimed. Quality Core run `31115253605` for `5df4fb61…` had core gates pass,
-  while its changed-line mutation job was still running at this record.
+- The original run's failure log identifies `source_claim_mismatch` at
+  `sources.handoff.claim`: `79ea3447…` had handoff `published_sha=7eed13ec…`
+  while the goal/manifest and ledger expected `e7c3e1b3…`; commit `8d6ad5e7`
+  later aligned the handoff claim.
+- Quality Core run `31115253605` for `5df4fb61…` completed with core gates
+  passing but changed-line mutation failing because this critique record's
+  absolute packet path resolved outside the runner repository. The failing
+  test was `test_live_corpus_critique_artifacts_pass_whole_tree_validation`.
+- The packet field is now repo-relative; local whole-tree critique validation
+  passes for 775 artifacts and the failing regression test passes. A new
+  post-repair remote run is still required.
 
 ## Reproduction
 
@@ -36,30 +44,38 @@ not performed in this slice.
 ## Candidate Causes
 
 - A historical publish-state source claim, manifest, and handoff snapshot were
-  temporarily out of sync at `79ea3447…`.
-- The scheduled runner observed a release-baton transition before all durable
-  state surfaces had synchronized, so the ledger tests correctly refused the
-  captured snapshot.
-- A runner dependency or checkout-state difference caused the scheduled
-  baseline to see a different artifact set from the current local checkout.
+  temporarily out of sync at `79ea3447…` (confirmed by the original runner
+  log and historical artifact comparison).
+- The current remote mutation runner resolved a machine-local absolute packet
+  path outside its checkout; the critique artifact, not the validator, owned
+  the malformed value.
+- A runner dependency or checkout-state difference may explain other historical
+  details, but remains unproven and is not needed for this bounded fix.
 
 ## Hypothesis
 
-- Candidate: the failure was a historical source-claim/manifest mismatch that
-  later reconciliation repaired | disconfirmer: run the exact four tests from
-  an isolated `79ea3447…` checkout and compare the ledger's bound source fields.
+- Confirmed: the historical baseline failed on the handoff source-claim
+  mismatch, and the current remote failure was caused by the absolute packet
+  locator | disconfirmer for additional environment claims: run the exact four
+  tests from an isolated `79ea3447…` checkout.
 
 ## Verification
 
-- Current-state disconfirmer passed: the four reported tests and the full ledger
-  suite pass now. The historical hypothesis remains still-candidate because the
-  original SHA was not checked out in an isolated environment.
+- The four reported tests and full ledger suite pass now; the original remote
+  log plus historical comparison confirm the source-claim root cause without a
+  local historical checkout. The current path repair passes local whole-tree
+  validation and its focused regression test; post-repair remote proof remains
+  pending.
 
 ## Root Cause
 
-Not yet confirmed. The strongest bounded finding is a stale historical
-regression: the issue's exact failing tests pass at current `HEAD`, but the
-producer/runner-to-issue history has not been replayed at the reported SHA.
+Confirmed bounded root cause: the historical run's handoff source claim was
+bound to `7eed13ec…` while the goal/manifest ledger expected `e7c3e1b3…`, so
+`publish_state_ledger.py` rejected `sources.handoff.claim` and the remaining
+reported tests cascaded from that invalid baseline. A separate current runner
+failure exposed a machine-local absolute packet path; making the field
+repo-relative repairs that portability defect without changing validator
+semantics.
 
 ## Invariant Proof
 
@@ -67,9 +83,10 @@ producer/runner-to-issue history has not been replayed at the reported SHA.
   issue consumer must preserve that SHA and failing nodeids as a historical
   observation, while a later pass must be verified separately.
 - Producer Proof: issue #516 and workflow run `31103691239` preserve the old
-  SHA and four failing nodeids.
-- Final-Consumer Proof: the current issue remains OPEN; no closeout or automatic
-  stale-issue transition was claimed.
+  SHA and four failing nodeids; the log names `source_claim_mismatch`.
+- Final-Consumer Proof: current local tests and the whole-tree validator pass
+  after the repo-relative path edit; the failed remote run names the exact
+  consumer test. A new remote run is required before issue closeout.
 - Interface-Shape Sibling Scan: the mutation mirror in
   `.github/workflows/quality-core.yml`, the scheduled workflow in
   `.github/workflows/mutation-tests.yml`, and the publish-state ledger tests
@@ -80,12 +97,12 @@ producer/runner-to-issue history has not been replayed at the reported SHA.
 
 ## Detection Gap
 
-- Scheduled mutation baseline: it detected the old failure, but no current-SHA
-  recheck or stale-issue disposition was attached | smallest change: require an
-  exact failing-nodeid recheck plus SHA identity before proposing closeout.
-- Local ledger suite: it now fires for current state, but cannot reconstruct a
-  prior runner environment | smallest change: retain the runner SHA and enough
-  artifact identity to replay the baseline.
+- Scheduled mutation baseline: it detected the old failure and preserved its
+  SHA, but did not itself attach a current-SHA disposition | smallest change:
+  require an exact failing-nodeid recheck plus SHA identity before closeout.
+- Local critique validation: a machine-local absolute path passed locally but
+  failed under the runner root | smallest change: store repo-relative packet
+  paths and keep the containment check fail-closed.
 
 ## Sibling Search
 
@@ -102,26 +119,26 @@ producer/runner-to-issue history has not been replayed at the reported SHA.
 
 ## Seam Risk
 
-- Interrupt ID: mutation-516-historical-baseline-identity
+- Interrupt ID: mutation-516-historical-baseline-identity-and-portability
 - Risk Class: external-seam
-- Seam: scheduled GitHub Actions checkout -> local baseline -> issue record
-- Disproving Observation: an isolated run at the recorded SHA reproduces or
-  disproves the four failures with matching ledger inputs.
-- What Local Reasoning Cannot Prove: historical runner state and current remote
-  mutation completion.
+- Seam: scheduled GitHub Actions checkout -> durable claim/packet path -> local
+  validator -> issue record
+- Disproving Observation: a new remote run at the repaired commit passes the
+  whole-tree critique corpus and changed-line mutation baseline.
+- What Local Reasoning Cannot Prove: post-repair remote mutation completion and
+  any additional historical runner-environment equivalence.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
-- Next Step: spec
-- Handoff Artifact: docs/handoff.md — keep #516 open until the historical SHA
-  replay or a delegated causal review supplies the missing evidence.
+- Next Step: issue-closeout
+- Handoff Artifact: charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md
 
 ## Prevention
 
 Keep mutation issues immutable as historical observations, bind any closeout to
-the exact reported SHA, and require a distinct current-SHA behavior recheck.
-Do not close #516 from the present local green alone; the host has no exposed
-Agent/Workflow spawn tool for the required causal fresh-eye reviewer.
+the exact reported SHA, store packet locators repo-relatively, and require a
+distinct current-SHA behavior recheck. Do not close #516 from local green
+alone; the issue still needs the post-repair remote mutation readback.
