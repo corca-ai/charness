@@ -2,9 +2,9 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-06T10:54:42Z",
+  "generated_at": "2026-08-06T10:56:33Z",
   "prepared_for": "runtime evidence and final boundary closeout claims",
-  "changed_ref": "HEAD",
+  "changed_ref": "8d6ad5e7ee08acea8afc1409757578e0ac37fc3e",
   "adapter_path": ".agents/critique-adapter.yaml",
   "sections": [
     {
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for ref `HEAD`:\n- charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "content": "Changed paths for ref `8d6ad5e7ee08acea8afc1409757578e0ac37fc3e`:\n- charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md\n- charness-artifacts/critique/runtime-evidence-final-boundary-packet.json\n- charness-artifacts/critique/runtime-evidence-final-boundary-packet.md\n- charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md\n- charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md\n- charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md\n- charness-artifacts/quality/latest.md\n- charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md\n- charness-artifacts/retro/lesson-selection-index.json\n- docs/conventions/operating-contract.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md, charness-artifacts/critique/runtime-evidence-final-boundary-packet.md, charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md, charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md, charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md, charness-artifacts/quality/latest.md, charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md, docs/conventions/operating-contract.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md, charness-artifacts/critique/runtime-evidence-final-boundary-packet.json, charness-artifacts/critique/runtime-evidence-final-boundary-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
       "ok": true,
       "errors": []
     },
@@ -53,11 +53,11 @@
     "algorithm": "sha256-v2",
     "status": "captured",
     "mode": "changed-ref",
-    "changed_ref": "HEAD",
+    "changed_ref": "8d6ad5e7ee08acea8afc1409757578e0ac37fc3e",
     "resolved_changed_ref": [
-      "8047a6147ba7ffba7c15ff71ca90f8d559a2f563"
+      "8d6ad5e7ee08acea8afc1409757578e0ac37fc3e"
     ],
-    "base_head": "8047a6147ba7ffba7c15ff71ca90f8d559a2f563",
+    "base_head": "8d6ad5e7ee08acea8afc1409757578e0ac37fc3e",
     "base_head_role": "target",
     "reviewed_paths": [
       "charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md",
@@ -70,34 +70,34 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md",
-        "content_sha256": "1c1ccb47fef0eda7119d4096f0848027aec92ac63ab129ee00da05ef8fceb939"
+        "content_sha256": "762ff4ca662ce85b0ceced93d83919702fffc47109c6414f597da8c5049c07cc"
       },
       {
         "path": "charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md",
-        "content_sha256": null
+        "content_sha256": "2aa48102ccafe2035eea15b2cd8973b7fba197859b04c357804ef9bd24dbe417"
       },
       {
         "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
-        "content_sha256": null
+        "content_sha256": "94ea27e21314844922f6a01c0afb6f15461b1095707112a5d9d77cafd1d44eb5"
       },
       {
         "path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-        "content_sha256": null
+        "content_sha256": "8dc61523cb1197d98ff0c9f595b3b636a8df9f25f5a3fa0149f70a0707a564d3"
       },
       {
         "path": "docs/conventions/operating-contract.md",
-        "content_sha256": "3478fee89c6b46337ea23b0a7c252be6677560f0c80c9a0ea695adc6dec7d705"
+        "content_sha256": "ba8bf846eff832a3644eb10a8f12310ae3dfce4c53913340ffd2b70cabb5c1c7"
       },
       {
         "path": "docs/handoff.md",
-        "content_sha256": "90e66435ae2634163cd92e398314143fde6dd622d588ba7b93904444a70b28e8"
+        "content_sha256": "c69a895ee86ec26f20aa14a9ddbf92552c37996aafff2bb6c1a7a9477abdfa9d"
       }
     ],
-    "reviewed_patch_sha256": "518d0299d76563cc52102b670d16256646eede93355ead9cb08cb09f924018c7",
+    "reviewed_patch_sha256": "3f29182c81ebdc7f37d0d51a6fa911d98be445a388df5599d4729bc479b9c82c",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "19cdaba424bd330af3c425b43484d8b9620d506d6915b38da8ca6a34ddbf1638"
+    "identity_sha256": "a836fa873860ad92d28a35128b49786b9973e9f57fbe9273eb45b85532e5e767"
   }
 }

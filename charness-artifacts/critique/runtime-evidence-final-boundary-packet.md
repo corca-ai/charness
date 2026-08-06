@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-06T10:54:42Z
+- **Generated**: 2026-08-06T10:56:33Z
 - **Prepared for**: runtime evidence and final boundary closeout claims
-- **Changed ref**: `HEAD`
+- **Changed ref**: `8d6ad5e7ee08acea8afc1409757578e0ac37fc3e`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `19cdaba424bd330af3c425b43484d8b9620d506d6915b38da8ca6a34ddbf1638`
+- **Reviewed input identity**: `a836fa873860ad92d28a35128b49786b9973e9f57fbe9273eb45b85532e5e767`
 - **Reviewed paths**: 6
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,13 +28,34 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 - **Section ok**: True
 
 ```text
-Changed paths for ref `HEAD`:
+Changed paths for ref `8d6ad5e7ee08acea8afc1409757578e0ac37fc3e`:
+- charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md
+- charness-artifacts/critique/runtime-evidence-final-boundary-packet.json
+- charness-artifacts/critique/runtime-evidence-final-boundary-packet.md
 - charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md
+- charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md
+- charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md
+- charness-artifacts/quality/latest.md
+- charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md
+- charness-artifacts/retro/lesson-selection-index.json
+- docs/conventions/operating-contract.md
+- docs/handoff.md
 
 Owning surfaces:
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md
+  source matches: charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md, charness-artifacts/critique/runtime-evidence-final-boundary-packet.md, charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md, charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md, charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md, charness-artifacts/quality/latest.md, charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md, docs/conventions/operating-contract.md, docs/handoff.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
+- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
+  source matches: charness-artifacts/critique/2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md, charness-artifacts/critique/runtime-evidence-final-boundary-packet.json, charness-artifacts/critique/runtime-evidence-final-boundary-packet.md
+  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
+- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
+  source matches: charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md
+  derived matches: charness-artifacts/retro/lesson-selection-index.json
+  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
+  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
+
+Planned sync commands before validators:
+- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract

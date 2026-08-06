@@ -80,8 +80,8 @@ folding findings into the next repair. The final readiness review returned
 
 - Goal: [active goal](../goals/2026-08-07-runtime-evidence-and-final-boundary.md).
 - Packet path: /home/hwidong/codes/charness/charness-artifacts/critique/runtime-evidence-final-boundary-packet.json
-- Packet SHA256: 893d1f473df0221bbb19aa2d3e957d3182ea43cf4497253cd14371de2bf0819e
-- Identity SHA256: 19cdaba424bd330af3c425b43484d8b9620d506d6915b38da8ca6a34ddbf1638
+- Packet SHA256: 9b394ecc60f14822e47477c5395cd561ac076cb516c54b8b81fbd4a3e9a639c5
+- Identity SHA256: a836fa873860ad92d28a35128b49786b9973e9f57fbe9273eb45b85532e5e767
 - Host evidence: [runtime and installed-host packet](../probe/2026-08-06-runtime-evidence-and-nose.md).
 - Quality: [current quality record](../quality/2026-08-06-runtime-evidence-and-nose.md).
 - Retro: [goal-bound retro](../retro/2026-08-06-runtime-evidence-and-final-boundary.md).
