@@ -31,8 +31,9 @@ historical issue.
   absolute packet path resolved outside the runner repository. The failing
   test was `test_live_corpus_critique_artifacts_pass_whole_tree_validation`.
 - The packet field is now repo-relative; local whole-tree critique validation
-  passes for 775 artifacts and the failing regression test passes. A new
-  post-repair remote run is still required.
+  passes for 775 artifacts and the failing regression test passes. Post-repair
+  Quality Core run `31117396157` for `9e2c390d…` passed both Core deterministic
+  gates and changed-line mutation coverage.
 
 ## Reproduction
 
@@ -64,8 +65,8 @@ not performed in this slice.
 - The four reported tests and full ledger suite pass now; the original remote
   log plus historical comparison confirm the source-claim root cause without a
   local historical checkout. The current path repair passes local whole-tree
-  validation and its focused regression test; post-repair remote proof remains
-  pending.
+  validation and its focused regression test; post-repair remote proof passed in
+  run `31117396157`.
 
 ## Root Cause
 
@@ -123,22 +124,23 @@ semantics.
 - Risk Class: external-seam
 - Seam: scheduled GitHub Actions checkout -> durable claim/packet path -> local
   validator -> issue record
-- Disproving Observation: a new remote run at the repaired commit passes the
-  whole-tree critique corpus and changed-line mutation baseline.
-- What Local Reasoning Cannot Prove: post-repair remote mutation completion and
-  any additional historical runner-environment equivalence.
+- Disproving Observation: Quality Core run `31117396157` at repaired commit
+  `9e2c390d…` passed the whole-tree critique corpus and changed-line mutation
+  baseline.
+- What Local Reasoning Cannot Prove: dependency equivalence for the old runner
+  or any provider/cross-host behavior.
 - Generalization Pressure: monitor
 
 ## Interrupt Decision
 
 - Resolution: resolved
 - Critique Required: yes
-- Next Step: issue-closeout
+- Next Step: issue-closeout-complete
 - Handoff Artifact: charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md
 
 ## Prevention
 
 Keep mutation issues immutable as historical observations, bind any closeout to
 the exact reported SHA, store packet locators repo-relatively, and require a
-distinct current-SHA behavior recheck. Do not close #516 from local green
-alone; the issue still needs the post-repair remote mutation readback.
+distinct current-SHA behavior recheck. #516's post-repair remote mutation
+readback is now recorded in run `31117396157`.

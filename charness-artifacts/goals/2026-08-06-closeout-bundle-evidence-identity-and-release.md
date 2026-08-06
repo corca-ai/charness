@@ -13,9 +13,8 @@ runs the activation command.
 - Current slice intent: preserve the confirmed historical source-claim cause,
   repair the machine-local packet path, obtain a new remote mutation readback,
   and close #516 only after its distinct behavior proof and carrier pass.
-- Next action: commit the portability repair, run the conditioned pre-push gate,
-  push, and read back a new Quality Core result for the repaired SHA without
-  claiming the failed prior run as green.
+- Next action: reconcile the successful remote readback and final issue state;
+  keep #515 and #514 as separate boundaries.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -108,14 +107,15 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 | 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | completed |
 | 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | completed |
 | 6 | Resolve issue #517's semantic surface-contract gap | The new quality issue is a direct recurrence of the closeout goal's receipt-versus-meaning boundary and was explicitly requested as follow-up work. | Gathered causal source, repaired quality artifact contract, root/plugin sync, delegated resolution critique, second proof-surface review, closeout carrier, and CLOSED readback. | completed |
-| 7 | Resolve issue #516's mutation regression and packet portability | The historical ledger mismatch is explained, while the first post-#517 remote run exposed a machine-local critique packet path that fails under a runner root. | Confirmed causal review, repo-relative packet repair, whole-tree validator proof, resolution critique, new remote mutation readback, closeout carrier, and CLOSED readback. | in_progress |
+| 7 | Resolve issue #516's mutation regression and packet portability | The historical ledger mismatch is explained, while the first post-#517 remote run exposed a machine-local critique packet path that fails under a runner root. | Confirmed causal review, repo-relative packet repair, whole-tree validator proof, resolution critique, new remote mutation readback, closeout carrier, and CLOSED readback. | completed |
 
 ## Operator Decision Queue
 
-- #516 remains OPEN: current `HEAD` passes its four reported ledger tests and
-  the full suite; its historical `79ea3447…` source-claim mismatch is confirmed
-  by the original remote log and the unnamed causal fresh-eye review. Its
-  durable diagnosis is
+- #516 is CLOSED: current `HEAD` passes its four reported ledger tests and the
+  full suite; its historical `79ea3447…` source-claim mismatch is confirmed by
+  the original remote log and the unnamed causal fresh-eye review, and the
+  repaired SHA has a successful remote mutation readback. Its durable diagnosis
+  is
   `charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md`.
 - #515 remains a distinct quality-routing boundary, not silently satisfied by
   #517's semantic disclosure contract; #514 remains deferred work.
@@ -134,13 +134,16 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
   `2026-08-06-runtime-evidence-and-final-boundary-disposition-review.md` used
   a machine-local absolute packet path. The owning field is repaired to a
   repo-relative path; `validate_critique_artifacts.py --all` now passes 775
-  artifacts and the failing corpus test passes locally.
+  artifacts and the failing corpus test passes locally. New run
+  `31117396157` at `9e2c390d…` passed Core deterministic gates and changed-line
+  mutation coverage.
 - Critique: the pre-close resolution record is
   `charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md`.
   Three unnamed angle reviewers and one separate counterweight found the same
-  act-before-ship floor: update the diagnosis and wait for a new remote run.
+  act-before-ship floor; the repo-relative repair landed and new remote run
+  `31117396157` passed.
 - Non-claims: no historical local checkout, dependency equivalence, provider,
-  cross-host, Cautilus, or post-repair remote success is claimed yet.
+  cross-host, or Cautilus proof is claimed.
 
 ## Coordination Cues
 
@@ -179,7 +182,7 @@ per the bullets above when that boundary is crossed):
 Routing: achieve → gather → issue → quality → critique → debug — selected from installed skill metadata and the active goal's issue-resolution continuation.
 Gather: charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md — authenticated public-source readback persisted before implementation.
 Release: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json — release work already completed in the preceding boundary.
-Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. #516 — direct-commit carrier and closeout draft pending; its resolution critique is recorded, the repo-relative repair passes local proof, and a new remote mutation readback is required before close.
+Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. #516 — direct-commit carrier `9e2c390d`; draft validation and `verify-closeout --expect-state CLOSED` passed, GitHub state read back as CLOSED, and Quality Core run `31117396157` independently passed both core gates and changed-line mutation coverage.
 
 ## Discuss Before Activation
 
@@ -309,7 +312,8 @@ applies.
 - Non-claims: no product UI semantic oracle, browser/provider roundtrip,
   cross-host, live-agent, or Cautilus proof is claimed. The final local gate,
   commits, push, and #517 CLOSED readback are complete; the remote mutation
-  conclusion remains pending until its separate readback.
+  for the original `5df4fb61` receipt failed on the absolute packet path; the
+  #516 repair at `9e2c390d` passed its separate remote mutation readback.
 
 ## Context Sources
 
@@ -387,7 +391,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
 Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately).
-Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed, but changed-line mutation coverage failed because a critique artifact used a machine-local absolute packet path. The repo-relative repair is pending a new gated push/readback.
+Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed, but changed-line mutation coverage failed because a critique artifact used a machine-local absolute packet path. For #516's repo-relative repair, run `31117396157` at `9e2c390d` independently passed both core gates and changed-line mutation coverage.
 Release readback: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json (unauthenticated HTTP release observation, installed refresh, `charness version`, and `charness doctor` readbacks).
 
 ## User Verification Instructions

@@ -56,10 +56,10 @@ substitute was used.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-06-154530-packet.md`
-- Packet path: `charness-artifacts/critique/2026-08-06-154530-packet.json`
-- Packet SHA256: `0f16d211f5342a0ed375360689be62f4335d3c808bc2510dec927c74fb9f467f`
-- Identity SHA256: `01ec4f14053dd5b90a3789e535d150baffb11429470f10b9b576c859af2b3456`
+- Packet consumed: `charness-artifacts/critique/2026-08-06-155346-packet.md`
+- Packet path: `charness-artifacts/critique/2026-08-06-155346-packet.json`
+- Packet SHA256: `8b116dd4f0556dbf9882eadce139c13aaef8a11fc82cc31ad0854ea9898f99b0`
+- Identity SHA256: `758045cd9a42c499e9b24efd1eeb57dc2f8201d420c2bb22fe259fd22c364c90`
 
 ## Boundary Ownership
 
@@ -84,3 +84,11 @@ Commit the repo-relative path and synchronized evidence records, run the local
 artifact and mutation gates, push only through the conditioned pre-push gate,
 read back the new Quality Core result, and then bind the direct-commit closeout
 carrier to the distinct behavior proof and GitHub state readback.
+
+## Post-Critique Readback
+
+The next gated carrier was pushed as `9e2c390d`. GitHub Actions Quality Core
+run `31117396157` independently passed Core deterministic gates and changed-line
+mutation coverage; `verify-closeout --expect-state CLOSED` read #516 as
+CLOSED/COMPLETED. This post-critique receipt is an external readback, not a new
+fresh-eye approval of the already-reviewed change.
