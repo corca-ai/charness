@@ -26,25 +26,27 @@
   `31062451122` for the published head completed successfully in both jobs.
 - The remote open-issue query after publish returned empty; #508 and #509 were
   already independently CLOSED before the final eight-carrier bundle.
-- The structural lesson is not to retune the 15.5s budget from one timing or to
-  hand-expand mutation producers without controlled evidence.
+- The next goal now covers the full structural set: slice manifest, premise
+  preflight, final-bundle preflight, runtime attribution, mutation producer
+  discovery, and immutable publish-ledger reconciliation.
 - Detailed evidence lives in the [completed goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md),
   [session retro](../charness-artifacts/retro/2026-08-06-session-retro.md), and
   [claims review](../charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md).
 
 ## Next Session
 
-1. Activate the post-push operational-proof goal after reading its boundaries
-   and the current quality/recent-lessons surfaces.
-2. Run `gh api repos/corca-ai/charness/actions/runs/31062451122 --jq
-   '{status,conclusion,head_sha}'` and the empty open-issue query only as a
-   live reconciliation check.
-3. Run the mutation-coverage suggestion helper before selecting producer tests.
-4. Measure isolated versus contended runtime on the same host with repeated,
-   unit-labelled samples; do not alter the budget from anecdotal timing.
-5. If a structural fix is justified, sync source/plugin, run fresh-eye proof,
-   and execute the applicable full gate before considering any separately
-   authorized publish.
+1. Activate the expanded post-push operational-proof goal after reading its
+   boundaries and the current quality/recent-lessons surfaces.
+2. Freeze the current head, issue/CI readback, reader-root matrix, and first
+   slice manifest; use premise preflight before designing any remedy.
+3. Run final-bundle preflight in dry-run mode and verify it selects sync,
+   artifact, critique, behavior, and gate surfaces without manual reconstruction.
+4. Measure isolated versus contended runtime with repeated unit-labelled
+   samples, and make mutation producer discovery emit a complete command set.
+5. Implement the immutable publish ledger and reconcile its output into goal and
+   handoff state. Keep issue/CI/provider ownership separate.
+6. Run source/plugin parity, fresh-eye review, and the full applicable gate
+   before considering any separately authorized publish.
 
 ## Discuss
 

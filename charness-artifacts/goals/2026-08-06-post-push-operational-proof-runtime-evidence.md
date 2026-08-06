@@ -1,4 +1,4 @@
-# Achieve Goal: 푸시 이후 운영 증거와 런타임 비용의 구조적 개선
+# Achieve Goal: 푸시 이후 증거·slice 실행·런타임 비용의 구조적 개선
 
 Status: draft
 Created: 2026-08-06
@@ -31,7 +31,7 @@ runs the activation command.
 
 ## Goal
 
-현재 푸시된 main의 원격 CI·이슈 상태를 독립적으로 닫고, 이번 회고가 남긴 런타임 비용과 mutation producer 선택의 불확실성을 측정 가능한 구조적 개선으로 전환한다. 먼저 현재 SHA를 기준으로 remote readback을 수행한 뒤, 동일 호스트에서 isolated validator와 contended quality phase를 controlled A/B로 비교하고, mutation-coverage suggestion helper가 필요한 producer 명령을 빠짐없이 제시하는지 검증한다. 근거가 충분한 경우에만 가장 작은 gate/workflow 개선을 적용하고, source/plugin sync·fresh-eye·전체 품질 gate를 다시 통과시킨다.
+현재 푸시된 main의 원격 증거를 재확인한 뒤, 지난 goal에서 반복된 상태·증거·명령 재조립을 구조적으로 제거한다. 하나의 slice manifest가 live premise, target SHA, carrier, behavior proof, critique packet, source/plugin surfaces, remote readback을 소유하게 하고, 구현 전 premise preflight와 최종 bundle preflight가 stale/duplicate/부분 해결을 조기에 거부하게 한다. Quality runner에는 isolated-vs-contended runtime 진단과 완전한 mutation producer command discovery를 붙이며, publish ledger가 immutable push SHA를 기준으로 issue/CI/goal/handoff 상태를 reconcile한다. 모든 개선은 source/plugin sync, bounded fresh-eye, focused regression, 전체 품질 gate를 통과한 뒤에만 적용한다.
 
 ## Non-Goals
 
@@ -41,6 +41,11 @@ runs the activation command.
   a new commit unless that boundary is explicitly activated and gated.
 - Do not widen the typed non-Markdown command detector into arbitrary strings or
   shell-language parsing; keep portability and consumer execution separate.
+- Do not turn the slice manifest into a second source of truth for issue bodies;
+  GitHub remains the issue-state source and the manifest owns only execution and
+  proof identity.
+- Do not build a universal scheduler or publish automation before the narrow
+  runtime, producer, and closeout seams have falsifiable evidence.
 
 ## Boundaries
 
@@ -52,9 +57,12 @@ runs the activation command.
   remote publication is assumed only when the operator explicitly asks or a
   runtime-affecting slice requires earlier publication.
 - Default scope for this draft is read-only remote verification plus local
-  measurement and, only if evidence warrants it, a source/plugin quality
-  improvement. Any later publish is a separate final phase with one gate and
-  one explicit push boundary.
+- measurement and structural source/plugin quality improvements. Any later
+  publish is a separate final phase with one gate, one immutable ledger, and one
+  explicit push boundary.
+- The manifest, preflight, bundle, runtime diagnostic, producer discovery, and
+  publish ledger are all in scope; consumer installation/provider roundtrip,
+  release versioning, and new issue closeouts are not.
 
 ## User Acceptance
 
@@ -66,6 +74,13 @@ runs the activation command.
 - The mutation producer suggestion path is either proven complete for the
   measured slice or its missing producer class is recorded as a bounded
   follow-up; no mutation floor is weakened.
+- A slice manifest and final-bundle preflight can reproduce the selected slice's
+  inputs, generated surfaces, proof commands, and closeout state without manual
+  reconstruction.
+- Premise preflight rejects a stale, duplicate, already-shipped, or
+  partial-repair premise before implementation, with the decision persisted.
+- The publish ledger reconciles one immutable push SHA to issue state, CI state,
+  goal state, and handoff state, and refuses stale `OPEN`/`pending` claims.
 - If code or workflow changes land, source/plugin parity, focused regression,
   bounded fresh-eye review, and the full applicable quality gate pass.
 
@@ -79,6 +94,10 @@ runs the activation command.
   a parent or push exit code as the CI result.
 - Run the mutation suggestion helper and inspect its producer set before
   selecting focused tests.
+- Run the slice-manifest and premise-preflight commands before shaping any
+  implementation slice; record the exact source/export/consumer reader roots.
+- Run final-bundle preflight in dry-run mode before any commit or publish-boundary
+  gate; it must list all generated and proof surfaces it will validate.
 
 ### High-Confidence Checks
 
@@ -88,6 +107,10 @@ runs the activation command.
 - Preserve existing receipts, failure propagation, source/plugin mirrors, and
   the changed-line mutation floor. Use a bounded fresh-eye review if verdict
   logic changes.
+- Exercise the manifest from a clean checkout or disposable fixture, mutate one
+  input identity, and verify that the preflight refuses the stale packet.
+- Exercise publish-ledger reconciliation against a known completed CI run and a
+  deliberately pending fixture without writing GitHub state.
 
 ### External Or Live Proof
 
@@ -99,9 +122,13 @@ runs the activation command.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Close the current pushed-SHA remote proof loop | The last session deliberately stopped at push while CI was asynchronous | CI head-SHA result, empty/residual issue list, handoff reconciliation | draft |
-| 2 | Measure isolated-vs-contended runtime cost | The runtime-budget diagnosis is still moderate without A/B evidence | durable runtime sample with units, commands, and unchanged-floor decision | draft |
-| 3 | Make mutation producer selection complete or explicitly bounded | Manual producer expansion was a repeat source of waste | helper output, focused producer proof, or a bounded repo-local follow-up | draft |
+| 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | draft |
+| 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | draft |
+| 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | draft |
+| 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | draft |
+| 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | draft |
+| 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | draft |
+| 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | draft |
 
 ## Operator Decision Queue
 
@@ -119,7 +146,12 @@ Queue item form:
 
 ## Coordination Cues
 
-Routing: achieve → quality → retro → handoff — the next run crosses goal, validation, measurement, and closeout phases.
+Routing: achieve — this goal coordinates premise, implementation, quality, critique, retro, and handoff phases.
+Routing: impl — the manifest, preflight, bundle, runtime, producer, and ledger changes are implementation work.
+Routing: quality — runtime attribution, mutation producer completeness, and full-gate posture belong to quality.
+Routing: critique — the structural contract and any verdict-logic changes require before-the-fact fresh-eye review.
+Routing: retro — each improvement must be dispositioned as applied, bounded, or deliberately deferred with a destination.
+Routing: handoff — the publish ledger and next action must be reconciled into the continuation baton.
 Gather: n/a — no new public external source is intended; GitHub is read through the issue/CI adapters.
 Release: n/a — this draft does not authorize a release surface.
 Issue closeout: n/a — this draft does not resolve a new tracked issue; live issue state is only a post-push proof input.
@@ -186,6 +218,9 @@ the originating context by following them in order.
    non-claims.
 5. `scripts/run-quality.sh` and `scripts/suggest_mutation_coverage_command.py`
    — the owners of the two measured seams.
+6. `scripts/plan_cautilus_proof.py`, `scripts/run_slice_closeout.py`, and the
+   existing issue/quality adapters — adjacent command and proof contracts that
+   must remain explicit rather than copied into a new orchestrator.
 
 ## Interview Decisions
 
@@ -196,6 +231,12 @@ the originating context by following them in order.
   isolated timing is insufficient to establish a new floor.
 - Producer decision: use the repository helper as the first source of truth,
   then record any missing class rather than silently hand-expanding forever.
+- Automation shape: prefer one manifest plus narrow composable commands over a
+  monolithic “close everything” command; dry-run output must be reviewable before
+  any write or gate execution.
+- State ownership: GitHub owns issue state, GitHub Actions owns CI state, the
+  manifest owns execution identity, and the publish ledger owns reconciliation;
+  no surface may silently become a second source of truth.
 
 For each Before-phase question: family of options considered, chosen value, and
 rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
@@ -209,6 +250,12 @@ itself so a fresh session sees the design space, not only the closed point.
   language parser; the smallest evidence-producing seam is the target.
 - Valid but defer: installed consumer/provider roundtrip, Cautilus, release
   publication, and a new GitHub issue remain outside this draft unless reshaped.
+- Act before ship: the final-bundle command must refuse incomplete generated
+  mirrors, unbound critique inputs, missing behavior channels, or a carrier/CI
+  SHA mismatch before the broad gate begins.
+- Over-worry rejected: do not generalize premise detection to every prose claim;
+  start with issue/tree/commit identity and add another class only with a
+  reproducible escape.
 
 Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
@@ -237,6 +284,11 @@ Disposition review: TODO — create or explicitly skip only when policy allows b
    accepting any budget decision.
 3. If a code change was applied, rerun the applicable quality gate and compare
    source/plugin mirrors before accepting the slice.
+4. Inspect the slice manifest and final-bundle dry-run to see exactly which
+   inputs and proof commands were selected.
+5. Confirm a stale or mismatched identity is refused by premise/bundle
+   preflight, while a valid published SHA is reconciled into the ledger and
+   handoff without a second push.
 
 ## Auto-Retro
 
