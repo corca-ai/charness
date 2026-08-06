@@ -81,6 +81,10 @@ that retains existing comments.
    `validate_quality_artifact.py` — it
    reports every remaining violation in one pass, so fix them together rather than
    iterating one error at a time.
+   Fill the `## Surface Contract Review` packet for the affected surface, or keep
+   its explicit `not-in-scope` disposition; routed gate output alone is not
+   semantic coverage. The packet must name the surface, canonical owner,
+   projections, state scope, transitions, proof boundary, and unexamined axes.
 9. Run bounded fresh-eye review after initial inventory and before broad
    recommendations when the quality contract calls for it; use the
    high-leverage tier in `../../shared/references/fresh-eye-subagent-review.md`

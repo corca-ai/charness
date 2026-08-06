@@ -9,14 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 5 — publish, read back, and reconcile the final release
-  boundary.
-- Current slice intent: carry the locked local proof through the delegated
-  claims/release critiques, publish the additive release through the repo-owned
-  helper, verify remote CI and the public/install surfaces through distinct
-  channels, and reconcile the session baton.
-- Next action: preserve the terminal receipts, push the baton bookkeeping
-  commit under the conditioned gate, and mark this goal complete.
+- Current slice: Slice 6 — resolve issue #517's semantic surface-contract gap.
+- Current slice intent: carry the new quality disclosure floor through a
+  delegated resolution critique, verify the repaired proof surface, and close
+  the bug only after the direct-commit carrier and distinct behavior proof pass.
+- Next action: run the final repository gates, commit the issue ledger, push
+  under the conditioned gate, verify #517 CLOSED, and reconcile the session
+  baton.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -106,8 +105,9 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 | 1 | Shape the closeout bundle contract | Existing closeout waste spans four surfaces and must have one opt-in owner without becoming universal ceremony. | Implementation contract, owner map, dry-run shape, and failure matrix. | completed |
 | 2 | Implement bundle orchestration | Pointer-freshness validation, authoring preflight, identity freeze, and reviewer packet generation currently require manual sequencing. | Helper/CLI behavior, focused tests, generated artifacts, and sync proof. | completed |
 | 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | completed |
-| 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | in_progress |
-| 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | planned |
+| 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | completed |
+| 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | completed |
+| 6 | Resolve issue #517's semantic surface-contract gap | The new quality issue is a direct recurrence of the closeout goal's receipt-versus-meaning boundary and was explicitly requested as follow-up work. | Gathered causal source, repaired quality artifact contract, root/plugin sync, delegated resolution critique, second proof-surface review, closeout carrier, and CLOSED readback. | in_progress |
 
 ## Operator Decision Queue
 
@@ -148,13 +148,10 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 
-Routing: achieve — selected from installed skill metadata for goal shaping;
-activation will resolve implementation, quality, critique, retro, and release
-owners from the installed capability surface.
-Gather: n/a — no new public source is needed for this repo-local goal draft.
-Release: n/a — no release is executed during shaping; activation will record the
-release preflight and final publish evidence.
-Issue closeout: n/a — no issue closeout is in scope for this goal.
+Routing: achieve → gather → issue → quality → critique — selected from installed skill metadata and the active goal's issue-resolution continuation.
+Gather: charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md — authenticated public-source readback persisted before implementation.
+Release: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json — release work already completed in the preceding boundary.
+Issue closeout: #517 — direct-commit carrier; `issue_tool.py validate-closeout-draft` passed and `verify-closeout` is pending remote push/readback.
 
 ## Discuss Before Activation
 
@@ -254,6 +251,32 @@ applies.
   installed-consumer proof, remote CI readback, push, tag, release publication,
   or release readback has occurred in this slice.
 
+### Slice 6: Issue #517 semantic surface-contract resolution
+
+- Objective: make a green quality receipt disclose the semantic surface it
+  actually observed and the axes it left unexamined, without moving product
+  meaning into a host-local validator.
+- Source and causal evidence: the issue planner selected #517; the public
+  cmanki debug review was gathered at
+  `charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md`; its
+  receipt-versus-semantic-coverage recurrence shaped the change.
+- What changed: added the portable surface-contract parser, required quality
+  artifact section, scaffold/default, reference and skill guidance, migrated
+  the current artifact, added duplicate-section and CLI enforcement tests, and
+  synchronized the plugin export.
+- Critique: the resolution record is
+  `charness-artifacts/critique/2026-08-06-issue-517-surface-contract-resolution.md`.
+  Three angle reviewers, a separate counterweight, and the mandated repaired
+  proof-surface round were delegated. The first round found duplicate-section
+  and integration-enforcement blockers; the repairs landed and round 2 found
+  no blocker with a clean boundary. Round-2 findings are accepted-unreviewed
+  under the two-round cap.
+- Targeted verification: 55 focused tests passed; the current quality artifact
+  validator and critique validator passed; the root/plugin mirror was synced.
+- Non-claims: no product UI semantic oracle, browser/provider roundtrip,
+  cross-host, live-agent, or Cautilus proof is claimed. Final gate, commit,
+  push, and #517 CLOSED readback remain pending.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -316,8 +339,9 @@ the originating context by following them in order.
 
 ## Off-Goal Findings
 
-Provider freshness, cross-host runtime, live-agent proof, Cautilus, issue
-operations, PR work, and unrelated releases remain separate goals.
+Provider freshness, cross-host runtime, live-agent proof, Cautilus, PR work,
+unrelated releases, and issue #515 remain separate boundaries. Issue #517 is an
+explicit user-requested continuation recorded in Slice 6.
 
 ## Final Verification
 

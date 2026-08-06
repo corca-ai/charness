@@ -47,6 +47,7 @@ SIZE_GUIDANCE = (
 )
 SECTIONS = (
     "## Scope",
+    "## Surface Contract Review",
     "## Current Gates",
     "## Runtime Signals",
     "## Healthy",
@@ -166,6 +167,23 @@ def render_template(*, title: str, date_text: str) -> str:
                     "Target boundary: TODO target skill, repo-wide quality question, or explicit non-target.",
                     "",
                     "Ambient repo findings: TODO broad-gate failures and opportunistic repairs that are not target-skill quality findings.",
+                    "",
+                ]
+            )
+            continue
+        if heading == "## Surface Contract Review":
+            lines.extend(
+                [
+                    heading,
+                    "",
+                    "- semantic coverage: `not-in-scope` — no user-visible or cross-boundary surface is in scope for this review.",
+                    "- surface: no semantic surface in scope",
+                    "- owner: quality reviewer owns this scope declaration; no product owner is claimed.",
+                    "- projections: not assessed because no semantic surface is in scope",
+                    "- state scope: not assessed because no semantic surface is in scope",
+                    "- transitions: not assessed because no semantic surface is in scope",
+                    "- proof boundary: scoped quality command only; no semantic behavior claim",
+                    "- unexamined axes: surface, owner, projection, state scope, transitions, proof boundary",
                     "",
                 ]
             )

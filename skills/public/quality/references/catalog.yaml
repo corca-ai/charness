@@ -3,6 +3,9 @@ references:
   - path: references/quality-lenses.md
     role: required-primer
     why: Interpret every quality packet through concept, behavior, security, and operability.
+  - path: references/surface-contract-review.md
+    role: required-primer
+    why: Separate routed gate receipts from semantic surface coverage and disclose unexamined axes.
   - path: references/inventory-dispatch.md
     role: on-demand
     trigger: a concern area needs its per-inventory review discipline or the clone-family/structural-signal depth beyond the planner brief's dispatch index

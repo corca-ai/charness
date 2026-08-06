@@ -10,6 +10,17 @@ manifest-supported installed-host `nose` lifecycle for the active goal.
 Ambient repo findings: provider freshness, remote CI, release publication,
 issue state, and cross-host runtime behavior remain outside this proof packet.
 
+## Surface Contract Review
+- semantic coverage: `partial` — the local runtime and installed-host lifecycle are observed, while external and cross-host claims remain unexamined.
+- surface: retained runtime phase-isolation evidence and installed-host `nose` lifecycle
+- owner: the quality run receipt and `.agents/release-adapter.yaml` installation probes own this packet; product/runtime providers do not.
+- projections: `.charness/quality/runtime-signals.json`, the dated proof packet, installer/doctor output, and the quality artifact
+  <!-- reproduction-source -->
+- state scope: per-run local host and installed version
+- transitions: pre-install readiness, supported install, post-install doctor, and current-pointer reconciliation
+- proof boundary: focused runner/aggregate suite plus installer/doctor readback and bounded reviewer
+- unexamined axes: cross-host runtime cohort, provider roundtrip, live-agent observation, remote CI, release parity, and source/install commit parity
+
 ## Current Gates
 
 - The focused runner/aggregate behavior suite passed 54 tests.

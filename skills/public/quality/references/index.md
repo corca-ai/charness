@@ -12,6 +12,7 @@ gates.
 ## Required And Scope Primers
 
 - `references/quality-lenses.md` — four-lens judgment frame.
+- `references/surface-contract-review.md` — semantic surface packet and proof-boundary fields.
 - `references/proposal-flow.md` — sourced, proportional recommendation discipline.
 - `references/operability-signals.md` — setup, runtime, CI, and maintenance signals.
 - `references/skill-quality.md` — skill packages as quality artifacts.

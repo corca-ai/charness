@@ -23,7 +23,23 @@ def run_script(
     )
 
 
+SURFACE_CONTRACT_FIXTURE = """## Surface Contract Review
+- semantic coverage: `observed` — contract packet is covered.
+- surface: demo surface
+- owner: demo owner
+- projections: DOM and command output
+- state scope: request
+- transitions: success and failure
+- proof boundary: focused test
+- unexamined axes: none
+"""
+
+
 def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
+    if "## Surface Contract Review" not in artifact_body:
+        artifact_body = artifact_body.replace(
+            "## Current Gates\n", SURFACE_CONTRACT_FIXTURE + "## Current Gates\n", 1
+        )
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality" / "history").mkdir(parents=True)
@@ -48,6 +64,15 @@ def valid_quality_artifact(*, runtime_source: str) -> str:
             "Date: 2026-04-20",
             "## Scope",
             "- demo",
+            "## Surface Contract Review",
+            "- semantic coverage: `observed` — contract packet is covered.",
+            "- surface: demo surface",
+            "- owner: demo owner",
+            "- projections: DOM and command output",
+            "- state scope: request",
+            "- transitions: success and failure",
+            "- proof boundary: focused test",
+            "- unexamined axes: none",
             "## Current Gates",
             "- gate",
             "## Runtime Signals",
@@ -85,6 +110,15 @@ def _multi_violation_artifact() -> str:
             "Date: 2026-04-20",
             "## Scope",
             "- demo",
+            "## Surface Contract Review",
+            "- semantic coverage: `observed` — contract packet is covered.",
+            "- surface: demo surface",
+            "- owner: demo owner",
+            "- projections: DOM and command output",
+            "- state scope: request",
+            "- transitions: success and failure",
+            "- proof boundary: focused test",
+            "- unexamined axes: none",
             "## Current Gates",
             "- gate",
             "## Runtime Signals",

@@ -22,6 +22,7 @@ SCAFFOLD = "skills/public/quality/scripts/scaffold_quality_artifact.py"
 # trial-and-error.
 REQUIRED_HEADINGS = (
     "## Scope",
+    "## Surface Contract Review",
     "## Current Gates",
     "## Runtime Signals",
     "## Healthy",
@@ -78,6 +79,8 @@ def test_quality_scaffold_reports_validator_and_template(tmp_path: Path) -> None
         assert heading in template, heading
     assert "Target boundary:" in template
     assert "Ambient repo findings:" in template
+    assert "- semantic coverage: `not-in-scope`" in template
+    assert "- unexamined axes:" in template
     assert "structural review result:" in template
     assert "prose review result:" in template
     # Runtime Signals carries the four prefixes the validator asserts on.

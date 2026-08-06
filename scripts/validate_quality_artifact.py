@@ -27,6 +27,7 @@ _quality_resolve_adapter = load_path_module("quality_resolve_adapter", _resolver
 load_adapter = _quality_resolve_adapter.load_adapter
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
 _skill_markdown_lib = import_repo_module(__file__, "scripts.skill_markdown_lib")
+_surface_contract = import_repo_module(__file__, "scripts.quality_surface_contract")
 ValidationError = _scripts_artifact_validator_module.ValidationError
 add_one_pass_args = _scripts_artifact_validator_module.add_one_pass_args
 add_artifact_path_arg = _scripts_artifact_validator_module.add_artifact_path_arg
@@ -44,6 +45,7 @@ run_validation_checks = _scripts_artifact_validator_module.run_validation_checks
 MAX_ARTIFACT_LINES = 140
 REQUIRED_SECTIONS = (
     "## Scope",
+    "## Surface Contract Review",
     "## Current Gates",
     "## Runtime Signals",
     "## Healthy",
@@ -478,6 +480,13 @@ def validate_skill_ergonomics_count_claims(lines: list[str], repo_root: Path) ->
             )
 
 
+def validate_surface_contract(lines: list[str]) -> None:
+    try:
+        _surface_contract.validate_surface_contract_section(lines)
+    except _surface_contract.SurfaceContractError as exc:
+        raise ValidationError(str(exc)) from exc
+
+
 def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, collect_all: bool = False) -> None:
     lines = read_lines(path)
     resolved_repo_root = repo_root or REPO_ROOT
@@ -491,6 +500,7 @@ def validate_quality_artifact(path: Path, *, repo_root: Path | None = None, coll
         lambda: validate_max_lines(lines, max_lines=MAX_ARTIFACT_LINES, artifact_label="quality artifact"),
         lambda: validate_date_line(lines),
         lambda: validate_section_order(normalized_recommended_heading_lines(lines), REQUIRED_SECTIONS),
+        lambda: validate_surface_contract(lines),
         lambda: validate_runtime_signals_section(lines),
         lambda: validate_advisory_section(lines),
         lambda: validate_delegated_review_section(lines),

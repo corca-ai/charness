@@ -49,7 +49,23 @@ def run_script(
     )
 
 
-def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
+SURFACE_CONTRACT_FIXTURE = """## Surface Contract Review
+- semantic coverage: `observed` — contract packet is covered.
+- surface: demo surface
+- owner: demo owner
+- projections: DOM and command output
+- state scope: request
+- transitions: success and failure
+- proof boundary: focused test
+- unexamined axes: none
+"""
+
+
+def seed_repo(tmp_path: Path, artifact_body: str, *, ensure_surface_contract: bool = True) -> Path:
+    if ensure_surface_contract and "## Surface Contract Review" not in artifact_body:
+        artifact_body = artifact_body.replace(
+            "## Current Gates\n", SURFACE_CONTRACT_FIXTURE + "## Current Gates\n", 1
+        )
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)
     (repo / "charness-artifacts" / "quality" / "history").mkdir(parents=True)
@@ -102,10 +118,19 @@ def valid_quality_artifact(*, runtime_source: str, runtime_hotspots: str = "`pyt
         "\n".join(
             [
                 "# Quality Review",
-                "Date: 2026-04-20",
-                "## Scope",
-                "- demo",
-                "## Current Gates",
+            "Date: 2026-04-20",
+            "## Scope",
+            "- demo",
+            "## Surface Contract Review",
+            "- semantic coverage: `observed` — contract packet is covered.",
+            "- surface: demo surface",
+            "- owner: demo owner",
+            "- projections: DOM and command output",
+            "- state scope: request",
+            "- transitions: success and failure",
+            "- proof boundary: focused test",
+            "- unexamined axes: none",
+            "## Current Gates",
                 "- gate",
                 "## Runtime Signals",
                 f"- runtime source: {runtime_source}",
@@ -148,6 +173,25 @@ def test_validate_quality_artifact_accepts_generic_structured_runtime_source(tmp
     )
     result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
+
+
+def test_validate_quality_artifact_rejects_legacy_artifact_without_surface_contract(tmp_path: Path) -> None:
+    body = valid_quality_artifact(
+        runtime_source=(
+            "structured metrics from `artifacts/runtime-timing.jsonl` "
+            "rendered by `scripts/summarize-runtime.py`; profile `ci`."
+        )
+    )
+    lines = body.splitlines()
+    start = lines.index("## Surface Contract Review")
+    end = lines.index("## Current Gates")
+    legacy_body = "\n".join(lines[:start] + lines[end:]) + "\n"
+    repo = seed_repo(tmp_path, legacy_body, ensure_surface_contract=False)
+
+    result = run_script("scripts/validate_quality_artifact.py", "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "missing required section `## Surface Contract Review`" in result.stderr
 
 
 def test_validate_quality_artifact_accepts_legacy_recommended_next_gates_heading(tmp_path: Path) -> None:
