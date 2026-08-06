@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-08",
   "source_artifact_count": 445,
-  "candidate_count": 1838,
+  "candidate_count": 1839,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1164,10 +1164,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:00a1111f0eac",
+      "candidate_id": "current_focus:60cd8e31cd25",
       "kind": "current_focus",
-      "lesson": "This retro covers the local proof and structural quality work after the #508/#509 sequence reached its final local publish boundary.",
-      "normalized_key": "this retro covers the local proof and structural quality work after the 508 509",
+      "lesson": "This retro covers the full closeout of the active umbrella sequence: the local quality repairs after #508/#509, the final portability carriers, the one final publish, and the independent remote readbacks.",
+      "normalized_key": "this retro covers the full closeout of the active umbrella sequence the local quality",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1185,7 +1185,7 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "This retro covers the local proof and structural quality work after the #508/#509 sequence reached its final local publish boundary."
+          "lesson": "This retro covers the full closeout of the active umbrella sequence: the local quality repairs after #508/#509, the final portability carriers, the one final publish, and the independent remote readbacks."
         }
       ]
     },
@@ -1238,6 +1238,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "a standalone-import check for every module in a package, generalizing the one-pair guard already committed — issue #492."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:246aa7619770",
+      "kind": "next_improvement",
+      "lesson": "carry the exact one-push boundary, carrier mapping, current-head CI query, and issue closeout verifier contract in the handoff and next goal.",
+      "normalized_key": "carry the exact one push boundary carrier mapping current head ci query and issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "carry the exact one-push boundary, carrier mapping, current-head CI query, and issue closeout verifier contract in the handoff and next goal."
         }
       ]
     },
@@ -1372,32 +1398,6 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:74c62ddc2839",
-      "kind": "next_improvement",
-      "lesson": "this retro, the final critique packet, and the next-session draft goal must remain in the handoff; preserve #508/#509 as OPEN/local-only until an independent remote observer verifies the final push and each closeout floor.",
-      "normalized_key": "this retro the final critique packet and the next session draft goal must remain",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-      "latest_source_date": "2026-08-06",
-      "age_days": 2,
-      "recency_weight": 0.9697,
-      "alpha": 0.12,
-      "selection_weight": 0.9697,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "this retro, the final critique packet, and the next-session draft goal must remain in the handoff; preserve #508/#509 as OPEN/local-only until an independent remote observer verifies the final push and each closeout floor."
-        }
-      ]
-    },
-    {
       "candidate_id": "next_improvement:caf238d47e92",
       "kind": "next_improvement",
       "lesson": "verify the reviewer boundary the MOMENT the reviewer returns, before any parent write. Missed once this run, costing that window its proof.",
@@ -1420,6 +1420,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "verify the reviewer boundary the MOMENT the reviewer returns, before any parent write. Missed once this run, costing that window its proof."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ac277e2c6585",
+      "kind": "repeat_trap",
+      "lesson": "Closeout readback was retried after an initial invocation omitted the required expected-state argument and a shell loop treated a quoted record as one word. The corrected explicit per-issue calls passed; the retry was process waste, not evidence weakness.",
+      "normalized_key": "closeout readback was retried after an initial invocation omitted the required expected state argument",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout readback was retried after an initial invocation omitted the required expected-state argument and a shell loop treated a quoted record as one word. The corrected explicit per-issue calls passed; the retry was process waste, not evidence weakness."
         }
       ]
     },

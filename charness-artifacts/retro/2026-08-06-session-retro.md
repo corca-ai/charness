@@ -4,22 +4,23 @@ Goal: charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-seque
 
 ## Context
 
-This retro covers the local proof and structural quality work after the #508/#509
-sequence reached its final local publish boundary. The immediate problem was a
-runtime-budget refusal for `validate-inventory-consumption-declaration`, despite
-the validator taking about 2.4 seconds when run alone. Trustworthy evidence is
-the source/plugin diff, focused pytest results, the bounded fresh-eye findings,
-the critique validator, and the standing quality runner; the causal claim that
-contention caused the refusal is still moderate until a controlled A/B sample
-exists.
+This retro covers the full closeout of the active umbrella sequence: the local
+quality repairs after #508/#509, the final portability carriers, the one final
+publish, and the independent remote readbacks. The immediate local problem was
+a runtime-budget refusal for `validate-inventory-consumption-declaration`,
+despite the validator taking about 2.4 seconds when run alone. Trustworthy
+evidence is the source/plugin diff, focused pytest results, bounded fresh-eye
+findings, the critique validator, the standing quality runner, the successful
+push, and GitHub adapter readbacks; the causal claim that contention caused the
+refusal remains moderate until a controlled A/B sample exists.
 
 ## Window
 
 The window is the 2026-08-06 session from the initial worktree/quality audit
-through the repaired runner and its concrete review. It includes the proposal
-round, the repaired-diff round, source/plugin synchronization, and focused
-behavioral proof. Full post-repair quality, commit, push, and remote CI are
-deliberately pending at this point in the retro record.
+through the repaired runner, portability bundle, one-push publish boundary, and
+remote issue/CI observation. It includes proposal and repaired-diff review,
+source/plugin synchronization, focused behavioral proof, the final 86-gate
+local run, commit `e7c3e1b3`, and the GitHub closeout readbacks.
 
 ## Evidence Summary
 
@@ -39,6 +40,19 @@ deliberately pending at this point in the retro record.
   caught the stale plugin mirror and the insufficient immediate-flush test.
 - The critique artifact and final reviewed-input packet validate successfully;
   no runtime-budget increase or speed improvement is claimed yet.
+- The final clean-HEAD quality gate and the pre-push gate both passed 86 checks
+  with 0 failures; changed-line mutation coverage analyzed all 15/15 eligible
+  files with no unproven result.
+- The final commit was pushed exactly once to `origin/main`. Before that push,
+  the remote open set was exactly #480, #482, #483, #484, #505, #510, #512,
+  and #513; after the push, `gh issue list --state open` returned `[]`.
+- The eight issue-specific `verify-closeout --expect-state CLOSED` calls all
+  returned `status: verified` through the GitHub backend-state observer. #508
+  and #509 were independently CLOSED before this continuation.
+- GitHub Quality Core run `31062451122` for `e7c3e1b3` completed with
+  `conclusion: success`; its `Core deterministic gates` and `Changed-line
+  mutation coverage (push/PR mirror)` jobs both completed successfully through
+  the GitHub Actions API observer.
 
 ## Waste
 
@@ -60,6 +74,10 @@ deliberately pending at this point in the retro record.
 - The fresh-eye rounds, source/plugin parity check, and focused regression proof
   were necessary safety work at a proof-surface boundary, not waste. No host
   metric supports claiming a token or wall-clock improvement from this session.
+- Closeout readback was retried after an initial invocation omitted the required
+  expected-state argument and a shell loop treated a quoted record as one word.
+  The corrected explicit per-issue calls passed; the retry was process waste,
+  not evidence weakness.
 
 ## Critical Decisions
 
@@ -76,6 +94,9 @@ deliberately pending at this point in the retro record.
 - Treat the generated plugin mirror and critique packet as part of the same
   change surface. Verification follows sync, and the final packet excludes a
   self-referential critique artifact while naming the exact reviewed files.
+- Hold all eight issue carriers until one final push, then use separate GitHub
+  issue and CI observers. This kept the irreversible boundary auditable without
+  creating a second docs-only publish.
 
 ## Trends vs Last Retro
 
@@ -94,11 +115,11 @@ where a wrong answer escapes. P1/P2 held: this was judgment on reversible local
 runner work, and ownership stayed at one runner phase rather than spreading a
 new abstraction across validators. P3 held by preserving the existing receipt
 and failure semantics while adding only the boundary needed for the measured
-contention seam. P4 held provisionally through distinct fresh-eye observers,
-clean boundary fingerprints, and a separate behavioral test channel; final push
-and remote CI still require a different observer and channel. P5 held by
-retaining the budget and making the residual uncertainty visible rather than
-adding a new floor.
+contention seam. P4 held through distinct fresh-eye observers, clean boundary
+fingerprints, a separate behavioral test channel, one gated push, and GitHub
+issue-state readback. The remote CI conclusion remains a separate observation
+and is not inferred from the push exit code. P5 held by retaining the budget and
+making residual uncertainty visible rather than adding a new floor.
 
 The mis-application was treating the first broad runtime sample as sufficient
 causal evidence and allowing the first critique input identity to be incomplete.
@@ -123,6 +144,10 @@ proof record whose identity was not yet durable.
   behavior.
 - Minto would have separated the claim “the phase is isolated” from “the
   budget should change”; the former is proven locally, the latter is deferred.
+- An SRE release reviewer would have frozen the carrier-to-issue mapping and
+  CI head SHA before publishing, then required state and CI readbacks keyed to
+  that same SHA. That is why the next session starts from remote readback
+  commands, not from the local green.
 
 ## Sibling Search
 
@@ -141,9 +166,8 @@ proof record whose identity was not yet durable.
   producer discovery so the operator receives a complete evidence command,
   while keeping both as advisory or existing-gate reuse until evidence earns a
   floor.
-- memory: this retro, the final critique packet, and the next-session draft goal
-  must remain in the handoff; preserve #508/#509 as OPEN/local-only until an
-  independent remote observer verifies the final push and each closeout floor.
+- memory: carry the exact one-push boundary, carrier mapping, current-head CI
+  query, and issue closeout verifier contract in the handoff and next goal.
 
 ## Packet Consumed
 

@@ -1,6 +1,6 @@
 # Achieve Goal: 현재 열린 17개 이슈를 다음 작업을 가능하게 만드는 순서로 닫기
 
-Status: active
+Status: complete
 Created: 2026-08-05
 Activation: `/goal @charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md`
 Activation time: 2026-08-05T04:54:43Z
@@ -9,10 +9,10 @@ Activation time: 2026-08-05T04:54:43Z
 
 ## Active Operating Frame
 
-- Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
-- Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b, and #508/#509 were independently read CLOSED before this run. #512, #513, #505, #510, #480, #484, #482, and #483 remain OPEN remotely; #512/#513/#505/#510 now have local carriers ready under the one-push boundary.
-- Current slice intent: preserve the #510 local/remote boundary after a representation-selection repair with explicit trace and persistence proof; continue the remaining four portability slices without claiming any of them CLOSED before the final publish.
-- Next action: run the final full local gate with the quality pointer and all eight local carriers committed, then push exactly once; read remote CI and every issue state independently afterward.
+- Current disposition: active pending final remote-CI conclusion; the activation-time 17-issue scope is now fully closed in GitHub after the single publish boundary.
+- Current slice: #468, #491, #496, #502, #503, #504, #506, #507, #508, #509, #511, #480, #482, #483, #484, #505, #510, #512, and #513 each have independent carrier/behavior evidence and CLOSED readback. The final eight carrier refs are recorded in `## Final Verification`.
+- Current slice intent: reconcile the irreversible publish boundary completely: local/pre-push quality, GitHub issue state/carrier readback, and remote CI must remain separate claims keyed to `e7c3e1b3`.
+- Next action: read the final conclusion of GitHub Quality Core run `31062451122` for `e7c3e1b3`, update the closeout evidence, then validate and close this goal; do not push again.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -142,6 +142,11 @@ Implementation grouping is allowed for #480/#484 and for #508–#510, but closur
 - Gather: n/a — shaping에는 새 public source URL을 사용하지 않았고, GitHub issue source of truth는 `issue` adapter가 읽었다.
 - Release: n/a — 이 draft는 version/install-manifest/release publish를 하지 않는다.
 - Issue closeout: planned for #480, #482, #483, #484, #505, #508, #509, and #510; #468, #491, #496, #502, #503, #504, #506, #507, and #511 are independently closed, and every issue requires its own carrier, `validate-closeout-draft`, delegated critique, distinct `Behavior #N:` verdict or typed disposition, and `verify-closeout --expect-state CLOSED`.
+Issue closeout: completed for all 17 scoped issues through direct-commit carriers; each has its own `validate-closeout-draft`, delegated critique, distinct behavior verdict or typed disposition, and `verify-closeout --expect-state CLOSED` readback.
+Routing: impl — implementation slices were executed through the installed implementation workflow and then closed through their owning proof surfaces.
+Routing: debug — bug-class slices used falsifiable causal review before their remedies were shaped.
+Routing: quality — local quality, mutation, source/plugin, and remote-CI proof were validated through the quality workflow.
+Routing: issue — GitHub issue carriers and CLOSED state readbacks were owned by the issue workflow.
 
 ## Discuss Before Activation
 
@@ -374,9 +379,10 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - Generative benefit: the isolated runtime sample removes the previous false
   signal from the final publish gate and leaves controlled A/B measurement plus
   mutation producer selection as the next session's explicit improvement.
-- Next: run locked closeout, commit once, pass the exact pre-push gate, push once,
-  and independently read CI/#508/#509; then activate the prepared draft goal if
-  the next sequence still matches the live backlog.
+- Next: the locked closeout, one commit/push, issue readback, and CI observation
+  are the final boundary for this goal. The superseded pre-push draft is not a
+  pickup route; the next session draft is
+  `charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md`.
 
 ### Slice 13: #512 metric-window ordering — local carrier ready
 
@@ -549,20 +555,47 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Continuation verification (2026-08-06, pre-push): the live open set is #480, #482, #483, #484, #505, #510, #512, and #513. Each has a checked-in carrier, delegated critique, distinct local behavior verdict, and draft_verified closeout floor; #480/#484/#482/#483 are recorded in Slices 17–20. #508 and #509 were independently read CLOSED before this continuation. The eight listed issues remain OPEN only because the one final push and separate GitHub readback are still pending.
+Continuation verification (2026-08-06, post-push): before the single push, the
+live open set was exactly #480, #482, #483, #484, #505, #510, #512, and #513.
+After pushing `e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5` once to `origin/main`,
+`gh issue list --repo corca-ai/charness --state open --limit 100 --json number,title`
+returned `[]`. #508 and #509 were independently read CLOSED before this
+continuation. Therefore the original 17-issue umbrella scope is fully reflected
+in the final remote issue state.
 
-Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
-Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
-Disposition review: `charness-artifacts/critique/2026-08-05-issue-508-closeout-claims-review.md` is canonical; it must name the current claims packet and identity before its PASS is relied on.
+Post-push carrier/state ledger, independently verified with
+`verify-closeout --expect-state CLOSED` through the GitHub backend observer:
+
+| Issue | Carrier commit | Readback |
+| ---: | --- | --- |
+| #480 | `7e63ddba` | `status: verified`, `CLOSED` |
+| #482 | `e7bd5079` | `status: verified`, `CLOSED` |
+| #483 | `a7bdc72c` | `status: verified`, `CLOSED` |
+| #484 | `9d244ab0` | `status: verified`, `CLOSED` |
+| #505 | `8f46f57f` | `status: verified`, `CLOSED` |
+| #510 | `8c59c3ac` | `status: verified`, `CLOSED` |
+| #512 | `824fce4e` | `status: verified`, `CLOSED` |
+| #513 | `cc36d2dd` | `status: verified`, `CLOSED` |
+
+Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for earlier carriers. Current pushed head `e7c3e1b3` is run `31062451122`; the separate GitHub Actions API observer now reads `status: completed`, `conclusion: success`, with both `Core deterministic gates` and `Changed-line mutation coverage (push/PR mirror)` successful. This is remote CI proof for that exact head only. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior.
+Local final evidence: `./scripts/run-quality.sh --read-only` passed 86 checks with 0 failures at `e7c3e1b3`; the pre-push hook independently passed the same 86/0 gate. Earlier 85/85 results in Slice 12 are historical phase evidence, not the final bundled result.
+Retro: charness-artifacts/retro/2026-08-06-session-retro.md
+Host log probe: skipped: host-log-not-exposed: this API session exposes no provider session JSONL or host log path, so elapsed/tool-count claims are not made.
+Disposition review: charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md
+Routing: achieve — selected from installed skill metadata for goal lifecycle closeout; quality, retro, and handoff are the supporting phase routes.
 
 ## User Verification Instructions
 
-1. Continue from `## Active Operating Frame` and `## Slice Log`; #508/#509 are independently CLOSED, while #480, #482, #483, #484, #505, #510, #512, and #513 are local/carrier-ready and await the one final push plus independent adapter readback.
-2. #508/#509 readbacks are historical inputs to this continuation; the eight remaining issues keep independent carriers, critique artifacts, behavior verdicts, and GitHub readback obligations.
-3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
-4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact. Push is intentionally deferred until the final publish boundary unless a closeout floor makes an earlier remote carrier unavoidable.
+1. Confirm `gh issue list --state open` remains empty and preserve the per-issue
+   carrier/state ledger above as the remote closeout evidence.
+2. Inspect GitHub Quality Core run `31062451122` at head `e7c3e1b3`; its result
+   is a separate remote claim and must not be derived from the push exit code.
+3. Read the retro and the draft next-session goal
+   `charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md`.
+4. No second push is part of this closeout; post-push lifecycle artifacts are
+   local follow-up state unless separately requested.
 
 ## Auto-Retro
 
-Retro dispositions: none — draft creation only; no execution waste or new improvement was surfaced beyond the sequence and proof-boundary decisions recorded above.
-Structural follow-up: none — draft creation only; any recurring waste discovered during execution must become an applied guard or a tracked issue with its structural pattern and destination.
+Retro dispositions: applied: runner phase isolation, pre-provider skip regression proof, source/plugin synchronization, and the one-push/readback boundary were implemented and committed during this run.
+Structural follow-up: repo-local guard: docs/handoff.md — the next-session goal carries controlled runtime A/B sampling and mutation-producer discovery instead of leaving those improvements as prose-only memory.
