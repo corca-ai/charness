@@ -43,6 +43,7 @@ _MARKER = re.compile(
     r"(?P<slug>[a-z0-9][a-z0-9-]*)(?![a-z0-9-])"
 )
 _FENCE = re.compile(r"^[ \t]*(`{3,}|~{3,})")
+_LIST_ITEM = re.compile(r"(?:[-+*][ \t]+|\d+[.)][ \t]+)")
 
 
 def _mask_fences(lines: list[str]) -> list[str]:
@@ -67,7 +68,6 @@ def _authored_lines(lines: list[str]) -> list[str]:
     masked = _mask_fences(lines)
     authored: list[str] = []
     lazy_quote = False
-    list_start = re.compile(r"(?:[-+*][ \t]+|\d+[.)][ \t]+)")
     for line in masked:
         stripped = line.strip()
         if not stripped:
@@ -79,7 +79,7 @@ def _authored_lines(lines: list[str]) -> list[str]:
             lazy_quote = True
             continue
         if lazy_quote:
-            if list_start.match(stripped) or stripped.startswith("#"):
+            if _LIST_ITEM.match(stripped) or stripped.startswith("#"):
                 lazy_quote = False
                 authored.append(line)
             else:
@@ -166,10 +166,11 @@ def _bullet_items(lines: list[str]) -> list[str]:
         stripped = raw.strip()
         if stripped.startswith(">"):
             continue
-        if stripped.startswith("- "):
+        match = _LIST_ITEM.match(stripped)
+        if match is not None:
             if current:
                 items.append(" ".join(current))
-            current = [stripped[2:]]
+            current = [stripped[match.end() :]]
         elif current and stripped:
             current.append(stripped)
     if current:

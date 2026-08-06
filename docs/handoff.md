@@ -2,43 +2,46 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** read the [active runtime-evidence goal](../charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md), then continue with `achieve` for its final closeout if it is not complete.
-- First read the [current quality posture](../charness-artifacts/quality/latest.md), [goal-bound retro](../charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and [North Star](./design-north-star.md).
-- Release `v3.3.0` is already published; no new release, tag, push, or issue phase is part of this baton.
+- **Next pickup:** read the [active closeout goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), then continue with `achieve` for its final claims review and release preflight.
+- First read the [current quality posture](../charness-artifacts/quality/latest.md), [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md), [recent lessons](../charness-artifacts/retro/recent-lessons.md), and [North Star](./design-north-star.md).
 
 ## Continuation Capability
 
-- Keep local quality, installed-host, provider, cross-host, remote-CI, release, Cautilus, and issue claims separate.
-- The goal's host packet is the source for `nose` receipts; the quality and retro records own interpretation and lessons.
-- Any provider refresh, cross-host runtime cohort, release, push, Cautilus, or external write needs its own explicitly gated phase.
+- Keep local, provider, cross-host, remote-CI, release, Cautilus, and issue claims separate.
+- The closeout goal and its execution contract own packet identity, pointer freshness, pre-review authoring order, and retro-to-handoff wiring.
+- The final release phase still needs its own pre-push gate, distinct remote observer/channel, release readback, and clean commit-boundary evidence.
 
 ## Current State
 
-- Runtime A/B evidence is retained: isolated median `6531 ms` versus same-affinity synthetic contention median `10463 ms`; keep the `15.500s` budget unchanged.
-- The installed host successfully invoked the manifest-supported `nose-cli-installer.sh` route and reports `nose 0.20.0` ready; support sync is integration-only and clone findings are advisory.
-- Source `8047a614…` and installed checkout `7eed13ec…` differ; no source/install parity claim is made. The clone baseline remains stamped under `nose 0.19.0`.
-- The bounded closeout reviewer received the packet, confirmed its substantive claims, and returned a clean boundary fingerprint. A final readiness review read the repaired surfaces, returned `PASS`, and returned a clean boundary fingerprint; the goal-bound retro and current-pointer refresh are recorded.
+- The closeout bundle and retro-to-handoff validator are committed through `0be77d37`; the deterministic pre-lock result is time-bound to that commit. This refreshed handoff has passed its named wiring, handoff, pointer, and targeted fixture checks, but the final packet rebinding and verification lock remain open.
+- The goal-bound retro is persisted at [the retro artifact](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md); its citation and recurrence-marker wiring is locally validated, while the final closeout identity is still provisional until the verification lock runs.
+- The publish-state claim below is a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a version or tag claim. The release record separately binds `v3.3.0` to its tag SHA, and neither record claims that this new closeout goal has been released.
+
+<!-- charness-publish-state-claim:post-push-operational-proof -->
+```json
+{"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
+```
 
 ## Next Session
 
-1. Read the goal frame, its evidence packet, current quality record, and goal-bound retro; verify the goal status before taking another action.
-2. Treat runtime threshold retuning, provider freshness, live-agent behavior, remote CI, and cross-host evidence as deferred non-claims.
-3. If any of those boundaries is pursued, activate a separate goal and obtain its own observer and evidence channel.
+1. Read the [active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md), its [quality record](../charness-artifacts/quality/latest.md), and [goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md).
+2. Run the distinct claims/disposition review and verification-locked closeout; preserve `recurrence-class: release-proof-identity-churn` and `recurrence-class: closeout-diagnostic-visibility` in the disposition evidence.
+3. Only after local gates pass, derive the release version/carrier, run the conditioned push, verify remote CI through a different observer/channel, publish, and read the release back distinctly.
 
 ## Discuss
 
-- No decision is needed to read or measure locally. Stop before Cautilus, release/tag/version work, provider writes, issue writes, or another push.
-- If a future runtime sample is mixed, preserve the current budget and record uncertainty rather than converting an advisory signal into a blocker.
+- The user-authorized final push/release remains conditional on every local and release gate; stop before any external effect when a gate, version, carrier, or distinct observer is unresolved.
+- Do not run Cautilus, provider roundtrips, or live-agent proof without a separate explicit boundary.
 
 ## References
 
-- [Active goal](../charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md)
-- [Runtime and installed-host packet](../charness-artifacts/probe/2026-08-06-runtime-evidence-and-nose.md)
+- [Active goal](../charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md)
+- [Execution contract](../charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md)
 - [Current quality posture](../charness-artifacts/quality/latest.md)
-- [Goal-bound retro](../charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md)
+- [Goal-bound retro](../charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md)
 - [Release record](../charness-artifacts/release/latest.md)
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
 - [North Star](./design-north-star.md)
 
-- Refresh kept: the active goal path, runtime disposition, installed `nose` version and baseline skew, source/install SHA distinction, and deferred boundary list because each changes the next operator's first move.
-- Refresh non-claims: provider freshness, private consumer/provider roundtrip, live-agent behavior, cross-host runtime behavior, remote CI, release parity, Cautilus execution, and issue state beyond the already-published release record.
+Refresh kept: the active closeout goal, prior published-state identity, local-gate boundary, and exact retro recurrence obligations because each changes the next action.
+Refresh non-claims: new release publication, remote CI, provider freshness, cross-host runtime, live-agent behavior, Cautilus execution, and issue writes.

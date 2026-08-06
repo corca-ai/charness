@@ -13,9 +13,11 @@ runs the activation command.
   boundary before any external release effect.
 - Current slice intent: consume the repaired retro-to-handoff wiring contract,
   run broad verification against the locked evidence, and record the delegated
-  claims review; do not refresh handoff until final closeout.
+  claims review. The closeout-only handoff refresh is now applied and must be
+  rebound into the final packet before release.
 - Next action: prepare the verification lock and final claims-review inputs;
-  keep the current handoff refusal as an explicit pre-closeout non-claim.
+  keep external CI, provider, release, and host-session claims explicitly
+  unproven until their distinct receipts exist.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -197,10 +199,13 @@ applies.
   repository-contained link checks, exact recurrence-marker coverage, and
   explicit non-claims. The contract and focused tests cover wrong goal identity,
   missing citation, wrapped markers, fenced content, direct/lazy blockquotes,
-  path escape, and source/plugin parity. The validator intentionally refuses
-  the unchanged current handoff because the closeout-only citation and marker
-  update has not happened yet.
-- Targeted verification: 13 focused wiring tests passed; Ruff, plugin help,
+  path escape, ordered and alternate Markdown list markers, and source/plugin
+  parity. The refreshed current handoff now cites the goal-bound retro and
+  carries both recurrence markers; the validator passes against those explicit
+  paths.
+- Targeted verification: 14 focused wiring tests passed; the handoff validator,
+  handoff artifact validator, pointer freshness, and authoring preflight passed;
+  Ruff, plugin help,
   source/plugin byte parity, and the boundary-bypass ratchet passed. The
   required repaired-surface review round had a clean boundary and found the
   wrapped-marker and lazy-blockquote cases; both were repaired with regression
@@ -209,13 +214,19 @@ applies.
   caught the plugin-export static import-safety guard rejecting a dev-tree path
   literal; the resolver now derives both source and plugin asset paths from the
   script directory, and the focused wiring plus empty-scope suite passes 68
-  tests. This post-round-2 repair is also accepted-unreviewed.
+  tests. This post-round-2 repair is also accepted-unreviewed. A real handoff
+  integration then exposed ordered-list parsing; the validator now covers all
+  standard list markers and the focused wiring suite passes 14 tests. This
+  integration repair is also accepted-unreviewed under the cap.
 - Retro disposition: the packet-rebinding workflow was applied by regenerating
-  the Slice 3 critique packet after the final reviewed-input edits; the
+  the Slice 3 critique packet after the final reviewed-input edits, including
+  the refreshed handoff and synchronized measurement probes; the
   aggregate diagnostic proposal was filed as deferred decision D52; and the
   memory item is carried by this goal-bound retro plus the refreshed lesson
-  index. The distinct final claims/disposition review, verification lock, and
-  closeout-only handoff refresh remain in the next slice.
+  index. The distinct final claims/disposition review and verification lock
+  remain in the next slice. The material handoff refresh received a separate
+  bounded critique; its two overclaims were repaired and recorded in
+  [the handoff critique](../critique/2026-08-06-closeout-handoff-refresh.md).
 
 ## Context Sources
 

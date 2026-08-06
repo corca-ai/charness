@@ -133,6 +133,23 @@ def test_wrapped_marker_is_covered_as_one_bullet(tmp_path: Path) -> None:
     assert report["missing_markers"] == []
 
 
+def test_ordered_next_session_items_are_covered(tmp_path: Path) -> None:
+    _seed(tmp_path)
+    (tmp_path / HANDOFF).write_text(
+        "# Demo Handoff\n\n"
+        "## Next Session\n\n"
+        f"1. [Read the retro]({Path('../' + RETRO)})\n"
+        "2. carry recurrence-class: packet-binding\n",
+        encoding="utf-8",
+    )
+
+    report = _run(tmp_path)
+
+    assert report["status"] == "passed"
+    assert report["retro_citations"] == [RETRO]
+    assert report["missing_markers"] == []
+
+
 def test_lazy_blockquote_continuation_cannot_satisfy_coverage(tmp_path: Path) -> None:
     _seed(
         tmp_path,

@@ -1,11 +1,11 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-06T13:20:33Z
-- **Prepared for**: closeout bundle Slice 3 retro-to-handoff wiring after final handoff critique repairs and synchronized inventory probes
+- **Generated**: 2026-08-06T13:20:15Z
+- **Prepared for**: closeout-only handoff refresh after bounded fresh-eye repairs
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `56006eda6e8181ce29ec9334a69edb54d279cee5c24fc0ae00dd606fdc8219fb`
-- **Reviewed paths**: 15
+- **Reviewed input identity**: `ca72852150eaa4ec7e15a9ee59c62e02a4235d5673490e66753f45e6c3230edc`
+- **Reviewed paths**: 6
 - **Sections**: 3
 - **Overall ok**: True
 

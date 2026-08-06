@@ -1,10 +1,12 @@
 {
-  "artifacts_citing_a_declared_inventory": 33,
+  "artifacts_citing_a_declared_inventory": 35,
   "artifacts_refused_by_the_marker_rule": [
     "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
-    "charness-artifacts/quality/2026-07-13-quality-review.md"
+    "charness-artifacts/quality/2026-07-13-quality-review.md",
+    "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+    "charness-artifacts/quality/latest.md"
   ],
-  "artifacts_scanned": 129,
+  "artifacts_scanned": 130,
   "citations_refused_by_the_marker_rule": [
     {
       "engaged_today": [
@@ -53,13 +55,41 @@
       ],
       "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
       "required": 2
+    },
+    {
+      "engaged_today": [
+        "command",
+        "families"
+      ],
+      "engaged_with_a_marker": [],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [
+        "command",
+        "families"
+      ],
+      "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+      "required": 2
+    },
+    {
+      "engaged_today": [
+        "command",
+        "families"
+      ],
+      "engaged_with_a_marker": [],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [
+        "command",
+        "families"
+      ],
+      "path": "charness-artifacts/quality/latest.md",
+      "required": 2
     }
   ],
   "corpus": "charness-artifacts/quality",
   "field_mentions_carrying_a_value_marker": 153,
-  "field_mentions_clearing_todays_floor": 182,
-  "field_mentions_presence_only": 190,
-  "field_mentions_without_a_marker": 29,
+  "field_mentions_clearing_todays_floor": 194,
+  "field_mentions_presence_only": 202,
+  "field_mentions_without_a_marker": 41,
   "marker_kinds": {
     "assign": 87,
     "backtick": 129,
@@ -767,6 +797,34 @@
       "lost_to_the_marker_rule": [],
       "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md",
       "required": 2
+    },
+    {
+      "engaged_today": [
+        "command",
+        "families"
+      ],
+      "engaged_with_a_marker": [],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [
+        "command",
+        "families"
+      ],
+      "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+      "required": 2
+    },
+    {
+      "engaged_today": [
+        "command",
+        "families"
+      ],
+      "engaged_with_a_marker": [],
+      "inventory": "inventory_nose_clones.py",
+      "lost_to_the_marker_rule": [
+        "command",
+        "families"
+      ],
+      "path": "charness-artifacts/quality/latest.md",
+      "required": 2
     }
   ],
   "_provenance": {
@@ -774,9 +832,9 @@
       "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json",
       "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"
     ],
-    "current_corpus": "Refreshed on 2026-08-06 after the typed non-Markdown carrier quality record and runner gate changed the checked-in quality corpus: shallow 124 artifacts / 190 presence-only mentions; recursive 142 artifacts / 263 presence-only mentions.",
+    "current_corpus": "Refreshed on 2026-08-06 after the checked-in quality corpus gained the 2026-08-06 quality records and closeout handoff evidence: shallow 130 artifacts / 202 presence-only mentions; recursive 148 artifacts / 275 presence-only mentions.",
     "date": "2026-08-06",
-    "does_not_license": "Measures THIS repo's checked-in quality artifacts. Says nothing about a consumer repo's corpus. Evidence that arming costs this repo N, not that arming is free anywhere else. The refused artifacts are not all ones the default runner reaches -- the gate is normally handed latest.md only -- so 'would refuse 3 citations across 2 artifacts' is not 'would redden the next quality run'. Nothing was armed and no frozen artifact was rewritten.",
+    "does_not_license": "Measures THIS repo’s checked-in quality artifacts. Says nothing about a consumer repo’s corpus. The refused artifacts are not a claim that the default runner reaches them all. Nothing was armed and no frozen artifact was rewritten; the live measurement is recorded as evidence only.",
     "first_executed_number_was_wrong": {
       "after_fix": {
         "marked": 114,
@@ -796,13 +854,15 @@
     },
     "known_false_positives_not_repaired": "`markers_for` treats a field name inside ANY backticked span as a citation, so a backticked PATH or flag containing the name as a hyphen-delimited token (`advisory-interpretation-contract.md`, `--paths`) scores as marked. Underscores are safe. Bias runs the same way as the repaired bug -- it inflates marked. Verified inert on today's corpus (those artifacts cite no inventory declaring that field), so the numbers above stand, but one new artifact quoting `--paths` while citing inventory_nose_clones.py would flip a refusal silently. Also unmodelled: lines with an odd number of backticks (a wrapped span's continuation line inverts code/prose -- zero live instances found) and fenced code blocks (pasted `status: ok` output scores a colon marker; fences exist only under --recursive). Marker attribution is per LINE, not per occurrence, matching the sibling's current line-granular 190. Raised by the round-2 bounded review and recorded rather than repaired: round 2 is the review cap.",
     "recursive_variant": {
-      "artifacts_citing_a_declared_inventory": 41,
+      "artifacts_citing_a_declared_inventory": 43,
       "artifacts_refused_by_the_marker_rule": [
         "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
         "charness-artifacts/quality/2026-07-13-quality-review.md",
-        "charness-artifacts/quality/history/2026-06-11-quality-review.md"
+        "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+        "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "charness-artifacts/quality/latest.md"
       ],
-      "artifacts_scanned": 147,
+      "artifacts_scanned": 148,
       "citations_refused_by_the_marker_rule": [
         {
           "engaged_today": [
@@ -854,6 +914,20 @@
         },
         {
           "engaged_today": [
+            "command",
+            "families"
+          ],
+          "engaged_with_a_marker": [],
+          "inventory": "inventory_nose_clones.py",
+          "lost_to_the_marker_rule": [
+            "command",
+            "families"
+          ],
+          "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+          "required": 2
+        },
+        {
+          "engaged_today": [
             "blanket",
             "codes"
           ],
@@ -883,13 +957,27 @@
           ],
           "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
           "required": 2
+        },
+        {
+          "engaged_today": [
+            "command",
+            "families"
+          ],
+          "engaged_with_a_marker": [],
+          "inventory": "inventory_nose_clones.py",
+          "lost_to_the_marker_rule": [
+            "command",
+            "families"
+          ],
+          "path": "charness-artifacts/quality/latest.md",
+          "required": 2
         }
       ],
       "corpus": "charness-artifacts/quality",
       "field_mentions_carrying_a_value_marker": 217,
-      "field_mentions_clearing_todays_floor": 255,
-      "field_mentions_presence_only": 263,
-      "field_mentions_without_a_marker": 38,
+      "field_mentions_clearing_todays_floor": 267,
+      "field_mentions_presence_only": 275,
+      "field_mentions_without_a_marker": 50,
       "marker_kinds": {
         "assign": 99,
         "backtick": 187,
@@ -1599,6 +1687,20 @@
           "required": 2
         },
         {
+          "engaged_today": [
+            "command",
+            "families"
+          ],
+          "engaged_with_a_marker": [],
+          "inventory": "inventory_nose_clones.py",
+          "lost_to_the_marker_rule": [
+            "command",
+            "families"
+          ],
+          "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+          "required": 2
+        },
+        {
           "engaged_today": [],
           "engaged_with_a_marker": [],
           "inventory": "inventory_entrypoint_docs_ergonomics.py",
@@ -1996,14 +2098,28 @@
           "lost_to_the_marker_rule": [],
           "path": "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
           "required": 2
+        },
+        {
+          "engaged_today": [
+            "command",
+            "families"
+          ],
+          "engaged_with_a_marker": [],
+          "inventory": "inventory_nose_clones.py",
+          "lost_to_the_marker_rule": [
+            "command",
+            "families"
+          ],
+          "path": "charness-artifacts/quality/latest.md",
+          "required": 2
         }
       ]
     },
-    "repo_head_at_run": "2ac38decc6cdaa6721dc93167fddc410367acd4f",
-    "synchronized_after": "Added the #508 quality record and refreshed the quality pointer; regenerated both marker variants from the repository-owned measurement script.",
-    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
-    "units_matter": "The hand count's unit was REVIEWS (5). This script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS. Top level: 3 refused citations across 2 artifacts. So on the hand count's own unit the executed number is 2, not 5; the two agree only if 'reviews' is read as 'citations', which the hand count did not say. Recorded because an earlier draft of D47 swapped the units to claim agreement.",
+    "repo_head_at_run": "0be77d37468bab3a6cdbc5c4012e8437961a9d58",
+    "synchronized_after": "Refreshed both marker variants from the repository-owned measurement script after the closeout handoff and quality corpus changed.",
+    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the marker rule remains deferred as D47.",
+    "units_matter": "The current shallow measurement has 5 refused citations across 4 artifacts; the recursive measurement has 7 refused citations across 5 artifacts. These counts are the measurement unit for D47.",
     "why": "docs/deferred-decisions.md D47 recorded '51 of 169 mentions unmarked' and 'refuses 5 checked-in reviews' as HAND measurements. This is the executed replacement. The original 169 was NOT hand-derived -- the sibling floor measurement produced it -- which is why the 2026-08-01 run reported a presence-only total that reproduced it exactly. The current synchronized corpus measurement is 196.",
-    "worktree": "dirty: #508 quality record is being synchronized after the post-commit standing gate exposed corpus drift"
+    "worktree": "dirty: closeout handoff and claims evidence are being finalized"
   }
 }

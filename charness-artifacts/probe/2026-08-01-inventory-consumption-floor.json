@@ -1,23 +1,23 @@
 {
-  "artifacts": 129,
+  "artifacts": 130,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 124,
+    "not-claimed": 130,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 190,
-    "median": 30,
+    "count": 202,
+    "median": 31,
     "min": 0,
     "p5": 5
   },
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 365,
+    "count": 370,
     "median": 45,
     "min": 7
   },
@@ -1402,11 +1402,54 @@
         }
       },
       "claims_pre_contract_exemption": false,
-      "commit_state": "dirty",
+      "commit_state": "dated",
       "declared_date": "2026-08-06",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-06",
       "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-mutation-producer-discovery.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-quality-review.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-runtime-ab-evidence.md"
+    },
+    {
+      "citations": {
+        "inventory_nose_clones.py": {
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md"
     },
     {
       "citations": {},
@@ -1424,18 +1467,44 @@
       "declared_date": "2026-08-06",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": null,
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md"
+    },
+    {
+      "citations": {
+        "inventory_nose_clones.py": {
+          "engaged_presence_only": 2,
+          "engaged_with_a_value": 2,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
       "path": "charness-artifacts/quality/latest.md"
     }
   ],
   "_provenance": {
-    "baseline_check": "The current measurement is refreshed over 124 checked-in quality artifacts after the typed non-Markdown carrier quality record and final runner synchronization changed the corpus; no detached-tree validator comparison is claimed.",
+    "baseline_check": "Refreshed over 130 checked-in quality artifacts after the 2026-08-06 quality records and final closeout synchronization changed the corpus; no detached-tree validator comparison is claimed.",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-06",
     "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 3 recursive artifacts and deferred as D47.",
-    "repo_head_at_run": "692c2a30853007b03a0cbc61fea78f00a0e1b993",
-    "synchronized_after": "Added the typed non-Markdown carrier quality record, synchronized the runner stub, debug seam index, and quality probes; regenerated the floor probe from the repository-owned measurement script.",
+    "repo_head_at_run": "0be77d37468bab3a6cdbc5c4012e8437961a9d58",
+    "synchronized_after": "Refreshed the floor probe from the repository-owned measurement script after the checked-in quality corpus gained the 2026-08-06 quality records.",
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed.",
-    "worktree": "dirty: final quality-gate synchronization changes are being finalized"
+    "worktree": "dirty: closeout handoff and claims evidence are being finalized",
+    "why": "docs/deferred-decisions.md D47 records the executed replacement for the former hand counts. The current synchronized corpus measurement is 202 field mentions over 130 top-level quality artifacts."
   }
 }
