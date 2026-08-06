@@ -9,13 +9,12 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 2 — implementation-time premise preflight.
+- Current slice: Slice 2 — implementation-time premise preflight, committed.
 - Current slice intent: compare captured issue/tree identity before implementation,
   persist accepted/refused decisions, and keep provider freshness and runtime
   behavior outside this offline verdict surface.
-- Next action: stage and commit the verified Slice 2 closeout, then continue to
-  Slice 3; broad and mutation proof remain integrated locked-closeout work; do
-  not push.
+- Next action: begin Slice 3 final-bundle preflight shaping; broad and mutation
+  proof remain integrated locked-closeout work; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -122,7 +121,7 @@ runs the activation command.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | complete; committed |
-| 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | implementation complete; closeout pending |
+| 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | complete; committed |
 | 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | draft |
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | draft |
 | 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | draft |
@@ -220,7 +219,7 @@ applies.
 
 - Objective: Compare a captured issue-tool readback and declared git tree identity before implementation, refuse stale duplicate already-shipped or partial-repair premises, and persist each semantically valid decision.
 - Why this approach: Slice 2 turns the repeated manual premise reconstruction into a deterministic offline identity check while keeping provider freshness and runtime behavior with their owning observers.
-- Commits: Pending Slice 2 closeout commit; the slice remains unpushed.
+- Commits: `9b95790b` (`feat: add implementation premise preflight`); the slice remains unpushed.
 - What changed: Added the source and checked-in plugin premise-preflight library and CLIs, adapter-shaped fixture tests, a persisted already-shipped decision fixture, the repaired premise contract, implementation critique, and the required risk-interrupt carry-forward refresh.
 - Alternatives rejected: Deferred live provider reads, issue writes, universal prose duplicate detection, publish-ledger ownership, and a mandatory quality gate to later slices.
 - Targeted verification: Focused pytest: 22 passed; ruff passed; source/plugin library and CLI copies are byte-identical; the source CLI persisted a refused already_shipped decision with protected/index/worktree observations and the offline non-claim; live GitHub readback independently observed issue #510 CLOSED at 2026-08-06T01:20:31Z; the second implementation review boundary was clean after every return; pre-lock `run_slice_closeout.py --skip-broad-pytest --allow-unmatched` completed with `rc=0`, recorded in `charness-artifacts/quality/2026-08-06-slice-2-prelock-closeout.md`.

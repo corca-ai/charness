@@ -119,10 +119,10 @@ round-2 packet in Reviewer Tier Evidence is the distinct identity of the
 surface fresh eyes actually read; F9–F11 repairs after that round are
 accepted-unreviewed and are not presented as having received a third approval.
 
-- Packet path: `charness-artifacts/critique/2026-08-06-036300-final-closeout-packet.json`
-- Packet SHA256: `01968b92378274ef8e263ced598e82e33847c49177ed06dfc66664d6ac56ae73`
-- Packet Markdown SHA256: `2459811591823a0894a8f4c5ad70eb43061d1ecd4cfe6cd5915cc8f14ee811da`
-- Identity SHA256: `e78dbad3019307beb9ec6eedf4356388f3f27853ba14507dd7e32f5b32651b22`
+- Packet path: `charness-artifacts/critique/2026-08-06-036800-post-commit-ledger-packet.json`
+- Packet SHA256: `b84195caec510ae86a3bd33281b3805d490345e02f3bfd662069cba4c080ca85`
+- Packet Markdown SHA256: `3d89e44d123755f45f215e20e727b417a5579afd2222f898e6deda60bc66e98a`
+- Identity SHA256: `5fa150720802cce3d8dcb3a7bfec6eab7cc0810c09ce9a70e92ea49404f17c1f`
 
 ## Boundary Ownership
 
