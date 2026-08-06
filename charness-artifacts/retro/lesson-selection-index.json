@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 450,
-  "candidate_count": 1853,
+  "source_artifact_count": 451,
+  "candidate_count": 1854,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -2017,10 +2017,10 @@
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 130,
+      "source_count": 131,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
       "latest_source_date": "2026-08-06",
       "age_days": 2,
       "recency_weight": 0.9697,
@@ -3066,6 +3066,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3075,10 +3083,10 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 10,
+      "source_count": 11,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
       "latest_source_date": "2026-08-06",
       "age_days": 2,
       "recency_weight": 0.9697,
@@ -3164,6 +3172,14 @@
           "generator": "release-trigger",
           "kind": "next_improvement",
           "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
         }
       ]
     },
@@ -3173,10 +3189,10 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 10,
+      "source_count": 11,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
       "latest_source_date": "2026-08-06",
       "age_days": 2,
       "recency_weight": 0.9697,
@@ -3257,6 +3273,14 @@
         },
         {
           "artifact_path": "charness-artifacts/retro/2026-08-06-v3-3-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
           "date": "2026-08-06",
           "section": "Waste",
           "generator": "release-trigger",
@@ -3288,6 +3312,32 @@
           "generator": "release-trigger",
           "kind": "current_focus",
           "lesson": "Release publish triggered a configured automatic session retro for `v3.3.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:2635eabce583",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v3.4.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v3 4 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-v3-4-0-release-auto-retro.md",
+          "date": "2026-08-06",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v3.4.0`."
         }
       ]
     },
