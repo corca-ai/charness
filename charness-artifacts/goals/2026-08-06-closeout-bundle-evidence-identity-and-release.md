@@ -13,9 +13,8 @@ runs the activation command.
 - Current slice intent: carry the new quality disclosure floor through a
   delegated resolution critique, verify the repaired proof surface, and close
   the bug only after the direct-commit carrier and distinct behavior proof pass.
-- Next action: run the final repository gates, commit the issue ledger, push
-  under the conditioned gate, verify #517 CLOSED, and reconcile the session
-  baton.
+- Next action: read back the final Quality Core result for push SHA `5df4fb61`
+  and reconcile the session baton without claiming any unfinished job.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -107,7 +106,7 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 | 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | completed |
 | 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | completed |
 | 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | completed |
-| 6 | Resolve issue #517's semantic surface-contract gap | The new quality issue is a direct recurrence of the closeout goal's receipt-versus-meaning boundary and was explicitly requested as follow-up work. | Gathered causal source, repaired quality artifact contract, root/plugin sync, delegated resolution critique, second proof-surface review, closeout carrier, and CLOSED readback. | in_progress |
+| 6 | Resolve issue #517's semantic surface-contract gap | The new quality issue is a direct recurrence of the closeout goal's receipt-versus-meaning boundary and was explicitly requested as follow-up work. | Gathered causal source, repaired quality artifact contract, root/plugin sync, delegated resolution critique, second proof-surface review, closeout carrier, and CLOSED readback. | completed |
 
 ## Operator Decision Queue
 
@@ -151,7 +150,7 @@ per the bullets above when that boundary is crossed):
 Routing: achieve → gather → issue → quality → critique — selected from installed skill metadata and the active goal's issue-resolution continuation.
 Gather: charness-artifacts/gather/2026-08-06-cmanki-debug-review-517.md — authenticated public-source readback persisted before implementation.
 Release: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json — release work already completed in the preceding boundary.
-Issue closeout: #517 — direct-commit carrier; `issue_tool.py validate-closeout-draft` passed and `verify-closeout` is pending remote push/readback.
+Issue closeout: #517 — direct-commit carrier `00656c5a`; `issue_tool.py validate-closeout-draft` and `verify-closeout --expect-state CLOSED` both passed, with GitHub state read back as CLOSED. Quality Core run `31115253605` independently observed the pushed SHA `5df4fb61`; core deterministic gates passed and changed-line mutation coverage was still in progress at the last readback.
 
 ## Discuss Before Activation
 
@@ -279,8 +278,9 @@ applies.
   registry mutation was authorized or claimed. The first verification-lock
   attempt surfaced this required review and stopped before proof execution.
 - Non-claims: no product UI semantic oracle, browser/provider roundtrip,
-  cross-host, live-agent, or Cautilus proof is claimed. Final gate, commit,
-  push, and #517 CLOSED readback remain pending.
+  cross-host, live-agent, or Cautilus proof is claimed. The final local gate,
+  commits, push, and #517 CLOSED readback are complete; the remote mutation
+  conclusion remains pending until its separate readback.
 
 ## Context Sources
 
@@ -358,7 +358,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` found host logs but this goal has no `Host metric window:` line, so only thread-wide signals exist and no per-goal host claim is bound.
 Disposition review: charness-artifacts/critique/2026-08-06-closeout-bundle-evidence-identity-and-release-disposition.md (bounded claims review accepted the corrected local target and preserved the external nonclaims; release receipts are recorded separately).
-Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (GitHub Actions Quality Core success for `76e96fe9`, including core deterministic gates and changed-line mutation coverage; distinct from the push channel).
+Remote CI readback: charness-artifacts/probe/2026-08-06-v3.4.0-remote-ci.json (release SHA `76e96fe9` had a distinct-channel Quality Core success, including core deterministic gates and changed-line mutation coverage). For issue #517, GitHub Actions run `31115253605` independently observed push SHA `5df4fb61`; core deterministic gates passed and changed-line mutation coverage was still in progress at the last readback.
 Release readback: charness-artifacts/probe/2026-08-06-v3.4.0-release-observer.json (unauthenticated HTTP release observation, installed refresh, `charness version`, and `charness doctor` readbacks).
 
 ## User Verification Instructions
