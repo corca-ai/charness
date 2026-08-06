@@ -2183,6 +2183,90 @@
       "reviewed_at": "2026-08-05",
       "surface": "code",
       "note": "quality adapter bootstrap and markdown-preview scaffold are parallel generated-writer lifecycles with different payloads, force policies, comment-retention requirements, and reports. A shared runner would couple two independent consumer-owned boundaries; the duplication is deliberate and each path has its own focused tests."
+    },
+    {
+      "class": "intentional",
+      "id": "0a2b79053773062c",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The plugin-dir reference validator and the structured-asset command-carrier validator are independent standalone gates with different input readers and verdict owners. Their small CLI/reporting boundary is intentionally repeated so each validator remains directly executable and its failure semantics stay local."
+    },
+    {
+      "class": "intentional",
+      "id": "421086eaf4dcd873",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The focused changed-line producer and structured-asset validator each need a direct command entrypoint with their own scope and exit contract. Extracting the shared main skeleton would couple unrelated proof surfaces and hide which command owns an unproven result."
+    },
+    {
+      "class": "intentional",
+      "id": "551f9b334fd4874a",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The two route-stage catalog branches construct distinct stage records with different route semantics. The repeated short shape keeps the stage contract visible and is not shared executable behavior."
+    },
+    {
+      "class": "intentional",
+      "id": "ae3cdd72a95c945d",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "These short artifact-run, claim-fidelity, and command-carrier branches are independent boundary readers. A shared formatter would couple artifact and portability ownership merely to erase incidental dictionary/list shape."
+    },
+    {
+      "class": "intentional",
+      "id": "b65c38f8d0eb8e4f",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The two check-doc-links regions handle different source and consumer reader positions. Their similar traversal scaffolding is deliberate because the ownership and false-positive rules differ."
+    },
+    {
+      "class": "intentional",
+      "id": "cff76212c30df1c8",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "Backtick migration and document-link scanning intentionally retain local tokenization rules for separate command and prose contracts; importing one scanner into the other would blur the owning verdict."
+    },
+    {
+      "class": "intentional",
+      "id": "dd5b3388f83df1ab",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The portable command helper and Markdown link gate share a narrow path-shape branch but consume different carriers and report different proof facts. The overlap is local and covered by separate focused suites."
+    },
+    {
+      "class": "intentional",
+      "id": "ed2971dbf3c0d6cc",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The portable command helper's recursive extraction branches are intentionally explicit for its own source/export contract; merging them would make the structured asset gate depend on Markdown command ownership."
+    },
+    {
+      "class": "intentional",
+      "id": "ef4d6d783d261ee8",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "These validators all render standalone failure summaries after distinct producer/consumer checks. A common report wrapper would erase the different evidence channels and would not remove the underlying ownership-specific checks."
+    },
+    {
+      "class": "intentional",
+      "id": "f9ecb6a39cf93faa",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The repeated compact range/branch shapes belong to achieve goal lifecycle, handoff routing, and web-fetch concerns with different semantics. They are pre-existing local contracts, not a new shared implementation introduced by this slice."
+    },
+    {
+      "class": "intentional",
+      "id": "fc7cc812ae48efdf",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The web-fetch route catalog and Markdown negotiation stage intentionally keep adjacent request-stage handling local because one owns route selection and the other owns representation negotiation."
+    },
+    {
+      "class": "intentional",
+      "id": "fd61ac52f2f6d2aa",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The handoff parser and goal-draft CLI entrypoints share the timeout/argument/output lifecycle shape but own different pipeline contracts and operator actions. Keeping these standalone surfaces local preserves their distinct refusal and payload semantics."
     }
   ],
   "fixable_ceiling": 0,

@@ -4,11 +4,15 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-from runtime_bootstrap import import_repo_module
+from runtime_bootstrap import import_repo_module, load_path_module
 
 from .support import ROOT, init_git_repo, run_script
 
 _check_doc_links = import_repo_module(ROOT / "scripts/check_doc_links.py", "scripts.check_doc_links")
+_portable_command_carrier = load_path_module(
+    "scripts.portable_command_carrier_test_surface",
+    ROOT / "scripts" / "portable_command_carrier.py",
+)
 
 
 def run_check_doc_links(monkeypatch, capsys, *args: str) -> SimpleNamespace:
@@ -689,6 +693,31 @@ def test_a_shipped_skill_command_cannot_use_the_authoring_kind_layout(
     assert "<plugin-dir>/skills/demo/scripts/helper.py" in result.stderr
 
 
+def test_shipped_skill_command_message_truncates_after_three_targets(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    extra = {
+        f"skills/public/demo/scripts/helper{n}.py": "#!/usr/bin/env python3\n"
+        for n in range(5)
+    }
+    body = "\n".join(
+        f"Run `python3 skills/public/demo/scripts/helper{n}.py --help`." for n in range(5)
+    ) + "\n"
+    repo = _portable_repo(tmp_path, body, extra=extra)
+    for n in range(5):
+        target = repo / "plugins" / "charness" / "skills" / "demo" / "scripts" / f"helper{n}.py"
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(
+            "#!/usr/bin/env python3\n", encoding="utf-8"
+        )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert ", ..." in result.stderr
+    assert result.stderr.count("skills/public/demo/scripts/helper") == 3
+
+
 def test_a_shipped_skill_command_may_use_skill_dir_placeholder(
     tmp_path: Path, monkeypatch, capsys
 ) -> None:
@@ -701,6 +730,22 @@ def test_a_shipped_skill_command_may_use_skill_dir_placeholder(
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
 
     assert result.returncode == 0, result.stderr
+
+
+def test_portable_command_detector_normalizes_dot_slash_and_skips_missing_source(
+    tmp_path: Path,
+) -> None:
+    repo = _portable_repo(
+        tmp_path,
+        "Run `python3 skills/public/demo/scripts/missing.py --help`.\n",
+    )
+    doc = repo / "skills" / "public" / "demo" / "references" / "note.md"
+    package_root = _check_doc_links.portable_skill_package_root(repo, doc)
+
+    assert _portable_command_carrier._looks_like_repo_reference("./scripts/example.py")
+    assert _portable_command_carrier.iter_unportable_command_targets(
+        repo, doc, package_root
+    ) == []
 
 
 def test_an_authoring_skill_command_is_rejected_when_export_omits_target(

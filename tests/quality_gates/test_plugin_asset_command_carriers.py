@@ -1,7 +1,11 @@
 from __future__ import annotations
 
 import json
+import runpy
+import sys
 from pathlib import Path
+
+import pytest
 
 from runtime_bootstrap import import_repo_module
 
@@ -130,3 +134,47 @@ def test_malformed_structured_asset_is_a_gate_finding(tmp_path: Path) -> None:
     assert count == 1
     assert len(findings) == 1
     assert "cannot parse structured asset" in findings[0]
+
+
+def test_scalar_asset_values_are_ignored_by_recursive_string_walk(tmp_path: Path) -> None:
+    repo = _repo(tmp_path)
+    _write(
+        repo / "plugins/charness/integrations/tools/tool.json",
+        json.dumps({"enabled": True, "retries": 2, "command": "python3 <plugin-dir>/skills/quality/scripts/run.py"}),
+    )
+
+    assert _gate.scan_assets(repo) == (1, [])
+
+
+def test_unsupported_authoring_target_is_defensive_failure() -> None:
+    with pytest.raises(AssertionError, match="unsupported authoring target"):
+        _gate._source_and_shipped("skills/shared/scripts/helper.py")
+
+
+def test_main_emits_success_and_finding_verdicts(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = _repo(tmp_path)
+    _write(
+        repo / "plugins/charness/integrations/tools/tool.json",
+        json.dumps({"command": "python3 skills/public/quality/scripts/run.py"}),
+    )
+
+    monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(repo)])
+    assert _gate.main() == 1
+    captured = capsys.readouterr()
+    assert "Unreachable command carriers" in captured.err
+    assert "authoring-only kind-bearing layout" in captured.err
+
+    clean_repo = tmp_path / "clean"
+    clean_repo.mkdir()
+    monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(clean_repo)])
+    assert _gate.main() == 0
+    assert "Validated 0 shipped JSON/YAML asset(s)" in capsys.readouterr().out
+
+
+def test_script_entrypoint_exits_with_main_status(tmp_path: Path, monkeypatch) -> None:
+    clean_repo = tmp_path / "clean"
+    clean_repo.mkdir()
+    monkeypatch.setattr(sys, "argv", ["check_plugin_asset_command_carriers.py", "--repo-root", str(clean_repo)])
+    with pytest.raises(SystemExit) as raised:
+        runpy.run_path(str(ROOT / "scripts" / "check_plugin_asset_command_carriers.py"), run_name="__main__")
+    assert raised.value.code == 0

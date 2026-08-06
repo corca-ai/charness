@@ -204,28 +204,39 @@ def main() -> int:
         issue_states = None
         issue_state_diagnostic = None
         if args.with_issues:
-            # The open set is threaded through explicitly. Reading it back off
-            # the issue-source module inside the staleness helper would reach a
-            # DIFFERENT module instance (the skill loaders do not cache), so the
-            # reuse would be silently dead and every cited issue -- including the
-            # ~50 that just came back from the open listing -- would cost its own
-            # provider call and blow the CLI timeout.
-            known_open = tuple(open_issue_numbers)
-            cited = [
-                number
-                for entry in entries
-                for number in entry.referenced_issues
-                if number not in open_issue_numbers
-            ]
-            issue_states, issue_state_diagnostic = (
-                chunked_routing_staleness.resolve_states_for_repo(
-                    _repo_root_for_adapter(args), cited, known_open=known_open
+            if issue_source_diagnostic is not None:
+                # A failed listing has already established that provider-backed
+                # issue facts are unavailable. Do not pay a second provider call
+                # through the staleness helper and turn a pre-provider diagnostic
+                # into a timeout or a different, less useful failure.
+                issue_state_diagnostic = {
+                    "stage": "issue_source",
+                    "provider_attempted": False,
+                    "message": "issue-state lookup skipped because issue source failed before provider access",
+                }
+            else:
+                # The open set is threaded through explicitly. Reading it back off
+                # the issue-source module inside the staleness helper would reach a
+                # DIFFERENT module instance (the skill loaders do not cache), so the
+                # reuse would be silently dead and every cited issue -- including the
+                # ~50 that just came back from the open listing -- would cost its own
+                # provider call and blow the CLI timeout.
+                known_open = tuple(open_issue_numbers)
+                cited = [
+                    number
+                    for entry in entries
+                    for number in entry.referenced_issues
+                    if number not in open_issue_numbers
+                ]
+                issue_states, issue_state_diagnostic = (
+                    chunked_routing_staleness.resolve_states_for_repo(
+                        _repo_root_for_adapter(args), cited, known_open=known_open
+                    )
                 )
-            )
-            if issue_state_diagnostic is not None:
-                issue_states = None
-            elif issue_states is not None:
-                issue_states.update({number: "OPEN" for number in known_open})
+                if issue_state_diagnostic is not None:
+                    issue_states = None
+                elif issue_states is not None:
+                    issue_states.update({number: "OPEN" for number in known_open})
         entries = chunked_routing_staleness.annotate_entries(
             entries, repo_root=staleness_repo_root, issue_states=issue_states
         )

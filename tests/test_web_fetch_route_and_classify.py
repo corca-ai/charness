@@ -6,9 +6,24 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
+from runtime_bootstrap import load_path_module
+
 ROOT = Path(__file__).resolve().parents[1]
 WEB_FETCH_SCRIPTS = ROOT / "skills" / "support" / "web-fetch" / "scripts"
 sys.path.insert(0, str(WEB_FETCH_SCRIPTS))
+
+_acquire_public_url_io_surface = load_path_module(
+    "acquire_public_url_io_test_surface",
+    ROOT / "skills" / "support" / "web-fetch" / "scripts" / "acquire_public_url_io.py",
+)
+_markdown_negotiation_stage_surface = load_path_module(
+    "markdown_negotiation_stage_test_surface",
+    ROOT / "skills" / "support" / "web-fetch" / "scripts" / "markdown_negotiation_stage.py",
+)
+_route_stage_catalog_surface = load_path_module(
+    "route_stage_catalog_test_surface",
+    ROOT / "skills" / "support" / "web-fetch" / "scripts" / "route_stage_catalog.py",
+)
 
 import acquire_public_url as apu  # noqa: E402
 import classify_fetch_response as cfr  # noqa: E402
@@ -29,6 +44,12 @@ def run_helper(
         text=True,
         input=input_text,
     )
+
+
+def test_split_web_fetch_modules_are_bound_to_a_standing_surface() -> None:
+    assert _acquire_public_url_io_surface.MARKDOWN_ACCEPT == apu.acquire_public_url_io.MARKDOWN_ACCEPT
+    assert _markdown_negotiation_stage_surface._markdown_looking_url("https://example.com/read.md")
+    assert _route_stage_catalog_surface.FALLBACK_ORDER[0] == "direct-public-fetch"
 
 
 def test_route_public_fetch_maps_reddit_to_feed_strategy() -> None:

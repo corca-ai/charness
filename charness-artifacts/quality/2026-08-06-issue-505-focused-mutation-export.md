@@ -21,9 +21,9 @@ behavior are outside this runtime slice.
 
 ## Runtime Signals
 
-- runtime source: structured metrics from `.charness/quality/runtime-signals.json`
+- runtime source: structured metrics from `.charness/quality/runtime-signals.json` <!-- reproduction-source -->
   rendered by `skills/public/quality/scripts/render_runtime_summary.py`; profile
-  `local-linux-x86_64-36cpu`. <!-- reproduction-source -->
+  `local-linux-x86_64-36cpu`.
 - runtime hot spots: the matched export phase, `coverage json` over the same combined data, took `9.54s`
   and produced `6,746,080` bytes without a filter, versus `0.31s` and `34,158`
   bytes when restricted to the four changed pool paths.

@@ -120,7 +120,7 @@ call change the exact authored shape that a later fill operation may match.
 
 - Resolution: resolved
 - Critique Required: yes
-- Next Step: closeout
+- Next Step: spec
 - Handoff Artifact: none
 
 ## Prevention

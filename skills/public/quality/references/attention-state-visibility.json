@@ -1066,6 +1066,19 @@
       ],
       "rationale": "resolve_states_for_repo returns an EMPTY state map plus a typed diagnostic when the handoff adapter's issue_source is disabled or the tracker cannot be resolved, so the cited-issue half of the staleness check did not run. The parse payload reports this as staleness.issue_states_checked=false with the diagnostic attached, never as an empty closed_issues list -- 'nothing was closed' and 'nothing was checked' are the same empty tuples on the entries, and a reader who cannot tell them apart trusts a backlog line the tracker was never asked about. Facts-only path: no verdict, no entry is dropped, and unknown is never reported as closed."
     },
+    "skills/public/handoff/scripts/parse_handoff_entries.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "structured_warning"
+      ],
+      "evidence_terms": [
+        "issue-state lookup skipped",
+        "provider-backed"
+      ],
+      "rationale": "When the live issue source fails before provider access, the parser explicitly skips the second issue-state lookup and carries a structured diagnostic. This prevents a provider timeout from replacing the original pre-provider failure while keeping the unverified issue facts visible in the staleness payload."
+    },
     "skills/public/issue/scripts/describe_closeout_draft_shape.py": {
       "states": [
         "skipped"

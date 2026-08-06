@@ -1,22 +1,11 @@
 {
-  "_provenance": {
-    "baseline_check": "The current measurement is refreshed over 119 checked-in quality artifacts after the runtime phase-isolation quality record changed the corpus; no detached-tree validator comparison is claimed.",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-06",
-    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 3 recursive artifacts and deferred as D47.",
-    "repo_head_at_run": "ecc54403b1831801d863fac2399933c27f14b8d3",
-    "synchronized_after": "Added the runtime phase-isolation quality record and refreshed the quality pointer; regenerated the floor probe from the repository-owned measurement script.",
-    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor and marker rule remain measured rather than armed.",
-    "worktree": "dirty: runtime phase-isolation changes and synchronized probes are being finalized"
-  },
-  "artifacts": 119,
+  "artifacts": 124,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 119,
+    "not-claimed": 124,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -28,7 +17,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 342,
+    "count": 354,
     "median": 45,
     "min": 7
   },
@@ -1370,7 +1359,59 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "uncommitted",
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-issue-480-authoring-path-resolver.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-issue-482-command-carrier.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-issue-483-non-markdown-command-carrier.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-issue-484-shared-portable-package.md"
+    },
+    {
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "engaged_presence_only": 0,
+          "engaged_with_a_value": 0,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dirty",
+      "declared_date": "2026-08-06",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-06",
+      "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
       "declared_date": "2026-08-06",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-06",
@@ -1379,11 +1420,22 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "dirty",
+      "commit_state": "dated",
       "declared_date": "2026-08-06",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-06",
       "path": "charness-artifacts/quality/latest.md"
     }
-  ]
+  ],
+  "_provenance": {
+    "baseline_check": "The current measurement is refreshed over 124 checked-in quality artifacts after the typed non-Markdown carrier quality record and final runner synchronization changed the corpus; no detached-tree validator comparison is claimed.",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-06",
+    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 3 recursive artifacts and deferred as D47.",
+    "repo_head_at_run": "692c2a30853007b03a0cbc61fea78f00a0e1b993",
+    "synchronized_after": "Added the typed non-Markdown carrier quality record, synchronized the runner stub, debug seam index, and quality probes; regenerated the floor probe from the repository-owned measurement script.",
+    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed.",
+    "worktree": "dirty: final quality-gate synchronization changes are being finalized"
+  }
 }

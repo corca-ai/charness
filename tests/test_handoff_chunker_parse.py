@@ -423,6 +423,11 @@ def test_cli_with_issues_unions_live_backlog(tmp_path, monkeypatch, capsys):
 
     monkeypatch.setattr(iss, "build_issue_entries", fake_build)
     monkeypatch.setattr(
+        peh.chunked_routing_staleness,
+        "resolve_states_for_repo",
+        lambda *_args, **_kwargs: ({}, {"stage": "test-staleness-failure"}),
+    )
+    monkeypatch.setattr(
         sys, "argv",
         ["parse_handoff_entries.py", "--handoff-path", str(handoff),
          "--repo-root", str(tmp_path), "--with-issues"],
@@ -494,7 +499,11 @@ def test_cli_with_issues_reports_pre_provider_diagnostic(tmp_path, monkeypatch, 
     def missing_issue_skill(root, name):
         raise ImportError("installed issue skill missing")
 
+    def should_not_run(*_args, **_kwargs):
+        raise AssertionError("staleness provider must not run after a pre-provider failure")
+
     monkeypatch.setattr(peh.chunked_routing_issue_source, "_load_issue_module", missing_issue_skill)
+    monkeypatch.setattr(peh.chunked_routing_staleness, "resolve_states_for_repo", should_not_run)
     monkeypatch.setattr(
         sys,
         "argv",
@@ -515,6 +524,10 @@ def test_cli_with_issues_reports_pre_provider_diagnostic(tmp_path, monkeypatch, 
     assert diagnostic["stage"] == "load_issue_modules"
     assert diagnostic["provider_attempted"] is False
     assert "installed issue skill missing" in diagnostic["message"]
+    assert payload["staleness"]["issue_states_checked"] is False
+    assert payload["staleness"]["diagnostic"]["stage"] == "issue_source"
+    assert payload["staleness"]["diagnostic"]["provider_attempted"] is False
+    assert "skipped because issue source failed" in payload["staleness"]["diagnostic"]["message"]
 
 
 def test_draft_goal_help_resolves_installed_achieve_skill_layout(tmp_path):

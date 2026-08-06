@@ -685,13 +685,13 @@ the evidence is sufficient for the boundary at hand.
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over this entry's own denominator (119 top-level artifacts, 32 citing a declared
+  Over this entry's own denominator (124 top-level artifacts, 33 citing a declared
   inventory): the presence-only mention total is **190**, **182** of those clear today's
   residual floor, **153** carry a value marker and **29** do not, and a
   marker rule would refuse **3 citations across 2 artifacts**
   (`2026-06-26-five-pass-boundary`, `2026-07-13`). Marker kinds are reported per mention and
   overlap: 129 backticked, 87 `field=`, 31 `field:`. With `--recursive`, which reaches the
-  `history/` directory the sibling script's non-recursive glob silently excludes: 137
+  `history/` directory the sibling script's non-recursive glob silently excludes: 142
   artifacts (263 presence-only), 255 floor-clearing mentions, 217 marked, 38 unmarked, 5
   citations across 3 artifacts (`2026-06-26-five-pass-boundary`, `2026-07-13`,
   `history/2026-06-11`). Both variants are recorded in the probe and pinned by the
