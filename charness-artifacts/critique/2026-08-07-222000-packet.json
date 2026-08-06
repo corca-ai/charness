@@ -1,0 +1,243 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-06T21:50:34Z",
+  "prepared_for": "unified #514/#515 goal design commit fb706ff5",
+  "changed_ref": "fb706ff5",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `fb706ff5`:\n- charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md\n- docs/handoff.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "fb706ff5",
+    "resolved_changed_ref": [
+      "fb706ff53338e360fc129aff561385df8085f48b"
+    ],
+    "base_head": "fb706ff53338e360fc129aff561385df8085f48b",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md",
+      "docs/handoff.md",
+      "plugins/charness/skills/issue/scripts/issue_close.py",
+      "plugins/charness/skills/issue/scripts/issue_local_import.py",
+      "plugins/charness/skills/issue/scripts/issue_tool.py",
+      "plugins/charness/skills/issue/scripts/issue_validate_closeout_draft.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+      "plugins/charness/skills/issue/scripts/resolve_adapter.py",
+      "plugins/charness/skills/release/scripts/publish_release_common.py",
+      "plugins/charness/skills/release/scripts/publish_release_execute.py",
+      "plugins/charness/skills/release/scripts/publish_release_resume.py",
+      "plugins/charness/skills/release/scripts/publish_release_resume_closeout.py",
+      "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+      "plugins/charness/skills/release/scripts/release_issue_closeout_message.py",
+      "scripts/check_issue_closeout_commit_msg.py",
+      "skills/public/issue/scripts/issue_close.py",
+      "skills/public/issue/scripts/issue_local_import.py",
+      "skills/public/issue/scripts/issue_tool.py",
+      "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+      "skills/public/issue/scripts/issue_verify_closeout.py",
+      "skills/public/issue/scripts/issue_verify_closeout_body.py",
+      "skills/public/issue/scripts/resolve_adapter.py",
+      "skills/public/release/scripts/publish_release_common.py",
+      "skills/public/release/scripts/publish_release_execute.py",
+      "skills/public/release/scripts/publish_release_resume.py",
+      "skills/public/release/scripts/publish_release_resume_closeout.py",
+      "skills/public/release/scripts/release_issue_closeout.py",
+      "skills/public/release/scripts/release_issue_closeout_message.py",
+      "tests/quality_gates/test_issue_close_comment_floor.py",
+      "tests/quality_gates/test_issue_closeout_commit_msg_hook.py",
+      "tests/quality_gates/test_issue_closeout_verifier.py",
+      "tests/quality_gates/test_issue_skill.py",
+      "tests/quality_gates/test_release_issue_closeout_preflight.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md",
+        "content_sha256": "2c45b2b72dd6d7f9412e9a510a43927ee7cf51db9ad0d643221686d8b11317b2"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "7ded29bcc484875f8ad412c972ff9910e0dddca4d7c05f2cb531f370cce61490"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_close.py",
+        "content_sha256": "3a163fb569b3eb538651050656094dc627437f8ae67290c06cb213ab8ec7280e"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_local_import.py",
+        "content_sha256": "30958484cc73dac8a567d0afeadd628b873c7d1683249f3737c85f3ef4bafd56"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_tool.py",
+        "content_sha256": "67436aca21777c3e605ac201481d2865b825443ba40374940a1655f440b1bff4"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_validate_closeout_draft.py",
+        "content_sha256": "a1ce04d9c663ac400703c20b924aefbce50efb9253c4735399b6ec60839c60ff"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "5058e3206a8600afbd9f6f1b034fdbd9230c8574076c993a3abe6ff479333567"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "c75480e486b3a47bd7e8e23c1b87675744a760c97860949a1172dec56a38e3c6"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/resolve_adapter.py",
+        "content_sha256": "c49671a36e16fdf4928700ec8fbb0090ca446ae822347793320bccaca8dea202"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_common.py",
+        "content_sha256": "0441674c580bfe3af281cca77ad9cc066267f500add591c0d3aa2a2de31421e4"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_execute.py",
+        "content_sha256": "d0e5c3869632b61e85fe4249b537904ca725d4324975f951d9d128f12e23b6d6"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_resume.py",
+        "content_sha256": "3de91ee93a47242acd0b89dcc72a09ad02859593fc27acbd2891d350d2700592"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/publish_release_resume_closeout.py",
+        "content_sha256": "9a5078fd739df9c60bb40bd08d0e05ceb484d3fdf098bd9676e1761ffbc3c7a3"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_issue_closeout.py",
+        "content_sha256": "8eed232f8da317f3f30369e8381b4ec2e633e34758f7d9bc3ed68fa64c25aaf7"
+      },
+      {
+        "path": "plugins/charness/skills/release/scripts/release_issue_closeout_message.py",
+        "content_sha256": "fc8d89d771adf831ec0e3e640f65096a5f25dfc31b1cda6badf6f813aa478aaa"
+      },
+      {
+        "path": "scripts/check_issue_closeout_commit_msg.py",
+        "content_sha256": "79e88bd6d826719093b0dba9c6f881f50b5438a0c278391e83c80315cc7334ce"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_close.py",
+        "content_sha256": "3a163fb569b3eb538651050656094dc627437f8ae67290c06cb213ab8ec7280e"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_local_import.py",
+        "content_sha256": "30958484cc73dac8a567d0afeadd628b873c7d1683249f3737c85f3ef4bafd56"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_tool.py",
+        "content_sha256": "67436aca21777c3e605ac201481d2865b825443ba40374940a1655f440b1bff4"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+        "content_sha256": "a1ce04d9c663ac400703c20b924aefbce50efb9253c4735399b6ec60839c60ff"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "5058e3206a8600afbd9f6f1b034fdbd9230c8574076c993a3abe6ff479333567"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "c75480e486b3a47bd7e8e23c1b87675744a760c97860949a1172dec56a38e3c6"
+      },
+      {
+        "path": "skills/public/issue/scripts/resolve_adapter.py",
+        "content_sha256": "c49671a36e16fdf4928700ec8fbb0090ca446ae822347793320bccaca8dea202"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_common.py",
+        "content_sha256": "0441674c580bfe3af281cca77ad9cc066267f500add591c0d3aa2a2de31421e4"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_execute.py",
+        "content_sha256": "d0e5c3869632b61e85fe4249b537904ca725d4324975f951d9d128f12e23b6d6"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume.py",
+        "content_sha256": "3de91ee93a47242acd0b89dcc72a09ad02859593fc27acbd2891d350d2700592"
+      },
+      {
+        "path": "skills/public/release/scripts/publish_release_resume_closeout.py",
+        "content_sha256": "9a5078fd739df9c60bb40bd08d0e05ceb484d3fdf098bd9676e1761ffbc3c7a3"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout.py",
+        "content_sha256": "8eed232f8da317f3f30369e8381b4ec2e633e34758f7d9bc3ed68fa64c25aaf7"
+      },
+      {
+        "path": "skills/public/release/scripts/release_issue_closeout_message.py",
+        "content_sha256": "fc8d89d771adf831ec0e3e640f65096a5f25dfc31b1cda6badf6f813aa478aaa"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_close_comment_floor.py",
+        "content_sha256": "894ba89a4c22db6b692079d11aded93c52503d7f097589fe7944442154a5c0f4"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_closeout_commit_msg_hook.py",
+        "content_sha256": "24dd38cf262a0b408a521d0e0781b05fbfa3b400e19af779fa1389cc19770683"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_closeout_verifier.py",
+        "content_sha256": "73d3fe284d81bc26db2bda9a695dd89bdcb8c50316322761f24ca430545f4975"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_skill.py",
+        "content_sha256": "0a087b5b13ad4de489cdf0e78997c5929f49d157eb98c882c439b378ba5d1ea1"
+      },
+      {
+        "path": "tests/quality_gates/test_release_issue_closeout_preflight.py",
+        "content_sha256": "dc4ffb6096de0e2c229fbcd75dd3d73e485aec998ba22eed180203eabd7f9790"
+      }
+    ],
+    "reviewed_patch_sha256": "af9315bb33ce07f63d0080ff6f7afe699bdde9ae90aba4daafed9496fdede400",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "c641043c0690de2b62775673413db93355ba9b1aa69f5a4fc51b2daa050c9b1c"
+  }
+}
