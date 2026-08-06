@@ -1,0 +1,246 @@
+// lint_failed documents=40 orphans=7 islands=0 link_only_lines=230 largest_component_ratio=0.8250 orphan_rate=0.1750 content_coverage=1.0000
+// orphan
+// why: no resolved links connect these pages to the wiki graph, so readers and agents are unlikely to discover them.
+// fix: add a contextual link to or from a related page, or merge/delete the note if it has no durable role.
+// example: add "Compare with [[Related page]] ..." from the orphan, or link to it from a relevant index page.
+[[agent-task-envelope]]: `charness task` provides a small repo-local contract for work that may pass
+[[conventions/surface-driven-adapter-triggers]]: When a Charness skill gates work on "did the current change touch a repo
+[[duplicate-detection-strategy]]: This note records the intended duplicate-detection posture for Charness and for
+[[narrative-announcement-boundary]]: `narrative` and `announcement` were drifting into overlapping territory.
+[[prompt-mutation-policy]]: Owner surface for the prompt-surface mutation pipeline: what its verdicts
+[[proof-semantics-adapter]]: The portable Charness residual/disposition ledger
+[[retro-self-improvement-spec]]: `charness` now has the beginnings of durable retrospective memory, but it still
+// link_only_line
+// why: a line with only one link gives no local context, and grep results become hard to interpret.
+// fix: add a short phrase explaining the relationship, or rewrite the link into a sentence.
+// example: - [[Bayes theorem]] -> - See [[Bayes theorem]] for updating beliefs with evidence.
+[[ai-ml-engineering-patterns]]:9: [issue-185-ai-ml-engineering-success.md](../charness-artifacts/spec/issue-185-ai-ml-engineering-success.md).
+[[artifact-policy]]:23: - [deferred-decisions.md](./deferred-decisions.md)
+[[artifact-policy]]:24: - [runtime-capability-contract.md](./runtime-capability-contract.md)
+[[artifact-policy]]:25: - [external-integrations.md](./external-integrations.md)
+[[artifact-policy]]:27: - [`.agents/quality-adapter.yaml`](../.agents/quality-adapter.yaml)
+[[artifact-policy]]:48: - [handoff.md](./handoff.md)
+[[artifact-policy]]:49: - [../charness-artifacts/gather/latest.md](../charness-artifacts/gather/latest.md)
+[[artifact-policy]]:50: - [../charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+[[artifact-policy]]:51: - [../charness-artifacts/release/latest.md](../charness-artifacts/release/latest.md)
+[[artifact-policy]]:77: - [`charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md`](../charness-artifacts/gather/2026-04-16-agent-harness-guide-v1-0.md)
+[[artifact-policy]]:78: - [`charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md`](../charness-artifacts/retro/2026-04-16-issue-closeout-premortem.md)
+[[artifact-policy]]:79: - [`charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md`](../charness-artifacts/quality/history/2026-04-09-through-2026-04-10.md)
+[[artifact-policy]]:138: [quality-claim-fidelity-2026-06-23/finding.md](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/finding.md)
+[[artifact-policy]]:140: [observed.v1.json](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-23/observed.v1.json),
+[[artifact-policy]]:141: [summary.v1.json](../charness-artifacts/cautilus/quality-claim-fidelity-2026-06-22/summary.v1.json),
+[[artifact-policy]]:146: [validate_cautilus_diagnostics.py](../scripts/validate_cautilus_diagnostics.py)
+[[artifact-policy]]:221: - [charness-artifacts/debug/latest.md](../charness-artifacts/debug/latest.md)
+[[artifact-policy]]:222: - [charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md](../charness-artifacts/debug/debug-2026-04-20-process-boundary-drift.md)
+[[artifact-policy]]:223: - [`charness-artifacts/gather/latest.md`](../charness-artifacts/gather/latest.md)
+[[artifact-policy]]:224: - [`charness-artifacts/release/latest.md`](../charness-artifacts/release/latest.md)
+[[artifact-policy]]:311: [retro lesson-selection index](../charness-artifacts/retro/lesson-selection-index.json)
+[[artifact-policy]]:315: [debug seam-risk index](../charness-artifacts/debug/seam-risk-index.json).
+[[artifact-policy]]:323: [derived-artifact recompute inventory](../charness-artifacts/audit/2026-07-27-derived-artifact-recompute-inventory.md).
+[[artifact-policy]]:349: - [harness-composition.md](./harness-composition.md)
+[[artifact-policy]]:350: - [handoff.md](./handoff.md)
+[[artifact-policy]]:351: - [runtime-capability-contract.md](./runtime-capability-contract.md)
+[[artifact-policy]]:352: - [external-integrations.md](./external-integrations.md)
+[[conventions/authoring-preflight]]:11: [implementation-discipline.md](./implementation-discipline.md).
+[[conventions/authoring-preflight]]:15: [validate_attention_state_visibility.py](../../scripts/validate_attention_state_visibility.py)
+[[conventions/authoring-preflight]]:21: [skills/public/quality/references/attention-state-visibility.json](../../skills/public/quality/references/attention-state-visibility.json)
+[[conventions/authoring-preflight]]:26: [tests/test_authoring_preflight_reference.py](../../tests/test_authoring_preflight_reference.py)
+[[conventions/authoring-preflight]]:84: [validate_quality_artifact.py](../../scripts/validate_quality_artifact.py)
+[[conventions/authoring-preflight]]:87: [check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
+[[conventions/authoring-preflight]]:109: [check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py).
+[[conventions/authoring-preflight]]:182: [check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
+[[conventions/authoring-preflight]]:216: [inventory_skill_script_references.py](../../scripts/inventory_skill_script_references.py)
+[[conventions/authoring-preflight]]:225: [inventory_skill_script_references.py](../../scripts/inventory_skill_script_references.py)
+[[conventions/authoring-preflight]]:258: [validate_skill_ergonomics.py](../../scripts/validate_skill_ergonomics.py)
+[[conventions/authoring-preflight]]:300: [.agents/usage-episodes-adapter.yaml](../../.agents/usage-episodes-adapter.yaml)
+[[conventions/authoring-preflight]]:303: [scripts/post_edit_skill_anchor_guard.py](../../scripts/post_edit_skill_anchor_guard.py)
+[[conventions/implementation-discipline]]:71: [producer-rerun retro](../../charness-artifacts/retro/2026-06-07-producer-rerun-waste.md)).
+[[conventions/implementation-discipline]]:75: [test_quality_runner.py](../../tests/quality_gates/test_quality_runner.py)
+[[conventions/implementation-discipline]]:135: [dup_ratchet_edit_advisory.py](../../scripts/dup_ratchet_edit_advisory.py),
+[[conventions/implementation-discipline]]:146: [check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py)
+[[conventions/implementation-discipline]]:148: [check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
+[[conventions/implementation-discipline]]:150: [check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py)
+[[conventions/implementation-discipline]]:198: [achieve-efficiency-improvements](../../charness-artifacts/spec/achieve-efficiency-improvements.md)
+[[conventions/implementation-discipline]]:209: [slice_closeout_advisories.py](../../scripts/slice_closeout_advisories.py)).
+[[conventions/implementation-discipline]]:216: ([describe_goal_closeout_shape.py](../../skills/public/achieve/scripts/describe_goal_closeout_shape.py))
+[[conventions/implementation-discipline]]:228: [closeout-floors audit](../../charness-artifacts/audit/closeout-floors.md);
+[[conventions/implementation-discipline]]:234: [slice_closeout_advisories.py](../../scripts/slice_closeout_advisories.py)
+[[conventions/implementation-discipline]]:332: [portability-miss retro](../../charness-artifacts/retro/2026-06-07-premerge-gate-portability-miss.md).
+[[conventions/implementation-discipline]]:350: ([check_staged_mirror_drift.py](../../scripts/check_staged_mirror_drift.py),
+[[conventions/implementation-discipline]]:359: ([check_issue_closeout_commit_msg.py](../../scripts/check_issue_closeout_commit_msg.py),
+[[conventions/operating-contract]]:35: [skills/public/spec/references/evidence-durability.md](../../skills/public/spec/references/evidence-durability.md).
+[[conventions/operating-contract]]:49: [skills/public/gather/scripts/write_record.py](../../skills/public/gather/scripts/write_record.py)
+[[conventions/operating-contract]]:104: [critique-boundary](../../skills/public/release/references/critique-boundary.md)
+[[conventions/operating-contract]]:124: [this critique](../../charness-artifacts/critique/2026-07-28-four-unestablished-scope-readers-in-the-quality-dup-nose-subsystem.md),
+[[conventions/operating-contract]]:285: [symptom-ledger.md](../../charness-artifacts/reference-compaction/symptom-ledger.md)
+[[conventions/operating-contract]]:287: [context-tax-measurement-design.md](../../charness-artifacts/reference-compaction/context-tax-measurement-design.md)).
+[[conventions/provenance-placement]]:59: [operating-contract.md](./operating-contract.md),
+[[conventions/provenance-placement]]:60: [implementation-discipline.md](./implementation-discipline.md),
+[[conventions/provenance-placement]]:61: [authoring-preflight.md](./authoring-preflight.md),
+[[conventions/provenance-placement]]:62: [prescribed-skill-closeout-contract.md](../prescribed-skill-closeout-contract.md)).
+[[conventions/provenance-placement]]:66: [deferred-decisions.md](../deferred-decisions.md),
+[[conventions/provenance-placement]]:67: [product-success-metrics.md](../product-success-metrics.md),
+[[conventions/surface-driven-adapter-triggers]]:14: [skills/public/retro/scripts/check_auto_trigger.py](../../skills/public/retro/scripts/check_auto_trigger.py)
+[[conventions/surface-driven-adapter-triggers]]:17: [skills/public/release/scripts/check_real_host_proof.py](../../skills/public/release/scripts/check_real_host_proof.py)
+[[conventions/surface-driven-adapter-triggers]]:102: - [scripts/surfaces_lib.py](../../scripts/surfaces_lib.py) —
+[[conventions/surface-driven-adapter-triggers]]:104: - [skills/public/retro/scripts/check_auto_trigger.py](../../skills/public/retro/scripts/check_auto_trigger.py)
+[[conventions/surface-driven-adapter-triggers]]:105: - [skills/public/release/scripts/check_real_host_proof.py](../../skills/public/release/scripts/check_real_host_proof.py)
+[[conventions/surface-driven-adapter-triggers]]:106: - [tests/quality_gates/test_retro_auto_trigger.py](../../tests/quality_gates/test_retro_auto_trigger.py)
+[[conventions/surface-driven-adapter-triggers]]:107: - [tests/quality_gates/test_release_real_host.py](../../tests/quality_gates/test_release_real_host.py)
+[[conventions/validator-timing-layers]]:13: ([check_skill_surface_preflight.py](../../scripts/check_skill_surface_preflight.py),
+[[conventions/validator-timing-layers]]:14: [check_artifact_surface_preflight.py](../../scripts/check_artifact_surface_preflight.py)).
+[[conventions/validator-timing-layers]]:17: [authoring-preflight.md](./authoring-preflight.md)).
+[[conventions/validator-timing-layers]]:19: ([staged_commit_gate_plan.py](../../scripts/staged_commit_gate_plan.py)),
+[[conventions/validator-timing-layers]]:40: [check_boundary_bypass_ratchet.py](../../scripts/check_boundary_bypass_ratchet.py)
+[[deferred-decisions]]:341: [references/dup-ratchet.md](../skills/public/quality/references/dup-ratchet.md).
+[[deferred-decisions]]:361: [parse_handoff_entries.py](../skills/public/handoff/scripts/parse_handoff_entries.py)
+[[deferred-decisions]]:416: [d36-close-exemption-advisory-single-source](../charness-artifacts/critique/2026-07-04-d36-close-exemption-advisory-single-source.md).
+[[deferred-decisions]]:454: [the debug artifact](../charness-artifacts/debug/2026-07-25-bounded-reviewer-result-delivery.md).
+[[deferred-decisions]]:461: [lesson-selection-index.json](../charness-artifacts/retro/lesson-selection-index.json),
+[[deferred-decisions]]:544: [ci_local_gate_parity_lib.py](../skills/public/quality/scripts/ci_local_gate_parity_lib.py):
+[[deferred-decisions]]:590: [test_handoff_chunker_issue_source.py](../tests/test_handoff_chunker_issue_source.py)
+[[deferred-decisions]]:593: [test_handoff_chunker_adapter_report.py](../tests/test_handoff_chunker_adapter_report.py)
+[[deferred-decisions]]:605: ([recorded run](../charness-artifacts/probe/2026-08-01-adapter-yaml-uninterpreted.json)),
+[[deferred-decisions]]:615: ([chunked_routing_issue_source.py](../skills/public/handoff/scripts/chunked_routing_issue_source.py))
+[[deferred-decisions]]:627: [simple_skill_adapter_lib.py](../scripts/simple_skill_adapter_lib.py),
+[[deferred-decisions]]:660: [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json)
+[[deferred-decisions]]:687: [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
+[[deferred-decisions]]:737: [measure_inventory_consumption_floor.py](../scripts/measure_inventory_consumption_floor.py),
+[[deferred-decisions]]:738: [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
+[[deferred-decisions]]:745: [the recorded probe](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json).
+[[deferred-decisions]]:784: [test_absent_input_is_not_a_matching_input.py](../tests/quality_gates/test_absent_input_is_not_a_matching_input.py).
+[[deferred-decisions]]:829: [release resolve_adapter.py](../skills/public/release/scripts/resolve_adapter.py),
+[[deferred-decisions]]:830: [adapter-contract.md](../skills/public/release/references/adapter-contract.md),
+[[deferred-decisions]]:831: [release-adapter.yaml](../.agents/release-adapter.yaml).
+[[deferred-decisions]]:870: [goal_artifact_closeout_evidence.py](../skills/public/achieve/scripts/goal_artifact_closeout_evidence.py),
+[[deferred-decisions]]:871: [describe_goal_closeout_shape.py](../skills/public/achieve/scripts/describe_goal_closeout_shape.py),
+[[deferred-decisions]]:872: [goal-artifact lifecycle-after.md](../skills/public/achieve/references/lifecycle-after.md),
+[[deferred-decisions]]:873: [test_goal_closeout_record_floors.py](../tests/quality_gates/test_goal_closeout_record_floors.py).
+[[deferred-decisions]]:992: [final_bundle_preflight_lib.py](../scripts/final_bundle_preflight_lib.py),
+[[duplicate-detection-strategy]]:13: [`inventory_doc_duplicates.py`](../skills/public/quality/scripts/inventory_doc_duplicates.py)
+[[duplicate-detection-strategy]]:28: ([`charness-artifacts/quality/doc-nose-baseline.json`](../charness-artifacts/quality/doc-nose-baseline.json),
+[[duplicate-detection-strategy]]:86: [`inventory_nose_clones.py`](../skills/public/quality/scripts/inventory_nose_clones.py)
+[[duplicate-detection-strategy]]:91: [`charness-artifacts/quality/nose-baseline.json`](../charness-artifacts/quality/nose-baseline.json)
+[[external-integrations]]:66: [gather-provider-ownership.md](./gather-provider-ownership.md).
+[[handoff]]:46: - [Unified goal](../charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md)
+[[handoff]]:47: - [Current quality posture](../charness-artifacts/quality/latest.md)
+[[handoff]]:48: - [Session retro](../charness-artifacts/retro/2026-08-07-session-retro.md)
+[[handoff]]:49: - [#516 debug record](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md)
+[[handoff-chunked-routing]]:4: [handoff auto-chunking goal](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md).
+[[handoff-chunked-routing]]:16: [`/achieve`](../skills/public/achieve/SKILL.md).
+[[handoff-chunked-routing]]:62: [`achieve/scripts/check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py));
+[[handoff-chunked-routing]]:314: [`goal_artifact_lib.upsert_goal`](../skills/public/achieve/scripts/goal_artifact_lib.py) —
+[[handoff-chunked-routing]]:331: [`templates/auto_draft_goal.md`](../skills/public/handoff/scripts/templates/auto_draft_goal.md)
+[[handoff-chunked-routing]]:387: [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py)
+[[handoff-chunked-routing]]:406: [`skills/public/handoff/SKILL.md`](../skills/public/handoff/SKILL.md)
+[[handoff-chunked-routing]]:461: [the goal artifact](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md#boundaries)
+[[handoff-chunked-routing]]:488: [`docs/handoff.md`](./handoff.md).
+[[handoff-chunked-routing]]:501: [`goal_artifact_lib._TEMPLATE`](../skills/public/achieve/scripts/goal_artifact_lib.py)
+[[handoff-chunked-routing]]:550: [`goal_artifact_lib.py`](../skills/public/achieve/scripts/goal_artifact_lib.py);
+[[handoff-chunked-routing]]:555: - [Goal artifact](../charness-artifacts/goals/2026-05-28-handoff-chunked-routing.md)
+[[handoff-chunked-routing]]:556: - [handoff SKILL.md](../skills/public/handoff/SKILL.md)
+[[handoff-chunked-routing]]:557: - [achieve SKILL.md](../skills/public/achieve/SKILL.md)
+[[handoff-chunked-routing]]:558: - [achieve goal-artifact-lib](../skills/public/achieve/scripts/goal_artifact_lib.py)
+[[handoff-chunked-routing]]:559: - [achieve check_goal_artifact](../skills/public/achieve/scripts/check_goal_artifact.py)
+[[handoff-chunked-routing]]:560: - [issue SKILL.md (generative-sequence idiom, step 5)](../skills/public/issue/SKILL.md)
+[[handoff-chunked-routing]]:561: - [issue resolve-flow reference](../skills/public/issue/references/resolve-flow.md)
+[[handoff-chunked-routing]]:562: - [implementation discipline](./conventions/implementation-discipline.md)
+[[handoff-chunked-routing]]:563: - [operating contract](./conventions/operating-contract.md)
+[[handoff-chunked-routing]]:564: - [docs/handoff.md (current snapshot is the slice-2 fixture)](./handoff.md)
+[[harness-composition]]:47: [deferred-decisions.md](./deferred-decisions.md)
+[[harness-composition]]:79: - [AGENTS.md](../AGENTS.md)
+[[harness-composition]]:154: - [external-integrations.md](./external-integrations.md)
+[[harness-composition]]:155: - [runtime-capability-contract.md](./runtime-capability-contract.md)
+[[harness-composition]]:187: - [handoff.md](./handoff.md)
+[[harness-composition]]:202: - [artifact-policy.md](./artifact-policy.md)
+[[harness-composition]]:225: - [artifact-policy.md](./artifact-policy.md)
+[[harness-composition]]:258: - [AGENTS.md](../AGENTS.md)
+[[harness-composition]]:259: - [handoff.md](./handoff.md)
+[[host-packaging]]:44: - [`README.md`](../README.md)
+[[host-packaging]]:52: - [`plugins/charness/.claude-plugin/plugin.json`](../plugins/charness/.claude-plugin/plugin.json)
+[[host-packaging]]:53: - [`plugins/charness/.codex-plugin/plugin.json`](../plugins/charness/.codex-plugin/plugin.json)
+[[host-packaging]]:54: - [`.claude-plugin/marketplace.json`](../.claude-plugin/marketplace.json)
+[[host-packaging]]:55: - [`.agents/plugins/marketplace.json`](../.agents/plugins/marketplace.json)
+[[host-packaging]]:103: - [`README.md`](../README.md)
+[[host-packaging]]:196: - [scripts/plugin_preamble.py](../scripts/plugin_preamble.py)
+[[north-star-overhaul-roadmap]]:33: > [phase0 diagnosis back-test](../charness-artifacts/audit/2026-06-20-north-star-phase0-diagnosis-backtest.md).
+[[operator-acceptance]]:37: - [docs/handoff.md](./handoff.md)
+[[operator-acceptance]]:38: - [docs/deferred-decisions.md](./deferred-decisions.md)
+[[operator-acceptance]]:39: - [docs/host-packaging.md](./host-packaging.md)
+[[operator-acceptance]]:40: - [docs/control-plane.md](./control-plane.md)
+[[operator-acceptance]]:55: - [docs/public-skill-validation.md](./public-skill-validation.md)
+[[operator-acceptance]]:56: - [docs/control-plane.md](./control-plane.md)
+[[operator-acceptance]]:57: - [docs/handoff.md](./handoff.md)
+[[operator-acceptance]]:58: - [.agents/cautilus-adapter.yaml](../.agents/cautilus-adapter.yaml)
+[[operator-acceptance]]:86: - [README.md](../README.md)
+[[operator-acceptance]]:87: - [docs/host-packaging.md](./host-packaging.md)
+[[operator-acceptance]]:88: - [packaging/charness.json](../packaging/charness.json)
+[[operator-acceptance]]:149: - [skills/public/create-skill/SKILL.md](../skills/public/create-skill/SKILL.md)
+[[operator-acceptance]]:150: - [skills/public/spec/SKILL.md](../skills/public/spec/SKILL.md)
+[[operator-acceptance]]:151: - [docs/public-skill-dogfood.md](./public-skill-dogfood.md)
+[[operator-acceptance]]:152: - [scripts/check_skill_contracts.py](../scripts/check_skill_contracts.py)
+[[operator-acceptance]]:153: - [scripts/run_evals.py](../scripts/run_evals.py)
+[[operator-acceptance]]:154: - [scripts/validate_public_skill_dogfood.py](../scripts/validate_public_skill_dogfood.py)
+[[operator-acceptance]]:169: - [skills/public/impl/SKILL.md](../skills/public/impl/SKILL.md)
+[[operator-acceptance]]:170: - [skills/public/quality/SKILL.md](../skills/public/quality/SKILL.md)
+[[operator-acceptance]]:171: - [docs/public-skill-validation.md](./public-skill-validation.md)
+[[operator-acceptance]]:172: - [charness-artifacts/quality/latest.md](../charness-artifacts/quality/latest.md)
+[[prescribed-skill-closeout-contract]]:6: [the achieve goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md)
+[[prescribed-skill-closeout-contract]]:11: [skills/shared/references/prescribed-path-self-test.md](../skills/shared/references/prescribed-path-self-test.md);
+[[prescribed-skill-closeout-contract]]:35: [goal artifact library](../skills/public/achieve/scripts/goal_artifact_lib.py)
+[[prescribed-skill-closeout-contract]]:141: [`charness-artifacts/probe/2026-08-01-evidence-residual-floor.json`](../charness-artifacts/probe/2026-08-01-evidence-residual-floor.json).
+[[prescribed-skill-closeout-contract]]:181: [check_prescribed_skill_executed_lib.py](../scripts/check_prescribed_skill_executed_lib.py):
+[[prescribed-skill-closeout-contract]]:207: [`goal_artifact_disposition.py`](../skills/public/achieve/scripts/goal_artifact_disposition.py)
+[[prescribed-skill-closeout-contract]]:254: [`goal_artifact_coordination_floors.py`](../skills/public/achieve/scripts/goal_artifact_coordination_floors.py)
+[[prescribed-skill-closeout-contract]]:256: [`goal_artifact_phase_routing.py`](../skills/public/achieve/scripts/goal_artifact_phase_routing.py),
+[[prescribed-skill-closeout-contract]]:303: [`goal_artifact_closeout_delegation.py`](../skills/public/achieve/scripts/goal_artifact_closeout_delegation.py),
+[[prescribed-skill-closeout-contract]]:339: [`_classification_requirements`](../skills/public/issue/scripts/issue_verify_closeout_body.py)
+[[prescribed-skill-closeout-contract]]:413: [The goal artifact library](../skills/public/achieve/scripts/goal_artifact_lib.py)
+[[prescribed-skill-closeout-contract]]:435: [`tests/quality_gates/test_goal_artifact_lib.py`](../tests/quality_gates/test_goal_artifact_lib.py)
+[[prescribed-skill-closeout-contract]]:448: [goal artifact Boundaries](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md#boundaries)
+[[prescribed-skill-closeout-contract]]:456: [scripts/check-markdown.sh](../scripts/check-markdown.sh)
+[[prescribed-skill-closeout-contract]]:485: - [Goal artifact](../charness-artifacts/goals/2026-05-28-230-229-self-substitution-pattern.md)
+[[prescribed-skill-closeout-contract]]:486: - [Source retro](../charness-artifacts/retro/2026-05-28-issue-226-achieve-run.md)
+[[prescribed-skill-closeout-contract]]:487: - [achieve lifecycle](../skills/public/achieve/references/lifecycle.md)
+[[prescribed-skill-closeout-contract]]:488: - [achieve goal artifact reference](../skills/public/achieve/references/goal-artifact.md)
+[[prescribed-skill-closeout-contract]]:489: - [issue closeout discipline](../skills/shared/references/closeout-discipline.md)
+[[prescribed-skill-closeout-contract]]:490: - [issue verify-closeout helper](../skills/public/issue/scripts/issue_verify_closeout.py)
+[[prescribed-skill-closeout-contract]]:491: - [release SKILL.md](../skills/public/release/SKILL.md)
+[[prescribed-skill-closeout-contract]]:492: - [critique SKILL.md](../skills/public/critique/SKILL.md)
+[[prescribed-skill-closeout-contract]]:493: - [prescribed-path self-test (read-side counterpart)](../skills/shared/references/prescribed-path-self-test.md)
+[[prescribed-skill-closeout-contract]]:494: - [implementation discipline](./conventions/implementation-discipline.md)
+[[prescribed-skill-closeout-contract]]:495: - [operating contract](./conventions/operating-contract.md)
+[[product-success-metrics]]:92: [rca-conversion-ledger spec](../charness-artifacts/spec/rca-conversion-ledger.md).
+[[product-success-metrics]]:182: [skills/shared/references/rca-ledger-append.md](../skills/shared/references/rca-ledger-append.md),
+[[product-success-metrics]]:399: [usage episode validator](../scripts/validate_usage_episodes.py)
+[[product-success-metrics]]:406: [report_usage_product_review.py](../scripts/report_usage_product_review.py)
+[[prompt-mutation-policy]]:7: [2026-07-09-prompt-mutation-pilot.md](../charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
+[[prompt-mutation-policy]]:31: [score_prompt_mutation_survival.py](../scripts/score_prompt_mutation_survival.py)
+[[proof-semantics-adapter]]:7: [`scripts/proof_semantics_adapter_lib.py`](../scripts/proof_semantics_adapter_lib.py).
+[[public-skill-validation]]:12: [docs/public-skill-dogfood.json](./public-skill-dogfood.json).
+[[public-skill-validation]]:58: - [`AGENTS.md`](../AGENTS.md)
+[[public-skill-validation]]:89: [whole-repo routing fixture](../evals/cautilus/whole-repo-routing.fixture.json)
+[[public-skill-validation]]:96: [Cautilus proof artifact](../charness-artifacts/cautilus/latest.md);
+[[public-skill-validation]]:108: [evals/cautilus/scenarios.json](../evals/cautilus/scenarios.json)
+[[public-skill-validation]]:153: ([scripts/claim_fidelity_lib.py](../scripts/claim_fidelity_lib.py),
+[[public-skill-validation]]:154: [tests/quality_gates/test_claim_fidelity_specs.py](../tests/quality_gates/test_claim_fidelity_specs.py))
+[[public-skill-validation]]:168: [`charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md`](../charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md)
+[[readme-proof]]:31: [`charness-artifacts/cautilus/latest.md`](../charness-artifacts/cautilus/latest.md);
+[[readme-proof]]:40: [`cautilus-on-demand.md`](../skills/public/quality/references/cautilus-on-demand.md)).
+[[readme-proof]]:89: [charness-artifacts/cautilus/latest.md](../charness-artifacts/cautilus/latest.md)
+[[retro-self-improvement-spec]]:71: [`phase-aware-efficiency.md`](../skills/public/retro/references/phase-aware-efficiency.md);
+[[retro-self-improvement-spec]]:73: [`audit_codex_session.py`](../skills/public/retro/scripts/audit_codex_session.py)
+[[retro-self-improvement-spec]]:162: [`skills/public/retro/scripts/probe_host_logs.py`](../skills/public/retro/scripts/probe_host_logs.py).
+[[retro-self-improvement-spec]]:164: [`skills/public/retro/scripts/refresh_recent_lessons.py`](../skills/public/retro/scripts/refresh_recent_lessons.py).
+[[support-tool-followup]]:282: - [scripts/capability_catalog.py](../scripts/capability_catalog.py)
+[[testability-dsl-initiative]]:6: [handoff](./handoff.md).
+[[testability-dsl-initiative]]:73: [`test_retro_lesson_selection_index.py`](../tests/quality_gates/test_retro_lesson_selection_index.py)
+[[testability-dsl-initiative]]:75: [test-dsl-first-slice](../charness-artifacts/critique/2026-06-03-test-dsl-first-slice-critique.md).
+[[testability-dsl-initiative]]:77: [`scripts/inventory_boundary_bypass_lib.py`](../scripts/inventory_boundary_bypass_lib.py)
+[[testability-dsl-initiative]]:84: [boundary-bypass-probe](../charness-artifacts/critique/2026-06-03-boundary-bypass-probe-critique.md).
+[[testability-dsl-initiative]]:88: [`scripts/boundary-bypass-exemptions.txt`](../scripts/boundary-bypass-exemptions.txt),
+[[testability-dsl-initiative]]:120: [`test_check_coverage_inventory.py`](../tests/quality_gates/test_check_coverage_inventory.py)
+[[testability-dsl-initiative]]:124: [`test_quality_standing_gate_verbosity.py`](../tests/quality_gates/test_quality_standing_gate_verbosity.py)
+[[testability-dsl-initiative]]:126: [`test_quality_lint_ignores.py`](../tests/quality_gates/test_quality_lint_ignores.py)
+[[testability-dsl-initiative]]:130: [`test_quality_bootstrap.py`](../tests/quality_gates/test_quality_bootstrap.py)
+[[testability-dsl-initiative]]:148: [testability-and-selection](../skills/public/quality/references/testability-and-selection.md)

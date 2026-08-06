@@ -27,15 +27,15 @@ Ambient repo findings: #514/#515 implementation, issue closeout, remote CI, rele
 
 ## Runtime Signals
 
-- runtime source: direct command output captured in this review turn and summarized here; awiki timing capture is missing because no standing awiki timing stream exists yet. <!-- reproduction-source -->
+- runtime source: durable raw stdout fixture [`awiki-0.5.0-docs-lint.stdout.txt`](./fixtures/awiki-0.5.0-docs-lint.stdout.txt), bound by [`awiki-0.5.0-docs-lint.json`](./fixtures/awiki-0.5.0-docs-lint.json); awiki timing capture is missing because no standing awiki timing stream exists yet. <!-- reproduction-source -->
 - runtime hot spots: no timing measurement was requested; the awiki command completed locally and returned its graph verdict.
 - coverage gate: no full `run-quality.sh` claim; this is a focused dependency/quality inventory.
 - evaluator depth: deterministic-gates-only; Cautilus was not run because it remains ask-before-run and is outside this goal.
 
 ## Healthy
 
-- The dependency binary is discoverable and responds with version `0.5.0`.
-- The repository command reaches awiki's final graph consumer and exposes a non-clean result instead of silently skipping.
+- The dependency binary is discoverable and responds with version `0.5.0`; the local source/tag identity is pinned in the #518 contract.
+- The direct repository command reaches awiki's graph analyzer and exposes a non-clean result instead of silently skipping; this is not yet proof of Charness's final quality consumer.
 
 ## Weak
 
@@ -69,7 +69,7 @@ Ambient repo findings: #514/#515 implementation, issue closeout, remote CI, rele
 
 - `command -v awiki` — `/home/hwidong/.cargo/bin/awiki`.
 - `awiki --version` — `0.5.0`.
-- `awiki lint -root docs -recursive` — exit 1; graph counts recorded above.
+- `awiki lint -root docs -recursive` — exit 1; graph counts and raw output are bound by the durable fixture above.
 - `python3 skills/public/quality/scripts/plan_quality_run.py --repo-root . --target-skill quality` — planner returned required quality primers and a structural review packet.
 - Read-only sibling inspection of `/home/hwidong/codes/cmanki` and `/home/hwidong/codes/craken-agents`; no sibling files were changed.
 
