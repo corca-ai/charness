@@ -12,7 +12,7 @@ Activation time: 2026-08-05T04:54:43Z
 - Current disposition: active; activation preflight matched the live open-issue inventory and recorded the activation boundary below.
 - Current slice: #491 is CLOSED through the GitHub adapter at 05726f15; #496 is CLOSED through the GitHub adapter at be4e65df; #504 is CLOSED at 5372631a with implementation 9768f95 and coverage repair c655e9aa. #511 is CLOSED at d4d61304; #507 at 90bc1f9e, #502 at 24e05492, #506 at b70d9a21eb7d5c5d5ba8c72271e6652e78f17657, #503 at b5d956998df4284659c39b55d5ef99b9b470d71e, #468 at d2ec4f583f0d8e68af76c4f765d86c4a97a1ac5b, and #508/#509 were independently read CLOSED before this run. #512, #513, #505, #510, #480, #484, #482, and #483 remain OPEN remotely; #512/#513/#505/#510 now have local carriers ready under the one-push boundary.
 - Current slice intent: preserve the #510 local/remote boundary after a representation-selection repair with explicit trace and persistence proof; continue the remaining four portability slices without claiming any of them CLOSED before the final publish.
-- Next action: continue #480 → #484 → #482 → #483; after all carriers and local gates are ready, run one final full gate and exactly one push. Read remote CI and every issue state independently afterward.
+- Next action: run the final full local gate with the quality pointer and all eight local carriers committed, then push exactly once; read remote CI and every issue state independently afterward.
 - Verification cadence: 이슈를 닫을 때마다 targeted deterministic proof → 필요한 경우 bounded fresh-eye/critique → 별도 behavioral verdict → GitHub adapter readback 순서를 지킨다. broad proof는 bundle/final 또는 risk-triggered 경계에서만 추가한다.
 - Gate cadence: source와 `plugins/` export를 먼저 동기화하고, pre-lock bundle/risk 경계에서 `run_slice_closeout.py --skip-broad-pytest`, 묶음/최종 경계에서 verification lock과 broad proof를 사용한다.
 - Sequence rule: 아래 순서는 기본 순서다. 앞 이슈가 막히면 조용히 건너뛰지 않고 이유와 재정렬을 기록한다. 재정렬해도 닫히지 않은 이슈를 닫힌 것으로 세지 않는다.
@@ -91,15 +91,15 @@ Activation time: 2026-08-05T04:54:43Z
 | 6 | #504 | retro persistence의 owning goal binding | 이 긴 goal의 closeout memory가 다른 goal에 붙는 churn을 막고, 뒤 slice의 evidence ownership을 고정한다. | goal-aware write/readback, session-mode preservation, distinct critique, GitHub close proof | CLOSED; adapter readback verified |
 | 7 | #496 | hollow refill report의 inert-default policy/semantics | 독립적인 mutation report 판단을 공통 schema나 runtime 정책으로 오염시키지 않고, 기존 local evidence를 현재 HEAD에서 정리한다. | positive/negative/axis-control matrix, plugin parity, issue-specific disposition | CLOSED; adapter readback verified |
 | 8 | #491 | semantic reference drift를 reviewer-owned decision으로 reshape | portability sweep 전에 “gate인가 reviewer question인가”를 결정해 의미론을 noisy static gate로 만들지 않는다. | three claim-family reads, copy-paste behavior check, bounded reviewer verdict | CLOSED; adapter readback verified |
-| 9 | #508 | gather classifier의 token-aware login-wall 판정 | gather route의 첫 판정을 바로잡아 정상 Markdown이 blocked로 분류되지 않게 한다. | `design intent` controls, real login fixture, classifier/route trace, fresh-eye review | local implementation/proof complete; publish pending |
-| 10 | #509 | auto-derived URL slug의 normalization/persistence | 정상적으로 얻은 representation이 dated-record writer에서 다시 실패하지 않게 persistence branch를 안정화한다. | uppercase/percent-encoded URL fixtures, digest retention, disposable execute/readback | local implementation/proof/carrier complete; publish pending |
+| 9 | #508 | gather classifier의 token-aware login-wall 판정 | gather route의 첫 판정을 바로잡아 정상 Markdown이 blocked로 분류되지 않게 한다. | `design intent` controls, real login fixture, classifier/route trace, fresh-eye review | CLOSED; adapter readback verified |
+| 10 | #509 | auto-derived URL slug의 normalization/persistence | 정상적으로 얻은 representation이 dated-record writer에서 다시 실패하지 않게 persistence branch를 안정화한다. | uppercase/percent-encoded URL fixtures, digest retention, disposable execute/readback | CLOSED; adapter readback verified |
 | 11 | #510 | content-negotiated Markdown acquisition route | classifier와 persistence branch가 안전해진 뒤 public URL에 Markdown representation을 먼저 요청한다. | Accept negotiation, route/representation trace, joined end-to-end record readback, fresh-eye review | local implementation/proof/carrier complete; publish pending |
-| 12 | #480 | `<authoring-repo>/` resolver를 docs/artifacts까지 확장 | portability reader가 실제 authoring tree를 읽게 해 다음 shared/package sweep의 ruler를 만든다. | authoring docs/artifacts positive/negative cases, source/plugin matrix | planned |
-| 13 | #484 | `skills/shared/**` portable package boundary | #480의 reader position을 shared shipped tree에도 적용해 unmarked-tree 판정의 구조적 빈틈을 닫는다. | shared package root cases, source/export parity, verdict-surface fresh-eye round | planned |
-| 14 | #482 | COMMAND carrier의 consumer-layout resolution | reader/tree 모델이 고정된 뒤 command text만의 path predicate를 별도로 고쳐 false unreachable을 줄인다. | consumer-layout positive/negative command cases, distinct command-carrier proof | planned |
-| 15 | #483 | non-Markdown asset carrier corpus | markdown-only ruler가 고정된 뒤 JSON/YAML/template를 typed carrier로 확장한다. 다른 portability issue와 proof를 섞지 않는다. | Markdown/JSON/YAML/executable-template fixtures, bounded corpus claim, second review if repaired | planned |
+| 12 | #480 | `<authoring-repo>/` resolver를 docs/artifacts까지 확장 | portability reader가 실제 authoring tree를 읽게 해 다음 shared/package sweep의 ruler를 만든다. | authoring docs/artifacts positive/negative cases, source/plugin matrix | local implementation/carrier complete; publish pending |
+| 13 | #484 | `skills/shared/**` portable package boundary | #480의 reader position을 shared shipped tree에도 적용해 unmarked-tree 판정의 구조적 빈틈을 닫는다. | shared package root cases, source/export parity, verdict-surface fresh-eye round | local implementation/carrier complete; publish pending |
+| 14 | #482 | COMMAND carrier의 consumer-layout resolution | reader/tree 모델이 고정된 뒤 command text만의 path predicate를 별도로 고쳐 false unreachable을 줄인다. | consumer-layout positive/negative command cases, distinct command-carrier proof | local implementation/carrier complete; publish pending |
+| 15 | #483 | non-Markdown asset carrier corpus | markdown-only ruler가 고정된 뒤 JSON/YAML/template를 typed carrier로 확장한다. 다른 portability issue와 proof를 섞지 않는다. | Markdown/JSON/YAML/executable-template fixtures, bounded corpus claim, second review if repaired | local implementation/carrier complete; publish pending |
 | 16 | #503 | recurring slow gate/over-slice telemetry의 owner/decision | 구조적 proof surface가 안정된 뒤 비용을 재측정해 “느리다”를 owner 없는 반복 보고로 남기지 않는다. | current cohort/percentiles, owner/budget or intentional-retention decision, distinct readback | CLOSED; adapter readback verified |
-| 17 | #505 | final mutation/quality runtime experiment | #502 이후 최종 runner를 기준으로 측정해야 하므로 마지막에 proof floor을 보존하는 실험을 한다. | matched full-command timing, phase/node map, unchanged failure visibility, final gate proof | planned |
+| 17 | #505 | final mutation/quality runtime experiment | #502 이후 최종 runner를 기준으로 측정해야 하므로 마지막에 proof floor을 보존하는 실험을 한다. | matched full-command timing, phase/node map, unchanged failure visibility, final gate proof | local implementation/carrier complete; publish pending |
 
 Implementation grouping is allowed for #480/#484 and for #508–#510, but closure order is still one issue at a time: the shared implementation is not a shared closeout, and a later issue does not inherit an earlier issue's behavioral verdict.
 
@@ -430,6 +430,62 @@ Generative benefit field: each closed row names one later issue whose design, ev
 - GitHub readback: not run; #510 remains OPEN by design until the single final push. No live provider, installed-consumer, remote CI, release, tag, version-bump, or Cautilus claim is made.
 - Generative benefit: #510 confirms #508/#509's gather classifier and persistence seams compose cleanly with a route-level representation selection, while the fresh-eye blocker prevents stage-plan drift before the portability sweep. Next: continue #480 → #484 → #482 → #483 with the same source/export/consumer distinction.
 
+### Slice 17: #480 authoring-path resolver — local carrier ready
+
+- Objective: Extend the authoring-relative resolver from scripts to docs and artifacts without conflating it with consumer or plugin roots.
+- Why this approach: The source/plugin portability sequence needed a full authoring-tree reader before the shared-package and command-carrier slices.
+- Commits: 7e63ddba; carrier charness-artifacts/issue/2026-08-06-issue-480-closeout-commit-message.md.
+- What changed: Generalized inventory resolution, repaired two stale references, added docs/artifact positive and missing-target fixtures, synchronized mirrors, and recorded quality/critique evidence.
+- Alternatives rejected: No consumer runtime or remote proof was inferred from the local inventory; no manual close or push occurred before the final boundary.
+- Targeted verification: 132 focused tests and strict inventory passed with 514 references, 257 authoring and 257 shipped, zero findings/unreadable files; delegated review and closeout draft validation passed.
+- Test duplication pressure: Added only the docs/artifacts resolution cases needed to pin the new root; existing scripts-root and mirror checks remain the owners.
+- Critique: charness-artifacts/critique/2026-08-06-issue-480-authoring-path-resolver-resolution-critique.md; one bounded fresh-eye review returned clean boundary verification.
+- Off-goal findings: Consumer installation, remote CI, and GitHub CLOSED state remain unclaimed until publish/readback.
+- Lessons carried forward: Make authoring, shipped, and consumer reader positions explicit before widening the next portability detector; #484 uses this distinction.
+- Metrics: Local carrier ready; GitHub readback remains OPEN pending the one final push.
+
+### Slice 18: #484 shared portable package — local carrier ready
+
+- Objective: Give skills/shared a real portable package boundary so the unmarked-tree rule has the same reader position as shipped skill packages.
+- Why this approach: #480 established the authoring resolver; this slice closes the structurally adjacent shared-package gap before command-carrier detection.
+- Commits: 9d244ab0; carrier charness-artifacts/issue/2026-08-06-issue-484-closeout-commit-message.md.
+- What changed: Added the shallow shared package root and explicit package-relative resolution, repaired shared helper commands to use plugin-relative paths, synchronized mirrors, and added regression tests.
+- Alternatives rejected: No broad runtime or consumer installation claim; no manual issue close or push before the final boundary.
+- Targeted verification: 77 focused tests, doc/plugin/plugin-dir gates, strict inventory with 518 references, 259 authoring and 259 shipped, and source/plugin parity passed.
+- Test duplication pressure: Kept shared-anchor semantics in the existing documented-command owner and added only package-root/unmarked-tree cases.
+- Critique: charness-artifacts/critique/2026-08-06-issue-484-shared-portable-package-resolution-critique.md; bounded review returned clean boundary verification.
+- Off-goal findings: Typed non-Markdown carriers remain #483; consumer execution and remote CI are non-claims.
+- Lessons carried forward: A package boundary must be explicit before a command detector can distinguish source layout from consumer layout; #482 reuses that contract.
+- Metrics: Local carrier ready; GitHub readback remains OPEN pending the one final push.
+
+### Slice 19: #482 Markdown command carrier — local carrier ready
+
+- Objective: Reject authoring-only kind-bearing command paths in shipped Markdown and repair all 14 live command sites.
+- Why this approach: With authoring and shared package reader positions fixed, command text can be judged from the consumer layout rather than the source checkout.
+- Commits: e7bd5079; carrier charness-artifacts/issue/2026-08-06-issue-482-closeout-commit-message.md.
+- What changed: Added the consumer-relative command detector, repaired own-skill commands to use the skill anchor and cross-skill commands to use plugin-relative paths, preserved shared anchors, synchronized mirrors, and added source/export/partial-tree fixtures.
+- Alternatives rejected: No Markdown detector was widened into typed assets; no consumer runtime or remote proof was inferred.
+- Targeted verification: 123 focused portability tests, doc/plugin/plugin-dir gates, and strict inventory with 544 references, 272 authoring and 272 shipped, passed.
+- Test duplication pressure: The second repaired-surface review caught the missing-plugin-directory fail-open; two-round cap records its final repair as accepted-unreviewed.
+- Critique: charness-artifacts/critique/2026-08-06-issue-482-command-carrier-resolution-critique.md; both bounded review windows verified clean before parent writes.
+- Off-goal findings: JSON/YAML/template carriers were kept separate and resolved next in #483; installed-consumer execution and remote CI remain non-claims.
+- Lessons carried forward: A command carrier must fail closed even in a partial export tree; #483 carries that invariant into typed assets.
+- Metrics: Local carrier ready; GitHub readback remains OPEN pending the one final push.
+
+### Slice 20: #483 typed non-Markdown command carrier — local carrier ready
+
+- Objective: Detect unreachable command carriers in shipped JSON/YAML/YML assets and repair every current source instance.
+- Why this approach: The Markdown-only denominator was the remaining portability blind spot; typed traversal is the smallest next center while preserving separate shell/runtime boundaries.
+- Commits: a7bdc72c; carrier charness-artifacts/issue/2026-08-06-issue-483-closeout-commit-message.md.
+- What changed: Added the typed structured-asset gate and generated mirror, repaired the vulture and achieve assets, queued the gate in run-quality, classified it in the timing table, and added seven tests.
+- Alternatives rejected: No arbitrary string or shell-language generalization, consumer roundtrip, Cautilus evaluation, or remote claim was added.
+- Targeted verification: Seven focused tests passed; the gate validated 62 tracked assets with no findings; timing completeness passed for 89 validators; source/plugin copies and repaired assets are synchronized; closeout draft is draft_verified.
+- Test duplication pressure: Fresh-eye round 1 found timing/source/layout fail-opens; round 2 found interpreter-option bypass. The final round-2 repair is accepted-unreviewed under the two-round cap.
+- Critique: charness-artifacts/critique/2026-08-06-issue-483-non-markdown-command-carrier-resolution-critique.md; round 1 boundary was clean and round 2 had only declared parent-attributed edits.
+- Off-goal findings: Consumer execution, provider behavior, remote CI, and GitHub CLOSED state remain explicit non-claims until publish/readback.
+- Lessons carried forward: Keep a typed corpus detector narrow and fail-closed, and classify every new broad validator before it enters the runner; the next session should apply this to runtime-cost decisions, not widen the matcher casually.
+- Metrics: Local carrier ready; GitHub readback remains OPEN pending the one final push.
+
 ## Activation Record
 
 Activation record status: recorded — 2026-08-05T04:54:43Z.
@@ -493,7 +549,7 @@ No new off-goal finding during shaping. If a new issue is discovered while execu
 
 ## Final Verification
 
-Activation verification: the 17-issue live snapshot had `comments_read: true` for every read and selected the `gh` backend. Execution has since completed nine CLOSED slices: #468, #503, #506, #502, #507, #511, #504, #496, and #491 each have a checked-in carrier, delegated critique, distinct behavior verdict, passing closeout gates, and independent GitHub adapter `CLOSED` readback. #508 and #509 have locally implemented, critiqued, and carrier-validated slices, but neither is yet CLOSED; both remain local-only-by-contract under the explicit one-final-push boundary.
+Continuation verification (2026-08-06, pre-push): the live open set is #480, #482, #483, #484, #505, #510, #512, and #513. Each has a checked-in carrier, delegated critique, distinct local behavior verdict, and draft_verified closeout floor; #480/#484/#482/#483 are recorded in Slices 17–20. #508 and #509 were independently read CLOSED before this continuation. The eight listed issues remain OPEN only because the one final push and separate GitHub readback are still pending.
 
 Remote boundary evidence: GitHub Quality Core runs `30979850501`, `30982493793`, `30987189942`, `30996843171`, `30998209731`, `30999412722`, `31003204282`, and `31008443698` independently verified both deterministic and changed-line mutation jobs for #506, #502, #507, #511's implementation and final durable-body heads, #504's closeout carrier, #496's closeout carrier, and #491's closeout carrier. Non-claims remain for installed-host behavior, provider roundtrip, release, or live-agent behavior; earlier slices without a recorded remote run remain non-claims.
 Retro: not run — the active goal still has 8 unresolved issues, so final goal retro belongs at complete/blocked disposition closeout.
@@ -501,8 +557,8 @@ Disposition review: `charness-artifacts/critique/2026-08-05-issue-508-closeout-c
 
 ## User Verification Instructions
 
-1. Continue from `## Active Operating Frame` and `## Slice Log`; #468, #503, #506, #502, #507, #511, #504, #496, and #491 are verified closed, while #508 and #509 are locally implemented/carrier-validated but OPEN and the goal remains active for the 8 remaining issues.
-2. The distinct #508 closeout-claims review is authoritative only when its canonical artifact names the current packet and identity; it preserves #508 as OPEN/local-only-by-contract. #509 has its own causal/resolution critique and carrier; do not merge the two issues' external closeout evidence.
+1. Continue from `## Active Operating Frame` and `## Slice Log`; #508/#509 are independently CLOSED, while #480, #482, #483, #484, #505, #510, #512, and #513 are local/carrier-ready and await the one final push plus independent adapter readback.
+2. #508/#509 readbacks are historical inputs to this continuation; the eight remaining issues keep independent carriers, critique artifacts, behavior verdicts, and GitHub readback obligations.
 3. Keep each later carrier, critique, distinct behavior verdict, push gate, and GitHub `CLOSED` readback issue-specific; do not infer remote CI or installed behavior from the local green gate.
 4. During execution, verify each issue from its own carrier, distinct behavioral evidence, and `verify-closeout --expect-state CLOSED`; do not infer the remaining issue states from this goal artifact. Push is intentionally deferred until the final publish boundary unless a closeout floor makes an earlier remote carrier unavoidable.
 

@@ -1,1 +1,1 @@
-2026-08-06-issue-482-command-carrier.md
+2026-08-06-issue-483-non-markdown-command-carrier.md
