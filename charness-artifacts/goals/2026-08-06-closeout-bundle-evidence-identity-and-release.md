@@ -1,6 +1,6 @@
 # Achieve Goal: Build a closeout bundle, bind evidence identity, and publish the final release
 
-Status: draft
+Status: active
 Created: 2026-08-06
 Activation: `/goal @charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md`
 
@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md` after confirming the draft is
-  still intended.
+- Current slice: Slice 1 — reconcile the existing closeout owners into an
+  executable opt-in bundle boundary.
+- Current slice intent: verify the shaped contract against the current tree,
+  then implement only the missing orchestration/identity seam; critique and
+  broad proof do not re-fire within this unchanged intent
+  (meaningful-slice-cadence).
+- Next action: inspect the existing preflight, ledger, release, and pointer
+  owners; record the smallest missing contract before coding.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -31,7 +31,7 @@ runs the activation command.
 
 ## Goal
 
-Make the Charness closeout boundary structurally reliable: provide one opt-in closeout bundle for surfaces 1-4, freeze evidence against an immutable identity, run authoring preflight before fresh-eye review, wire retro improvements into handoff/contract state, and finish with a separately gated push and release publication/readback. The draft is inert until the operator activates it; no external side effect is executed while shaping.
+Make the Charness closeout boundary structurally reliable: provide one opt-in closeout bundle for surfaces 1-4, freeze evidence against an immutable identity, run authoring preflight before fresh-eye review, wire retro improvements into handoff/contract state, and finish with a separately gated push and release publication/readback. The goal is active; no external side effect is executed before the final release boundary is independently verified.
 
 ## Non-Goals
 
@@ -62,7 +62,7 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 ## User Acceptance
 
 - A single opt-in closeout bundle command can dry-run and then execute the
-  surface inventory, pointer refresh, evidence identity freeze, pre-review
+  surface inventory, pointer-freshness validation, evidence identity freeze, pre-review
   authoring preflight, reviewer packet generation, and verification lock.
 - Tests demonstrate refusal for stale current pointers, mutable or missing
   evidence identity, pre-review authoring failures, and retro/handoff drift.
@@ -103,9 +103,9 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Shape the closeout bundle contract | Existing closeout waste spans four surfaces and must have one opt-in owner without becoming universal ceremony. | Implementation contract, owner map, dry-run shape, and failure matrix. | planned |
-| 2 | Implement bundle orchestration | Pointer refresh, authoring preflight, identity freeze, and reviewer packet generation currently require manual sequencing. | Helper/CLI behavior, focused tests, generated artifacts, and sync proof. | planned |
-| 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | planned |
+| 1 | Shape the closeout bundle contract | Existing closeout waste spans four surfaces and must have one opt-in owner without becoming universal ceremony. | Implementation contract, owner map, dry-run shape, and failure matrix. | completed |
+| 2 | Implement bundle orchestration | Pointer-freshness validation, authoring preflight, identity freeze, and reviewer packet generation currently require manual sequencing. | Helper/CLI behavior, focused tests, generated artifacts, and sync proof. | completed |
+| 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | in_progress |
 | 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | planned |
 | 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | planned |
 
@@ -170,6 +170,20 @@ applies.
   outputs; no external side effect occurs until all local and release gates pass.
 
 ## Slice Log
+
+### Slice 1: Closeout bundle orchestration and evidence identity
+
+- Objective: Deliver the first executable opt-in bundle slice that composes existing preflight, pointer, authoring, packet, identity, and verification-lock owners without silently executing behavior channels or irreversible release work.
+- Why this approach: The prior final-bundle planner was dry-run only; the goal contract required one bounded execution owner with explicit safety and evidence identity seams.
+- Commits: Pending slice closeout commit; source and plugin mirrors are synchronized before commit.
+- What changed: Added scripts/closeout_bundle.py and closeout_bundle_lib.py with plugin mirrors, the execution contract spec, focused tests, strict repo-owned direct-script validation, post-sync scope refresh, packet identity enforcement, and the intentional CLI boundary exemption. Refreshed the issue-510 interrupt carry-forward and the duplicate-ratchet quality record.
+- Alternatives rejected: Rejected universal enforcement, shell execution of planned strings, interpreter code modes, lexical-only repository containment, stale pre-sync path reuse, and receipt creation from dry-run or failed execution.
+- Targeted verification: Focused: pytest -q tests/quality_gates/test_closeout_bundle.py (13 passed); pytest -q tests/quality_gates/test_final_bundle_preflight.py tests/test_reviewed_input_identity_failures.py tests/quality_gates/test_closeout_bundle.py (32 passed before the final additions); ruff and Python length checks passed; CLI help passed with status/non-claim workflow; boundary-bypass ratchet passed; duplicate ratchet passed after two intentional portability/evidence metadata entries; plugin/source sync and copy invariants passed. A real --execute reached three surface syncs and pointer freshness, then refused before packet generation on pre-existing hand-authored critique path-authoring violations; no receipt or behavior command was produced. The full review gate ran and reported 82 passes, with ambient baseline failures in recorded probe reconciliation, docs/handoff reference inventory, and pre-existing corpus measurements; changed-surface boundary and duplicate failures were repaired and rerun green.
+- Test duplication pressure: Round 1 fresh-eye review was quarantined after parent-attributed boundary drift from a fixture repair. Round 2 had a clean boundary and found symlink escape and missing post-sync behavior coverage; both were repaired. A standalone three-angle critique plus separate counterweight then found packet-binding mismatch, lazy command validation, pointer wording drift, help/status clarity, and the inert --json flag; the first two were repaired before the critique continued and the final three were repaired after counterweight triage. Repairs after the last clean reviewer windows are accepted-unreviewed under the two-round cap, not presented as a fresh approval.
+- Critique: Delegated fresh-eye reviews used unnamed gpt-5.6-terra medium reviewers. Round 1 findings were independently carried forward but its approval was quarantined. Round 2 cleanly verified identity ordering, post-sync implementation, and source/plugin parity, rejected the symlink and coverage gaps, and those repairs are recorded as accepted-unreviewed. The standalone critique's Jackson/Weinberg, Gawande/Raskin, Minto/first-reader, and counterweight passes were cleanly fingerprinted; counterweight classified packet consumption as a later claims boundary, output truncation and CLI-reference placement as deferred, and required the source-of-truth/help repairs that landed.
+- Off-goal findings: No pointer write, behavior-channel execution, provider or installed-consumer claim, remote CI claim, release publication, tag, or push occurred in this slice. Fresh-eye verdict consumption for the generated packet remains a later delegated claims-review boundary. Quality-gate failures tied to the pre-existing handoff reference drift and stale repository measurement probes remain non-claims.
+- Lessons carried forward: Keep execution scopes rebuilt after every mutating sync; lexical path containment is not ownership when symlinks are possible; a clean reviewer boundary is evidence, while parent-attributed drift is not.
+- Metrics: 13 focused tests; 32 broader focused tests before final additions; 82 quality-review phases passed; boundary candidates remained 45 with no increase; duplicate fixable-eligible families returned to 0.
 
 ## Context Sources
 

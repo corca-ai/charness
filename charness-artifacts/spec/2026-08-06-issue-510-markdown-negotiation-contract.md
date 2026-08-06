@@ -164,3 +164,13 @@ change Markdown negotiation, claim installed-consumer behavior, or make a
 remote write. The existing live-provider and remote-CI non-claims remain in
 force while immutable ledger reconciliation proceeds against the captured
 post-push manifest.
+
+## Interrupt Carry-Forward Refresh (Closeout Bundle, 2026-08-06)
+
+The forced `gather-510-markdown-representation-selection` interrupt remains
+resolved. The active closeout-bundle work is an unrelated local orchestration
+and evidence-identity seam: it does not alter public acquisition, retry a
+provider, claim installed-consumer behavior, or perform a live URL read. The
+paired local transport/persistence evidence and the existing live-provider,
+installed-consumer, and remote-CI non-claims remain authoritative while the
+closeout bundle is implemented.

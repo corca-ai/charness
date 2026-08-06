@@ -21,7 +21,7 @@ from scripts.final_bundle_preflight_lib import (
 from .support import ROOT, run_script
 
 MANIFEST = "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
-CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-spec-critique.md"
+CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md"
 
 
 def test_full_plan_is_ready_and_has_provenance_and_closeout_command() -> None:

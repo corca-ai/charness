@@ -2,6 +2,20 @@
   "entries": [
     {
       "class": "intentional",
+      "id": "08fe2144b94bbc8f",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The closeout bundle receipt timestamp uses the same compact UTC serialization as critique and retro packet producers. This is evidence metadata owned by the bundle contract; sharing a private time helper across independently portable producers would add coupling without changing verdict behavior."
+    },
+    {
+      "class": "intentional",
+      "id": "e2be6ebfbea2ac95",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The closeout bundle CLI keeps the repo-owned runtime bootstrap preamble local, matching other directly executable proof CLIs. The entrypoint must work in both source-checkout and installed-plugin layouts; centralizing this short bootstrap would add indirection without removing the per-entrypoint portability contract."
+    },
+    {
+      "class": "intentional",
       "id": "059c8578bee19e5a",
       "reviewed_at": "2026-08-06",
       "surface": "code",
