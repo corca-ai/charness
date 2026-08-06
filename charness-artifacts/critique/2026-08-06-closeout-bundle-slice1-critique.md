@@ -61,8 +61,8 @@ reviewer returned findings, and each shared-worktree boundary verified clean.
 
 - Packet consumed: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json
 - Packet path: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json
-- Packet SHA256: 8321725e2bbcbfcdff99cdf66970fe84253cd499cb59245a283f43777ea0591e
-- Identity SHA256: 66b229ba5207baa5f18f80f17f1727fb0134c5c47ac382047dc1353c9da871a6
+- Packet SHA256: e180301ea9ebf39ddd2db5b222ea339484d44aa229cc67fc71f9d321cc2c3cdb
+- Identity SHA256: 7e5d7cff20a1987437c3e7485d9231cae7fc138f87fd3e297556cee45d7ef345
 
 ## Boundary Ownership
 

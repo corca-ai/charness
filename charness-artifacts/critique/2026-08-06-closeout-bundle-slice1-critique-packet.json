@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-06T12:19:17Z",
+  "generated_at": "2026-08-06T12:23:24Z",
   "prepared_for": "closeout bundle slice 1 standalone critique",
   "changed_ref": null,
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -12,7 +12,7 @@
       "title": "Changed Files And Owning Surfaces",
       "content_kind": "script",
       "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
-      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/sloc-inventory/latest.json\n- charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md\n- plugins/charness/scripts/boundary-bypass-exemptions.txt\n- scripts/boundary-bypass-exemptions.txt\n- tests/quality_gates/test_final_bundle_preflight.py\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md\n- charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n- charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md\n- plugins/charness/scripts/closeout_bundle.py\n- plugins/charness/scripts/closeout_bundle_lib.py\n- scripts/closeout_bundle.py\n- scripts/closeout_bundle_lib.py\n- tests/quality_gates/test_closeout_bundle.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/boundary-bypass-exemptions.txt, scripts/closeout_bundle.py, scripts/closeout_bundle_lib.py\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/closeout_bundle.py, plugins/charness/scripts/closeout_bundle_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md, charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md, charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- quality-inventory-artifacts: Checked-in quality inventory artifacts refreshed by local quality phases.\n  source matches: charness-artifacts/quality/sloc-inventory/latest.json\n  sync: python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.json, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice1-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/closeout_bundle.py, plugins/charness/scripts/closeout_bundle_lib.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_final_bundle_preflight.py, scripts/closeout_bundle.py, scripts/closeout_bundle_lib.py, tests/quality_gates/test_closeout_bundle.py\n  derived matches: plugins/charness/scripts/closeout_bundle.py, plugins/charness/scripts/closeout_bundle_lib.py\n  verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/closeout_bundle.py, scripts/closeout_bundle_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 skills/public/quality/scripts/inventory_sloc.py --repo-root . --output charness-artifacts/quality/sloc-inventory/latest.json\n",
+      "content": "Changed paths for working tree:\n- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n\n",
       "ok": true,
       "errors": []
     },
@@ -55,7 +55,7 @@
     "mode": "working-tree",
     "changed_ref": null,
     "resolved_changed_ref": [],
-    "base_head": "be3797229df13e8f554446670a67825dbb82465a",
+    "base_head": "7af2ec02dd8f777dda06aafb2987ff44eaabf6b0",
     "base_head_role": "provenance-only",
     "reviewed_paths": [
       "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
@@ -70,7 +70,7 @@
     "reviewed_content": [
       {
         "path": "charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md",
-        "content_sha256": "9eda444a7a5f5933d8070127ad03696e90f1a6e2b1c0a981cb8e99f3bc321a5a"
+        "content_sha256": "cf16a8e5418bd0f7ecdc32e24c49896e7cbcdd27e47182e8e33c55eef7e7ea79"
       },
       {
         "path": "charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md",
@@ -103,34 +103,9 @@
     ],
     "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "unstaged_patch_sha256": "71ce11119b77a439bdea0244d4a7d559a5ddeef029568042dee6fb0c8fb99f06",
-    "declared_untracked": [
-      {
-        "path": "charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md",
-        "content_sha256": "f21a9f1fc9c375735b7b2dc3af3aa789683fa54182e441eb1c6dc3da0fcd18ed"
-      },
-      {
-        "path": "plugins/charness/scripts/closeout_bundle.py",
-        "content_sha256": "42ae907186287b9b15e51327c963144e8f5d4df401b4b02542f47c15c7d9f437"
-      },
-      {
-        "path": "plugins/charness/scripts/closeout_bundle_lib.py",
-        "content_sha256": "f15c79e608b412b84ab7bd5bf35b5f67b63bffbc585f1d15d2a924ec5a91d3e2"
-      },
-      {
-        "path": "scripts/closeout_bundle.py",
-        "content_sha256": "42ae907186287b9b15e51327c963144e8f5d4df401b4b02542f47c15c7d9f437"
-      },
-      {
-        "path": "scripts/closeout_bundle_lib.py",
-        "content_sha256": "f15c79e608b412b84ab7bd5bf35b5f67b63bffbc585f1d15d2a924ec5a91d3e2"
-      },
-      {
-        "path": "tests/quality_gates/test_closeout_bundle.py",
-        "content_sha256": "51e707623782adf83cef1d5cfb7953f7099f630cd8c8930d2b6def5485c1758b"
-      }
-    ],
+    "unstaged_patch_sha256": "7e5c66c0cc990100a13aa1c64087a2422ba3cad4bbbbfed2e7d48b01cc6fd2b3",
+    "declared_untracked": [],
     "auto_excluded_paths": [],
-    "identity_sha256": "66b229ba5207baa5f18f80f17f1727fb0134c5c47ac382047dc1353c9da871a6"
+    "identity_sha256": "7e5d7cff20a1987437c3e7485d9231cae7fc138f87fd3e297556cee45d7ef345"
   }
 }
