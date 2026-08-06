@@ -975,3 +975,21 @@ reopen trigger fires.
   and release closeout artifacts.
 - Reopen trigger: the next release-helper change, or a measured quality-gate
   runtime regression that supplies a concrete optimization candidate.
+
+### D52. Aggregate closeout-bundle authoring diagnostics
+
+- Question: Should the opt-in closeout bundle aggregate all hand-authored
+  authoring-preflight violations during dry-run before any sync or execution?
+- Current choice: Defer as a scoped diagnostic capability; the current bundle
+  remains fail-closed and reports the first owner-gate refusal without changing
+  the authoring-preflight contract.
+- Why now: The first real execute reached pointer freshness and then refused on
+  pre-existing hand-authored critique path violations. An aggregate dry-run
+  report could reduce rework, but it is not required to preserve the current
+  safety boundary and would change diagnostic ownership.
+- Impact surfaces: [closeout_bundle_lib.py](../scripts/closeout_bundle_lib.py),
+  [final_bundle_preflight_lib.py](../scripts/final_bundle_preflight_lib.py),
+  the closeout execution contract, and closeout artifacts.
+- Reopen trigger: the next closeout-bundle diagnostic change, or a second
+  recorded execute refusal where first-error reporting materially obscures the
+  repair set.

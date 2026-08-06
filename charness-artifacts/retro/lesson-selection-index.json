@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 448,
-  "candidate_count": 1847,
+  "source_artifact_count": 450,
+  "candidate_count": 1853,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -54,6 +54,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:3b52f9af8951",
+      "kind": "repeat_trap",
+      "lesson": "packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start.",
+      "normalized_key": "packet identity churn the goal ledger was corrected after the first commit requiring packet",
+      "recurrence_class": "release-proof-identity-churn",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.24,
+      "selection_weight": 1.2024,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "freeze the reviewed goal/spec/implementation set before ledger edits, and regenerate the packet immediately whenever a reviewed path changes."
         }
       ]
     },
@@ -340,32 +374,6 @@
           "lesson": "keep the semantic reviewer question, the worked #499/#491 application, and the surface-owner examples in the goal-bound packet and handoff pointers."
         }
       ]
-    },
-    {
-      "candidate_id": "next_improvement:b46d9d8abc6d",
-      "kind": "next_improvement",
-      "lesson": "make retro persistence accept or derive the owning goal identity so a cross-goal session retro cannot be mistaken for goal evidence.",
-      "normalized_key": "make retro persistence accept or derive the owning goal identity so a cross goal",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make retro persistence accept or derive the owning goal identity so a cross-goal session retro cannot be mistaken for goal evidence."
-        }
-      ]
     }
   ],
   "candidates": [
@@ -408,6 +416,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:3b52f9af8951",
+      "kind": "repeat_trap",
+      "lesson": "packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start.",
+      "normalized_key": "packet identity churn the goal ledger was corrected after the first commit requiring packet",
+      "recurrence_class": "release-proof-identity-churn",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.24,
+      "selection_weight": 1.2024,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "packet-identity-churn: the goal ledger was corrected after the first commit, requiring packet regeneration and a second small bookkeeping commit. The repair was correct, but the packet should have been treated as dependent on every reviewed goal edit from the start."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "freeze the reviewed goal/spec/implementation set before ledger edits, and regenerate the packet immediately whenever a reviewed path changes."
         }
       ]
     },
@@ -1190,6 +1232,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:60355c8460a0",
+      "kind": "current_focus",
+      "lesson": "This retro covers the first implementation slice of the active closeout-bundle goal: the opt-in local orchestrator, its source/plugin mirror, packet identity binding, focused refusal tests, and the two commits that recorded the slice.",
+      "normalized_key": "this retro covers the first implementation slice of the active closeout bundle goal the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro covers the first implementation slice of the active closeout-bundle goal: the opt-in local orchestrator, its source/plugin mirror, packet identity binding, focused refusal tests, and the two commits that recorded the slice."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:60cd8e31cd25",
       "kind": "current_focus",
       "lesson": "This retro covers the full closeout of the active umbrella sequence: the local quality repairs after #508/#509, the final portability carriers, the one final publish, and the independent remote readbacks.",
@@ -1346,6 +1414,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:53dae0dedcc9",
+      "kind": "next_improvement",
+      "lesson": "carry the distinction between `ready`, `completed`, and a refused execute into the final claims review; a bundle receipt is never implied by a dry-run or a partial execute.",
+      "normalized_key": "carry the distinction between ready completed and a refused execute into the final claims",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "carry the distinction between `ready`, `completed`, and a refused execute into the final claims review; a bundle receipt is never implied by a dry-run or a partial execute."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:246aa7619770",
       "kind": "next_improvement",
       "lesson": "carry the exact one-push boundary, carrier mapping, current-head CI query, and issue closeout verifier contract in the handoff and next goal.",
@@ -1368,6 +1462,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "carry the exact one-push boundary, carrier mapping, current-head CI query, and issue closeout verifier contract in the handoff and next goal."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:31f4eef90f1c",
+      "kind": "next_improvement",
+      "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command.",
+      "normalized_key": "consider a dry run authoring diagnostic that aggregates all offending hand authored paths without",
+      "recurrence_class": "closeout-diagnostic-visibility",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "consider a dry-run authoring diagnostic that aggregates all offending hand-authored paths without executing any sync or behavior command."
         }
       ]
     },
@@ -1606,6 +1726,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:2598a1272f41",
+      "kind": "repeat_trap",
+      "lesson": "historical-authoring-scope-refusal: the real execute reached sync and pointer freshness, then refused on existing hand-authored critique path references. The refusal is useful safety evidence; the avoidable cost was discovering the full historical scope only after execution began rather than presenting an aggregated authoring diagnostic in the dry-run plan.",
+      "normalized_key": "historical authoring scope refusal the real execute reached sync and pointer freshness then refused",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "historical-authoring-scope-refusal: the real execute reached sync and pointer freshness, then refused on existing hand-authored critique path references. The refusal is useful safety evidence; the avoidable cost was discovering the full historical scope only after execution began rather than presenting an aggregated authoring diagnostic in the dry-run plan."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:c65934e1d729",
       "kind": "repeat_trap",
       "lesson": "mutation-producer-selection: the #509 proof needed an explicit focused producer command because the standing suggestion path did not surface every relevant producer test. The existing helper is useful; the waste is manual sequencing and should be addressed in the next workflow slice rather than by weakening a mutation floor now.",
@@ -1732,6 +1878,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:bf550de5c287",
+      "kind": "repeat_trap",
+      "lesson": "The fresh-eye rounds, identity checks, mirror checks, and refusal tests were necessary proof at a cross-surface verdict boundary, not waste. No claim is made that the full review gate's ambient baseline failures were caused by this slice.",
+      "normalized_key": "the fresh eye rounds identity checks mirror checks and refusal tests were necessary proof",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "latest_source_date": "2026-08-06",
+      "age_days": 2,
+      "recency_weight": 0.9697,
+      "alpha": 0.12,
+      "selection_weight": 0.9697,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The fresh-eye rounds, identity checks, mirror checks, and refusal tests were necessary proof at a cross-surface verdict boundary, not waste. No claim is made that the full review gate's ambient baseline failures were caused by this slice."
         }
       ]
     },

@@ -51,6 +51,11 @@ pointer writer or publish externally.
 - Generated `charness-artifacts/**/*-packet.md` renders are packet outputs, not
   hand-authored documents; the bundle leaves their shape to the artifact owner
   while still running artifact-surface preflight over changed artifact paths.
+- Retro-to-handoff wiring is an explicit closeout check, not a mid-session
+  handoff rewrite. `validate_retro_handoff_wiring.py` requires explicit goal and
+  retro paths, normalizes markdown-link citations relative to the handoff file,
+  and checks only exact `recurrence-class: <slug>` marker coverage in
+  `## Next Session`.
 
 ## Probe Questions
 
@@ -65,6 +70,9 @@ pointer writer or publish externally.
 
 - Automatic current-pointer record selection and writing; continue using the
   existing pointer owner until a closeout record shape is fixed.
+- Natural-language retro disposition quality; the wiring validator proves path
+  and marker presence only, while the bounded disposition reviewer judges
+  whether each improvement was actually applied or filed.
 - Push, remote CI observation, release publication, and release readback; these
   are the final separately gated phase after the local bundle lock.
 - Provider, installed-consumer, cross-host, live-agent, and Cautilus proof.
@@ -95,6 +103,10 @@ pointer writer or publish externally.
   results, verification-lock result, and non-claims.
 - A fresh identity check refuses after a reviewed input changes, even if
   mutable `HEAD` is unchanged.
+- A retro-to-handoff wiring check refuses a wrong goal binding, an absent
+  goal-bound retro citation, or a missing exact recurrence marker, and passes a
+  retro that has no recurrence markers while making that zero-obligation state
+  explicit.
 
 ## Acceptance Checks
 
@@ -103,6 +115,7 @@ pointer writer or publish externally.
 - `cmp -s scripts/closeout_bundle.py plugins/charness/scripts/closeout_bundle.py` (integration: generated mirror parity)
 - `python3 scripts/check_doc_authoring_preflight.py --repo-root . --path charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md --json` (integration: authoring preflight before review packet)
 - `python3 scripts/validate_current_pointer_freshness.py --repo-root .` (integration: pointer owner remains authoritative)
+- `python3 scripts/validate_retro_handoff_wiring.py --repo-root . --goal-path <goal> --retro-path <retro> --handoff-path docs/handoff.md` (integration: deterministic retro-to-handoff binding only)
 
 ## Operator Workflow
 

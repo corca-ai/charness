@@ -9,14 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 — reconcile the existing closeout owners into an
-  executable opt-in bundle boundary.
-- Current slice intent: verify the shaped contract against the current tree,
-  then implement only the missing orchestration/identity seam; critique and
-  broad proof do not re-fire within this unchanged intent
-  (meaningful-slice-cadence).
-- Next action: inspect the existing preflight, ledger, release, and pointer
-  owners; record the smallest missing contract before coding.
+- Current slice: Slice 4 — lock local proof and the distinct claims/disposition
+  boundary before any external release effect.
+- Current slice intent: consume the repaired retro-to-handoff wiring contract,
+  run broad verification against the locked evidence, and record the delegated
+  claims review; do not refresh handoff until final closeout.
+- Next action: prepare the verification lock and final claims-review inputs;
+  keep the current handoff refusal as an explicit pre-closeout non-claim.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -105,8 +104,8 @@ Make the Charness closeout boundary structurally reliable: provide one opt-in cl
 | --- | --- | --- | --- | --- |
 | 1 | Shape the closeout bundle contract | Existing closeout waste spans four surfaces and must have one opt-in owner without becoming universal ceremony. | Implementation contract, owner map, dry-run shape, and failure matrix. | completed |
 | 2 | Implement bundle orchestration | Pointer-freshness validation, authoring preflight, identity freeze, and reviewer packet generation currently require manual sequencing. | Helper/CLI behavior, focused tests, generated artifacts, and sync proof. | completed |
-| 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | in_progress |
-| 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | planned |
+| 3 | Harden evidence identity and retro wiring | Mutable `HEAD`, late authoring checks, and retro-only memory caused avoidable rework. | Immutable/worktree identity tests, pre-review ordering, retro-to-handoff validator, and contract docs. | completed |
+| 4 | Run local verification and delegated review | The repaired bundle needs independent claim review before any irreversible boundary. | Full local gates, bounded reviewer result, clean fingerprint, and verification lock. | in_progress |
 | 5 | Push and publish the final release | External effects are safest after the complete local bundle is frozen. | Pre-push receipt, push result, remote CI distinct-channel readback, release publish receipt, and release readback. | planned |
 
 ## Operator Decision Queue
@@ -185,6 +184,35 @@ applies.
 - Lessons carried forward: Keep execution scopes rebuilt after every mutating sync; lexical path containment is not ownership when symlinks are possible; a clean reviewer boundary is evidence, while parent-attributed drift is not.
 - Metrics: 13 focused tests; 32 broader focused tests before final additions; 82 quality-review phases passed; boundary candidates remained 45 with no increase; duplicate fixable-eligible families returned to 0.
 
+### Slice 3: Goal-bound retro and disposition wiring
+
+- Objective: Persist a retro bound to this goal and make its remaining
+  improvements visible to the eventual closeout disposition review.
+- Evidence: [goal-bound retro](../retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md)
+  validates, the retro packet was consumed, and the recent-lessons/index
+  surfaces were refreshed by the persistence owner.
+- What changed: Added [the wiring validator](../../scripts/validate_retro_handoff_wiring.py)
+  and its [generated plugin mirror](../../plugins/charness/scripts/validate_retro_handoff_wiring.py),
+  with explicit goal/retro/handoff inputs, normalized
+  repository-contained link checks, exact recurrence-marker coverage, and
+  explicit non-claims. The contract and focused tests cover wrong goal identity,
+  missing citation, wrapped markers, fenced content, direct/lazy blockquotes,
+  path escape, and source/plugin parity. The validator intentionally refuses
+  the unchanged current handoff because the closeout-only citation and marker
+  update has not happened yet.
+- Targeted verification: 13 focused wiring tests passed; Ruff, plugin help,
+  source/plugin byte parity, and the boundary-bypass ratchet passed. The
+  required repaired-surface review round had a clean boundary and found the
+  wrapped-marker and lazy-blockquote cases; both were repaired with regression
+  tests. Per the two-round cap, those round-2 repairs are accepted-unreviewed,
+  not a fresh approval.
+- Retro disposition: the packet-rebinding workflow was applied by regenerating
+  the Slice 3 critique packet after the final reviewed-input edits; the
+  aggregate diagnostic proposal was filed as deferred decision D52; and the
+  memory item is carried by this goal-bound retro plus the refreshed lesson
+  index. The distinct final claims/disposition review, verification lock, and
+  closeout-only handoff refresh remain in the next slice.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -257,7 +285,7 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: not yet created — activation will persist a goal-bound retro.
+Retro: charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
 Host log probe: not yet created — final push/release execution will record host receipts.
 Disposition review: not yet created — activation and closeout will run the bounded claims review.
 
@@ -269,8 +297,9 @@ Confirm that no local green was promoted to provider, cross-host, or Cautilus pr
 
 ## Auto-Retro
 
-Retro dispositions: none — this inert draft has executed no improvement; activation
-must disposition each surfaced improvement.
-Structural follow-up: planned — slices 1-4 will land the opt-in closeout bundle,
-immutable identity, pre-review authoring order, and retro-to-handoff wiring; final
-disposition must name the landed contract or guard.
+Retro dispositions: applied — the packet-rebinding workflow is recorded in the
+Slice 3 critique packet, the aggregate diagnostic proposal is filed as D52, and
+the memory item is persisted by the goal-bound retro and lesson-selection index.
+Structural follow-up: applied for the retro-to-handoff validator; the final
+claims/disposition reader, verification lock, and closeout-only handoff refresh
+remain planned boundaries.

@@ -2449,6 +2449,13 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "The manifest library's standard-library import block is a small portability idiom shared with an unrelated surfaces library. The modules have separate owners and no shared import contract; extraction would add coupling without reducing semantic duplication."
+    },
+    {
+      "class": "intentional",
+      "id": "4e0160a823736142",
+      "reviewed_at": "2026-08-06",
+      "surface": "code",
+      "note": "The standalone retro-to-handoff validator intentionally uses the repository-standard argparse/main entrypoint shape also used by the pre-push coverage gate. The commands own different arguments, refusal semantics, and evidence payloads; a shared runner would couple distinct operator contracts without removing domain logic."
     }
   ],
   "fixable_ceiling": 0,
