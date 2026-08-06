@@ -345,6 +345,8 @@ def test_the_authoring_marker_resolves_for_every_shipped_package_shape(tmp_path:
     plugin = tmp_path / "plugins" / "demo"
     (plugin / "scripts").mkdir(parents=True)
     (plugin / "scripts" / "real.py").write_text("print('ok')\n", encoding="utf-8")
+    (tmp_path / "scripts").mkdir()
+    (tmp_path / "scripts" / "real.py").write_text("print('authoring')\n", encoding="utf-8")
     line = "`charness` ships `<authoring-repo>/scripts/real.py`.\n"
     for rel in ("skills/one", "support/two", "shared"):
         target = plugin / rel
@@ -357,6 +359,36 @@ def test_the_authoring_marker_resolves_for_every_shipped_package_shape(tmp_path:
     rows = inventory_module.classify_references(tmp_path)
     assert len(rows) == 3
     assert {row["status"] for row in rows} == {inventory_module.AUTHORING_MARKED}
+
+
+def test_the_authoring_marker_resolves_docs_and_artifacts_in_both_layouts(tmp_path: Path) -> None:
+    """The placeholder covers the whole authoring tree, not only scripts/."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / "docs" / "design-north-star.md").write_text("# North Star\n", encoding="utf-8")
+    (tmp_path / "charness-artifacts" / "spec").mkdir(parents=True)
+    (tmp_path / "charness-artifacts" / "spec" / "ledger.md").write_text("# Ledger\n", encoding="utf-8")
+    source_doc = _package(tmp_path, "skills/public/demo") / "SKILL.md"
+    source_doc.write_text(
+        "# Demo\n\n"
+        "Read `<authoring-repo>/docs/design-north-star.md`.\n"
+        "Read `<authoring-repo>/charness-artifacts/spec/ledger.md`.\n"
+        "Read `<authoring-repo>/docs/missing.md`.\n",
+        encoding="utf-8",
+    )
+    shipped_doc = _package(tmp_path, "plugins/demo/skills/demo") / "SKILL.md"
+    shipped_doc.write_text(source_doc.read_text(encoding="utf-8"), encoding="utf-8")
+
+    rows = [
+        row
+        for row in inventory_module.classify_references(tmp_path)
+        if row["form"] == "authoring-repo"
+    ]
+    assert len(rows) == 6
+    resolved = [row for row in rows if row["reference"].endswith(("design-north-star.md", "ledger.md"))]
+    missing = [row for row in rows if row["reference"].endswith("missing.md")]
+    assert {row["status"] for row in resolved} == {inventory_module.AUTHORING_MARKED}
+    assert len(missing) == 2
+    assert {row["status"] for row in missing} == {inventory_module.UNRESOLVED}
 
 
 def _package(root: Path, rel: str) -> Path:

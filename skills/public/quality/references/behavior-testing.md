@@ -77,5 +77,5 @@ source. Routine quality review can recommend a proof without running it.
 
 The stable consumer result shape is owned by Cautilus. The contract is
 documented in the Cautilus source repo, not vendored here, at
-`<authoring-repo>/docs/contracts/robustness-evaluation.md` and uses request, plan, and report
+`<cautilus-repo>/docs/contracts/robustness-evaluation.md` and uses request, plan, and report
 packets instead of a Charness-owned runner.

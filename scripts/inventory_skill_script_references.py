@@ -61,10 +61,13 @@ from check_doc_links import PORTABLE_SKILL_KINDS  # noqa: E402
 _SCRIPT_NAME = r"[A-Za-z0-9_][A-Za-z0-9_./-]*\.[A-Za-z0-9]+"
 # `<repo-root>/scripts/<name>` -- the CONSUMER's tree. Unverifiable here.
 REPO_ROOT_SCRIPT_RE = re.compile(rf"<repo-root>/scripts/({_SCRIPT_NAME})")
-# `<authoring-repo>/scripts/<name>.py` -- charness's OWN tree. Verifiable here,
-# and the whole point of the split: a consumer reads it as "not mine", and this
-# check resolves it instead of waving it through as an unverifiable placeholder.
-AUTHORING_REPO_SCRIPT_RE = re.compile(rf"<authoring-repo>/scripts/({_SCRIPT_NAME})")
+# `<authoring-repo>/<path>` -- charness's OWN tree. Verifiable here, and the
+# whole point of the split: a consumer reads it as "not mine", and this check
+# resolves it instead of waving it through as an unverifiable placeholder.
+# Keep the old public constant as an alias for callers that only need the
+# historical scripts-shaped subset; the inventory itself scans the wider form.
+AUTHORING_REPO_PATH_RE = re.compile(rf"<authoring-repo>/({_SCRIPT_NAME})")
+AUTHORING_REPO_SCRIPT_RE = AUTHORING_REPO_PATH_RE
 # `<plugin-dir>/scripts/<name>` -- the INSTALLED plugin package. Verifiable here
 # against the generated `plugins/<pkg>/`, which is what makes it the honest
 # spelling for a charness script the consumer actually receives. Adopted 2026-08-04
@@ -170,6 +173,7 @@ class SkillPackage(NamedTuple):
     layout: str
     resolves_skill_dir: bool
     authoring_root: Path
+    authoring_source_root: Path
 
 
 def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
@@ -196,9 +200,9 @@ def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
         for kind in sorted(PORTABLE_SKILL_KINDS):
             for package in sorted((skills_root / kind).glob("*")):
                 if package.is_dir():
-                    packages.append(SkillPackage(package, AUTHORING, True, repo_root))
+                    packages.append(SkillPackage(package, AUTHORING, True, repo_root, repo_root))
         if (skills_root / "shared").is_dir():
-            packages.append(SkillPackage(skills_root / "shared", AUTHORING, False, repo_root))
+            packages.append(SkillPackage(skills_root / "shared", AUTHORING, False, repo_root, repo_root))
 
     # Each shipped package carries its OWN plugin root, taken from the
     # `plugins/<pkg>` path that produced it rather than counted backwards.
@@ -208,10 +212,10 @@ def iter_skill_packages(repo_root: Path) -> list[SkillPackage]:
         for kind, resolves in (("skills", True), ("support", True)):
             for package_dir in sorted((plugin_root / kind).glob("*")):
                 if package_dir.is_dir():
-                    packages.append(SkillPackage(package_dir, SHIPPED, resolves, plugin_root))
+                    packages.append(SkillPackage(package_dir, SHIPPED, resolves, plugin_root, repo_root))
         shared_dir = plugin_root / "shared"
         if shared_dir.is_dir():
-            packages.append(SkillPackage(shared_dir, SHIPPED, False, plugin_root))
+            packages.append(SkillPackage(shared_dir, SHIPPED, False, plugin_root, repo_root))
 
     return packages
 
@@ -337,20 +341,34 @@ def classify_references(repo_root: Path) -> list[dict[str, object]]:
             # tree carried per package (never counted backwards, see SkillPackage);
             # `<plugin-dir>/` resolves against the generated package, because that
             # is the claim it makes -- that the consumer received the file.
-            for pattern, placeholder, form, script_root in (
-                (AUTHORING_REPO_SCRIPT_RE, "<authoring-repo>", "authoring-repo", package.authoring_root),
-                (PLUGIN_DIR_SCRIPT_RE, "<plugin-dir>", "plugin-dir", repo_root / PLUGIN_PACKAGE_ROOT),
+            for pattern, placeholder, form, target_root, target_prefix, reference_prefix in (
+                (
+                    AUTHORING_REPO_PATH_RE,
+                    "<authoring-repo>",
+                    "authoring-repo",
+                    package.authoring_source_root,
+                    "",
+                    "",
+                ),
+                (
+                    PLUGIN_DIR_SCRIPT_RE,
+                    "<plugin-dir>",
+                    "plugin-dir",
+                    repo_root / PLUGIN_PACKAGE_ROOT,
+                    "scripts",
+                    "scripts/",
+                ),
             ):
                 for match in pattern.finditer(line):
                     name = match.group(1)
-                    target_path = script_root / "scripts" / name
+                    target_path = target_root / target_prefix / name
                     resolved = target_path.is_file()
                     rows.append(
                         {
                             "doc": rel_doc,
                             "line": lineno,
                             "layout": layout,
-                            "reference": f"{placeholder}/scripts/{name}",
+                            "reference": f"{placeholder}/{reference_prefix}{name}",
                             "form": form,
                             "status": AUTHORING_MARKED if resolved else UNRESOLVED,
                             "found_at": _repo_relative(repo_root, target_path) if resolved else None,
