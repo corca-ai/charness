@@ -271,8 +271,13 @@ applies.
   and integration-enforcement blockers; the repairs landed and round 2 found
   no blocker with a clean boundary. Round-2 findings are accepted-unreviewed
   under the two-round cap.
-- Targeted verification: 55 focused tests passed; the current quality artifact
+- Targeted verification: 57 focused tests passed; the current quality artifact
   validator and critique validator passed; the root/plugin mirror was synced.
+- Public-skill scenario decision: the required quality consumer contract is
+  frozen in `docs/public-skill-dogfood.json` with the issue #517 observation.
+  The maintained case remains `hitl-recommended`; no Cautilus run or scenario
+  registry mutation was authorized or claimed. The first verification-lock
+  attempt surfaced this required review and stopped before proof execution.
 - Non-claims: no product UI semantic oracle, browser/provider roundtrip,
   cross-host, live-agent, or Cautilus proof is claimed. Final gate, commit,
   push, and #517 CLOSED readback remain pending.
