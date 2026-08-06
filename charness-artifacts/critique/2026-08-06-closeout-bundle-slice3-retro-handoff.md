@@ -42,6 +42,7 @@ honest non-claims about prose quality, disposition meaning, and external state.
 - F3 | bin: bundle-anyway | evidence: strong | ref: [wiring tests](../../tests/quality_gates/test_retro_handoff_wiring.py) | action: fix | note: the required second review found wrapped markers and lazy blockquote continuations; logical bullets and stateful authored-line masking now cover both with regressions.
 - F4 | bin: valid-but-defer | evidence: strong | ref: [deferred decision D52](../../docs/deferred-decisions.md#d52-aggregate-closeout-bundle-authoring-diagnostics) | action: defer | follow-up: D52 | note: aggregate dry-run authoring diagnostics would improve repair-set visibility but would change diagnostic ownership and is not needed for the current fail-closed boundary.
 - F5 | bin: valid-but-defer | evidence: strong | ref: [execution contract](../spec/2026-08-06-closeout-bundle-execution-contract.md) | action: defer | follow-up: final closeout claims/disposition review | note: this validator proves token and path wiring only; it does not prove human disposition quality, fresh handoff writes, or external state.
+- F6 | bin: bundle-anyway | evidence: strong | ref: [validator](../../scripts/validate_retro_handoff_wiring.py) | action: fix | note: locked broad pytest caught the plugin-export static import-safety guard rejecting a dev-tree path literal; script-directory-relative asset resolution repaired the source/plugin portability seam, accepted-unreviewed after the two-round cap.
 
 ## Reviewer Tier Evidence
 
@@ -60,15 +61,17 @@ parent-delegated; the design reviewer supplied semantic findings but no boundary
 is not counted as a clean approval. The repaired-surface reviewer and the
 required second proof-surface reviewer each had a clean shared-worktree
 fingerprint. The second reviewer found two blockers; their repairs are
-accepted-unreviewed under the repository's two-round cap. No same-agent pass is
+accepted-unreviewed under the repository's two-round cap. A later locked broad
+pytest run found the plugin-export path-literal blocker; that repair is also
+accepted-unreviewed, with no third reviewer under the cap. No same-agent pass is
 substituted for the bounded reviewers.
 
 ## Reviewed Input Identity
 
 - Packet consumed: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json
 - Packet path: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json
-- Packet SHA256: 2980e2854fcb1b0cf20315f159c722500125266a3f66bffde0f6feafeec340f3
-- Identity SHA256: cf045b8b5e219dfb6e9d005e8a11ea7cc869e2658641353f1c71062338b9c8d2
+- Packet SHA256: cf5c6b4a93d0f66a92defd50e4273757a7cbd44c1447fc67eb86779d3bfeef64
+- Identity SHA256: 2573946deebb4770d4398ed64d47c13f5a88a4ee4076e9ed7f53100c9283d3f1
 
 ## Boundary Ownership
 

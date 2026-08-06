@@ -205,7 +205,11 @@ applies.
   required repaired-surface review round had a clean boundary and found the
   wrapped-marker and lazy-blockquote cases; both were repaired with regression
   tests. Per the two-round cap, those round-2 repairs are accepted-unreviewed,
-  not a fresh approval.
+  not a fresh approval. The first locked broad-pytest attempt additionally
+  caught the plugin-export static import-safety guard rejecting a dev-tree path
+  literal; the resolver now derives both source and plugin asset paths from the
+  script directory, and the focused wiring plus empty-scope suite passes 68
+  tests. This post-round-2 repair is also accepted-unreviewed.
 - Retro disposition: the packet-rebinding workflow was applied by regenerating
   the Slice 3 critique packet after the final reviewed-input edits; the
   aggregate diagnostic proposal was filed as deferred decision D52; and the

@@ -22,9 +22,10 @@ _markdown = load_path_module("retro_handoff_markdown", REPO_ROOT / "scripts/mark
 
 
 def _load_handoff_paths():
+    script_dir = Path(__file__).resolve().parent
     candidates = (
-        REPO_ROOT / "skills/public/handoff/scripts/chunked_routing_paths.py",
-        REPO_ROOT / "skills/handoff/scripts/chunked_routing_paths.py",
+        script_dir / "../skills/public/handoff/scripts/chunked_routing_paths.py",
+        script_dir / "../skills/handoff/scripts/chunked_routing_paths.py",
     )
     for candidate in candidates:
         if candidate.is_file():

@@ -1,10 +1,10 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-06T12:52:41Z
+- **Generated**: 2026-08-06T12:59:15Z
 - **Prepared for**: closeout bundle slice 3 retro handoff wiring
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `cf045b8b5e219dfb6e9d005e8a11ea7cc869e2658641353f1c71062338b9c8d2`
+- **Reviewed input identity**: `2573946deebb4770d4398ed64d47c13f5a88a4ee4076e9ed7f53100c9283d3f1`
 - **Reviewed paths**: 10
 - **Sections**: 3
 - **Overall ok**: True
@@ -28,49 +28,28 @@ Read this packet first. Then judge what the deterministic surface leaves uncover
 
 ```text
 Changed paths for working tree:
-- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md
-- charness-artifacts/quality/dup-review.json
-- charness-artifacts/retro/lesson-selection-index.json
-- charness-artifacts/retro/recent-lessons.md
-- charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md
-- docs/deferred-decisions.md
-- plugins/charness/scripts/boundary-bypass-exemptions.txt
-- scripts/boundary-bypass-exemptions.txt
-- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json
-- charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md
 - charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md
-- charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md
-- charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.json
-- charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.md
+- charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md
 - plugins/charness/scripts/validate_retro_handoff_wiring.py
 - scripts/validate_retro_handoff_wiring.py
-- tests/quality_gates/test_retro_handoff_wiring.py
 
 Owning surfaces:
 - checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.
-  source matches: scripts/boundary-bypass-exemptions.txt, scripts/validate_retro_handoff_wiring.py
-  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/validate_retro_handoff_wiring.py
+  source matches: scripts/validate_retro_handoff_wiring.py
+  derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py
   sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .
   verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .
 - repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.
-  source matches: charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md, charness-artifacts/retro/recent-lessons.md, charness-artifacts/spec/2026-08-06-closeout-bundle-execution-contract.md, docs/deferred-decisions.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md, charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.md
+  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md, charness-artifacts/goals/2026-08-06-closeout-bundle-evidence-identity-and-release.md
   verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh
-- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.
-  source matches: charness-artifacts/quality/dup-review.json
-  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool "$quality_json" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary
 - critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.
-  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.json, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff-packet.md, charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md
+  source matches: charness-artifacts/critique/2026-08-06-closeout-bundle-slice3-retro-handoff.md
   verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all
-- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
-  source matches: charness-artifacts/retro/recent-lessons.md, charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md, charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.json, charness-artifacts/retro/closeout-bundle-evidence-identity-and-release-retro-packet.md
-  derived matches: charness-artifacts/retro/lesson-selection-index.json
-  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
-  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e "$retro_packet_json" ]; then python3 -m json.tool "$retro_packet_json" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check
 - integrations-and-control-plane: Integration manifests and control-plane helper scripts.
-  derived matches: plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/validate_retro_handoff_wiring.py
+  derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py
   verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json
 - repo-python: Repo-owned Python code and tests.
-  source matches: scripts/validate_retro_handoff_wiring.py, tests/quality_gates/test_retro_handoff_wiring.py
+  source matches: scripts/validate_retro_handoff_wiring.py
   derived matches: plugins/charness/scripts/validate_retro_handoff_wiring.py
   verify: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only
 - python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.
@@ -79,7 +58,6 @@ Owning surfaces:
 
 Planned sync commands before validators:
 - python3 scripts/sync_root_plugin_manifests.py --repo-root .
-- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write
 ```
 
 ## Non-Goals For This Contract
