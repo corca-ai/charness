@@ -28,13 +28,20 @@
   already independently CLOSED before the final eight-carrier bundle.
 - The active goal now covers the full structural set: slice manifest, premise
   preflight, final-bundle preflight, runtime attribution, mutation producer
-  discovery, and immutable publish-ledger reconciliation.
-- Slice 6 is implemented and reconciles the captured snapshot through
-  `python3 scripts/publish_state_ledger.py --repo-root .`; source/plugin
-  validator files are byte-identical, and the focused ledger behavior is
-  covered by `python3 -m pytest -q
-  tests/quality_gates/test_publish_state_ledger.py`. The ledger is offline and
-  source-claim bound; it does not refresh providers or perform writes.
+  discovery, immutable publish-ledger reconciliation, and the integrated
+  closeout.
+- Slice 7 closeout is recorded in the active goal and quality artifact; the
+  final-bundle dry run is ready with zero blockers; recount the neighboring
+  proof suites with `python3 -m pytest -q
+  tests/quality_gates/test_premise_preflight.py
+  tests/quality_gates/test_slice_manifest.py
+  tests/quality_gates/test_final_bundle_preflight.py
+  tests/quality_gates/test_publish_state_ledger.py`. The verification-locked
+  closeout emitted fresh coverage whose clean changed-line consumer passed for
+  the declared Python pool at the manifest-declared `ff3029…` slice base. The
+  ledger remains offline and source-claim bound; no provider refresh,
+  installed-host proof, push, release, tag, Cautilus run, or new remote
+  observer was performed.
 - Detailed evidence lives in the [completed goal](../charness-artifacts/goals/2026-08-05-close-all-open-issues-generative-sequence.md),
   [session retro](../charness-artifacts/retro/2026-08-06-session-retro.md), and
   [claims review](../charness-artifacts/critique/2026-08-06-close-all-open-issues-generative-sequence-goal-claims-review.md).
@@ -46,14 +53,12 @@
 
 ## Next Session
 
-1. Read the active goal's Slice 7 closeout frame, quality posture, recent
-   lessons, and North Star.
-2. Run the final-bundle preflight dry run and the strongest applicable local
-   quality gate over the integrated six-slice state.
-3. Validate the ledger in human and JSON modes, inspect the closeout/retro
-   dispositions, and refresh this handoff with the final proof paths.
-4. Do not push, release, tag, run Cautilus, or claim installed/provider
-   behavior; any future publish needs its own explicit gated phase.
+1. Read the completed goal's Slice 7 closeout frame, quality posture, recent
+   lessons, and North Star if resuming this work.
+2. Treat the local slice as complete. Any provider, installed-host, release,
+   tag, Cautilus, issue-write, or publish work needs a new explicitly gated
+   phase.
+3. Do not infer a remote or installed behavior claim from the local closeout.
 
 ## Discuss
 

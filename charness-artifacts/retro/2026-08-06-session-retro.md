@@ -151,6 +151,8 @@ proof record whose identity was not yet durable.
 
 ## Current Slice Addendum — Post-Push Operational-Proof Goal
 
+Bound goal: charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md
+
 This bounded addendum records the Slice 6/7 continuation after the umbrella
 closeout above. The changed surface was an offline publish-state ledger whose
 verdict could be consumed by a later operator, so the North Star's distinct
@@ -166,7 +168,8 @@ observer and distinct-channel rules applied in full.
   The second review confirmed that boundary and found two additional repairs:
   structured unreadable-manifest refusal and the exact broad source-invalid
   field from the contract.
-- The final focused ledger suite passed 26 tests. Source/plugin parity,
+- The final focused ledger suite passed 27 tests; the neighboring preflight,
+  manifest, bundle, and ledger selection passed 95 tests. Source/plugin parity,
   packaging, handoff, doc links, and the checked-in ledger readback passed.
 - `mine_closeout_telemetry.py --detail` read 1,410 local records and surfaced
   four recurring waste items. This is a repo-local cost signal only; it does

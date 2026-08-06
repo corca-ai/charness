@@ -59,9 +59,9 @@ round repaired verdict logic.
 ## Verification Summary
 
 - Focused behavior: `python3 -m pytest -q
-  tests/quality_gates/test_publish_state_ledger.py` — 26 passed.
-- Integrated neighboring behavior: ledger, manifest, and mutation-producer
-  focused selection — 79 passed.
+  tests/quality_gates/test_publish_state_ledger.py` — 27 passed.
+- Integrated neighboring behavior: premise preflight, slice manifest,
+  final-bundle preflight, and ledger focused selection — 95 passed.
 - Source/plugin parity: `cmp -s scripts/publish_state_ledger.py
   plugins/charness/scripts/publish_state_ledger.py` — passed.
 - Human and JSON checked-in ledger modes both return the same captured target
@@ -89,8 +89,8 @@ under the cap rather than silently treated as reviewed.
 ## Reviewed Input Identity
 
 - Packet path: `charness-artifacts/critique/2026-08-06-slice-6-publish-state-ledger-implementation-review-final-packet.json`
-- Packet SHA256: `b044ec4fece089e7f102cb4fc7294a52e57886d43ac86f1967549f7d68816d8c`
-- Identity SHA256: `a32feac44cfa5a67d03e524b02c1c6de30a9be9e21ffa7a0273dda8904ff017c`
+- Packet SHA256: `9eb44e4fb0dad48eaca8ec38187799fab49aaec86413c546a45fc3bdb7449d28`
+- Identity SHA256: `296c3896e6a8647e3994572256d3c14ba41920d3a696a9bc53470bbe68b5d886`
 - Round 1 prepared packet JSON SHA256:
   `ba9859fb0cadfa0b65f0a9cfae6a6075373c0964cb4556ed441584a6b0c98d84`
 - Round 1 prepared identity SHA256:
@@ -103,9 +103,9 @@ under the cap rather than silently treated as reviewed.
   `64810e2d65b27bdd29ca85a315116fec12865b5a7549779191072caa049a188a`
 - Round 2 reviewer-reported packet Markdown SHA256:
   `f2c6a38a18cd2b9fe4931cbe3df129743a040f8b156cb0fe870c79ff38855a28`
-- The final binding packet was prepared after round-2 repairs; it is current
-  input identity evidence, not a claim that either reviewer re-read those
-  final repair bytes.
+- The final binding packet was regenerated after the round-2 repairs and local
+  regression/closeout synchronization; it is current input identity evidence,
+  not a claim that either reviewer re-read those final bytes.
 
 ## Boundary Ownership
 

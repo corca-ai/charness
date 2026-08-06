@@ -15,11 +15,15 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 
 - Final-bundle preflight is `ready` with zero blockers and a distinct
   `ledger-focused` behavior channel.
-- The verification-locked closeout completed its deterministic checks and
-  emitted fresh full-suite mutation coverage; its dirty-tree consumer is
-  intentionally not a changed-line claim.
+- The verification-locked closeout completed its deterministic checks at the
+  manifest-declared `ff3029…` slice base, emitted fresh full-suite mutation
+  coverage, and its clean changed-line consumer passed for all 8 eligible
+  Python pool files.
 - Boundary-bypass and duplicate ratchets are clean; source/plugin parity and
   packaging validators pass.
+- The final whole-quality gate completed with 87 checks passed and 0 failed;
+  the remaining output is advisory-only line-length and markdown wrapping
+  guidance.
 
 ## Runtime Signals
 
@@ -35,11 +39,10 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 
 ## Healthy
 
-- The isolated ledger suite passed serially with 26 tests and under 16-way
-  execution with the neighboring final-bundle suite, 38 tests total.
-- The full quality run's only behavior failure was corrected probe drift: the
-  inventory-consumption corpus is now recorded at 128 artifacts and 362 label
-  residuals. The remaining mutation refusal was the honest dirty-tree guard.
+- The isolated ledger suite passed serially with 27 tests; the neighboring
+  preflight, manifest, bundle, and ledger proof suites passed with 95 tests.
+- The locked changed-line consumer passed with no blocking files after the
+  CLI refusal/rendering branches and isolated fixture mutations were covered.
 - Human/JSON ledger modes share the same captured verdict, and the source and
   checked-in plugin validator files are byte-identical.
 
@@ -50,11 +53,14 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 - Quality delegated review is blocked because the host exposes no Agent tool;
   the separate ledger implementation review contains the required two-round
   fresh-eye evidence for the verdict surface.
+- The broader `origin/main..HEAD` changed-line attempt blocked on historical
+  lines outside the declared local slice boundary; that aggregate result is
+  not claimed as a failure or substituted for the slice-bound proof.
 
 ## Missing
 
-- A clean-tree changed-line mutation consumer result after the integrated slice
-  is committed; the emitted coverage is ready for that distinct readback.
+- A provider/installed-host/remote-fresh observer is not present; this is an
+  explicit non-goal rather than a local gate failure.
 
 ## Deferred
 
@@ -82,17 +88,19 @@ reruns, Cautilus, release publication, and push remain outside this slice.
 
 ## Commands Run
 
-- `pytest -q tests/quality_gates/test_publish_state_ledger.py` — 26 passed.
+- `pytest -q tests/quality_gates/test_publish_state_ledger.py` — 27 passed.
+- `pytest -q tests/quality_gates/test_premise_preflight.py tests/quality_gates/test_slice_manifest.py tests/quality_gates/test_final_bundle_preflight.py tests/quality_gates/test_publish_state_ledger.py` — 95 passed.
 - `pytest -q -n 16 tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_final_bundle_preflight.py` — 38 passed.
 - `python3 scripts/final_bundle_preflight.py ... --json` — ready, zero blockers.
 - `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .` — passed.
 - `python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary` — clean.
-- `python3 scripts/run_slice_closeout.py ... --verification-lock --produce-mutation-coverage --json` — completed; coverage emitted, dirty-tree changed-line claim withheld.
-- `./scripts/run-quality.sh` — one stale-probe failure repaired; clean-tree mutation proof remains commit-boundary work.
+- `python3 scripts/run_slice_closeout.py --repo-root . --base ff3029112280470e341f00900438033f232cad35 --verification-lock --produce-mutation-coverage --json` — completed with effective exit 0; fresh coverage and the clean changed-line consumer passed for 8 eligible Python pool files.
+- `python3 scripts/check_test_repo_copy_invariants.py --repo-root .` — passed after isolating all manifest fixture mutations.
+- `./scripts/run-quality.sh` — 87 passed, 0 failed; advisory-only Python
+  line-length and markdown inline-code wrapping warnings remain.
 
 ## Recommended Next Quality Moves
 
-- active — capability_needed=clean-tree changed-line mutation consumer; next_center=integrated proof surface; transformation=consume the emitted coverage after commit; proof_boundary=origin/main merge-base; enforcement_posture=existing-gate-reuse.
 - passive — capability_needed=provider and installed-host observers; next_center=post-publish freshness; transformation=run distinct external readbacks; proof_boundary=separately authorized publish phase; enforcement_posture=deferred because outside this goal.
 
 ## History

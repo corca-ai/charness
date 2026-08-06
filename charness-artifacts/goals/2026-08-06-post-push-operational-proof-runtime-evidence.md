@@ -1,6 +1,6 @@
 # Achieve Goal: 푸시 이후 증거·slice 실행·런타임 비용의 구조적 개선
 
-Status: active
+Status: complete
 Created: 2026-08-06
 Activation: `/goal @charness-artifacts/goals/2026-08-06-post-push-operational-proof-runtime-evidence.md`
 
@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 7 — integrated locked verification and closeout.
+- Current slice: Slice 7 — integrated locked verification and closeout (complete).
 - Current slice intent: carry the repaired immutable publish-state ledger through source/plugin parity, final bundle planning, quality proof, retro disposition, and handoff refresh without initiating a new publish.
-- Next action: run the final-bundle dry run and strongest applicable local quality gate, then bind the closeout ledger, retro, and handoff; do not push.
+- Next action: none — the declared local slice boundary is verified and recorded; provider, installed-host, release, Cautilus, and push boundaries remain non-claims.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -128,21 +128,12 @@ runs the activation command.
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | complete; evidence committed |
 | 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | complete; committed |
 | 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | complete; repaired and reviewed |
-| 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | in progress |
+| 7 | Integrate, fresh-eye review, and close the structural loop | All improvements must survive together at the real proof boundary | source/plugin parity, critique, full gate, retro dispositions, updated handoff | complete |
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+none — all safe local verification is complete; provider, installed-host,
+release, Cautilus, and publish observers remain explicitly out of scope.
 
 ## Coordination Cues
 
@@ -282,6 +273,17 @@ applies.
 - Sync and non-claims: source/plugin validator files are byte-identical; the ledger is offline and repo-local, and does not claim current provider freshness, installed behavior, external writes, releases, Cautilus, or a new push.
 - Status: complete; integrated locked verification and closeout remain in Slice 7.
 
+### Slice 7: Integrated locked verification and closeout
+
+- Objective: prove the six-slice bundle at the manifest-declared local base, refresh the operator baton, and close the goal without a new publish.
+- What changed: added bounded refusal/rendering/CLI regression coverage for the preflight, manifest, bundle, and ledger proof surfaces; isolated all manifest fixture mutations in a disposable seeded repository; refreshed the checked-in SLOC inventory.
+- Targeted verification: the four neighboring proof suites passed with 95 tests; the source/plugin ledger validator remains byte-identical; `python3 scripts/check_test_repo_copy_invariants.py --repo-root .`, boundary-bypass, duplicate ratchet, packaging, critique, and handoff validators passed.
+- Final-bundle proof: `python3 scripts/final_bundle_preflight.py ... --json` returned `ready` with zero blockers using the distinct ledger-focused behavior channel.
+- Verification lock: `python3 scripts/run_slice_closeout.py --repo-root . --base ff3029112280470e341f00900438033f232cad35 --verification-lock --produce-mutation-coverage --json` completed with effective exit `0`; the clean changed-line consumer passed for all 8 eligible Python pool files, and the fresh coverage fingerprint was consumed at the same `ff3029…` slice boundary.
+- Distinct-boundary note: an aggregate `origin/main..HEAD` changed-line attempt was also run and blocked on the broader historical range; it is recorded as a non-claim and does not replace the manifest-declared slice proof.
+- Non-claims: no provider refresh, installed-host roundtrip, new remote CI run, Cautilus evaluation, issue write/closeout, release/tag/version change, or push occurred; delegated quality review remained host-blocked because no Agent tool was exposed.
+- Status: complete; commits `1e5ab655`, `f5225617`, `e5d7ff9b`, `6d7cf1f7`, and `72139430` carry the regression and generated-inventory closeout state.
+
 ## Context Sources
 
 Durable references this goal was shaped from. A fresh session can reconstruct
@@ -385,9 +387,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-06-session-retro.md
+Host log probe: skipped: host-log-not-exposed: this runtime exposes no stable goal-scoped host session log; local closeout telemetry and structured quality artifacts were used instead.
+Disposition review: skipped: host-blocked-subagent: no Agent/subagent tool is exposed in this session; no same-agent substitute is claimed.
 
 ## User Verification Instructions
 
@@ -405,5 +407,9 @@ Disposition review: TODO — create or explicitly skip only when policy allows b
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied — controlled runtime evidence, final-bundle identity planning, mutation producer discovery, and the exact one-push/current-head handoff boundary are now committed evidence.
+Retro dispositions: applied — the refusal matrix, canonical source-claim digest, surrounding-prose fixture, and isolated manifest fixtures are covered by repo-local tests and the locked changed-line consumer.
+Retro dispositions: out-of-scope: cross-host runtime cohorts and provider/installed-host observers remain outside this goal; the runtime floor and external-claim posture are unchanged.
+Retro dispositions: accepted-risk — the claim digest stays local until a second source-bound record needs reuse; no generic evidence-hashing framework was introduced.
+Retro dispositions: none — the standalone inventory validator remains an intentional runner-owned boundary, and no new abstraction is warranted.
+Structural follow-up: repo-local guard: `scripts/publish_state_ledger.py` and `tests/quality_gates/test_publish_state_ledger.py` — retain canonical claim hashing and the exact refusal-field matrix; reconsider extraction only when a second source-bound record is proposed.
