@@ -1,1 +1,1 @@
-2026-08-06-runtime-evidence-and-nose.md
+2026-08-07-quality-review.md

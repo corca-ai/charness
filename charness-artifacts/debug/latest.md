@@ -1,1 +1,1 @@
-2026-08-06-issue-510-markdown-negotiation-debug.md
+2026-08-07-issue-518-quality-declaration-reconciliation-debug.md
