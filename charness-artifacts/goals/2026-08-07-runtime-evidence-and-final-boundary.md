@@ -1,4 +1,4 @@
-# Achieve Goal: 다음 세션: 런타임 증거와 최종 이슈 경계
+# Achieve Goal: 다음 세션: 런타임 증거와 installed-host nose 검증
 
 Status: draft
 Created: 2026-08-07
@@ -15,8 +15,8 @@ runs the activation command.
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md` after confirming the draft is
-  still intended.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md` after confirming the
+  runtime and installed-host `nose` proof boundary is still intended.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -31,46 +31,49 @@ runs the activation command.
 
 ## Goal
 
-현재 활성 goal의 남은 publish 경계를 이어받아, 런타임 phase isolation을 controlled A/B evidence로 판정하고 #508/#509의 단 한 번의 최종 push·remote CI·issue closeout 경계를 독립적으로 검증한다. 그 결과로 다음 generative sequence를 re-rank하고, 근거가 부족하면 budget이나 issue state를 억지로 green으로 만들지 않는다.
+현재 릴리즈 `v3.3.0` 이후 남은 증거 경계를 이어받아, 기존 런타임 phase-isolation 자료를 재검증하고 installed host에서 `nose`를 실제로 탐지·설치·동기화·사용 가능한 상태인지 판정한다. `nose` 증거는 소스 checkout, 설치본, 명령 결과, 시점, 호스트를 하나의 검토 가능한 packet으로 묶고, 근거가 부족하면 runtime budget·provider 상태·cross-host 동작을 green으로 만들지 않는다.
 
 ## Non-Goals
 
 - Do not retune the 15.500s runtime budget from one host-local sample or turn a
-  local green into a remote, installed, or provider claim.
-- Do not close #508 or #509 without each issue's carrier, delegated critique,
-  distinct behavior verdict, independent remote CI, and adapter readback.
-- Do not create a release tag, version bump, PR, or public release without an
-  explicit target/version decision; Cautilus remains ask-before-run.
+  local green into a remote, provider, or cross-host claim.
+- Do not infer live-agent behavior, private consumer/provider roundtrip, or
+  current provider freshness from the installed-host `nose` proof.
+- Do not create a release tag, version bump, PR, public release, issue write,
+  issue closeout, or new push in this goal; Cautilus remains ask-before-run.
 
 ## Boundaries
 
-- External side-effect scope: name which phase or bundle any approved
-  publish / push / remote-CI / apply applies to. That approval is phase-scoped
-  and does not carry forward — after an approved publish/CI/apply lane
-  completes, done-early test-only quality continuation is local by default
-  (batch remote proof, run CI once over the final bundled state). Per-slice
-  remote publication is assumed only when the operator explicitly asks or a
-  runtime-affecting slice requires earlier publication.
-- The final publish bundle owns exactly one `git push`; after it, only
-  read-only CI and GitHub adapter observation may occur in this goal.
-- #508 and #509 remain OPEN/local-only until their independent boundary proof
-  is read back; no issue state is inferred from a commit or local test.
+- External side-effect scope: installed-host proof may use the
+  manifest-supported `nose` installation path during its explicitly activated
+  slice. If it requires an unlisted installer, elevated privilege, or a
+  provider write, stop and record the operator decision instead of guessing.
+- The goal owns no publish bundle. Any future release, tag, push, issue write,
+  or remote-CI phase must be a separate explicitly activated and gated goal.
+- `nose` claims are host-local and time-bound: distinguish pre-install doctor,
+  dry-run target, install result, `nose --version`, post-install doctor,
+  `tool sync-support`, and clone-inventory output.
 
 ## User Acceptance
 
-- The runtime decision names a controlled A/B packet or an honest residual
-  non-claim, with no threshold change justified by correlation alone.
-- The final bundle records one push, a different remote CI observer/channel,
-  and per-issue #508/#509 readback or an explicit blocked boundary.
-- The next generative sequence and any unresolved issue remain visible in the
-  active goal, handoff, quality, critique, and retro records.
+- The runtime decision names the existing controlled A/B packet or an honest
+  residual non-claim, with no threshold change justified by correlation alone.
+- The installed-host packet records `charness tool doctor nose --no-write-locks`
+  before installation, `charness tool install nose --dry-run`, the chosen
+  supported install path, `nose --version`, post-install doctor, `charness
+  tool sync-support nose`, and one `inventory_nose_clones.py --json` result.
+- The packet states source checkout, installed checkout, host, timestamp,
+  return codes, and what each observation does not prove.
+- The next generative sequence and any unresolved capability boundary remain
+  visible in the active goal, handoff, quality, and retro records.
 
 ## Agent Verification Plan
 
 ### Low-Cost Checks
 
 - Re-read the active goal, handoff, North Star, recent lessons, quality record,
-  and current runtime profile before shaping the first slice.
+  release record, and current runtime profile before shaping the first slice.
+- Confirm the live issue state only as context; do not reopen or modify #508/#509.
 - Run source/plugin parity, focused runner tests, artifact validators, and the
   mutation producer suggestion helper before broad verification.
 
@@ -78,24 +81,28 @@ runs the activation command.
 
 - Repeat the declaration validator in isolated and first-phase-contended
   conditions on the same host, recording samples and phase identity.
-- Run locked closeout and the full read-only quality gate after all artifacts and
-  generated surfaces are synchronized; keep the 15.500s budget unless the A/B
-  result supports a measured decision.
+- Reuse or refresh the controlled A/B packet only when its source and host
+  identity are stale; keep the 15.500s budget unless the evidence supports a
+  measured decision.
+- Validate the `nose` proof packet and all generated/current pointers after the
+  installed-host commands complete.
 
 ### External Or Live Proof
 
-- Perform the one final push only after the pre-push gate passes. Read remote CI
-  through GitHub independently of the push exit code, then use the issue adapter
-  for each closeout readback. Preserve OPEN/non-claim status when any floor is
-  missing.
+- Run the manifest-supported installed-host sequence: pre-install doctor,
+  install dry-run, install, version, post-install doctor, support sync, and
+  clone inventory. Record an honest blocked/non-claim result if installation
+  or PATH discovery cannot be completed.
+- Do not convert installed-host success into provider, remote CI, or release
+  proof; those observers are outside this goal.
 
 ## Slice Plan
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Controlled runtime evidence | Compare isolated and contended declaration phases on one host and decide whether the budget signal is causal. | Runtime packet with phase identity, samples, and reviewer disposition. | planned |
-| 2 | Final local closeout bundle | Bind quality, critique, retro, handoff, goal draft, source/plugin parity, and issue carriers before the publish boundary. | Full quality, locked closeout, clean worktree, one commit, pre-push pass. | planned |
-| 3 | One publish and independent readback | Push once, wait for remote CI, then read CI and #508/#509 through distinct adapters/channels. | Push result, CI run/readback, per-issue CLOSED or honest OPEN disposition. | planned |
+| 1 | Reconcile runtime evidence | Reuse the controlled phase-isolation packet and decide whether any new measurement is needed before touching the budget. | Runtime packet identity, phase samples, units, and explicit non-claim or measured disposition. | planned |
+| 2 | Installed-host `nose` proof | Close the remaining optional real-host checklist with the supported tool lifecycle and a distinct installed-host evidence channel. | Doctor/install/version/sync/inventory receipts, host identity, return codes, and PATH result. | planned |
+| 3 | Local closeout and baton refresh | Bind the runtime and `nose` packets, quality posture, retro, and handoff without starting a publish or issue-closeout phase. | Validated artifacts, clean local closeout, updated non-claims, and next-session proposal. | planned |
 
 ## Operator Decision Queue
 
@@ -111,14 +118,16 @@ Queue item form:
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
 
-- Decision: conditional final push and issue closeout approval is standing only
-  when every pre-push/closeout floor passes; release target is unspecified.
+- Decision: an installed-host `nose` installation may mutate the local tool
+  environment, but it must use a manifest-supported path and remain separate
+  from publish/provider claims.
   Owner: operator
-  Why deferred: this draft is inert and the current active goal still owns the
-  publish boundary.
-  Unblock action: activate this goal only after the current bundle is ready and
-  supply a release target if a version/tag is wanted.
-  Revisit trigger: pre-push gate, remote CI completion, or a release request.
+  Why deferred: this draft is inert and activation is the explicit decision to
+  run the installed-host proof.
+  Unblock action: activate this goal; stop if the supported installer requires
+  elevated privilege or an unapproved provider write.
+  Revisit trigger: the `nose` dry-run or install command reports a new side
+  effect boundary.
 
 ## Coordination Cues
 
@@ -152,10 +161,10 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: quality → impl → prove → release → handoff/retro — runtime evidence, implementation, verification, final publish/readback, and durable learning.`
+- `Routing: quality → hotl → prove → handoff/retro — runtime evidence, installed-host proof, closeout verification, and durable learning.`
 - `Gather: n/a — no new public source is needed.`
 - `Release: n/a — no version/tag/public release target is supplied.`
-- `Issue closeout: issue skill for #508/#509 carriers and adapter readback after the one final push.`
+- `Issue closeout: n/a — #508/#509 are already CLOSED and this goal performs no issue write or closeout.`
 
 ## Discuss Before Activation
 
@@ -166,9 +175,11 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: CONFIRMED — the user requested one final push, and
-  the standing approval is conditional on the pre-push gate; no release
-  version/tag is assumed, and issue closeout remains floor-gated.
+- Discuss before activation: CONFIRMED — the user requested that `nose` be
+  included. Activation may run the manifest-supported installed-host install
+  and verification sequence; no release, push, issue write, or Cautilus run is
+  included. Stop for explicit direction if the installer requires elevated
+  privilege, an unlisted provider write, or a different host.
 
 ## Slice Log
 
@@ -180,14 +191,16 @@ the originating context by following them in order.
 1. `docs/design-north-star.md` — judgment on reversible work; distinct observer
    and evidence channel at push/issue boundaries; teeth only where wrong answers
    escape.
-2. `docs/handoff.md` — current #508/#509 local-only boundary and one-final-push
-   continuation state.
+2. `docs/handoff.md` — current release boundary, installed-host non-claims, and
+   next-session routing.
 3. `charness-artifacts/quality/2026-08-06-runtime-phase-isolation.md` — runtime
    evidence, healthy/weak/missing/deferred classification, and next moves.
 4. `charness-artifacts/retro/2026-08-06-session-retro.md` — measured waste,
    North Star mapping, sibling scan, and workflow improvements.
 5. `charness-artifacts/critique/2026-08-06-critique-review.md` — repaired
    phase-isolation review and reviewer-boundary evidence.
+6. `charness-artifacts/release/latest.md` — the exact real-host `nose` checklist
+   and the release-time installed-vs-repo evidence already recorded.
 
 ## Interview Decisions
 
@@ -198,11 +211,13 @@ itself so a fresh session sees the design space, not only the closed point.
 - Runtime remedy: choose a bounded runner phase with behavioral proof over a
   budget edit or scheduler abstraction; the latter two were rejected because
   causal evidence is not yet controlled and ownership is local.
-- Publish shape: choose one final push with independent remote observation over
-  incremental pushes; this follows the user's explicit instruction and keeps
-  the irreversible boundary legible.
-- Next sequence: keep #508/#509 at the final boundary before re-ranking #510 or
-  the remaining open issues; no local proof is promoted to CLOSED.
+- Runtime shape: reuse the existing controlled A/B packet unless its identity
+  is stale; a single host-local sample cannot retune the budget.
+- `nose` shape: use the manifest-supported doctor → dry-run → install → version
+  → doctor → sync → clone-inventory sequence rather than a hand-installed
+  binary with no provenance.
+- Boundary shape: keep release, push, provider, Cautilus, and issue state out of
+  this goal; the installed-host proof is a separate capability observation.
 
 ## Plan Critique Findings
 
@@ -210,40 +225,41 @@ Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
 not folded, and reviewer provenance. Preserves reasoning so a fresh session
 re-verifies the folded revisions without re-running critique.
 
-- Proposal review required a controlled A/B before any runtime claim, a real
-  phase-drain/receipt test, and no broad scheduler generalization.
-- Repaired-diff review found a stale plugin mirror and a missing immediate-flush
-  assertion; both were fixed and rechecked with clean fingerprints.
-- Residual: runtime improvement and budget retuning remain unproven until the
-  controlled sample exists.
+- Prior review required a controlled A/B before any runtime claim, a real
+  phase-drain/receipt test, and no broad scheduler generalization; those
+  constraints remain folded into this draft.
+- The release record's real-host checklist supplies the `nose` command order;
+  the new risk is installation provenance and PATH state, so the proof packet
+  must preserve pre/post doctor and version observations.
+- Residual: cross-host runtime behavior, provider freshness, and live-agent
+  behavior remain unproven even if `nose` succeeds locally.
 
 ## Closeout Binding Plan
 
 Shape these minimum fields before activation and keep them current. The field
 check proves shape only; closeout workflows prove the values and identities:
 
-- Reviewed inputs: name semantic goal/issue/quality inputs; retro, packet, reviewer, and lock records are terminal evidence.
-- Frozen target: commit the semantic baseline, then bind the packet to that exact commit SHA.
-- Fresh-eye: name a distinct reviewer and a different observer/evidence channel.
-- Verification lock: name the lock command and evidence location; semantic input edits require rebinding.
-- Complete flip: record packet/reviewer/lock evidence, then write terminal status/evidence bookkeeping outside the reviewed identity.
-- Reviewed inputs: active goal, #508/#509 carriers, runtime quality record,
-  final critique packet, retro packet, and the final publish bundle.
-- Frozen target: final commit SHA recorded before push; critique and quality
-  identities must be regenerated if semantic inputs change.
-- Fresh-eye: unnamed bounded reviewer round with clean boundary fingerprint,
-  plus GitHub Actions/issue adapter as a different post-push observer.
-- Verification lock: `python3 scripts/run_slice_closeout.py --repo-root . --base --verification-lock --ack-cautilus-skill-review` and the final `./scripts/run-quality.sh --read-only` output files.
-- Complete flip: update goal status only after remote CI/readbacks and retro
-  dispositions are recorded; current draft remains inert until `/goal`.
+- Reviewed inputs: goal, runtime packet, `nose` doctor/install/version/sync/
+  inventory receipts, quality record, critique packet, retro packet, release
+  checklist, and handoff.
+- Frozen target: record the source checkout SHA and installed checkout/version
+  identity before the host commands; rebind packets when semantic inputs move.
+- Fresh-eye: use a bounded reviewer for the packet and the installed tool
+  doctor/version channel as a distinct observer from local deterministic tests.
+- Verification lock: validate the goal, quality/release/retro artifacts,
+  current pointers, source/plugin parity, and the final host-proof packet;
+  keep the exact command outputs as terminal evidence.
+- Complete flip: update status only after the host proof is either complete or
+  explicitly blocked, all non-claims are recorded, and retro dispositions are
+  persisted; no push or issue readback is required by this goal.
 
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
 
-- Cross-host budget retuning, mutation-producer automation, and release
-  publication are tracked as next-sequence or explicit-decision work, not
-  silently folded into this boundary.
+- Cross-host budget retuning, provider roundtrip, mutation-producer
+  automation, release publication, and issue operations remain next-sequence
+  or explicit-decision work, not silently folded into this boundary.
 
 ## Final Verification
 
@@ -262,13 +278,13 @@ Disposition review: pending activation — no current goal completion is claimed
 
 Review this draft, then activate with:
 `/goal @charness-artifacts/goals/2026-08-07-runtime-evidence-and-final-boundary.md`.
-After activation, verify the A/B runtime packet, the one-push record, independent
-CI readback, and per-issue adapter state before accepting completion.
+After activation, verify the runtime packet and the installed-host `nose`
+doctor/install/version/sync/inventory receipts before accepting completion.
 
 ## Auto-Retro
 
-Retro dispositions: planned — the current session applied runner phase isolation,
-  mirror synchronization, and behavioral proof; the activated goal must record
-  its own dispositions.
-Structural follow-up: planned — runtime A/B evidence and mutation producer
-  selection are deferred to the named next-session anchors in the current retro.
+Retro dispositions: planned — the activated goal must record whether the
+runtime packet was reused, whether the `nose` capability was proven, and which
+non-claims remain.
+Structural follow-up: planned — runtime budget attribution, provider freshness,
+and cross-host evidence remain deferred unless a later goal activates them.
