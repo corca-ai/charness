@@ -9,9 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 3 — final-bundle preflight and proof-command generation, implemented and pre-lock verified.
+- Current slice: Slice 4 — controlled runtime diagnosis, next slice to shape.
 - Current slice intent: derive a complete candidate range, inventory artifacts and surfaces, bind critique inputs, require explicit behavior channels, and generate a dry-run command plan without executing it.
-- Next action: begin Slice 4 runtime diagnosis; broad pytest, mutation proof, and the integrated locked closeout remain pending; do not push.
+- Next action: shape Slice 4's isolated-vs-contended runtime evidence contract; Slice 3 is committed, while broad pytest, mutation proof, and the integrated locked closeout remain pending; do not push.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -119,7 +119,7 @@ runs the activation command.
 | --- | --- | --- | --- | --- |
 | 1 | Freeze the current published baseline and slice-manifest contract | Every later improvement needs one identity-bearing execution record | manifest schema, current-head readback, source/plugin/consumer root matrix | complete; committed |
 | 2 | Add implementation-time premise preflight | Stale, duplicate, and already-shipped premises caused rework across the 15-hour run | live issue/tree differential fixtures, refusal reasons, persisted decision | complete; committed |
-| 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | complete; pre-lock verified |
+| 3 | Build final-bundle preflight and proof-command generation | Manual sync, probe refresh, packet binding, and gate selection were repeatedly reconstructed | dry-run bundle plan, generated command set, artifact/surface inventory | complete; committed |
 | 4 | Make runtime diagnosis controlled and owner-aware | Broad gate timing was mistaken for validator cost | isolated-vs-contended repeated samples, units, attribution, unchanged-floor decision | draft |
 | 5 | Complete mutation producer discovery | Focused producer expansion required manual additions | helper completeness matrix, focused producer proof, bounded residual | draft |
 | 6 | Reconcile publish state through an immutable ledger | Goal/handoff claims lagged the pushed issue and CI state | push-SHA ledger, issue/CI readback, stale-claim refusal fixtures | draft |
@@ -230,7 +230,7 @@ applies.
 
 - Objective: Replace manual final-bundle reconstruction with an offline dry-run planner that binds the frozen baseline, complete candidate range, generated plugin state, critique inputs, behavior channel, artifact inventory, surface inventory, and ordered proof commands.
 - Why this approach: The planner composes existing owners — the Slice 1 manifest validator, `.agents/surfaces.json` selector, packaging exporter, critique binding validator, and `run_slice_closeout.py` — instead of creating a second scheduler or generated-file registry.
-- Commits: pending Slice 3 closeout commit; the slice remains unpushed.
+- Commits: `9d306ac7` (`feat: add final bundle preflight planner`); the slice remains unpushed.
 - What changed: Added the source/plugin final-bundle CLI, planner, and cohesive evidence-input module; extended the goal-evidence surface to cover JSONL records; added 12 focused regressions; registered the intentional CLI subprocess boundary; and recorded the contract, design critique, post-ratchet implementation review, dry-run receipt, and pre-lock closeout.
 - Refusal contract: Unmatched paths, stale/missing packaging output, invalid manifest identity, unbound critique packets, missing/duplicate/unsafe behavior channels, diagnostic `--paths`, and outside-repository manifest input all refuse with structured blockers and no closeout command.
 - Targeted verification: Focused pytest `12 passed`; ruff passed; Python length limits passed; source/plugin evidence, library, and CLI copies are byte-identical; surfaces and critique validation passed; the boundary-bypass and duplicate ratchets passed; the full-range dry run returned `ready` with 67 paths, 47 evidence artifacts, 9 surfaces, 32 planned commands, matched packaging mirror, and zero blockers.
@@ -239,7 +239,7 @@ applies.
 - Test duplication pressure: The duplicate ratchet initially surfaced six families; five small cross-owner idioms were reviewed and classified intentional in `dup-review.json`, while one avoidable artifact-classification branch was replaced by an ordered prefix table. The final duplicate ratchet is clean with zero new fixable families; mutation producer proof remains an integrated locked-closeout obligation.
 - Alternatives rejected: Deferred command execution, shell parsing, live provider/CI refresh, installed-consumer proof, universal generated-asset registry, scheduler ownership, release/push, and runtime-budget changes.
 - Off-goal findings: The new JSONL goal-evidence surface coverage was required because the existing manifest left the persisted Slice 2 decision log unmatched; no issue write, issue closeout, release, Cautilus evaluation, push, remote CI claim, installed-host proof, or runtime-budget decision was performed.
-- Metrics: 12 focused tests; 2 implementation review rounds; 1 bounded reviewer per implementation round due host thread capacity; 67 full-range paths; 47 artifact inventory entries; 9 surfaces; 32 planned commands; dry-run status `ready`; pre-lock closeout status `completed` with broad pytest intentionally skipped.
+- Metrics: 12 focused tests; 2 implementation review rounds; 1 bounded reviewer per implementation round due host thread capacity; 67 full-range paths; 47 artifact inventory entries; 9 surfaces; 32 planned commands; dry-run status `ready`; pre-lock closeout status `completed` with broad pytest intentionally skipped; commit `9d306ac7`.
 
 ## Context Sources
 
