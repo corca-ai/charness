@@ -11,13 +11,13 @@ The issue was selected by the issue planner as the newest open bug. The public c
 
 ## Packet Consumed
 
-- Packet consumed: `charness-artifacts/critique/2026-08-06-150600-packet.json`
+- Packet consumed: `charness-artifacts/critique/2026-08-06-150947-packet.json`
 
 ## Reviewed Input Identity
 
-- Packet path: `charness-artifacts/critique/2026-08-06-150600-packet.json`
-- Packet SHA256: `b356f81bf99ed1847b35112e2099e2ca32aed292ce65bcd49e43c5e79a0c2cbe`
-- Identity SHA256: `0eae0535f0ff5012f31bbf3183c05411ac578ecacc411abcf514c3786e8d734d`
+- Packet path: `charness-artifacts/critique/2026-08-06-150947-packet.json`
+- Packet SHA256: `a37380b6068d12ed4da3f84d8a5c243a2b74212bd0c36f374fc63ade4e9835aa`
+- Identity SHA256: `21ef0cd95d8e613ceeb4d060b53082532d597bd0e7da236efc684ba5b5d9d317`
 
 ## Target
 
@@ -45,6 +45,7 @@ This is a `skill-capability` change: the disclosure contract is portable across 
 - The counterweight classified the duplicate-section and export-parity risk as `act-before-ship`, the CLI regression as required bundled evidence, and automated semantic truth checking as valid but deferred.
 - Round 2 found no blocker. It confirmed the validator invokes the parser, the CLI regression disables fixture injection, root/plugin copies are byte-identical, and both validator entrypoints accept the migrated current artifact. The round-2 finding status is accepted-unreviewed under the two-round cap; no further review round is claimed.
 - After round 2, the parser's section-boundary walk was refactored onto the shared Markdown section primitive and the quality reference catalog was synchronized. These are source-of-truth/duplication and catalog repairs, not new semantic policy; they are accepted-unreviewed under the two-round cap.
+- The post-commit mutation lane identified three uncovered parser branches; duplicate-field and invalid-status regressions were added without changing verdict policy. This coverage-only repair is accepted-unreviewed under the same cap.
 
 ## Counterweight Pass
 
@@ -89,7 +90,7 @@ Run the final focused and repository gates, validate the critique and quality ar
 
 ## Verification
 
-- `pytest -q tests/test_quality_surface_contract.py tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py tests/test_quality_delegated_review.py tests/test_quality_scaffold.py` — 55 passed after the repairs.
+- `pytest -q tests/test_quality_surface_contract.py tests/test_quality_artifact.py tests/test_quality_artifact_report_all.py tests/test_quality_delegated_review.py tests/test_quality_scaffold.py` — 57 passed after the repairs.
 - `python3 scripts/validate_quality_artifact.py --repo-root .` — current migrated artifact accepted.
 - `python3 scripts/check_staged_mirror_drift.py --repo-root .` — root/plugin mirror parity checked after synchronization.
 - Round-2 delegated reviewer — no blockers; root/plugin parity, CLI enforcement, and parser behavior independently read back.

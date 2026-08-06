@@ -44,6 +44,19 @@ def test_surface_contract_rejects_duplicate_sections() -> None:
         validate_surface_contract_section(VALID + VALID)
 
 
+def test_surface_contract_rejects_duplicate_fields() -> None:
+    duplicate_field = VALID[:-1] + ["- proof boundary: second observer", VALID[-1]]
+    with pytest.raises(SurfaceContractError, match="repeats `proof boundary`"):
+        validate_surface_contract_section(duplicate_field)
+
+
+def test_surface_contract_rejects_unknown_coverage_status() -> None:
+    invalid_status = VALID.copy()
+    invalid_status[1] = "- semantic coverage: `unknown` — the status is not allowed."
+    with pytest.raises(SurfaceContractError, match="semantic coverage must start"):
+        validate_surface_contract_section(invalid_status)
+
+
 @pytest.mark.parametrize(
     "mutation, message",
     [
