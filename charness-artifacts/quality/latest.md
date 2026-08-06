@@ -1,1 +1,1 @@
-2026-08-06-issue-480-authoring-path-resolver.md
+2026-08-06-issue-484-shared-portable-package.md

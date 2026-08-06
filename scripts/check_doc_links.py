@@ -61,15 +61,9 @@ PORTABLE_SKILL_KINDS = {"public", "support"}
 # yours" — which a consumer can read at a glance, and which
 # `inventory_skill_script_references.py` can actually RESOLVE here instead of
 # waving through.
-# Honest bound on that last clause: the resolver's `AUTHORING_REPO_SCRIPT_RE` is
-# `scripts/`-anchored, so only `<authoring-repo>/scripts/<name>` is resolved. The
-# `docs/` and `charness-artifacts/` forms are checked by nothing — converting a
-# markdown link to one of those trades a verified reference for an unverified
-# string. Accepted deliberately (the link was UNFOLLOWABLE for a consumer, so the
-# trade is from wrong-and-checked to right-and-unchecked), but it is a trade, not
-# a free repair. Widening the resolver past `scripts/` is tracked as
-# https://github.com/corca-ai/charness/issues/480 — a comment is a disclosure, not
-# a record, and an unfiled finding is a lost one.
+# The companion inventory resolves `<authoring-repo>/<path>` against the full
+# authoring tree, including `docs/` and `charness-artifacts/`. This keeps the
+# placeholder a checked reference rather than a disclosure-only escape hatch.
 PORTABLE_PLACEHOLDER_PREFIXES = (
     "<repo-root>/",
     "<plugin-dir>/",
@@ -150,6 +144,10 @@ def portable_skill_package_root(root: Path, doc: Path) -> Path | None:
     parts = rel.parts
     if len(parts) >= 3 and parts[0] == "skills" and parts[1] in PORTABLE_SKILL_KINDS:
         package_root = root.joinpath(*parts[:3])
+        if package_root.is_dir():
+            return package_root
+    if len(parts) >= 3 and parts[0:2] == ("skills", "shared"):
+        package_root = root / "skills" / "shared"
         if package_root.is_dir():
             return package_root
     return None
@@ -243,6 +241,7 @@ def classify_backtick_token(
     known_directories: set[str],
     canonical_markdown_surfaces: set[str],
     portable_package_root: Path | None,
+    package_root_relative: Path | None = None,
 ) -> str | None:
     """Return a short reason tag if the backticked token must become a markdown link.
 
@@ -287,7 +286,14 @@ def classify_backtick_token(
         # turns this axis from a per-site judgement into a mechanical check.
         if not PATHY_TOKEN_RE.match(bare):
             return None
-        package_relative = portable_package_root.relative_to(portable_package_root.parents[2]) / bare
+        if package_root_relative is None:
+            # Preserve the direct helper's historical API for callers that only
+            # supply the package root. Production callers pass the explicit
+            # repo-relative path so the shallower shared package is handled too.
+            package_root_relative = portable_package_root.relative_to(
+                portable_package_root.parents[2]
+            )
+        package_relative = package_root_relative / bare
         if package_relative.as_posix() in known_repo_paths:
             # Resolves inside the shipped package, so it is reachable as written.
             # Checked against the git listing, not `.exists()`: an untracked helper
@@ -325,6 +331,9 @@ def iter_backticked_file_refs(
 ) -> list[tuple[int, str, str]]:
     matches: list[tuple[int, str, str]] = []
     portable_package_root = portable_skill_package_root(root, doc)
+    package_root_relative = (
+        portable_package_root.relative_to(root) if portable_package_root is not None else None
+    )
     for lineno, line, in_fence in iter_doc_lines(doc):
         if in_fence:
             continue
@@ -338,6 +347,7 @@ def iter_backticked_file_refs(
                 known_directories,
                 canonical_markdown_surfaces,
                 portable_package_root,
+                package_root_relative,
             )
             if reason is not None:
                 matches.append((lineno, candidate, reason))
@@ -382,7 +392,7 @@ def iter_unresolved_command_targets(
                 if resolves(candidate):
                     continue
                 if package_root is not None:
-                    packaged = (package_root / candidate).relative_to(root).as_posix()
+                    packaged = (package_root.relative_to(root) / candidate).as_posix()
                     if resolves(packaged):
                         continue
                 matches.append((lineno, candidate))

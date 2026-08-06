@@ -636,6 +636,40 @@ def test_a_path_resolving_inside_the_skill_package_is_accepted(tmp_path: Path, m
     assert result.returncode == 0, result.stderr
 
 
+def test_shared_is_a_portable_package_for_package_relative_paths(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "repo"
+    shared = repo / "skills" / "shared"
+    (shared / "references").mkdir(parents=True)
+    (shared / "scripts").mkdir(parents=True)
+    (shared / "scripts" / "helper.py").write_text("# shared helper\n", encoding="utf-8")
+    (shared / "references" / "note.md").write_text(
+        "Run `scripts/helper.py` from the shared package.\n", encoding="utf-8"
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 0, result.stderr
+    assert _check_doc_links.portable_skill_package_root(repo, shared / "references" / "note.md") == shared
+
+
+def test_shared_unmarked_repo_path_is_refused(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "repo"
+    shared = repo / "skills" / "shared"
+    (shared / "references").mkdir(parents=True)
+    (repo / "scripts").mkdir()
+    (repo / "scripts" / "outside.py").write_text("# consumer/root helper\n", encoding="utf-8")
+    (shared / "references" / "note.md").write_text(
+        "The reader helper is `scripts/outside.py`.\n", encoding="utf-8"
+    )
+
+    result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "unmarked-tree" in result.stderr
+
+
 def test_a_canonical_markdown_surface_needs_no_tree_marker(tmp_path: Path) -> None:
     """`docs/handoff.md` means the same file in EVERY tree, so it needs no marker.
 

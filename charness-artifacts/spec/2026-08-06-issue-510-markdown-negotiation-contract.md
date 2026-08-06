@@ -125,3 +125,13 @@ transport fixtures.
 Add the stage and route declaration, write a transport fixture that returns a
 login wall for HTML and Markdown for `Accept: text/markdown`, then run the
 focused tests and update the closeout artifacts with the observed trace.
+
+## Interrupt Carry-Forward (2026-08-06)
+
+The forced `gather-510-markdown-representation-selection` interrupt was
+resolved by the completed local implementation and its paired transport and
+gather persistence fixtures. This refresh preserves the external-seam
+boundary: live provider negotiation, installed-consumer behavior, and remote
+CI remain unverified. Future provider-specific discovery remains the named
+follow-up; unrelated portability slices may continue without reopening this
+resolved contract.

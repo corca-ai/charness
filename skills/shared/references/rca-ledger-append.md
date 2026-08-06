@@ -66,7 +66,7 @@ suppress the event.
 ## How
 
 ```bash
-python3 scripts/record_rca_event.py \
+python3 <plugin-dir>/scripts/record_rca_event.py \
   --source <debug|issue|retro> --event-kind <bug|repeated_correction|weak_proof> \
   --class-key <short-opaque-class> [--converted --durable-kind <kind>] \
   [--caught-by <agent|human|gate>] [--ref <issue|sha|path>] [--note "<summary>"]
@@ -74,4 +74,4 @@ python3 scripts/record_rca_event.py \
 
 The committed ledger is durable repo state: commit the appended line with the
 work it records, in the same closeout. Check the running figure any time with
-`python3 scripts/aggregate_rca_ledger.py`.
+`python3 <plugin-dir>/scripts/aggregate_rca_ledger.py`.
