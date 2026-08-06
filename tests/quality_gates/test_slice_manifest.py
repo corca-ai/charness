@@ -370,6 +370,12 @@ def test_manifest_private_validation_refusal_branches(fixture_path: Path, tmp_pa
     assert refused.returncode == 1
     assert "slice-manifest: REFUSED [missing_manifest]" in refused.stderr
     assert "source-checkout-only" in refused.stderr
+    machine_refused = subprocess.run(
+        [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(empty_root), "--json"],
+        capture_output=True, text=True, check=False,
+    )
+    assert machine_refused.returncode == 1
+    assert "source-checkout-only" in json.loads(machine_refused.stdout)["error"]["message"]
     manifest = repo / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
     human = subprocess.run(
         [sys.executable, str(SOURCE_ROOT / "scripts/validate_slice_manifest.py"), "--repo-root", str(repo), "--manifest", str(manifest)],
