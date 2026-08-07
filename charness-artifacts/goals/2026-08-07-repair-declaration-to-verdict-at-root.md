@@ -328,7 +328,16 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- `Routing: achieve — goal lifecycle operator for the slice sequence, premise-check phase, and closeout binding`
+- `Routing: impl + prove — slice 1 and 2 builds and their closeout ledgers`
+- `Routing: critique — the bounded fresh-eye rounds; round 2 read the repairs and caught a fix carrying the class it fixed`
+- `Routing: issue — #550/#551/#552 filed under the standing approval; #553 filed, repaired, and closed through its full floor`
+- `Routing: quality — pre-push gate cadence; it failed first and named four real defects`
+- `Routing: release — v3.5.0 publish under the operator's explicit grant`
+- `Gather: n/a — no external source informed this run; every input was repo-local or a GitHub issue already tracked`
+- `Release: v3.5.0 published; critique charness-artifacts/critique/2026-08-07-release-v3.5.0-critique.md; release https://github.com/corca-ai/charness/releases/tag/v3.5.0 confirmed non-draft via gh release view, a channel distinct from the publish script's exit code`
+- `Issue closeout: #553 — carrier direct-commit 19189ff1; validate-closeout-draft draft_verified; verify-closeout --expect-state CLOSED returned CLOSED via backend-state-readback. #550/#551/#552 filed as findings, not closed by this run.`
+- `Successor goal: charness-artifacts/goals/2026-08-08-finish-the-declaration-to-verdict-sequence.md — carries slices 3-5 plus the four boundaries this run measured (premise-check as a phase, two review rounds, upper bound on any widening, and the quality gate at every slice boundary rather than only at the end)`
 
 ## Discuss Before Activation
 
