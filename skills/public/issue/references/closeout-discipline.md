@@ -10,12 +10,19 @@ issue-specific instantiation of the shared
 
 `issue new` closeout must render only from a verified ledger.
 
-After every successful create, capture `{repo, number, url, state}` from the
-backend response (or, when the response shape is uncertain, re-read with
+After every successful create, capture `{repo, number, url}` from the create
+helper's payload. Those are the exact key names it emits; `created_number` and
+`created_url` are deprecated aliases of the same two values, kept for existing
+readers.
+
+`state` is deliberately NOT in that set. No create path emits it — it belongs to
+the read/verify shape, and a just-created issue is `OPEN` by construction, so
+reporting it from create is noise dressed as verification. When you genuinely
+need state (resolve and closeout do), read it with
 `gh issue view --repo <full_name> <number> --json number,url,state` or the
 host-mediated equivalent — for example, the appropriate
 `acme github issue view ...` invocation that returns `number`, `url`, and
-`state`).
+`state`. That is a separate call, not a fallback for an uncertain response shape.
 
 The closeout report includes:
 
@@ -28,6 +35,13 @@ The closeout report includes:
   ledger
 - if any verification call failed, surface the failure inline next to the
   affected ledger entry rather than silently smoothing it
+- **a null `number` does NOT mean the create failed — do not retry it.** The
+  helper returns `ok: true` with `number: null` only when the issue was created
+  and its number could not be parsed from the backend's output. The issue exists.
+  Re-read it (`gh issue list --repo <full_name> --limit 5` or the host-mediated
+  equivalent), report it, and say the number was recovered rather than returned.
+  Retrying the create here files a duplicate, and that is the harmful reaction
+  that looks safe.
 
 Suggested single-issue shape:
 

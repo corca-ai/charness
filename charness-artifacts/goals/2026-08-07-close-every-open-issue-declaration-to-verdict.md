@@ -325,6 +325,68 @@ executable final consumer — that is `#518`'s work and the surface notes say so
 No claim the marker rule should be armed; D47 stays deferred. Round-2 repairs are
 recorded as accepted-unreviewed per the two-round cap.
 
+### Slice 1 — Repair the issue lane's own report contract (`#529`)
+
+**Root cause, from the delegated causal review — not a typo.** `issue_read.py`
+emits `number`; `issue_create.py` emitted `created_number`. One skill, two
+spellings of one concept, and the docs were written in the *read* helper's
+vocabulary. So an agent following `SKILL.md` literally read nulls from a create
+that had SUCCEEDED, and a retry would have filed a duplicate issue.
+
+**The review found more than the issue reported.**
+
+- A **third** doc site the issue does not name: `references/resolve-flow.md:50`.
+  A fix touching only the two reported sites would have left the resolve path
+  broken.
+- `state`, asked for by `closeout-discipline.md:13`, is **unobtainable by any
+  rename** — no create path emits it, ever. It is a `view` field, and the doc
+  framed the readback as a conditional fallback when it was the only route.
+- **Nothing in the repo gates a skill's documented payload keys against what its
+  helper emits**, and the test suite is structurally incapable of it:
+  `test_issue_create.py` asserts the helper's real keys, `test_issue_closeout_discipline.py`
+  asserts the docs' real strings, both pass, and no test read both.
+
+**Fix direction chosen: make the helper emit the contract's names.** The review
+established this has *zero* programmatic downstream consumers — four assertions,
+all in one test file, and nothing outside this repo's tests reads
+`created_number`/`created_url`. The alternative (renaming the docs) would have
+entrenched the intra-skill naming split that caused the bug. `created_*` are kept
+as deprecated aliases because charness installs into consumer repos.
+
+`state` was removed from the create-side ask and re-homed to the read/verify
+shape, with the reason stated: a just-created issue is `OPEN` by construction, so
+reporting state from create is noise dressed as verification.
+
+**The missing gate, added.** A test that parses the ledger key names out of the
+doc TEXT and asserts every one is a key the helper actually emits. Proven against
+the pre-fix tree at `8b33af7e`: it reports `['number', 'state', 'url']` missing
+and fails. It passes at HEAD. It reads the names rather than restating them, so a
+rename on either side reds instead of drifting apart again.
+
+**Public-skill validation decision (recorded for `--ack-cautilus-skill-review`).**
+No change to `evals/cautilus/scenarios.json` and no change to the consumer
+contract in `docs/public-skill-dogfood.json`. Reason: the consumer-facing contract
+`{repo, number, url}` is UNCHANGED — this slice made the helper conform to the
+contract that was already documented and already asserted by the existing dogfood
+acceptance evidence ("renders `issue new` closeout from the verified issue ledger
+plus the created title and a short filed-body summary"). That criterion was
+previously unsatisfiable; it is now satisfiable. A contract that gained no new
+semantics needs no new scenario. No Cautilus run: eval-only, ask-before-run, and
+this goal's Non-Goals exclude it.
+
+**Sibling filed, not fixed here.** The review's sweep found the same class in a
+different skill: `quality/SKILL.md:69-79` names `scaffold_quality_artifact.py`
+but instructs `--intent record`, `update_current_pointer_after_write`, and
+`refresh_current_pointer_command`, all of which belong to the unnamed
+`resolve_quality_artifact.py`. Out of `#529`'s job-to-be-done; filed separately.
+
+**Non-claims.** The new gate covers the `issue` skill only. The general question
+— whether doc-to-helper key agreement should be gated repo-wide, and whether that
+gate is declaration-based or inference-based — is named by the review as a design
+question bigger than this issue and is NOT answered here. The review's sweep did
+not reach `create-skill`, `critique`, `gather`, `ideation`, `impl`, `narrative`,
+`prove`, `retro`, `setup`, or `spec` at depth.
+
 ## Context Sources
 
 1. `docs/design-north-star.md` — the "teeth only where a wrong answer escapes"

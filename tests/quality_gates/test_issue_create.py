@@ -123,6 +123,12 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     assert payload["ok"] is True
     assert payload["created_number"] == 777
     assert "issues/777" in payload["created_url"]
+    # The canonical names the skill contract tells the agent to report from. Asserted at
+    # RUNTIME, not just as source literals: without these, deleting `number`/`url` from
+    # the payload leaves this behavioral suite fully green and only the static doc-key
+    # guard catches it.
+    assert payload["number"] == 777
+    assert "issues/777" in payload["url"]
     assert payload["body_verified"] is True
     assert payload["body_preview"] == HOSTILE_BODY
     # The backend received the body via file, byte-identical to the input.

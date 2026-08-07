@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from .support import ROOT, fake_gh_env, run_script
@@ -38,6 +39,66 @@ def test_issue_skill_pins_verified_ledger_for_new_closeout() -> None:
     assert "ledger" in skill
     assert "Created-Issue Ledger" in closeout
     assert "never report a number, repo, or status not present in the" in closeout
+
+
+def test_the_ledger_keys_the_docs_name_are_keys_the_create_helper_actually_emits() -> None:
+    """The join no test in this repo used to make, and the reason the defect was invisible.
+
+    `test_issue_create.py` asserted the helper's real keys. The tests above assert the
+    docs' real strings. Both passed while the docs named `{repo, number, url}` and the
+    helper emitted `created_number` / `created_url` — so an agent following the
+    instruction literally read nulls on a create that had SUCCEEDED, and a retry would
+    have filed a duplicate issue. Two correct tests, one uncovered seam between them.
+
+    This reads the key names out of the doc text rather than restating them, so renaming
+    on either side fails here instead of silently drifting apart again.
+    """
+    documented: set[str] = set()
+    for path in (SKILL, CLOSEOUT, RESOLVE_FLOW):
+        for match in re.finditer(r"\{([a-z_]+(?:,\s*[a-z_]+)+)\}", _read(path)):
+            keys = {key.strip() for key in match.group(1).split(",")}
+            # Only brace sets containing `repo` are the CREATE ledger. Scoping on that
+            # keeps the read/verify shape (`--json number,url,state`) from being checked
+            # against the create payload, which would fail on a doc that is entirely
+            # correct -- and the cheapest way out of that red would be deleting the guard.
+            if "repo" in keys:
+                documented.update(keys)
+    assert documented, "no create-ledger key set found in the issue docs; the parser is broken, not the docs"
+
+    # Brace sets are not the only way the docs name a payload key. These are named in
+    # prose and backticks, which no safe regex distinguishes from ordinary words, so they
+    # are listed rather than inferred. Listing them is what makes the guard cover the keys
+    # the create closeout actually reads instead of only the three in the ledger set.
+    documented.update({"body_preview", "body_verified", "title"})
+
+    emitted = _create_payload_keys()
+    missing = sorted(documented - emitted)
+    assert not missing, (
+        f"issue docs tell the agent to report {missing}, which the create helper never emits. "
+        f"Helper emits: {sorted(emitted)}"
+    )
+
+
+def _create_payload_keys() -> set[str]:
+    """Every key `issue_create.create_issue` can put in its payload, read from the source.
+
+    Read statically on purpose: driving the helper would need a backend, and the failure
+    being guarded is a NAME mismatch, which the literal assignments already show.
+
+    Scoped to the `payload: dict[str, Any] = {...}` literal and later `payload[...] =`
+    assignments, NOT to every dict key in the file. Parsing the whole file passed today
+    only because every other dict literal happens to fit on one line; a formatter wrapping
+    one of them would silently widen this set and make the assertion above pass when it
+    should fail.
+    """
+    source = (
+        ROOT / "skills" / "public" / "issue" / "scripts" / "issue_create.py"
+    ).read_text(encoding="utf-8")
+    literal = re.search(r"payload: dict\[str, Any\] = \{(.*?)\n    \}", source, re.DOTALL)
+    assert literal is not None, "could not find the create payload literal; this guard is looking at the wrong shape"
+    keys = set(re.findall(r'^\s*"([a-z_]+)":', literal.group(1), re.MULTILINE))
+    keys.update(re.findall(r'payload\["([a-z_]+)"\]\s*=', source))
+    return keys
 
 
 def test_issue_new_closeout_requires_title_body_preview_and_warning() -> None:
