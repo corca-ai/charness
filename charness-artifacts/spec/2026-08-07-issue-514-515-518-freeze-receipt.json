@@ -2,7 +2,7 @@
   "capture_receipt_identity": "77e0afa47d1fa361cca0d48ccc874935268bc924dab254dd500485f519c7bc0d",
   "capture_receipt_path": "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-capture-receipt.json",
   "clause_inventory_identity": "28ca8bd6756a22a01c435fdab7c40446b2b274550370f705d318ded3afbca3de",
-  "freeze_identity": "9e38d4f0df1bd49ce2fe621299edfee7ab0d3d588ff4833d657e6452bac7eefa",
+  "freeze_identity": "1a800d9ed57857078189188f345814cb60391f1eeef2bbd2bff20331463d330c",
   "inspected_locators": [
     ".agents/quality-adapter.yaml",
     "scripts/check_issue_closeout_commit_msg.py",
@@ -25,7 +25,7 @@
     "skills/public/release/scripts/release_issue_closeout_message.py",
     "tests/test_quality_surface_contract.py"
   ],
-  "inspection_identity": "498785da1bf1f835299ad73ed8561758b550e0cd91330d2dffe0a656c38b96f7",
+  "inspection_identity": "d62d8937507fb3e0ceecddbb163c0d23e424abf71e0d0d206858d3757f893c6f",
   "inspection_path": "charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json",
   "issues": [
     514,
@@ -34,7 +34,7 @@
   ],
   "normalization_policy": "github-issue-v1",
   "repository": "corca-ai/charness",
-  "reviewed_input_identity": "fd73db91d5b086ce6e3010e5b221516d29ce271b5c4f1a2fa92a3df6a4a10e15",
+  "reviewed_input_identity": "db0a299751cebeba60b6740d0225a10f9fe26074ad56b3882d536e7ba5baf529",
   "schema": "issue-source-freeze-receipt/v1",
   "snapshot_path": "charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json",
   "source_snapshot_sha256": "9eb2d417e03a0486440c5e17e8a385915052e736c3b946a8fcd70748c0837bf6"

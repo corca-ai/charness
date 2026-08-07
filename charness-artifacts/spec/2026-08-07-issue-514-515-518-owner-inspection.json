@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "498785da1bf1f835299ad73ed8561758b550e0cd91330d2dffe0a656c38b96f7",
+  "inspection_identity": "d62d8937507fb3e0ceecddbb163c0d23e424abf71e0d0d206858d3757f893c6f",
   "issues": [
     514,
     515,
@@ -18,7 +18,7 @@
       "note": "The executable route that runs quality phases. #518's question is whether every surface the adapter declares reaches a phase here, and whether a declared-but-unreached surface is visible as a gap rather than absent from the final artifact.",
       "path": "scripts/run-quality.sh",
       "role": "quality-route-and-fold",
-      "sha256": "443d7216ee02b2f3cfc8f190796193ebd5c32801176dcce597ec78579cd7184a"
+      "sha256": "ea9223dcca443f6ccdd2fd0982e19d7aded3db4a25a20d89729a8e9382987169"
     },
     {
       "issue": 515,
