@@ -381,3 +381,121 @@ def test_rotate_archives_tolerates_concurrently_deleted_oldest(tmp_path: Path, m
         if path.name.startswith(record_quality_runtime.ARCHIVE_PREFIX)
     ]
     assert len(remaining) <= record_quality_runtime.MAX_ARCHIVE_FILES
+
+
+def _profile_median(repo: Path, profile_id: str, label: str) -> int | None:
+    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    entry = payload.get("profiles", {}).get(profile_id, {}).get("commands", {}).get(label)
+    return entry["median_recent_elapsed_ms"] if entry else None
+
+
+def test_a_subset_run_never_enters_the_window_the_full_queue_is_budgeted_against(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # #544's real defect: the same label costs 2.1x-4.8x more in the ~85-gate full
+    # queue than in the 14-gate docs-only pre-push subset, and the sample records
+    # only elapsed time. Pooled, the enforcement median stops being a function of
+    # the code. This is the regression test for the pooling itself, not for a bar.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    for elapsed, regime in (
+        ("15000", ""),
+        ("15200", ""),
+        ("4800", "docs-only"),
+        ("4700", "docs-only"),
+        ("4650", "docs-only"),
+    ):
+        assert (
+            _record(
+                monkeypatch,
+                repo,
+                "--label",
+                "check-markdown",
+                "--elapsed-ms",
+                elapsed,
+                "--status",
+                "pass",
+                "--timestamp",
+                "2026-08-07T07:00:00Z",
+                "--runtime-profile",
+                "local-test-36cpu",
+                "--runtime-regime",
+                regime,
+            )
+            == 0
+        )
+    capsys.readouterr()
+
+    # The enforced profile sees only full-queue samples. Were the three cheap
+    # docs-only samples pooled in, the median would fall to 4800 -- a 3.1x drop
+    # caused by how the gate was invoked, not by anything the gate checks.
+    assert _profile_median(repo, "local-test-36cpu", "check-markdown") == 15100
+    assert _profile_median(repo, "local-test-36cpu.docs-only", "check-markdown") == 4700
+
+
+def test_an_absent_regime_records_into_the_enforced_profile_unchanged(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    # The unfiltered runner passes an EMPTY regime rather than omitting the flag,
+    # so the empty case is the common path and must not invent a `<profile>.`
+    # bucket that no budget is ever declared under.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    for extra in (("--runtime-regime", ""), ()):
+        assert (
+            _record(
+                monkeypatch,
+                repo,
+                "--label",
+                "pytest",
+                "--elapsed-ms",
+                "1000",
+                "--status",
+                "pass",
+                "--timestamp",
+                "2026-08-07T07:00:00Z",
+                "--runtime-profile",
+                "local-test-36cpu",
+                *extra,
+            )
+            == 0
+        )
+    capsys.readouterr()
+
+    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    assert sorted(payload["profiles"]) == ["local-test-36cpu"]
+    assert payload["profiles"]["local-test-36cpu"]["commands"]["pytest"]["samples"] == 2
+
+
+def test_a_regime_slug_cannot_forge_a_second_separator(tmp_path: Path, monkeypatch, capsys) -> None:
+    # `RUNTIME_PROFILE_ID_RE` permits `.`, so an unsanitised regime could produce
+    # `<profile>.<a>.<b>` and make `<profile>.<a>` ambiguous between a regime id
+    # and a prefix of one. The regime slug excludes the separator on purpose.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    assert (
+        _record(
+            monkeypatch,
+            repo,
+            "--label",
+            "pytest",
+            "--elapsed-ms",
+            "1000",
+            "--status",
+            "pass",
+            "--timestamp",
+            "2026-08-07T07:00:00Z",
+            "--runtime-profile",
+            "local-test-36cpu",
+            "--runtime-regime",
+            "docs.only/weird ",
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    payload = json.loads((repo / ".charness" / "quality" / "runtime-signals.json").read_text(encoding="utf-8"))
+    assert sorted(payload["profiles"]) == ["local-test-36cpu.docs-only-weird"]

@@ -111,6 +111,16 @@ would block the review, skip it and report the limitation. A single global
 threshold is acceptable only when the repo intentionally measures one stable
 runner class.
 
+The machine is only half of "materially different": the same machine running a
+14-gate subset and an 85-gate battery measures the same label 2.1x-4.8x apart.
+`CHARNESS_RUNTIME_REGIME` keys those samples into `<profile>.<regime>` so a bar
+is never compared against a median drawn from a mixture of both. Name a recurring
+subset explicitly. Charness regimes two cases automatically: any label-filtered
+run, and any run that opts an extra gate into the main concurrent phase. It does
+NOT regime the smaller variations inside the standard battery — a conditionally
+queued gate, or a mode that drops one — because splitting the dominant sample
+population over a one-gate delta costs more evidence than it buys.
+
 For broad quality or setup reviews, run bounded delegated exploration when
 the host supports it before finalizing slow-gate advice. Useful lenses are:
 fixture economics, parallel critical path, duplicated proof, adapter/runtime

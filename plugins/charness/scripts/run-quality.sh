@@ -65,6 +65,43 @@ RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
 RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
+# A label-filtered run measures the SAME gate against a different amount of
+# competition, and the sample records only elapsed time. Pooled with full-queue
+# samples, the enforcement median becomes a function of how the operator happened
+# to invoke the gate rather than of the code (#544). The aggregate label already
+# refuses to record under a filter for exactly this reason; the per-gate samples
+# are re-keyed instead of dropped, so the subset regime stays measurable.
+# A caller that runs a RECURRING subset names it (the docs-only pre-push branch
+# does); an ad hoc filter falls back to one shared `filtered` bucket, which is
+# honest about being a mixture rather than pretending to be a regime.
+# A gate set can differ from the standard battery in two directions, and both
+# change what every sibling is competing with: a label filter NARROWS it, and an
+# opt-in gate WIDENS it. Every env-gated gate that queues into the MAIN concurrent
+# phase is a widening case, so they are enumerated rather than special-cased one at
+# a time — naming only the first one found is how the second keeps contaminating
+# the enforced window. Gates that occupy their own phase (the agent-browser pair,
+# each queued and flushed alone) are deliberately absent: they compete with
+# nothing, so they change no sibling's sample.
+RUN_QUALITY_EXTRA_GATE_TOKENS=""
+if [[ "${CHARNESS_QUALITY_DEAD_CODE:-0}" == "1" ]]; then
+  RUN_QUALITY_EXTRA_GATE_TOKENS="${RUN_QUALITY_EXTRA_GATE_TOKENS}-dead-code"
+fi
+if [[ "${CHARNESS_SUPPLY_CHAIN_ONLINE:-0}" == "1" ]]; then
+  RUN_QUALITY_EXTRA_GATE_TOKENS="${RUN_QUALITY_EXTRA_GATE_TOKENS}-supply-chain"
+fi
+if [[ -n "$RUN_QUALITY_LABELS" ]]; then
+  RUN_QUALITY_RUNTIME_REGIME="${CHARNESS_RUNTIME_REGIME:-filtered}"
+elif [[ -n "$RUN_QUALITY_EXTRA_GATE_TOKENS" ]]; then
+  RUN_QUALITY_RUNTIME_REGIME="${CHARNESS_RUNTIME_REGIME:-plus${RUN_QUALITY_EXTRA_GATE_TOKENS}}"
+else
+  RUN_QUALITY_RUNTIME_REGIME=""
+fi
+# Exported as well as passed explicitly: gates that record their OWN samples
+# through the recorder (`measure_startup_probes.py --record-runtime-signals`)
+# never see this script's locals, and an unregimed sample from inside a filtered
+# run is the same contamination one call site over. Same variable both ways, so
+# the ambient and explicit values cannot disagree.
+export CHARNESS_RUNTIME_REGIME="$RUN_QUALITY_RUNTIME_REGIME"
 RUN_QUALITY_START_NS="$(date +%s%N)"
 PYTEST_DEBUG_TEMPROOT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-temp-root)"
 export PYTEST_DEBUG_TEMPROOT
@@ -263,8 +300,16 @@ flush_runtime_batch() {
   if [[ ! -s "$RUN_QUALITY_RUNTIME_BATCH" ]]; then
     return 0
   fi
+  # Only the batch path passes the regime on ARGV. `record_runtime` serves the
+  # aggregate label, which is unreachable under a label filter (its
+  # `-z "$RUN_QUALITY_LABELS"` guard) but IS reachable under a widening opt-in —
+  # so the aggregate does get regimed, via the exported variable rather than a
+  # flag. That is a real dependency on the `export` above, not an accident: an
+  # unregimed `run-quality-full` sample from a dead-code run would land against
+  # the real bar while all its per-gate siblings went to the regime bucket.
   if ! python3 scripts/record_quality_runtime.py \
     --repo-root "$REPO_ROOT" \
+    --runtime-regime "$RUN_QUALITY_RUNTIME_REGIME" \
     --batch "$RUN_QUALITY_RUNTIME_BATCH" >/dev/null; then
     echo "run-quality: warning: failed to record phase runtimes." >&2
   fi

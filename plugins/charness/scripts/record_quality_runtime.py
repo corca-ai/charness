@@ -50,6 +50,7 @@ _runtime_profile_lib = load_path_module(
 )
 usable_cpu_count = _runtime_profile_lib.usable_cpu_count
 machine_runtime_profile = _runtime_profile_lib.machine_runtime_profile
+regime_scoped_profile = _runtime_profile_lib.regime_scoped_profile
 
 SUMMARY_FILENAME = "runtime-signals.json"
 SMOOTHING_FILENAME = "runtime-smoothing.json"
@@ -83,6 +84,15 @@ def parse_args() -> argparse.Namespace:
         "--runtime-profile",
         default=os.environ.get("CHARNESS_RUNTIME_PROFILE"),
         help="Named machine/runner profile for runtime samples. Defaults to a fast local machine profile.",
+    )
+    parser.add_argument(
+        "--runtime-regime",
+        default=os.environ.get("CHARNESS_RUNTIME_REGIME"),
+        help=(
+            "Gate-set regime these samples were taken under (e.g. `docs-only`, `filtered`). "
+            "Scopes them into `<profile>.<regime>` so a subset run's cheaper timings never "
+            "enter the window the full-queue budgets are enforced against."
+        ),
     )
     args = parser.parse_args()
     if args.batch is None:
@@ -331,7 +341,10 @@ def main() -> int:
     state_dir.mkdir(parents=True, exist_ok=True)
 
     try:
-        runtime_profile = normalize_runtime_profile(args.runtime_profile or machine_runtime_profile())
+        runtime_profile = regime_scoped_profile(
+            normalize_runtime_profile(args.runtime_profile or machine_runtime_profile()),
+            args.runtime_regime,
+        )
     except ValueError as exc:
         raise SystemExit(str(exc)) from exc
     batch_errors: list[str] = []

@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 119,
-  "indexed_artifact_count": 107,
+  "source_artifact_count": 120,
+  "indexed_artifact_count": 108,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
     "host-disproves-local": 2,
-    "none": 37,
+    "none": 38,
     "operator-visible-recovery": 22,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
     "monitor": 91,
-    "none": 11
+    "none": 12
   },
   "entries": [
     {
@@ -1504,6 +1504,20 @@
       "next_step": "spec",
       "handoff_artifact": "charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md",
       "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-07-issue-544-runtime-budget-regime-mixture-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
     },
     {
       "artifact_path": "charness-artifacts/debug/latest.md",

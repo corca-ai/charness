@@ -196,9 +196,31 @@ Do not derive hard pass/fail budgets from automatic CPU fingerprints by
 default. Hardware facts can be useful diagnostic metadata, but named profiles
 keep budget history from fragmenting across incidental runner details.
 
+A budget is a claim about one workload, so samples taken under a different GATE
+SET are keyed into a different profile. When `run-quality.sh` runs a label subset
+(`CHARNESS_QUALITY_LABELS`) or opts an extra gate into the main concurrent phase,
+it records under `<profile>.<regime>` instead of `<profile>`. The caller may name a
+recurring subset with `CHARNESS_RUNTIME_REGIME`; an ad hoc filter falls back to
+`filtered`, and an opt-in run to `plus-<gate>` (`plus-dead-code`,
+`plus-supply-chain`, or both joined). The reason is measured — the same
+labels ran 2.1x-4.8x faster in a 14-gate subset than in the ~85-gate full queue,
+and a recorded sample says only how long the label took, never how much it was
+competing with. Pooled, the enforcement median stops being a function of the code
+and becomes a function of how the gate happened to be invoked.
+
+`<profile>.<regime>` profiles are evidence, not budget bases. No automatic path
+selects one for enforcement — the regime is applied by the recorder only, never by
+profile selection — so a regime profile accumulating samples with no `budgets`
+block is expected and does not block anything. Naming one explicitly through
+`--runtime-profile` or `CHARNESS_RUNTIME_PROFILE` still resolves it like any other
+id, and without a `budgets` block that is a configuration error, not a no-op.
+Declare budgets for one only if you decide that regime is worth enforcing in its
+own right.
+
 A profile that has recorded samples but no `budgets` block is the one combination
-that hard-blocks the gate, and writing that block by hand is where bars get
-mis-transcribed below already-observed runs. Derive a starting block instead:
+that hard-blocks the gate — when it is the SELECTED profile — and writing that
+block by hand is where bars get mis-transcribed below already-observed runs.
+Derive a starting block instead:
 
 ```bash
 python3 <quality-scripts>/check_runtime_budget.py --repo-root . \

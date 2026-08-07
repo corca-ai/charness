@@ -34,12 +34,23 @@ def _confine_git_discovery_to_pytest_temp(
             os.environ["GIT_CEILING_DIRECTORIES"] = previous
 
 
-AMBIENT_RUNNER_ENV = ("MUTATION_BASE_SHA", "MUTATION_HEAD_SHA", "GITHUB_OUTPUT")
+AMBIENT_RUNNER_ENV = (
+    "MUTATION_BASE_SHA",
+    "MUTATION_HEAD_SHA",
+    "GITHUB_OUTPUT",
+    "CHARNESS_RUNTIME_REGIME",
+    "CHARNESS_RUNTIME_PROFILE",
+)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def _scrub_ambient_runner_state() -> Iterator[None]:
-    """Stop the CI runner's own state from reaching the suite (#466).
+    """Stop AMBIENT state from reaching the suite (#466, #544).
+
+    Originally the CI runner's own environment; it now also covers local
+    `run-quality.sh` state, which is exported on a developer machine and reaches
+    the `pytest` gate the same way. The unifying property is not where the
+    variable comes from, it is that a reader inside the suite defaults from it.
 
     The scheduled mutation workflow's "Select mutation sample" step launches the
     coverage-baseline pytest (`python3 -m pytest -q -m 'not release_only' tests`)
@@ -59,6 +70,24 @@ def _scrub_ambient_runner_state() -> Iterator[None]:
       output file that the "Run mutation" step then consumes. Masked in practice
       only by ordering (the baseline pytest runs before the real publish, and
       GitHub keeps the last value for a duplicate key) -- luck, not isolation.
+
+    * `CHARNESS_RUNTIME_REGIME`/`CHARNESS_RUNTIME_PROFILE` -- both are defaults
+      for `record_quality_runtime.py`'s `--runtime-regime`/`--runtime-profile`,
+      and `run-quality.sh` EXPORTS the regime for the whole run, so the `pytest`
+      gate inherits it. Under `CHARNESS_QUALITY_LABELS=pytest ./scripts/run-quality.sh`
+      the regime is `filtered`, and the recorder tests that drive `main()`
+      in-process then file their samples under `default.filtered` instead of
+      `default`. Reproduced: `CHARNESS_RUNTIME_REGIME=filtered pytest
+      tests/quality_gates/test_quality_runtime_recorder.py` fails three cases,
+      including the one written to pin the absent-regime path. A false red caused
+      purely by how the gate was invoked -- which is the same defect class as the
+      issue that introduced the regime (#544), one layer up.
+      `CHARNESS_RUNTIME_PROFILE` is scrubbed alongside it: identical shape, and
+      masked today only because no test asserts on a DERIVED profile id without
+      pinning it -- the two recorder tests that pass no `--runtime-profile` happen
+      to read `profiles[next(iter(profiles))]` or assert only on archive
+      filenames. That is a property of the current assertions, not of the name,
+      and the next test to assert a concrete derived id would inherit the bug.
 
     Scrubbed session-wide rather than per test: individual tests had already
     started deleting the range one at a time, which only ever fixes the test that

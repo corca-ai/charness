@@ -7,6 +7,34 @@ from typing import Any
 
 DEFAULT_RUNTIME_PROFILE = "default"
 RUNTIME_PROFILE_ID_RE = re.compile(r"[^A-Za-z0-9_.-]+")
+# A regime slug may not contain the separator itself, so `<profile>.<regime>` stays
+# one unambiguous split. `RUNTIME_PROFILE_ID_RE` permits `.`; this one does not.
+RUNTIME_REGIME_SEPARATOR = "."
+RUNTIME_REGIME_SLUG_RE = re.compile(r"[^A-Za-z0-9_-]+")
+
+
+def regime_scoped_profile(base_profile: str, regime: str | None) -> str:
+    """Key samples taken under a different GATE SET into a different profile.
+
+    A runtime bar is a claim about one workload, but the recorded sample says only
+    how long a label took -- not how many siblings it was competing with. This repo
+    runs the same label in a ~85-gate full queue and in a 14-gate docs-only pre-push
+    subset (`.githooks/pre-push`), and the measured cost differs by 2.1x-4.8x. Pooled
+    in one window, the enforcement median stops being a function of the code and
+    becomes a function of how many docs-only pushes happened to land recently.
+
+    The profile id is already the partition key every layer agrees on: the recorder
+    writes under it, `profile_commands` reads under it, and budgets are declared per
+    profile. So a regime needs no new field and no change to the verdict rule -- it
+    scopes the id, and the mixture stops existing at the source.
+
+    A regime is NOT a budget basis on its own. Scoping moves the off-regime samples
+    out of the enforced window; it does not claim the off-regime bucket is sized.
+    """
+    slug = RUNTIME_REGIME_SLUG_RE.sub("-", (regime or "").strip()).strip("-")
+    if not slug:
+        return base_profile
+    return f"{base_profile}{RUNTIME_REGIME_SEPARATOR}{slug}"
 
 
 def normalize_runtime_profile(value: str | None) -> str:
