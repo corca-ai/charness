@@ -32,9 +32,11 @@ Slice 4 substrate; nothing built there is rebuilt here.
 - Current slice intent: close all 19 open issues by repairing the shared
   declaration-to-verdict boundary first, then the surfaces that accumulated on
   top of it — in an order where each slice's tools already exist.
-- Next action: Slice 2 (`#530`) — make adapters able to refuse unrecognized input.
-  The closeout machinery is now proven end to end on `#529`, so the remaining
-  issues are ordinary slice work rather than blocked work.
+- Next action: pick the next tractable issue. Two are closed (`#529`, `#533`), both
+  with full floors and adapter readbacks. `#530` is scouted and PARKED: its causal
+  review (posted on the issue) shows the named remedy's premise does not hold, so it
+  needs a contract design pass, not a loader patch — do not shape a slice around it
+  without reading that comment first.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye review at each slice that changes verdict logic, with a mandatory
   second round when round 1 produces repairs; broad proof at bundle boundaries.
@@ -214,7 +216,7 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | 3 | Let a repo declare a sub-key ABSENT | #528 | Needs Slice 2's absent/defaulted/declared distinction; deletions currently refill silently | planned |
 | 4 | Reconcile every declared quality surface to a reader or a typed gap (+ awiki) | #518 | The flagship declaration-to-verdict repair; consumes Slices 2-3 | planned |
 | 5 | Repair quality-surface routing and disclosure | #515 | Own contract; reuses #517's existing disclosure floor rather than re-solving it | planned |
-| 6 | Reconcile the declared mirrors and waivers | #526, #533 | Same family, now cheap: #526 has a working sibling in-repo to copy; #533 is a one-path CI/local drift | planned |
+| 6 | Reconcile the declared mirrors and waivers | #526, ~~#533~~ | Same family. **#533 CLOSED** (carrier `d2921f3c`, readback `verified`) — taken early because it was small and self-contained; #526 remains | #533 done, #526 planned |
 | 7 | Deterministic evidence assembly and one-command re-bind | #514, #535 | #535 is the retro finding in #514's own neighborhood; both are "identity bound late and re-bound by hand" | planned |
 | 8 | Stop taxing refactors | #534 | Must precede the two split-heavy slices (#523, #527) or they pay the same tax measured in `8bc8e0e4` | planned |
 | 9 | Make claims and proof levels machine-readable | #525, #524 | `readme-proof.md` is prose no gate reads; the 5-name ladder was 21 classes to a real consumer | planned |
