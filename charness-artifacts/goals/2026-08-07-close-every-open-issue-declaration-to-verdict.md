@@ -11,12 +11,16 @@ Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
 
-- Current slice: Slice 0b — restore the PRE-PUSH gate's baseline. NOT finished:
-  one gate (`check-changed-line-mutation-coverage`) still refuses over release-script
-  lines whose tests pass and measure 100% in isolation but produce no coverage in the
-  aggregate run. The handoff carries the two unverified leads. Slice 0 fixed
-  `pytest`; the pre-push gate turned out to have its own standing red, and it
-  blocks every closeout in this goal.
+- Current slice: Slice 0b COMPLETE and the repo is UNBLOCKED. The pre-push gate
+  passes (86 passed, 0 failed) and `main` is pushed at `1849a9b2`. `#529` is
+  CLOSED and verified through the adapter — the first close of this goal.
+- **Root cause of the last blocker, recorded because it wasted the most time:**
+  the gate was not wrong and the coverage was never missing. `reports/mutation/`
+  holds ONE shared coverage data file, and I had a broad producer running in the
+  background while the pre-push gate ran. The two clobbered each other, which is
+  why the same command reported `clean`, then `[51]`, then `[48, 51, 55]`. With
+  nothing else running it passed first try. Do not run a mutation-coverage
+  producer concurrently with a push.
 - **The plan had a hole and this is it.** Slice 0's boundary said "no other slice
   may claim a green suite before Slice 0 closes" and treated `pytest` as *the*
   baseline. It is not: the gate that decides whether work may leave this machine
@@ -28,10 +32,9 @@ Slice 4 substrate; nothing built there is rebuilt here.
 - Current slice intent: close all 19 open issues by repairing the shared
   declaration-to-verdict boundary first, then the surfaces that accumulated on
   top of it — in an order where each slice's tools already exist.
-- Next action: finish Slice 0b's last gate failure, then push. Nothing closes
-  before the push. Slice 1 (`#529`) is IMPLEMENTED and committed (`10de65a9`)
-  with its delegated resolution critique and a `draft_verified` closeout draft
-  already in hand; it needs only the push and then `verify-closeout`.
+- Next action: Slice 2 (`#530`) — make adapters able to refuse unrecognized input.
+  The closeout machinery is now proven end to end on `#529`, so the remaining
+  issues are ordinary slice work rather than blocked work.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye review at each slice that changes verdict logic, with a mandatory
   second round when round 1 produces repairs; broad proof at bundle boundaries.
@@ -205,8 +208,8 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | Slice | Objective | Issues | Why here | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Restore the baseline nobody owns | (none; filed #536, #537) | Every later green is read against 34 standing reds. `docs/handoff.md` lost its publish-state claim block at `0659d5a0`; 26 tests + the ledger CLI have been red for 6 commits | **complete** — 35 measured (not 34), 0 remaining |
-| 1 | Repair the issue lane's own report contract | #529 | This goal performs 19 closeouts; a wrong `{repo, number, url}` ledger costs 19 times if fixed late | implemented (`10de65a9`), NOT closed — carrier is local until the pre-push gate passes |
-| 0b | Restore the PRE-PUSH gate's own unowned baseline | (none; filed #540, #541) | Discovered after Slice 1: the pre-push gate has been red across 13 unpushed commits, and auto-close only fires on the default branch — so **no issue in this goal can close until it is green**. Same shape as Slice 0, one gate over. | 5 failures → 1; 161 of 164 uncovered lines covered; blocked on release-script coverage lost in the aggregate run |
+| 1 | Repair the issue lane's own report contract | #529 | This goal performs 19 closeouts; a wrong `{repo, number, url}` ledger costs 19 times if fixed late | **CLOSED** — carrier `10de65a9`, `verify-closeout --expect-state CLOSED` returned `verified` |
+| 0b | Restore the PRE-PUSH gate's own unowned baseline | (none; filed #540, #541) | Discovered after Slice 1: the pre-push gate had been red across 13 unpushed commits, and auto-close only fires on the default branch — so no issue could close until it was green. Same shape as Slice 0, one gate over. | **complete** — gate green, 18 commits pushed at `1849a9b2` |
 | 2 | Make adapters able to refuse unrecognized input | #530 | Root of the declaration family: 16/17 resolvers accept any `version` and absorb typo'd keys as defaults | planned |
 | 3 | Let a repo declare a sub-key ABSENT | #528 | Needs Slice 2's absent/defaulted/declared distinction; deletions currently refill silently | planned |
 | 4 | Reconcile every declared quality surface to a reader or a typed gap (+ awiki) | #518 | The flagship declaration-to-verdict repair; consumes Slices 2-3 | planned |
