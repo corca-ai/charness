@@ -74,15 +74,14 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
     write_artifact_path = f"{DEFAULT_OUTPUT_DIR}/{date_text}-{_slug(resolved_title)}.md"
-    return {
-        "artifact_path": write_artifact_path,
-        "artifact_role": "record",
-        "write_artifact_path": write_artifact_path,
-        "date": date_text,
-        "title": resolved_title,
-        "template": render_template(title=resolved_title, date_text=date_text),
-        "validator_command": validator_command(repo_root, write_artifact_path),
-    }
+    return _scaffold_lib.dated_record_payload(
+        repo_root,
+        write_artifact_path=write_artifact_path,
+        date_text=date_text,
+        title=resolved_title,
+        template=render_template(title=resolved_title, date_text=date_text),
+        validator_command=validator_command(repo_root, write_artifact_path),
+    )
 
 
 def main() -> int:

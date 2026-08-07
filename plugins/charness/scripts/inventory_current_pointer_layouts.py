@@ -3,12 +3,15 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import subprocess
 from dataclasses import asdict, dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any
+
+from runtime_bootstrap import import_repo_module
+
+_scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 
 
 @dataclass(frozen=True)
@@ -103,11 +106,10 @@ def _path_layout(repo_root: Path, artifact_path: str | None) -> str:
     return "missing_current_pointer"
 
 
-def _portable_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root))
-    except ValueError:
-        return str(path)
+# The fourth copy of the pointer rule used this; it is now the owner's `portable_path`
+# rather than a byte-identical private duplicate, kept under the old name because two tests
+# reach for it directly.
+_portable_path = _scaffold_artifact_lib.portable_path
 
 
 def _fallback_artifact_path(repo_root: Path, skill_id: str) -> str | None:
@@ -124,22 +126,11 @@ def _fallback_pointer_state(repo_root: Path, artifact_path: str | None) -> dict[
             "current_pointer_target_path": None,
             "current_pointer_target_exists": None,
         }
-    path = repo_root / artifact_path
-    if not path.is_symlink():
-        return {
-            "current_pointer_is_symlink": False,
-            "current_pointer_target_path": None,
-            "current_pointer_target_exists": None,
-        }
-    raw_target = os.readlink(path)
-    target_path = Path(raw_target)
-    if not target_path.is_absolute():
-        target_path = path.parent / target_path
-    return {
-        "current_pointer_is_symlink": True,
-        "current_pointer_target_path": _portable_path(repo_root, target_path),
-        "current_pointer_target_exists": target_path.exists(),
-    }
+    # A FOURTH copy of the pointer-resolution rule used to live here, found by the
+    # duplicate-ratchet gate while the other three were being consolidated. It answered the
+    # same question this inventory reports on, so a drift between them would have made the
+    # inventory of pointer layouts disagree with the payloads it inventories.
+    return _scaffold_artifact_lib.published_pointer_state(repo_root, Path(artifact_path))
 
 
 def _unresolved_status(error: str | None) -> tuple[str, str]:

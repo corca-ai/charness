@@ -50,6 +50,7 @@ def current_pointer_payload(
         "artifact_role": "current_pointer",
         "write_artifact_path": write_path,
         "write_artifact_role": write_role,
+        **write_target_facts(repo_root, write_path),
         "current_pointer_symlink_target": symlink_target,
         "date": date_text,
         "title": title,
@@ -73,15 +74,134 @@ def portable_path(repo_root: Path, path: Path) -> str:
         return str(path)
 
 
-def current_pointer_write_path(repo_root: Path, artifact_path: Path) -> tuple[str, str, str | None]:
+CURRENT_POINTER_STATE_KEYS = (
+    "current_pointer_is_symlink",
+    "current_pointer_target_path",
+    "current_pointer_target_exists",
+)
+
+
+def current_pointer_state(repo_root: Path, artifact_path: Path) -> dict[str, object]:
+    """SINGLE OWNER of what a `latest.md` current pointer resolves to.
+
+    #548: this rule was implemented twice -- here, and again inside
+    `scripts/resolve_artifact_path.py` -- and both copies produced the same
+    `write_artifact_path` / `write_artifact_role` pair from separate code. Nothing forced
+    them to agree, so the same key name came to mean different things depending on which
+    producer a skill happened to call, and `#538` is the recorded instance of an agent
+    nearly writing over a finished review because of it. `resolve_artifact_path` now calls
+    this; keep it dependency-free, because skill scaffolds load this module by file path
+    with no package context.
+    """
     absolute_artifact_path = repo_root / artifact_path
     if not absolute_artifact_path.is_symlink():
-        return str(artifact_path), "current_pointer", None
+        return {
+            "current_pointer_is_symlink": False,
+            "current_pointer_target_path": None,
+            "current_pointer_target_exists": None,
+            "current_pointer_symlink_target": None,
+        }
     raw_target = os.readlink(absolute_artifact_path)
     target_path = Path(raw_target)
     if not target_path.is_absolute():
         target_path = absolute_artifact_path.parent / target_path
-    return portable_path(repo_root, target_path), "current_pointer_target", raw_target
+    return {
+        "current_pointer_is_symlink": True,
+        "current_pointer_target_path": portable_path(repo_root, target_path),
+        "current_pointer_target_exists": target_path.exists(),
+        "current_pointer_symlink_target": raw_target,
+    }
+
+
+def published_pointer_state(repo_root: Path, artifact_path: Path) -> dict[str, object]:
+    """The three pointer keys artifact payloads publish, from the single owner.
+
+    Exists so each payload producer is a one-line delegation rather than its own copy of
+    "call the owner, then filter". The duplicate-ratchet gate caught that second-order
+    duplication immediately after the first consolidation removed the first-order kind --
+    consolidating a rule can create a new shared shape that then drifts, which is the trade
+    this repo's boundary rule names.
+    """
+    state = current_pointer_state(repo_root, artifact_path)
+    return {key: state[key] for key in CURRENT_POINTER_STATE_KEYS}
+
+
+def write_target_facts(repo_root: Path, write_path: str) -> dict[str, object]:
+    """What writing to `write_path` actually DOES to what is already there.
+
+    #548: every scaffold payload said WHERE to write and none said whether anything was
+    already there. `write_artifact_role: current_pointer_target` is true and reads as
+    neutral, while the path it names may be a completed dated review whose content a write
+    destroys -- and because the filename is dated, nothing afterwards looks wrong. These
+    two keys state the consequence instead of leaving it to be inferred from the role.
+
+    Deliberately a FACT, not a policy: whether overwriting is acceptable differs by skill
+    (`debug` continues an open investigation in place; `quality` must never overwrite a
+    finished review), so each skill's own contract decides what to do with it.
+    """
+    exists = (repo_root / write_path).exists()
+    return {
+        "write_artifact_target_exists": exists,
+        "write_artifact_effect": "overwrite_existing_content" if exists else "create_new_file",
+    }
+
+
+def dated_record_payload(
+    repo_root: Path,
+    *,
+    write_artifact_path: str,
+    date_text: str,
+    title: str,
+    template: str,
+    validator_command: str,
+    extra: dict[str, object] | None = None,
+) -> dict[str, object]:
+    """One shape for a records-only scaffold whose write target is a dated file.
+
+    `critique`, `retro`, and `ideation` each built this dict themselves. They were already
+    near-identical; adding the write-target facts to all three made them identical enough for
+    the duplicate ratchet to call it a new family, which was the correct verdict -- the fix is
+    one owner for the shape, not three copies that happen to agree.
+    """
+    payload: dict[str, object] = {
+        "artifact_path": write_artifact_path,
+        "artifact_role": "record",
+        "write_artifact_path": write_artifact_path,
+        "date": date_text,
+        "title": title,
+        "template": template,
+        "validator_command": validator_command,
+    }
+    payload.update(extra or {})
+    return with_write_target_facts(repo_root, payload)
+
+
+def with_write_target_facts(repo_root: Path, payload: dict[str, object]) -> dict[str, object]:
+    """Stamp the write-target facts from the payload's FINAL `write_artifact_path`.
+
+    Producers that build a payload and then REPLACE its write target must call this last.
+    `scaffold_debug_artifact.py` does exactly that: it takes the current-pointer payload and
+    swaps in a fresh-record target through a fixed key list. The first version of these facts
+    was computed before that swap and was not in the list, so the payload reported
+    `overwrite_existing_content` for a path guaranteed not to exist -- while `debug/SKILL.md`
+    told the agent to trust the key. Recomputing from the final value is what makes a later
+    key addition unable to go stale the same way; a longer copy list would not.
+
+    Idempotent, so it is safe to call even where nothing was replaced.
+    """
+    payload.update(write_target_facts(repo_root, str(payload["write_artifact_path"])))
+    return payload
+
+
+def current_pointer_write_path(repo_root: Path, artifact_path: Path) -> tuple[str, str, str | None]:
+    state = current_pointer_state(repo_root, artifact_path)
+    if not state["current_pointer_is_symlink"]:
+        return str(artifact_path), "current_pointer", None
+    return (
+        str(state["current_pointer_target_path"]),
+        "current_pointer_target",
+        str(state["current_pointer_symlink_target"]),
+    )
 
 
 def emit_payload_main(

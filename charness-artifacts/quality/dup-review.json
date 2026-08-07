@@ -2,258 +2,6 @@
   "entries": [
     {
       "class": "intentional",
-      "id": "08fe2144b94bbc8f",
-      "note": "The closeout bundle receipt timestamp uses the same compact UTC serialization as critique and retro packet producers. This is evidence metadata owned by the bundle contract; sharing a private time helper across independently portable producers would add coupling without changing verdict behavior.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e2be6ebfbea2ac95",
-      "note": "The closeout bundle CLI keeps the repo-owned runtime bootstrap preamble local, matching other directly executable proof CLIs. The entrypoint must work in both source-checkout and installed-plugin layouts; centralizing this short bootstrap would add indirection without removing the per-entrypoint portability contract.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "059c8578bee19e5a",
-      "note": "The publish-state ledger's reconciled/refused human renderer keeps the status branch explicit at its operator boundary, while the unchanged command-doc, prose-pin, and ubiquitous-language validators own parallel terminal rendering. These branches expose different verdict contracts; extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1190bcd05d674cea",
-      "note": "The publish-state ledger and final-bundle planner each keep their direct-execution runtime-bootstrap import preamble local. Both are portable proof CLIs with independently owned module imports; centralizing the short preamble would add indirection without removing the per-entrypoint portability contract.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7e5aeb01ebedf33e",
-      "note": "The ledger, final-bundle evidence, slice-manifest, and sync producers independently hash byte files at their own evidence boundaries. This standard-library two-line idiom is shared plumbing across separate proof owners, not a common verdict helper worth coupling.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c18254bd675f7bb1",
-      "note": "The ledger, premise preflight, and slice-manifest validators each convert untrusted JSON values into locally owned mapping contracts with different error types and field semantics. The repeated mapping guard is small boundary plumbing; extracting it would couple independent validators.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d225f44b7ca36ae4",
-      "note": "The ledger, premise preflight, and slice-manifest validators each enforce their own SHA/string shape at a schema-owned field boundary. Although the regex-and-error pattern is similar, the refusal contracts and accepted evidence fields differ, so a shared validator would obscure ownership rather than reduce meaningful duplication.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1ed587c63a0eebb0",
-      "note": "The final-bundle evidence module keeps its two-line file hash helper local to the evidence-input boundary, while the unchanged manifest and sync helpers own their own byte hashes. This is a tiny standard-library idiom across independent producers; extracting it would widen the planner's helper ownership without unifying a verdict contract.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "353f2bbab8da535c",
-      "note": "The final-bundle planner and evidence module each construct the same four-field typed blocker because both are directly executable portable modules and must preserve their own refusal boundary without importing each other. The short dict literal is the shared output schema, not duplicated domain behavior worth a new cross-module dependency.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "80e081c349d539cd",
-      "note": "The final-bundle planner's repository-relative path guard is local boundary plumbing with its own BundleError contract. Similar two-line guards in premise and reviewed-input identity code deliberately map unsafe paths to different owners and refusal semantics; extracting them would couple independent proof surfaces.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a549b7f526d975f1",
-      "note": "The final-bundle CLI keeps the repository-root/runtime-bootstrap preamble explicit like other directly executable repo scripts. This is portable entrypoint plumbing, not planner behavior; centralizing it would replace the per-script startup contract with an indirection every exported CLI still needs.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fa452ae476fcdef5",
-      "note": "The final-bundle planner's small subprocess wrapper is intentionally local because it returns a BundleError and is used for candidate evidence, while the packaging validation script runs a different command contract. The repeated subprocess shape is idiomatic plumbing across independent owners, not extractable verdict logic.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "0207688c81c33f11",
-      "note": "premise_preflight_lib and slice_manifest_lib keep separate mapping validators because their error types and schema owners differ. The common dict guard is idiomatic boundary plumbing; extracting it would couple independent verdict contracts.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3ba9cf87673ea820",
-      "note": "The premise preflight and reviewed-input identity modules independently hash byte payloads under separate ownership. This two-line standard-library helper is not a shared semantic contract and does not justify cross-surface coupling.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "52e2a3f86ad5d124",
-      "note": "The preflight keeps text-returning and byte-returning Git subprocess wrappers explicit so metadata and blob evidence cannot silently cross types. The broader matching family is common subprocess boilerplate across unrelated owners, not an extractable premise helper.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5f26d18ced59185f",
-      "note": "Decision-history validation deliberately keeps protected-file rows and expected-missing rows as separate branches because their required evidence fields differ. A shared row formatter would obscure the audit schema distinction.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "626f4126df442a5c",
-      "note": "Premise and manifest validators each own a repository-boundary resolver with different symlink and error-code semantics. The repeated relative_to guard is small portability plumbing; sharing it would couple independent validators.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "6f4d3ab160a0feed",
-      "note": "PremiseError and ManifestError intentionally keep their local structured error contracts beside their owning validators. The class plus raise helper shape is standard local plumbing, not shared domain behavior.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "bf64dd77dd3802c8",
-      "note": "The premise and manifest validators independently verify Git commits because they emit different domain errors and accept different captured-record schemas. A shared Git-object helper would widen ownership for a tiny idiom.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "d47e642f4c8ca1c7",
-      "note": "Candidate strings and historical strings use parallel validators but must map malformed input to different refusal codes. Keeping the history-specific wrapper local preserves the invalid-decision-history boundary.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "dd12381fd0b50fab",
-      "note": "Candidate path and historical path validation deliberately translate the shared safe-path failure into different schema-owned error codes. The short try/except shape is not semantic duplication worth coupling.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "0616e9e330a5adf2",
-      "note": "The code and Markdown nose inventories independently render advisory payloads with similar bounded status/scope fields, but they are separate executable producers with different family and heading semantics. A shared renderer would couple the portable inventories and hide contract-specific evidence fields.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "57506d788714a245",
-      "note": "The new nose_inventory_paths adapter validator shares the existing list-shape validation idiom with adapter_lib, but adds a scope-specific traversal/absolute-path contract. Keeping the field validator beside the other quality-adapter validators makes the owning policy explicit; extracting a generic list validator would not capture the path semantics.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "590b14d1cd50a7ac",
-      "note": "The scope payload helper keeps parallel status branches explicit so inapplicable, missing-tool, partial, and error outcomes retain distinct machine-readable contracts. The repeated shape is the auditable boundary under test, not extractable business logic.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5acd09553c421d74",
-      "note": "The scope library repeats small return payloads for adapter errors and incomplete baseline writes because those branches differ in authority and whether scanning was attempted. A shared formatter would make the failure distinction less visible; focused #511 tests cover both.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "617745f7764f5f02",
-      "note": "The adapter validator's explicit invalid-input branch shares a small shape with an unrelated Markdown-preview validator. Both are local field validators with different contracts; a cross-skill helper would couple portable packages for an idiomatic refusal path.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "a8f3604c3ed28763",
-      "note": "The newly added adapter-validator entry participates in the repository's pre-existing adapter-resolution/reporting family across many independent skills. The shared shape is portable adapter status plumbing; centralizing it would create a broad cross-skill dependency and is outside #511.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "b1be708a80843471",
-      "note": "Two scope-library branches deliberately use the same compact status payload shape while differing in the requested-root state they disclose. The local repetition keeps the inapplicable/error boundary visible and is covered by the scope matrix.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "dcd1dcad8f7b2767",
-      "note": "The adapter validator additions surfaced alongside a broad pre-existing two-line validation idiom shared by unrelated adapter and policy modules. This is common local validation boilerplate, not a new extractable contract; the #511 field remains owned by quality adapter validation.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "39b7f3745f737e0a",
-      "note": "inventory_nose_clones.py repeats compact scope/status payload assembly across missing-tool, inapplicable, partial, and query-error outcomes. Each branch owns a distinct terminal contract and returns before the next external operation; extracting a generic status builder would hide which outcome owns the no-scan, unproven, or failed-query verdict. The branch matrix is pinned by the #511 focused scope and runner tests.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "58f891da8b205ffd",
-      "note": "inventory_nose_clones.py repeats explicit terminal status payload fields in separate scope branches. The repetition keeps missing-tool, inapplicable, and partial-scope behavior locally legible and prevents a shared formatter from collapsing distinct exit and receipt semantics; focused #511 tests cover each branch.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5f59eade34536004",
-      "note": "The nose inventory's partial-scope and query-error paths deliberately repeat a small payload skeleton while differing in whether a query ran and whether the wrapper is unproven or failed. A helper would obscure that producer/consumer distinction; the #511 matrix tests both outcomes.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "68ad3a0ff9c4b7dd",
-      "note": "Scope resolution and baseline refusal use parallel local diagnostics for distinct incomplete-scope cases. These are deliberately adjacent to the owning branch so an operator can see why no scan or baseline write occurred; centralizing them would make the quality verdict less auditable.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "c1f1d693f0dabfdc",
-      "note": "inventory_nose_clones.py and inventory_doc_duplicates.py independently render advisory inventory summaries with similar bounded fields. They are separate directly executable quality producers with different scope and finding semantics; a shared renderer would couple portable inventories and hide their contract-specific fields.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e41ae07624c29ee5",
-      "note": "The nose producer keeps the successful full-scan and partial-scan result branches explicit because both may report clean/findings while only one is measured. This parallelism is the issue's core invariant, and extracting it would risk losing the scope-status distinction; focused tests pin both.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e8079ade923f41ed",
-      "note": "Two short CLI exit-code assignments in inventory_nose_clones.py are parallel by design: they preserve the visible mapping from non-scan status to the wrapper's unproven exit contract. A helper would add indirection without reducing semantic duplication.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
       "id": "003780cc89f2ccfd",
       "note": "idiom-sized `if <payload>.get(<key>) == <literal>: return <message>` guard-clause shape shared by three unrelated blockers: the D48 release-surface corroboration refusal (publish_release_preflight), the seed-fixture shared-temp-root advisory (check_seed_fixture_budget), and the support-manifest state classifier (support_sync_lib). Same class already accepted as 349f5d577fe2588b -- different conditions, different strings, different subsystems; a shared formatter would couple three independently-owned refusal surfaces through a message helper and obscure which one owns the verdict. Surfaced as new because D48 slice 2 added release_surface_blocker; the other two members are untouched. ROTATED to 003780cc89f2ccfd on the same day when the round-2 review rewrote the refusal message text; same three members, same reasoning.",
       "reviewed_at": "2026-08-01",
@@ -278,6 +26,13 @@
       "id": "017938717d9e4e73",
       "note": "two-line optional-section early return shared across unrelated validation owners; extraction would couple policy, profile, efficiency, and worktree schemas without centralizing behavior",
       "reviewed_at": "2026-07-19",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0207688c81c33f11",
+      "note": "premise_preflight_lib and slice_manifest_lib keep separate mapping validators because their error types and schema owners differ. The common dict guard is idiomatic boundary plumbing; extracting it would couple independent verdict contracts.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -310,6 +65,20 @@
     },
     {
       "class": "intentional",
+      "id": "059c8578bee19e5a",
+      "note": "The publish-state ledger's reconciled/refused human renderer keeps the status branch explicit at its operator boundary, while the unchanged command-doc, prose-pin, and ubiquitous-language validators own parallel terminal rendering. These branches expose different verdict contracts; extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0616e9e330a5adf2",
+      "note": "The code and Markdown nose inventories independently render advisory payloads with similar bounded status/scope fields, but they are separate executable producers with different family and heading semantics. A shared renderer would couple the portable inventories and hide contract-specific evidence fields.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "07bcaa87c24008ba",
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
@@ -324,6 +93,13 @@
     },
     {
       "class": "intentional",
+      "id": "08fe2144b94bbc8f",
+      "note": "The closeout bundle receipt timestamp uses the same compact UTC serialization as critique and retro packet producers. This is evidence metadata owned by the bundle contract; sharing a private time helper across independently portable producers would add coupling without changing verdict behavior.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0944d2726369a59f",
       "note": "the sibling-module import shim preamble shared by `chunked_routing_parser` and `classify_push_diff`. Surfaced this session because slice 4 renamed the parser's `_load_sibling_types` to `_load_sibling` so it could load a second sibling; the span is the portable skill-local bootstrap idiom this repo keeps per-copy on purpose, because a shared helper would need the very import machinery it provides.",
       "reviewed_at": "2026-08-01",
@@ -334,6 +110,13 @@
       "id": "09af11c87038f373",
       "note": "The two readers of ONE delegation contract: validate_critique_artifacts.has_repo_delegation_contract and issue_critique_observer.repo_requires_delegated_observer. The restatement is deliberate and load-bearing -- issue_critique_observer ships as a portable public skill, and importing the harness repo's scripts/ would make the guard ABSENT (not merely inert) in every consuming repo, which that module's own docstring records. Surfaced as new because the #471 repair gave the validator the markup-flattening step the observer already carried, making the two bodies converge; before this slice they DIVERGED, and that divergence is precisely the defect #471 fixed (one reader said this repo had adopted the contract, the other said it had not). Convergence is the correct end state, so the right control is not deduplication but the parity pin: tests/test_critique_artifact_validation.py::test_both_readers_of_the_delegation_contract_agree_on_this_repo asserts both the shared marker tuple and equal verdicts against the real AGENTS.md.",
       "reviewed_at": "2026-08-03",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0a2b79053773062c",
+      "note": "The plugin-dir reference validator and the structured-asset command-carrier validator are independent standalone gates with different input readers and verdict owners. Their small CLI/reporting boundary is intentionally repeated so each validator remains directly executable and its failure semantics stay local.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -359,9 +142,23 @@
     },
     {
       "class": "intentional",
+      "id": "0bfd54f2563138af",
+      "note": "Reader-root and source/plugin parity validation intentionally keep parallel loops local: one validates owned reader roots and captured/current identity modes, while the other validates derived-file equality. A shared loop would hide different manifest fields and refusal codes behind a generic schema helper; both contracts are covered by the focused slice suite.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "0c807ead92e5865a",
       "note": "the five-line `sys.path.insert(Path(__file__).resolve().parent)` + sibling-import preamble shared by ten independently executable repo scripts and setup adapters. Same accepted class as 4d3ffbd0991be52a and 39fe3da80754d73c: each must run by direct `python3 scripts/x.py` from a consuming checkout, so a shared bootstrap shim would add the very import coupling the preamble exists to avoid. Surfaced as new because D47 slice 3 added scripts/inventory_measurement_lib.py and its two callers; the other seven members are untouched.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0dd0a2267d136d73",
+      "note": "short lifecycle/report branch shared by independent quality adapter surfaces; the quality bootstrap owns migration authorization and the sibling helpers own different consumer contracts, so extracting the tiny idiom would couple verdict owners without removing behavior duplication.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -397,6 +194,13 @@
       "id": "1064f7970518a588",
       "note": "two-line repo-root-relative path resolver family shared across standalone mutation and prompt-mutation CLIs; keeping the resolver local preserves direct script execution and avoids coupling unrelated command surfaces for a trivial idiom",
       "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1190bcd05d674cea",
+      "note": "The publish-state ledger and final-bundle planner each keep their direct-execution runtime-bootstrap import preamble local. Both are portable proof CLIs with independently owned module imports; centralizing the short preamble would add indirection without removing the per-entrypoint portability contract.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -443,6 +247,13 @@
     },
     {
       "class": "intentional",
+      "id": "1b518cbab6e42d3d",
+      "note": "small local helper branch shared by unrelated standalone commands; the quality adapter lifecycle must remain directly importable in source and exported layouts, and a shared formatter would hide independent refusal/report semantics.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "1bac2c258fcda5ae",
       "note": "five-line state-recording tail shared by two independent hook owners; a shared helper would couple hook lifecycles without owning their distinct payloads",
       "reviewed_at": "2026-07-13",
@@ -460,6 +271,20 @@
       "id": "1d36956dff2fc82b",
       "note": "the repo-standard gate entrypoint block: `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError as exc: print(str(exc), file=sys.stderr); sys.exit(1)`. NINE members across nine unrelated gates, EIGHT of them untouched (validate_public_skill_validation, check_skill_contracts, check_supply_chain, validate_cautilus_scenarios, validate_claim_fidelity_specs, validate_presets, validate_public_skill_dogfood, validate_scenario_conditional_reads) -- the family predates this slice and surfaced as new only because check_plugin_doc_links joined it. Centralizing it would put every gate's exit code and stderr contract behind one shared runner, and each script would still have to spell out the indirection; same reasoning as the accepted runtime_bootstrap preamble family 02923daf7e01c82e.",
       "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1e790839dc306944",
+      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
+      "reviewed_at": "2026-08-08",
+      "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "1ed587c63a0eebb0",
+      "note": "The final-bundle evidence module keeps its two-line file hash helper local to the evidence-input boundary, while the unchanged manifest and sync helpers own their own byte hashes. This is a tiny standard-library idiom across independent producers; extracting it would widen the planner's helper ownership without unifying a verdict contract.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -513,9 +338,9 @@
     },
     {
       "class": "intentional",
-      "id": "c71405ac5e920fb0",
-      "note": "ROTATED from 23c406419969c6e2 the same day, when the round-2 repairs grew upsert_goal.py's main() and moved this block's span; same three members, same reasoning. the standard CLI-entrypoint shape `try: <lib call with kwargs> / except <Error> as exc: print(str(exc)); return 2`, shared by three unrelated commands: upsert_goal.py (ValueError from goal_artifact_lib), audit_codex_session.py (ValueError from codex_audit), and check_test_production_ratio.py (TokeiUnavailableError from tokei). Different libraries, different exception types, different follow-on code; what they share is Python's own convention for turning a library error into an operator-readable exit, not a concept. A shared helper would have to take a thunk plus an exception class -- an abstraction over control flow rather than over meaning. Verified pre-existing rather than introduced: the ratchet is CLEAN on the tree before this slice (checked by stashing), and the family surfaced only because the upsert_goal.py --fields-file work shifted that block's span and changed two kwarg expressions; the other two members are untouched. Same boy-scout span-shift class this repo measured four times on 2026-08-06.",
-      "reviewed_at": "2026-08-07",
+      "id": "239b1c221a081f14",
+      "note": "two-line comment-preservation boundary shared with an unrelated subprocess/path helper; the quality lifecycle's comment parser is load-bearing for quoted and list-valued YAML, so extracting the incidental shape would couple unrelated owners.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -555,6 +380,20 @@
     },
     {
       "class": "intentional",
+      "id": "2b08a39f47fa892b",
+      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy. Rotated from 58b291a6b5fa9084 when the fence/list rules moved.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2b952852d5c1e0f5",
+      "note": "small JSON/YAML lifecycle setup shape shared by independent command owners; the quality bootstrap report is a consumer-owned output contract and should not import another command's formatter merely to erase two lines.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2b9ab26b7c51dcd5",
       "note": "ROTATION of dee01e2ae27f76a8 with removed_name_consumers.py joining: the short argparse/resolve preamble shared by six unrelated inventory and check scripts, five of them untouched. Repo-wide gate-skeleton idiom, same judgment as its predecessors.",
       "reviewed_at": "2026-08-04",
@@ -579,6 +418,20 @@
       "id": "2e5ed4e478b3bcfd",
       "note": "A four-line stdlib idiom: `try: return path.relative_to(root).as_posix() / except ValueError: return path.as_posix()`. Shared by the new advisory's _repo_relative and scripts/mutation_manifest_lib.py's display_path, which are behaviourally identical. Deliberately NOT collapsed: mutation_manifest_lib imports mutation_sampling_lib and the wider mutation subsystem, so importing display_path would couple a skill-reference advisory (which is also exported into plugins/charness/scripts/) to the mutation tooling's whole import graph for four lines. Same class already accepted as 0077076d77f6ae1b, a single shared stderr write. Only the advisory member is in this diff.",
       "reviewed_at": "2026-08-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e6e18e44ccc5bd8",
+      "note": "The repository-boundary try/relative_to guard is the small standalone path-safety idiom used by direct scripts and the manifest validator. It is portability boilerplate with different owning entrypoints; extracting it would create a cross-script dependency for two lines.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2e98240a5f7205ac",
+      "note": "same chunker per-stage CLI skeleton as the accepted 0bc23ea0000c6cf9 and e870767ba8b3d1ab families: parse_handoff_entries and draft_goal_from_chunk are separate pipeline executables, so their timeout/parse/try-finally lifecycle remains explicit. Their stage work, input resolution, refusal payloads, and rollback contracts differ; extracting the surrounding main would couple independent stages behind a generic runner and hide which stage owns a failure. Surfaced as a fingerprint rotation because this slice changed draft_goal_from_chunk while parse_handoff_entries stayed untouched; the repeated skeleton was pre-existing and no new shared behavior was introduced.",
+      "reviewed_at": "2026-08-04",
       "surface": "code"
     },
     {
@@ -611,6 +464,13 @@
     },
     {
       "class": "intentional",
+      "id": "329ea2d370525729",
+      "note": "The authorization helper's permissive-fallback dict literal matches the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults so one could not change without the others.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "33bb1736e07c0033",
       "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary.",
       "reviewed_at": "2026-08-02",
@@ -639,6 +499,13 @@
     },
     {
       "class": "intentional",
+      "id": "353f2bbab8da535c",
+      "note": "The final-bundle planner and evidence module each construct the same four-field typed blocker because both are directly executable portable modules and must preserve their own refusal boundary without importing each other. The short dict literal is the shared output schema, not duplicated domain behavior worth a new cross-module dependency.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3547c7c6d66c1f10",
       "note": "a wider slice of the same portability preamble as d7021cae01c1a7b0, this time paired only with validate_presets.py:3-16 because that script's import list happens to extend one line further. Same block, same reasoning, one extra member line; splitting the judgment across the two fingerprints would say two different things about one preamble.",
       "reviewed_at": "2026-08-04",
@@ -660,9 +527,23 @@
     },
     {
       "class": "intentional",
+      "id": "38fae250ba1dde05",
+      "note": "The manifest validator's compact repository-entry refusal branches share an idiom-sized shape with unrelated validators. Their paths and evidence contracts are independently owned; a common formatter would couple refusal semantics without removing the checks.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "398be936164f6588",
       "note": "same runtime_bootstrap import/alias preamble across sample_mutation_files.py and check_js_mutation_score.py; identical rationale to 02923daf7e01c82e, surfaced separately because the spans differ by a line",
       "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "39b7f3745f737e0a",
+      "note": "inventory_nose_clones.py repeats compact scope/status payload assembly across missing-tool, inapplicable, partial, and query-error outcomes. Each branch owns a distinct terminal contract and returns before the next external operation; extracting a generic status builder would hide which outcome owns the no-scan, unproven, or failed-query verdict. The branch matrix is pinned by the #511 focused scope and runner tests.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -688,6 +569,13 @@
     },
     {
       "class": "intentional",
+      "id": "3ba9cf87673ea820",
+      "note": "The premise preflight and reviewed-input identity modules independently hash byte payloads under separate ownership. This two-line standard-library helper is not a shared semantic contract and does not justify cross-surface coupling.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3c13e2e9b432a6fd",
       "note": "two-line `if <predicate>: return \"<literal>\"` classifier arm, same shape already accepted as 907963a5caacf849/d86058cd07319fec; here the seed-budget scan classifier rhymes with support_sync_lib's manifest-kind arm. Unrelated domains, each returning its own constant, nothing to centralize",
       "reviewed_at": "2026-07-26",
@@ -698,6 +586,20 @@
       "id": "3c301f25c9dd81c5",
       "note": "two-line missing-file early return shared by host-hook discovery and feedback JSONL reading; the call sites have unrelated return contracts and no stable helper concept",
       "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3e53f4696faac404",
+      "note": "top-level runtime_bootstrap import/alias preamble shared by independent repo commands: build_retro_lesson_selection_index and validate_adapters bind different helpers for different owner contracts, and each must remain directly executable from both source and exported layouts. The bootstrap is the mechanism that makes shared-module imports possible, so extracting it would add indirection without removing the portability requirement. Surfaced as new because validate_adapters gained the source/flattened resolver loader; the matching prologue in build_retro_lesson_selection_index was untouched.",
+      "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3e585e6d2db885a6",
+      "note": "The capture adapter keeps its direct-execution runtime-bootstrap import preamble local, matching the retro-index, risk-interrupt, and packaging producers. Established repo pattern for portable CLIs that must run in both source-checkout and installed-plugin layouts.",
+      "reviewed_at": "2026-08-07",
       "surface": "code"
     },
     {
@@ -723,6 +625,13 @@
     },
     {
       "class": "intentional",
+      "id": "3ee29bf91326977e",
+      "note": "A two-line `sha256(text.encode()).hexdigest()` helper. Standard-library idiom shared with three unrelated hashing owners; centralizing it would couple the issue-source digest contract to mutation-sampling internals.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "3f18bd389422968e",
       "note": "cross-skill package-root discovery for source and installed layouts; this is bootstrap-before-import code and cannot live in a shared imported helper without circularly assuming the path it resolves",
       "reviewed_at": "2026-07-11",
@@ -734,6 +643,20 @@
       "note": "goal closeout roundtrip fixture intentionally shares the canonical goal Slice Plan table skeleton with achieve/handoff templates so the validator exercises real artifact shape",
       "reviewed_at": "2026-06-27",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "41324c32e734fea6",
+      "note": "the SHAPE two independent bootstrappers share, not logic either could borrow: scripts/quality_bootstrap_lib.py's `bootstrap_quality_adapter` (in this diff) and scripts/markdown_preview_bootstrap_lib.py's `scaffold_markdown_preview` (untouched) both build state, decide what a real run WOULD do, branch on `dry_run`, and assemble a report dict. Every field, status vocabulary, and warning in the two is different -- what matches lexically is the sequence, and a shared scaffolder helper would need more parameters than the shared span has lines while coupling two independently-owned bootstrap surfaces through one control-flow helper. Same reasoning as the accepted guard-clause families in this overlay. Surfaced as NEW because slice C added three lines to the report-assembly region (the sub-key refill evidence for issue #489), shifting the span into a match; no duplication was written.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "421086eaf4dcd873",
+      "note": "The focused changed-line producer and structured-asset validator each need a direct command entrypoint with their own scope and exit contract. Extracting the shared main skeleton would couple unrelated proof surfaces and hide which command owns an unproven result.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -800,6 +723,13 @@
     },
     {
       "class": "intentional",
+      "id": "487bb9f65898407b",
+      "note": "The permissive-fallback dict literal returned when the authorization module is absent, matching the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults. Rotated from 329ea2d370525729.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "48bf9d9e90c97d9e",
       "note": "nose subdag artifact inside check_coverage_lib.py: exercise_control_plane_scenarios grew new version_transition scenario calls (#424) and now shares a 2-node subdag with _basic_manifest in the same file; a scenario-call list and a manifest builder are unrelated units with no extractable shared helper",
       "reviewed_at": "2026-07-09",
@@ -849,6 +779,13 @@
     },
     {
       "class": "intentional",
+      "id": "4e0160a823736142",
+      "note": "The standalone retro-to-handoff validator intentionally uses the repository-standard argparse/main entrypoint shape also used by the pre-push coverage gate. The commands own different arguments, refusal semantics, and evidence payloads; a shared runner would couple distinct operator contracts without removing domain logic.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "4e87147b48902263",
       "note": "low-value git subprocess error-handling family rotated after setup worktree template extraction; extracting it would add cross-surface coupling for no behavior gain",
       "reviewed_at": "2026-06-27",
@@ -891,6 +828,20 @@
     },
     {
       "class": "intentional",
+      "id": "52e2a3f86ad5d124",
+      "note": "The preflight keeps text-returning and byte-returning Git subprocess wrappers explicit so metadata and blob evidence cannot silently cross types. The broader matching family is common subprocess boilerplate across unrelated owners, not an extractable premise helper.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "54055904847649e6",
+      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`) duplicated across the release closeout, closeout-message, and authorization modules and the untouched handoff chunk drafter. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. The layout knowledge is now centralized in issue_closeout_authorization.load_from/SKILL_RELS; what remains is the irreducible per-entrypoint bootstrap.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5494fadd46ead922",
       "note": "bootstrap-locating preamble that walks parents for skill_runtime_bootstrap.py, shared by the two irreversible-action entrypoints that refuse a drifted foreign copy (publish_release.py, issue_tool.py) plus ~108 existing portable skill scripts. Chicken-and-egg the preamble exists to solve: a portable skill script cannot import the shared locator without first locating it. The shared logic IS extracted (refuse_foreign_entrypoint in skill_runtime_bootstrap.py); only the locate prologue remains per-script, matching every other member. The nose advisory names this class as its own known blind spot.",
       "reviewed_at": "2026-07-27",
@@ -908,6 +859,13 @@
       "id": "5505a8794c55f12d",
       "note": "CLI-surface boilerplate: `argparse.ArgumentParser(description=__doc__...)` plus the repo-standard `--repo-root type=Path` option, shared by the new scripts/inventory_skill_script_references.py advisory and skills/public/handoff/scripts/prepare_chunk_packet.py. Not extractable: a portable skill package must not import repo-level `scripts/`, so a shared parser builder would cross the portability boundary the export contract exists to keep. It is also the surface check_documented_command_flags/argparse_surface_lib read back off each script's own parser -- hiding option declarations behind a helper would make the documented-flag gate blind to them. Only the advisory member is in this diff.",
       "reviewed_at": "2026-08-02",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "551f9b334fd4874a",
+      "note": "The two route-stage catalog branches construct distinct stage records with different route semantics. The repeated short shape keeps the stage contract visible and is not shared executable behavior.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -933,10 +891,24 @@
     },
     {
       "class": "intentional",
+      "id": "57506d788714a245",
+      "note": "The new nose_inventory_paths adapter validator shares the existing list-shape validation idiom with adapter_lib, but adds a scope-specific traversal/absolute-path contract. Keeping the field validator beside the other quality-adapter validators makes the owning policy explicit; extracting a generic list validator would not capture the path semantics.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "57a52ad013e764b8",
       "note": "per-skill sequence-discipline.md reference copies (ideation, impl) share the uniform `# Sequence Discipline` / `## Core Moves` heading skeleton while the body is tailored per skill; uniform reference structure is the planner-uniformity north star and each skill package stays self-contained — intentional",
       "reviewed_at": "2026-07-02",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "58b291a6b5fa9084",
+      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -961,9 +933,30 @@
     },
     {
       "class": "intentional",
+      "id": "58f891da8b205ffd",
+      "note": "inventory_nose_clones.py repeats explicit terminal status payload fields in separate scope branches. The repetition keeps missing-tool, inapplicable, and partial-scope behavior locally legible and prevents a shared formatter from collapsing distinct exit and receipt semantics; focused #511 tests cover each branch.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "590b14d1cd50a7ac",
+      "note": "The scope payload helper keeps parallel status branches explicit so inapplicable, missing-tool, partial, and error outcomes retain distinct machine-readable contracts. The repeated shape is the auditable boundary under test, not extractable business logic.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "590c04aa922d2a76",
       "note": "the repo's standard import-bootstrap preamble (from __future__ / stdlib imports / runtime_bootstrap import / REPO_ROOT / import_repo_module calls) across scripts/resolve_artifact_path.py:9-16, scripts/validate_critique_artifacts.py:7-14, scripts/validate_retro_artifact.py:6-13; the bootstrap cannot be extracted into a shared module because it IS the mechanism that makes shared-module import possible. Two of three members untouched this session; surfaced by scan regrouping after an unused-import removal shifted the block (#441 rotation class)",
       "reviewed_at": "2026-07-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "59c2c5986b2b51b6",
+      "note": "a single argparse flag declaration -- the `--repo-root` / `--goal-path` style `parser.add_argument(..., type=Path, help=...)` line -- shared between skills/public/achieve/scripts/goal_cli_args.py (in this diff) and scripts/critique_enforcement_scope.py (untouched). Irreducible: argparse flag declarations for two independent CLIs cannot be shared without one importing the other's parser, which couples unrelated command surfaces to remove one line. Surfaced as NEW because slice D EXTRACTED the achieve goal-target flags into goal_cli_args.py rather than accepting the two larger families they were part of -- that extraction removed real duplication between append_slice_log.py and check_goal_artifact.py and left this one-line residue behind.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -975,9 +968,44 @@
     },
     {
       "class": "intentional",
+      "id": "5acd09553c421d74",
+      "note": "The scope library repeats small return payloads for adapter errors and incomplete baseline writes because those branches differ in authority and whether scanning was attempted. A shared formatter would make the failure distinction less visible; focused #511 tests cover both.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5b3c7738502d380d",
+      "note": "A one-line canonical-JSON dump matching the boundary-bypass ratchet's. Both are digest-input serializations owned by separate evidence contracts; sharing would let one contract's serialization change silently move the other's digests.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5b81e034f4f4419b",
+      "note": "short value-normalization helper shape shared with a separate inventory library; the quality adapter's semantic conflict vocabulary is intentionally local to its lifecycle boundary.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5bdec49283c0883e",
       "note": "paired uninstall tails deliberately keep each standalone hook's ownership, result labels, and cleanup lifecycle visible; a cross-hook helper would add coupling",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5f26d18ced59185f",
+      "note": "Decision-history validation deliberately keeps protected-file rows and expected-missing rows as separate branches because their required evidence fields differ. A shared row formatter would obscure the audit schema distinction.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5f59eade34536004",
+      "note": "The nose inventory's partial-scope and query-error paths deliberately repeat a small payload skeleton while differing in whether a query ran and whether the wrapper is unproven or failed. A helper would obscure that producer/consumer distinction; the #511 matrix tests both outcomes.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -1024,6 +1052,13 @@
     },
     {
       "class": "intentional",
+      "id": "617745f7764f5f02",
+      "note": "The adapter validator's explicit invalid-input branch shares a small shape with an unrelated Markdown-preview validator. Both are local field validators with different contracts; a cross-skill helper would couple portable packages for an idiomatic refusal path.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "61d7a55b4688babd",
       "note": "ROTATION of the already-accepted 69026ef11d8ee529 / 1d36956dff2fc82b: the same `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError ...` entrypoint block, re-fingerprinted once check_plugin_doc_links.py was committed (every member now reads as untouched, which changes the cluster boundary). Five members across five unrelated gates: check_doc_links, check_export_safe_imports, check_plugin_doc_links, validate_adapters, validate_presets. Same reasoning as its predecessors -- centralizing it would put every gate's exit code and stderr contract behind one runner while each script still spells out the indirection.",
       "reviewed_at": "2026-08-04",
@@ -1031,9 +1066,23 @@
     },
     {
       "class": "intentional",
+      "id": "626f4126df442a5c",
+      "note": "Premise and manifest validators each own a repository-boundary resolver with different symlink and error-code semantics. The repeated relative_to guard is small portability plumbing; sharing it would couple independent validators.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "62e19bb7ee0fbe0a",
       "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "637bb6af7e7552e5",
+      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {
@@ -1059,9 +1108,23 @@
     },
     {
       "class": "intentional",
+      "id": "66f4c0f1eb35d6fe",
+      "note": "portable import preamble shared by scripts/bootstrap_runtime.py and the standalone markdown-preview renderer. The renderer must remain directly executable in both the source and exported plugin layouts, so importing a shared bootstrap would add the coupling that this preamble establishes. The family surfaced when the renderer gained its independent PTY probe imports; no new shared behavior was introduced.",
+      "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "678d8f09da69b267",
       "note": "generic scan loop across a portable skill text scanner and repo-owned doc coupling gate; extraction would cross plugin/bootstrap ownership for four generic lines",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "68ad3a0ff9c4b7dd",
+      "note": "Scope resolution and baseline refusal use parallel local diagnostics for distinct incomplete-scope cases. These are deliberately adjacent to the owning branch so an operator can see why no scan or baseline write occurred; centralizing them would make the quality verdict less auditable.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -1104,6 +1167,13 @@
       "id": "6edaccbfec18eca5",
       "note": "install and uninstall branches intentionally mirror state-file and result handling inside one standalone session-routing hook; symmetry is the lifecycle contract",
       "reviewed_at": "2026-07-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6f4d3ab160a0feed",
+      "note": "PremiseError and ManifestError intentionally keep their local structured error contracts beside their owning validators. The class plus raise helper shape is standard local plumbing, not shared domain behavior.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1241,6 +1311,20 @@
     },
     {
       "class": "intentional",
+      "id": "7d265405fe859204",
+      "note": "Within issue_source_capture_capability: the default, undeclared-backend, and parsed capability all return the same field set by construction, because they are three states of ONE contract. That is the point of the module; collapsing them would erase the distinction between a default, an unsupported backend, and a declared block.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7d3e075575180936",
+      "note": "Stdlib plus scripts.adapter_lib import preamble shared by two independently portable adapter libraries (cautilus, narrative). They import the same shared field validators because they validate the same field contract; the preamble carries no verdict logic and centralizing an import block would add indirection without removing any behavior.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7dd66ad639d0d9db",
       "note": "the preflight/inventory `argparse -> build report -> emit JSON or human -> exit code` main() shape, shared by four unrelated repo scripts. Only check_skill_surface_preflight.py is in this diff (its named-scope refusal), and the other three are untouched. This is the repo's CLI contract surfacing as duplication.",
       "reviewed_at": "2026-07-30",
@@ -1248,9 +1332,23 @@
     },
     {
       "class": "intentional",
+      "id": "7de839c3498879a4",
+      "note": "The crosswalk validator keeps its direct-execution runtime-bootstrap preamble local, matching four untouched validator CLIs. Same portable-entrypoint rationale as the other preamble families already classified here.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "7e1276de1ac523e4",
       "note": "`parse_handoff_entries.py` and `draft_goal_from_chunk.py` share the handoff CLI's argparse + adapter-resolution + JSON-emit spine. Both are stage entrypoints of the same pipeline and each owns a different stage's flags; the shared span is the CLI contract itself, and the repo's own create-cli guidance keeps entrypoint spines per-command rather than behind one dispatcher. Rotated into view this session by slice 4's `--handoff-path` citation-root change.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7e5aeb01ebedf33e",
+      "note": "The ledger, final-bundle evidence, slice-manifest, and sync producers independently hash byte files at their own evidence boundaries. This standard-library two-line idiom is shared plumbing across separate proof owners, not a common verdict helper worth coupling.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1265,6 +1363,13 @@
       "id": "7f11e1cbf8266c06",
       "note": "low-value local string/assignment idiom family spanning unrelated Python and JavaScript helper code; the duplicated spans are not a stable shared concept and extraction would add cross-surface coupling",
       "reviewed_at": "2026-07-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7f2afc700c4874d3",
+      "note": "The CLI's direct-execution sys.path/runtime bootstrap is intentional portable-script boilerplate shared across quality commands. It preserves standalone plugin/source-checkout execution and is not a domain helper to centralize.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1297,10 +1402,24 @@
     },
     {
       "class": "intentional",
+      "id": "808dad940a8e5681",
+      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/sample_mutation_files.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "80c5b9827dc39f57",
       "note": "the root AGENTS.md owns the live Subagent Delegation contract, while setup's copy-ready Markdown template must retain the same section heading so a generated host document is self-contained; a shared heading label is required interface shape, not an extractable prose block",
       "reviewed_at": "2026-07-14",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "80e081c349d539cd",
+      "note": "The final-bundle planner's repository-relative path guard is local boundary plumbing with its own BundleError contract. Similar two-line guards in premise and reviewed-input identity code deliberately map unsafe paths to different owners and refusal semantics; extracting them would couple independent proof surfaces.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -1311,9 +1430,30 @@
     },
     {
       "class": "intentional",
+      "id": "8259eb3bf04fb3b7",
+      "note": "A module-level cache dict plus typing preamble matching the parity harness. Two-line plumbing, not a shared verdict helper.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "825ebe6cba3065d4",
+      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/check_js_mutation_score.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "82b2e7b16bc79773",
       "note": "issue and release keep thin skill-local post-boundary lifecycle loaders so source and installed-plugin layouts retain standalone failure containment; lifecycle IDs, schemas, append behavior, and conflicts are already owned by the shared lifecycle capture implementation",
       "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8438b78f671dc3bf",
+      "note": "A single-line `path.parent.mkdir(parents=True, exist_ok=True)`. Standard-library idiom shared with eight untouched writers.",
+      "reviewed_at": "2026-08-07",
       "surface": "code"
     },
     {
@@ -1363,6 +1503,20 @@
       "id": "8c41129333077c9f",
       "note": "ROTATION of c28c913feb04ce73 (same two members, window shifted by the round-1 repairs to goal_artifact_figure_form). Per-module sys.path + import bootstrap shared by the two floors added this slice. Unextractable by construction: this block is the mechanism by which a module finds shared code, so it cannot itself be shared. The REAL duplication these modules carried -- the Created-gated grandfathered payload -- was extracted into goal_artifact_floor_grammar.grandfathered_report, and BOTH remaining inline copies (operator_queue and blocked_matrix) were migrated onto it in the same slice.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8c465ddf2715dcca",
+      "note": "quality adapter bootstrap and markdown-preview scaffold are parallel generated-writer lifecycles with different payloads, force policies, comment-retention requirements, and reports. A shared runner would couple two independent consumer-owned boundaries; the duplication is deliberate and each path has its own focused tests.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8dc7bd9985a9904b",
+      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {
@@ -1493,6 +1647,13 @@
     },
     {
       "class": "intentional",
+      "id": "9b344dba944af0db",
+      "note": "The records-only scaffold triple (critique, retro, ideation) shares its module shape: `default_title`, `_slug`, `validator_command`, and a `payload_for` that names a dated write target. The genuinely shared RULE was extracted this slice into `scaffold_artifact_lib.dated_record_payload`, which is now the single owner of the payload shape and of the write-target facts. What remains is per-skill-package portability boilerplate: each public skill package must stand alone when installed, and these three entrypoints are loaded independently (ideation loads the shared lib by file path with no package context). Collapsing the remaining wrappers would couple three portable packages without changing any verdict. Measured: the family became visible only after the write-target facts made three already-near-identical bodies identical, so this is a detection-threshold crossing, not new duplication.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "9dad44e71295f197",
       "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary.",
       "reviewed_at": "2026-08-02",
@@ -1535,6 +1696,13 @@
     },
     {
       "class": "intentional",
+      "id": "a549b7f526d975f1",
+      "note": "The final-bundle CLI keeps the repository-root/runtime-bootstrap preamble explicit like other directly executable repo scripts. This is portable entrypoint plumbing, not planner behavior; centralizing it would replace the per-script startup contract with an indirection every exported CLI still needs.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "a60c7e0a171aac7c",
       "note": "small internal-schema stdout branch remains local because critique and retro build different packet contracts and return evidence; extraction would add abstraction without policy ownership",
       "reviewed_at": "2026-07-19",
@@ -1545,6 +1713,13 @@
       "id": "a82bba62dcfd4317",
       "note": "ROTATION of 8c41129333077c9f (itself a rotation of c28c913feb04ce73) -- same two members, window shifted once more when `ruff --fix` reordered the import block. Per-module sys.path + import bootstrap shared by the two floors added this slice; unextractable by construction, since this block is the mechanism by which a module finds shared code. The real duplication these modules carried was extracted into goal_artifact_floor_grammar.grandfathered_report and both remaining inline copies migrated onto it.",
       "reviewed_at": "2026-08-01",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a8f3604c3ed28763",
+      "note": "The newly added adapter-validator entry participates in the repository's pre-existing adapter-resolution/reporting family across many independent skills. The shared shape is portable adapter status plumbing; centralizing it would create a broad cross-skill dependency and is outside #511.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -1591,6 +1766,13 @@
     },
     {
       "class": "intentional",
+      "id": "ae3cdd72a95c945d",
+      "note": "These short artifact-run, claim-fidelity, and command-carrier branches are independent boundary readers. A shared formatter would couple artifact and portability ownership merely to erase incidental dictionary/list shape.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "af879894e690c749",
       "note": "chunker per-stage CLI main() shape shared by prepare_chunk_packet and prepare_ranker_packet: arm timeout -> parse_args -> read_pipeline_json (naming its OWN stage in the refusal) -> emit the stage payload -> return 0 -> cancel timeout. Same class already accepted as 6ff3e380d6a8fcaf and 0bc23ea0000c6cf9: the shape IS the pipeline's CLI contract, because the stages run as independent piped processes and each must name the stage that read a malformed input. Surfaced as new only because D46 slice 1 added one forwarding line to prepare_chunk_packet; prepare_ranker_packet is untouched. The extractable half WAS extracted in this same slice, not argued away -- _restore_entries became chunked_routing_cli.entries_from_pipeline_payload and the three per-key forwarding blocks became chunked_routing_cli.forward_carried_keys, which removed the family the first ratchet run flagged between propose_merges and prepare_chunk_packet.",
       "reviewed_at": "2026-08-01",
@@ -1619,9 +1801,23 @@
     },
     {
       "class": "intentional",
+      "id": "b1be708a80843471",
+      "note": "Two scope-library branches deliberately use the same compact status payload shape while differing in the requested-root state they disclose. The local repetition keeps the inapplicable/error boundary visible and is covered by the scope matrix.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b3c057ebab07c6d3",
       "note": "ROTATION of the repo-standard gate-skeleton families as the A4 slice lengthened check_doc_links and check_plugin_dir_references (main() argparse+resolve+report skeleton, the guard-clause ladders, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal with the same reasoning: the portability preamble IS the bootstrap and cannot be imported, and a shared runner would own each gate's argument surface and its operator-facing summary wording -- which is exactly the part a reader uses to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b3e08764961ab57c",
+      "note": "Pre-existing and untouched by this slice: `validate_usage_episodes.py` and `report_usage_episodes.py` share the usage-episodes adapter-resolution preamble. Both members are outside the current diff; the family surfaced as the ratchet anchor moved. Recorded rather than repaired because it belongs to the usage-episodes surface, not to the artifact-path ownership question this slice closes, and repairing it here would put an unreviewed change in an unrelated verdict path.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {
@@ -1650,6 +1846,13 @@
       "id": "b5a9e7d2038bd0c3",
       "note": "chunker CLI `main()` shape shared by pipeline stages: arm timeout, parse args, read the pipeline JSON, emit the stage payload, cancel timeout. The shape IS the pipeline's CLI contract — every stage must present it identically so the stages compose — and the work inside each is entirely different. Same family class as 988cc97f3ed47e80, refingerprinted as the spans grew when the staleness facts were threaded through.",
       "reviewed_at": "2026-07-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b65c38f8d0eb8e4f",
+      "note": "The two check-doc-links regions handle different source and consumer reader positions. Their similar traversal scaffolding is deliberate because the ownership and false-positive rules differ.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1689,6 +1892,20 @@
     },
     {
       "class": "intentional",
+      "id": "be9c2c68c9ecef9c",
+      "note": "A two-line regex-substitute/strip normalization matching adapter_lib and four untouched helpers. Standard-library idiom at independent normalization boundaries.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "bf64dd77dd3802c8",
+      "note": "The premise and manifest validators independently verify Git commits because they emit different domain errors and accept different captured-record schemas. A shared Git-object helper would widen ownership for a tiny idiom.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "bffade4892f4681d",
       "note": "Authorization-ladder readers (#475). `issue_critique_observer` is a PORTABLE public skill: importing the harness repo's `scripts/` would make the guard absent -- not merely inert -- in every consuming repo, so the delegation-contract reader is restated there by design. That duplication is the repo's existing documented choice for this exact pair; the ladder widened both readers with the same three states (declined, narrowed scope, unreadable record) and so grew the shared shape. Drift is guarded by the behavioural parity test tests/quality_gates/test_subagent_delegation_ladder.py, which runs ALL THREE readers over one fixture set including the divergent states -- a stronger guard than deduplication would be, since a shared helper cannot exist across the portability boundary.",
       "reviewed_at": "2026-08-02",
@@ -1706,6 +1923,20 @@
       "id": "c178ae00e001f90a",
       "note": "the gate `run()` convention already accepted as 119fa9bcafbd3048: load the strict quality adapter, return a typed adapter-invalid report, read this gate's config block, dispatch. check_dup_ratchet and migrate_dup_fingerprints dispatch to different modes with different report shapes; a shared runner would take those as data and each script would still spell them out through an indirection",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c18254bd675f7bb1",
+      "note": "The ledger, premise preflight, and slice-manifest validators each convert untrusted JSON values into locally owned mapping contracts with different error types and field semantics. The repeated mapping guard is small boundary plumbing; extracting it would couple independent validators.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c1f1d693f0dabfdc",
+      "note": "inventory_nose_clones.py and inventory_doc_duplicates.py independently render advisory inventory summaries with similar bounded fields. They are separate directly executable quality producers with different scope and finding semantics; a shared renderer would couple portable inventories and hide their contract-specific fields.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -1780,6 +2011,13 @@
     },
     {
       "class": "intentional",
+      "id": "c71405ac5e920fb0",
+      "note": "ROTATED from 23c406419969c6e2 the same day, when the round-2 repairs grew upsert_goal.py's main() and moved this block's span; same three members, same reasoning. the standard CLI-entrypoint shape `try: <lib call with kwargs> / except <Error> as exc: print(str(exc)); return 2`, shared by three unrelated commands: upsert_goal.py (ValueError from goal_artifact_lib), audit_codex_session.py (ValueError from codex_audit), and check_test_production_ratio.py (TokeiUnavailableError from tokei). Different libraries, different exception types, different follow-on code; what they share is Python's own convention for turning a library error into an operator-readable exit, not a concept. A shared helper would have to take a thunk plus an exception class -- an abstraction over control flow rather than over meaning. Verified pre-existing rather than introduced: the ratchet is CLEAN on the tree before this slice (checked by stashing), and the family surfaced only because the upsert_goal.py --fields-file work shifted that block's span and changed two kwarg expressions; the other two members are untouched. Same boy-scout span-shift class this repo measured four times on 2026-08-06.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "c86d5365eb700947",
       "note": "debug and retro planners intentionally expose the same portable gate-packet envelope while retaining skill-specific packet semantics and install-local ownership; cross-skill extraction would couple public skill packages",
       "reviewed_at": "2026-07-11",
@@ -1843,9 +2081,23 @@
     },
     {
       "class": "intentional",
+      "id": "cff76212c30df1c8",
+      "note": "Backtick migration and document-link scanning intentionally retain local tokenization rules for separate command and prose contracts; importing one scanner into the other would blur the owning verdict.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "d1cc108c53cf4b55",
       "note": "paired one-line list comprehensions select delivery versus feedback event types; separate named functions make the discriminated-union vocabulary explicit, and nose reports zero shared lines",
       "reviewed_at": "2026-07-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d225f44b7ca36ae4",
+      "note": "The ledger, premise preflight, and slice-manifest validators each enforce their own SHA/string shape at a schema-owned field boundary. Although the regex-and-error pattern is similar, the refusal contracts and accepted evidence fields differ, so a shared validator would obscure ownership rather than reduce meaningful duplication.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1874,6 +2126,13 @@
       "id": "d44c7c8b2422d9a4",
       "note": "skill-script bootstrap preamble shared by the release and retro packages; the two files became byte-identical here only after four dead `REPO_ROOT / skills / public` constants were deleted, and the preamble is per-package portability boilerplate the plugin export copies verbatim -- extracting it would reintroduce the cross-package import the bootstrap exists to avoid",
       "reviewed_at": "2026-07-25",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d47e642f4c8ca1c7",
+      "note": "Candidate strings and historical strings use parallel validators but must map malformed input to different refusal codes. Keeping the history-specific wrapper local preserves the invalid-decision-history boundary.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -1962,6 +2221,27 @@
     },
     {
       "class": "intentional",
+      "id": "dcd1dcad8f7b2767",
+      "note": "The adapter validator additions surfaced alongside a broad pre-existing two-line validation idiom shared by unrelated adapter and policy modules. This is common local validation boilerplate, not a new extractable contract; the #511 field remains owned by quality adapter validation.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "dd12381fd0b50fab",
+      "note": "Candidate path and historical path validation deliberately translate the shared safe-path failure into different schema-owned error codes. The short try/except shape is not semantic duplication worth coupling.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "dd5b3388f83df1ab",
+      "note": "The portable command helper and Markdown link gate share a narrow path-shape branch but consume different carriers and report different proof facts. The overlap is local and covered by separate focused suites.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "dd9ce9abe53447dc",
       "note": "the standard try/except ImportError sibling-module bootstrap block, shared by scripts/host_hook_entry_identity.py and scripts/host_hook_skill_anchor_guard.py. This is the repo's portability idiom for a script that must import a sibling both as a package member and when invoked as a bare file from an installed copy; it cannot be centralized, because the helper that centralized it would need the very import it is bootstrapping. (id re-keyed after the round-2 repairs grew both halves; #441 rotation class, same members)",
       "reviewed_at": "2026-07-30",
@@ -2025,9 +2305,23 @@
     },
     {
       "class": "intentional",
+      "id": "e2be6ebfbea2ac95",
+      "note": "The closeout bundle CLI keeps the repo-owned runtime bootstrap preamble local, matching other directly executable proof CLIs. The entrypoint must work in both source-checkout and installed-plugin layouts; centralizing this short bootstrap would add indirection without removing the per-entrypoint portability contract.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e32bc7ae8aa9104c",
       "note": "scanner-reported zero-shared-line control-flow resemblance between release and achieve helpers; there is no shared body or contract to extract",
       "reviewed_at": "2026-07-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e41ae07624c29ee5",
+      "note": "The nose producer keeps the successful full-scan and partial-scan result branches explicit because both may report clean/findings while only one is measured. This parallelism is the issue's core invariant, and extracting it would risk losing the scope-status distinction; focused tests pin both.",
+      "reviewed_at": "2026-08-05",
       "surface": "code"
     },
     {
@@ -2060,6 +2354,13 @@
     },
     {
       "class": "intentional",
+      "id": "e8079ade923f41ed",
+      "note": "Two short CLI exit-code assignments in inventory_nose_clones.py are parallel by design: they preserve the visible mapping from non-scan status to the wrapper's unproven exit contract. A helper would add indirection without reducing semantic duplication.",
+      "reviewed_at": "2026-08-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "e870767ba8b3d1ab",
       "note": "same chunker per-stage CLI skeleton anchoring a long span between parse_handoff_entries.main and draft_goal_from_chunk.main; the skeleton matches at both ends while the bodies do entirely different work (handoff parsing + staleness + issue union vs goal-artifact drafting + check_goal rollback). Same accepted class as 6ff3e380d6a8fcaf. Surfaced as new because D46 slice 1 added the issue_adapter_report plumbing to parse_handoff_entries; draft_goal_from_chunk is untouched. Not collapsible: the two stages are separate executables in a documented pipe, and coupling their mains would defeat the per-stage refusal contract chunked_routing_cli exists to hold.",
       "reviewed_at": "2026-08-01",
@@ -2078,6 +2379,13 @@
       "note": "public-skill bootstrap/workflow template overlap between HITL and narrative; shared authoring shape is intentional, not a single-sourceable doc block",
       "reviewed_at": "2026-06-24",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "e8e4df2c0dc2536d",
+      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`), duplicated across the commit-msg authorization helper and five untouched achieve/handoff callers. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. Rotated from 54055904847649e6.",
+      "reviewed_at": "2026-08-07",
+      "surface": "code"
     },
     {
       "class": "intentional",
@@ -2116,6 +2424,13 @@
     },
     {
       "class": "intentional",
+      "id": "ed2971dbf3c0d6cc",
+      "note": "The portable command helper's recursive extraction branches are intentionally explicit for its own source/export contract; merging them would make the structured asset gate depend on Markdown command ownership.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "ed8a6184309255b4",
       "note": "tiny f-string path/timestamp helper family across unrelated modules; existing local helper policy keeps such low-value direct-execution idioms local instead of introducing shared imports",
       "reviewed_at": "2026-07-09",
@@ -2130,6 +2445,20 @@
     },
     {
       "class": "intentional",
+      "id": "ef4d6d783d261ee8",
+      "note": "These validators all render standalone failure summaries after distinct producer/consumer checks. A common report wrapper would erase the different evidence channels and would not remove the underlying ownership-specific checks.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f04c480d38d7ff2e",
+      "note": "Pre-existing and untouched by this slice: `record_usage_feedback.py` and `slice_closeout_usage_episode.py` share the same short repo-root/runtime import preamble that other directly executable CLIs keep local for the source-checkout vs installed-plugin contract, matching the already-accepted `e2be6ebfbea2ac95` rationale. Both members are outside the current diff.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "f1b3765205bd97ef",
       "note": "the tail of a validator `main()` — print a count to stderr and return 1, else print a 'Validated N …' line and return 0, then `if __name__ == '__main__': raise SystemExit(main())`. Shared by check_skill_bootstrap_vars (untouched) and check_markdown_inline_code, whose summary sentence changed on 2026-08-01 (it said 'wrapped inline code span(s)' for a finding class that is no longer only wraps) and rotated the fingerprint. This is the repo's standard CLI exit convention; the only thing that differs between the two is the sentence, and extracting it would mean a helper taking two format strings and a count.",
       "reviewed_at": "2026-08-01",
@@ -2140,6 +2469,13 @@
       "id": "f1ecdb322d57f29e",
       "note": "a 14-member family of two-to-five-line `if <cond>: return <literal>` guard clauses spread over eight unrelated modules (a staged-reversion check, a mutation-testing proposer, a t-signal classifier, a prompt-sentinel scorer, a tool-recommendation table, a JS eval runtime, and this release qualifier). It has no shared concept to centralize: each member returns its own module's own message for its own condition. It surfaced as new because widening the `same-proxy-flagged` qualifier text (S93) changed this file's normalized shape, not because duplication was introduced; the same guard-clause chain is present at 920b05ab.",
       "reviewed_at": "2026-07-28",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f26f830efe2060a9",
+      "note": "Load-a-sibling-script-by-path preamble, matching the untouched release publisher and markdown-preview renderer. These entrypoints run as git hooks or standalone CLIs from arbitrary working directories, where `scripts` is not importable as a package; the path load is the portability contract, not incidental repetition.",
+      "reviewed_at": "2026-08-07",
       "surface": "code"
     },
     {
@@ -2186,6 +2522,20 @@
     },
     {
       "class": "intentional",
+      "id": "f9ecb6a39cf93faa",
+      "note": "The repeated compact range/branch shapes belong to achieve goal lifecycle, handoff routing, and web-fetch concerns with different semantics. They are pre-existing local contracts, not a new shared implementation introduced by this slice.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fa452ae476fcdef5",
+      "note": "The final-bundle planner's small subprocess wrapper is intentionally local because it returns a BundleError and is used for candidate evidence, while the packaging validation script runs a different command contract. The repeated subprocess shape is idiomatic plumbing across independent owners, not extractable verdict logic.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "fba5b0dd854c84ab",
       "note": "argv-parse CLI scaffolding shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation runCli, extract-skill-experiment-input parseCliArgs); re-fingerprinted after the --stream option was added to build-skill-execution-observation; each is independently executable, a shared arg-parser would couple them — intentional; revisit if a 3rd consumer appears",
       "reviewed_at": "2026-07-02",
@@ -2200,6 +2550,13 @@
     },
     {
       "class": "intentional",
+      "id": "fc7cc812ae48efdf",
+      "note": "The web-fetch route catalog and Markdown negotiation stage intentionally keep adjacent request-stage handling local because one owns route selection and the other owns representation negotiation.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "fc9d43f98b928157",
       "note": "required and optional Git byte readers intentionally diverge on failure: one raises a diagnostic and the other returns None; keeping both explicit protects fail-closed reviewed-input semantics",
       "reviewed_at": "2026-07-19",
@@ -2207,9 +2564,30 @@
     },
     {
       "class": "intentional",
+      "id": "fcc3b3de194ba795",
+      "note": "The manifest library's standard-library import block is a small portability idiom shared with an unrelated surfaces library. The modules have separate owners and no shared import contract; extraction would add coupling without reducing semantic duplication.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "fce03d2223b4f9dc",
       "note": "argparse preamble shared by the two cautilus CLI entrypoints (validate_cautilus_diagnostics.py, validate_cautilus_proof.py): the same `--repo-root` / `--paths` declarations plus the changed-path resolution. Extracting it would hide which flags each CLI actually accepts, the explicitness the repo already preferred at fc9d43f98b928157. Surfaced 2026-07-31 as a rotation when the `--all` help string was corrected",
       "reviewed_at": "2026-07-31",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fd022e8a31bc6b4b",
+      "note": "the repo's standard import prologue, pairwise between scripts/quality_bootstrap_lib.py (in this diff) and scripts/quality_adapter_lib.py (untouched): the `from scripts.quality_policy_defaults import (...)` block over the same shared default/merge names, which both files legitimately consume. Deduplicating it would mean one importing the other's re-exports, which is indirection, not removal. Surfaced as NEW because slice C added `refilled_policy_subkeys` to the import list, shifting the span into a match; no duplication was written. Same class as the two bootstrap-prologue families accepted on the same day.",
+      "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fd61ac52f2f6d2aa",
+      "note": "The handoff parser and goal-draft CLI entrypoints share the timeout/argument/output lifecycle shape but own different pipeline contracts and operator actions. Keeping these standalone surfaces local preserves their distinct refusal and payload semantics.",
+      "reviewed_at": "2026-08-06",
       "surface": "code"
     },
     {
@@ -2232,363 +2610,6 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "808dad940a8e5681",
-      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/sample_mutation_files.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "825ebe6cba3065d4",
-      "note": "the repo's standard top-level-script bootstrap prologue: `REPO_ROOT = Path(__file__).resolve().parent.parent`, the `sys.path.insert` guard, and the `from scripts...` imports that follow it. This family is the PAIRWISE match between scripts/check_changed_line_mutation_coverage.py and scripts/check_js_mutation_score.py (untouched); the sibling family covers the same prologue against the other partner, and the two are separate ids because they are separate pairs. It cannot be extracted into a shared helper because it is the code that makes importing a shared helper possible -- the prologue must run before any `from scripts.` line resolves. Surfaced as NEW only because slice B moved the exit-code constants and `_verdict_exit_code` out of check_changed_line_mutation_coverage.py into changed_line_verdict_codes.py, which shifted the prologue into a span that now matches; no duplication was written. The same shape is already accepted elsewhere in this overlay as portability boilerplate.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "41324c32e734fea6",
-      "note": "the SHAPE two independent bootstrappers share, not logic either could borrow: scripts/quality_bootstrap_lib.py's `bootstrap_quality_adapter` (in this diff) and scripts/markdown_preview_bootstrap_lib.py's `scaffold_markdown_preview` (untouched) both build state, decide what a real run WOULD do, branch on `dry_run`, and assemble a report dict. Every field, status vocabulary, and warning in the two is different -- what matches lexically is the sequence, and a shared scaffolder helper would need more parameters than the shared span has lines while coupling two independently-owned bootstrap surfaces through one control-flow helper. Same reasoning as the accepted guard-clause families in this overlay. Surfaced as NEW because slice C added three lines to the report-assembly region (the sub-key refill evidence for issue #489), shifting the span into a match; no duplication was written.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fd022e8a31bc6b4b",
-      "note": "the repo's standard import prologue, pairwise between scripts/quality_bootstrap_lib.py (in this diff) and scripts/quality_adapter_lib.py (untouched): the `from scripts.quality_policy_defaults import (...)` block over the same shared default/merge names, which both files legitimately consume. Deduplicating it would mean one importing the other's re-exports, which is indirection, not removal. Surfaced as NEW because slice C added `refilled_policy_subkeys` to the import list, shifting the span into a match; no duplication was written. Same class as the two bootstrap-prologue families accepted on the same day.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "59c2c5986b2b51b6",
-      "note": "a single argparse flag declaration -- the `--repo-root` / `--goal-path` style `parser.add_argument(..., type=Path, help=...)` line -- shared between skills/public/achieve/scripts/goal_cli_args.py (in this diff) and scripts/critique_enforcement_scope.py (untouched). Irreducible: argparse flag declarations for two independent CLIs cannot be shared without one importing the other's parser, which couples unrelated command surfaces to remove one line. Surfaced as NEW because slice D EXTRACTED the achieve goal-target flags into goal_cli_args.py rather than accepting the two larger families they were part of -- that extraction removed real duplication between append_slice_log.py and check_goal_artifact.py and left this one-line residue behind.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2e98240a5f7205ac",
-      "note": "same chunker per-stage CLI skeleton as the accepted 0bc23ea0000c6cf9 and e870767ba8b3d1ab families: parse_handoff_entries and draft_goal_from_chunk are separate pipeline executables, so their timeout/parse/try-finally lifecycle remains explicit. Their stage work, input resolution, refusal payloads, and rollback contracts differ; extracting the surrounding main would couple independent stages behind a generic runner and hide which stage owns a failure. Surfaced as a fingerprint rotation because this slice changed draft_goal_from_chunk while parse_handoff_entries stayed untouched; the repeated skeleton was pre-existing and no new shared behavior was introduced.",
-      "reviewed_at": "2026-08-04",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3e53f4696faac404",
-      "note": "top-level runtime_bootstrap import/alias preamble shared by independent repo commands: build_retro_lesson_selection_index and validate_adapters bind different helpers for different owner contracts, and each must remain directly executable from both source and exported layouts. The bootstrap is the mechanism that makes shared-module imports possible, so extracting it would add indirection without removing the portability requirement. Surfaced as new because validate_adapters gained the source/flattened resolver loader; the matching prologue in build_retro_lesson_selection_index was untouched.",
-      "reviewed_at": "2026-08-04",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "66f4c0f1eb35d6fe",
-      "note": "portable import preamble shared by scripts/bootstrap_runtime.py and the standalone markdown-preview renderer. The renderer must remain directly executable in both the source and exported plugin layouts, so importing a shared bootstrap would add the coupling that this preamble establishes. The family surfaced when the renderer gained its independent PTY probe imports; no new shared behavior was introduced.",
-      "reviewed_at": "2026-08-04",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "0dd0a2267d136d73",
-      "note": "short lifecycle/report branch shared by independent quality adapter surfaces; the quality bootstrap owns migration authorization and the sibling helpers own different consumer contracts, so extracting the tiny idiom would couple verdict owners without removing behavior duplication.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1b518cbab6e42d3d",
-      "note": "small local helper branch shared by unrelated standalone commands; the quality adapter lifecycle must remain directly importable in source and exported layouts, and a shared formatter would hide independent refusal/report semantics.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "239b1c221a081f14",
-      "note": "two-line comment-preservation boundary shared with an unrelated subprocess/path helper; the quality lifecycle's comment parser is load-bearing for quoted and list-valued YAML, so extracting the incidental shape would couple unrelated owners.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2b952852d5c1e0f5",
-      "note": "small JSON/YAML lifecycle setup shape shared by independent command owners; the quality bootstrap report is a consumer-owned output contract and should not import another command's formatter merely to erase two lines.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5b81e034f4f4419b",
-      "note": "short value-normalization helper shape shared with a separate inventory library; the quality adapter's semantic conflict vocabulary is intentionally local to its lifecycle boundary.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8c465ddf2715dcca",
-      "note": "quality adapter bootstrap and markdown-preview scaffold are parallel generated-writer lifecycles with different payloads, force policies, comment-retention requirements, and reports. A shared runner would couple two independent consumer-owned boundaries; the duplication is deliberate and each path has its own focused tests.",
-      "reviewed_at": "2026-08-05",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "0a2b79053773062c",
-      "note": "The plugin-dir reference validator and the structured-asset command-carrier validator are independent standalone gates with different input readers and verdict owners. Their small CLI/reporting boundary is intentionally repeated so each validator remains directly executable and its failure semantics stay local.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "421086eaf4dcd873",
-      "note": "The focused changed-line producer and structured-asset validator each need a direct command entrypoint with their own scope and exit contract. Extracting the shared main skeleton would couple unrelated proof surfaces and hide which command owns an unproven result.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "551f9b334fd4874a",
-      "note": "The two route-stage catalog branches construct distinct stage records with different route semantics. The repeated short shape keeps the stage contract visible and is not shared executable behavior.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ae3cdd72a95c945d",
-      "note": "These short artifact-run, claim-fidelity, and command-carrier branches are independent boundary readers. A shared formatter would couple artifact and portability ownership merely to erase incidental dictionary/list shape.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "b65c38f8d0eb8e4f",
-      "note": "The two check-doc-links regions handle different source and consumer reader positions. Their similar traversal scaffolding is deliberate because the ownership and false-positive rules differ.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "cff76212c30df1c8",
-      "note": "Backtick migration and document-link scanning intentionally retain local tokenization rules for separate command and prose contracts; importing one scanner into the other would blur the owning verdict.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "dd5b3388f83df1ab",
-      "note": "The portable command helper and Markdown link gate share a narrow path-shape branch but consume different carriers and report different proof facts. The overlap is local and covered by separate focused suites.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ed2971dbf3c0d6cc",
-      "note": "The portable command helper's recursive extraction branches are intentionally explicit for its own source/export contract; merging them would make the structured asset gate depend on Markdown command ownership.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "ef4d6d783d261ee8",
-      "note": "These validators all render standalone failure summaries after distinct producer/consumer checks. A common report wrapper would erase the different evidence channels and would not remove the underlying ownership-specific checks.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f9ecb6a39cf93faa",
-      "note": "The repeated compact range/branch shapes belong to achieve goal lifecycle, handoff routing, and web-fetch concerns with different semantics. They are pre-existing local contracts, not a new shared implementation introduced by this slice.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fc7cc812ae48efdf",
-      "note": "The web-fetch route catalog and Markdown negotiation stage intentionally keep adjacent request-stage handling local because one owns route selection and the other owns representation negotiation.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fd61ac52f2f6d2aa",
-      "note": "The handoff parser and goal-draft CLI entrypoints share the timeout/argument/output lifecycle shape but own different pipeline contracts and operator actions. Keeping these standalone surfaces local preserves their distinct refusal and payload semantics.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "0bfd54f2563138af",
-      "note": "Reader-root and source/plugin parity validation intentionally keep parallel loops local: one validates owned reader roots and captured/current identity modes, while the other validates derived-file equality. A shared loop would hide different manifest fields and refusal codes behind a generic schema helper; both contracts are covered by the focused slice suite.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2e6e18e44ccc5bd8",
-      "note": "The repository-boundary try/relative_to guard is the small standalone path-safety idiom used by direct scripts and the manifest validator. It is portability boilerplate with different owning entrypoints; extracting it would create a cross-script dependency for two lines.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "38fae250ba1dde05",
-      "note": "The manifest validator's compact repository-entry refusal branches share an idiom-sized shape with unrelated validators. Their paths and evidence contracts are independently owned; a common formatter would couple refusal semantics without removing the checks.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7f2afc700c4874d3",
-      "note": "The CLI's direct-execution sys.path/runtime bootstrap is intentional portable-script boilerplate shared across quality commands. It preserves standalone plugin/source-checkout execution and is not a domain helper to centralize.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "fcc3b3de194ba795",
-      "note": "The manifest library's standard-library import block is a small portability idiom shared with an unrelated surfaces library. The modules have separate owners and no shared import contract; extraction would add coupling without reducing semantic duplication.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "4e0160a823736142",
-      "note": "The standalone retro-to-handoff validator intentionally uses the repository-standard argparse/main entrypoint shape also used by the pre-push coverage gate. The commands own different arguments, refusal semantics, and evidence payloads; a shared runner would couple distinct operator contracts without removing domain logic.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "329ea2d370525729",
-      "note": "The authorization helper's permissive-fallback dict literal matches the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults so one could not change without the others.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3e585e6d2db885a6",
-      "note": "The capture adapter keeps its direct-execution runtime-bootstrap import preamble local, matching the retro-index, risk-interrupt, and packaging producers. Established repo pattern for portable CLIs that must run in both source-checkout and installed-plugin layouts.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "3ee29bf91326977e",
-      "note": "A two-line `sha256(text.encode()).hexdigest()` helper. Standard-library idiom shared with three unrelated hashing owners; centralizing it would couple the issue-source digest contract to mutation-sampling internals.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "54055904847649e6",
-      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`) duplicated across the release closeout, closeout-message, and authorization modules and the untouched handoff chunk drafter. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. The layout knowledge is now centralized in issue_closeout_authorization.load_from/SKILL_RELS; what remains is the irreducible per-entrypoint bootstrap.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "58b291a6b5fa9084",
-      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "5b3c7738502d380d",
-      "note": "A one-line canonical-JSON dump matching the boundary-bypass ratchet's. Both are digest-input serializations owned by separate evidence contracts; sharing would let one contract's serialization change silently move the other's digests.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7d265405fe859204",
-      "note": "Within issue_source_capture_capability: the default, undeclared-backend, and parsed capability all return the same field set by construction, because they are three states of ONE contract. That is the point of the module; collapsing them would erase the distinction between a default, an unsupported backend, and a declared block.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7de839c3498879a4",
-      "note": "The crosswalk validator keeps its direct-execution runtime-bootstrap preamble local, matching four untouched validator CLIs. Same portable-entrypoint rationale as the other preamble families already classified here.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8259eb3bf04fb3b7",
-      "note": "A module-level cache dict plus typing preamble matching the parity harness. Two-line plumbing, not a shared verdict helper.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8438b78f671dc3bf",
-      "note": "A single-line `path.parent.mkdir(parents=True, exist_ok=True)`. Standard-library idiom shared with eight untouched writers.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "be9c2c68c9ecef9c",
-      "note": "A two-line regex-substitute/strip normalization matching adapter_lib and four untouched helpers. Standard-library idiom at independent normalization boundaries.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "2b08a39f47fa892b",
-      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy. Rotated from 58b291a6b5fa9084 when the fence/list rules moved.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "487bb9f65898407b",
-      "note": "The permissive-fallback dict literal returned when the authorization module is absent, matching the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults. Rotated from 329ea2d370525729.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "e8e4df2c0dc2536d",
-      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`), duplicated across the commit-msg authorization helper and five untouched achieve/handoff callers. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. Rotated from 54055904847649e6.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "f26f830efe2060a9",
-      "note": "Load-a-sibling-script-by-path preamble, matching the untouched release publisher and markdown-preview renderer. These entrypoints run as git hooks or standalone CLIs from arbitrary working directories, where `scripts` is not importable as a package; the path load is the portability contract, not incidental repetition.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "7d3e075575180936",
-      "note": "Stdlib plus scripts.adapter_lib import preamble shared by two independently portable adapter libraries (cautilus, narrative). They import the same shared field validators because they validate the same field contract; the preamble carries no verdict logic and centralizing an import block would add indirection without removing any behavior.",
-      "reviewed_at": "2026-08-07",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "8dc7bd9985a9904b",
-      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
-      "reviewed_at": "2026-08-08",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "637bb6af7e7552e5",
-      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
-      "reviewed_at": "2026-08-08",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "1e790839dc306944",
-      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
-      "reviewed_at": "2026-08-08",
-      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

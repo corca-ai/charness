@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import os
 import shlex
 import subprocess
 from datetime import date
@@ -14,6 +13,7 @@ from runtime_bootstrap import import_repo_module, repo_root_from_script
 REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.artifact_naming_lib")
+_scaffold_artifact_lib = import_repo_module(__file__, "scripts.scaffold_artifact_lib")
 ArtifactClassError = _scripts_artifact_naming_lib_module.ArtifactClassError
 artifact_class_from_adapter = _scripts_artifact_naming_lib_module.artifact_class_from_adapter
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
@@ -71,39 +71,6 @@ def load_adapter(repo_root: Path, skill_id: str) -> dict[str, object]:
     return json.loads(completed.stdout)
 
 
-def _portable_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root))
-    except ValueError:
-        return str(path)
-
-
-def _current_pointer_state(repo_root: Path, current_path: Path) -> dict[str, object]:
-    if not current_path.is_symlink():
-        return {
-            "current_pointer_is_symlink": False,
-            "current_pointer_target_path": None,
-            "current_pointer_target_exists": None,
-        }
-
-    raw_target = os.readlink(current_path)
-    target_path = Path(raw_target)
-    if not target_path.is_absolute():
-        target_path = current_path.parent / target_path
-    return {
-        "current_pointer_is_symlink": True,
-        "current_pointer_target_path": _portable_path(repo_root, target_path),
-        "current_pointer_target_exists": target_path.exists(),
-    }
-
-
-def _current_write_path(repo_root: Path, current_path: Path, pointer_state: dict[str, object]) -> str:
-    target = pointer_state.get("current_pointer_target_path")
-    if pointer_state.get("current_pointer_is_symlink") and isinstance(target, str):
-        return target
-    return str(current_path.relative_to(repo_root))
-
-
 def _refresh_current_pointer_argv(skill_id: str, record_path: Path) -> list[str]:
     helper = Path(__file__).resolve().parent / "refresh_current_pointer.py"
     return [
@@ -149,7 +116,7 @@ def payload_for(
     records_supported = record_artifact_supported(artifact_class)
     record_path = output_dir / record_name if records_supported else None
     absolute_current_path = repo_root / current_path
-    pointer_state = _current_pointer_state(repo_root, absolute_current_path)
+    pointer_state = _scaffold_artifact_lib.published_pointer_state(repo_root, absolute_current_path)
     if intent == "record" and record_path is not None:
         write_path = str(record_path)
         write_role = "durable_record"
@@ -157,8 +124,7 @@ def payload_for(
         refresh_argv = _refresh_current_pointer_argv(skill_id, record_path)
         refresh_command = shlex.join(refresh_argv)
     else:
-        write_path = _current_write_path(repo_root, absolute_current_path, pointer_state)
-        write_role = "current_pointer_target" if pointer_state["current_pointer_is_symlink"] else "current_pointer"
+        write_path, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(repo_root, current_path)
         update_current_pointer_after_write = False
         refresh_argv = None
         refresh_command = None
@@ -174,6 +140,7 @@ def payload_for(
         "current_artifact_path": str(current_path),
         "write_artifact_path": write_path,
         "write_artifact_role": write_role,
+        **_scaffold_artifact_lib.write_target_facts(repo_root, write_path),
         "update_current_pointer_after_write": update_current_pointer_after_write,
         "refresh_current_pointer_argv": refresh_argv,
         "refresh_current_pointer_command": refresh_command,

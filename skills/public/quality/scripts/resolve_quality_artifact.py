@@ -4,7 +4,6 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import json
-import os
 import runpy
 import shlex
 import sys
@@ -24,33 +23,9 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 load_adapter = _resolve_adapter.load_adapter
 _artifact_naming = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.artifact_naming_lib")
 _refresh_current_pointer = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.refresh_current_pointer")
+_scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 dated_artifact_filename = _artifact_naming.dated_artifact_filename
 slugify = _artifact_naming.slugify
-
-
-def _portable_path(repo_root: Path, path: Path) -> str:
-    try:
-        return str(path.resolve().relative_to(repo_root))
-    except ValueError:
-        return str(path)
-
-
-def _current_pointer_state(repo_root: Path, current_path: Path) -> dict[str, object]:
-    if not current_path.is_symlink():
-        return {
-            "current_pointer_is_symlink": False,
-            "current_pointer_target_path": None,
-            "current_pointer_target_exists": None,
-        }
-    raw_target = os.readlink(current_path)
-    target_path = Path(raw_target)
-    if not target_path.is_absolute():
-        target_path = current_path.parent / target_path
-    return {
-        "current_pointer_is_symlink": True,
-        "current_pointer_target_path": _portable_path(repo_root, target_path),
-        "current_pointer_target_exists": target_path.exists(),
-    }
 
 
 def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.date) -> dict[str, object]:
@@ -58,7 +33,7 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
     output_dir = Path(adapter["data"]["output_dir"])
     current_path = output_dir / "latest.md"
     record_path = output_dir / dated_artifact_filename(slugify(slug), artifact_date=artifact_date)
-    pointer_state = _current_pointer_state(repo_root, repo_root / current_path)
+    pointer_state = _scaffold_artifact_lib.published_pointer_state(repo_root, repo_root / current_path)
     if intent == "record":
         write_path = str(record_path)
         write_role = "durable_record"
@@ -76,9 +51,7 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
         ]
         refresh_command = shlex.join(refresh_argv)
     else:
-        target = pointer_state.get("current_pointer_target_path")
-        write_path = target if pointer_state["current_pointer_is_symlink"] and isinstance(target, str) else str(current_path)
-        write_role = "current_pointer_target" if pointer_state["current_pointer_is_symlink"] else "current_pointer"
+        write_path, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(repo_root, current_path)
         update_current = False
         refresh_argv = None
         refresh_command = None
@@ -93,6 +66,7 @@ def payload_for(repo_root: Path, *, slug: str, intent: str, artifact_date: dt.da
         "current_artifact_path": str(current_path),
         "write_artifact_path": write_path,
         "write_artifact_role": write_role,
+        **_scaffold_artifact_lib.write_target_facts(repo_root, write_path),
         "update_current_pointer_after_write": update_current,
         "refresh_current_pointer_argv": refresh_argv,
         "refresh_current_pointer_command": refresh_command,

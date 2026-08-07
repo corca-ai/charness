@@ -45,7 +45,13 @@ the artifact to fit `size_budget.max_lines` on the first pass and heed its
 `guidance` on the overflow-prone section, instead of writing long and then
 trimming to fit against a ceiling the validator only reveals at the end. Edit the
 scaffold payload's `write_artifact_path`, not `latest.md` by habit; it resolves a
-symlinked current pointer to its actual target.
+symlinked current pointer to its actual target. The payload also says whether that
+target already holds content: `write_artifact_effect: overwrite_existing_content`
+means the file is there and its content is the investigation you are continuing, so
+append rather than replace it; `create_new_file` means nothing is there yet — a
+fresh repo, a resolved previous record, or a pointer whose target is missing. The
+key reports what is on disk, not why, so pair it with `write_artifact_role` and
+`intent` when the distinction matters.
 
 Before stopping, run the `validator_command` emitted by the scaffold helper or
 the planner's `debug-artifact-shape` packet. Do not replace it with a guessed

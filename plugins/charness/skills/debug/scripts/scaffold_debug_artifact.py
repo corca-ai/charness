@@ -2,7 +2,6 @@
 from __future__ import annotations
 
 import datetime as dt
-import os
 import runpy
 from pathlib import Path
 from types import SimpleNamespace
@@ -20,6 +19,7 @@ _resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adap
 load_adapter = _resolve_adapter.load_adapter
 _scaffold_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 _resolve_artifact_path = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.resolve_artifact_path")
+_scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 
 # Single-source the artifact line budget from the validator (the one authority
 # for MAX_ARTIFACT_LINES) so the scaffold surfaces the exact ceiling the gate
@@ -191,10 +191,16 @@ def _resolution(path: Path) -> str:
 
 
 def _current_pointer_symlink_target(repo_root: Path, artifact_path: str) -> str | None:
-    absolute_artifact_path = repo_root / artifact_path
-    if not absolute_artifact_path.is_symlink():
-        return None
-    return os.readlink(absolute_artifact_path)
+    """From the single owner, not a private copy.
+
+    This was a FIFTH implementation of the pointer rule. It existed because
+    `published_pointer_state` filters this key out, so a bounded review's answer to "is the
+    fourth copy the last one" was no -- the owner's own key filtering was what forced the
+    copy to stay.
+    """
+    state = _scaffold_artifact_lib.current_pointer_state(repo_root, Path(artifact_path))
+    target = state["current_pointer_symlink_target"]
+    return str(target) if isinstance(target, str) else None
 
 
 def _resolved_followup_record_payload(
@@ -283,6 +289,9 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     )
     if size_budget is not None:
         payload["size_budget"] = size_budget
+    # LAST, because the resolved-followup branch above replaces `write_artifact_path` through
+    # a fixed key list. Facts computed before that swap describe the wrong file.
+    _scaffold_artifact_lib.with_write_target_facts(repo_root, payload)
     return payload
 
 

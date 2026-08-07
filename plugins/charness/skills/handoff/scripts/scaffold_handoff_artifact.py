@@ -101,7 +101,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
     artifact_path = str(adapter["artifact_path"])
     date_text = dt.date.today().isoformat()
     resolved_title = default_title(title)
-    return {
+    return _scaffold_lib.with_write_target_facts(repo_root, {
         "artifact_path": artifact_path,
         "artifact_role": "rolling",
         "write_artifact_path": artifact_path,
@@ -109,7 +109,7 @@ def payload_for(repo_root: Path, *, title: str | None) -> dict[str, object]:
         "title": resolved_title,
         "template": render_template(title=resolved_title, date_text=date_text),
         "validator_command": validator_command(repo_root),
-    }
+    })
 
 
 def main() -> int:
