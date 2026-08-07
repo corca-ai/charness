@@ -74,6 +74,12 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Backlog Recount
+
+- Counted:
+- Claims:
+- Not claimed:
+
 ## Operator Decision Queue
 
 Record decisions, confirmations, credential actions, manual proof steps, and

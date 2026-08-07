@@ -125,6 +125,20 @@ half of the same question — the half the root repair exists to make possible.
 | 2 | Let a repo declare a sub-key ABSENT and have the resolver honor it | #528 | Needs declared/defaulted/absent as three states | planned |
 | 3 | Bundle proof and goal closeout, including the successor goal | (none) | Composition can drop what each slice proved alone | planned |
 
+## Backlog Recount
+
+- Counted: To be filled by the achieve Before-phase
+- Claims: To be filled by the achieve Before-phase
+- Not claimed: To be filled by the achieve Before-phase
+
+This draft is the ONE pre-existing artifact the backlog-recount floor reaches: it is
+`Status: draft` and `Created: 2026-08-08`, so it is in scope. The heading is added with
+unfilled placeholders deliberately rather than back-filled with a count — the floor's
+whole point is that scope gets reconciled against the tracker at shaping time, and this
+goal's own `## Off-Goal Findings` already records that it was shaped WITHOUT a recount
+and that a later count found 28 open issues intersecting its subject. Fill this during its
+Before phase, not from here.
+
 ## Operator Decision Queue
 
 - Decision: whether `adapter_key_registry`'s unknown/`reader-elsewhere` states

@@ -170,3 +170,55 @@ def test_the_floor_actually_gates_activation_not_just_reports() -> None:
         draft + "\n## Backlog Recount\n- Counted: 28\n- Claims: none\n- Not claimed: none\n"
     )
     assert with_section["pursue_ready"] is True, with_section["reason"]
+
+
+def test_a_punctuation_only_value_is_refused() -> None:
+    """"Present but says nothing" is the same look-alike as empty.
+
+    Round-1 review found `Claims: **` passing: the first cut only stripped whitespace, so
+    any non-empty string counted. The closeout-plan floor in the very function that
+    consumes this one had already solved it, and its solution is now reused. If this
+    passed, satisfying the floor would be cheaper than reading the tracker.
+    """
+    noise = IN_SCOPE + "\n## Backlog Recount\n\n- Counted: —\n- Claims: **\n- Not claimed: .\n"
+    report = backlog.check(noise)
+
+    assert report["ok"] is False
+    assert report["missing_fields"] == list(backlog.REQUIRED_FIELDS)
+
+
+def test_emphasised_and_alternate_bullets_are_read_not_reported_absent() -> None:
+    """A visibly-present field must not be reported missing.
+
+    `**Claims:**`, `+ ` bullets and a lower-case label are all valid markdown an operator
+    will write. The first regex refused all three — failing closed, so never a false
+    green, but a refusal saying "field absent" about a field plainly on the page.
+    """
+    emphasised = (
+        IN_SCOPE
+        + "\n## Backlog Recount\n\n- **Counted:** 28\n+ Claims: none\n- not claimed: none\n"
+    )
+
+    assert backlog.check(emphasised)["ok"] is True, backlog.check(emphasised)
+
+
+def test_the_floor_cannot_be_disarmed_by_removing_or_mis_casing_the_status() -> None:
+    """FAIL CLOSED on status, matching the `Created:` direction.
+
+    Round-1 review found the draft gate keyed to `status == "draft"`, while `read_status`
+    returns None for a missing `Status:` line and the raw string otherwise, and
+    `--pursue-ready` explicitly does not validate status. So deleting one line, or writing
+    `Status: Draft`, skipped the floor — and disarmed the closeout-plan floor in the same
+    edit — while two shipped docstrings claimed the floor could not be removed that way.
+    """
+    import goal_artifact_lib as gal  # noqa: PLC0415
+
+    base = "# Achieve Goal: T\n\n{status}Activation: `/goal @x.md`\n\n## Goal\n\nx\n"
+    for status_line in ("", "Status: Draft\n", "Status: DRAFT\n", "Status: nonsense\n"):
+        report = gal.pursue_readiness(base.format(status=status_line))
+        assert report["backlog_recount_missing_fields"] == list(backlog.REQUIRED_FIELDS), status_line
+
+    # The recognised non-shaping statuses still skip it — that scoping is deliberate.
+    for status_line in ("Status: active\n", "Status: blocked\n", "Status: complete\n"):
+        report = gal.pursue_readiness(base.format(status=status_line))
+        assert report["backlog_recount_missing_fields"] == [], status_line

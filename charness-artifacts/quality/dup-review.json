@@ -2582,6 +2582,13 @@
       "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1e790839dc306944",
+      "note": "The `## Backlog Recount` scaffold block, duplicated between `achieve`'s `goal_artifact_template.md` and `handoff`'s `templates/auto_draft_goal.md`. This repo has TWO goal-artifact producers and `tests/quality_gates/test_goal_artifact_producers.py` REQUIRES them to share the current shape — de-duplicating by removing the block from either one re-creates the exact blocker round-1 review found in this slice, where the floor shipped into one template and not the other and every pickup-generated goal became unactivatable with no heading to fill. A template is a literal artifact skeleton; it cannot reference its own sections indirectly. The reducible part WAS removed in the same commit: both templates previously carried a four-line explanation, now a one-line pointer to `references/lifecycle-before.md`, which owns the reasoning. What remains is the heading, the pointer, and the three field placeholders.",
+      "reviewed_at": "2026-08-08",
+      "surface": "doc"
     }
   ],
   "fixable_ceiling": 0,

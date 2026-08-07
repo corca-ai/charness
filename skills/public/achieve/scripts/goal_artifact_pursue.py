@@ -56,13 +56,17 @@ def _load_backlog_floor():
 
 _BACKLOG = _load_backlog_floor()
 
+# Statuses whose scope was already set, so a SHAPING floor no longer applies. Listed
+# positively (rather than testing `== "draft"`) so an unreadable status fails closed.
+NON_SHAPING_STATUSES = frozenset({"active", "blocked", "complete"})
+
 
 SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",
     "closeout evidence",
     "closeout binding values and final packet identity",
-    "section CONTENT (headings are checked; what is under them is not)",
+    "section CONTENT beyond the closeout-plan and backlog-recount FIELDS this reads",
 )
 
 
@@ -76,6 +80,7 @@ def _reason(
     closeout_plan_missing_fields: list[str],
     closeout_plan_duplicate: bool,
     backlog_recount_missing_fields: list[str],
+    backlog_evaluated: bool,
     activation_ready: bool,
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
@@ -93,11 +98,21 @@ def _reason(
     is preserved so an existing matcher still matches.
     """
     if activation_ready:
+        # The backlog clause is CONDITIONAL on the floor having run. Saying "the backlog
+        # recount is recorded" on a non-draft, where it was skipped entirely, would be the
+        # narrow-measurement-in-wide-vocabulary defect this docstring warns about -- and
+        # the pass sentence read identically in both cases until round-1 review said so.
+        backlog_clause = (
+            "the backlog recount is recorded"
+            if backlog_evaluated
+            else "the backlog recount was NOT evaluated (shaping floor; this artifact is not a draft)"
+        )
         return (
             "shaped: no Before-phase placeholders remain, every required/portability heading is present, "
-            "and the closeout-plan heading/minimum binding fields are present; safe to pursue via `/goal` -- "
+            "the closeout-plan heading/minimum binding fields are present, and "
+            f"{backlog_clause}; safe to pursue via `/goal` -- "
             "field shape only, "
-            "section content not checked"
+            "section content beyond those fields not checked"
         )
     clauses: list[str] = []
     if not balanced:
@@ -235,11 +250,19 @@ def pursue_readiness(
     # undated legacy ones. Both are needed: `applies` fails CLOSED on a missing `Created:`
     # so the floor cannot be removed by deleting one line, which is right for a draft and
     # wrong for a historical record.
+    # FAIL CLOSED on the status too, not just on `Created:`. Round-1 review found that
+    # `status == "draft"` made the floor removable by deleting the `Status:` line or
+    # writing `Status: Draft` -- `read_status` returns None or the raw string, and
+    # `--pursue-ready` explicitly does not validate status -- which also disarmed the
+    # closeout-plan floor in the same edit. The docstring below claimed the opposite. So
+    # the skip is keyed to a RECOGNISED non-shaping status: missing, mis-cased or
+    # unrecognised all evaluate.
+    _status = (status or "").strip().lower()
     backlog_report = (
-        _BACKLOG.check(text)
-        if status == "draft"
-        else {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
-              "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
+        {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
+         "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
+        if _status in NON_SHAPING_STATUSES
+        else _BACKLOG.check(text)
     )
     backlog_recount_missing_fields = list(backlog_report.get("missing_fields") or [])
     activation_ready = (
@@ -283,6 +306,7 @@ def pursue_readiness(
             closeout_plan_missing_fields=closeout_plan_missing_fields,
             closeout_plan_duplicate=closeout_plan_duplicate,
             backlog_recount_missing_fields=backlog_recount_missing_fields,
+            backlog_evaluated=bool(backlog_report.get("applies")),
             activation_ready=activation_ready,
         ),
         "activation_discussion_warning": discussion_warning,

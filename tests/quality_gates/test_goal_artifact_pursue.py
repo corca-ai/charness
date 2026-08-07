@@ -11,8 +11,12 @@ gal = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gal)
 
 
-_BACKLOG_SECTION = gal._BACKLOG.SECTION if hasattr(gal, "_BACKLOG") else "Backlog Recount"
-_BACKLOG_FIELDS = gal._BACKLOG.REQUIRED_FIELDS if hasattr(gal, "_BACKLOG") else ("Counted", "Claims", "Not claimed")
+# `_BACKLOG` lives in `goal_artifact_pursue`, NOT in `goal_artifact_lib`. The first
+# version guarded with `hasattr(gal, "_BACKLOG")`, which is ALWAYS False, so the fixtures
+# silently used hardcoded literals and a rename would have left them asserting dead
+# strings — coupling that only looked like coupling. Reached through the real module.
+_BACKLOG_SECTION = gal._pursue._BACKLOG.SECTION
+_BACKLOG_FIELDS = gal._pursue._BACKLOG.REQUIRED_FIELDS
 
 
 def _goal_text(tmp_path: Path, slug: str = "g", date: str = "2026-05-27") -> str:
@@ -462,7 +466,30 @@ def test_pursue_readiness_pass_message_states_the_scope_it_measured() -> None:
 
     assert "safe to pursue" in reason  # legacy substring preserved for matchers
     assert "heading is present" in reason
-    assert "section content not checked" in reason
+    # Narrowed from the old blanket `section content not checked`: the verdict now DOES
+    # read the closeout-plan and backlog-recount field values, so claiming it reads no
+    # section content would understate it in the opposite direction.
+    assert "section content beyond those fields not checked" in reason
+    # The dimension this slice added must appear, or a passing operator cannot tell the
+    # recount was evaluated from a run where it was skipped.
+    assert "the backlog recount is recorded" in reason
+
+
+def test_pursue_readiness_pass_message_does_not_claim_a_recount_it_skipped() -> None:
+    """The non-draft counterpart: the floor is skipped, so the sentence must say so.
+
+    Without this the PASS sentence read identically whether the recount was evaluated or
+    bypassed, which is a narrow measurement wearing wide vocabulary — the exact thing the
+    reason-builder's own docstring warns against.
+    """
+    reason = gal.pursue_readiness(
+        _with_required_sections(
+            "# Achieve Goal: T\n\nStatus: active\nActivation: `/goal @x.md`\n"
+        )
+    )["reason"]
+
+    assert "was NOT evaluated" in reason, reason
+    assert "the backlog recount is recorded" not in reason
 
 
 def test_pursue_readiness_states_what_its_verdict_did_not_measure() -> None:

@@ -21,11 +21,17 @@ artifact. The floor makes the reasoning VISIBLE and auditable; a human or a revi
 grades it. Every other conditional floor in this module's siblings is presence-shaped for
 the same reason.
 
-WHY A DATE GRANDFATHER. Nineteen goal artifacts predate this rule and none carries the
-section. Making it unconditional would redden every historical artifact and the broad
-gate with them, which is how a floor gets disarmed rather than obeyed. `RULE_DATE` gates
-on the goal's own `Created:` line and fails CLOSED on a missing or malformed one, so a
-dateless artifact is covered rather than exempted.
+WHY A DATE GRANDFATHER. This repo holds 176 goal artifacts and 173 of them predate the
+rule; of the 8 that are still `draft` -- the only ones a shaping floor can reach -- 7 are
+pre-rule. Making the floor unconditional would redden the whole corpus and the broad gate
+with it, which is how a floor gets disarmed rather than obeyed. (The first draft of this
+paragraph said "nineteen", carried in from the PRECEDING slice's unrelated count of 19
+shipped example adapters. A verdict surface quantifying its own design argument with a
+number from a different denominator is the exact defect this goal family exists to remove,
+so the real denominators are stated and the provenance is kept as a warning.)
+
+`RULE_DATE` gates on the goal's own `Created:` line and fails CLOSED on a missing or
+malformed one, so a dateless artifact is covered rather than exempted.
 """
 from __future__ import annotations
 
@@ -80,7 +86,19 @@ REQUIRED_FIELDS = ("Counted", "Claims", "Not claimed")
 # field's value -- an empty field reporting itself satisfied, which is precisely the
 # defect this floor exists to catch, inside the floor that catches it. Caught by the
 # test written for the empty-value case, not by review.
-_FIELD_RE = r"^[^\S\n]*[-*]?[^\S\n]*{field}[^\S\n]*:[^\S\n]*(?P<value>.*)$"
+# The bullet/emphasis tolerance and the substantive-content test both mirror the
+# closeout-plan floor in `goal_artifact_pursue`, which had already solved this: `[`*_~]*`
+# so `**Claims:**` and `+ Claims:` are read rather than reported absent, and a strip of
+# markdown punctuation so `Claims: **` -- present, saying nothing -- is refused like an
+# empty one. Round-1 review found both: the first refused a visibly-present field, and the
+# second ACCEPTED a field with no content, which is the look-alike the floor exists to kill.
+_FIELD_RE = r"^[ \t>]*[-*+]?[ \t]*[`*_~]*{field}[`*_~]*[ \t]*:[ \t]*(?P<value>.*)$"
+# "Says something" == contains at least one word character. An explicit punctuation
+# class kept missing members (the em-dash in `Counted: —` slipped straight through the
+# first list), and `[^0-9A-Za-z]` would refuse a perfectly good non-Latin value — this
+# tracker's issue titles are routinely Korean. `\w` is Unicode-aware by default in
+# Python 3, so Hangul counts and decoration does not.
+_SUBSTANTIVE = re.compile(r"[\W_]+", re.UNICODE)
 
 
 def applies(text: str) -> bool:
@@ -89,7 +107,7 @@ def applies(text: str) -> bool:
 
 
 def _field_value(body: str, field: str) -> str | None:
-    pattern = re.compile(_FIELD_RE.format(field=re.escape(field)), re.MULTILINE)
+    pattern = re.compile(_FIELD_RE.format(field=re.escape(field)), re.MULTILINE | re.IGNORECASE)
     match = pattern.search(body)
     if match is None:
         return None
@@ -104,7 +122,11 @@ def missing_fields(body: str) -> list[str]:
     floor was satisfied. That look-alike is the whole class this goal family exists to
     remove, so the two cases are collapsed into one verdict rather than distinguished.
     """
-    return [field for field in REQUIRED_FIELDS if not (_field_value(body, field) or "")]
+    return [
+        field
+        for field in REQUIRED_FIELDS
+        if not _SUBSTANTIVE.sub("", _field_value(body, field) or "")
+    ]
 
 
 def check(text: str) -> dict:

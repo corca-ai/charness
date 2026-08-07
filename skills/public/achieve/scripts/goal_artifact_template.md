@@ -46,10 +46,7 @@ What the user can do to verify completion directly.
 
 ## Backlog Recount
 
-Recount the tracker BEFORE shaping scope, then record the split. Presence is the
-floor; the judgement stays the operator's. `Claims:` and `Not claimed:` may say
-`none`, but the word has to be written — an empty line reads as satisfied while
-telling the next session nothing.
+Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 - Counted: To be filled by the achieve Before-phase
 - Claims: To be filled by the achieve Before-phase

@@ -16,6 +16,7 @@ def _load(path: Path, name: str):
 
 goal_lib = _load(ROOT / "skills/public/achieve/scripts/goal_artifact_lib.py", "goal_artifact_lib")
 handoff_lib = _load(ROOT / "skills/public/handoff/scripts/chunked_routing_lib.py", "chunked_routing_lib")
+backlog = _load(ROOT / "skills/public/achieve/scripts/goal_artifact_backlog.py", "goal_artifact_backlog")
 
 
 def _assert_goal_shape(text: str) -> None:
@@ -27,6 +28,15 @@ def _assert_goal_shape(text: str) -> None:
         assert f"## {section}" in text, section
     assert "Activation: `/goal @" in text
     assert "## Operator Decision Queue" in text
+    # Read the floor's own constants, NOT a literal. This assertion exists because the
+    # backlog-recount floor shipped into `achieve`'s template and NOT into handoff's
+    # auto-draft template, so every pickup-generated goal was refused by `--pursue-ready`
+    # with no heading to fill — while this very test reported "producers share current
+    # shape". A hardcoded string here would have been the same blind spot one layer up:
+    # renaming the section or its fields would leave this passing against dead strings.
+    assert f"## {backlog.SECTION}" in text
+    for field in backlog.REQUIRED_FIELDS:
+        assert f"- {field}: " in text, field
 
 
 def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:

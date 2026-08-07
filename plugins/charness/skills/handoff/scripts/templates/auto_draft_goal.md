@@ -43,6 +43,14 @@ runs the activation command.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Backlog Recount
+
+Recount the tracker before scope; see `references/lifecycle-before.md`.
+
+- Counted: To be filled by the achieve Before-phase
+- Claims: To be filled by the achieve Before-phase
+- Not claimed: To be filled by the achieve Before-phase
+
 ## Operator Decision Queue
 
 Record decisions, confirmations, credential actions, manual proof steps, and
