@@ -2,14 +2,18 @@
 
 #555. Resolving a GitHub tracker command — pick the binary, look up the adapter's
 `commands.<op>` template, fall back to the built-in `gh` default, substitute placeholders —
-was implemented THREE times:
+had FOUR implementations: the owner plus THREE private copies. Two copies were removed by this
+slice; the third could not be and is named in `_KNOWN_UNCONSOLIDATED` below.
 
-- `skills/public/issue/scripts/issue_backend.py::resolve_op` — the owner, and the only one
-  that validated placeholders against an allowlist.
+- `skills/public/issue/scripts/issue_backend.py::resolve_op` — the owner, and the only
+  implementation that validated placeholders against an allowlist.
 - `skills/public/issue/scripts/issue_runtime.py::newest_open_issue` — a copy inside the same
-  skill as the owner, without that validation.
+  skill as the owner, without that validation. REMOVED.
 - `skills/public/handoff/scripts/chunked_routing_issue_backend.py::_resolve_command` — a copy
-  in another skill, also without it.
+  in another skill, also without it. REMOVED.
+- `scripts/issue_source_capture_lib.py::build_page_argv` — found by bounded review, outside the
+  first version of this guard's scope. NOT removed; its built-in default is a conditionally
+  assembled GraphQL invocation rather than a template, so it needs its own slice.
 
 The premise check found why the copies existed, and it was not laziness: the two callers need
 OPPOSITE answers to one question. An op a non-`gh` backend never declared is a configuration
@@ -89,58 +93,94 @@ def test_the_non_raising_variant_still_raises_on_a_caller_or_adapter_bug() -> No
         )
 
 
-# Every root that can hold a module reading the `issue_backend` adapter key. A bounded round
-# found the FOURTH copy of this rule in `scripts/`, which the first version of this sweep did
-# not look at while its name claimed "no other module" — the guard's own scope was the defect.
+# Every root that can hold a module resolving a backend command. `skills/shared` and
+# `skills/support` are included because this repo's older sibling gate records that omitting
+# `skills/shared` once produced a clean report over a scope that excluded a real violation — a
+# lesson a bounded round pointed out this test had not carried across.
 _BACKEND_ROOTS = (
     "scripts",
-    "skills/public/issue/scripts",
-    "skills/public/handoff/scripts",
-    "skills/public/release/scripts",
+    "skills/shared/scripts",
+    "skills/public",
+    "skills/support",
 )
-# The one module that still derives the rule itself, named with its reason rather than left
-# invisible. Its built-in default is not a template at all: it assembles a GraphQL invocation
-# with conditional `-F` flags, so the owner's render-a-template contract does not fit it as
-# written. Consolidating it needs the default expressed as a template first, which is a
-# separate change with its own review — tracked, not hidden. An entry here is a debt record:
-# removing one is progress, and adding one requires justifying it in this list.
-_KNOWN_UNCONSOLIDATED = {"scripts/issue_source_capture_lib.py"}
+# Two tells, because a bounded round found the first one anchored on the CHEAPEST half of the
+# rule. Binary derivation is the line a re-grown copy most readily delegates; the parts that
+# carry the verdict are the template lookup, the built-in default, and the undeclared-op policy.
+# A live instance proved it: `publish_release_helpers.backend_command` re-derives the whole rule
+# and is invisible to the binary tell, because it takes the binary from the template.
 _BINARY_DERIVATION = 'backend.get("binary") or backend.get("id")'
+# Rendering a template into argv IS the rule, so this is the verdict-bearing tell. A first
+# attempt used the bare undeclared-op condition instead and false-positived on three modules
+# that check it as a PRECONDITION and then correctly call the owner — a tell that flags correct
+# callers trains people to widen the exemption list, which is worse than no tell.
+_TEMPLATE_RENDERING = "part.format("
+_TELLS = (_BINARY_DERIVATION, _TEMPLATE_RENDERING)
+# Modules that still resolve a backend command themselves, each with its reason. An entry is a
+# DEBT RECORD: removing one is progress, adding one requires justifying it here, and the test
+# below asserts every entry still describes something real so the list cannot rot into an
+# excuse for nothing.
+_KNOWN_UNCONSOLIDATED = {
+    # Its built-in default is not a template but a conditionally assembled GraphQL invocation,
+    # so the owner's render-a-template contract does not fit it as written. Filed.
+    "scripts/issue_source_capture_lib.py",
+    # A DIFFERENT adapter key (`release_backend`), so a different contractual owner — but the
+    # same rule, and it has already drifted: it renders with `if subs and "{" in part` where the
+    # owner uses `if "{" in part`, so a brace-bearing template with no substitutions renders
+    # differently in the two. Filed rather than folded in, because unifying two adapter keys is
+    # a contract decision, not a refactor.
+    "skills/public/release/scripts/publish_release_helpers.py",
+}
+
+
+def _code_only(source: str) -> str:
+    """Source with whole-line comments dropped.
+
+    A tell that matches prose matches the comment EXPLAINING the tell, which is how this test
+    first flagged the very module it exists to certify as delegating.
+    """
+    return "\n".join(line for line in source.splitlines() if not line.strip().startswith("#"))
+
+
+def _backend_modules() -> dict[str, str]:
+    """Every candidate module, per root, with a per-root floor.
+
+    The floor used to be one aggregate count. `scripts/` alone holds hundreds of files, so
+    deleting or typo-ing every skill root left the aggregate green — the floor could not detect
+    the loss of the roots it existed to protect. Per-root floors can.
+    """
+    found: dict[str, str] = {}
+    for root in _BACKEND_ROOTS:
+        root_path = ROOT / root
+        assert root_path.is_dir(), f"backend sweep root {root} is gone; re-anchor this test"
+        # Recursive: a future `scripts/tracker/backend.py` was invisible to a flat glob.
+        paths = sorted(root_path.rglob("*.py"))
+        assert len(paths) >= 5, f"backend sweep root {root} collapsed to {len(paths)} modules"
+        for path in paths:
+            found[str(path.relative_to(ROOT))] = _code_only(path.read_text(encoding="utf-8"))
+    return found
 
 
 def test_no_other_module_re_derives_the_backend_binary_and_template_rule() -> None:
     """The consolidation's guard: a re-grown copy fails here.
 
-    The tell is the expression the issue used as its own evidence — falling back through
-    `binary` then `id`. Only the owner may decide that.
-
-    Honest about reach: this is a substring match, so a copy spelled
-    `backend.get('binary')` with single quotes, or split across two statements, evades it. It
-    is a ratchet against the likely regression, not a proof — and its scope is now every root
-    that can hold such a module, because the previous version's two-directory scope was itself
-    how the fourth copy stayed green.
+    Two tells, both taken from the rule's verdict-bearing half as well as its cheap half. Honest
+    about reach: these are substring matches, so a copy spelled with single quotes or split
+    across statements evades them. It is a ratchet against the likely regression, not a proof.
     """
     owner_rel = "skills/public/issue/scripts/issue_backend.py"
-    owner = (ROOT / owner_rel).read_text(encoding="utf-8")
-    assert _BINARY_DERIVATION in owner, "the owner no longer resolves the binary; re-anchor this test"
+    owner = _code_only((ROOT / owner_rel).read_text(encoding="utf-8"))
+    for tell in _TELLS:
+        assert tell in owner, f"the owner no longer contains {tell!r}; re-anchor this test"
 
-    modules = sorted(
-        path
-        for root in _BACKEND_ROOTS
-        if (ROOT / root).is_dir()
-        for path in (ROOT / root).glob("*.py")
-    )
-    assert len(modules) >= 100, "the module sweep collapsed; re-anchor its roots"
-
-    offenders = []
-    for path in modules:
-        relative = str(path.relative_to(ROOT))
+    offenders: dict[str, list[str]] = {}
+    for relative, source in _backend_modules().items():
         if relative == owner_rel or relative in _KNOWN_UNCONSOLIDATED:
             continue
-        if _BINARY_DERIVATION in path.read_text(encoding="utf-8"):
-            offenders.append(relative)
-    assert offenders == [], (
-        f"{offenders} re-derive the backend binary instead of calling "
+        hits = [tell for tell in _TELLS if tell in source]
+        if hits:
+            offenders[relative] = hits
+    assert offenders == {}, (
+        f"{offenders} resolve a backend command themselves instead of calling "
         "issue_backend.resolve_op / try_resolve_op; that is the copy this slice removed"
     )
 
@@ -155,9 +195,12 @@ def test_every_known_unconsolidated_copy_is_still_really_there() -> None:
     for relative in sorted(_KNOWN_UNCONSOLIDATED):
         path = ROOT / relative
         assert path.is_file(), f"{relative} no longer exists; drop it from _KNOWN_UNCONSOLIDATED"
-        assert _BINARY_DERIVATION in path.read_text(encoding="utf-8"), (
-            f"{relative} no longer re-derives the rule; drop it from _KNOWN_UNCONSOLIDATED "
-            "rather than leaving a stale exemption"
+        source = _code_only(path.read_text(encoding="utf-8"))
+        assert any(tell in source for tell in _TELLS), (
+            f"{relative} no longer matches either tell. If it genuinely delegates to "
+            "issue_backend now, drop it from _KNOWN_UNCONSOLIDATED. If it still resolves a "
+            "backend command by hand and was only RESPELLED, add the new spelling to _TELLS "
+            "instead of deleting a live debt record"
         )
 
 
@@ -174,9 +217,18 @@ def test_handoff_resolves_through_the_issue_owner_rather_than_its_own_copy() -> 
     assert '_load_issue_module(' in source and '"issue_backend"' in source, (
         "handoff must reach the owner through the route-reuse loader it already had"
     )
-    assert "frozenset()" in source, (
-        "handoff must pass an EMPTY required set: equating it with the allowlist makes every "
-        "placeholder mandatory and invalidates adapter templates that were valid before"
+    # Per-op required sets, asserted by NAME rather than by the substring `frozenset()`, which
+    # matched `LIST_OPEN_REQUIRED` regardless of what `view_state` required — so the assertion
+    # could not fail for the choice its own message was about. The behavioural test below is
+    # what actually catches a regression here; this keeps the two constants from being merged
+    # back into one all-or-nothing value.
+    assert 'VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"number"})' in source, (
+        "`view_state` must REQUIRE the identity-bearing `{number}`: without it a template "
+        "resolves to a listing whose first row is read as the asked-about issue's state"
+    )
+    assert "LIST_OPEN_REQUIRED: frozenset[str] = frozenset()" in source, (
+        "`list_open` must require nothing: a host paging internally declares no `{limit}`, and "
+        "equating required with the allowlist invalidated templates that were valid before"
     )
 
     issue_sources = "\n".join(
@@ -274,7 +326,7 @@ def test_the_owner_module_is_loaded_once_not_once_per_issue() -> None:
         return real(root, name)
 
     handoff._load_issue_module = counting_loader
-    handoff._ISSUE_BACKEND_OWNER = None
+    handoff._MEMOIZED_ISSUE_MODULES.clear()
 
     def runner(argv):
         return {"number": 7, "state": "OPEN"}
@@ -335,7 +387,7 @@ def test_a_missing_issue_backend_module_reports_UNKNOWN_rather_than_aborting_the
         raise ImportError(f"issue skill script {name}.py not found")
 
     handoff._load_issue_module = missing
-    handoff._ISSUE_BACKEND_OWNER = None
+    handoff._MEMOIZED_ISSUE_MODULES.clear()
 
     def runner(argv):  # pragma: no cover - resolution must fail before this
         raise AssertionError("resolution should have failed")
@@ -396,4 +448,31 @@ def test_newest_open_issue_refuses_a_search_template_that_omits_the_repo() -> No
 
     with pytest.raises(RuntimeError, match="missing required placeholders"):
         runtime.newest_open_issue("o/r", host)
+
+
+def test_a_listing_shaped_answer_whose_first_row_is_another_issue_is_not_that_issues_state() -> None:
+    """The wrong-verdict path in its most realistic shape, and the changed line that covers it.
+
+    A `view_state` template can resolve to a LISTING rather than a single view, in which case the
+    backend returns a list and this module reads its first row. That row is not necessarily the
+    issue asked about — it is simply the newest — so reading its state is precisely how a live
+    backlog citation becomes a CLOSED verdict. Requiring `{number}` makes the common case
+    impossible; this covers the case where a template still yields a list.
+    """
+    handoff = _load_handoff_backend()
+
+    def listing_runner(argv):
+        return [{"number": 999, "state": "CLOSED"}, {"number": 451, "state": "OPEN"}]
+
+    assert handoff.issue_state("o/r", 451, backend=dict(_GH_BACKEND), runner=listing_runner) is None
+
+    def matching_listing_runner(argv):
+        return [{"number": 451, "state": "OPEN"}]
+
+    assert handoff.issue_state("o/r", 451, backend=dict(_GH_BACKEND), runner=matching_listing_runner) == "OPEN"
+
+    def empty_listing_runner(argv):
+        return []
+
+    assert handoff.issue_state("o/r", 451, backend=dict(_GH_BACKEND), runner=empty_listing_runner) is None
 

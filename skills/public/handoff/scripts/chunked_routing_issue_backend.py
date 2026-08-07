@@ -84,7 +84,14 @@ def _load_issue_module(repo_root: Path, name: str):
 # LAST_ISSUE_SOURCE_DIAGNOSTIC on the listing half.
 LAST_STATE_RESOLUTION_DIAGNOSTIC: str | None = None
 
-_ISSUE_BACKEND_OWNER: Any | None = None
+_MEMOIZED_ISSUE_MODULES: dict[str, Any] = {}
+
+
+def _memoized_issue_module(name: str):
+    """Load an `issue` skill module once per process, by name."""
+    if name not in _MEMOIZED_ISSUE_MODULES:
+        _MEMOIZED_ISSUE_MODULES[name] = _load_issue_module(Path.cwd(), name)
+    return _MEMOIZED_ISSUE_MODULES[name]
 
 
 def _issue_backend_owner():
@@ -94,11 +101,12 @@ def _issue_backend_owner():
     per cited issue number, inside a CLI that arms a timeout, and `parse_handoff_entries`
     already carries a comment warning that the skill loaders do not cache. Reading and
     exec'ing the module per issue would put that cost back.
+
+    A first version memoized only this loader while `_default_runner` still exec'd
+    `issue_runtime` per call on the same path, so the docstring claimed a broader cost fix than
+    shipped. Both are memoized now, by the same helper.
     """
-    global _ISSUE_BACKEND_OWNER
-    if _ISSUE_BACKEND_OWNER is None:
-        _ISSUE_BACKEND_OWNER = _load_issue_module(Path.cwd(), "issue_backend")
-    return _ISSUE_BACKEND_OWNER
+    return _memoized_issue_module("issue_backend")
 
 
 VIEW_STATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number"})
@@ -145,11 +153,12 @@ def _resolve_command(
     """
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
     backend_id = backend.get("id", "gh")
-    # `required` is deliberately EMPTY, not `allowed`. Equating them would make every
-    # placeholder mandatory and invalidate adapter templates that were valid before: a host
-    # whose `issue list` pages internally declares no `{limit}`, and one whose binary carries
-    # the repo declares no `{repo}`. The allowlist still refuses an UNKNOWN placeholder, which
-    # is the validation worth gaining; requiring all of them is a narrowing nobody asked for.
+    # `required` is chosen PER OP by the caller, and both extremes were wrong. Equating it with
+    # `allowed` invalidated adapter templates that were valid before (a host paging internally
+    # declares no `{limit}`); setting it to nothing let a `view_state` template omit the
+    # identity-bearing `{number}` and resolve to a listing, whose first row was then read as the
+    # asked-about issue's state. See VIEW_STATE_REQUIRED / LIST_OPEN_REQUIRED above for what each
+    # op requires and why. The allowlist always refuses an UNKNOWN placeholder.
     argv = _issue_backend_owner().try_resolve_op(
         backend, command_key, gh_default, allowed, required, **subs
     )
@@ -159,7 +168,7 @@ def _resolve_command(
 def _default_runner(runner: Callable[[list[str]], Any] | None) -> Callable[[list[str]], Any]:
     if runner is not None:
         return runner
-    return _load_issue_module(Path.cwd(), "issue_runtime")._backend_json
+    return _memoized_issue_module("issue_runtime")._backend_json
 
 
 def issue_state(
