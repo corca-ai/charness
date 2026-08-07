@@ -15,26 +15,25 @@ runs the activation command.
   adapters (18 repo-owned + 19 shipped examples) plus the flattened
   `skills/<id>/` layout the export produces. `reader-elsewhere` and
   `text-asserted` stay reported-but-unarmed on measured evidence.
-- Next action: Slice 2 premise check (`#554`). Two facts already refute the
-  remedy as the Slice Plan names it — see the Slice 2 premise note below.
+- Next action: BUILD Slice 2 (`#554`) against the REVISED target below. The
+  premise check is done and its full verdict is in the Slice Log.
 - `#530` is NOT closed and no closeout is staged: the gate warns, the resolver
   still does not. The full reasoning is one operator decision in the
   `## Operator Decision Queue`; do not re-derive it here.
 - Tracker recount 2026-08-08 (post-activation): 28 open issues, not the 25 this
   goal was shaped against.
-- SLICE 2 PREMISE NOTE (recorded before shaping, per the Work Phase Map): the
-  Slice Plan says "reuse `handoff`'s backlog seam
-  (`parse_handoff_entries.py --with-issues`)". Two facts refute that as written.
-  (1) `parse_handoff_entries.py` is a handoff-ARTIFACT parser; the reusable piece
-  is `skills/public/handoff/scripts/chunked_routing_issue_source.py`
-  (`build_issue_entries`), and `achieve` shaping has no handoff artifact to
-  parse. (2) That seam is GATED behind the handoff adapter's optional
-  `issue_source:` block, so `achieve` importing it would make goal-shaping
-  recounts silently depend on handoff's configuration. Also
-  `skills/public/handoff/scripts/draft_goal_from_chunk.py:55` already imports
-  `achieve`'s `goal_artifact_lib`, so the naive direction creates a cycle. A
-  third option `#554` does not name — extracting the issue-listing seam to the
-  existing `skills/shared/scripts/` — avoids both. VERIFY BEFORE BUILDING.
+- SLICE 2 REVISED TARGET (the Slice Plan's remedy was REFUTED; verdict in the
+  Slice Log): `achieve` consumes the **`issue`** skill's backend — not
+  `handoff`'s — mirroring the dual-layout `_load_issue_module` route that
+  `handoff`'s own `chunked_routing_issue_backend` already uses to import from
+  `issue`. `handoff` is not the owner: it holds a SECOND backend implementation
+  duplicating `issue_runtime` (filed as `#555`). Routing through `issue` keeps
+  the graph acyclic (`issue` is a leaf), inherits no handoff adapter gating, and
+  adds no third backend. The `--pursue-ready` floor stays PRESENCE-only: which
+  issues a goal claims is the operator's judgement, and a floor checking
+  correctness would be a new false-verdict surface inside the tool built to stop
+  them. That floor is verdict logic on a proof surface, so slice 2 owes BOTH
+  bounded review rounds.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye proof at slice boundaries; broad/live proof at closeout.
 - Gate cadence: `run_slice_closeout.py --skip-broad-pytest` per slice AND
@@ -231,6 +230,20 @@ for an unattended overnight run.
 - Lessons carried forward: PROCESS ERROR to carry forward: for round 2 the reviewer-boundary window was verified AFTER committing the repairs, not before starting them. The contract says the window closes before the parent repairs. The verdict was recoverable -- `--parent-head-moved` resolved it to `parent-attributed` with zero reviewer-attributable drift -- but the ordering discipline slipped and a real reviewer-side write would have been indistinguishable from my own commit at that point. Round 1 was done correctly; the difference was momentum. SUBSTANTIVE: a mutation that survives at the CALL SITE while every test passes is the signature of tests proving a helper rather than the wiring, and it is the same defect as a check claiming a scope it never read, one level up. Both appeared in this slice, and the second appeared inside the fix for the first.
 - Metrics:
 
+### Slice 3: Slice 2 premise check (#554) — recorded BEFORE the build
+
+- Objective: Verify the remedy the Slice Plan names for `#554` ("make `achieve` recount the tracker, reusing `handoff`'s backlog seam") before shaping any code around it, per the Work Phase Map's design-time premise rule.
+- Why this approach: The Work Phase Map fires one phase earlier than the rest of implementation discipline: before SHAPING a slice around a remedy a durable record already names. `#554`'s own text names a direction, and this goal's Slice Plan copied it. That is exactly the input the rule exists to check.
+- Commits: none yet — this entry is the pre-build record. Off-goal finding filed as #555.
+- What changed: nothing yet; reading only
+- Alternatives rejected: REJECTED — `achieve` imports `chunked_routing_issue_source`: inherits handoff's adapter gating and closes a dependency cycle. REJECTED — `achieve` builds its own backlog reader: the exact repair `#554` forbids, and would be the third implementation. CONSIDERED, NOT CHOSEN — extract the issue-listing seam to `skills/shared/scripts/`: it resolves the duplication but moves a surface AWAY from its contractual owner, and it enlarges slice 2 from "achieve gains a recount" into "three skills change". Recorded in #555 as the open alternative rather than decided here.
+- Targeted verification: PREMISE VERDICT: REFUTED. The named remedy is wrong in its object, and the direction it implies is wrong in its target. FOUR ESTABLISHED FACTS. (1) `parse_handoff_entries.py --with-issues` is a handoff-ARTIFACT parser: it parses a handoff's `## Next Session` entries and merely UNIONS tracker issues into them. `achieve` shaping a goal has no handoff artifact to parse, so the flag is not the seam — the seam it calls is `chunked_routing_issue_source.build_issue_entries`. (2) That seam is GATED behind the handoff adapter: `load_issue_source_config` reads the handoff adapter's optional `issue_source:` block, and a host that sets `issue_source: {enabled: false}` would silently disable `achieve`'s goal-shaping recount too. A backlog floor that a DIFFERENT skill's adapter can switch off is not a floor. (3) The naive direction is a CYCLE: `skills/public/handoff/scripts/draft_goal_from_chunk.py:55` already loads `achieve`'s `goal_artifact_lib`, so `handoff -> achieve` exists; adding `achieve -> handoff` closes it. (4) THE DECISIVE FACT, and it inverts the target: `handoff` does NOT own tracker access. `skills/public/handoff/scripts/chunked_routing_issue_backend.py` is a SECOND implementation of backend resolution — same `{"id": "gh", "binary": "gh", "commands": None}` default and the same `backend.get("binary") or backend.get("id") or "gh"` line as `skills/public/issue/scripts/issue_runtime.py`, and its own docstring says so ("exactly as `issue_runtime` already does"). The `issue` skill is the contractual owner per CLAUDE.md. So `#554`'s warning that "building a second backlog reader inside `achieve` would be the wrong repair" describes something that ALREADY HAPPENED once, between `handoff` and `issue` — and following the Slice Plan literally would have made `achieve` the third consumer of the duplicate rather than the first consumer of the owner. REVISED TARGET: `achieve` consumes the `issue` skill's backend, mirroring the dual-layout `_load_issue_module` route `chunked_routing_issue_backend` ALREADY uses to import from `issue`. This keeps the graph acyclic (`issue` imports neither `achieve` nor `handoff`; it is a leaf), puts the dependency on the contractual owner, inherits no handoff adapter gating, and adds no third backend. CROSS-SKILL IMPORT IS NOT A NEW PATTERN HERE: it is established, deliberate, dual-layout-aware, and documented as "route reuse".
+- Test duplication pressure:
+- Critique: Reviewer question to carry into the build: `#554` also asks that `--pursue-ready` refuse a goal with no record of which open issues it claims and does not. That is VERDICT LOGIC on a proof surface (`check_goal_artifact.py` is what decides a goal may activate), so the slice owes round-1 AND round-2 bounded review. The presence-only shape matters: the judgement of WHICH issues to claim is the operator's, and a floor that tried to check correctness rather than presence would be a new false-verdict surface inside the tool built to stop them.
+- Off-goal findings: #555 filed: two tracker-backend implementations already exist (`handoff` and `issue`) with parallel default templates and refusal paths, and nothing prevents them diverging. Filed under the standing issue-filing approval. Its non-claims are explicit: no evidence the two currently DISAGREE, and no non-`gh` backend exercised.
+- Lessons carried forward: The premise check has now paid 5 for 5 in this goal family, and this is its largest single save: the Slice Plan's remedy would have shipped a working feature wired to the wrong owner, inheriting a foreign adapter's kill switch and closing a dependency cycle — none of which is visible from the issue text or the plan row. The tell was cheap: read what the named script actually parses, then ask who OWNS the capability rather than who currently HAS it.
+- Metrics:
+
 ## Context Sources
 
 1. `charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md`
@@ -277,6 +290,10 @@ for an unattended overnight run.
 - The prompt-surface cluster (`#519`, `#520`, `#521`, `#523`, `#524`, `#525`,
   `#527`, `#531`, `#532`) is unclaimed and recorded as a candidate successor.
 - `#549`, `#548`, `#545`, `#542`, `#539`, `#550`, `#552` are unclaimed here.
+- `#555` FILED this run (slice 2 premise check): `handoff` and `issue` each carry
+  a tracker-backend implementation with parallel `gh` defaults and refusal paths.
+  Not claimed by this goal — slice 2 routes around it by consuming the owner
+  (`issue`) rather than consolidating the duplicate.
 - `#514`/`#515` carry consumer ownership and are not this goal's to close.
 
 ## Final Verification
