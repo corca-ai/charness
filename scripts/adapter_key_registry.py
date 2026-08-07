@@ -55,6 +55,7 @@ from pathlib import Path
 from typing import Any, NamedTuple
 
 # Keys every adapter shares, owned by the shared loader in scripts/adapter_lib.py.
+SHARED_CORE_OWNER = "scripts/adapter_lib.py"
 SHARED_CORE_KEYS = ("version", "repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 
 # Keys deliberately withdrawn. A retired key is NOT unknown: an operator who still
@@ -267,7 +268,17 @@ def _convention_owners(repo_root: Path, adapter_relative: str) -> set[str]:
         f"scripts/{skill.replace('-', '_')}_adapter_lib.py",
         f"skills/public/{skill}/scripts/{skill.replace('-', '_')}_adapter_policy.py",
     )
-    return {candidate for candidate in candidates if (repo_root / candidate).is_file()}
+    # Existence is not association. A candidate counts only if it also names the skill --
+    # `find_adapter(repo_root, "release")` / `skill_id="release"` -- so the convention is
+    # RECONCILED against the code rather than asserted, the same discipline
+    # `audit_registry` already applies to the registry's own entries. Without this a stub
+    # or repurposed resolver at the conventional path would fabricate an owner.
+    edges = _reference_edges(repo_root)
+    return {
+        candidate
+        for candidate in candidates
+        if (repo_root / candidate).is_file() and skill in edges.get(candidate, (frozenset(), frozenset()))[0]
+    }
 
 
 def _exemplified_owners(repo_root: Path, adapter_relative: str) -> set[str]:
@@ -328,14 +339,19 @@ def associated_modules(repo_root: Path, adapter_relative: str) -> frozenset[str]
     associated = set(owners)
     frontier = set(owners)
     while frontier:
-        wanted = {_module_name(member) for member in frontier} | {
-            _module_name(member).rsplit(".", 1)[-1] for member in frontier
-        } | set(frontier)
+        # Dotted module names and repo-relative paths only. The bare BASENAME was the
+        # whole collision surface and re-created `#553` one level up: this repo has 16
+        # files named `resolve_adapter.py`, one per skill, and `_convention_owners` seeds
+        # exactly that name -- so a tail match associated every module mentioning
+        # "resolve_adapter" with EVERY skill adapter. Association by module-name collision
+        # is the same defect as the verdict by key-name collision this module exists to
+        # remove, which is why the branch is gone rather than narrowed.
+        wanted = {_module_name(member) for member in frontier} | set(frontier)
         found = {
             relative
             for relative, (literals, imports) in edges.items()
             if relative not in associated
-            and (literals & wanted or any(name.split(".")[0:2] and name in wanted for name in imports)
+            and (literals & wanted or any(name in wanted for name in imports)
                  or any(name.rsplit(".", 1)[0] in wanted for name in imports))
         }
         associated |= found
@@ -357,9 +373,16 @@ def resolve_key(
         owner = DYNAMIC_READER_KEYS[key]
         return KeyResolution(key, "reader", (owner,), "resolved dynamically by its reader; registered rather than scanned")
     parsing, asserting = find_readers(repo_root, key, files=files)
-    if key in SHARED_CORE_KEYS:
-        return KeyResolution(key, "shared-core", parsing, "shared adapter core, owned by scripts/adapter_lib.py")
     scoped = tuple(module for module in parsing if module in associated) if associated is not None else parsing
+    if key in SHARED_CORE_KEYS:
+        # Named owner, not a scan result. Returning the unscoped parse list here claimed
+        # arbitrary modules as readers, and scoping it returned an EMPTY reader list for a
+        # state whose whole meaning is "this one is owned" -- a verdict with no named
+        # reader, which is the thing this module refuses to emit. The shared core is owned
+        # by the shared loader by construction, so it is named directly.
+        return KeyResolution(
+            key, "shared-core", (SHARED_CORE_OWNER,), f"shared adapter core, owned by {SHARED_CORE_OWNER}"
+        )
     if scoped:
         return KeyResolution(key, "reader", scoped, f"parsed by {len(scoped)} module(s) that read this adapter")
     if parsing:

@@ -296,10 +296,19 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
     assert result["keys"] >= 400
     assert result["registry_problems"] == []
     assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
+    # The two cautilus files have no parsing reader at all -- the repo documents this.
+    # The other two are UNDER-ASSOCIATION residue: a real reader the closure cannot reach
+    # because it receives adapter data from a caller rather than naming the adapter or its
+    # owner. They appeared when association was narrowed to kill the module-basename
+    # collision, and keeping them visible is the deliberate trade: a false
+    # `reader-elsewhere` is a report an operator dismisses in one reading, while a false
+    # `reader` is a false green that hides an unreconciled declaration.
     covered = {gap["adapter"] for gap in result["gaps"]}
     assert covered <= {
         ".agents/cautilus-adapters/chatbot-benchmark.yaml",
         ".agents/cautilus-adapters/chatbot-proposals.yaml",
+        ".agents/usage-episodes-adapter.yaml",
+        "skills/public/handoff/adapter.example.yaml",
     }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
 
 
@@ -311,3 +320,72 @@ def test_the_survey_reports_rather_than_refuses() -> None:
 
     assert result["gaps"], "this repo has known gaps; a survey reporting none is broken, not clean"
     assert all(gap["detail"].strip() for gap in result["gaps"])
+
+
+def test_association_stays_a_small_fraction_of_the_repo() -> None:
+    """The decisive missing assertion, and the reason the collision surface shipped.
+
+    Every seed in this module was justified by a measurement of UNDER-reporting; none was
+    accompanied by a measurement of OVER-reporting, and that asymmetry is exactly how the
+    defect recurred. A mechanism whose job is to NARROW a verdict needs a narrowness test,
+    not only a non-emptiness test.
+
+    The concrete failure this bounds: 16 skills each ship a `resolve_adapter.py`, and the
+    closure once matched on bare module basename -- so every module mentioning
+    "resolve_adapter" was associated with EVERY skill adapter, at 15-22% of the repo.
+    That is association by name collision, the same defect as the verdict by name
+    collision this module exists to remove.
+    """
+    total = len(iter_reader_files(ROOT))
+    oversized = {
+        str(path.relative_to(ROOT)): len(associated_modules(ROOT, str(path.relative_to(ROOT))))
+        for path in ROOT.glob(".agents/*-adapter.yaml")
+    }
+    oversized = {rel: size for rel, size in oversized.items() if size > 0.10 * total}
+
+    assert oversized == {}, (
+        f"association covers more than 10% of {total} modules for: {oversized}. "
+        "A `reader` verdict means little at that breadth; find the collision."
+    )
+
+
+def test_one_skills_modules_are_not_associated_with_another_skills_adapter() -> None:
+    """The explicit cross-skill exclusion. A fraction bound alone can be satisfied while
+    still mixing two skills together, so the specific contamination is named."""
+    release = associated_modules(ROOT, ".agents/release-adapter.yaml")
+
+    assert "skills/public/release/scripts/resolve_adapter.py" in release
+    for foreign in (
+        "skills/public/hitl/scripts/render_report.py",
+        "skills/public/retro/scripts/plan_retro_run.py",
+        "skills/public/quality/scripts/check_runtime_budget.py",
+    ):
+        assert foreign not in release, f"{foreign} belongs to another skill and must not read release's adapter"
+
+
+def test_a_conventional_path_alone_does_not_fabricate_an_owner(tmp_path: Path, monkeypatch) -> None:
+    """Existence is not association.
+
+    `_convention_owners` used to accept any file sitting at the conventional path. A stub
+    or repurposed resolver would then fabricate an owner and drag its whole closure in
+    behind it. The candidate must also NAME the skill, which is the same reconciliation
+    `audit_registry` already applies to the registry's own entries.
+    """
+    from scripts import adapter_key_registry
+
+    (tmp_path / "skills/public/ghost/scripts").mkdir(parents=True)
+    (tmp_path / "skills/public/ghost/scripts/resolve_adapter.py").write_text("VALUE = 'unrelated'\n", encoding="utf-8")
+    monkeypatch.setattr(adapter_key_registry, "_EDGES_CACHE", {})
+    monkeypatch.setattr(adapter_key_registry, "_LITERALS_CACHE", {})
+
+    assert adapter_key_registry._convention_owners(tmp_path, ".agents/ghost-adapter.yaml") == set()
+
+
+def test_shared_core_names_its_owner_rather_than_a_scan_result() -> None:
+    """A `shared-core` verdict with an empty reader list is a verdict with no named
+    reader, which is the one thing this module must never emit. Scoping the scan result
+    produced exactly that for adapters nothing loads."""
+    rel = ".agents/cautilus-adapters/chatbot-benchmark.yaml"
+    for resolution in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel):
+        if resolution.state == "shared-core":
+            assert resolution.readers == ("scripts/adapter_lib.py",)
