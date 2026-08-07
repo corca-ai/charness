@@ -8,7 +8,7 @@
   "exit_code": 1,
   "stdout_path": "charness-artifacts/quality/fixtures/awiki-0.5.0-docs-lint.stdout.txt",
   "stdout_sha256": "53dd8860240719482b1fba39134bea811e1a3e294b926d5984dde33e64c0ddf1",
-  "stderr_sha256": "e3b0c44298fc1c149af4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
   "parsed": {
     "documents": 40,
     "orphans": 7,
@@ -20,5 +20,6 @@
     "observed_result": "graph-findings"
   },
   "final_consumer": null,
-  "non_claim": "This fixture proves the direct awiki observation only; it does not establish an aggregate verdict or prove the Charness final-consumer route until the implementation slice runs it."
+  "non_claim": "This fixture proves the direct awiki observation only; it does not establish an aggregate verdict or prove the Charness final-consumer route until the implementation slice runs it.",
+  "stderr_sha256_repair": "Recorded as e3b0c44298fc1c149af4c8996fb92427ae41e4649b934ca495991b7852b855 (62 chars) at capture: the empty-stream digest with two characters dropped in transcription. Repaired 2026-08-07 after re-running the same pinned command (`awiki lint -root docs -recursive`, awiki 0.5.0) and observing 0 bytes on stderr. Only the stderr digest was repaired; `stdout_sha256` is the frozen capture and is unchanged."
 }

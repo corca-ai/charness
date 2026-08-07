@@ -654,9 +654,11 @@ the evidence is sufficient for the boundary at hand.
   rewriting frozen artifacts to satisfy a later gate — the Goodhart move this validator's
   own docstring exists to refuse — or accepting a standing red. Choosing that toll is the
   owner's, as in [D45](#d45-should-run-qualitysh-arm---require-evaluated-scope-on-the-cilocal-parity-gate).
-  The hand count put that at 5 reviews; the executed measurement below puts it at 5
-  refused CITATIONS across **4** artifacts, which is the same argument at a slightly lower
-  price. There is also a better repair available: qualify the generic tokens in
+  The hand count put that at 5 reviews; the executed measurement below puts it at **4**
+  refused CITATIONS across **3** artifacts, which is the same argument at a lower price.
+  (The 2026-08-01 measurement said 5 across 4; `quality/latest.md` left the refused set on
+  2026-08-07. Both figures are in the probe — the current one in the measured fields, the
+  earlier one in `_provenance`.) There is also a better repair available: qualify the generic tokens in
   [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json)
   so a field declares whether its name is distinctive, which is a contract change
   deserving its own slice.
@@ -676,37 +678,49 @@ the evidence is sufficient for the boundary at hand.
 - Named remedy premise:
   - Remedy: qualify generic inventory tokens with a distinctiveness field in `inventory-consumer-fields.json`.
   - Premise: the declaration can distinguish the fields whose incidental prose caused the false engagement.
-  - Evidence channel: read the inventory declaration and the five cited consumer citations across four artifacts.
+  - Evidence channel: read the inventory declaration and the cited consumer citations (5 across 4 artifacts when this remedy was assessed on the 2026-08-01 corpus; 4 across 3 today).
   - Observation: every cited engagement uses ordinary-English field names; declaring them non-distinctive spares the reviews, while declaring them distinctive makes the rule a measured-zero no-op.
   - Downstream decision delta: withdraw this remedy, keep the marker refusal unarmed, and require a different contract if the issue is reopened.
   - Status: withdrawn
-- **Executed measurement replacing the hand counts (2026-08-01).** New script
+- **Executed measurement replacing the hand counts (first run 2026-08-01; figures below
+  are the CURRENT probe, refreshed 2026-08-07).** New script
   [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py), recorded
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over the current denominator (130 top-level artifacts, 35 citing a declared
-  inventory): the presence-only mention total is **202**, **194** of those clear today's
-  residual floor, **153** carry a value marker and **41** do not, and a
-  marker rule would refuse **5 citations across 4 artifacts**
-  (`2026-06-26-five-pass-boundary`, `2026-07-13`, `2026-08-06-runtime-evidence-and-nose`,
-  `quality/latest`). Marker kinds are reported per mention and overlap: 129 backticked,
-  87 `field=`, 31 `field:`. With `--recursive`, which reaches the `history/` directory
-  the sibling script's non-recursive glob silently excludes: 148 artifacts (275
-  presence-only), 267 floor-clearing mentions, 217 marked, 50 unmarked, 7 citations
-  across 5 artifacts (the four above plus `history/2026-06-11`). Its marker kinds are
-  187 backticked, 99 `field=`, and 36 `field:`. Both variants are recorded in the probe
-  and pinned by the test, so neither number is an unrecorded assertion sitting beside
-  recorded ones. The probe was refreshed on 2026-08-06 after this slice changed the
-  checked-in quality corpus; `quality/latest.md` now points to this slice's review,
-  which records its inventory engagement explicitly.
+  Over the current denominator (131 top-level artifacts, 34 citing a declared
+  inventory): the presence-only mention total is **196**, **188** of those clear today's
+  residual floor, **153** carry a value marker and **35** do not, and a
+  marker rule would refuse **4 citations across 3 artifacts**
+  (`2026-06-26-five-pass-boundary`, `2026-07-13`,
+  `2026-08-06-runtime-evidence-and-nose`). Marker kinds are reported per mention and
+  overlap: 129 backticked, 87 `field=`, 31 `field:`. With `--recursive`, which reaches
+  the `history/` directory the sibling script's non-recursive glob silently excludes:
+  149 artifacts (269 presence-only), 261 floor-clearing mentions, 217 marked, 44
+  unmarked, 6 citations across 4 artifacts (the three above plus `history/2026-06-11`).
+  Its marker kinds are 187 backticked, 99 `field=`, and 36 `field:`. Both variants are
+  recorded in the probe and pinned by the test, so neither number is an unrecorded
+  assertion sitting beside recorded ones.
+- **Refreshed 2026-08-07 (Slice 0), and the toll went DOWN.** `quality/latest.md` LEFT
+  the refused set: its rewrite marks the inventory fields it cites, so the shallow toll
+  fell from 5 citations across 4 artifacts to **4 across 3**, and the recursive toll from
+  7 across 5 to **6 across 4**. That is a real corpus improvement, not a measurement
+  change — the rule and the script are unchanged. It does not arm the marker rule, and it
+  does not narrow the deferral: three frozen 2026-06/2026-07 reviews still carry the toll,
+  which is the same owner's-call shape this entry has always recorded. This is the THIRD
+  refresh (2026-08-01, 2026-08-06, 2026-08-07); the pin reds on any write to the checked-in
+  quality corpus, so a quality-writing slice pays it every time. That standing tax is a
+  separate finding from D47's question and is tracked as
+  [#536](https://github.com/corca-ai/charness/issues/536) rather than absorbed here.
 - **The first executed number was WRONG, and how it was wrong is the point.** The initial
   marker test used `` `[^`]*field[^`]*` ``, which matches the GAP BETWEEN two adjacent code
   spans — so a bare English mention sitting between two unrelated spans scored as marked.
   The bias ran one way: it inflated "marked" and deflated the cost, reporting 42 unmarked
   and 4 citations across 3 artifacts, which supported a tidy conclusion that the toll was
-  smaller than this entry had recorded. It is not. Corrected, the refusal count lands on
-  5 refused citations across 4 artifacts, up from 3 artifacts. **Units matter here and an
+  smaller than this entry had recorded. It is not. Corrected, the refusal count landed on
+  5 refused citations across 4 artifacts on the 2026-08-01 corpus, up from 3 artifacts.
+  (Every figure in this bullet describes that 2026-08-01 run; the current corpus measures
+  lower — see the 2026-08-07 refresh bullet.) **Units matter here and an
   earlier draft of this entry got them wrong:** the hand count's unit was REVIEWS (5);
   the script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS. On the hand
   count's own unit the executed answer is **4, not 5** — so the hand count was close and
@@ -716,15 +730,15 @@ the evidence is sufficient for the boundary at hand.
   the probe's `_provenance`.
 - Non-claims: the floor as shipped refuses a stub, not a lie, and not incidental prose
   about an ordinary word. Nothing here narrows sweep row S11. The new measurement counts
-  mentions that clear TODAY's residual floor (194), while the presence-only population is
-  202 — both are reported, and the marker split is measured over the 194 only, so the 41
+  mentions that clear TODAY's residual floor (188), while the presence-only population is
+  196 — both are reported, and the marker split is measured over the 188 only, so the 35
   is NOT directly comparable to the hand count's 51 over 169; the 8 sub-floor mentions were
   never marker-split. It does not
   model the gate's `prose_review_status` skill-ergonomics arm; that arm looks inert here
   (every corpus mention of that field is backticked or `=`-assigned) but it was not
   measured. It measures this repo's corpus and says nothing about a consumer's. The
   refused artifacts are not all ones the default runner reaches — the gate is normally
-  handed `latest.md` only — so "would refuse 5 citations" is not "would redden the next
+  handed `latest.md` only — so "would refuse 4 citations" is not "would redden the next
   quality run". Known and unrepaired, raised by the round-2 review and recorded because
   round 2 is the review cap: a field name inside a backticked PATH or flag
   (`advisory-interpretation-contract.md`, `--paths`) scores as marked — the same one-way
@@ -738,7 +752,7 @@ the evidence is sufficient for the boundary at hand.
   [inventory-consumer-fields.json](../skills/public/quality/references/inventory-consumer-fields.json).
 - Reopen trigger: a quality artifact passing the floor on incidental prose and later found
   not to have consumed the inventory; or the declaration file gaining per-field
-  distinctiveness; or those five reviews being rewritten for another reason. **Both numbers
+  distinctiveness; or the currently-refused artifacts being rewritten for another reason. **Both numbers
   are now output of a recorded probe command** — the hand-measurement caveat this line used
   to carry is retired; re-derive with
   [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py) against

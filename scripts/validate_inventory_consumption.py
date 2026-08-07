@@ -73,9 +73,11 @@ STUB_PHRASE_RE = re.compile(
 # closed S3 ("evidence must say something beyond the identity it was checked against"),
 # applied one surface over.
 #
-# The floor is 5, and it is a measured number rather than a defended one. Over the 110
+# The floor is 5, and it is a measured number rather than a defended one. Over the
 # checked-in quality artifacts the lowest real label value scores 7 and a bare `n/a`
-# scores 0, so 5 sits under the corpus minimum with margin. Re-runnable with
+# scores 0, so 5 sits under the corpus minimum with margin. The corpus size moves with
+# every quality write, so it is NOT transcribed here — read `artifacts` in the probe.
+# Re-runnable with
 # `measure_inventory_consumption_floor.py --floor N`, recorded at
 # `charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json`: at floor 5
 # nothing is refused; at floor 20, 10 citations drop below their requirement and 46 label
@@ -93,14 +95,17 @@ STUB_PHRASE_RE = re.compile(
 #     corpus line `- Runtime hotspot ranking excludes samples older than 14 days` engages
 #     `ranking` on incidental prose. MEASURED, and re-derivable — run
 #     `scripts/measure_inventory_marker_rule.py` against
-#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`: of 190
-#     presence-only field mentions, 182 clear this floor, and 29 of those carry no value
-#     marker at all. Requiring a marker (`field=`, `field:`, `` `field` ``) would refuse
-#     the sampled incidental cases — not all of them, since a marker can appear in prose
-#     too — costing 3 refused citations across 2 checked-in artifacts. It is deferred as
-#     D47.
-#     (The 51-of-169 and "5 reviews" figures this comment used to carry were hand counts;
-#     the executed run lowers the artifact count to 4.)
+#     `charness-artifacts/probe/2026-08-01-inventory-marker-rule.json`. Read the counts
+#     from the probe's measured fields — `field_mentions_presence_only`,
+#     `field_mentions_clearing_todays_floor`, `field_mentions_without_a_marker`, and
+#     `citations_refused_by_the_marker_rule` — rather than from this comment. Requiring a
+#     marker (`field=`, `field:`, `` `field` ``) would refuse the sampled incidental
+#     cases, though not all of them, since a marker can appear in prose too. It is
+#     deferred as D47.
+#     Deliberately not transcribed: this comment carried `190 / 182 / 29 / 3 refused
+#     citations across 2 artifacts` for two refresh cycles after the probe moved, and
+#     before that a 51-of-169 hand count. The numbers change on every quality write; the
+#     probe path does not.
 #
 # The first cut of this floor did not even refuse a stub: it counted every surviving
 # character, so `"n/a"` scored exactly the floor, and it stripped only the field under

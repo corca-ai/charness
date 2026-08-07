@@ -11,13 +11,15 @@ Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
 
-- Current slice: draft awaiting activation. No slice has run under THIS goal;
-  the superseded goal's pre-0 slice is complete and committed.
+- Current slice: Slice 0 complete. The baseline is zero, so from here a `pytest`
+  red is a regression this goal caused, not inherited noise.
 - Current slice intent: close all 19 open issues by repairing the shared
   declaration-to-verdict boundary first, then the surfaces that accumulated on
   top of it — in an order where each slice's tools already exist.
-- Next action: activate, then run Slice 0 (restore the 34-red baseline) before
-  reading any other gate verdict as meaningful.
+- Next action: Slice 1 (`#529`) — repair the issue lane's own report contract.
+  Confirmed live while filing #536/#537: `issue_tool.py create` returns
+  `created_number`/`created_url` while `SKILL.md` tells the agent to report from
+  `{repo, number, url}`. That mismatch is on the path of all 19 closeouts.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye review at each slice that changes verdict logic, with a mandatory
   second round when round 1 produces repairs; broad proof at bundle boundaries.
@@ -190,7 +192,7 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 
 | Slice | Objective | Issues | Why here | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Restore the baseline nobody owns | (none; files one) | Every later green is read against 34 standing reds. `docs/handoff.md` lost its publish-state claim block at `0659d5a0`; 26 tests + the ledger CLI have been red for 6 commits | planned |
+| 0 | Restore the baseline nobody owns | (none; filed #536, #537) | Every later green is read against 34 standing reds. `docs/handoff.md` lost its publish-state claim block at `0659d5a0`; 26 tests + the ledger CLI have been red for 6 commits | **complete** — 35 measured (not 34), 0 remaining |
 | 1 | Repair the issue lane's own report contract | #529 | This goal performs 19 closeouts; a wrong `{repo, number, url}` ledger costs 19 times if fixed late | planned |
 | 2 | Make adapters able to refuse unrecognized input | #530 | Root of the declaration family: 16/17 resolvers accept any `version` and absorb typo'd keys as defaults | planned |
 | 3 | Let a repo declare a sub-key ABSENT | #528 | Needs Slice 2's absent/defaulted/declared distinction; deletions currently refill silently | planned |
@@ -226,15 +228,18 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
   Unblock action: Slice 12's answer.
   Revisit trigger: `#523`'s reviewer finds a section whose removal is safe on
   routing grounds alone, independent of the deletion policy.
-- Decision: whether the 34 pre-existing failures include any that should be
+- Decision: whether the pre-existing failures include any that should be
   re-scoped to a different owner rather than fixed here.
   Owner: operator.
-  Why deferred: Slice 0 produces the per-group cause; two groups
-  (`inventory_marker` probe drift, `closeout_bundle` blocked-state) may be
-  intended behavior responding to this repo's own artifacts rather than defects.
-  Unblock action: Slice 0's cause report.
-  Revisit trigger: a group's cause turns out to be a deliberate contract this goal
-  should not change.
+  **RESOLVED by Slice 0's measurement — no operator input needed.** Both suspected
+  groups were indeed intended behavior, and neither required changing the thing
+  being measured: the `closeout_bundle`/`final_bundle_preflight` block was a
+  CORRECT `unmatched_surface_path` refusal over ten genuinely unowned artifacts
+  (repaired by adding real owning surfaces, not by relaxing the gate), and the
+  `inventory_marker` drift was this repo's own quality corpus growing (repaired by
+  refreshing both probes with D47 in lockstep). Nothing is re-scoped to another
+  owner; all 35 are fixed here. The recurring cost of the probe refresh is filed
+  as `#536` rather than absorbed silently.
 
 ## Coordination Cues
 
@@ -261,9 +266,64 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 
 ## Slice Log
 
-No slices have run under this goal. The superseded goal's pre-0 slice is complete
-and committed as `8bc8e0e4`; its artifacts and gates carry forward as Slice 4's
-substrate and are not rebuilt.
+The superseded goal's pre-0 slice is complete and committed as `8bc8e0e4`; its
+artifacts and gates carry forward as Slice 4's substrate and are not rebuilt.
+
+### Slice 0 — Restore the baseline nobody owns (complete)
+
+**Issue closed:** none, by design. **Issues filed:** `#536`, `#537`.
+
+**Measured before/after.** `pytest tests/ -q` at `1db69613`: 35 failed, 7491
+passed. After: 7545 passed, 0 failed. The goal's plan said 34; the true count was
+35, and the extra one (`test_retro_memory`) shares a root cause with the largest
+group, which is why the plan's grouping missed it.
+
+**Cause per group — no group closed as "environment" or "flaky".**
+
+| Group | N | Cause | Disposition |
+| --- | --- | --- | --- |
+| `publish_state_ledger` | 26 | The handoff rewrite at `0659d5a0` dropped the `charness-publish-state-claim` marker block. The ledger declares `docs/handoff.md` as a source locator, and the tests copy the live file into a fixture. | Defect. Block restored byte-identical to the surviving copy in the goal artifact. |
+| `test_retro_memory` | 1 | Same rewrite dropped the `recent-lessons.md` reference the retro-memory gate requires. | Defect, same root cause. Reference restored. |
+| `final_bundle_preflight` + `closeout_bundle` | 5 | `status: blocked` on `unmatched_surface_path`: ten artifacts added by `8bc8e0e4` under `charness-artifacts/spec/` and `charness-artifacts/quality/fixtures/` had no owning surface. | **The gate was RIGHT.** Not a defect in the gate. Repaired by giving the ten paths real owning surfaces with executable verifiers, not by relaxing the blocker. |
+| `inventory_marker_rule_measurement` + `a_declaration_is_not_its_own_corroboration` | 3 | Recorded-probe drift (130→131 artifacts). Caused by this repo's own quality writes. | Intended behavior. Both probes refreshed with D47 updated in lockstep. The toll went DOWN (5 citations across 4 artifacts → 4 across 3) because `quality/latest.md` now marks the fields it cites. |
+
+**Operator Decision Queue entry resolved.** The queue asked whether the
+`inventory_marker` and `closeout_bundle` groups were intended behavior rather
+than defects. Measured answer: **both are intended behavior**, and neither needed
+a fix to the thing being measured. No re-scoping to another owner is required, so
+that decision does not need to go back to the operator.
+
+**Prevention, and what escape it prevents.** `docs/handoff.md` matched only
+`repo-markdown`, whose verifiers are link, markdown-lint, and secret checks —
+none of which read the claim block. So the rewrite that broke 27 tests passed
+every gate that matched the file it broke. Added the `handoff-machine-readers`
+surface binding `docs/handoff.md` to its two actual machine readers. The escape
+is measured, not hypothetical: it already happened and cost six commits.
+
+**Proof channel distinct from the fix.** The fix was driven by `pytest`; the
+ledger repair was confirmed independently by `publish_state_ledger.py --json`
+exiting 0 and printing `"status": "reconciled"` — a CLI reader, not a test.
+
+**Bounded review: two rounds, both delegated, both boundary-verified clean.**
+Round 1 found 6 blockers, including one confirmed by execution
+(`validate_handoff_artifact.py` refused prose I had added — it would have failed
+the commit gate). Round 2 read the repairs and found 3 more blockers *in the
+repairs*, including the mirror hole in the new checker (a stream path with no
+digest) and a path-traversal escape the repo already had an idiom for. This is
+the second-round rule paying for itself exactly as the contract predicts.
+
+**New verdict logic added:** `scripts/check_quality_tool_fixtures.py` plus 19
+tests. It replaced an inline one-liner with three holes, under which the repo's
+one checked-in fixture carried a 62-character `stderr_sha256` — the empty-stream
+digest with two characters lost in transcription — unread since capture. Repaired
+after re-running the pinned `awiki lint -root docs -recursive` and observing 0
+bytes on stderr. Mutation-checked: narrowing `STREAMS` back to `("stdout",)` lets
+a corrupt stderr digest pass the checker and is killed by the parametrized tests.
+
+**Non-claims.** No remote CI claim. No claim that the awiki fixture has an
+executable final consumer — that is `#518`'s work and the surface notes say so.
+No claim the marker rule should be armed; D47 stays deferred. Round-2 repairs are
+recorded as accepted-unreviewed per the two-round cap.
 
 ## Context Sources
 
@@ -358,8 +418,15 @@ substrate and are not rebuilt.
 
 ## Off-Goal Findings
 
-- The 34 pre-existing failures were unowned by any goal before this one and are
-  adopted here rather than left to the next session.
+- The pre-existing failures were unowned by any goal before this one and are
+  adopted here rather than left to the next session. Slice 0 measured 35, not the
+  34 this goal was drafted against, and closed all of them.
+- `#536` (filed): two pinned measurement probes red on any quality-corpus write,
+  and the failure names a drifted number rather than the write that caused it.
+  Third hand refresh in seven days.
+- `#537` (filed): a correct bundle-preflight refusal over ten unowned artifacts
+  surfaced as five broken tests instead of its own blocker message, which is how
+  a real finding read as pre-existing noise for six commits.
 - Any consumer-repo defect surfaced while reading comparison checkouts is a
   separate owner and is filed, not fixed here.
 - Release, push, tag, PR, bump, Cautilus, and new external provider writes remain

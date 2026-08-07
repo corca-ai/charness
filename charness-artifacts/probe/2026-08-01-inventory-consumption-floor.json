@@ -1,23 +1,35 @@
 {
-  "artifacts": 130,
+  "_provenance": {
+    "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality; the artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-07",
+    "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
+    "repo_head_at_run": "1db696134ffeffa09e8574711742c590442d3a99",
+    "synchronized_after": "Refreshed the floor probe after the 2026-08-07 pre-0 slice added a quality artifact (130 -> 131) and `quality/latest.md` was rewritten to mark the inventory fields it cites.",
+    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed. Kept in lockstep with 2026-08-01-inventory-marker-rule.json, whose D47 denominator is this probe's `field_mention_residuals.count`.",
+    "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because the 2026-08-06 copy of this sentence still asserted 202 over 130 after the 2026-08-07 refresh measured 196 over 131.",
+    "worktree": "dirty: Slice 0 is restoring the standing red baseline; the marker-rule sibling probe was refreshed in the same run"
+  },
+  "artifacts": 131,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 130,
+    "not-claimed": 131,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 202,
-    "median": 31,
+    "count": 196,
+    "median": 30,
     "min": 0,
     "p5": 5
   },
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 370,
+    "count": 374,
     "median": 45,
     "min": 7
   },
@@ -1448,7 +1460,7 @@
       "commit_state": "dated",
       "declared_date": "2026-08-06",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-08-06",
+      "last_commit_date": "2026-08-07",
       "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md"
     },
     {
@@ -1479,32 +1491,22 @@
       "path": "charness-artifacts/quality/2026-08-06-slice-3-final-bundle-preflight.md"
     },
     {
-      "citations": {
-        "inventory_nose_clones.py": {
-          "engaged_presence_only": 2,
-          "engaged_with_a_value": 2,
-          "lost_to_the_floor": [],
-          "required": 2
-        }
-      },
+      "citations": {},
       "claims_pre_contract_exemption": false,
       "commit_state": "dated",
-      "declared_date": "2026-08-06",
+      "declared_date": "2026-08-07",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-08-06",
+      "last_commit_date": "2026-08-07",
+      "path": "charness-artifacts/quality/2026-08-07-quality-review.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-07",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-07",
       "path": "charness-artifacts/quality/latest.md"
     }
-  ],
-  "_provenance": {
-    "baseline_check": "Refreshed over 130 checked-in quality artifacts after the 2026-08-06 quality records and final closeout synchronization changed the corpus; no detached-tree validator comparison is claimed.",
-    "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-06",
-    "does_not_license": "THIS repo's corpus only; a consumer repo's quality artifacts are not visible from here. Also: NO checked-in artifact claims a pre-contract exemption, so the S9 corroboration arm is exercised by zero rows here — its evidence is the regression tests in tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py, not this number. The value-marker rule that would close the ordinary-word-field hole was measured separately at 5 refused citations across 3 recursive artifacts and deferred as D47.",
-    "repo_head_at_run": "0be77d37468bab3a6cdbc5c4012e8437961a9d58",
-    "synchronized_after": "Refreshed the floor probe from the repository-owned measurement script after the checked-in quality corpus gained the 2026-08-06 quality records.",
-    "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed.",
-    "worktree": "dirty: closeout handoff and claims evidence are being finalized",
-    "why": "docs/deferred-decisions.md D47 records the executed replacement for the former hand counts. The current synchronized corpus measurement is 202 field mentions over 130 top-level quality artifacts."
-  }
+  ]
 }

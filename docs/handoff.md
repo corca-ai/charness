@@ -2,8 +2,9 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** activate the [all-open-issues goal](../charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md) and run **Slice 0** first. It covers all 19 open issues plus the 34 pre-existing test failures no goal owned. The [#514/#515/#518 goal](../charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md) is SUPERSEDED — do not activate it; its committed pre-0 work is the successor's Slice 4 substrate.
-- **Slice 0 is a prerequisite, not a preference.** Until it lands, every `pytest` verdict is read against a standing red baseline and a new regression is indistinguishable from the noise. Recount before acting: `python3 -m pytest tests/ -q 2>&1 | tail -1`, and `python3 scripts/publish_state_ledger.py --repo-root . --json` for the largest group's root cause. This handoff lost its publish-state claim block at `0659d5a0` (`git log --format=%h -- docs/handoff.md` then `git show <sha>:docs/handoff.md | grep -c publish-state`); the goal's Context Sources hold the measured per-group split.
+- **Next pickup:** activate the [all-open-issues goal](../charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md) and run **Slice 0** first. It covers all 19 open issues plus the pre-existing test failures no goal owned. Slice 0 is the one that adopts them; recount with the command below rather than trusting any sentence here for the current number. The [#514/#515/#518 goal](../charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md) is SUPERSEDED — do not activate it; its committed pre-0 work is the successor's Slice 4 substrate.
+- **Slice 0 has landed and the baseline is zero.** That changes how you read a red: a `pytest` failure is now a regression this goal caused, not inherited noise, so do not wave one through as pre-existing. Recount with `python3 -m pytest tests/ -q > /tmp/baseline.txt 2>&1; grep -nE '^(FAILED|ERROR) ' /tmp/baseline.txt` — do not pipe a gate through `tail`, which discards the failure names the recount exists to produce.
+- **The next slice is Slice 1 (`#529`).** Confirmed live: `issue_tool.py create` returns `created_number`/`created_url` while the issue `SKILL.md` tells the agent to report from `{repo, number, url}`. This goal performs 19 closeouts, so a wrong report contract costs 19 times if fixed late. This handoff lost its publish-state claim block at `0659d5a0` (`git log --format=%h -- docs/handoff.md` then `git show <sha>:docs/handoff.md | grep -c publish-state`); the goal's Context Sources hold the measured per-group split.
 - **Three ordering claims carry the plan** and are worth checking before you reorder anything: root before consumer (`#530` before `#518`/`#528`/`#526`), instrument before measurement before decision (`#532`/`#519`/`#520` before `#521` before `#523`/`#527`), and pay the refactor tax first (`#534` before the split-heavy slices).
 - Read the [pre-0 retro](../charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md) before adding any refusal: two were added and withdrawn there for firing where nothing could escape.
 
@@ -24,6 +25,12 @@
 - Existing Charness `check-doc-links`, `markdownlint`, `check-links-internal`, and `nose` document-duplicate review have distinct observed semantics from awiki's graph check. No deletion is authorized until a command-level overlap matrix proves a full replacement.
 - The goal draft now binds all three issues in one lifecycle while preserving consumer ownership, independent carriers, and separate readbacks.
 - Quality Core run `31118030353` for head `0e469e917c6fa1b07f0351da639ac4431f519acc` failed at GitHub action metadata with `Service Unavailable`; mutation was cancelled. Treat it as an external CI non-claim.
+- The publish-state claim below remains a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a current version or tag claim. The release record separately binds `v3.4.0` to tag SHA `7bf3893b`, and the post-publish bookkeeping is committed at `c34b3dc0`. This block is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json), not prose: rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group, which is exactly what `0659d5a0` did. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
+
+<!-- charness-publish-state-claim:post-push-operational-proof -->
+```json
+{"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
+```
 
 ## Next Session
 
@@ -48,6 +55,7 @@
 - [Unified goal](../charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md)
 - [Current quality posture](../charness-artifacts/quality/latest.md)
 - [Session retro](../charness-artifacts/retro/2026-08-07-session-retro.md)
+- [Recent lessons](../charness-artifacts/retro/recent-lessons.md) — read this before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts. It is a machine-read obligation of this file, not a courtesy link.
 - [#516 debug record](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md)
 - [#514](https://github.com/corca-ai/charness/issues/514)
 - [#515](https://github.com/corca-ai/charness/issues/515)
