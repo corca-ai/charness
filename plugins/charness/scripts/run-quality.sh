@@ -735,7 +735,7 @@ python_files=(
   skills/support/*/vendor/*.py
 )
 queue_selected "py-compile" python3 -m py_compile "${python_files[@]}"
-queue_selected "ruff" ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts skills/shared/scripts
+queue_selected "ruff" ./scripts/check-python-lint.sh
 
 if [[ "$RUN_QUALITY_MODE" == "full" ]] || coverage_relevant_changes_present; then
   queue_selected "check-coverage" python3 scripts/check_coverage.py --repo-root "$REPO_ROOT"

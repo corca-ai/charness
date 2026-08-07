@@ -285,6 +285,7 @@ QUALITY_SHELL_STUBS = (
     ("check-shell", "check-shell.sh"),
     ("check-links-internal", "check-links-internal.sh"),
     ("check-links-external", "check-links-external.sh"),
+    ("ruff", "check-python-lint.sh"),
 )
 QUALITY_BIN_STUBS = ("ruff", "pytest", "specdown")
 

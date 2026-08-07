@@ -644,7 +644,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
     the slice loop (the failure class this pins)."""
     import re
 
-    from .support import QUALITY_PYTHON_STUBS
+    from .support import QUALITY_PYTHON_STUBS, QUALITY_SHELL_STUBS
 
     runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
     queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
@@ -660,7 +660,21 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
             # come from QUALITY_RUNTIME_STUBS and are seeded elsewhere.
             if prefix in ("", "$REPO_ROOT/"):
                 queued.add(name)
+    # `.sh` gates too. This guard used to match only `scripts/<name>.py`, so when the
+    # ruff gate moved behind `./scripts/check-python-lint.sh` the harness lost it
+    # silently and a runner test failed at the broad boundary -- exactly the failure
+    # class the docstring above claims to pin, walking straight past a guard whose
+    # stated scope was wider than its pattern.
+    for line in runner.splitlines():
+        if "queue_selected" not in line:
+            continue
+        for path in re.findall(r'([\w$/{}.-]*scripts/[a-z0-9-]+\.sh)', line):
+            prefix, _, name = path.rpartition("scripts/")
+            if prefix in ("", "./", "$REPO_ROOT/"):
+                queued.add(name)
+
     stubbed = {name for _, name in QUALITY_PYTHON_STUBS}
+    stubbed |= {name for _, name in QUALITY_SHELL_STUBS}
     copied_real_scripts = {"run_standing_pytest.py", "specdown_ephemeral_config.py"}
     missing = sorted(queued - stubbed - copied_real_scripts)
     assert missing == [], (

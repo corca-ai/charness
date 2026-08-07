@@ -270,7 +270,7 @@
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_skills.py --repo-root .",
-        "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py",
+        "python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py",
         "python3 scripts/check_skill_ownership_overlap.py --repo-root .",
         "python3 scripts/validate_skill_ergonomics.py --repo-root .",
         "python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary"
@@ -868,7 +868,7 @@
       ],
       "sync_commands": [],
       "verify_commands": [
-        "ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts",
+        "./scripts/check-python-lint.sh",
         "python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing",
         "python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support",
         "python3 scripts/check_test_repo_copy_invariants.py --repo-root .",

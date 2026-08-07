@@ -64,9 +64,11 @@ jobs:
         run: pip install -r packaging/bootstrap-requirements.txt "ruff==0.15.10"
 
       - name: Lint (ruff)
-        # Path list mirrors the broad gate's ruff invocation in
-        # scripts/run-quality.sh; rules stay single-source in pyproject.toml.
-        run: ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts
+        # Invokes the repo-owned entrypoint rather than retyping its path list, which is
+        # what this workflow's `local-gate-subset-mirror` marker claims of every step.
+        # The retyped copy this replaced had drifted: it omitted skills/shared/scripts,
+        # so ten shared-contract scripts were invisible to the bypass-catcher.
+        run: ./scripts/check-python-lint.sh
 
       - name: Validate plugin packaging export
         run: python3 scripts/validate_packaging.py --repo-root .

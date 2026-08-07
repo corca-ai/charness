@@ -85,6 +85,6 @@
     ]
   },
   "host_notes": [
-    "The repo's standing gate currently invokes `ruff check charness scripts tests skills/public/*/scripts skills/support/*/scripts`."
+    "The repo's standing gate invokes `./scripts/check-python-lint.sh`, which owns the path list; do not restate the paths here, because the copy that used to live in this note went stale."
   ]
 }
