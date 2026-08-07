@@ -19,7 +19,12 @@ import pytest
 from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
 from scripts.issue_source_freeze_lib import _RECEIPT_IDENTITY_EXCLUDED, FreezeError
 from scripts.issue_source_normalize_lib import sha256_payload
-from scripts.validate_issue_source_freeze import run_freeze, run_validate, stamp_inspection
+from scripts.validate_issue_source_freeze import (
+    run_freeze,
+    run_refreeze,
+    run_validate,
+    stamp_inspection,
+)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SNAPSHOT_REL = "spec/source.json"
@@ -481,6 +486,54 @@ def test_a_raw_response_path_escaping_the_repo_is_refused(tmp_path: Path) -> Non
         _validate(tmp_path)
 
     assert excinfo.value.code == "raw_response_escape"
+
+
+def test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command(tmp_path: Path) -> None:
+    """The retro repair: the maintenance ritual is a tool, not a shell heredoc.
+
+    Editing an inspected owner correctly stales the freeze, so re-freezing is routine
+    rather than rare. As three separate steps the third — copying identity fields into
+    the crosswalk — had no tool at all and was hand-executed six times in one session.
+    """
+    _build_world(tmp_path)
+    crosswalk_rel = "spec/crosswalk.json"
+    _write_json(
+        tmp_path / crosswalk_rel,
+        {
+            "schema": "evidence-boundary-crosswalk/v1",
+            "source_identity": {"freeze_receipt_path": FREEZE_REL, "source_snapshot_sha256": "stale"},
+        },
+    )
+    (tmp_path / "owner.py").write_text("# the inspected owner changed\n", encoding="utf-8")
+
+    # The staleness is real before the repair runs.
+    with pytest.raises(FreezeError) as stale:
+        _validate(tmp_path)
+    assert stale.value.code == "stale_inspection"
+
+    payload = run_refreeze(
+        tmp_path, SNAPSHOT_REL, INSPECTION_REL, FREEZE_REL, [514, 515, 518], crosswalk_rel
+    )
+
+    assert payload["ok"] is True
+    assert payload["validated"]["ok"] is True
+    rebound = json.loads((tmp_path / crosswalk_rel).read_text(encoding="utf-8"))["source_identity"]
+    freeze = json.loads((tmp_path / FREEZE_REL).read_text(encoding="utf-8"))
+    assert rebound["source_snapshot_sha256"] == freeze["source_snapshot_sha256"]
+    assert rebound["freeze_identity"] == freeze["freeze_identity"]
+    assert "source_snapshot_sha256" in payload["crosswalk_rebound"]["changed_fields"]
+
+
+def test_refreeze_is_usable_before_a_crosswalk_exists(tmp_path: Path) -> None:
+    """Every repo has a freeze before it has a crosswalk; the rebind must no-op."""
+    _build_world(tmp_path)
+
+    payload = run_refreeze(
+        tmp_path, SNAPSHOT_REL, INSPECTION_REL, FREEZE_REL, [514, 515, 518], "spec/absent.json"
+    )
+
+    assert payload["ok"] is True
+    assert payload["crosswalk_rebound"]["rebound"] is False
 
 
 def test_the_checked_in_charness_freeze_for_514_515_518_validates() -> None:

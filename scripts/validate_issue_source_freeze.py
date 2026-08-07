@@ -40,6 +40,15 @@ verify_inspection = _freeze_lib.verify_inspection
 verify_issue_coverage = _freeze_lib.verify_issue_coverage
 
 DEFAULT_PROTECTED = (514, 515, 518)
+DEFAULT_CROSSWALK = "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json"
+# The four fields the crosswalk copies from the freeze receipt. Named once so the
+# rebind and the crosswalk's own staleness check cannot disagree about the set.
+BOUND_IDENTITY_FIELDS = (
+    "source_snapshot_sha256",
+    "clause_inventory_identity",
+    "reviewed_input_identity",
+    "freeze_identity",
+)
 
 
 def capture_receipt_path_for(snapshot_rel: str) -> str:
@@ -118,9 +127,64 @@ def stamp_inspection(repo_root: Path, inspection_rel: str) -> dict[str, object]:
     return {"ok": True, "stamped": inspection_rel, "inspection_identity": inspection["inspection_identity"]}
 
 
+def run_refreeze(
+    repo_root: Path,
+    snapshot_rel: str,
+    inspection_rel: str,
+    freeze_rel: str,
+    required: list[int],
+    crosswalk_rel: str,
+) -> dict[str, object]:
+    """Re-stamp, re-freeze, and re-bind the crosswalk in ONE command.
+
+    The owner inspection binds working-tree digests of the very files a slice edits,
+    so every code change correctly stales the freeze — which makes re-freezing a
+    routine act, not a rare one. Left as three separate steps, the third (copying four
+    identity fields into the crosswalk) has no tool at all, and the session that built
+    this validator performed it six times as an untested shell heredoc.
+
+    That is the failure this subcommand exists to remove: a tool whose own maintenance
+    ritual is hand-executed is unfinished, and the hand-executed step is the one that
+    silently drifts. Atomic here means the crosswalk is never left bound to a
+    superseded freeze — the rebind happens in the same run that produced the receipt.
+    """
+    stamped = stamp_inspection(repo_root, inspection_rel)
+    frozen = run_freeze(repo_root, snapshot_rel, inspection_rel, freeze_rel, required)
+    rebound = rebind_crosswalk(repo_root, freeze_rel, crosswalk_rel)
+    validated = run_validate(repo_root, snapshot_rel, inspection_rel, freeze_rel, required)
+    return {
+        "ok": True,
+        "inspection_identity": stamped["inspection_identity"],
+        "freeze_identity": frozen["freeze_identity"],
+        "crosswalk_rebound": rebound,
+        "validated": validated,
+    }
+
+
+def rebind_crosswalk(repo_root: Path, freeze_rel: str, crosswalk_rel: str) -> dict[str, object]:
+    """Point the crosswalk's `source_identity` at the current freeze receipt.
+
+    A no-op when the crosswalk is absent: `refreeze` must stay usable in a repo that
+    has a freeze but no crosswalk yet, which is every repo before Slice 0.
+    """
+    path = repo_root / crosswalk_rel
+    if not path.is_file():
+        return {"rebound": False, "reason": f"{crosswalk_rel} does not exist"}
+    freeze = load_json(repo_root, freeze_rel, FREEZE_RECEIPT_SCHEMA)
+    crosswalk = json.loads(path.read_text(encoding="utf-8"))
+    identity = crosswalk.setdefault("source_identity", {})
+    changed = {}
+    for field in BOUND_IDENTITY_FIELDS:
+        if identity.get(field) != freeze[field]:
+            changed[field] = freeze[field]
+        identity[field] = freeze[field]
+    path.write_text(json.dumps(crosswalk, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {"rebound": True, "path": crosswalk_rel, "changed_fields": sorted(changed)}
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("validate", "freeze", "stamp-inspection"))
+    parser.add_argument("command", choices=("validate", "freeze", "stamp-inspection", "refreeze"))
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--snapshot", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json")
     parser.add_argument(
@@ -130,6 +194,7 @@ def main() -> int:
         "--freeze-receipt", default="charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json"
     )
     parser.add_argument("--require-issues", type=int, nargs="+", default=list(DEFAULT_PROTECTED))
+    parser.add_argument("--crosswalk", default=DEFAULT_CROSSWALK, help="Crosswalk rebound by `refreeze`")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
@@ -140,6 +205,10 @@ def main() -> int:
         ),
         "validate": lambda: run_validate(
             repo_root, args.snapshot, args.inspection, args.freeze_receipt, list(args.require_issues)
+        ),
+        "refreeze": lambda: run_refreeze(
+            repo_root, args.snapshot, args.inspection, args.freeze_receipt,
+            list(args.require_issues), args.crosswalk,
         ),
     }
     return _refusal_lib.run_cli(
