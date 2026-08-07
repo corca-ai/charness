@@ -87,17 +87,22 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   A bounded parent-history count is the conscious exception; Codex V2 defaults
   to `fork_turns: "all"`, which rejects those overrides. This is a Codex host
   mapping, not portable policy for other hosts.
-- a short `Skill Routing` fallback paragraph: pickup follows the handoff,
-  ordinary routing starts the matching workflow directly from installed skill
-  metadata and model judgment, and hidden support/integration availability runs
-  `charness catalog list --repo-root <repo>`; a nonzero result reports a
-  command failure; and it says a SessionStart hook may inject the same context
-  while this block stands without it. Spell that standing explicitly — `it
-  remains context-only`, or `this block is the fallback when the hook is
-  absent` — and keep the word `hook` or `block` in the same sentence as the
-  standing, so the claim names what it is about. Naming the hook is not the
-  claim: a reader that has to infer the standing cannot recognize the block as
-  charness-managed, and the AGENTS.md policy checks that only run for managed
+- a short `Skill Routing` fallback paragraph. It must name every route, because
+  the reader that decides whether a repo is charness-managed requires all of
+  them and answers no if any is missing: a pickup follows the handoff at
+  `docs/handoff.md` `## Workflow Trigger`; ordinary routing starts the matching
+  workflow directly from installed skill metadata and model judgment; unclear
+  hidden support/integration availability runs the read-only
+  `charness catalog list --repo-root <repo>` inventory, and a nonzero result
+  reports a command failure; an external URL or source link goes through
+  `gather` before deciding from it; validation closeout and operator reading
+  tests go through `quality` validation; and a SessionStart hook may inject the
+  same context while this block stands without it. Spell that last standing
+  explicitly — `it remains context-only`, or `this block is the fallback when
+  the hook is absent` — and keep the word `hook` or `block` in the same sentence
+  as the standing, so the claim names what it is about. Naming the hook is not
+  the claim: a reader that has to infer the standing cannot recognize the block
+  as charness-managed, and the AGENTS.md policy checks that only run for managed
   repos then never fire
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding

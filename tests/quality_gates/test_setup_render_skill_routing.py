@@ -368,35 +368,67 @@ def test_every_standing_spelling_the_setup_REFERENCES_offer_is_accepted() -> Non
     """The docs that tell an operator what to write are writers too, and were drifting.
 
     `render_skill_routing.py` is not the only writer of this block: two `setup` references
-    describe it in prose for the hand-written path, and both described a block the reader
-    REFUSED — one omitted the standing claim entirely. Same reader/writer split as #552, one
-    layer out, where no test was looking.
+    describe it in prose for the hand-written path, on load paths `SKILL.md` routes to
+    separately. Both described a block the reader REFUSED — one omitted the standing claim
+    entirely, and the other described only part of the signal set. Same reader/writer split
+    as #552, one layer out, where no test was looking.
 
-    The phrases are asserted to exist in the reference files, so this cannot decay into a
-    fixture that agrees only with itself: reword the guidance and this test fails.
+    Bound PER FILE, not across the union. An earlier version asserted each standing spelling
+    appeared in *some* reference; since both files carried both spellings, either file could
+    have had its standing sentence deleted with this test still green — which is the whole
+    failure it exists to prevent, one indirection out.
+
+    `default-surfaces.md` owns the full description, so its own routing bullet is fed to the
+    readers directly: the guidance that tells an operator what to write must itself be
+    recognizable. `bootstrap-seams.md` defers the block's content to the renderer, so it owes
+    only the standing requirement.
     """
-    references = {
-        name: (ROOT / "skills/public/setup/references" / name).read_text(encoding="utf-8")
-        for name in ("default-surfaces.md", "bootstrap-seams.md")
-    }
+    references_dir = ROOT / "skills/public/setup/references"
     standings = (
         "it remains context-only",
         "this block is the fallback when the hook is absent",
     )
+
+    described = " ".join((references_dir / "default-surfaces.md").read_text(encoding="utf-8").split())
+    # Two prose anchors, asserted before use. This test pins reference prose ON PURPOSE —
+    # that is the whole mechanism — but a reworded anchor should say so rather than raise a
+    # bare `ValueError` from `str.index` and send the next reader hunting.
+    opening = "a short `Skill Routing` fallback paragraph"
+    following = "- when the repo keeps repo-owned skills"
+    for anchor in (opening, following):
+        assert anchor in described, (
+            f"default-surfaces.md no longer contains the anchor {anchor!r} this test slices "
+            "its routing bullet with; re-anchor the slice rather than deleting the check"
+        )
+    routing_bullet = described[described.index(opening) : described.index(following)]
     for standing in standings:
-        collapsed = {name: " ".join(text.split()) for name, text in references.items()}
-        assert any(standing in text for text in collapsed.values()), (
-            f"no setup reference offers this standing spelling any more: {standing!r}"
+        assert standing in routing_bullet, (
+            f"default-surfaces.md no longer offers this standing spelling: {standing!r}"
+        )
+    # The description is fed to the readers as written. Any signal the guidance stops naming
+    # fails here, which is what the first version of this test could not see: it supplied the
+    # `gather` and `quality` clauses itself while the reference named neither.
+    assert skill_routing_declares_charness_management(routing_bullet) is True, (
+        "a repo written as default-surfaces.md describes would read as NOT charness-managed"
+    )
+    assert skill_routing_semantically_complete(routing_bullet) is True, (
+        "a repo written as default-surfaces.md describes would read as an incomplete contract"
+    )
+
+    seams = " ".join((references_dir / "bootstrap-seams.md").read_text(encoding="utf-8").split())
+    for standing in standings:
+        assert standing in seams, (
+            f"bootstrap-seams.md no longer offers this standing spelling: {standing!r}"
         )
 
-    # Written the way the references describe the block, in the third person they use --
-    # NOT copied from the renderer, whose imperative voice the readers already accept.
+    # And a block an operator writes from that guidance, in the third person the references
+    # use rather than the renderer's imperative, satisfies both readers.
     for standing in standings:
         body = _routing_block(
             "Pickup follows the handoff at docs/handoff.md `## Workflow Trigger`; ordinary routing starts the matching workflow directly from installed skill metadata and model judgment.",
-            "Hidden support/integration availability runs the read-only `charness catalog list --repo-root <repo>`; a nonzero result reports a command failure.",
-            "External URLs or source links go through `gather` first.",
-            "Validation closeout goes through `quality` validation.",
+            "Unclear hidden support/integration availability runs the read-only `charness catalog list --repo-root <repo>` inventory; a nonzero result reports a command failure.",
+            "An external URL or source link goes through `gather` before deciding from it.",
+            "Validation closeout and operator reading tests go through `quality` validation.",
             f"A SessionStart hook may inject the same context, and {standing}.",
         )
         assert skill_routing_declares_charness_management(body) is True, standing
