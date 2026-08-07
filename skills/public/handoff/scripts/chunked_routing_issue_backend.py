@@ -78,6 +78,12 @@ def _load_issue_module(repo_root: Path, name: str):
     )
 
 
+# Why the most recent state resolution could not be built. Swallowing the owner's precise
+# message left a broken `view_state` template indistinguishable from an unauthenticated
+# tracker, forever. Read by the staleness layer's diagnostic, mirroring
+# LAST_ISSUE_SOURCE_DIAGNOSTIC on the listing half.
+LAST_STATE_RESOLUTION_DIAGNOSTIC: str | None = None
+
 _ISSUE_BACKEND_OWNER: Any | None = None
 
 
@@ -97,15 +103,34 @@ def _issue_backend_owner():
 
 VIEW_STATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number"})
 LIST_OPEN_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "limit"})
+# Which placeholders a template MUST spell, chosen per op rather than set to all-or-nothing.
+# All-of-them invalidated adapter templates that were valid before (a host whose binary
+# carries the repo declares no `{repo}`; one that pages internally declares no `{limit}`).
+# NONE of them was worse: `{number}` is IDENTITY-bearing, and a `view_state` template that
+# omits it resolves to a listing, whose first row is then read as the state of whichever issue
+# was asked about -- reporting a live backlog citation as CLOSED, silently, with
+# `issue_states_checked: true`. That is the manufactured stale verdict this module exists to
+# refuse, so it is a loud error instead.
+VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"number"})
+LIST_OPEN_REQUIRED: frozenset[str] = frozenset()
 
 
 def _resolve_command(
-    backend: dict[str, Any] | None, command_key: str, gh_default: list[str], allowed: frozenset[str], **subs: str
+    backend: dict[str, Any] | None,
+    command_key: str,
+    gh_default: list[str],
+    allowed: frozenset[str],
+    required: frozenset[str],
+    **subs: str,
 ) -> tuple[list[str] | None, str]:
     """Build the argv for one backend command, or report why it cannot be built.
 
     Returns ``(argv, backend_id)``; ``argv`` is None when a non-``gh`` backend declared no
-    template for ``command_key``. Callers decide what that means -- listing treats it as a
+    template for ``command_key``. RAISES for an adapter or caller error — an unknown or
+    missing-required placeholder, or no usable binary — because those are configuration bugs
+    rather than absences. ``list_open_issues`` lets them propagate to its own diagnostic;
+    ``issue_state`` catches them, because its contract is UNKNOWN and its callers have no
+    handler. Callers decide what that means -- listing treats it as a
     configuration error, a state lookup treats it as UNKNOWN -- but neither re-derives the
     binary, template, and substitution rules, which is the part that must stay identical
     across commands.
@@ -126,7 +151,7 @@ def _resolve_command(
     # the repo declares no `{repo}`. The allowlist still refuses an UNKNOWN placeholder, which
     # is the validation worth gaining; requiring all of them is a narrowing nobody asked for.
     argv = _issue_backend_owner().try_resolve_op(
-        backend, command_key, gh_default, allowed, frozenset(), **subs
+        backend, command_key, gh_default, allowed, required, **subs
     )
     return argv, backend_id
 
@@ -146,10 +171,14 @@ def issue_state(
 ) -> str | None:
     """Return one issue's state string (e.g. ``OPEN``/``CLOSED``), or None.
 
-    None means UNKNOWN, not open: a provider error, a missing/renumbered issue,
-    or a backend that declared no ``commands.view_state`` template. Callers must
-    report unknown as unknown — guessing "closed" here would manufacture the very
-    stale-verdict this facts-only path refuses to emit.
+    None means UNKNOWN, not open: a provider error, a missing/renumbered issue, a backend
+    that declared no ``commands.view_state`` template, an adapter template this backend
+    cannot render, a payload naming a different issue than the one asked about, or the
+    ``issue`` skill's backend module being absent from the install. Callers must report
+    unknown as unknown — guessing "closed" here would manufacture the very stale-verdict this
+    facts-only path refuses to emit. ``LAST_STATE_RESOLUTION_DIAGNOSTIC`` carries the reason
+    for the resolution failures, because "template is broken" and "tracker is unreachable"
+    are different problems and read identically once the message is dropped.
     """
     # Inside the try, not outside it. Delegating to the owner introduced raising paths this
     # function never had -- an adapter template with an unknown placeholder, or a backend with
@@ -160,9 +189,19 @@ def issue_state(
     try:
         argv, _ = _resolve_command(
             backend, "view_state", GH_VIEW_STATE_ARGS, VIEW_STATE_PLACEHOLDERS,
-            repo=repo, number=str(number),
+            VIEW_STATE_REQUIRED, repo=repo, number=str(number),
         )
-    except RuntimeError:
+    except Exception as exc:  # noqa: BLE001 - see LAST_STATE_RESOLUTION_DIAGNOSTIC below
+        # `except Exception`, not `except RuntimeError`. A first version of this guard named
+        # only the owner's own refusals and a bounded round found two escapes it did not
+        # cover: `_load_issue_module` raises ImportError on a partially-synced install (a
+        # shape this very slice created, since handoff now needs `issue_backend.py` present),
+        # and the owner's `part.format(...)` raises KeyError/ValueError for an adapter template
+        # containing a brace that is not a placeholder -- a jq reshape, which this repo's own
+        # backend reference documents. Both aborted the whole pickup. Matching the breadth of
+        # the runner guard three lines below is the point: this function's contract is UNKNOWN.
+        global LAST_STATE_RESOLUTION_DIAGNOSTIC
+        LAST_STATE_RESOLUTION_DIAGNOSTIC = f"{type(exc).__name__}: {exc}"
         return None
     if argv is None:
         return None
@@ -173,6 +212,13 @@ def issue_state(
     if isinstance(payload, list):
         payload = payload[0] if payload else None
     if not isinstance(payload, dict):
+        return None
+    # If the payload says WHICH issue it describes, it must be the one asked about. Requiring
+    # `{number}` in the template is the primary guard; this is the second, because a template
+    # can still resolve to a listing whose first row is a different issue, and reporting that
+    # row's state here is how a live citation becomes a CLOSED verdict.
+    reported = payload.get("number")
+    if isinstance(reported, int) and reported != number:
         return None
     state = payload.get("state")
     return state.strip().upper() if isinstance(state, str) and state.strip() else None
@@ -192,7 +238,7 @@ def list_open_issues(
     """
     argv, backend_id = _resolve_command(
         backend, "list_open", GH_LIST_OPEN_ARGS, LIST_OPEN_PLACEHOLDERS,
-        repo=repo, limit=str(limit),
+        LIST_OPEN_REQUIRED, repo=repo, limit=str(limit),
     )
     if argv is None:
         raise RuntimeError(

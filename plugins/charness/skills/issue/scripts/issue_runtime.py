@@ -161,6 +161,10 @@ def newest_open_issue(repo: str, backend: dict[str, Any] | None = None) -> dict[
         "search_newest_open",
         GH_NEWEST_OPEN_ARGS,
         NEWEST_OPEN_PLACEHOLDERS,
+        # `{repo}` is REQUIRED here, unlike handoff's `list_open`, and the difference is
+        # deliberate: this op searches, and a search template that omits the repo returns
+        # another repository's newest issue, which the caller then acts on as if it were this
+        # one. A missing page size is a benign omission; a missing scope is a wrong answer.
         required=frozenset({"repo"}),
         repo=repo,
     )
