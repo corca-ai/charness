@@ -130,3 +130,43 @@ def test_this_repos_own_active_goal_satisfies_the_floor_it_ships() -> None:
 
     assert backlog.applies(text) is True, "the rule date must cover the goal that ships the rule"
     assert backlog.check(text)["ok"] is True
+
+
+def test_the_floor_actually_gates_activation_not_just_reports() -> None:
+    """The WIRING, not the helper — and this is the second time in one session.
+
+    A mutation removing `and not backlog_recount_missing_fields` from
+    `pursue_readiness`'s `activation_ready` conjunction passed every other test in this
+    file and in the pursue suite: `check()` still returned the right verdict, the payload
+    still carried the missing fields, and nothing noticed that `/goal` would activate the
+    goal anyway. A floor that reports but does not refuse is exactly the false green this
+    goal family exists to remove, so the refusal is asserted through the composed verdict
+    rather than through the module that computes it.
+
+    Slice 1 of this goal shipped the identical shape (a scope helper proven correct while
+    its call site was reverted), which is why this test exists at all.
+    """
+    import goal_artifact_lib as gal  # noqa: PLC0415
+
+    draft = (
+        "# Achieve Goal: T\n\nStatus: draft\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n"
+        + "".join(
+            f"\n## {section}\n"
+            for section in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS
+        )
+        + "\n## Closeout Binding Plan\n"
+        + "".join(f"- {field} fixture value\n" for field in gal.CLOSEOUT_PLAN_FIELDS)
+    )
+
+    without = gal.pursue_readiness(draft)
+    assert without["pursue_ready"] is False, "a draft with no backlog recount must not activate"
+    assert without["backlog_recount_missing_fields"] == list(backlog.REQUIRED_FIELDS)
+    assert "backlog recount" in without["reason"]
+
+    # Control: the ONLY difference is the section, so the refusal above is attributable to
+    # this floor rather than to some other unmet condition in the same fixture.
+    with_section = gal.pursue_readiness(
+        draft + "\n## Backlog Recount\n- Counted: 28\n- Claims: none\n- Not claimed: none\n"
+    )
+    assert with_section["pursue_ready"] is True, with_section["reason"]
