@@ -233,6 +233,42 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | 13 | Reshape the surfaces under the decided policy | #523, #527, #531 | Constrained by #521's answer, measured by #532/#519/#520, untaxed by #534 | planned |
 | 14 | Bundle proof and goal closeout | (none) | Composition can drop what each slice proved in isolation | planned |
 
+## Re-Scope Required Before Resuming
+
+The plan assumed 19 slice-shaped defects. Measured across four attempts, that is
+wrong often enough to change how the rest should be run. Three of four had a named
+remedy whose premise did not hold, and one of those (`#534`) was BUILT green before
+a delegated review refuted it.
+
+Sort the remaining backlog by shape before promising any more closes:
+
+- **Premise-check first, then decide whether to build.** `#530` (loader-scoped key
+  set is the wrong set; refutation posted on the issue), `#534` (stated cause false
+  since the D30 re-key; refutation posted). Neither is a slice until someone
+  re-measures. `#534` in particular may not be worth building at all.
+- **Design passes, not slices.** `#521` is an operator decision by construction.
+  `#524`/`#525` are machine-readable-contract designs. `#531` changes what every
+  agent sees at session start, so it carries a prompt-surface validation review and
+  interacts with `#521`'s unresolved deletion policy. `#523`/`#527` are gated behind
+  `#521` by the goal's own ordering claim.
+- **Genuinely slice-shaped, in rough ascending cost.** `#528` (blocked by `#530` per
+  root-before-consumer), `#535`, `#532`, `#519`/`#520`, then `#515`/`#518`/`#514`,
+  which are the flagship reconciliation work the superseded goal's pre-0 slice
+  built substrate for.
+- **This goal's own filings** (`#536`-`#541`) are small and independent; `#540` and
+  `#541` are already fixed in `2ecd7c79` and need only closeout floors.
+
+Two rules earned by measurement, not by preference:
+
+1. **When a fix ADDS an exemption, carve-out, or skip path, construct the input that
+   triggers it and show it triggering before trusting a green suite.** `#534`'s
+   seven passing tests, clean gate, and completed closeout were all consistent with
+   dead code.
+2. **A closeout floor is the authorization.** `#526` shipped with one delegated
+   review instead of two under context pressure. It is recorded in the carrier, and
+   it is the point where throughput started costing depth. If a session cannot
+   afford the floor, it cannot afford the close.
+
 ## Operator Decision Queue
 
 - Decision: `#521` — whether `NO-OBSERVED-EFFECT` may authorize physical deletion
