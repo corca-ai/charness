@@ -1,9 +1,23 @@
 # Achieve Goal: Repair the shared quality/evidence boundary and close #514, #515, and #518
 
-Status: active (pre-0 complete; Slice 0 next)
+Status: draft
 Created: 2026-08-07
 Activated: 2026-08-07
-Activation: `/goal @charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md` after the bounded pre-activation bootstrap below.
+Activation: SUPERSEDED — do not activate this file. Its scope moved to
+`charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md`,
+which covers all 19 open issues in one lifecycle.
+
+`Status: draft` is the honest value among the four the lifecycle allows: this goal
+did NOT close #514, #515, or #518, so `complete` would be exactly the false-green it
+was written to prevent, and no lane here is unrunnable, so `blocked` would be false
+too. What actually happened is that its remaining scope was absorbed.
+
+Its completed pre-0 slice (capture adapter, freeze chain, closeout authorization
+surface; commit `8bc8e0e4`) carries forward unchanged as the successor's Slice 4
+substrate and is not rebuilt. The successor reorders what remained here for one
+reason this fixed plan could not express: `#530` — 16 of 17 adapter resolvers
+silently absorb typo'd keys and any `version` — is the ROOT of `#518`, so the
+resolver repair now precedes the declaration reconciler that reads its output.
 
 This goal treats #514, #515, and #518 as one coordinated repair of the recurring
 declaration-to-verdict boundary failure. It is not a small experiment or an
