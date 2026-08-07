@@ -67,6 +67,50 @@ def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict
     return json.loads(result.stdout)
 
 
+def bundle_blocker_report(payload: dict, label: str) -> str:
+    """Render a bundle payload's blockers as the message they already carry.
+
+    A correct bundle-preflight refusal used to surface as FIVE failing tests whose only
+    diagnostic was pytest's truncated `CompletedProcess` repr — the structured blocker, with
+    its `code`, `message`, `remediation`, and the paths in `subject`, never reached the reader
+    deliberately. `assert result.returncode == 0, result.stderr` looked like it supplied a
+    message and supplied nothing, because these scripts report on stdout.
+
+    Used by the ONE test per bundle surface that asks "is this repo bundle-ready right now".
+    """
+    blockers = payload.get("blockers") or []
+    preflight = payload.get("preflight") or {}
+    if not blockers and isinstance(preflight, dict):
+        blockers = preflight.get("blockers") or []
+    if not isinstance(blockers, list):
+        # This helper builds an ASSERTION MESSAGE. Raising here would mask the real failure
+        # with an AttributeError from inside the reporter.
+        return f"{label} reported a non-list `blockers` value: {blockers!r}"
+    if isinstance(payload.get("error"), str):
+        lines_error = f"{label} did not produce a plan at all; it raised: {payload['error']}"
+        return lines_error
+    lines = [f"{label} is not bundle-ready; status={payload.get('status')!r}."]
+    if not blockers:
+        lines.append(
+            "  No blockers were reported, which is itself the finding: the status is not"
+            " `ready` and nothing says why."
+        )
+    for blocker in blockers:
+        lines.append(f"  - code: {blocker.get('code')}")
+        lines.append(f"    message: {blocker.get('message')}")
+        if blocker.get("remediation"):
+            lines.append(f"    remediation: {blocker.get('remediation')}")
+        subject = blocker.get("subject")
+        if subject:
+            # Split ONLY the blocker that comma-joins its subject. Splitting every subject
+            # mangles a POSIX-legal path containing a comma into two bogus lines, and this
+            # helper's whole job is to survive an awkward payload rather than garble it.
+            parts = str(subject).split(",") if blocker.get("code") == "unmatched_surface_path" else [str(subject)]
+            for part in parts:
+                lines.append(f"    subject: {part.strip()}")
+    return "\n".join(lines)
+
+
 def seed_normalize_repo(repo: Path, agents_text: str) -> None:
     """Seed the minimum surface set `inspect_repo` needs to reach normalization checks."""
     (repo / "docs").mkdir(parents=True)

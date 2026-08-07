@@ -10,7 +10,7 @@ import pytest
 from scripts import closeout_bundle as cli
 from scripts import closeout_bundle_lib as lib
 
-from .support import ROOT, run_script
+from .support import ROOT, bundle_blocker_report, run_script
 
 MANIFEST = ROOT / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
 CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md"
@@ -25,9 +25,14 @@ def _args() -> dict[str, object]:
     }
 
 
-def test_dry_run_is_ready_and_has_ordered_phases() -> None:
+def test_dry_run_plan_has_ordered_phases() -> None:
     payload = lib.build_plan(ROOT, **_args())
-    assert payload["status"] == "ready"
+    # #537: the phase ORDER is this test's subject and it survives a blocked repo intact. Only
+    # the `ready` line tied it to the repo being currently clean, which is why one correct
+    # preflight refusal surfaced as five failing tests. One test below owns readiness.
+    # Renamed off `is_ready` for the same reason the final-bundle shape test was: a name that
+    # claims a verdict it no longer checks is the defect this goal is about, one file over.
+    assert payload["status"] in {"ready", "blocked"}, payload.get("status")
     assert payload["mode"] == "dry-run"
     assert [phase["name"] for phase in payload["phases"]] == [
         "surface_inventory", "pointer_freshness", "authoring_preflight",
@@ -67,9 +72,17 @@ def test_cli_help_and_dry_run_do_not_write_receipt() -> None:
         "--bundle-id", "closeout-bundle-cli-test", "--critique-path", CRITIQUE,
         "--behavior-channel", "behavior=echo behavior",
     )
-    assert result.returncode == 0
+    # The subject is that `--help` and a dry run write NO receipt, which holds whether the plan
+    # is ready or blocked. But `blocked` alone is NOT enough to accept: `closeout_bundle.py`
+    # emits an ERROR payload with `status: "blocked"` for any BundleError/OSError/ValueError, so
+    # a bounded round showed that accepting the status alone let a CRASHED CLI pass this test —
+    # deleting the only coverage of the dry-run path. Assert it is a PLAN.
     payload = json.loads(result.stdout)
-    assert payload["status"] == "ready"
+    assert "error" not in payload, payload["error"]
+    assert payload["status"] in {"ready", "blocked"}, payload.get("status")
+    assert payload["mode"] == "dry-run"
+    assert [phase["name"] for phase in payload["phases"]][0] == "surface_inventory"
+    assert payload["preflight"]["status"] in {"ready", "blocked"}
     assert not (ROOT / "charness-artifacts/goals/closeout-bundle-cli-test.json").exists()
 
 
@@ -408,3 +421,18 @@ def test_cli_main_covers_execute_receipt_and_exception(monkeypatch: pytest.Monke
     monkeypatch.setattr(cli._lib, "build_plan", lambda *_args, **_kwargs: (_ for _ in ()).throw(cli._lib.BundleError("blocked")))
     assert cli.main(argv[:-1]) == 1
     assert '"status": "blocked"' in capsys.readouterr().out
+
+
+def test_this_repo_is_currently_closeout_bundle_ready() -> None:
+    """The single test that answers "is this repo closeout-bundle-ready right now".
+
+    Paired with `test_final_bundle_preflight.py::test_this_repo_is_currently_bundle_ready`: two
+    surfaces, two questions, one failing test each, and each prints the blocker payload it found
+    rather than leaving the reader a truncated subprocess repr.
+    """
+    payload = lib.build_plan(ROOT, **_args())
+    assert payload["status"] == "ready", bundle_blocker_report(payload, "closeout_bundle")
+    # Structural, so a status mapping that always says `ready` cannot survive on a clean
+    # worktree — the gap its twin did not have.
+    assert payload["preflight"]["status"] == "ready"
+    assert [phase["name"] for phase in payload["phases"]][-1] == "verification_lock"

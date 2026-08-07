@@ -18,13 +18,42 @@ from scripts.final_bundle_preflight_lib import (
     packaging_mirror_inventory,
 )
 
-from .support import ROOT, run_script
+from .support import ROOT, bundle_blocker_report, run_script
 
 MANIFEST = "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
 CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md"
 
 
-def test_full_plan_is_ready_and_has_provenance_and_closeout_command() -> None:
+def _payload_or_report(result) -> dict:
+    """Parse the plan payload, and surface stderr when there is no payload to parse.
+
+    A bounded round caught this: parsing before asserting the exit code meant a CRASHING
+    preflight — stdout empty, traceback on stderr — failed with a bare `JSONDecodeError` and
+    discarded the traceback. The acceptance for #537 is that a refusal reports itself, so a
+    broken preflight must not report LESS than before.
+    """
+    if not result.stdout.strip():
+        raise AssertionError(
+            f"preflight produced no payload on stdout; returncode={result.returncode}, "
+            f"stderr={result.stderr.strip()!r}"
+        )
+    try:
+        return json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise AssertionError(
+            f"preflight stdout was not JSON ({exc}); returncode={result.returncode}, "
+            f"stdout={result.stdout[:400]!r}, stderr={result.stderr.strip()!r}"
+        ) from exc
+
+
+def test_full_plan_has_provenance_and_inventories() -> None:
+    """Renamed off `is_ready`, because that was the coupling #537 is about.
+
+    The build found one place the issue's own analysis was too generous: it says every
+    assertion other than `status == "ready"` survives a blocked repo, and `planned_commands` does
+    NOT — the plan omits them entirely when blocked. Those two assertions moved to the readiness
+    test, where the precondition they need is the subject rather than a side effect.
+    """
     result = run_script(
         "scripts/final_bundle_preflight.py",
         "--repo-root",
@@ -37,15 +66,17 @@ def test_full_plan_is_ready_and_has_provenance_and_closeout_command() -> None:
         "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
         "--json",
     )
-    assert result.returncode == 0, result.stderr
-    payload = json.loads(result.stdout)
-    assert payload["status"] == "ready"
+    # Parsed from stdout regardless of exit code, and NOT asserting `ready`. #537: this test's
+    # name and every other assertion in it are about plan SHAPE, which survives a blocked repo
+    # intact. Only the `ready` line tied it to the repo being currently clean, and that one line
+    # made a correct preflight refusal surface as five failing tests instead of one finding.
+    # `test_this_repo_is_currently_bundle_ready` below is the single test that owns that question.
+    payload = _payload_or_report(result)
+    assert payload["status"] in {"ready", "blocked"}, payload.get("status")
     assert payload["mirror_inventory"]["status"] == "matched"
     assert payload["critique_inventory"][0]["status"] == "current"
     assert payload["artifact_inventory"]
     assert payload["candidate_snapshot"]["head_sha"]
-    assert any(item["phase"] == "closeout" for item in payload["planned_commands"])
-    assert all("reason_surface_ids" in item for item in payload["planned_commands"])
 
 
 def test_explicit_paths_are_diagnostic_only() -> None:
@@ -187,9 +218,20 @@ def test_final_bundle_cli_human_renderer_is_available() -> None:
         "--critique-path", CRITIQUE,
         "--behavior-channel", "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
     )
-    assert result.returncode == 0
-    assert "Final-bundle preflight: ready" in result.stdout
-    assert "Blockers: none" in result.stdout
+    # The subject is that the human renderer EXISTS and renders the verdict it actually has.
+    # A first version accepted either verdict and then asserted `"Blockers:" in stdout`, which a
+    # bounded round showed was vacuous: the ready branch prints "Blockers: none", which CONTAINS
+    # that substring, so the assertion could not distinguish the branches. Now the blocker line
+    # asserted is the one the status implies.
+    assert result.stdout.startswith("Final-bundle preflight: "), result.stdout[:120]
+    if "Final-bundle preflight: ready" in result.stdout:
+        assert "Blockers: none" in result.stdout
+    else:
+        assert "Final-bundle preflight: blocked" in result.stdout, result.stdout[:200]
+        # A blocked render must carry the blocker DETAIL, not just the heading — that detail is
+        # the whole point of #537, and nothing pinned it before.
+        assert "Blockers:" in result.stdout
+        assert "Remediation:" in result.stdout, result.stdout[:600]
 
 
 def test_critique_inventory_refusal_matrix(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
@@ -311,13 +353,18 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
     assert {"candidate_base_not_ancestor", "changed_path_collection_failed", "candidate_snapshot_failed", "surface_inventory_failed"} <= codes
 
     monkeypatch.undo()
-    ready = build_plan(
+    # The subject here is that undoing the patches restores a REAL build that still produces a
+    # well-formed plan — not that this repo happens to be bundle-ready, which is a different
+    # question owned by one test below.
+    restored = build_plan(
         ROOT,
         manifest_path=manifest,
         critique_paths=[CRITIQUE],
         behavior_channels=["behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py"],
     )
-    assert ready["status"] == "ready"
+    assert restored["status"] in {"ready", "blocked"}
+    assert restored["mirror_inventory"]["status"] == "matched"
+    assert restored["candidate_snapshot"]["head_sha"]
 
     rich = {
         "status": "ready", "changed_paths": ["x"],
@@ -330,3 +377,30 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
     assert "Surfaces: surface" in rendered and "Blockers:" in rendered
     rich["blockers"] = []
     assert "Blockers: none" in lib.render_text(rich)
+
+
+def test_this_repo_is_currently_bundle_ready() -> None:
+    """The single test that answers "is this repo bundle-ready right now".
+
+    #537: five tests used to answer it as a side effect, so one correct refusal — ten artifacts
+    with no owning surface — arrived as five failures whose only diagnostic was a truncated
+    subprocess repr, and stayed unread for six commits among thirty other reds. The gate keeps
+    its teeth; what changes is that exactly one test fails and it PRINTS the blocker payload the
+    preflight already produced, including the remediation and the offending paths.
+    """
+    result = run_script(
+        "scripts/final_bundle_preflight.py",
+        "--repo-root", str(ROOT), "--manifest", MANIFEST,
+        "--critique-path", CRITIQUE,
+        "--behavior-channel", "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
+        "--json",
+    )
+    payload = _payload_or_report(result)
+    assert payload["status"] == "ready", bundle_blocker_report(payload, "final_bundle_preflight")
+    # `result.stdout`, not `result.stderr`: these scripts report on stdout, so passing stderr
+    # here is the empty-message idiom this slice exists to stop repeating.
+    assert result.returncode == 0, result.stdout[:400]
+    # These live here rather than in the shape test because a blocked plan carries NO
+    # planned_commands, so asserting them anywhere else re-creates the coupling this slice removed.
+    assert any(item["phase"] == "closeout" for item in payload["planned_commands"])
+    assert all("reason_surface_ids" in item for item in payload["planned_commands"])
