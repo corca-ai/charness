@@ -8,8 +8,14 @@ COMPACT_SKILL_ROUTING_CALL_RE = re.compile(r"\b(charness\s+catalog|catalog\s+lis
 COMPACT_SKILL_ROUTING_NEGATED_CALL_RE = re.compile(
     r"\b(do not|don't|never)\s+(run|use)\s+.*catalog"
 )
-DIRECT_WORKFLOW_ACTION_RE = re.compile(r"\b(start|choose|route|invoke)\b")
-CATALOG_FAILURE_ACTION_RE = re.compile(r"\b(report|surface)\b")
+# Inflected forms are matched deliberately. These read PROSE an operator wrote, and the
+# repo's own guidance describes the block in the third person ("a nonzero result reports a
+# command failure") while the generated block uses the imperative ("report the command
+# failure"). `\breport\b` matches only the second, so a block written from
+# `skills/public/setup/references/default-surfaces.md` was reported as drifted from the
+# block that reference describes -- the same reader/writer split as #552, one signal over.
+DIRECT_WORKFLOW_ACTION_RE = re.compile(r"\b(start|choose|route|invoke)(s|d|ed|ing)?\b")
+CATALOG_FAILURE_ACTION_RE = re.compile(r"\b(report|surface)(s|d|ed|ing)?\b")
 NONZERO_RESULT_RE = re.compile(r"\bnon[- ]?zero\b")
 
 # #552: this signal used to require the literal token `context-only`. The renderer that
@@ -34,34 +40,68 @@ NONZERO_RESULT_RE = re.compile(r"\bnon[- ]?zero\b")
 # output (see `tests/quality_gates/test_setup_render_skill_routing.py`), because every
 # fixture for this predicate spelled it `context-only` and that is how this hid.
 #
-# The claim is matched PER SENTENCE, not across the whole section. Searching the two
-# halves independently would let the polarity word be about anything: this repo's own
-# `gather` prose pairs "gather" with "browser-mediated fallback", and signal 4 already
-# requires `gather` in the section, so an uncoupled search would read
-# "...route through `gather`, escalating to the browser-mediated fallback..." plus a
-# sentence declaring the hook AUTHORITATIVE as a valid declaration. One sentence must
-# carry all three parts. Semicolons deliberately do not split a sentence -- both shipped
-# spellings join the hook and its standing with one.
+# Two parts, each matched inside ONE segment, where a segment is a line or a sentence.
 #
-# KNOWN LIMIT, stated rather than implied: like its sibling signals this is substring
-# matching, so it has no polarity WITHIN a sentence -- "the hook is authoritative, so
-# this block is not a fallback" carries all three parts and passes. What the check buys
-# is narrow and real: the surface `setup` writes is no longer excluded from its own
-# policy checks, and a polarity word about an unrelated subject no longer counts.
-SESSION_START_HOOK_RE = re.compile(r"\bsessionstart\b|\bsession[- ]start\b|\bstartup\b")
+# Searching the section as one blob does not work, and neither does requiring both parts
+# in a single sentence. A bounded review found both failure directions, and both are the
+# SAME defect class this signal was repaired for:
+#
+#   * Blob search lets the polarity word be about anything. Signal 4 already requires
+#     `gather` in the section, and this repo's own gather prose says "browser-mediated
+#     fallback", so a block whose hook sentence declares the hook AUTHORITATIVE reads as a
+#     valid declaration on the strength of a word about acquisition paths.
+#   * One-sentence-carries-everything breaks on punctuation, not on meaning. Markdown
+#     bullets carry no terminal period, so a bulleted block collapses to a single
+#     "sentence" and silently degenerates to blob search -- while a correct block that
+#     spells the claim as two sentences ("The SessionStart hook may inject this context.
+#     This block is the fallback when the hook is absent.") gets REFUSED.
+#
+# So the polarity claim must instead name its own subject: `denies_authority` requires a
+# segment carrying a polarity token AND the word `hook` or `block`. That is what makes the
+# gather line fail -- it is about URLs -- without depending on where a period lands. The
+# two parts may live in different segments, because a claim spanning two bullets is still
+# the claim.
+#
+# KNOWN LIMITS, stated rather than implied, because a check that overstates its reach is
+# the same defect one layer up:
+#   * Substring matching has no polarity WITHIN a segment. "the hook is authoritative, so
+#     this block is not a fallback" satisfies `denies_authority` and passes.
+#   * A section written as one unpunctuated run-on line is one segment, so it gets the
+#     coarse behavior above. Bulleted and sentence-terminated prose -- every shipped and
+#     hand-written form seen so far -- segments correctly.
+#   * The hook tokens are the two real spellings plus `session start`; a routing block
+#     that calls it something else entirely is not recognized.
+SESSION_START_HOOK_RE = re.compile(r"\bsessionstart\b|\bsession[- ]start\b")
 HOOK_NOUN_RE = re.compile(r"\bhook\b")
 HOOK_IS_NOT_AUTHORITATIVE_RE = re.compile(r"\bcontext[- ]only\b|\bfallback\b")
+# What the polarity claim must be ABOUT for it to count as a claim about this contract.
+POLARITY_SUBJECT_RE = re.compile(r"\bhook\b|\bblock\b")
 SENTENCE_SPLIT_RE = re.compile(r"(?<=[.!?])\s+")
 
 
-def _declares_session_start_hook_is_not_authoritative(text: str) -> bool:
-    """One sentence must name the session-start hook AND deny it authority."""
-    return any(
-        SESSION_START_HOOK_RE.search(sentence)
-        and HOOK_NOUN_RE.search(sentence)
-        and HOOK_IS_NOT_AUTHORITATIVE_RE.search(sentence)
-        for sentence in SENTENCE_SPLIT_RE.split(text)
+def _routing_segments(section_body: str) -> list[str]:
+    """Lines first, then sentences: a markdown bullet is a segment even with no period."""
+    segments = []
+    for line in section_body.lower().splitlines():
+        for sentence in SENTENCE_SPLIT_RE.split(line):
+            collapsed = " ".join(sentence.split())
+            if collapsed:
+                segments.append(collapsed)
+    return segments
+
+
+def _declares_session_start_hook_is_not_authoritative(section_body: str) -> bool:
+    """The block must name the session-start hook and deny it authority over the block."""
+    segments = _routing_segments(section_body)
+    names_hook = any(
+        SESSION_START_HOOK_RE.search(segment) and HOOK_NOUN_RE.search(segment)
+        for segment in segments
     )
+    denies_authority = any(
+        HOOK_IS_NOT_AUTHORITATIVE_RE.search(segment) and POLARITY_SUBJECT_RE.search(segment)
+        for segment in segments
+    )
+    return names_hook and denies_authority
 
 
 def skill_routing_declares_charness_management(section_body: str) -> bool:
@@ -73,7 +113,9 @@ def skill_routing_declares_charness_management(section_body: str) -> bool:
         "read-only" in text and bool(COMPACT_SKILL_ROUTING_CALL_RE.search(text)),
         "gather" in text and "external" in text and ("url" in text or "source" in text),
         "quality" in text and "validation" in text,
-        _declares_session_start_hook_is_not_authoritative(text),
+        # Passed the RAW body, not `text`: collapsing whitespace destroys the line breaks
+        # that make a bulleted block segmentable.
+        _declares_session_start_hook_is_not_authoritative(section_body),
     )
     return all(signals)
 

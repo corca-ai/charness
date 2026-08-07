@@ -229,55 +229,69 @@ def test_a_setup_seeded_repo_can_produce_both_gated_agents_policy_findings() -> 
     )
 
 
+_ROUTING_PREFIX = (
+    "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
+    "Use the read-only `charness catalog list --repo-root .` inventory when hidden availability is unclear.",
+    "If the command returns nonzero, report the command failure.",
+    "External URLs and source links route through `gather` before deciding.",
+    "Validation closeout and operator reading tests route through `quality`.",
+)
+# The word "fallback" spent on an UNRELATED subject, the way this repo's own `gather` prose
+# spends it ("a browser-mediated fallback"). Signal 4 already requires `gather` in the
+# section, so this is the realistic shape of the false positive, not a contrived one.
+_GATHER_LINE_USING_FALLBACK_FOR_ACQUISITION = "External URLs and source links route through `gather`, escalating to the browser-mediated fallback when official paths fail."
+_HOOK_NAMED_WITHOUT_ITS_STANDING = "The SessionStart hook injects this context at session open."
+_HOOK_STANDING_DECLARED = "The SessionStart hook may inject this context; it remains context-only."
+
+
+def _routing_block(*lines: str) -> str:
+    return "\n".join(["", *lines, ""])
+
+
 def test_naming_the_session_start_hook_alone_does_not_declare_charness_management() -> None:
-    """The #552 repair widened one signal's spelling; it must not have removed it.
+    """A block that names the hook while asserting nothing about its standing fails.
 
-    Accepting both `context-only` and `fallback` is accepting two spellings of one claim
-    — the hook is not the authority and the block stands without it. A block that names
-    the hook while asserting nothing about its standing still fails.
+    Accepting both `context-only` and `fallback` accepts two spellings of one claim — the
+    hook is not the authority and the block stands without it. Naming the hook is not that
+    claim.
 
-    The gather line here spends the word "fallback" on an UNRELATED subject, the way this
-    repo's own `gather` prose does ("a browser-mediated fallback"). That is why the
-    polarity token must appear in the same sentence as the hook: searched section-wide,
-    this block would read as charness-managed on the strength of a word about acquisition
-    paths, and this very test would then pass only because it happened to word its gather
-    line differently.
+    Paired with its own positive control below rather than left standing alone: this
+    fixture must fail signal 6 specifically, not incidentally because some OTHER signal's
+    token drifted. Adding only the standing sentence to the same text must flip it.
     """
-    body = "\n".join(
-        [
-            "",
-            "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
-            "Use the read-only `charness catalog list --repo-root .` inventory when hidden availability is unclear.",
-            "If the command returns nonzero, report the command failure.",
-            "External URLs and source links route through `gather`, escalating to the browser-mediated fallback when official paths fail.",
-            "Validation closeout and operator reading tests route through `quality`.",
-            "The SessionStart hook injects this context at session open.",
-            "",
-        ]
+    refused = _routing_block(
+        *_ROUTING_PREFIX[:3],
+        _GATHER_LINE_USING_FALLBACK_FOR_ACQUISITION,
+        _ROUTING_PREFIX[4],
+        _HOOK_NAMED_WITHOUT_ITS_STANDING,
     )
 
-    assert skill_routing_declares_charness_management(body) is False
+    assert skill_routing_declares_charness_management(refused) is False
+
+    # Positive control: same text, standing sentence added, nothing else changed.
+    accepted = _routing_block(
+        *_ROUTING_PREFIX[:3],
+        _GATHER_LINE_USING_FALLBACK_FOR_ACQUISITION,
+        _ROUTING_PREFIX[4],
+        _HOOK_NAMED_WITHOUT_ITS_STANDING,
+        "This block is the fallback when the hook is absent.",
+    )
+
+    assert skill_routing_declares_charness_management(accepted) is True, (
+        "the refusal above did not come from signal 6; another signal is failing"
+    )
 
 
-def test_a_sentence_about_session_start_without_a_hook_declares_nothing_about_one() -> None:
-    """Co-location is not sufficient on its own; the sentence must be ABOUT a hook.
+def test_a_polarity_word_about_session_start_but_no_hook_declares_nothing() -> None:
+    """The claim must be about a HOOK, not merely co-located with a session-start phrase.
 
-    Added because a mutation check found this: dropping the `hook` requirement killed no
-    test, so the guard was real but unproven. A block saying "at session start this block
-    is the fallback" co-locates a session-start token with a polarity token and still says
+    Added because a mutation check found the `hook` requirement unproven: dropping it
+    killed no test. A block saying "at session start this block is the fallback" says
     nothing about a hook injecting context, which is the claim the signal recognizes.
     """
-    body = "\n".join(
-        [
-            "",
-            "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
-            "Use the read-only `charness catalog list --repo-root .` inventory when hidden availability is unclear.",
-            "If the command returns nonzero, report the command failure.",
-            "External URLs and source links route through `gather` before deciding.",
-            "Validation closeout and operator reading tests route through `quality`.",
-            "At session start, treat this block as the fallback routing contract.",
-            "",
-        ]
+    body = _routing_block(
+        *_ROUTING_PREFIX,
+        "At session start, treat this block as the fallback routing contract.",
     )
 
     assert skill_routing_declares_charness_management(body) is False
@@ -286,27 +300,107 @@ def test_a_sentence_about_session_start_without_a_hook_declares_nothing_about_on
 def test_the_hooks_standing_is_recognized_in_hand_written_spellings_too() -> None:
     """The signal must recognize the CLAIM, not two blessed spellings of it.
 
-    The detector's job is to read hand-written AGENTS.md as well as generated blocks. Each
-    variant below declares the same thing the two shipped spellings declare — the hook
-    only injects context and the block stands without it — in wording neither writer uses.
+    The detector reads hand-written AGENTS.md as well as generated blocks. Each variant
+    declares what the two shipped spellings declare — the hook only injects context and the
+    block stands without it — in wording neither writer uses.
     """
-    prefix = [
-        "",
-        "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly.",
-        "Use the read-only `charness catalog list --repo-root .` inventory when hidden availability is unclear.",
-        "If the command returns nonzero, report the command failure.",
-        "External URLs and source links route through `gather` before deciding.",
-        "Validation closeout and operator reading tests route through `quality`.",
-    ]
     variants = (
         "A session-start routing hook may inject this context; this block is the fallback.",
-        "The startup hook may inject this context; treat this block as the fallback.",
         "A hook may inject this context at session start; this block remains context-only.",
+        "The SessionStart hook is one input; this block is the fallback when it is absent.",
     )
 
     for variant in variants:
-        body = "\n".join([*prefix, variant, ""])
-        assert skill_routing_declares_charness_management(body) is True, variant
+        assert skill_routing_declares_charness_management(
+            _routing_block(*_ROUTING_PREFIX, variant)
+        ) is True, variant
+
+
+def test_the_claim_survives_being_spelled_as_two_sentences() -> None:
+    """A correct block must not be refused for where its periods land.
+
+    Requiring one sentence to carry the whole claim looked tighter and was not: it made the
+    verdict depend on punctuation rather than meaning, so this block — which says exactly
+    what the renderer says — was refused. A bounded review caught it. That is the #552 class
+    reintroduced by its own repair, which is why the polarity claim now names its subject
+    instead of relying on sentence adjacency.
+    """
+    body = _routing_block(
+        *_ROUTING_PREFIX,
+        "The SessionStart hook may inject this context when installed.",
+        "This block is the fallback when the hook is absent.",
+    )
+
+    assert skill_routing_declares_charness_management(body) is True
+
+
+def test_a_bulleted_block_is_segmented_even_though_bullets_carry_no_periods() -> None:
+    """Markdown bullets have no terminal punctuation, and both directions must still hold.
+
+    A sentence-only splitter collapsed a bulleted section into ONE segment, which silently
+    restored the whole-section search it was meant to replace: a block declaring the hook
+    AUTHORITATIVE passed on the strength of the gather line's unrelated "fallback". Both
+    cases below are bulleted; only the meaning differs.
+    """
+    bullets = (
+        "- At session start, a pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment to start the matching workflow directly",
+        "- Run the read-only `charness catalog list --repo-root .` inventory; if the command returns nonzero, report the command failure",
+        "- Validation closeout and operator reading tests go through `quality`",
+    )
+
+    hook_is_authoritative = _routing_block(
+        *bullets,
+        "- External URLs or source links route through `gather`, escalating to the browser-mediated fallback",
+        "- The SessionStart hook is authoritative when installed",
+    )
+    standing_across_two_bullets = _routing_block(
+        *bullets,
+        "- External URLs or source links route through `gather` before deciding",
+        "- The SessionStart hook may inject this context when installed",
+        "- This block is the fallback when the hook is absent",
+    )
+
+    assert skill_routing_declares_charness_management(hook_is_authoritative) is False
+    assert skill_routing_declares_charness_management(standing_across_two_bullets) is True
+
+
+def test_every_standing_spelling_the_setup_REFERENCES_offer_is_accepted() -> None:
+    """The docs that tell an operator what to write are writers too, and were drifting.
+
+    `render_skill_routing.py` is not the only writer of this block: two `setup` references
+    describe it in prose for the hand-written path, and both described a block the reader
+    REFUSED — one omitted the standing claim entirely. Same reader/writer split as #552, one
+    layer out, where no test was looking.
+
+    The phrases are asserted to exist in the reference files, so this cannot decay into a
+    fixture that agrees only with itself: reword the guidance and this test fails.
+    """
+    references = {
+        name: (ROOT / "skills/public/setup/references" / name).read_text(encoding="utf-8")
+        for name in ("default-surfaces.md", "bootstrap-seams.md")
+    }
+    standings = (
+        "it remains context-only",
+        "this block is the fallback when the hook is absent",
+    )
+    for standing in standings:
+        collapsed = {name: " ".join(text.split()) for name, text in references.items()}
+        assert any(standing in text for text in collapsed.values()), (
+            f"no setup reference offers this standing spelling any more: {standing!r}"
+        )
+
+    # Written the way the references describe the block, in the third person they use --
+    # NOT copied from the renderer, whose imperative voice the readers already accept.
+    for standing in standings:
+        body = _routing_block(
+            "Pickup follows the handoff at docs/handoff.md `## Workflow Trigger`; ordinary routing starts the matching workflow directly from installed skill metadata and model judgment.",
+            "Hidden support/integration availability runs the read-only `charness catalog list --repo-root <repo>`; a nonzero result reports a command failure.",
+            "External URLs or source links go through `gather` first.",
+            "Validation closeout goes through `quality` validation.",
+            f"A SessionStart hook may inject the same context, and {standing}.",
+        )
+        assert skill_routing_declares_charness_management(body) is True, standing
+        assert skill_routing_semantically_complete(body) is True, standing
 
 
 def test_setup_render_skill_routing_accepts_equivalent_action_order(tmp_path: Path) -> None:

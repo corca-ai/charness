@@ -65,9 +65,17 @@ Keep the block startup-bootstrap-heavy and discovery-first. Use
 `$SKILL_DIR/scripts/render_skill_routing.py` so mature repos get an add-block
 suggestion instead of a silent rewrite.
 
-If a mature repo already has a compact pickup/metadata/catalog fallback rule at
-session startup, setup normalization may accept it as compact routing when the
-SessionStart hook provides the same context.
+If a mature repo already has a compact pickup/metadata/catalog rule for session
+start, setup normalization may accept it as compact routing rather than
+rewriting it.
+
+Whichever path writes the block, it must SAY that the SessionStart hook is only
+an injector and this block stands without it — `it remains context-only`, or
+`this block is the fallback when the hook is absent`. Naming the hook is not
+that claim, and the reader that decides whether a repo is charness-managed
+cannot infer it. Keep the standing next to the word `hook` or `block`; a repo
+that omits it reads as unmanaged, which silently disables the AGENTS.md policy
+checks that only run for managed repos.
 
 ## Repo-Owned Skill Proof
 

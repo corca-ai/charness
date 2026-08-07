@@ -80,13 +80,13 @@ def test_setup_inspect_accepts_the_shipped_routing_block_an_operator_extended(tm
     permanently-False recognizer meant that a repo carrying the block `setup` wrote —
     once an operator inserted a single repo-specific line into it, so the block is no
     longer a byte-identical substring and `matches_compact_block` stops rescuing it — was
-    reported as
-    `skill_routing_block_custom_or_drifted` and told to review the block charness itself
-    had just written.
+    reported as `skill_routing_block_custom_or_drifted` and told to review the block
+    charness itself had just written.
 
-    Built from the renderer's REAL output rather than a fixture. The sibling test below
-    covers this path with hand-written prose spelling `context-only`, which is exactly
-    the tautology that kept this caller's defect invisible.
+    Built from the renderer's REAL output rather than a fixture. The pre-existing sibling
+    case, `test_setup_inspect_accepts_expanded_semantically_complete_skill_routing` in
+    `test_setup_inspect_policy.py`, covers this path with hand-written prose spelling
+    `context-only` — exactly the tautology that kept this caller's defect invisible.
     """
     markdown, _ = _render_skill_routing._render_skill_routing([])
     hook_sentence = "The SessionStart hook"

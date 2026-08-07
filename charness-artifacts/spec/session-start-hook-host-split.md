@@ -159,21 +159,37 @@ why the directive was expanded.
   **neither** of the two options this probe offered. The inverted sentence stays a
   required signal — a routing block that says nothing about the hook's standing is
   not recognized — but it is matched as a CLAIM rather than as a string:
-  `_declares_session_start_hook_is_not_authoritative` requires one sentence to
-  name the session-start hook and deny it authority (`context-only`, or this block
-  is the `fallback`), which admits both shipped spellings and hand-written ones.
-  The polarity token must share a sentence with the hook, because searched
-  section-wide it matched this repo's own unrelated "browser-mediated fallback"
-  gather prose. Accepted limit, stated in the code: substring matching has no
-  polarity *within* a sentence.
+  `_declares_session_start_hook_is_not_authoritative` requires the block to name
+  the session-start hook, and requires some line or sentence to deny the hook
+  authority (`context-only`, or this block is the `fallback`) while naming `hook`
+  or `block` as the subject of that denial.
+- Two wrong shapes were tried and rejected on the way, both caught by bounded
+  review, and both worth recording because each was the checked defect class
+  reappearing inside its own repair. Searching the whole section let the polarity
+  word be about anything — this repo's gather prose says "browser-mediated
+  fallback" and signal 4 already requires `gather` in the section — so a block
+  declaring the hook AUTHORITATIVE passed. Requiring one *sentence* to carry the
+  whole claim then made the verdict depend on punctuation instead of meaning:
+  markdown bullets carry no terminal period, so a bulleted section collapsed to a
+  single sentence and silently restored the whole-section search, while a correct
+  block spelling the claim as two sentences was refused. Requiring the denial to
+  name its own subject is what actually separates the two, independent of where a
+  period lands.
+- Accepted limits, stated in the code rather than implied: substring matching has
+  no polarity *within* a segment; a section written as one unpunctuated run-on
+  line is one segment and gets the coarse behavior; and only the real hook
+  spellings plus `session start` are recognized.
 - This slice also shows how this spec's own Constraint below — "a renderer that
   disagrees with AGENTS.md is a drift bug by definition" — was discharged: by
   widening the READER to accept both spellings, not by converging the writers.
-  Two writers remain (`render_skill_routing.py` and the `Skill Routing` bullet in
-  `skills/public/setup/references/default-surfaces.md`, which had to be corrected
-  because it described a block the reader refused). Their reconciliation is now
-  pinned by a test against the renderer's REAL output rather than a fixture; a
-  fixture is what let the drift hide.
+  THREE writers remain, not two: `render_skill_routing.py` plus the prose in
+  `skills/public/setup/references/default-surfaces.md` and
+  `references/bootstrap-seams.md`. Both references had to be corrected, because
+  each described a block the reader refused — one omitted the standing claim
+  entirely, and the other's suggested phrasing produced a block the
+  one-sentence rule rejected. Reconciliation is now pinned by tests against the
+  renderer's REAL output and against the phrases those references still contain,
+  rather than against a fixture; a fixture is what let the drift hide.
 
 ## Non-Goals
 
