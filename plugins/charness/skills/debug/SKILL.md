@@ -47,8 +47,9 @@ trimming to fit against a ceiling the validator only reveals at the end. Edit th
 scaffold payload's `write_artifact_path`, not `latest.md` by habit; it resolves a
 symlinked current pointer to its actual target. The payload also says whether that
 target already holds content: `write_artifact_effect: overwrite_existing_content`
-means the file is there and its content is the investigation you are continuing, so
-append rather than replace it; `create_new_file` means nothing is at THAT path —
+means something is at that path — usually the investigation you are continuing, so append
+rather than replace it, though `.exists()` is also true of a directory or a
+symlink-to-existing there; `create_new_file` means nothing is at THAT path —
 among other causes a fresh repo, a resolved previous record, a dangling pointer, or
 a same-day follow-up whose pointer was never refreshed. The key reports what is on
 disk, not why, and that cause list is not exhaustive, so pair it with

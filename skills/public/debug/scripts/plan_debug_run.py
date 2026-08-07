@@ -255,11 +255,23 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
 
 
 def _artifact_next_action(kind: str, instruction: str, artifact: dict[str, Any]) -> dict[str, Any]:
+    """The branches that name an EXISTING artifact as the write target.
+
+    These carry the write-target fact too. A bounded round found the distribution inverted
+    against risk: only the scaffold branch carried it, and that branch is reached when the
+    artifact is absent or resolved -- almost always `create_new_file`. The
+    continue-existing-artifact branch is the one whose target holds content, and it was the
+    one staying silent.
+    """
     return {
         "kind": kind,
         "instruction": instruction,
         "artifact_path": artifact["path"],
         "write_artifact_path": artifact["write_path"],
+        "write_artifact_effect": (
+            "overwrite_existing_content" if artifact["write_exists"] else "create_new_file"
+        ),
+        "write_artifact_target_exists": bool(artifact["write_exists"]),
     }
 
 

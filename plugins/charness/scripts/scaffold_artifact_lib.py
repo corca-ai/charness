@@ -84,14 +84,16 @@ CURRENT_POINTER_STATE_KEYS = (
 def current_pointer_state(repo_root: Path, artifact_path: Path) -> dict[str, object]:
     """SINGLE OWNER of what a `latest.md` current pointer resolves to.
 
-    #548: this rule was implemented twice -- here, and again inside
-    `scripts/resolve_artifact_path.py` -- and both copies produced the same
-    `write_artifact_path` / `write_artifact_role` pair from separate code. Nothing forced
-    them to agree, so the same key name came to mean different things depending on which
-    producer a skill happened to call, and `#538` is the recorded instance of an agent
-    nearly writing over a finished review because of it. `resolve_artifact_path` now calls
-    this; keep it dependency-free, because skill scaffolds load this module by file path
-    with no package context.
+    #548: SIX implementations of this rule existed -- this one plus five private copies, in
+    `resolve_artifact_path.py`, `resolve_quality_artifact.py`,
+    `inventory_current_pointer_layouts.py`, `scaffold_debug_artifact.py`, and
+    `plan_debug_run.py`. Three of them produced the same `write_artifact_path` /
+    `write_artifact_role` pair from separate code, and nothing forced the copies to agree, so
+    the key came to mean different things depending on which producer a skill happened to
+    call; `#538` is the recorded instance of an agent nearly writing over a finished review
+    because of it. Two copies were named by the issue, one was found by the duplicate-ratchet
+    gate, and two by bounded review. All five now call this. Keep it dependency-free: skill
+    scaffolds load this module by file path with no package context.
     """
     absolute_artifact_path = repo_root / artifact_path
     if not absolute_artifact_path.is_symlink():

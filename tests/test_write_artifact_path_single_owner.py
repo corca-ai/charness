@@ -54,11 +54,12 @@ _scaffold_retro = import_repo_module(
 
 def _seed_resolved_debug_pointer(repo: Path) -> Path:
     """A debug current pointer whose record is marked resolved, so the followup branch fires."""
-    (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (repo / ".agents" / "debug-adapter.yaml").write_text(
-        "schema_version: 1\nartifact_class: current_pointer_with_records\ndata:\n  output_dir: charness-artifacts/debug\n",
-        encoding="utf-8",
-    )
+    # Real adapter schema: top-level `output_dir` and an `artifact_class` the resolver
+    # accepts. The first version of this fixture used `schema_version:` plus a nested `data:`
+    # and an invented class, so every producer silently fell back to inferred repo defaults
+    # and the fixture only APPEARED to configure the output directory — the
+    # fixture-supplies-its-own-premise family this slice's sibling issue is about.
+    _seed_adapter(repo, "debug")
     debug_dir = repo / "charness-artifacts" / "debug"
     debug_dir.mkdir(parents=True, exist_ok=True)
     target = debug_dir / "debug-2026-05-06-demo.md"
@@ -73,11 +74,7 @@ def _producer_payloads(tmp_path: Path) -> dict[str, dict[str, object]]:
 
     quality_repo = tmp_path / "quality"
     _seed_pointer(quality_repo, "symlink_to_existing")
-    (quality_repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (quality_repo / ".agents" / "quality-adapter.yaml").write_text(
-        "schema_version: 1\nartifact_class: current_pointer_with_records\ndata:\n  output_dir: charness-artifacts/quality\n",
-        encoding="utf-8",
-    )
+    _seed_adapter(quality_repo, "quality")
     payloads["quality:current"] = _resolve_quality_artifact.payload_for(
         quality_repo, slug="quality review", intent="current", artifact_date=dt.date(2026, 1, 3)
     )
@@ -97,15 +94,28 @@ def _producer_payloads(tmp_path: Path) -> dict[str, dict[str, object]]:
         ("retro", _scaffold_retro, "retro"),
     ):
         repo = tmp_path / label
-        (repo / ".agents").mkdir(parents=True, exist_ok=True)
-        (repo / ".agents" / f"{output}-adapter.yaml").write_text(
-            f"schema_version: 1\nartifact_class: records_only\ndata:\n  output_dir: charness-artifacts/{output}\n",
-            encoding="utf-8",
-        )
+        _seed_adapter(repo, output)
         payloads[label] = module.payload_for(repo, title="Probe")
         payloads[label]["_repo_root"] = repo
 
     return payloads
+
+
+def _seed_adapter(repo: Path, skill_id: str, *, artifact_class: str = "history") -> None:
+    """Write an adapter the skill's own resolver actually accepts.
+
+    `artifact_class` is one of the three the repo defines (`current`, `history`, `rolling`), and
+    `history` is the one that supports dated records — the class `debug` itself declares;
+    `output_dir` is top-level, not nested. Getting this wrong does not fail loudly — the
+    resolver reports `valid: false` and the producer falls back to inferred defaults, so a
+    wrong fixture still passes while proving nothing about adapter-configured output.
+    """
+    (repo / ".agents").mkdir(parents=True, exist_ok=True)
+    (repo / ".agents" / f"{skill_id}-adapter.yaml").write_text(
+        f"version: 1\nrepo: fixture\noutput_dir: charness-artifacts/{skill_id}\n"
+        f"artifact_class: {artifact_class}\n",
+        encoding="utf-8",
+    )
 
 
 def _seed_pointer(repo: Path, case: str) -> Path:
@@ -146,27 +156,61 @@ _FACT_ROUTES = (
 )
 
 
+# Roots scanned for producers. `skills/support` and `skills/shared` are included because the
+# repo's older sibling gate (`scripts/check_current_pointer_writes.py`) records that omitting
+# `skills/shared` once produced a clean report over a scope that excluded a real violation.
+_PRODUCER_ROOTS = ("scripts", "skills/public", "skills/support", "skills/shared")
+# How a module can emit the key. Both literal spellings, AND the delegation calls -- because
+# the two scaffolds this issue is actually about (`scaffold_quality_artifact.py`,
+# `scaffold_debug_artifact.py`) build their payload by delegation and never spell the key at
+# all, so a literal-only predicate excluded the issue's own subjects. That was the first
+# version of this guard, and a bounded round caught it.
+_KEY_LITERALS = ('"write_artifact_path":', "'write_artifact_path':", "write_artifact_path=write_artifact_path")
+_DELEGATED_PAYLOAD_CALLS = ("current_pointer_payload(", "dated_record_payload(", "with_write_target_facts(")
+# A payload key built by string assembly would evade any literal scan. The sibling gate
+# records this exact escape (an `f"latest.{ext}"` slipped a verbatim-filename scan), so the
+# sweep refuses rather than reporting clean over a scope it cannot see.
+_DYNAMIC_KEY_SHAPES = ('payload[f"write_artifact', "payload[f'write_artifact")
+
+
 def _modules_naming_a_write_target() -> dict[str, str]:
     """DERIVED FROM THE TREE, never hand-listed.
 
-    The first version of this guard kept a hand-maintained list of producers — which is the
-    same defect one level up: a producer added later silently falls outside the list and ships
-    green, exactly as the two new keys fell outside `scaffold_debug_artifact`'s hand-maintained
-    key list. A bounded round found the list already missing four producers. Globbing means a
-    new one cannot be added without this test seeing it.
+    Two earlier versions of this guard were the defect one level up. The first kept a
+    hand-maintained producer list — the same shape as `scaffold_debug_artifact`'s
+    hand-maintained key list, which is how the two new facts went stale — and it was already
+    missing four producers. The second globbed but matched only a dict-literal key, so it
+    excluded every producer that builds its payload by DELEGATION, which is both scaffolds the
+    issue names. A guard whose population is a proxy for the real one is this repo's recurring
+    trap; it is now selected by literal OR delegation call.
     """
     found: dict[str, str] = {}
-    for root in ("scripts", "skills/public"):
-        for path in sorted((ROOT / root).rglob("*.py")):
+    for root in _PRODUCER_ROOTS:
+        root_path = ROOT / root
+        if not root_path.is_dir():
+            continue
+        for path in sorted(root_path.rglob("*.py")):
             source = path.read_text(encoding="utf-8")
-            # A PRODUCER emits the key into a payload; a CONSUMER only reads it back out.
-            # The distinction matters: `inventory_current_pointer_layouts.py` reports other
-            # skills' write targets and owes no facts of its own. Producers are matched by the
-            # dict-literal key form, or by passing it to the owner's shared record shape.
-            produces = '"write_artifact_path":' in source or "write_artifact_path=write_artifact_path" in source
-            if produces:
+            for shape in _DYNAMIC_KEY_SHAPES:
+                assert shape not in source, (
+                    f"{path.relative_to(ROOT)} assembles the write-target key name dynamically; "
+                    "this sweep cannot see such a producer, so widen it rather than trusting it"
+                )
+            # A PRODUCER emits the key; a CONSUMER only reads it back out.
+            # `inventory_current_pointer_layouts.py` reports other skills' write targets and
+            # owes no facts of its own, so reading the key is deliberately not enough.
+            emits_key = any(literal in source for literal in _KEY_LITERALS)
+            # No `write_artifact_path` requirement here on purpose: `scaffold_quality_artifact.py`
+            # returns `current_pointer_payload(...)` and never mentions the key, which is
+            # precisely why a literal-only sweep excluded it.
+            builds_by_delegation = "def payload_for(" in source and any(
+                call in source for call in _DELEGATED_PAYLOAD_CALLS
+            )
+            if emits_key or builds_by_delegation:
                 found[str(path.relative_to(ROOT))] = source
-    assert len(found) >= 8, f"the sweep found suspiciously few producers: {sorted(found)}"
+    # Floor set at the count this sweep currently finds, so a producer cannot disappear
+    # silently. Raise it when producers are added; never lower it to make a run pass.
+    assert len(found) >= 11, f"the sweep found fewer producers than it should: {sorted(found)}"
     return found
 
 
@@ -221,7 +265,16 @@ def test_the_owner_stays_importable_with_no_package_context() -> None:
     load-bearing and guarded by nothing, which is the shape this goal is about.
     """
     source = (ROOT / "scripts/scaffold_artifact_lib.py").read_text(encoding="utf-8")
-    forbidden = ("from runtime_bootstrap", "import runtime_bootstrap", "import_repo_module", "from scripts.")
+    # `import scripts.x` is the most natural second spelling of the exact failure mode this
+    # guards, and the first version of the list missed it.
+    forbidden = (
+        "from runtime_bootstrap",
+        "import runtime_bootstrap",
+        "import_repo_module",
+        "from scripts.",
+        "import scripts.",
+        "spec_from_file_location",
+    )
     for token in forbidden:
         assert token not in source, (
             f"scaffold_artifact_lib.py now imports repo machinery ({token}); the ideation "
@@ -313,3 +366,37 @@ def test_the_quality_scaffold_payload_admits_it_would_overwrite_a_finished_revie
     )
     assert record["write_artifact_effect"] == "create_new_file"
     assert record["write_artifact_target_exists"] is False
+
+
+_EFFECT_PROSE_ANCHORS = {
+    "skills/public/quality/SKILL.md": (
+        "write_artifact_effect",
+        "not a green light",
+        "--intent record",
+    ),
+    "skills/public/debug/SKILL.md": (
+        "write_artifact_effect",
+        "overwrite_existing_content",
+        "create_new_file",
+        "not exhaustive",
+    ),
+}
+
+
+def test_the_two_skills_still_explain_how_to_read_the_write_target_facts() -> None:
+    """The prose is the ONLY surface telling an agent how to act on the two new keys.
+
+    A bounded round pointed out that nothing failed if it disappeared — and that this same
+    prose had been rewritten three times and been wrong twice. So the surface with the worst
+    track record in the slice was also its least guarded. This does not check that the prose is
+    CORRECT (a reviewer judges that); it fails if the explanation is deleted, or if it stops
+    naming the hedge and the safe alternative that make it correct.
+    """
+    for relative, anchors in _EFFECT_PROSE_ANCHORS.items():
+        text = " ".join((ROOT / relative).read_text(encoding="utf-8").split())
+        for anchor in anchors:
+            assert anchor in text, (
+                f"{relative} no longer explains {anchor!r}; the write-target facts would be "
+                "emitted with no surface telling an agent what to do with them"
+            )
+
