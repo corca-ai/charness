@@ -1,6 +1,6 @@
 # Achieve Goal: Close every open issue: repair the declaration-to-verdict boundary, then the surfaces that grew on top of it
 
-Status: draft
+Status: active — 6 of the original 19 closed; next action is `#544`
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md`
 
@@ -11,24 +11,18 @@ Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
 
-- Current slice: Slice 0b COMPLETE and the repo is UNBLOCKED. The pre-push gate
-  passes (86 passed, 0 failed) and `main` is pushed at `1849a9b2`. `#529` is
-  CLOSED and verified through the adapter — the first close of this goal.
-- **Root cause of the last blocker, recorded because it wasted the most time:**
-  the gate was not wrong and the coverage was never missing. `reports/mutation/`
-  holds ONE shared coverage data file, and I had a broad producer running in the
-  background while the pre-push gate ran. The two clobbered each other, which is
-  why the same command reported `clean`, then `[51]`, then `[48, 51, 55]`. With
-  nothing else running it passed first try. Do not run a mutation-coverage
-  producer concurrently with a push.
-- **The plan had a hole and this is it.** Slice 0's boundary said "no other slice
-  may claim a green suite before Slice 0 closes" and treated `pytest` as *the*
-  baseline. It is not: the gate that decides whether work may leave this machine
-  is the pre-push gate, and nobody had run it in 13 commits. `Closes #N` only
-  fires on the default branch, so an unpushable repo is a repo where all 19
-  issues stay open no matter how good the local work is. Slice 0b is therefore a
-  prerequisite in exactly the sense Slice 0 was, and the same rule applies: do not
-  weaken a check to reach the green.
+- **Next action: `#544` (runtime-budget drift). Start here.** It is not the most
+  important issue; it is the one most likely to block the next push, and a blocked
+  push blocks every close in this goal. The data is already gathered — see
+  `## Slice 544 Starting Data` below — so this is a decision, not an investigation.
+- Status: 6 issues closed and verified through the adapter (`#529`, `#533`, `#526`,
+  `#541`, `#543`, `#540`). `pytest` is at 0 failures and the pre-push gate passes.
+  `main` is current; the working tree is clean.
+- **Read `## Re-Scope Required` before picking anything else.** The plan assumed 19
+  slice-shaped defects. Three of four issues attempted had a named remedy whose
+  premise did not hold, and one (`#534`) was BUILT green — seven passing tests, clean
+  gate, completed closeout — before a delegated review proved the code could not
+  execute on any input. Verify the premise at design time.
 - Current slice intent: close all 19 open issues by repairing the shared
   declaration-to-verdict boundary first, then the surfaces that accumulated on
   top of it — in an order where each slice's tools already exist.
@@ -223,7 +217,7 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | 3 | Let a repo declare a sub-key ABSENT | #528 | Needs Slice 2's absent/defaulted/declared distinction; deletions currently refill silently | planned |
 | 4 | Reconcile every declared quality surface to a reader or a typed gap (+ awiki) | #518 | The flagship declaration-to-verdict repair; consumes Slices 2-3 | planned |
 | 5 | Repair quality-surface routing and disclosure | #515 | Own contract; reuses #517's existing disclosure floor rather than re-solving it | planned |
-| 6 | Reconcile the declared mirrors and waivers | ~~#526~~, ~~#533~~ | Same family, taken early because both were small and self-contained. **BOTH CLOSED**: #533 carrier `d2921f3c`, #526 carrier `75f66107`, each with an adapter readback | **complete** |
+| 6 | Reconcile the declared mirrors and waivers | ~~#526~~, ~~#533~~ | Same family, taken early because both were small and self-contained. **BOTH CLOSED**: #533 carrier `d2921f3c`, #526 carrier `75f66107` | **complete** |
 | 7 | Deterministic evidence assembly and one-command re-bind | #514, #535 | #535 is the retro finding in #514's own neighborhood; both are "identity bound late and re-bound by hand" | planned |
 | 8 | Stop taxing refactors | #534 | Must precede the two split-heavy slices (#523, #527) or they pay the same tax measured in `8bc8e0e4` | planned |
 | 9 | Make claims and proof levels machine-readable | #525, #524 | `readme-proof.md` is prose no gate reads; the 5-name ladder was 21 classes to a real consumer | planned |
@@ -232,6 +226,68 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | 12 | Decide the prompt-surface deletion policy on measured evidence | #521 | An operator decision answered from Slices 10-11's output, not from the current unmeasured premise | planned |
 | 13 | Reshape the surfaces under the decided policy | #523, #527, #531 | Constrained by #521's answer, measured by #532/#519/#520, untaxed by #534 | planned |
 | 14 | Bundle proof and goal closeout | (none) | Composition can drop what each slice proved in isolation | planned |
+
+## Slice 544 Starting Data
+
+The repo owns the re-derivation tool; do not hand-raise bars one at a time, which is
+the ratchet `#544` is about.
+
+```
+python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root . --suggest-budgets
+```
+
+It emits a paste-ready block derived at **1.4x each label's worst observed run,
+rounded up to 500ms** — the convention stated in the profile header and mechanized as
+`runtime_budget_sizing_lib.SLACK_SUGGESTION_HEADROOM = 1.4`. Current output for the
+labels that matter:
+
+| label | current bar | suggested | worst | n |
+| --- | --- | --- | --- | --- |
+| `check-markdown` | 17000 | 22000 | 15469 | 2494 |
+| `check-secrets` | 19500 | 25000 | 17669 | 2078 |
+| `doc-duplicates` | 11500 | 14000 | 9988 | 1074 |
+| `run-evals` | 3000 | 3500 | 2434 | 2079 |
+
+Three things to carry into the decision:
+
+1. **Every current bar is already below convention.** `check-secrets` was raised to
+   19500 deliberately tighter than its 25000 suggestion, so a blanket paste would
+   silently undo that judgment. Decide per label whether convention or tighter is
+   right; do not paste wholesale.
+2. **The tool warns about itself, and the warning is the useful part**: *"`n=` is the
+   evidence depth behind each bar. A bar drawn from one or two samples is sized from
+   noise, and no later advisory will ever say so."* The four above have n in the
+   thousands, so they are not noise-sized. Check `n` before trusting any other row.
+3. **Raising bars does not address the mechanism.** These checks only ever run inside
+   the concurrent gate phase, so no uncontended sample can exist and every bar
+   encodes contention. `check-secrets` is 7.6s standalone against a 19500 bar. If the
+   answer is only "re-derive", say so explicitly as a decision rather than letting it
+   read as a fix.
+
+## Remaining Work, In Order
+
+1. **`#544`** — runtime-budget drift. Data above. Unblocks future pushes.
+2. **`#535`, `#532`, `#519`/`#520`** — the genuinely slice-shaped group. `#528` is NOT
+   here despite looking ready: the goal's root-before-consumer rule puts it behind
+   `#530`, which is parked.
+3. **`#536`, `#537`, `#538`, `#539`, `#542`** — this session's own filings. Small and
+   independent; each still owes a full closeout floor.
+4. **Premise-check before building**: `#530`, `#534`. Both have a refutation posted as
+   an issue comment. `#534` may not be worth building at all.
+5. **Design passes, not slices**: `#521` (operator decision), `#524`/`#525`
+   (machine-readable contracts), `#531` (prompt surface; interacts with `#521`),
+   then `#523`/`#527` which the ordering claim gates behind `#521`.
+6. **The flagship reconciliation work**: `#515`, `#518`, `#514`. The superseded goal's
+   pre-0 slice built their substrate; nothing there is rebuilt.
+
+Two rules this goal earned by measurement, not preference:
+
+- **When a fix ADDS an exemption, carve-out, or skip path, construct the input that
+  triggers it and show it triggering before trusting a green suite.** `#534`'s tests,
+  gate, and closeout were all consistent with dead code.
+- **A closeout floor is the authorization.** `#526` shipped with one delegated review
+  instead of two under context pressure; it is recorded in that carrier. A session
+  that cannot afford the floor cannot afford the close.
 
 ## Re-Scope Required Before Resuming
 
