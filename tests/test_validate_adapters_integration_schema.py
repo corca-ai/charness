@@ -164,7 +164,12 @@ def test_cli_main_preserves_generic_floor_for_retro_adapter(tmp_path: Path) -> N
     )
 
     assert completed.returncode == 1
-    assert "`version` must be a positive integer" in completed.stderr
+    # The floor this test names -- the gate still refuses a retro adapter with no
+    # `version` -- is unchanged. The MESSAGE changed, deliberately: the old wording
+    # ("must be a positive integer") described the old predicate, which accepted
+    # `version: 9` and `version: true` while every runtime resolver refused them. Keeping
+    # it would have left the gate telling operators a rule it no longer enforces.
+    assert "version is required" in completed.stderr
 
 
 def test_schema_violation_names_offending_key(tmp_path: Path) -> None:

@@ -18,8 +18,8 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 
-_scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
-render_yaml_mapping = _scripts_adapter_lib_module.render_yaml_mapping
+_scripts_render_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_yaml_render_lib")
+render_yaml_mapping = _scripts_render_lib_module.render_yaml_mapping
 _resolve_adapter_module = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
 load_adapter = _resolve_adapter_module.load_adapter
 _SCRATCHPAD_TEMPLATE = Template(

@@ -407,6 +407,55 @@ def parse_failure_error(exc: Exception) -> str:
     return f"adapter could not be parsed: {exc}"
 
 
+# The one adapter schema version every resolver in this repo speaks. It lives here, with
+# the loader the resolvers already share, because the alternative was measured: 17 sites
+# hand-copied a `version` check and 16 of them only asked "is it an int?", then wrote the
+# answer into the resolved payload as authoritative. A repo could declare `version: 9` and
+# every one of those 16 echoed 9 back as if it had been honoured. `bool` is excluded
+# explicitly because `isinstance(True, int)` is True and this module's own scalar coercion
+# turns a bare `true` into `True` -- so `version: true` read as a valid integer version at
+# all 17 sites, including the one that did check a supported value.
+SUPPORTED_ADAPTER_VERSION = 1
+
+
+def validate_adapter_version(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str],
+    *, supported: int | None = None, field: str = "version", required: bool = False,
+) -> None:
+    """Reconcile a declared adapter ``version`` against the version this reader speaks.
+
+    Absent is legal by default and leaves the caller's inferred default in place. A
+    non-integer and an unsupported integer are both errors, and neither writes
+    ``validated[field]``: a version the reader cannot interpret must not come back out as
+    authoritative. Message wording is fixed by existing callers' fixtures and is
+    deliberately not reworded here.
+
+    ``supported`` resolves at CALL time, not at definition time. As a plain default it
+    would bind ``SUPPORTED_ADAPTER_VERSION``'s value once at import, so rebinding the
+    module constant -- which is exactly what a bump, or a test proving the bump path,
+    would do -- changed nothing while appearing to work.
+
+    ``required`` is a parameter rather than a caller-side pre-check because the
+    commit-time gate needs a stricter answer than the resolvers do: it refuses an adapter
+    declaring no version at all, while a resolver falls back to its inferred default.
+    That difference lives here, with the contract, so the strict site does not hand-roll a
+    predicate beside the shared one -- hand-rolled predicates beside a shared check are
+    exactly how 18 sites came to disagree in the first place.
+    """
+    supported = SUPPORTED_ADAPTER_VERSION if supported is None else supported
+    value = data.get(field)
+    if value is None:
+        if required:
+            errors.append(f"{field} is required")
+        return
+    if isinstance(value, bool) or not isinstance(value, int):
+        errors.append(f"{field} must be an integer")
+    elif value != supported:
+        errors.append(f"{field} must be {supported}")
+    else:
+        validated[field] = value
+
+
 def optional_string(value: Any, field: str, errors: list[str]) -> str | None:
     if value is None:
         return None
@@ -441,100 +490,6 @@ def list_field_state(data: dict[str, Any], field: str) -> str:
     if isinstance(value, list) and len(value) == 0:
         return "explicit-empty"
     return "configured"
-
-
-def _string_round_trips_bare(value: str) -> bool:
-    """Would this string parse back as the same string if emitted without quotes?
-
-    A string like ``"true"`` or ``"123"`` is legal YAML text, but emitted bare it
-    reloads as a bool or an int. That silently changes a value's type across a
-    write/read cycle, so such a string has to be quoted.
-    """
-    if value.lower() in ("true", "false", "null", "~"):
-        return False
-    for parse in (int, float):
-        try:
-            parse(value)
-        except ValueError:
-            continue
-        return False
-    return True
-
-
-def _yaml_scalar(value: Any) -> str:
-    if value is None:
-        return "null"
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, str):
-        if (
-            value == ""
-            or value[0] in "*&!@`#{}[],:>|-'\""
-            or any(char in value for char in ("\n", "\r", ": ", "#", "\\"))
-            or value != value.strip()
-            or not _string_round_trips_bare(value)
-        ):
-            escaped = value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n").replace("\r", "\\r")
-            return f'"{escaped}"'
-    return str(value)
-
-
-def _yaml_key(value: Any) -> str:
-    if isinstance(value, str) and ":" in value:
-        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
-        return f'"{escaped}"'
-    return _yaml_scalar(value)
-
-
-def _render_yaml_value(lines: list[str], key: str, value: Any, *, indent: int) -> None:
-    prefix = " " * indent
-    rendered_key = _yaml_key(key)
-    if isinstance(value, dict):
-        lines.append(f"{prefix}{rendered_key}:")
-        for nested_key, nested_value in value.items():
-            _render_yaml_value(lines, nested_key, nested_value, indent=indent + 2)
-        return
-    if isinstance(value, list):
-        if not value:
-            lines.append(f"{prefix}{rendered_key}: []")
-            return
-        lines.append(f"{prefix}{rendered_key}:")
-        for item in value:
-            _render_yaml_list_item(lines, item, indent=indent + 2)
-        return
-    lines.append(f"{prefix}{rendered_key}: {_yaml_scalar(value)}")
-
-
-def _render_yaml_list_item(lines: list[str], item: Any, *, indent: int) -> None:
-    prefix = " " * indent
-    if isinstance(item, dict):
-        first = True
-        for nested_key, nested_value in item.items():
-            item_prefix = f"{prefix}- " if first else f"{prefix}  "
-            rendered_key = _yaml_key(nested_key)
-            if isinstance(nested_value, dict):
-                lines.append(f"{item_prefix}{rendered_key}:")
-                for child_key, child_value in nested_value.items():
-                    _render_yaml_value(lines, child_key, child_value, indent=indent + 4)
-            elif isinstance(nested_value, list):
-                if not nested_value:
-                    lines.append(f"{item_prefix}{rendered_key}: []")
-                else:
-                    lines.append(f"{item_prefix}{rendered_key}:")
-                    for child in nested_value:
-                        _render_yaml_list_item(lines, child, indent=indent + 4)
-            else:
-                lines.append(f"{item_prefix}{rendered_key}: {_yaml_scalar(nested_value)}")
-            first = False
-        return
-    lines.append(f"{prefix}- {_yaml_scalar(item)}")
-
-
-def render_yaml_mapping(items: list[tuple[str, Any]]) -> str:
-    lines: list[str] = []
-    for key, value in items:
-        _render_yaml_value(lines, key, value, indent=0)
-    return "\n".join(lines) + "\n"
 
 
 def plan_generated_write(

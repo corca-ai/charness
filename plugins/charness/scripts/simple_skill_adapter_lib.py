@@ -8,6 +8,7 @@ from scripts.adapter_lib import (
     optional_string,
     parse_failure_error,
     uninterpreted_warnings,
+    validate_adapter_version,
 )
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
 
@@ -158,12 +159,7 @@ def validate_simple_adapter_data(
     warnings: list[str] = []
     validated = infer_simple_adapter_defaults(repo_root, output_dir=output_dir)
 
-    version = data.get("version")
-    if version is not None:
-        if isinstance(version, int):
-            validated["version"] = version
-        else:
-            errors.append("version must be an integer")
+    validate_adapter_version(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

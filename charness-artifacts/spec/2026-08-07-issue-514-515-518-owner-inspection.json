@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "dd43da23e60d76a4974fb30870e1040d50baa763fdf9686aa62cb17043f7032f",
+  "inspection_identity": "7c15ae902769cfcd38a988d77ef4af3fc48e60aa9ac0713f17b64540a5fad73d",
   "issues": [
     514,
     515,
@@ -102,7 +102,7 @@
       "note": "Adapter resolution and, as of this slice, the issue_source_capture capability contract. The capture adapter loads this module rather than reimplementing resolution so the receipt records the same adapter identity the issue lane resolves.",
       "path": "skills/public/issue/scripts/resolve_adapter.py",
       "role": "issue-adapter-resolver",
-      "sha256": "e6e493107742fce7fd9edcbef1e468f70afedad37284ffa18d18f2677dd20999"
+      "sha256": "e4e76a80bd70049f152997c953f82d8c34fbc52fb93e220b2aded67dc2c12aaf"
     },
     {
       "issue": 514,

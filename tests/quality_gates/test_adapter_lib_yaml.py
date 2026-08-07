@@ -4,7 +4,7 @@ import importlib.util
 
 import pytest
 
-from .support import ADAPTER_LIB, ROOT
+from .support import ADAPTER_LIB, ADAPTER_RENDER_LIB, ROOT
 
 VALIDATORS_SPEC = importlib.util.spec_from_file_location(
     "adapter_validators_under_test",
@@ -16,7 +16,7 @@ VALIDATORS_SPEC.loader.exec_module(ADAPTER_VALIDATORS)
 
 
 def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping(
+    rendered = ADAPTER_RENDER_LIB.render_yaml_mapping(
         [
             ("version", 1),
             ("repo", "demo"),
@@ -37,7 +37,7 @@ def test_adapter_lib_renders_and_loads_simple_yaml_mapping() -> None:
 
 
 def test_adapter_lib_renders_and_loads_list_of_mappings() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping(
+    rendered = ADAPTER_RENDER_LIB.render_yaml_mapping(
         [
             (
                 "startup_probes",
@@ -128,7 +128,7 @@ def test_adapter_lib_loads_quoted_mapping_keys_with_colons() -> None:
 
 
 def test_adapter_lib_renders_mapping_keys_with_colons_as_quoted_keys() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping(
+    rendered = ADAPTER_RENDER_LIB.render_yaml_mapping(
         [
             (
                 "runtime_budgets",
@@ -156,7 +156,7 @@ def test_adapter_lib_loads_single_quoted_mapping_keys_with_escaped_quotes() -> N
 
 
 def test_adapter_lib_renders_newline_scalars_as_round_trippable_escapes() -> None:
-    rendered = ADAPTER_LIB.render_yaml_mapping([("body", "line1\nline2")])
+    rendered = ADAPTER_RENDER_LIB.render_yaml_mapping([("body", "line1\nline2")])
     assert rendered == 'body: "line1\\nline2"\n'
     assert ADAPTER_LIB.load_yaml(rendered) == {"body": "line1\nline2"}
 

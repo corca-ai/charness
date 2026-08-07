@@ -25,11 +25,44 @@ COMPACT_SUBAGENT_BLOCK = "\n".join(
     ]
 )
 
-CODEX_PROFILE_POLICY = "\n".join(
+# The `## Skill Routing` block that marks a repo charness-managed. The subagent-model
+# check only fires for a managed repo, so both polarity fixtures below need it.
+CHARNESS_MANAGED_SKILL_ROUTING = "\n".join(
+    [
+        "# Agents",
+        "",
+        "## Skill Routing",
+        "",
+        "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use installed skill metadata and model judgment.",
+        "Run the read-only `charness catalog list` only when hidden availability is unclear.",
+        "External URL sources route through gather before deciding.",
+        "Validation work goes through quality first.",
+        "A SessionStart hook is context-only, not a classifier.",
+        "",
+    ]
+)
+
+# The superseded Codex-specific block, kept as a NEGATIVE fixture. Commit 353fa4a5
+# removed it from AGENTS.md because a host-specific model id does not belong in the
+# contract; a doc still carrying only this must NOT satisfy the per-host check, or the
+# validator would bless exactly the shape the contract now forbids.
+SUPERSEDED_CODEX_PROFILE_POLICY = "\n".join(
     [
         "Charness-spawned subagents use Codex MultiAgent V2.",
         "Every Charness-spawned agent uses gpt-5.6-terra with medium reasoning effort.",
         'Use fork_turns: "none" because fork_turns: "all" rejects those overrides.',
+    ]
+)
+
+# What the contract asserts today, and what the check now requires.
+SUBAGENT_MODEL_POLICY = "\n".join(
+    [
+        "",
+        "## Subagent Delegation",
+        "",
+        "**Subagent model/effort defaults are per-host, not one global value.**",
+        "Use the host's own subagent controls, inheriting the session model by default.",
+        "A host-specific model or flag request belongs in that host's adapter or preset, not here.",
     ]
 )
 
@@ -58,7 +91,7 @@ def _run_inspect(repo: Path) -> dict[str, object]:
 def _seed_repo(repo: Path) -> None:
     (repo / "docs").mkdir(parents=True)
     (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / "AGENTS.md").write_text(COMPACT_SUBAGENT_BLOCK + CODEX_PROFILE_POLICY, encoding="utf-8")
+    (repo / "AGENTS.md").write_text(COMPACT_SUBAGENT_BLOCK + SUPERSEDED_CODEX_PROFILE_POLICY, encoding="utf-8")
     (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
     (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
 
@@ -109,9 +142,9 @@ def test_setup_inspect_reports_missing_charness_dynamic_and_codex_profile_polici
         item["id"]: item for item in payload["agent_docs"]["normalization"]["recommendations"]
     }
     assert "agents_missing_charness_dynamic_workflow_policy" in findings
-    assert "agents_missing_codex_subagent_profile_policy" in findings
+    assert "agents_missing_subagent_model_policy" in findings
     assert recommendations["agents_missing_charness_dynamic_workflow_policy"]["priority"] == "review_required"
-    assert recommendations["agents_missing_codex_subagent_profile_policy"]["priority"] == "review_required"
+    assert recommendations["agents_missing_subagent_model_policy"]["priority"] == "review_required"
 
 
 def test_setup_inspect_ignores_ordinary_charness_mentions(tmp_path: Path) -> None:
@@ -128,7 +161,7 @@ def test_setup_inspect_ignores_ordinary_charness_mentions(tmp_path: Path) -> Non
     findings = {finding["type"] for finding in normalization["findings"]}
     assert normalization["charness_subagent_policy"]["charness_managed"] is False
     assert "agents_missing_charness_dynamic_workflow_policy" not in findings
-    assert "agents_missing_codex_subagent_profile_policy" not in findings
+    assert "agents_missing_subagent_model_policy" not in findings
 
 
 def test_setup_inspect_recognizes_live_charness_policy_with_inline_code() -> None:
@@ -139,10 +172,80 @@ def test_setup_inspect_recognizes_live_charness_policy_with_inline_code() -> Non
     assert normalization["charness_subagent_policy"] == {
         "charness_managed": True,
         "dynamic_workflow_complete": True,
-        "codex_subagent_profile_complete": True,
+        "subagent_model_policy_complete": True,
     }
     assert "agents_missing_charness_dynamic_workflow_policy" not in findings
-    assert "agents_missing_codex_subagent_profile_policy" not in findings
+    assert "agents_missing_subagent_model_policy" not in findings
+
+
+def test_the_superseded_codex_block_alone_does_not_satisfy_the_per_host_check(tmp_path: Path) -> None:
+    """Direction, not presence.
+
+    The check used to REQUIRE the Codex model-id tokens; commit 353fa4a5 deleted that
+    block from AGENTS.md because a host-specific model id does not belong in the
+    contract, and the validator was not moved with it -- so it demanded exactly what the
+    contract had just forbidden, and main went red.
+
+    These two cases pin the repaired direction by constructing both inputs: a doc
+    carrying ONLY the superseded Codex block must NOT satisfy the check, and a doc
+    carrying the per-host policy must. A presence-only assertion would be satisfied by a
+    validator that had the polarity backwards.
+    """
+    repo = tmp_path / "repo"
+    _seed_repo(repo)
+    (repo / "AGENTS.md").write_text(
+        CHARNESS_MANAGED_SKILL_ROUTING + SUPERSEDED_CODEX_PROFILE_POLICY, encoding="utf-8"
+    )
+
+    normalization = _run_inspect(repo)["agent_docs"]["normalization"]
+
+    assert normalization["charness_subagent_policy"]["subagent_model_policy_complete"] is False
+    assert "agents_missing_subagent_model_policy" in {
+        finding["type"] for finding in normalization["findings"]
+    }
+
+
+def test_the_per_host_subagent_model_policy_satisfies_the_check(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_repo(repo)
+    (repo / "AGENTS.md").write_text(
+        CHARNESS_MANAGED_SKILL_ROUTING + SUBAGENT_MODEL_POLICY, encoding="utf-8"
+    )
+
+    normalization = _run_inspect(repo)["agent_docs"]["normalization"]
+
+    assert normalization["charness_subagent_policy"]["subagent_model_policy_complete"] is True
+    assert "agents_missing_subagent_model_policy" not in {
+        finding["type"] for finding in normalization["findings"]
+    }
+
+
+def test_the_policy_phrases_do_not_count_from_outside_the_subagent_section(tmp_path: Path) -> None:
+    """Scope, not just presence.
+
+    Read document-wide, the three required phrases could be scattered across unrelated
+    sections -- a changelog line, a doc-comment, a quoted note -- and satisfy the check
+    while `## Subagent Delegation` said nothing about subagent models. Without this case
+    the scoping is unproven: every other fixture puts the phrases inside the section, so
+    a whole-document check passes all of them.
+    """
+    repo = tmp_path / "repo"
+    _seed_repo(repo)
+    (repo / "AGENTS.md").write_text(
+        CHARNESS_MANAGED_SKILL_ROUTING
+        + "\n## Subagent Delegation\n\n- Spawn bounded reviewers when the contract calls for them.\n"
+        + "\n## Notes\n\n"
+        + "- Historical: subagent model/effort defaults are per-host was added, moving the\n"
+        + "  model id into that host's adapter or preset and inheriting the session model.\n",
+        encoding="utf-8",
+    )
+
+    normalization = _run_inspect(repo)["agent_docs"]["normalization"]
+
+    assert normalization["charness_subagent_policy"]["subagent_model_policy_complete"] is False
+    assert "agents_missing_subagent_model_policy" in {
+        finding["type"] for finding in normalization["findings"]
+    }
 
 
 def test_setup_inspect_does_not_treat_generic_gpt_adapter_as_codex_policy(tmp_path: Path) -> None:

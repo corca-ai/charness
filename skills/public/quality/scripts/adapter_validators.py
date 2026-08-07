@@ -10,7 +10,7 @@ import re
 from pathlib import PurePosixPath, PureWindowsPath
 from typing import Any
 
-from scripts.adapter_lib import optional_string, optional_string_list
+from scripts.adapter_lib import optional_string, optional_string_list, validate_adapter_version
 from scripts.quality_policy_defaults import validate_skill_ergonomics_gate_rules
 
 RUNTIME_PROFILE_ID_RE = re.compile(r"^[A-Za-z0-9_.-]+$")
@@ -53,11 +53,7 @@ LIST_FIELDS = (
 
 
 def validate_version_field(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:
-    version = data.get("version")
-    if isinstance(version, int):
-        validated["version"] = version
-    elif version is not None:
-        errors.append("version must be an integer")
+    validate_adapter_version(data, validated, errors)
 
 
 def apply_string_fields(data: dict[str, Any], validated: dict[str, Any], errors: list[str]) -> None:

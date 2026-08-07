@@ -25,6 +25,7 @@ _scripts_simple_skill_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_s
 load_adapter_contract = _scripts_simple_skill_adapter_lib_module.load_adapter_contract
 _scripts_adapter_lib_module = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.adapter_lib")
 optional_string = _scripts_adapter_lib_module.optional_string
+validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
 
 STRING_FIELDS = ("repo", "language", "output_dir", "preset_id", "preset_version", "customized_from")
 OPTIONAL_PATH_FIELDS = ("ledger_path", "ledger_schema", "completion_audit_command")
@@ -91,12 +92,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     warnings: list[str] = []
     validated = infer_repo_defaults(repo_root)
 
-    version = data.get("version")
-    if version is not None:
-        if isinstance(version, int):
-            validated["version"] = version
-        else:
-            errors.append("version must be an integer")
+    validate_adapter_version(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

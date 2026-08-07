@@ -23,6 +23,7 @@ load_yaml_file = _adapter_lib_module.load_yaml_file
 load_yaml_file_report = _adapter_lib_module.load_yaml_file_report
 uninterpreted_warnings = _adapter_lib_module.uninterpreted_warnings
 parse_failure_error = _adapter_lib_module.parse_failure_error
+validate_adapter_version = _adapter_lib_module.validate_adapter_version
 
 def _load_capture_capability():
     """Load the sibling capability module from either the source or installed layout.
@@ -272,12 +273,7 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         for line in uninterpreted_warnings(uninterpreted)
     )
 
-    version = raw_data.get("version")
-    if version is not None:
-        if isinstance(version, int):
-            data["version"] = version
-        else:
-            errors.append("version must be an integer")
+    validate_adapter_version(raw_data, data, errors)
 
     for field in ("default_org", "default_repo", "remote_name"):
         value = _string(raw_data.get(field), field, errors)

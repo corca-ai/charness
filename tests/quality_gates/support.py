@@ -23,6 +23,14 @@ assert ADAPTER_LIB_SPEC is not None and ADAPTER_LIB_SPEC.loader is not None
 ADAPTER_LIB = importlib.util.module_from_spec(ADAPTER_LIB_SPEC)
 ADAPTER_LIB_SPEC.loader.exec_module(ADAPTER_LIB)
 
+# The YAML emitter now lives beside the parser rather than inside it. Round-trip tests
+# need both halves, so both are loaded here instead of one re-exporting the other.
+ADAPTER_RENDER_LIB_PATH = ROOT / "scripts" / "adapter_yaml_render_lib.py"
+ADAPTER_RENDER_LIB_SPEC = importlib.util.spec_from_file_location("adapter_yaml_render_lib", ADAPTER_RENDER_LIB_PATH)
+assert ADAPTER_RENDER_LIB_SPEC is not None and ADAPTER_RENDER_LIB_SPEC.loader is not None
+ADAPTER_RENDER_LIB = importlib.util.module_from_spec(ADAPTER_RENDER_LIB_SPEC)
+ADAPTER_RENDER_LIB_SPEC.loader.exec_module(ADAPTER_RENDER_LIB)
+
 
 def _load_script_module(module_name: str, module_path: Path):
     spec = importlib.util.spec_from_file_location(module_name, module_path)

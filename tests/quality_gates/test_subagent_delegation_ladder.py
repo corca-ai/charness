@@ -654,6 +654,26 @@ def test_the_shipped_setup_template_satisfies_BOTH_readers_of_the_contract() -> 
     assert inspector._missing_snippets(template, inspector.FRESH_EYE_COMPACT_REQUIRED_SNIPPETS) == []
     assert inspector.fresh_eye_compact_contract_present(template) is True
 
+    # THIRD reader, added after it split from the writer exactly as #476 predicts.
+    # `_detect_charness_subagent_policy` reads AGENTS.md for the per-host subagent
+    # model/effort policy. When the contract dropped the baked Codex model id, the reader
+    # was moved and this template was not, so charness shipped a template its own
+    # inspector flagged. Pinned against the REAL template for the same reason as above.
+    docs = _load_module("scripts/setup_agent_docs_lib.py", "_sad_tmpl")
+    policy, _ = docs._detect_charness_subagent_policy(
+        "# Agents\n\n## Skill Routing\n\n"
+        "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use "
+        "installed skill metadata and model judgment.\n"
+        "Run the read-only `charness catalog list` only when hidden availability is unclear.\n"
+        "External URL sources route through gather before deciding.\n"
+        "Validation work goes through quality first.\n"
+        "A SessionStart hook is context-only, not a classifier.\n\n" + template
+    )
+    assert policy["subagent_model_policy_complete"] is True, (
+        "a repo set up from this template would be flagged for missing the per-host "
+        "subagent model policy the template is supposed to write"
+    )
+
 
 def test_a_repo_set_up_from_the_shipped_template_reads_as_adopted(
     tmp_path: Path, resolver, validator, observer

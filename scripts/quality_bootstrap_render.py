@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from scripts.adapter_lib import render_yaml_mapping
+from scripts.adapter_yaml_render_lib import render_yaml_mapping
 
 
 def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str]) -> str:

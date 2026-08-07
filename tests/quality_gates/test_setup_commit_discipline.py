@@ -82,16 +82,27 @@ def test_greenfield_template_fragments_live_in_template_assets() -> None:
     ).read_text(encoding="utf-8") == host_docs.COMPACT_SUBAGENT_DELEGATION
 
 
-def test_greenfield_template_sets_clean_codex_override_context() -> None:
+def test_greenfield_template_states_the_per_host_subagent_model_policy() -> None:
+    """This test used to REQUIRE the template to name `gpt-5.6-terra`.
+
+    The contract reversed: a host-specific model id belongs in that host's adapter or
+    preset, because naming one in a contract file bakes it in and it goes stale silently.
+    The reader (`setup_agent_docs_lib._detect_charness_subagent_policy`) was moved to the
+    per-host framing while this writer was left naming a model, so charness would have
+    shipped a template its own inspector flags -- the same two-spellings-of-one-contract
+    split that #476 exists to prevent, one contract later.
+
+    The absence assertion is the load-bearing half. Requiring the per-host phrases alone
+    would still pass on a template that ALSO baked in a model id, which is exactly the
+    state this repair exists to leave behind.
+    """
     agents_text = render_agents_template(skill_routing_markdown=_SKILL_ROUTING_BLOCK)
 
-    assert "every Charness-spawned coding, review," in agents_text
-    assert "dynamic-workflow subagent" in agents_text
-    assert "gpt-5.6-terra" in agents_text
-    assert "`medium`" in agents_text
-    assert '`fork_turns: "none"`' in agents_text
-    assert '`fork_turns: "all"`' in agents_text
-    assert "rejects caller-provided model/reasoning overrides" in agents_text
+    assert "Subagent model/effort defaults are per-host" in agents_text
+    assert "adapter or preset" in agents_text
+    assert "inheriting the session model" in agents_text
+    assert "gpt-5.6-terra" not in agents_text, "the template baked a model id back into the contract"
+    assert "fork_turns" not in agents_text, "host-specific spawn flags belong in that host's adapter"
     assert "## Dynamic Workflows" in agents_text
     assert "when the agent judges it earns its cost" in agents_text
     assert "A higher-priority system, developer, or host instruction may prohibit" in agents_text

@@ -21,13 +21,13 @@
   effort unless it says otherwise; that is a per-adapter default, not a claim
   that every subagent is medium. If the required adapter or tier cannot be
   applied, stop and report the concrete signal.
-- In Codex MultiAgent V2, pass the adapter's model, reasoning-effort, and
-  `fork_turns` fields explicitly. For every Charness-spawned coding, review,
-  and dynamic-workflow subagent, request `gpt-5.6-terra` with `medium`
-  reasoning effort when Codex exposes those controls. Use `fork_turns: "none"`
-  unless a bounded parent-history count is needed: Codex V2 defaults to
-  `fork_turns: "all"`, which rejects caller-provided model/reasoning overrides.
-  This is Codex-specific; other hosts use their own adapter mappings.
+- Subagent model/effort defaults are per-host, not one global value. Use the
+  host's own subagent controls and its typed agents where they exist,
+  inheriting the session model by default; choose a different tier only when
+  the task clearly warrants it. A host-specific model or flag request belongs
+  in that host's adapter or preset, not here — naming a model id in this file
+  bakes it into the contract and it goes stale silently. When a higher-priority
+  policy restricts per-subagent controls, proceed and state that limitation.
 
 ## Dynamic Workflows
 

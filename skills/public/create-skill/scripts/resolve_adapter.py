@@ -21,6 +21,7 @@ _adapter_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scrip
 load_yaml_file = _adapter_lib.load_yaml_file
 list_field_state = _adapter_lib.list_field_state
 optional_string = _adapter_lib.optional_string
+validate_adapter_version = _adapter_lib.validate_adapter_version
 optional_string_list = _adapter_lib.optional_string_list
 
 ADAPTER_CANDIDATES = (
@@ -39,7 +40,6 @@ STRING_LIST_FIELDS = (
     "topology_verification_hints",
 )
 HOST_EXTENSION_FIELD = "host_extensions"
-SUPPORTED_VERSION = 1
 KNOWN_FIELDS = ("version", *STRING_FIELDS, *STRING_LIST_FIELDS, HOST_EXTENSION_FIELD)
 
 
@@ -62,15 +62,7 @@ def validate_adapter_data(data: dict[str, Any], repo_root: Path) -> tuple[dict[s
     warnings: list[str] = []
     validated = infer_repo_defaults(repo_root)
 
-    version = data.get("version")
-    if version is not None:
-        if isinstance(version, int):
-            if version == SUPPORTED_VERSION:
-                validated["version"] = version
-            else:
-                errors.append(f"version must be {SUPPORTED_VERSION}")
-        else:
-            errors.append("version must be an integer")
+    validate_adapter_version(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

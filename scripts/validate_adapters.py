@@ -14,6 +14,7 @@ REPO_ROOT = repo_root_from_script(__file__)
 
 _scripts_adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _scripts_adapter_lib_module.load_yaml_file
+validate_adapter_version = _scripts_adapter_lib_module.validate_adapter_version
 _scripts_cautilus_adapter_lib_module = import_repo_module(__file__, "scripts.cautilus_adapter_lib")
 load_cautilus_adapter = _scripts_cautilus_adapter_lib_module.load_cautilus_adapter
 _scripts_critique_adapter_lib_module = import_repo_module(__file__, "scripts.critique_adapter_lib")
@@ -256,7 +257,27 @@ def validate_adapter_integration_schema(path: Path) -> None:
         raise ValidationError(f"{path}: rejected by integration schema {schema_path}: {exc.message}") from exc
 
 
+def _require_declared_version(path: Path) -> None:
+    """The commit-time version floor, hoisted ABOVE the per-adapter early returns.
+
+    Left below them, `cautilus-adapter.yaml` and `critique-adapter.yaml` returned before
+    ever reaching it, so the floor covered 14 of 16 `.agents/*-adapter.yaml` files while
+    reading as if it covered all of them. Their resolvers treat an absent version as
+    legal -- correctly, for a resolver -- so those two files had no required-version
+    verdict anywhere. Running first also means the version answer does not depend on
+    which resolver branch a filename happens to match.
+    """
+    data = load_yaml_file(path)
+    if not isinstance(data, dict):
+        raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
+    errors: list[str] = []
+    validate_adapter_version(data, {}, errors, required=True)
+    if errors:
+        raise ValidationError(f"{path}: {'; '.join(errors)}")
+
+
 def validate_adapter_yaml(path: Path) -> None:
+    _require_declared_version(path)
     if path.name == "cautilus-adapter.yaml" and path.parent.name == ".agents":
         payload = load_cautilus_adapter(path.parent.parent.resolve())
         if not payload["valid"]:
@@ -278,9 +299,14 @@ def validate_adapter_yaml(path: Path) -> None:
     data = load_yaml_file(path)
     if not isinstance(data, dict):
         raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
-    version = data.get("version")
-    if not isinstance(version, int) or version < 1:
-        raise ValidationError(f"{path}: `version` must be a positive integer")
+    # The version verdict now runs in `_require_declared_version`, above the early
+    # returns. It was the 18th site and the one that disagreed hardest: the predicate it
+    # used to carry accepted every value the resolvers refuse -- `version: 9` (a positive
+    # integer) and `version: true` (`isinstance(True, int)` is True and `True < 1` is
+    # False). This gate is also the ONLY version verdict `.agents/cautilus-adapters/*.yaml
+    # ` gets, since those files have no per-skill resolver. A commit-time gate that passes
+    # what every runtime reader refuses is a false green on the surface whose whole job is
+    # to catch a bad adapter BEFORE it ships.
     repo = data.get("repo")
     if not isinstance(repo, str) or not repo:
         raise ValidationError(f"{path}: `repo` must be a non-empty string")

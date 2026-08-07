@@ -15,7 +15,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.adapter_lib import load_yaml, render_yaml_mapping
+from scripts.adapter_lib import load_yaml
+from scripts.adapter_yaml_render_lib import render_yaml_mapping
 from scripts.quality_adapter_lib import (
     ABSENCE_STRUCTURAL_FIELDS,
     PATH_BEARING_ABSENCE_FIELDS,

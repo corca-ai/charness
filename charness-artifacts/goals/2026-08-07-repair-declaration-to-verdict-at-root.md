@@ -1,7 +1,8 @@
 # Achieve Goal: Repair the declaration-to-verdict boundary at its root, as a generative sequence
 
-Status: draft
+Status: active
 Created: 2026-08-07
+Activated: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md`
 
 This file is the living goal scratchpad. It becomes active only when the user
@@ -9,14 +10,49 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md` after confirming the draft is
-  still intended.
+- Current slice: Slice 1 — make one declared field answerable: reconcile adapter
+  `version` across all 17 resolver sites.
+- Current slice intent: replace 17 hand-copied inline `version` blocks with ONE
+  shared contract check in `scripts/adapter_lib.py`, so an adapter declaring an
+  unsupported `version` is refused everywhere instead of echoed back as
+  authoritative at 16 of 17 sites. This names the reviewable-intent unit in
+  progress and the commits it spans; critique and broad proof do not re-fire
+  within one unchanged intent (meaningful-slice-cadence).
+- Premise check (verdict BEFORE the build): **HOLDS, and is slightly worse than
+  stated.** Measured at activation — 17 non-plugin sites carry a `version`
+  check; 16 accept ANY integer and write it into `validated["version"]` as
+  authoritative; exactly one
+  (`skills/public/create-skill/scripts/resolve_adapter.py`) compares against a
+  `SUPPORTED_VERSION`. All 17 import `scripts/adapter_lib.py` already, so the
+  shared seam exists and needs no new plumbing. Blast radius is zero as claimed:
+  all 17 `.agents/*.yaml` and all shipped `adapter.example.yaml` files declare
+  `version: 1`. NEW fact the goal did not predict: `isinstance(version, int)` is
+  True for `bool`, and this repo's own YAML loader coerces bare `true`/`false`
+  to `bool` — so `version: true` is currently accepted as an integer version at
+  ALL 17 sites, including the one that enforces a supported value.
+- Round-1 review (2 bounded reviewers): found an 18th unrouted site
+  (`scripts/validate_adapters.py`, which accepted `version: 9` AND `version: true`
+  and is the only version verdict `.agents/cautilus-adapters/*.yaml` gets), a test
+  row proving a two-line pass-through instead of the real quality resolver, a
+  vacuous payload assertion, an import-time-bound `supported` default, a dead
+  constant, and an under-covering blast-radius glob. All repaired.
+- Round-2 review (1 bounded reviewer reading the REPAIRS): the round earned its
+  keep exactly as the contract predicts — the round-1 fix CARRIED THE CLASS IT
+  FIXED. Moving the AGENTS.md reader to per-host framing left the setup TEMPLATE
+  still writing a baked model id, so charness would have shipped a template its
+  own inspector flags: one reader/writer split traded for another. Also found the
+  new required-version floor skipped `cautilus-adapter.yaml` and
+  `critique-adapter.yaml` via early returns (14 of 16 covered while reading as
+  16 of 16), and that requiredness had been re-hand-rolled beside the shared
+  check. All repaired; round-2 repairs are accepted-unreviewed per the two-round
+  cap.
+- Proof: 7762 passed / 0 failed, including the pre-existing red this slice
+  repaired. 11 mutants constructed against the new verdict paths, 11 killed, 0
+  survived — counted from a re-run, not from memory. The one mutant that first
+  SURVIVED (section-scoping of the AGENTS.md policy check) is why the count is
+  reported rather than assumed.
+- Next action: Slice 2 — the reader registry. `scripts/adapter_lib.py` now has
+  82 lines of headroom, which slice 1 had to create before slice 2 could use it.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -237,16 +273,62 @@ per the bullets above when that boundary is crossed):
 
 ## Discuss Before Activation
 
-- Confirm the reframe: this goal is measured by whether the repo can refuse an
-  unreconciled declaration, NOT by issues closed. The predecessor's 16 remaining
-  issues stay in the tracker and are picked up when a slice's work reaches them
-  or in a later goal.
-- Confirm slice 2's warn-vs-refuse tier is the operator's call and may be
-  answered mid-goal from slice 2's measurement, rather than blocking activation.
-- Confirm that `#521` and the `#532`/`#519`/`#520` instrument chain are out of
-  scope here rather than deferred inside it.
+CONFIRMED at activation (2026-08-07) by two operator acts read together: the
+checked-in [handoff](../../docs/handoff.md) `## Workflow Trigger` names
+"activate the root-repair goal and run **Slice 1**" as the next pickup, and the
+operator then ran the `/goal` activation on this exact artifact. Each item
+below is resolved on that basis; nothing here is assumed silently.
+
+- RESOLVED — the reframe stands: this goal is measured by whether the repo can
+  refuse an unreconciled declaration, NOT by issues closed. The predecessor's
+  remaining open issues stay in the tracker and are picked up when a slice's own
+  work reaches them, or in a later goal. The handoff states this reframe in the
+  operator's own checked-in words ("measured by one question ... not by issues
+  closed"), which is the confirmation.
+- RESOLVED — slice 2's warn-vs-refuse tier is the operator's call and does NOT
+  block activation. It stays in `## Operator Decision Queue` with its unblock
+  action (slice 2's measured unknown-key count) and is answered mid-goal.
+  Slices 3 and 4 consume slice 2's typed states either way, so the deferral
+  changes the teeth, not the seam.
+- RESOLVED — `#521` and the `#532`/`#519`/`#520` instrument chain are OUT OF
+  SCOPE here, not deferred inside. They were ordered into the predecessor only
+  to answer `#521`; outside the close-everything frame they need their own
+  justification, which is an `## Operator Decision Queue` entry.
+
+Non-claim about this confirmation: it is an inference from two operator acts,
+not a fresh per-item answer in this session's transcript. If any item was meant
+differently, say so and the goal reshapes — the three resolutions above are the
+only place activation depends on them.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — reconcile adapter `version` across all 17 resolver sites
+
+- Objective: Make ONE declared adapter field answerable everywhere, and prove the "one shared contract check, applied consistently" pattern that slices 2-4 reuse, on the smallest surface with measured zero blast radius.
+- Why this approach: VERDICT BEFORE THE BUILD: HOLDS, and understated. Measured 17 non-plugin sites carrying a `version` check. 16 accepted ANY integer and wrote it into the resolved payload as authoritative; exactly one (`skills/public/create-skill/scripts/resolve_adapter.py`) compared against a local `SUPPORTED_VERSION`. All 17 already import `scripts/adapter_lib.py`, so the shared seam existed and needed no new plumbing. Blast radius zero as predicted: all 17 `.agents/*.yaml` and all shipped `adapter.example.yaml` declare `version: 1`. NEW fact the goal did not predict: `isinstance(True, int)` is True and this repo's own YAML loader coerces a bare `true` to `True`, so `version: true` read as a valid integer version at ALL 17 sites -- including the one site that did enforce a supported value.
+- Commits:
+- What changed: Added `SUPPORTED_ADAPTER_VERSION` and `validate_adapter_version()` to `scripts/adapter_lib.py` and routed all 17 sites through it, deleting 17 hand-copied inline blocks. Absent stays legal; a bool, a non-integer, and an unsupported integer are each refused, and none of them writes `validated['version']` -- a version the reader cannot interpret no longer comes back out as authoritative. `create-skill`'s local `SUPPORTED_VERSION` became an alias of the shared constant rather than a second source of truth. Existing error wording preserved exactly (`version must be an integer`, `version must be 1`) so existing fixtures keep their meaning. `scripts/adapter_lib.py` was at 459/480 code lines and the shared check pushed it to exactly 480/480 -- passing, but leaving zero headroom for slices 2 and 3, which both need this module. Per the length gate's own prescribed response (separate a concept; do NOT shave lines to stay under the bar), the YAML EMITTER moved whole into `scripts/adapter_yaml_render_lib.py`, a clean data->text boundary against the parser and field validators that remain. `adapter_lib` deliberately does not re-export the moved names, because a re-exporting companion would dodge the cap rather than separate the concept. Result: 398/480, 82 lines of headroom.
+- Alternatives rejected: Rejected: warning instead of refusing an unsupported version. The in-repo precedent (`create-skill`) already ERRORED, so warning everywhere would have resolved the 17-way disagreement by weakening the one site that was right. D46's consumer-population reasoning argues against arming refusals from a repo-local zero, but it governs uninterpreted LINES, not a version the reader provably cannot interpret: an unknown key may be a legal extension in a consumer's world, while an unsupported schema version cannot be honoured by definition. Rejected: shaving the new helper's docstring to fit `adapter_lib.py` under its cap. That is the evasion the length gate names by name, and it would have left slices 2-3 with zero headroom in the module they both need.
+- Targeted verification: New `tests/quality_gates/test_adapter_version_reconciliation.py`: 70 passing cases, 17 of 17 sites covered, 0 exempt. Per site it CONSTRUCTS the refused declaration (version 9, version true, version "1") and asserts BOTH that the refusal fires AND that the bad value does not survive into the resolved payload -- a test asserting only that an error appeared would pass on a resolver refusing for an unrelated reason. A polarity control asserts `version: 1` stays clean at every site, so a check that refused the supported value could not hide behind the refusal tests. The blast-radius measurement is kept executable rather than recorded as prose: a test fails and names the file if any repo-local adapter stops declaring version 1. pytest tests/ -q: 7747 passed, 1 failed. The single failure (`test_setup_inspect_recognizes_live_charness_policy_with_inline_code`) is PRE-EXISTING on main -- reproduced at HEAD in a detached worktree before any of this slice's changes. validate_packaging / validate_packaging_committed / validate_adapters / validate_skills / check_skill_ownership_overlap / validate_public_skill_validation / validate_public_skill_dogfood / check_python_lengths / check_doc_links / validate_skill_ergonomics / check_boundary_bypass_ratchet / check_test_repo_copy_invariants / gitignore_scan_hygiene / check-python-lint: all pass. Root->plugin synced before validators. Fired with 18 new code families, and the cause is worth recording because it inverts the obvious reading. Collapsing the 6-line version block did not ADD duplication -- it REVEALED duplication that was always there. The block sat in the middle of each resolver's `validate_adapter_data` body and split an otherwise identical preamble/epilogue (`errors`/`warnings`/`infer_repo_defaults`/STRING_FIELDS loop/CHANGE_ME warning/return) into two sub-threshold runs. One line per family is mine. Verified by reading two members side by side rather than inferred. Disposition: 18 families scoped-accepted into the gate baseline (not classified `intentional`, because they ARE fixable) plus 5 membership-reduction rotations; the real repair is a shared resolver contract, which is slice 2/3 territory and is filed rather than bundled here. Two later families WERE classified `intentional` in dup-review.json: one is literally the shared `validate_adapter_version` call site (consistent use of a shared helper looks like a clone of every other use), the other an import preamble. Editing `skills/public/issue/scripts/resolve_adapter.py` correctly staled the checked-in #514/#515/#518 owner-inspection freeze, which binds that file's digest. Re-froze with the repo's own `validate_issue_source_freeze.py refreeze`, whose docstring names re-freezing as the routine response to exactly this. Safe because the locator was inspected for the `issue_source_capture` capability contract and this slice's diff to that file touches only version validation plus one import binding -- confirmed by reading the diff, not assumed.
+- Test duplication pressure: The 4 new test functions are parametrized across one SITES table rather than written per resolver, so adding a resolver adds a row, not a test. Duplicate pressure checked with check_dup_ratchet: the new test file introduced no fixable family of its own.
+- Critique: Round-1 bounded fresh-eye review pending; this slice changes verdict logic on a proof surface, so it owes round 1 and round 2.
+- Off-goal findings: The unknown-KEY half of #530 (slice 2's reader registry) is untouched. The resolver-body duplication the ratchet revealed is recorded, not repaired. The pre-existing `codex_subagent_profile_complete` failure is diagnosed but repaired in a separate commit. FINDING (pre-existing, main is red at HEAD): `test_setup_inspect_recognizes_live_charness_policy_with_inline_code` fails on unmodified HEAD. Cause traced: commit `353fa4a5` deliberately removed the Codex model-id profile block from AGENTS.md (the contract now says a host-specific model id belongs in an adapter or preset, because naming one in the contract file goes stale silently), but `scripts/setup_agent_docs_lib.py` still REQUIRES the exact tokens `gpt-5.6-terra`, `medium reasoning effort`, and `fork_turns: "none"` in AGENTS.md. This is this goal's own root class one layer over: a validator whose declaration nobody reconciled against the surface it reads.
+- Lessons carried forward: A shared check can make a gate fire by REVEALING duplication rather than adding it. The dup ratchet's 18 new families were pre-existing clones unmasked by removing the 6 lines that had been splitting them; reading two members side by side took a minute and inverted the disposition entirely. A gate result is evidence about the tree, not about the diff, and the difference is only visible if you read the members. The premise check paid for itself again, in the direction the goal predicted least: the premise HELD, and checking it still surfaced a defect the goal had not predicted (`version: true` accepted as an integer at all 17 sites, including the compliant one).
+- Metrics: No remote CI claim, no push, no release, no Cautilus run, no issue closed. Mutation coverage of the new verdict path is NOT yet reported from a re-run and remains owed before slice closeout. Consumer-repo adapter behavior is unobserved: the blast-radius measurement covers THIS repo's adapters only, and a consumer declaring a version other than 1 will now be refused where it was previously accepted silently -- that is the intended behavior change, not an unmeasured side effect, but no consumer repo was read to confirm none does so.
+
+### Slice 2: Slice 1 addendum — public-skill scenario-registry decision (Cautilus planner follow-ups)
+
+- Objective: Record the decision the closeout gate requires before it will pass: whether this slice's public-skill edits change any skill's consumer contract or need new/changed evaluator scenario coverage.
+- Why this approach: The gate flagged 9 public skills because their helper scripts changed. It is right to ask; the answer has to be reasoned, not waved through.
+- Commits:
+- What changed: DECISION: no dogfood re-freeze and no scenario-registry change. Every public-skill edit in this slice is the same mechanical substitution -- a 6-line inline `version` block replaced by one call to `validate_adapter_version`, plus one module-attribute binding line. Net -72/+24 lines across 12 files, and no skill gained, lost, or reworded a command, flag, payload key, artifact path, or operator-facing message. The one behavior change is the shared one under review: an adapter declaring an unsupported version is now refused instead of echoed back. That is a change to the ADAPTER CONTRACT, which `docs/public-skill-dogfood.json` does not model per skill, and it is already covered by 81 constructed-input cases across all 18 sites plus 11 killed mutants. A dogfood re-freeze here would re-record unchanged consumer contracts and make the next real change harder to see.
+- Alternatives rejected: Rejected: running `cautilus evaluate` to settle it. It is a Non-Goal of this goal, needs a separate explicit operator grant, and could not answer the question anyway -- the scenarios exercise skill workflows, not adapter version validation.
+- Targeted verification: Basis for the decision, not assertion: `git diff --stat skills/public/` shows 12 files at -72/+24 with no signature, CLI, or output change; the full suite is 7762 passed / 0 failed; and the version contract's own proof is the 81-case table with 0 exempt sites. Acknowledged with `--ack-cautilus-skill-review` after recording this.
+- Test duplication pressure: n/a — no tests added by this addendum.
+- Critique: Round 1 (2 reviewers) and round 2 (1 reviewer reading the repairs) both complete; this addendum records a gate decision, not new verdict logic.
+- Off-goal findings: Two length WARNs surfaced and are recorded rather than acted on: scripts/setup_agent_docs_lib.py at 462/480 and skills/public/quality/scripts/adapter_validators.py at 332/360. Neither is over its cap. Splitting either is a separate concept-separation decision, and this slice already carried one such split.
+- Lessons carried forward: The gate asked a question this slice could answer cheaply and precisely because the edit was uniform. A slice whose public-skill edits were heterogeneous could not have answered it in one paragraph -- which is an argument for keeping mechanical substitutions in their own slice.
+- Metrics: Non-claim: no Cautilus run, no evaluator observation, no consumer-repo dogfood execution. This is a reasoned decision from the diff and the suite, not evaluator evidence.
 
 ## Context Sources
 

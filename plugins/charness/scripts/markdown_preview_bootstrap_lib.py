@@ -6,7 +6,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import plan_generated_write, render_yaml_mapping
+from scripts.adapter_lib import plan_generated_write
+from scripts.adapter_yaml_render_lib import render_yaml_mapping
 
 LIB_REPO_ROOT = Path(__file__).resolve().parents[1]
 CONFIG_SEARCH_PATHS = (

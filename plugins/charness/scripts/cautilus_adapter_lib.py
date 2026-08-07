@@ -3,7 +3,12 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
+from scripts.adapter_lib import (
+    load_yaml_file,
+    optional_string,
+    optional_string_list,
+    validate_adapter_version,
+)
 
 ADAPTER_PATH = Path(".agents/cautilus-adapter.yaml")
 ARTIFACT_PATH = "charness-artifacts/cautilus/latest.md"
@@ -158,12 +163,7 @@ def validate_cautilus_adapter_data(
     warnings: list[str] = []
     validated = infer_cautilus_defaults(repo_root, run_mode="adaptive")
 
-    version = data.get("version")
-    if version is not None:
-        if isinstance(version, int):
-            validated["version"] = version
-        else:
-            errors.append("version must be an integer")
+    validate_adapter_version(data, validated, errors)
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)

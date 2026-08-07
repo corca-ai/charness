@@ -6,7 +6,8 @@ import argparse
 from collections.abc import Callable
 from pathlib import Path
 
-from scripts.adapter_lib import render_yaml_mapping, write_adapter_scaffold
+from scripts.adapter_lib import write_adapter_scaffold
+from scripts.adapter_yaml_render_lib import render_yaml_mapping
 
 
 def base_adapter_items(

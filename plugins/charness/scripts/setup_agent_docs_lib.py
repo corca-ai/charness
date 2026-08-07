@@ -42,7 +42,7 @@ FINDING_RECOMMENDATION_PRIORITIES = {
     "critique_adapter_missing_for_fresh_eye_review": "review_required",
     "critique_adapter_codex_profile_drift": "review_required",
     "agents_missing_charness_dynamic_workflow_policy": "review_required",
-    "agents_missing_codex_subagent_profile_policy": "review_required",
+    "agents_missing_subagent_model_policy": "review_required",
     "skill_routing_block_custom_or_drifted": "review_required",
     "charness_artifacts_commit_policy_drift": "review_required",
     "commit_discipline_drift": "review_required",
@@ -204,7 +204,6 @@ def _detect_critique_adapter_normalization(
 def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object], list[dict[str, str]]]:
     """Report missing Charness-specific standing policies without rewriting AGENTS.md."""
 
-    lowered = " ".join(agents_text.lower().translate(str.maketrans("", "", "`*~")).split())
     charness_managed = skill_routing_declares_charness_management(
         extract_section(agents_text, "## Skill Routing")
     )
@@ -218,15 +217,43 @@ def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object
         token in dynamic_section
         for token in ("standing request", "earns its cost", "higher-priority", "host")
     )
+    # This check used to require the literal tokens `gpt-5.6-terra`, `medium reasoning
+    # effort`, and `fork_turns: "none"` in AGENTS.md. Commit 353fa4a5 deliberately
+    # DELETED that block, because the contract now says a host-specific model id belongs
+    # in that host's adapter or preset -- "naming one in this file bakes a model id into
+    # the contract and it goes stale silently". The validator was not moved with it, so
+    # it demanded the exact tokens the contract had just forbidden, and main went red.
+    #
+    # That is this repo's own recurring defect: a declaration no executable reader was
+    # reconciled against. The tokens below track what the contract actually asserts now
+    # -- that the default is PER-HOST, that a model id lives in an adapter or preset
+    # rather than here, and that the session model is inherited by default -- and
+    # deliberately name no model id, so a model bump cannot stale this gate again.
+    # Scoped to `## Subagent Delegation`, not the whole document, matching
+    # `dynamic_complete` above. Read document-wide, the three phrases could be scattered
+    # across unrelated sections and still satisfy the check.
+    #
+    # KNOWN LIMIT, stated rather than implied: this is substring matching, so it has no
+    # polarity. A section that says "the claim that subagent model/effort defaults are
+    # per-host is wrong -- pin the model here rather than in that host's adapter or
+    # preset, and never rely on inheriting the session model" contains all three tokens
+    # and passes. The tokens are also near-verbatim from the contract they check, so a
+    # rewording reddens this without any behavior changing. What the check DOES buy is
+    # narrow and real: it can no longer be satisfied by the superseded model-id block,
+    # and the negative fixture in the tests proves that direction. Making it semantic is
+    # tracked, not claimed.
+    subagent_section = " ".join(
+        extract_section(agents_text, "## Subagent Delegation")
+        .lower()
+        .translate(str.maketrans("", "", "`*~"))
+        .split()
+    )
     profile_complete = all(
-        token in lowered
+        token in subagent_section
         for token in (
-            "every charness-spawned",
-            "gpt-5.6-terra",
-            "medium reasoning effort",
-            'fork_turns: "none"',
-            'fork_turns: "all"',
-            "rejects those overrides",
+            "subagent model/effort defaults are per-host",
+            "adapter or preset",
+            "inheriting the session model",
         )
     )
     findings: list[dict[str, str]] = []
@@ -241,16 +268,16 @@ def _detect_charness_subagent_policy(agents_text: str) -> tuple[dict[str, object
     if charness_managed and not profile_complete:
         findings.append(
             {
-                "type": "agents_missing_codex_subagent_profile_policy",
-                "message": "Charness-managed AGENTS.md is missing the Codex Terra/medium/fork_turns default-profile policy.",
-                "recommended_action": "add_codex_subagent_default_profile_policy",
+                "type": "agents_missing_subagent_model_policy",
+                "message": "Charness-managed AGENTS.md is missing the per-host subagent model/effort default policy.",
+                "recommended_action": "add_subagent_model_default_policy",
             }
         )
     return (
         {
             "charness_managed": charness_managed,
             "dynamic_workflow_complete": dynamic_complete,
-            "codex_subagent_profile_complete": profile_complete,
+            "subagent_model_policy_complete": profile_complete,
         },
         findings,
     )
