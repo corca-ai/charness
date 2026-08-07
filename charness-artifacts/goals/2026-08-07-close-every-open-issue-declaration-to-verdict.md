@@ -5,7 +5,12 @@ plan's central premise is measurably wrong; read `## Re-Scope Required` and the
 Slice 538 entry before continuing.** 24 issues are open, MORE than the 19 this
 goal was drafted against.
 Created: 2026-08-07
-Activation: `/goal @charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md`
+Activation: SUPERSEDED — do not activate this file. Its diagnosis held and its
+Slice Log is durable evidence, but its SHAPE ("close all 19") is measurably not
+reachable: it closed 8 and the open set grew, because honest reviews surface real
+defects faster than closes remove them. Successor:
+`charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md`,
+which keeps the diagnosis and repairs the root the ordering claim always named.
 
 Supersedes `charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md`
 (pre-0 complete, committed as `8bc8e0e4`). That goal's frozen source, capture
@@ -366,6 +371,7 @@ Two rules earned by measurement, not by preference:
 
 ## Coordination Cues
 
+- Successor goal: charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md
 - Routing: `achieve` owns the goal; `debug` for the bug-class issues before their
   fixes; `quality` for #515/#518/#526/#533 proof planning and the awiki
   integration; `spec` for the #524/#525 machine-readable contracts;

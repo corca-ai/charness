@@ -196,6 +196,46 @@ of exactly two:
   chunker reasons over. Prefer this when the improvement is real but larger than
   the current goal's scope, or needs its own design.
 
+## Reading The Closeout-Shape Preflight
+
+`describe_goal_closeout_shape.py --goal-path <artifact>` renders each conditional
+floor live from the validator, so the missing-line set is discovered before
+drafting rather than by failing the flip.
+
+Worked example: a goal that names and closes a tracked issue sees
+`issue_closeout` MISSING until `## Coordination Cues` carries
+`Issue closeout: <ref>` (or an `n/a — <reason>` opt-out). The successor-goal floor
+below behaves the same way, except that it is triggered for every goal rather
+than by a boundary the goal happened to touch.
+
+## Successor Goal
+
+The last closeout act is designing the next goal, recorded as a
+`Successor goal: <path>` line in `## Coordination Cues`. The floor is
+unconditional — every completing goal triggers it — and
+`check_goal_artifact.py` refuses the flip to `complete` without either that line
+or an explicit `Successor goal: n/a — <reason>` opt-out of at least 30
+characters.
+
+Why it is a floor and not a suggestion: the closing goal is the only place that
+still holds what the session measured about this repo's REAL shape — which
+remedies did not survive their premise check, which reviews found the issue
+wrong, which structural root stayed parked and why. A completion that does not
+spend that turns it into prose nobody re-reads, and the next session re-derives
+it at full cost or, worse, repeats the refuted move.
+
+Design it from what was LEARNED, not from what is left over. A successor that is
+just the unfinished backlog re-listed has skipped the step: the backlog is
+already in the tracker, and re-listing it carries none of this run's judgment
+about which items are slice-shaped, which are design passes, and which are
+blocked behind a root nobody has re-measured. Prefer a **generative sequence** —
+each slice creating the conditions the next one needs — anchored at the
+structural root rather than at whatever is cheapest to close.
+
+The opt-out exists for exactly one case: the operator said not to. Writing it
+makes that instruction durable past the session it was given in, which a silent
+omission does not.
+
 Which of the two — apply now vs file for next session — is the **agent's
 judgment**, weighing the improvement's size against the current goal's scope.
 What is **not** optional: leaving an improvement as prose-only retro memory is

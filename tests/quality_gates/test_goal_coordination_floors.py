@@ -993,3 +993,54 @@ def test_phase_routing_control_routed_work_still_passes_with_fences() -> None:
 
     assert report["phase_routing_floor"]["satisfied"] is True
     assert report["ok"] is True
+
+
+# --- successor-goal floor (unconditional at completion) ---------------------
+
+
+def _cues(body: str, created: str = "2026-08-07") -> dict:
+    report: dict = {}
+    cf.apply_coordination_floors(
+        report, f"# Goal\nCreated: {created}\n\n## Coordination Cues\n\n{body}\n"
+    )
+    return report["successor_goal_floor"]
+
+
+def test_the_successor_goal_floor_triggers_on_every_in_scope_goal() -> None:
+    """Unlike gather/release/issue-closeout, the trigger is not a boundary the
+    goal happened to touch. Every completing goal has learned something, so the
+    only question is whether the next goal gets it."""
+    floor = _cues("- Routing: impl owns the slices")
+
+    assert floor["triggered"] is True
+    assert floor["satisfied"] is False
+    assert "designing its successor" in floor["reason"]
+
+
+def test_a_named_successor_satisfies_the_floor() -> None:
+    floor = _cues(
+        "- Routing: impl\n"
+        "- Successor goal: charness-artifacts/goals/2026-08-08-repair-the-root.md"
+    )
+
+    assert floor["satisfied"] is True
+    assert floor["evidence"] == "ref"
+
+
+def test_only_a_substantive_opt_out_can_decline_a_successor() -> None:
+    """The opt-out is where "do not design one" gets said out loud. A one-word
+    bypass would let the floor be discharged by typing `n/a`, which is how a
+    standing operator instruction quietly stops applying."""
+    assert _cues("- Successor goal: n/a — nope")["satisfied"] is False
+    assert (
+        _cues("- Successor goal: n/a — operator asked for no successor this cycle")[
+            "satisfied"
+        ]
+        is True
+    )
+
+
+def test_the_successor_floor_grandfathers_goals_created_before_it() -> None:
+    assert cf.successor_goal_floor_applies("Created: 2026-08-07\n") is True  # inclusive
+    assert cf.successor_goal_floor_applies("Created: 2026-08-06\n") is False
+    assert _cues("- Routing: impl", created="2026-08-06")["triggered"] is False

@@ -126,10 +126,10 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
    - the closeout-shape script's missing-line set is the contract for every
      conditional floor (disposition, coordination, timebox, and the rest):
      `describe_goal_closeout_shape.py --goal-path <artifact>` renders each one
-     live from the validator, so nothing here is re-derived or restated.
-     Worked example: a goal that names and closes a tracked issue sees
-     `issue_closeout` MISSING until `## Coordination Cues` carries
-     `Issue closeout: <ref>` (or an `n/a — <reason>` opt-out).
+     live from the validator, so nothing here is re-derived or restated
+   - **design the successor goal from what this run LEARNED, not what is left
+     over, and record `Successor goal: <path>` in `## Coordination Cues`** — the
+     last closeout act, required at every completion
    - run `check_goal_artifact.py`, then flip status to `complete`
    - if the artifact names `current HEAD`/`HEAD is` with an immutable SHA, make
      the SHA match the live `git rev-parse HEAD` result or mark it historical
@@ -162,7 +162,8 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
   metadata/model judgment (never an inline phase→skill map; use the catalog only
   for hidden availability facts) and, at completion, `Routing:` / `Gather:`
   / `Release:` / `Issue closeout:` evidence (or an `n/a — <reason>` opt-out)
-  whenever the matching closeout floor is triggered
+  whenever the matching closeout floor is triggered, plus a `Successor goal:`
+  line at EVERY completion
 - a `## Closeout Binding Plan` with minimum fields shaped before activation; semantic values and final identity remain closeout proof
 
 ## Guardrails

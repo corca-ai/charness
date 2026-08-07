@@ -15,6 +15,13 @@ from typing import Any
 # The floors landed around 2026-05-30; the cutoff grandfathers same-day in-flight goals.
 COORDINATION_FLOOR_RULE_DATE = date(2026, 5, 31)
 ISSUE_CLOSEOUT_FLOOR_RULE_DATE = date(2026, 6, 2)
+# A goal that ends without designing its successor spends the session's most
+# expensive asset -- what it just learned about this repo's real shape -- and then
+# drops it. Unlike the three floors above, this one is UNCONDITIONAL in scope: the
+# trigger is "a goal is closing", not "this goal touched a boundary". The opt-out
+# is where "do not design one" gets said out loud, which is the only form of that
+# instruction that survives the session it was given in.
+SUCCESSOR_GOAL_FLOOR_RULE_DATE = date(2026, 8, 7)
 
 # Long enough that an opt-out cannot be a one-word bypass.
 MIN_OPTOUT_REASON = 30
@@ -30,6 +37,10 @@ _GATHER_REF = re.compile(r"^[\s>*-]*Gather\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE |
 _RELEASE_REF = re.compile(r"^[\s>*-]*Release\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
 _ISSUE_CLOSEOUT_REF = re.compile(
     r"^[\s>*-]*Issue\s+closeout\s*:\s*(\S.*?)[ \t]*$",
+    re.MULTILINE | re.IGNORECASE,
+)
+_SUCCESSOR_GOAL_REF = re.compile(
+    r"^[\s>*-]*Successor\s+goal\s*:\s*(\S.*?)[ \t]*$",
     re.MULTILINE | re.IGNORECASE,
 )
 _NA_VALUE = re.compile(r"^n/?a\b[ \t]*[—–:-]+[ \t]*(\S.*)$", re.IGNORECASE)
@@ -70,6 +81,16 @@ def coordination_floors_apply(text: str) -> bool:
     """Whether the gather/release floors fire for this goal (grandfather-by-
     ``Created``-date). Fail-CLOSED: a missing/malformed ``Created`` is in-scope."""
     return is_floor_in_scope(goal_created_date(text), COORDINATION_FLOOR_RULE_DATE)
+
+
+def successor_goal_floor_applies(text: str) -> bool:
+    """Whether the successor-goal floor fires for this goal.
+
+    Scope only, not a trigger test: once in scope this floor is ALWAYS triggered,
+    because every closing goal has learned something and the question is only
+    whether the next one gets it.
+    """
+    return is_floor_in_scope(goal_created_date(text), SUCCESSOR_GOAL_FLOOR_RULE_DATE)
 
 
 def issue_closeout_floor_applies(text: str) -> bool:
@@ -227,6 +248,27 @@ def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
         )
         report["issue_closeout_floor"]["reason"] = reason
         missing.append({"floor": "issue_closeout", "reason": reason})
+
+    s_scope = successor_goal_floor_applies(text)
+    s_kind, _ = _parse_step(section, _SUCCESSOR_GOAL_REF)
+    s_ok = (not s_scope) or s_kind in _SATISFYING
+    report["successor_goal_floor"] = {
+        "in_scope": s_scope,
+        "rule_date": SUCCESSOR_GOAL_FLOOR_RULE_DATE.isoformat(),
+        "triggered": s_scope,
+        "satisfied": s_ok,
+        "evidence": s_kind,
+    }
+    if s_scope and not s_ok:
+        reason = (
+            "this goal is closing without designing its successor: `## Coordination Cues` "
+            "records no `Successor goal: <path-or-ref>` line and no "
+            "`Successor goal: n/a — <reason>` opt-out (>=30 chars). Design the next goal from "
+            "THIS run's measured lessons, patterns, and structural findings -- the operator "
+            "asked for the closeout to end there -- or say out loud why none is wanted"
+        )
+        report["successor_goal_floor"]["reason"] = reason
+        missing.append({"floor": "successor_goal", "reason": reason})
 
     if missing:
         report["coordination_missing"] = missing

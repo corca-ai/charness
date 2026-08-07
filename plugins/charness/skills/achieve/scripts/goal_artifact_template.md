@@ -82,6 +82,12 @@ below. Fill during the run:
   `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
   tracked issue appears in `## Context Sources` as context only, use
   `Issue closeout: n/a — <reason>`.
+- **Successor goal step** — required at EVERY completion, not conditionally. Add
+  a `Successor goal:` line naming the next goal artifact this run's lessons
+  designed, or write `Successor goal: n/a — <reason>` to say out loud that none
+  is wanted. The closing goal is the only place that still holds what the session
+  measured about this repo's real shape; a completion that does not spend it
+  throws that away, and the next session re-derives it.
 
 Routing step line — record it on ONE physical line so the floor reads the whole
 value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the

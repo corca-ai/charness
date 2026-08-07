@@ -216,6 +216,7 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
         ("gather", "gather_floor", "`Gather:` routes the external source through gather"),
         ("release", "release_floor", "`Release:` verifies the release surface"),
         ("issue_closeout", "issue_closeout_floor", "`Issue closeout:` stages the tracked-issue close"),
+        ("successor_goal", "successor_goal_floor", "`Successor goal:` designs the next goal from this run's lessons"),
     ):
         floor = ev.get(sub, {})
         rows.append({"floor": key, "label": label, "triggered": bool(floor.get("triggered")),
