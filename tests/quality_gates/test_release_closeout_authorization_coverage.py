@@ -35,6 +35,24 @@ from tests.closeout_authorization_world import build_protected_world
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RELEASE_SCRIPTS = REPO_ROOT / "skills" / "public" / "release" / "scripts"
+# The production files this suite measures, written as repo-relative literals.
+#
+# This is not decoration. The pre-push changed-line lane maps tests to files
+# TEXTUALLY (`suggest_mutation_coverage_command`), and every path below is otherwise
+# assembled as `RELEASE_SCRIPTS / "..."` — a variable the mapper cannot follow. With no
+# match it instruments no test for these files and blocks them as uncovered, which is a
+# FALSE STOP: the coverage exists and the broad producer measures it at 100%/86%/85%.
+# That is the same mapper blind spot the producer's own docstring already records for
+# `seed_dup_review.py`, hit from the other side.
+#
+# Keeping the list here rather than widening the mapper's regex is deliberate: a literal
+# says which production files this suite claims to cover, which a reader can check.
+COVERS = (
+    "skills/public/release/scripts/release_closeout_authorization.py",
+    "skills/public/release/scripts/release_issue_closeout.py",
+    "skills/public/release/scripts/release_issue_closeout_message.py",
+)
+
 AUTHZ_PATH = RELEASE_SCRIPTS / "release_closeout_authorization.py"
 CLOSEOUT_PATH = RELEASE_SCRIPTS / "release_issue_closeout.py"
 
