@@ -173,7 +173,7 @@ def authorize_closeout(
     have said so was unreachable. The promise is withdrawn rather than left standing over
     code that cannot keep it. Making it real requires knowing the carrier SOURCE — on the
     commit-hook path the two sets are halves of one carrier and GitHub closes both, so
-    aggregation is correct there — which is a contract change tracked on its own issue.
+    aggregation is correct there — which is a contract change tracked as #542.
     """
     if crosswalk is None:
         try:
@@ -261,7 +261,7 @@ def authorize_closeout(
     # both-sides-singleton refinement, each broke a real ingress test.
     #
     # The branch is removed rather than left unreachable so that nothing here reads as a
-    # protection that exists. The open design question is tracked on the issue.
+    # protection that exists. The open design question is tracked as #542.
     if len(distinct) != 1:
         return _refusal(
             "not_singleton",

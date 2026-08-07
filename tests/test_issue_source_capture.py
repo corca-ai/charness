@@ -842,3 +842,32 @@ def test_rewrapping_a_bullet_does_not_change_its_clause_digest() -> None:
         return inventory["issues"][0]["source_units"][0]["clauses"][0]["clause_digest"]
 
     assert digest("- one long bullet that wraps") == digest("- one long bullet\n  that wraps")
+
+
+def test_a_backend_that_returns_a_different_issue_is_refused(tmp_path: Path) -> None:
+    """The escape: the payload is stamped with the REQUESTED number, not the returned one.
+
+    Without this refusal a backend answering #999 to a request for #514 produces a
+    snapshot labelled #514 carrying #999's title, body and comments — and the freeze
+    receipt binds its digest, which is what closeout authorization reads. The query
+    already selects `number`, so the disagreement was observable and simply discarded.
+
+    Found by the delegated resolution critique of the fix for the unreachable
+    `missing_issue` guard: the comment left behind claimed this comparison existed.
+    """
+    payload = json.dumps({
+        "data": {"repository": {"issue": {
+            "number": 999, "title": "other", "body": "- a criterion", "state": "OPEN",
+            "url": "u",
+            "comments": {"totalCount": 0, "pageInfo": {"hasNextPage": False, "endCursor": None}, "nodes": []},
+        }}}
+    })
+    with pytest.raises(CaptureRefusal) as excinfo:
+        capture_issue(
+            repo="corca-ai/charness", number=514,
+            backend={"id": "gh", "binary": "gh", "commands": None}, capability=CAPABILITY,
+            runner=lambda argv: subprocess.CompletedProcess(argv, 0, payload, ""),
+        )
+    assert excinfo.value.code == "wrong_issue"
+    assert "514" in str(excinfo.value) and "999" in str(excinfo.value)
+

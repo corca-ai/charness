@@ -184,6 +184,19 @@ def capture_issue(
         issue = _require(payload, "data.repository.issue", page_index)
         if issue is None:
             raise CaptureRefusal("missing_issue", f"{repo}#{number} was not returned by the backend")
+        # The backend's OWN number, not the one we asked for. Without this the returned
+        # payload is stamped with the REQUESTED number at the bottom of this function, so a
+        # backend that answers #999 to a request for #514 yields a snapshot labelled #514
+        # carrying #999's title, body and comments -- and the freeze receipt binds its
+        # digest, which is what closeout authorization reads. The escape is concrete rather
+        # than theoretical: the query already selects `number`, so the disagreement is
+        # observable and was simply discarded.
+        returned_number = issue.get("number")
+        if returned_number is not None and returned_number != number:
+            raise CaptureRefusal(
+                "wrong_issue",
+                f"asked {repo}#{number}, backend returned #{returned_number}",
+            )
         issue_payload = issue
         page = _page_comments(payload, page_index, capability)
         total_count = page["total_count"]
@@ -282,9 +295,11 @@ def capture_issues(
     # No cross-check of `numbers` against the captured numbers here on purpose. The one
     # that used to sit at this spot could not fail: `capture_issue(number=number)` always
     # returns a dict carrying that same `number`, so the difference was always empty. It
-    # read as defence in depth and provided none. The real "requested issue did not come
-    # back" refusal lives inside `capture_issue`, which compares the BACKEND's answer to
-    # the requested number and is exercised by its own test.
+    # read as defence in depth and provided none. `capture_issue` owns both real refusals:
+    # `missing_issue` when the backend returns no issue, and `wrong_issue` when it returns
+    # a DIFFERENT one than was asked for -- the second added here, because the first
+    # version of this very comment claimed a backend-answer comparison that did not exist,
+    # which is the defect this issue was filed about, re-created in its own fix.
     return captured
 
 

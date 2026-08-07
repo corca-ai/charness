@@ -350,7 +350,7 @@ def test_invoked_and_carrier_targets_that_disagree_still_refuse_as_an_aggregate(
     `not_singleton` is not a placeholder here. On the commit-hook path the two sets are
     halves of ONE carrier and GitHub auto-closes both numbers on push, so aggregation is
     the correct reading. A distinct disagreement refusal would have to know the carrier
-    source; that is tracked on its own issue, and until it exists this is the honest code.
+    source; that is tracked as #542, and until it exists this is the honest code.
     """
     _crosswalk(tmp_path)
 
