@@ -165,10 +165,15 @@ def authorize_closeout(
 
     `invoked_target_set` is what the caller ASKED to close (CLI target, manual
     declaration); `carrier_target_set` is what the carrier's CONTENT would close
-    (body close keywords, staged artifact). They are kept apart until the very end so
-    a disagreement between them is a distinct, nameable refusal rather than a silent
-    union — "the CLI said #514 and the body said #999" is a different bug from "this
-    carrier closes two issues", and an operator needs to be told which one happened.
+    (body close keywords, staged artifact).
+
+    They are AGGREGATED, and every multi-target case refuses as `not_singleton`. An
+    earlier version of this docstring promised that a disagreement between the two sets
+    was reported as its own distinct refusal; it never was, because the branch that would
+    have said so was unreachable. The promise is withdrawn rather than left standing over
+    code that cannot keep it. Making it real requires knowing the carrier SOURCE — on the
+    commit-hook path the two sets are halves of one carrier and GitHub closes both, so
+    aggregation is correct there — which is a contract change tracked on its own issue.
     """
     if crosswalk is None:
         try:
@@ -241,30 +246,22 @@ def authorize_closeout(
             "content alone (this is what makes close-with-comment declare its target explicitly)",
             target=None, **base,
         )
-    # `target_disagreement` is checked BEFORE the singleton rule, and only for the case it
-    # actually names: BOTH sides declare exactly one target and those targets DIFFER.
+    # There is deliberately NO `target_disagreement` refusal here, and the reason is
+    # recorded because it is not obvious.
     #
-    # It used to sit after the singleton check, where it was unreachable -- by then
-    # `distinct` held one key and both operand sets were non-empty subsets of it, so they
-    # could never differ. A real disagreement (`--invoked 514 --carrier 518`) produced two
-    # keys and was reported as `not_singleton`: "this carrier closes two issues", when the
-    # actual problem is that the CLI and the body name DIFFERENT issues. Wrong remedy.
+    # One used to sit AFTER the singleton check, where it could never fire: `distinct`
+    # already held one key and both operand sets were non-empty subsets of it. Moving it
+    # earlier makes it reachable but CHANGES A VERDICT MESSAGE ON THE COMMIT-HOOK PATH,
+    # and wrongly: there, `invoked` and `carrier` are not "a declaration and the body to
+    # check it against" -- they are two halves of ONE carrier, and GitHub auto-closes both
+    # numbers on push. So a commit whose message closes #518 while its staged artifact
+    # closes #9001 IS the aggregate/split case, and `not_singleton` is the right answer.
+    # A `target_disagreement` refusal would have to know the carrier SOURCE to be correct,
+    # which is a contract change, not a reordering. Measured: the naive reorder, and then a
+    # both-sides-singleton refinement, each broke a real ingress test.
     #
-    # The both-singleton guard is what keeps the split-carrier case where it belongs:
-    # invoked {514} with carrier {514, 999} is a carrier closing two issues, not a
-    # disagreement, and must stay `not_singleton`.
-    #
-    # Neither ordering can change an authorize-vs-refuse verdict -- both arms refuse. Only
-    # the refusal the operator is told changes, and the specific one is now reachable.
-    invoked_keys = {_key(item) for item in invoked}
-    carrier_keys = {_key(item) for item in carrier}
-    if len(invoked_keys) == 1 and len(carrier_keys) == 1 and invoked_keys != carrier_keys:
-        return _refusal(
-            "target_disagreement",
-            f"invoked target(s) {sorted(invoked_keys)} disagree with carrier-derived "
-            f"target(s) {sorted(carrier_keys)}",
-            target=None, **base,
-        )
+    # The branch is removed rather than left unreachable so that nothing here reads as a
+    # protection that exists. The open design question is tracked on the issue.
     if len(distinct) != 1:
         return _refusal(
             "not_singleton",

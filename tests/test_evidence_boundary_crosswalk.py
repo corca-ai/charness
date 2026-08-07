@@ -340,35 +340,31 @@ def test_two_protected_issues_in_one_carrier_are_refused(tmp_path: Path) -> None
     assert result["refusal"] == "not_singleton"
 
 
-def test_invoked_and_carrier_targets_that_disagree_are_named_as_a_disagreement(tmp_path: Path) -> None:
-    """A distinct refusal from `not_singleton` on purpose.
+def test_invoked_and_carrier_targets_that_disagree_still_refuse_as_an_aggregate(tmp_path: Path) -> None:
+    """Pinned to the EXACT code, because the hedge here hid unreachable code.
 
-    "the CLI said #514 and the body said #518" is a different operator mistake from
-    "this carrier closes two issues", and collapsing them would hand the author the
-    wrong remedy.
+    This assertion used to read `in {"not_singleton", "target_disagreement"}` and always
+    took the first arm -- the disagreement branch sat after the singleton check and could
+    never fire, so a docstring promise outlived the code's ability to keep it.
+
+    `not_singleton` is not a placeholder here. On the commit-hook path the two sets are
+    halves of ONE carrier and GitHub auto-closes both numbers on push, so aggregation is
+    the correct reading. A distinct disagreement refusal would have to know the carrier
+    source; that is tracked on its own issue, and until it exists this is the honest code.
     """
     _crosswalk(tmp_path)
 
     result = _authorize(tmp_path, [514], [518])
 
-    # This assertion used to read `in {"not_singleton", "target_disagreement"}`, and it
-    # always took the `not_singleton` arm -- the disagreement branch sat after the
-    # singleton check and was unreachable. The hedge is what let the docstring above claim
-    # a distinct refusal that the code could not produce. Pin the exact code.
-    assert result["refusal"] == "target_disagreement"
-    assert "514" in result["detail"] and "518" in result["detail"]
+    assert result["refusal"] == "not_singleton"
 
 
-def test_a_carrier_that_is_a_superset_of_the_invoked_target_is_still_split_not_disagreement(
+def test_a_carrier_that_is_a_superset_of_the_invoked_target_also_refuses_as_an_aggregate(
     tmp_path: Path,
 ) -> None:
-    """The boundary between the two refusals, which a plain reorder gets wrong.
-
-    invoked {514} with carrier {514, 999} is a carrier closing two issues -- the split
-    that cannot be evidenced independently -- not the CLI and the body naming different
-    issues. Reporting `target_disagreement` here would hand back the wrong remedy in the
-    opposite direction from the bug this pair of tests exists to pin.
-    """
+    """The neighbouring case, pinned so a future disagreement refusal cannot quietly
+    swallow it: invoked {514} with carrier {514, 999} is a carrier closing two issues,
+    which is the split that cannot be evidenced independently."""
     _crosswalk(tmp_path)
 
     assert _authorize(tmp_path, [514], [514, 999])["refusal"] == "not_singleton"
