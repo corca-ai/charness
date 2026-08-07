@@ -1,6 +1,6 @@
 # Achieve Goal: Arm the verdict, then close the false-green cluster
 
-Status: active
+Status: complete
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster.md`
 
@@ -9,51 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slices 1 (`#530`) and 2 (`#554` part 1) are DONE through
-  `50407fab`. Both ran round-1 AND round-2 bounded review; round 2 found real
-  blockers in both. Final boundary gate: 86 passed, 0 failed, 0 UNPROVEN.
-  Slice 3 (`#518`) next.
-- Current slice intent: the WARN tier is ARMED for `unknown` only, across 37
-  adapters (18 repo-owned + 19 shipped examples) plus the flattened
-  `skills/<id>/` layout the export produces. `reader-elsewhere` and
-  `text-asserted` stay reported-but-unarmed on measured evidence.
-- Next action: Slice 3 (`#518`, reconcile every declared quality surface to a
-  reader or a typed gap). Open its premise check FIRST — the goal's own record is
-  4-for-4 on the named remedy being wrong, and `#518` is the largest surface here.
-- HOUSE FAILURE MODE, now measured three times in this goal: tests prove the
-  module that COMPUTES a verdict and leave the wiring that ACTS on it unproven
-  (slice 1's call site, slice 2's activation conjunct, slice 2's producer test).
-  Assert through the composed verdict, with a one-variable control.
-- SECOND, from slice 2 round 2: hardening one of two sibling gates makes the
-  other REACHABLE. When a finding says "this predicate is wrong", grep every
-  caller before repairing one.
-- `#530` is NOT closed and no closeout is staged: the gate warns, the resolver
-  still does not. The full reasoning is one operator decision in the
-  `## Operator Decision Queue`; do not re-derive it here.
-- Tracker recount 2026-08-08 (post-activation): 28 open issues, not the 25 this
-  goal was shaped against.
-- SLICE 2 REVISED TARGET, with one CORRECTION to the premise record: the
-  adapter-gating objection applies to `chunked_routing_issue_SOURCE`
-  (`load_issue_source_config` reads handoff's `issue_source:` block), NOT to
-  `chunked_routing_issue_BACKEND` underneath it — `list_open_issues` takes
-  explicit args and reads no adapter. The Slice Log's original wording overstated
-  this and is corrected here rather than left standing. The objections that DO
-  survive are ownership (`handoff` holds a duplicate of `issue_runtime`'s
-  resolution, filed as `#555`; `issue` is the contractual owner) and direction
-  (`handoff` already imports `achieve`, so `achieve` importing `handoff` points
-  the coupling backwards). The `--pursue-ready` floor stays PRESENCE-only: which
-  issues a goal claims is the operator's judgement, and a floor checking
-  correctness would be a new false-verdict surface inside the tool built to stop
-  them. That floor is verdict logic on a proof surface, so slice 2 owes BOTH
-  bounded review rounds.
-- Verification cadence: cheap deterministic checks at commit boundaries; bounded
-  fresh-eye proof at slice boundaries; broad/live proof at closeout.
-- Gate cadence: `run_slice_closeout.py --skip-broad-pytest` per slice AND
-  `./scripts/run-quality.sh --read-only` at EVERY slice boundary.
-- Slice review packet: intent, changed files and owning/generated surfaces,
-  expected invariants, tests/proof, non-claims, out-of-scope lines, questions.
-- History boundary: keep this frame current; completed detail moves to
-  `## Slice Log`.
+- Status: CLOSED EARLY at 2 of 7 slices by operator instruction, not by a blocker.
+  Slices 1 (`#530`, WARN tier armed) and 2 (`#554` part 1, backlog-recount floor)
+  are complete and proven; both ran round-1 AND round-2 bounded review.
+- Successor: `charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
+  (draft, pursue-ready). The remaining claims — `#518`, `#528`, `#547`, `#546`,
+  `#536`, `#537` — are re-homed there. `#535` is released for a decision and
+  `#534` is deliberately NOT re-homed: a prior goal built, refuted and reverted it.
+- Open operator decisions carried to the successor: whether the GATE discharges
+  `#530`, and whether `#535` is worth claiming.
+- Final gate: 86 passed, 0 failed, 0 UNPROVEN. 13 commits, all local; nothing
+  pushed.
+- No further action belongs to this artifact. Read `## Final Verification` for the
+  proof and non-claims, `## Slice Log` for what each slice measured.
 
 ## Goal
 
@@ -202,9 +170,18 @@ Ordered by what unlocks the most and what is least likely to be refuted:
 ## Coordination Cues
 
 Phase-appropriate routing chosen from installed skill metadata and model
-judgment. Fill during the run:
+judgment.
 
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: achieve — goal operator for the whole run; owns the slice log, the operating frame, and the closeout floors
+- Routing: impl — slice 1 and slice 2 builds, both loading prove at their stop gate
+- Routing: quality — the slice-boundary gate cadence, dup-ratchet dispositions, and the mutation/coverage reads
+- Routing: issue — filed #555 under the standing issue-filing approval during slice 2's premise check
+- Routing: critique — two bounded review rounds per slice, four rounds total
+- Routing: retro — the closing efficiency review that produced this goal's successor scope
+- Gather: n/a — no external URL or published source became working context in this run; every input was repo-local or the live tracker
+- Release: n/a — no release, tag, or version bump was requested or performed; the plugin mirror sync is not a release surface
+- Issue closeout: n/a — no issue was closed. #530 and #554 both remain open by design, each with an operator decision recorded in the queue above
+- Successor goal: charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md — designed from THIS run's measured mechanisms (one rule with two owners, a refusal that cannot say its own name, a label that reads as protection), carrying twelve tracker issues that share that class plus the four waste habits this run measured
 
 ## Discuss Before Activation
 
@@ -330,13 +307,60 @@ for an unattended overnight run.
 
 ## Final Verification
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md
+Host log probe: skipped: host-log-not-exposed: this host surfaces no per-turn token, wall-clock, or tool-call ledger to the session, so any efficiency figure here would be fabricated rather than measured; the gate timings quoted in the Slice Log come from the gate's own output and are the only real timing evidence this run has.
+Disposition review: charness-artifacts/critique/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-disposition-review.md
+
+Early close: this goal is closing at 2 of 7 slices by explicit operator
+instruction, not because the remaining work is unsafe. The operator asked for the
+structural class the run surfaced to become the center of gravity and to be taken
+LARGER, absorbing related tracker issues. Slices 1 and 2 are complete and proven;
+the remaining claims (`#518`, `#528`, `#547`, `#546`, `#536`, `#537`, `#534`) are
+re-homed in the successor rather than abandoned, and `#535` is explicitly released
+for a decision rather than inherited silently.
+
+Self-verification: `./scripts/run-quality.sh --read-only` 86 passed / 0 failed /
+0 UNPROVEN at the final boundary; changed-line mutation coverage clean at HEAD.
+The full-suite figure (7816 passed) was measured at an EARLIER commit, before the
+last four landed — the qualifier is carried here deliberately, because dropping it
+exactly where the number is used as closeout proof is this goal's own house
+failure mode.
+
+Mutation ledger: 20 mutants across both slices, 19 resolved. Two of those were
+resolved by DELETING the unreachable branch they exposed, not by a test killing
+them — "19 killed" reads stronger than the evidence, so it is stated as resolved.
+The one survivor (`require_git` not threaded) is disclosed in the Slice Log with
+its reason.
+
+Non-claims: nothing was pushed, so remote CI is unobserved. No issue was closed.
+`#530` and `#554` are NOT resolved. Consumer-repo behavior is unobserved. The
+mutant ledger covers the verdict paths this goal added, not the surfaces they sit
+in. The four bounded review rounds left NO checked-in packet or fingerprint
+artifact, so their occurrence is supported only by this artifact's own prose — a
+delegated reviewer flagged that and it is recorded rather than argued away. Slice
+2's round-2 boundary window was verified AFTER its repairs were committed and
+resolved to `parent-attributed` via `--parent-head-moved`; that is a degraded
+verify, not a clean one.
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: five repairs committed this run — the warn-scope widening, the shared `is_shaping_status` predicate, two wiring-level tests, `tests/fixtures/*` surface coverage, and the mutation-selector test mapping — with two tracked issues, one accepted risk and one out-of-scope deferral itemised below.
+
+- `applied: the WARN tier now reads iter_warn_scope_adapters' 37 adapters plus the flattened installed layout, with the scope stated in the summary line` — the gate claiming a scope it never read.
+- `applied: is_shaping_status is now shared by the backlog floor and the closeout-plan section gate, so the two cannot drift again` — sibling-predicate drift.
+- `applied: test_the_floor_actually_gates_activation_not_just_reports and test_the_real_command_warns_on_a_typo_in_a_shipped_example assert through the composed verdict, not the computing module` — the wiring-vs-helper gap, guarded for these two instances.
+- `applied: tests/fixtures/* given an owning surface in .agents/surfaces.json` — a pre-existing coverage gap that surfaced as five unrelated broken tests.
+- `applied: the floor's tests are loaded by quoted path so the mutation gate's target selector can map them` — exercised lines reading as uncovered.
+- `issue #555` — two tracker-backend implementations; filed this run, claimed by the successor.
+- `issue #537` — a correct refusal surfacing as unrelated broken tests; hit live this run, already open, now claimed by the successor rather than worked around again.
+- `applied: docs/handoff.md's Next Session now names sync-before-verify, the aggregate-after-first-rejection habit, and the premise-check record, and the successor goal's Boundaries carry all four measured waste habits as activation-time constraints` — the sync-ordering false red, the serial gate rediscovery, the `-k`-filter-as-suite error, and the two derived numbers.
+- `applied: the successor's Verification Plan requires a mutant at the CALL SITE, not only inside the helper, and requires each caller of a repaired predicate to be mutated independently` — the wiring-vs-helper and sibling-drift habits turned into a per-slice obligation rather than a remembered lesson.
+- `accepted-risk: a commit was allowed past a blocked closeout because it was not chained to the gate's exit status; every pre-commit check passed and the closeout is green at that commit, so nothing shipped unverified, but no gate prevents the same ordering next time and none is added here` — recorded rather than dropped, which is what the first draft of this section did to it.
+- `out-of-scope: a portable gate for the wiring-vs-helper and sibling-drift mechanisms needs evidence across several unrelated surfaces before it can be generalized without becoming a wolf-crier; the successor goal exists to produce exactly that evidence, and slice 9 is where generalization is decided`
+
+Structural follow-up: `issue #537 (recurs: hit live in this run and independently
+present in the tracker; the predecessor's #554 evidence shows the same
+work-around-without-linking pattern, so this is a recurring class rather than a
+novel one)`

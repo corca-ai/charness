@@ -2,11 +2,11 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** continue the [root-repair goal](../charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md) at **Slice 3 (`#518`)**. Slices 1 and 2 are done; `#553` is repaired and its closeout carrier is committed and `draft_verified`, awaiting only a push to fire `Closes #553` and the `--expect-state CLOSED` readback.
+- **Next pickup:** shape or activate the [one-rule-one-owner goal](../charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md). It is `draft` and pursue-ready; `/goal @charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md` activates it. Its slice 1 is `#552` — a checker requiring a token its renderer never emits, so two AGENTS.md policy checks can never fire. The [arm-the-verdict goal](../charness-artifacts/goals/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster.md) is CLOSED early at 2 of 7 by operator instruction; its remaining claims are re-homed in the successor.
 - **Ask for the push before anything else.** Local commits sit unpushed (`git log --oneline origin/main..HEAD`), one of which carries the `#553` closeout. `git push` is not a standing approval and must be requested every time.
 - **The WARN tier is now ARMED for `unknown` only, on the operator's recorded decision.** `python3 scripts/validate_adapters.py --repo-root .` warns by name on a declared key nothing reads, exits 0, and states the count AND the file scope so a clean run is a claim rather than silence. `reader-elsewhere` and `text-asserted` stay reported-but-unarmed: 3 of `reader-elsewhere`'s 23 instances are association residue where the reader really does read the file through dynamic dispatch, and one of those ships inside the [handoff adapter example](../skills/public/handoff/adapter.example.yaml). `survey()` still reports and refuses nothing. Recount with `python3 scripts/adapter_key_registry.py --repo-root .`, which prints the adapter/key totals, the per-state counts, and every gap with its reason. The goal artifact's Slice Log holds the as-of measurement.
 - **Widening a scope needs a measured UPPER bound in the same commit.** This is the generalized lesson and it is now an executable test. Every seed in the key registry was justified by a measurement of under-reporting and none by a measurement of over-reporting — and that asymmetry is exactly how the defect recurred, as association by module-BASENAME collision: every skill ships a `resolve_adapter.py`, so a bare-basename match tied every one of them to every adapter (`ls skills/public/*/scripts/resolve_adapter.py | wc -l`).
-- **The premise-check phase has now paid off three times out of three in this goal, including when the premise HELD.** Slice 1's premise held and the check still found `version: true` accepted at all 17 sites; slice 2's premise held and the check sharpened the refutation. Keep opening every slice with it.
+- **The premise-check phase is now 5 for 5 across this goal family, including where the premise HELD.** Slice 1's premise held and the check still found `version: true` accepted at all 17 sites; slice 2's premise held and the check sharpened the refutation. Keep opening every slice with it.
 - **Two review rounds, not one, when verdict logic changes — and round 2 reads the REPAIRS.** Measured again this session: round 1 fixed the AGENTS.md reader and left the setup TEMPLATE writing a baked model id, so charness would have shipped a template its own inspector flags. Round 2 caught it. A fix carrying the class it fixes is this repo's most reliable failure mode.
 - **A gate firing is evidence about the tree, not about your diff.** The dup ratchet reported 19 new families; reading two members showed the slice REVEALED pre-existing duplication rather than adding it (the deleted 6-line block had been splitting identical resolver bodies into sub-threshold runs). Read the members before dispositioning — it took a minute and inverted the answer. Filed as #550.
 - Recount the backlog with `gh issue list --repo corca-ai/charness --state open`; this session filed #550, #551, #552, #553.
@@ -39,10 +39,20 @@
 
 ## Next Session
 
-1. Activate the [arm-the-verdict goal](../charness-artifacts/goals/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster.md) and run **Slice 1**: measure how many warnings would fire across this repo and every shipped example adapter BEFORE arming the WARN tier. The operator has decided the tier is WARN, not refuse. If the measured fire rate is broad, scope it before shipping — a tier that fires everywhere is a wolf-crier.
-2. Slice 1 must also decide, from those counts, whether the warning covers `unknown` only or `reader-elsewhere` too. `reader-elsewhere` currently includes under-association residue, so arming it turns that residue into operator-visible noise.
-3. Then **Slice 2 (`#554`)**: make `achieve` recount the tracker by REUSING `handoff`'s backlog seam (`parse_handoff_entries.py --with-issues`), not by building a second reader inside `achieve`.
-4. Recount before shaping anything: `gh issue list --repo corca-ai/charness --state open`. The previous `## Next Session` was pruned because the chunker reported 10 of its entries citing closed issues and 21 citing missing paths.
+1. Activate the successor goal above. Its slice 1 (`#552`) is the sharpest
+   instance in the tracker: a gate that can never fire is a permanent green.
+2. **Open every slice with a premise check.** The record is 5 for 5 that the
+   named remedy is wrong — including where the premise held. Slice 2's check
+   refuted the plan's own wording and rerouted the work to a different skill.
+3. **`#534` is NOT claimed and should not be re-shaped from its issue title.** A
+   prior goal built it green, refuted it, reverted it in full, and posted the
+   refutation to the issue, concluding it may not be worth building at all.
+4. Two operator decisions are open and block nothing: whether the GATE discharges
+   `#530` (the resolver still emits the string in its title), and whether `#535`
+   is worth claiming at all. Both are in the successor's Operator Decision Queue.
+5. Recount before shaping anything: `gh issue list --repo corca-ai/charness
+   --state open` (29 at last count). `achieve` now REFUSES a draft goal that does
+   not record what it claims and does not.
 
 ## Discuss
 

@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 456,
-  "candidate_count": 1874,
+  "source_artifact_count": 457,
+  "candidate_count": 1881,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -228,6 +228,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c5f991197506",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the `arm-the-verdict-and-close-the-false-green-cluster` goal, closed EARLY at 2 of 7 slices by operator decision so its remaining claims could be re-homed under a larger structural frame.",
+      "normalized_key": "this retro reviews the arm the verdict and close the false green cluster goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro reviews the `arm-the-verdict-and-close-the-false-green-cluster` goal, closed EARLY at 2 of 7 slices by operator decision so its remaining claims could be re-homed under a larger structural frame."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b7312125cf7c",
       "kind": "next_improvement",
       "lesson": "carry the semantic reviewer question and the worked #499/#491 application in the critique packet and its source/plugin mirrors.",
@@ -354,32 +380,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "keep the corpus-denominator packet capability separate until it has a named consumer and owner; it is out of scope for this goal."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:185a88be3991",
-      "kind": "next_improvement",
-      "lesson": "keep the semantic reviewer question, the worked #499/#491 application, and the surface-owner examples in the goal-bound packet and handoff pointers.",
-      "normalized_key": "keep the semantic reviewer question the worked 499 491 application and the surface owner",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep the semantic reviewer question, the worked #499/#491 application, and the surface-owner examples in the goal-bound packet and handoff pointers."
         }
       ]
     }
@@ -594,6 +594,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retro covers the shaped goal's five slices: selecting the evidence-carrying control for #499/#491, building the semantic reviewer question, assigning the #502 receipt owner, repairing the #500/#501/#497 producer/export boundaries, and staging the final closeout carrier."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:c5f991197506",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the `arm-the-verdict-and-close-the-false-green-cluster` goal, closed EARLY at 2 of 7 slices by operator decision so its remaining claims could be re-homed under a larger structural frame.",
+      "normalized_key": "this retro reviews the arm the verdict and close the false green cluster goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro reviews the `arm-the-verdict-and-close-the-false-green-cluster` goal, closed EARLY at 2 of 7 slices by operator decision so its remaining claims could be re-homed under a larger structural frame."
         }
       ]
     },
@@ -910,6 +936,110 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:afa095575403",
+      "kind": "repeat_trap",
+      "lesson": "**A finding repaired at one call site out of two.** Round 1 named a wrong predicate; I fixed the floor it pointed at and left the sibling gate, which converted a shared bypass into a live single-gate bypass.",
+      "normalized_key": "a finding repaired at one call site out of two round 1 named a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A finding repaired at one call site out of two.** Round 1 named a wrong predicate; I fixed the floor it pointed at and left the sibling gate, which converted a shared bypass into a live single-gate bypass."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:50f4ad71f18c",
+      "kind": "repeat_trap",
+      "lesson": "**A `-k` filter used as if it were the suite.** `-k \"achieve or goal\"` was green while a handoff golden-render fixture was broken; the boundary quality gate caught it. Filtered runs answer a narrower question than they appear to.",
+      "normalized_key": "a k filter used as if it were the suite k achieve or goal",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A `-k` filter used as if it were the suite.** `-k \"achieve or goal\"` was green while a handoff golden-render fixture was broken; the boundary quality gate caught it. Filtered runs answer a narrower question than they appear to."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f54a1ea7cc29",
+      "kind": "repeat_trap",
+      "lesson": "**Gate-by-gate rediscovery.** dup-ratchet → skill-core-headroom → attention-state-visibility → skill-ergonomics each blocked in turn, one per re-run. `CLAUDE.md` already says to run the aggregate when a commit is rejected so all of them surface at once; I re-ran serially instead.",
+      "normalized_key": "gate by gate rediscovery dup ratchet skill core headroom attention state visibility skill ergonomics",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Gate-by-gate rediscovery.** dup-ratchet → skill-core-headroom → attention-state-visibility → skill-ergonomics each blocked in turn, one per re-run. `CLAUDE.md` already says to run the aggregate when a commit is rejected so all of them surface at once; I re-ran serially instead."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:9190f44dba67",
+      "kind": "repeat_trap",
+      "lesson": "**Ordering slips with no bad outcome but real risk:** a reviewer-boundary window verified after repairs instead of before, and a commit allowed past a blocked closeout because it was not chained to the gate's exit status.",
+      "normalized_key": "ordering slips with no bad outcome but real risk a reviewer boundary window verified",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Ordering slips with no bad outcome but real risk:** a reviewer-boundary window verified after repairs instead of before, and a commit allowed past a blocked closeout because it was not chained to the gate's exit status."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:122a30d4d52e",
       "kind": "repeat_trap",
       "lesson": "The broad verification, fresh-eye rounds, and carrier checks were necessary safety work at proof and issue boundaries, not waste. No host metric evidence supports a per-goal runtime or token comparison.",
@@ -932,6 +1062,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The broad verification, fresh-eye rounds, and carrier checks were necessary safety work at proof and issue boundaries, not waste. No host metric evidence supports a per-goal runtime or token comparison."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fe14529bb21b",
+      "kind": "repeat_trap",
+      "lesson": "**Two full-suite runs (~12 min each) burned on a self-inflicted false red.** I ran `pytest tests/` BEFORE syncing the `plugins/` mirror, so mirror-consistency tests failed against source I had just edited. The repo's own `mutate → sync → verify` phase barrier exists for exactly this; I ran verify before sync and then investigated the result as if it were a finding.",
+      "normalized_key": "two full suite runs 12 min each burned on a self inflicted false red",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two full-suite runs (~12 min each) burned on a self-inflicted false red.** I ran `pytest tests/` BEFORE syncing the `plugins/` mirror, so mirror-consistency tests failed against source I had just edited. The repo's own `mutate → sync → verify` phase barrier exists for exactly this; I ran verify before sync and then investigated the result as if it were a finding."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b57c43052a24",
+      "kind": "repeat_trap",
+      "lesson": "**Two numbers written without measuring.** \"nineteen\" was carried in from the preceding slice's unrelated count of shipped example adapters; its replacement \"173\" was `176 − 3` computed without checking that 20 of the 176 were not goal artifacts. Both looked authoritative in a verdict surface's own rationale.",
+      "normalized_key": "two numbers written without measuring nineteen was carried in from the preceding slice s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two numbers written without measuring.** \"nineteen\" was carried in from the preceding slice's unrelated count of shipped example adapters; its replacement \"173\" was `176 − 3` computed without checking that 20 of the 176 were not goal artifacts. Both looked authoritative in a verdict surface's own rationale."
         }
       ]
     },
