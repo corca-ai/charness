@@ -350,6 +350,37 @@ executable final consumer — that is `#518`'s work and the surface notes say so
 No claim the marker rule should be armed; D47 stays deferred. Round-2 repairs are
 recorded as accepted-unreviewed per the two-round cap.
 
+### Slice 8 — Stop taxing refactors (`#534`) — BUILT, REFUTED, REVERTED
+
+**Not closed. The issue's stated cause is false for this gate, and the fix I built
+could not fire on any well-formed input.**
+
+The issue says family ids are content-addressed over location, so a module split
+rotates them. That was true of nose's `family_id`; it stopped being true of the
+GATE's fingerprint at the slice-4 D30 re-key. `family_member_hashes` returns a
+SORTED list and the fingerprint is `sha16` of it, so equal member multiset implies
+equal fingerprint, and paths are not hashed at all. A "relocation" — equal members,
+different id — is contradictory by construction.
+
+**The part worth carrying forward is how close this came to shipping.** Seven tests
+passed, `check_dup_ratchet.py --summary` exited 0, the slice closeout completed,
+and all of it was consistent with the feature being dead code. Every test
+hand-built `baseline={"old1": [h...]}, live={"new1": [same h...]}` — a state the
+fingerprint algorithm makes impossible. A synthetic fixture proved the classifier's
+logic and nothing about its reachability. The delegated resolution critique caught
+it; the gates could not, because a carve-out that never fires breaks nothing.
+
+Reverted in full rather than closed. The refutation and a suggested re-scope are
+posted on the issue: the real defect is that extraction EDITS the duplicated spans
+(dedent, `self.`, renames), which needs near-match pairing with an explicit
+similarity budget — materially riskier, and the laundering hole the issue's own
+non-claim warns about.
+
+**Second-order lesson, applies beyond this slice.** This is the third issue in this
+goal whose named remedy did not survive its own premise check (`#530`, `#534`, and
+partially `#526`). The plan assumed 19 slice-shaped defects; the measured rate says
+otherwise. Verify the premise before building, not after.
+
 ### Slice 1 — Repair the issue lane's own report contract (`#529`)
 
 **Root cause, from the delegated causal review — not a typo.** `issue_read.py`
