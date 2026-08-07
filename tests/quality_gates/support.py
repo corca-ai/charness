@@ -67,6 +67,15 @@ def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict
     return json.loads(result.stdout)
 
 
+def seed_normalize_repo(repo: Path, agents_text: str) -> None:
+    """Seed the minimum surface set `inspect_repo` needs to reach normalization checks."""
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text(agents_text, encoding="utf-8")
+    (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
+    (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
+
+
 def skill_package_text(skill_id: str) -> str:
     skill_dir = ROOT / "skills" / "public" / skill_id
     parts = [(skill_dir / "SKILL.md").read_text(encoding="utf-8")]

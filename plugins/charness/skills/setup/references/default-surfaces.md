@@ -91,8 +91,11 @@ The repo root `<repo-root>/AGENTS.md` should answer:
   ordinary routing starts the matching workflow directly from installed skill
   metadata and model judgment, and hidden support/integration availability runs
   `charness catalog list --repo-root <repo>`; a nonzero result reports a
-  command failure; a SessionStart hook may inject
-  the same context
+  command failure; and one sentence says a SessionStart hook may inject the same
+  context while this block stands without it — spell that standing explicitly
+  (`context-only`, or this block is the `fallback` when the hook is absent),
+  because a reader that has to infer it cannot recognize the block as
+  charness-managed
 - when the repo keeps repo-owned skills, keep one short policy that semantic
   skill changes should freeze the current intent before broad edits by deciding
   whether reviewed dogfood, maintained evaluator scenarios, or checked-in

@@ -151,10 +151,29 @@ why the directive was expanded.
   otherwise carry this as an accepted risk with a named rollback (restore the
   full directive) rather than claiming it proven.
 - **P2 — Does `skill_routing_semantically_complete` need a new signal set, or
-  only edited strings?** Its current signals require `sessionstart` and
-  `context-only` in the AGENTS.md section. Determine during implementation
-  whether the inverted sentence should still be a required signal or whether the
-  canonical-home claim replaces it.
+  only edited strings?** RESOLVED 2026-08-08 by `#552`, and the cost of leaving
+  it open is on the record: the signal set was never revisited, so the signal
+  kept requiring the literal `context-only` that the renderer never emitted,
+  `charness_managed` was permanently `False` for every setup-seeded repo, and the
+  two AGENTS.md policy checks gated behind it could never fire. The answer is
+  **neither** of the two options this probe offered. The inverted sentence stays a
+  required signal — a routing block that says nothing about the hook's standing is
+  not recognized — but it is matched as a CLAIM rather than as a string:
+  `_declares_session_start_hook_is_not_authoritative` requires one sentence to
+  name the session-start hook and deny it authority (`context-only`, or this block
+  is the `fallback`), which admits both shipped spellings and hand-written ones.
+  The polarity token must share a sentence with the hook, because searched
+  section-wide it matched this repo's own unrelated "browser-mediated fallback"
+  gather prose. Accepted limit, stated in the code: substring matching has no
+  polarity *within* a sentence.
+- This slice also shows how this spec's own Constraint below — "a renderer that
+  disagrees with AGENTS.md is a drift bug by definition" — was discharged: by
+  widening the READER to accept both spellings, not by converging the writers.
+  Two writers remain (`render_skill_routing.py` and the `Skill Routing` bullet in
+  `skills/public/setup/references/default-surfaces.md`, which had to be corrected
+  because it described a block the reader refused). Their reconciliation is now
+  pinned by a test against the renderer's REAL output rather than a fixture; a
+  fixture is what let the drift hide.
 
 ## Non-Goals
 

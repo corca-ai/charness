@@ -659,15 +659,18 @@ def test_the_shipped_setup_template_satisfies_BOTH_readers_of_the_contract() -> 
     # model/effort policy. When the contract dropped the baked Codex model id, the reader
     # was moved and this template was not, so charness shipped a template its own
     # inspector flagged. Pinned against the REAL template for the same reason as above.
+    #
+    # #552: this reader is GATED on `charness_managed`, so the routing block above it
+    # decides whether the assertion below can fail at all. It used to be hand-written
+    # here, spelling the recognizer's required `context-only` — which the shipped
+    # renderer never emits — so this pin passed while the real setup path was excluded
+    # from the very check this test guards. Both halves now come from their writers.
     docs = _load_module("scripts/setup_agent_docs_lib.py", "_sad_tmpl")
-    policy, _ = docs._detect_charness_subagent_policy(
-        "# Agents\n\n## Skill Routing\n\n"
-        "A pickup follows docs/handoff.md `## Workflow Trigger`; ordinary requests use "
-        "installed skill metadata and model judgment.\n"
-        "Run the read-only `charness catalog list` only when hidden availability is unclear.\n"
-        "External URL sources route through gather before deciding.\n"
-        "Validation work goes through quality first.\n"
-        "A SessionStart hook is context-only, not a classifier.\n\n" + template
+    routing = _load_module("skills/public/setup/scripts/render_skill_routing.py", "_rsr_tmpl")
+    seeded_routing, _ = routing._render_skill_routing([])
+    policy, _ = docs._detect_charness_subagent_policy("# Agents\n\n" + seeded_routing + "\n" + template)
+    assert policy["charness_managed"] is True, (
+        "the gate in front of the assertion below is shut, so it cannot fail"
     )
     assert policy["subagent_model_policy_complete"] is True, (
         "a repo set up from this template would be flagged for missing the per-host "

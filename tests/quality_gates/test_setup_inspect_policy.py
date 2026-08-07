@@ -5,18 +5,11 @@ from pathlib import Path
 import pytest
 
 from .support import inspect_setup_repo
+from .support import seed_normalize_repo as _seed_normalize_repo
 
 
 def _run_inspect(repo: Path) -> dict[str, object]:
     return inspect_setup_repo(repo)
-
-
-def _seed_normalize_repo(repo: Path, agents_text: str) -> None:
-    (repo / "docs").mkdir(parents=True)
-    (repo / "README.md").write_text("# Demo\n", encoding="utf-8")
-    (repo / "AGENTS.md").write_text(agents_text, encoding="utf-8")
-    (repo / "docs" / "roadmap.md").write_text("# Roadmap\n", encoding="utf-8")
-    (repo / "docs" / "operator-acceptance.md").write_text("# Acceptance\n", encoding="utf-8")
 
 
 def test_setup_inspect_repo_flags_targeted_missing_surface(tmp_path: Path) -> None:

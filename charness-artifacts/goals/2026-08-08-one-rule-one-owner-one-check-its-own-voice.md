@@ -1,6 +1,6 @@
 # Achieve Goal: One rule, one owner; one check, its own voice
 
-Status: draft
+Status: active
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
 
@@ -260,6 +260,20 @@ slices, and pull in the related open issues.
   Each is per-request, and `#530`/`#554` closure awaits operator decisions.
 
 ## Slice Log
+
+### Slice 1: Slice 1 premise check (#552) — CONFIRMED, both halves, before any build
+
+- Objective: Before shaping any repair, establish by execution rather than by reading titles whether `#552`'s premise holds: that the detector `skill_routing_declares_charness_management` requires a literal token the shipped renderer never emits, and that two AGENTS.md policy findings are therefore unreachable for any repo `charness setup` seeded.
+- Why this approach: This goal's Boundaries record the premise check as a PHASE, 5 for 5 across the goal family including where the premise held. `#552` also arrives with a `Suggested direction (not a decision)` naming a remedy, and the Work Phase Map's Change Discipline rule fires exactly here: verify the remedy's premise before shaping a slice around it.
+- Commits: none yet — this record precedes the build, per this goal's User Acceptance (`The Slice Log records the premise-check verdict BEFORE each build`).
+- What changed: No source changed. Read: `scripts/setup_skill_routing_lib.py`, `scripts/setup_agent_docs_lib.py` (`_detect_charness_subagent_policy`, and the second predicate caller at line 408), `skills/public/setup/scripts/render_skill_routing.py`, `skills/public/setup/SKILL.md`, `tests/quality_gates/test_setup_render_skill_routing.py`, `tests/quality_gates/test_subagent_delegation_ladder.py`, `charness-artifacts/spec/session-start-hook-host-split.md`.
+- Alternatives rejected: Rejected: inferring the premise from the issue body, which already states it precisely. The issue is a claim about executable behavior, so it is cheap to EXECUTE and the record is then a measurement rather than a re-reading.
+- Targeted verification: Executed the shipped detector against the shipped renderer's real output (imported `_render_skill_routing` and fed its markdown to `skill_routing_declares_charness_management`). VERDICT: CONFIRMED, and sharper than the issue states. Exactly ONE of six signals fails — signal 6 (`sessionstart` AND `context-only`); the other five (handoff/workflow-trigger, installed-metadata/model-judgment, read-only/catalog, gather/external/url, quality/validation) all pass against the renderer's real text. So `skill_routing_declares_charness_management` is False and `skill_routing_semantically_complete` is False for a setup-seeded repo. Second half confirmed by reading `_detect_charness_subagent_policy`: both `agents_missing_charness_dynamic_workflow_policy` and `agents_missing_subagent_model_policy` are guarded by `if charness_managed and ...`, so both are unreachable. Writer-of-record confirmed: `skills/public/setup/SKILL.md:60` runs this renderer and its markdown is what an operator writes into AGENTS.md.
+- Test duplication pressure: n/a — no tests added or expanded in this record; it is a read-only premise verdict.
+- Critique: Two findings the premise check produced that the issue does not name, both feeding the repair's shape. (1) A SECOND predicate caller exists at `scripts/setup_agent_docs_lib.py:408`, where the same False makes a seeded repo's own block read as `skill_routing_block_custom_or_drifted` and recommends `review_existing_skill_routing` — charness telling an operator to review the block charness just wrote. The Boundaries rule `grep every caller before repairing one` earned its place here. (2) EVERY existing fixture for this predicate — five in `test_setup_render_skill_routing.py` and the routing preamble inside `test_subagent_delegation_ladder.py`'s own BOTH-readers pin test — hand-writes `context-only`. The issue's line `Pinning a fixture is how this hid` is literally true of the test that was written to stop this class.
+- Off-goal findings: `charness-artifacts/spec/session-start-hook-host-split.md` probe `P2` asked this exact question (`Does skill_routing_semantically_complete need a new signal set, or only edited strings? ... Determine during implementation`) and was never determined; that same spec's Constraints say `a renderer that disagrees with AGENTS.md is a drift bug by definition`. The spec named the drift, deferred the decision, and shipped. Not filed separately: it is this slice's subject and the repair resolves P2.
+- Lessons carried forward: The premise held, so no reshape — but it held with one signal, not a diffuse mismatch, which makes the repair small and makes the canonical-spelling question the only real decision. Carry forward: the detector must keep working on HAND-WRITTEN AGENTS.md too, so it cannot become a string comparison against the renderer; the reconciliation belongs in a test that pins the renderer's REAL output, not in the predicate.
+- Metrics:
 
 ## Context Sources
 
