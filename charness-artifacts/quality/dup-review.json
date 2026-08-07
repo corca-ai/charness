@@ -2456,6 +2456,111 @@
       "reviewed_at": "2026-08-06",
       "surface": "code",
       "note": "The standalone retro-to-handoff validator intentionally uses the repository-standard argparse/main entrypoint shape also used by the pre-push coverage gate. The commands own different arguments, refusal semantics, and evidence payloads; a shared runner would couple distinct operator contracts without removing domain logic."
+    },
+    {
+      "class": "intentional",
+      "id": "329ea2d370525729",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The authorization helper's permissive-fallback dict literal matches the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults so one could not change without the others."
+    },
+    {
+      "class": "intentional",
+      "id": "3e585e6d2db885a6",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The capture adapter keeps its direct-execution runtime-bootstrap import preamble local, matching the retro-index, risk-interrupt, and packaging producers. Established repo pattern for portable CLIs that must run in both source-checkout and installed-plugin layouts."
+    },
+    {
+      "class": "intentional",
+      "id": "3ee29bf91326977e",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "A two-line `sha256(text.encode()).hexdigest()` helper. Standard-library idiom shared with three unrelated hashing owners; centralizing it would couple the issue-source digest contract to mutation-sampling internals."
+    },
+    {
+      "class": "intentional",
+      "id": "54055904847649e6",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`) duplicated across the release closeout, closeout-message, and authorization modules and the untouched handoff chunk drafter. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. The layout knowledge is now centralized in issue_closeout_authorization.load_from/SKILL_RELS; what remains is the irreducible per-entrypoint bootstrap."
+    },
+    {
+      "class": "intentional",
+      "id": "58b291a6b5fa9084",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy."
+    },
+    {
+      "class": "intentional",
+      "id": "5b3c7738502d380d",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "A one-line canonical-JSON dump matching the boundary-bypass ratchet's. Both are digest-input serializations owned by separate evidence contracts; sharing would let one contract's serialization change silently move the other's digests."
+    },
+    {
+      "class": "intentional",
+      "id": "7d265405fe859204",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "Within issue_source_capture_capability: the default, undeclared-backend, and parsed capability all return the same field set by construction, because they are three states of ONE contract. That is the point of the module; collapsing them would erase the distinction between a default, an unsupported backend, and a declared block."
+    },
+    {
+      "class": "intentional",
+      "id": "7de839c3498879a4",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The crosswalk validator keeps its direct-execution runtime-bootstrap preamble local, matching four untouched validator CLIs. Same portable-entrypoint rationale as the other preamble families already classified here."
+    },
+    {
+      "class": "intentional",
+      "id": "8259eb3bf04fb3b7",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "A module-level cache dict plus typing preamble matching the parity harness. Two-line plumbing, not a shared verdict helper."
+    },
+    {
+      "class": "intentional",
+      "id": "8438b78f671dc3bf",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "A single-line `path.parent.mkdir(parents=True, exist_ok=True)`. Standard-library idiom shared with eight untouched writers."
+    },
+    {
+      "class": "intentional",
+      "id": "be9c2c68c9ecef9c",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "A two-line regex-substitute/strip normalization matching adapter_lib and four untouched helpers. Standard-library idiom at independent normalization boundaries."
+    },
+    {
+      "class": "intentional",
+      "id": "2b08a39f47fa892b",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "Within issue_source_normalize_lib: the clause-splitting loop and the whitespace-normalizing key share short text-walking shape. They answer different questions (where a clause BOUNDARY falls versus what its DIGEST is over) and deliberately diverge on fenced content; merging them would fuse the boundary policy with the equivalence policy. Rotated from 58b291a6b5fa9084 when the fence/list rules moved."
+    },
+    {
+      "class": "intentional",
+      "id": "487bb9f65898407b",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The permissive-fallback dict literal returned when the authorization module is absent, matching the achieve adapter-policy and goal-disposition fallbacks. Each is its own contract's neutral value; a shared constant would couple three unrelated skills' defaults. Rotated from 329ea2d370525729."
+    },
+    {
+      "class": "intentional",
+      "id": "e8e4df2c0dc2536d",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "The cross-layout skill-module loader (`skills/public/<skill>` vs installed `skills/<skill>`), duplicated across the commit-msg authorization helper and five untouched achieve/handoff callers. This IS the bootstrap: a module cannot import the shared loader without already having loaded something. Rotated from 54055904847649e6."
+    },
+    {
+      "class": "intentional",
+      "id": "f26f830efe2060a9",
+      "reviewed_at": "2026-08-07",
+      "surface": "code",
+      "note": "Load-a-sibling-script-by-path preamble, matching the untouched release publisher and markdown-preview renderer. These entrypoints run as git hooks or standalone CLIs from arbitrary working directories, where `scripts` is not importable as a package; the path load is the portability contract, not incidental repetition."
     }
   ],
   "fixable_ceiling": 0,

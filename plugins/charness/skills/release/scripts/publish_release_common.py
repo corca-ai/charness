@@ -48,13 +48,29 @@ def _baton_reconcile_record(repo_root: Path, adapter_data: dict[str, Any], *, ta
         }
 
 
-def preflight_close_issue_carrier(repo_root: Path, *, args: Any, issue_repo: str, payload: dict[str, Any], cli: Any) -> None:
+def preflight_close_issue_carrier(
+    repo_root: Path,
+    *,
+    args: Any,
+    issue_repo: str,
+    payload: dict[str, Any],
+    cli: Any,
+    carrier_source: str = "release",
+) -> None:
+    """`carrier_source` names WHICH release lane is asking.
+
+    All three lanes funnel through here, so collapsing them to a single "release"
+    string meant the authorization record could not tell a first publish from a
+    recovery resume — and recovery is the lane an operator reaches for precisely when
+    the primary path has already refused them.
+    """
     cli.preflight_release_issues(
         repo_root,
         repo=issue_repo,
         issue_numbers=args.close_issue,
         payload=payload,
         run=cli.run,
+        carrier_source=carrier_source,
         behavior_lines=args.close_issue_behavior,
         classification=args.close_issue_classification,
         carrier_file=args.close_issue_carrier_file.resolve() if args.close_issue_carrier_file else None,
@@ -161,6 +177,7 @@ def close_issues_install_refresh_and_commit(
     payload: dict[str, Any],
     cli: Any,
     carrier_already_committed: bool = False,
+    carrier_source: str = "release",
 ) -> None:
     payload["install_refresh"] = timed(
         payload,
@@ -221,6 +238,10 @@ def close_issues_install_refresh_and_commit(
             payload=payload,
             run=cli.run,
             behavior_lines=args.close_issue_behavior,
+            # The lane name must reach HERE above all: this is the call that runs
+            # `gh issue close`. Threading it only through the preflight left the
+            # irreversible call misattributing which lane asked for it.
+            carrier_source=carrier_source,
         ),
     )
     _commit_final_release_artifact(
@@ -244,6 +265,7 @@ def run_release_closeout_tail(
     payload: dict[str, Any],
     cli: Any,
     carrier_already_committed: bool = False,
+    carrier_source: str = "release",
 ) -> None:
     run_distinct_channel_floor(repo_root, args=args, adapter_data=adapter_data, state=state, payload=payload, cli=cli)
     payload["lifecycle_capture"] = _capture_lifecycle(repo_root, tag_name=state["tag_name"])
@@ -259,4 +281,5 @@ def run_release_closeout_tail(
         payload=payload,
         cli=cli,
         carrier_already_committed=carrier_already_committed,
+        carrier_source=carrier_source,
     )

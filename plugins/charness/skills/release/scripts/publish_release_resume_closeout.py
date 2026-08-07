@@ -165,7 +165,8 @@ def resume_post_publication_closeout(
     artifact_relpath = str(Path(adapter_data["output_dir"]) / "latest.md")
     _require_closeout_resume_inputs(args)
     common.preflight_close_issue_carrier(
-        repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli
+        repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli,
+        carrier_source="release-resume-closeout",
     )
     carrier_message = state["head_message"]
     carrier_ref = "HEAD"
@@ -252,5 +253,6 @@ def resume_post_publication_closeout(
         payload=payload,
         cli=cli,
         carrier_already_committed=True,
+        carrier_source="release-resume-closeout",
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))

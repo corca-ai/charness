@@ -1,7 +1,8 @@
 # Achieve Goal: Repair the shared quality/evidence boundary and close #514, #515, and #518
 
-Status: draft
+Status: active (pre-0 complete; Slice 0 next)
 Created: 2026-08-07
+Activated: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md` after the bounded pre-activation bootstrap below.
 
 This goal treats #514, #515, and #518 as one coordinated repair of the recurring
@@ -13,9 +14,9 @@ retain its own proof, carrier, and GitHub readback.
 
 ## Active Operating Frame
 
-- Current slice: draft/backlog awaiting activation; no implementation or issue close has run.
+- Current slice: pre-0 COMPLETE. The capture/freeze/crosswalk/authorization operating surface exists, is tested, and is bound to the live three-issue source. No implementation of #514/#515/#518 and no issue close has run.
 - Current slice intent: repair the producer-boundary contract that connects declared quality intent, executable coverage, semantic routing, and deterministic evidence assembly.
-- Next action: run the bounded pre-activation bootstrap, reproduce #518 against the pinned `cmanki` history while reading `../craken-agents` as the comparison contract, preserve the causal/debug record, then normalize the live #514/#515/#518 and adapter/owner reads before creating the source-freeze receipt and activating this goal.
+- Next action: Slice 0. Reproduce #518 against the pinned `cmanki` history at `aac5feca...` while reading `../craken-agents` as read-only comparison, complete the #518 causal/debug substrate, then build the acceptance matrix on top of the frozen clause inventory and promote the crosswalk from `bootstrap` to `complete` (which is what first makes any protected close authorizable).
 - Verification cadence: cheap contract/fixture checks at each slice; bounded fresh-eye review for each meaningful verdict change; each consumer may close on its own proof, while shared-seam proof is bundle-level only when a common projection is actually proven.
 - Gate cadence: sync source/plugin surfaces before validators; use pre-lock closeout for slices and a verification-locked closeout for the bundle.
 - Slice review packet: every proof-surface change names owner, execution root, identity, final consumer, semantic coverage, tests, non-claims, and unexamined axes.
@@ -125,7 +126,7 @@ the user.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| pre-0 | Bootstrap the canonical source-capture, freeze, crosswalk-loader, and authorization surface | Activation cannot depend on validators that do not yet exist; this bounded operating-surface slice is prerequisite work, not a small product experiment and not an issue repair | adapter/plugin capture scripts, adapter-resolution/pagination tests, freeze validator, canonical typed `authorize_closeout()` loader, actual owner call-order tests proving zero backend/temp/bump calls on refusal, preservation tests for unrelated generic multi-issue closes, and refusal/parity tests for `close-with-comment`, commit-msg, draft, verify, direct carriers, PR-body validation, and release refusal (missing/stale crosswalk, wrong/combined/foreign target, stale source, wrong reader capture, missing Slice-4 lock), no issue close or product claim | planned |
+| pre-0 | Bootstrap the canonical source-capture, freeze, crosswalk-loader, and authorization surface | Activation cannot depend on validators that do not yet exist; this bounded operating-surface slice is prerequisite work, not a small product experiment and not an issue repair | adapter/plugin capture scripts, adapter-resolution/pagination tests, freeze validator, canonical typed `authorize_closeout()` loader, actual owner call-order tests proving zero backend/temp/bump calls on refusal, preservation tests for unrelated generic multi-issue closes, and refusal/parity tests for `close-with-comment`, commit-msg, draft, verify, direct carriers, PR-body validation, and release refusal (missing/stale crosswalk, wrong/combined/foreign target, stale source, wrong reader capture, missing Slice-4 lock), no issue close or product claim | **complete** — see Slice Log |
 | 0 | Qualify all three issues, complete #518 causal/spec substrate, and decide whether a real common projection exists | #518 proves the declaration-to-verdict symptom against a consumer history; #515 and #514 expose adjacent routing/evidence gaps. This is a decision gate, not a stopping experiment | live source snapshot for #514/#515/#518, pinned #518 consumer reproduction, `craken-agents` comparison record, validated #518 debug/spec substrate, criterion inventory, executable crosswalk, producer/validation-boundary/locator/reader map, source/plugin map, shared-schema decision or `no-shared-artifact`, regression fixtures, bounded critique | planned |
 | 1 | Repair #518 declaration/preset/surface reconciliation and final quality verdict folding | #518 is a mandatory full repair, not a diagnostic experiment; every declared quality surface must resolve to an executable reader or an explicit gap/inapplicability state | reconciler contract, preset-to-gate and surface-to-reader matrix, typed applicability/scope/finding statuses, final artifact fold tests, language/surface reachability fixtures, `cmanki@aac5fec` replay, root/plugin parity, repaired verdict-logic second review, and #518 carrier | planned |
 | 2 | Repair #515 quality-surface routing and disclosure independently | #515 has its own semantic-routing contract and must not wait on #518 or #514 taxonomy | quality planner/artifact surface matrix, explicit omissions, source/plugin parity, focused proof, #515 bug carrier | planned |
@@ -159,7 +160,98 @@ the user.
 
 ## Slice Log
 
-No slices have run; this draft is inert until activation.
+### pre-0 — Bootstrap the capture/freeze/crosswalk/authorization surface (complete)
+
+Status: complete. No issue was closed, no product behavior is claimed, and the
+crosswalk it produces is deliberately inert (`matrix_state: bootstrap`).
+
+**Built.**
+
+| Surface | Owner | Proof |
+| --- | --- | --- |
+| Paginated source capture | `scripts/capture_issue_source.py`, `scripts/issue_source_capture_lib.py` | `tests/test_issue_source_capture.py` (22) |
+| Clause normalization / frozen ids | `scripts/issue_source_normalize_lib.py` | same file |
+| Capture capability contract | `skills/public/issue/scripts/issue_source_capture_capability.py`, wired via `resolve_adapter.py` | same file |
+| Freeze + owner inspection | `scripts/issue_source_freeze_lib.py`, `scripts/validate_issue_source_freeze.py` | `tests/test_issue_source_freeze.py` (16) |
+| Authorization + crosswalk | `scripts/evidence_boundary_crosswalk.py`, `scripts/validate_evidence_boundary_crosswalk.py` | `tests/test_evidence_boundary_crosswalk.py` (35) |
+| Ingress wiring | `issue_closeout_authorization.py`, `issue_close.py`, `issue_tool.py`, `issue_validate_closeout_draft.py`, `issue_verify_closeout.py`, `check_issue_closeout_commit_msg.py`, `release_closeout_authorization.py` + release callers | `tests/quality_gates/test_closeout_authorization_ingress.py` (18) |
+| Shared refusal shape | `scripts/closeout_refusal_lib.py` | exercised by all three CLIs |
+
+**Frozen source (live, adapter-captured).**
+
+- `charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json` — #514 (0 comments), #515 (1), #518 (0); pagination complete per issue.
+- Capture receipt + per-page raw responses under `...-source-raw/`; the snapshot is
+  **re-derived from those raw bytes** at every validation, which is what makes a
+  hand-authored snapshot fail rather than merely look suspicious.
+- Owner inspection (21 locators, digest-stamped) + freeze receipt binding snapshot
+  digest, clause-inventory identity, normalization policy, inspection identity, and
+  reviewed-input identity.
+- Diagnostic cross-check: `gh issue view` body lengths (4538 / 3806 / 7254) and comment
+  counts matched the adapter capture exactly — a second channel, not the capture's own
+  exit code.
+
+**Behaviour the gate now has.** Bootstrap-state crosswalk refuses every protected
+close; the aggregate singleton rule refuses a carrier mixing a protected issue with any
+other; foreign qualified refs (`fork-org/charness#514`) refuse rather than resolving to
+the protected target; release/PR carriers refuse outright; `close-with-comment` requires
+an explicit `--manual-target-declaration` so the CLI number cannot authorize itself.
+Every refusal is proven to land **before** the first side effect (no comment, no close,
+no temp carrier file, no bump).
+
+**Deliberate non-gate.** `verify-closeout` attaches the authorization record but does
+not refuse on it: by readback time the close has already happened, and refusing there
+would suppress the only channel confirming whether the irreversible act landed. Recorded
+in-code as `gating: reported-only`.
+
+**Two defects the new gates caught in their own slice**, both real and both fixed:
+raw responses were newline-padded on write (breaking digest re-derivation), and
+requiring the capture capability at adapter-load time invalidated every non-`gh`
+adapter — the refusal was rescoped to the capture operation itself.
+
+#### Bounded fresh-eye review (verdict-logic surface: two rounds, as the contract requires)
+
+Round 1 ran two delegated reviewers (authorization gate; capture/freeze chain) and
+found repairable defects in both. The most consequential:
+
+| Finding | Why it mattered | Repair |
+| --- | --- | --- |
+| `clause_inventory` block verified only by its identity scalar | Deleting one clause record silently removed a criterion from everything downstream, all gates green | Full inventory compared against the re-derived one |
+| Completeness re-read from the receipt's own integers | A truncated capture satisfied the check by declaring both numbers equal — the exact failure the module exists to prevent | Completeness re-proven from the raw bytes |
+| `receipt_identity` asserted, never recomputed | Adapter identity, normalization policy, cursors editable post-freeze with nothing noticing | Identity recomputed on every validation |
+| Criterion sources ignored disposition | A matrix could mark its whole source `non-goal` and still assert criteria from it, and read `complete` | Only `criterion`-dispositioned clauses may back a criterion |
+| `"shared": 0` bypassed the multi-criterion guard | `0 in {True, False}` is True; `0 is False` is not | `isinstance(..., bool)` |
+| No type floor on issue numbers | Quoting them in the artifact disarmed the entire gate with no refusal anywhere | Integer floor on `protected_issues` and row numbers |
+| Validator restated `matrix_state` as authorization | A `complete`, consumer-owned crosswalk printed "authorized" while every close refused | Reports per real carrier by consuming `authorize_closeout` |
+| Commit carrier discarded the repository | `Fixes acme/other-repo#514` blocked as if it were ours; the bare-keyword floor's suggested remedy would have auto-closed a local issue | Repository preserved through both paths |
+| Dead `authorized_call`/`load_from` backing a false docstring claim | The module asserted ordering was "structural" when nothing used the wrapper | Removed; the docstring now names the tests that actually hold the ordering |
+
+Round 2 read the repaired surfaces and earned its keep: the drift check added in round 1
+compared only the issue NUMBER, so an appended page with a forged body could still
+override the honest one. Also fixed: a missing `raw_response_dir` silently disabled
+containment, `carrier_source` stopped short of the call that actually runs `gh issue
+close`, and the normalization repairs had no tests at all.
+
+**One repair carried the class it fixed, and was caught by probing rather than by
+reading.** The round-1 indented-code rule intended to stop pasted evidence minting
+criteria instead swallowed every 4+-space nested bullet — reintroducing the
+under-splitting it shipped alongside a fix for, and regressing the 4-7-space band. It
+was removed in favour of an explicit, documented trade: over-splitting costs a reviewer
+one disposition line, under-splitting hides a criterion that can never fail anything.
+A round-1 repair that raised on an unterminated fence was also reverted — it would have
+made a typo in someone else's comment a hard failure of this repo's capture, and would
+have split text that no reader of the issue can see as criteria.
+
+Claim accuracy was corrected in two places where the code overstated itself: the freeze
+docstring no longer implies unforgeability (every link is a file the same agent can
+write; what it catches is inconsistency, not forgery), and the clause-digest docstring
+no longer claims rewrap tolerance it does not deliver.
+
+**Non-claims.** No #514/#515/#518 repair. No quality-surface, awiki, or `cmanki`
+reproduction yet. No shared-projection decision (`shared_projection.status: undecided`).
+No push, release, tag, PR, or Cautilus run. Pre-existing failures in
+`tests/quality_gates/test_publish_state_ledger.py` (26) and
+`tests/test_inventory_marker_rule_measurement.py` (2) reproduce with this slice stashed
+and are **not** caused by it; they remain unowned by this goal.
 
 ## Context Sources
 

@@ -24,6 +24,25 @@ _PAUSE_BRIEF_RE = re.compile(
 )
 
 
+def _load_sibling(module_name: str):
+    """Load a sibling script by path.
+
+    By path rather than by package import because this file runs as a git hook from an
+    arbitrary working directory, where `scripts` is not importable as a package.
+    """
+    spec = importlib.util.spec_from_file_location(
+        module_name, Path(__file__).resolve().with_name(f"{module_name}.py")
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError(f"unable to load sibling module {module_name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_AUTHZ = _load_sibling("commit_msg_closeout_authorization")
+
+
 def _load_issue_verify_closeout():
     root = Path(__file__).resolve().parents[1]
     candidates = [
@@ -61,7 +80,9 @@ def _strip_commit_comments(body: str) -> str:
     return "\n".join(line for line in body.splitlines() if not _COMMENT_LINE_RE.match(line)).strip() + "\n"
 
 
-def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_refs: Any) -> list[int]:
+def _bare_close_keyword_numbers(
+    sanitized_body: str, covered: set[int], iter_refs: Any, current_repo: str
+) -> list[int]:
     """Issue numbers the commit message itself close-keywords, minus numbers
     already covered by a staged closeout artifact.
 
@@ -82,8 +103,19 @@ def _bare_close_keyword_numbers(sanitized_body: str, covered: set[int], iter_ref
     GitHub closed the issue with no floor anywhere — the exact escape this floor
     exists to close (an agent quoting a log/diff that contains a close keyword,
     or deliberately fencing one to dodge the floor).
+
+    Repository-qualified refs to ANOTHER repo are excluded. GitHub only auto-closes an
+    issue in the repo the commit lands in, so ``Fixes acme/other-repo#77`` closes nothing
+    here — but folding it in reported ``missing_close_keywords: [77]`` against THIS
+    repo's #77, and the remedy that satisfies that report is writing ``Fixes #77``,
+    which would auto-close a local issue the author never meant to touch. A floor whose
+    remedy causes the harm it guards against is worse than no floor on that path.
     """
-    found = {number for _repo, number in iter_refs(sanitized_body)}
+    found = {
+        number
+        for repo, number in iter_refs(sanitized_body)
+        if repo is None or repo.lower() == current_repo.lower()
+    }
     return sorted(number for number in found if number not in covered)
 
 
@@ -93,13 +125,17 @@ def _issue_closeout_artifacts(repo_root: Path, iter_refs: Any, strip_code_fences
         if not (path.startswith("charness-artifacts/issue/") and path.endswith(".md")):
             continue
         body = "\n".join(strip_code_fences(_staged_file(repo_root, path)))
-        numbers = sorted({number for _repo, number in iter_refs(body)})
+        qualified = sorted({(repo, number) for repo, number in iter_refs(body)}, key=lambda item: (item[0] or "", item[1]))
+        numbers = sorted({number for _repo, number in qualified})
         if not numbers:
             continue
         artifacts.append(
             {
                 "path": path,
                 "numbers": numbers,
+                # Repo-qualified form kept alongside the bare numbers the existing floors
+                # use, so authorization can tell this repo's #514 from another repo's.
+                "qualified_numbers": qualified,
                 "classification": _infer_classification(body),
                 "pause_brief": _PAUSE_BRIEF_RE.search(body) is not None,
                 "body": body,
@@ -244,7 +280,8 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     commit_msg_file = commit_msg_file.resolve()
     raw_body = commit_msg_file.read_text(encoding="utf-8")
     sanitized_body = _strip_commit_comments(raw_body)
-    message_refs = {number for _repo, number in iter_refs(sanitized_body)}
+    message_qualified = {(repo, number) for repo, number in iter_refs(sanitized_body)}
+    message_refs = {number for _repo, number in message_qualified}
     # Pause carve-out (#444): a pausing resolution brief is persisted state, not
     # a closeout carrier — at pause time no honest critique/behavior ledger can
     # exist. The brief stays exempt only while the commit message close-keywords
@@ -257,12 +294,31 @@ def evaluate(repo_root: Path, commit_msg_file: Path, repo: str) -> dict[str, Any
     artifacts = [artifact for artifact in artifacts if artifact not in pause_briefs]
     covered = {number for artifact in artifacts for number in artifact["numbers"]}
     # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
-    bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs)
+    bare_numbers = _bare_close_keyword_numbers(sanitized_body, covered, iter_refs, repo)
     pause_reports = _pause_brief_reports(pause_briefs, issue_verify_closeout)
     for artifact in artifacts + pause_briefs:
         artifact.pop("body", None)
     if not artifacts and not bare_numbers and not pause_reports:
         return {"ok": True, "status": "not_applicable", "artifacts": [], "review_advisory": []}
+
+    # Protected-target authorization runs HERE: after the close targets are known, and
+    # before the sanitized carrier file is written. The temp file is this carrier's
+    # first side effect, and an authorization check placed after it would be checking a
+    # state it had already changed. Targets are normalized in memory only.
+    authorization = _AUTHZ.authorize_commit_carrier(repo_root, message_qualified, artifacts, bare_numbers)
+    # Dropped only AFTER authorization has consumed it: this is internal scratch, not
+    # part of the report, but authorization is the one reader that needs it.
+    for artifact in artifacts + pause_briefs:
+        artifact.pop("qualified_numbers", None)
+    if not authorization["authorized"]:
+        return {
+            "ok": False,
+            "status": "refused",
+            "artifacts": artifacts,
+            "closeout_authorization": authorization,
+            "reports": [],
+            "review_advisory": [],
+        }
 
     sanitized_file = commit_msg_file.with_suffix(commit_msg_file.suffix + ".charness-closeout-body")
     sanitized_file.write_text(sanitized_body, encoding="utf-8")
@@ -430,7 +486,10 @@ def _emit_human_output(report: dict[str, Any]) -> None:
     being the silent path on the commit-msg carrier, without ever changing exit.
     """
     if not report["ok"]:
-        print(_format_failure(report), file=sys.stderr)
+        if report.get("status") == "refused":
+            print(_AUTHZ.format_refusal(report), file=sys.stderr)
+        else:
+            print(_format_failure(report), file=sys.stderr)
     for line in report.get("review_advisory", []):
         print(f"charness commit-msg: {line}", file=sys.stderr)
 

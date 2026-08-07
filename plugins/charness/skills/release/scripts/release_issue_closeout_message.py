@@ -61,6 +61,34 @@ except ImportError as exc:
     _ISSUE_VERIFY_CLOSEOUT = None
     _ISSUE_CLOSEOUT_DRAFT_ERROR = str(exc)
 
+try:
+    _ISSUE_AUTHZ = _load_issue_closeout_module(
+        "issue_closeout_authorization", "release_message_closeout_authorization"
+    )
+except ImportError:
+    _ISSUE_AUTHZ = None
+
+
+def _refuse_unauthorized_message(repo_root: Path, repo: str, issue_numbers: list[int]) -> None:
+    """Refuse before this module writes its temp commit-message file.
+
+    This module is separately importable and reachable without the release preflight
+    having run in the same process, so it re-authorizes rather than assuming an
+    earlier caller did. Duplicated intentionally: the alternative is a temp carrier
+    written for a close that the crosswalk forbids.
+    """
+    if _ISSUE_AUTHZ is None or not issue_numbers:
+        return
+    targets = [
+        {"repository": repo, "issue_number": number, "source": "release-closeout-message"}
+        for number in issue_numbers
+    ]
+    result = _ISSUE_AUTHZ.authorize(
+        invoked_targets=targets, carrier_targets=[], carrier_source="release", repo_root=repo_root
+    )
+    if not result["authorized"]:
+        raise SystemExit(_ISSUE_AUTHZ.refusal_message(result))
+
 
 def _carrier_classification(carrier_body: str) -> str | None:
     match = _CLASSIFICATION_LINE_RE.search(carrier_body)
@@ -139,6 +167,7 @@ def validate_release_closeout_commit_message(
     commit_ref: str | None = None,
 ) -> dict[str, Any]:
     """Validate an exact commit carrier with issue-owned closeout semantics."""
+    _refuse_unauthorized_message(repo_root, repo, issue_numbers)
     if _ISSUE_VALIDATE_CLOSEOUT_DRAFT is None or _ISSUE_VERIFY_CLOSEOUT is None:
         raise SystemExit(
             "release --close-issue carrier validation requires the issue skill's "

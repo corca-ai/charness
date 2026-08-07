@@ -32,7 +32,10 @@ def _prepare_release_attempt(
     cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
     expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)
     payload["expected_release_url"] = expected_release_url
-    _common["preflight_close_issue_carrier"](repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli)
+    _common["preflight_close_issue_carrier"](
+        repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli,
+        carrier_source="publish-execute",
+    )
     cli.run_release_adapter_preflight(repo_root, adapter_preflight_payload, run_command=cli.run)
     cli.run_bump(args, repo_root)
     cli.ensure_release_surface(repo_root, next_version)
@@ -218,6 +221,7 @@ def _publish_and_finalize(
         issue_repo=issue_repo,
         payload=payload,
         cli=cli,
+        carrier_source="publish-execute",
     )
 
 

@@ -11,6 +11,7 @@ _run_backend = _BACKEND.run_backend
 _resolve_op = _BACKEND.resolve_op
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
+_AUTHZ = _load_local("issue_closeout_authorization")
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -70,6 +71,39 @@ def _capture_lifecycle(repo_root: Path, *, repo: str, number: int) -> dict[str, 
         return {"status": "capture_error", "appended": False, "errors": [f"{exc.__class__.__name__}: {exc}"]}
 
 
+def _authorize_direct_close(
+    *, repo: str, number: int, repo_root: Path, body: str, manual_target_declaration: str | None
+) -> dict[str, Any]:
+    """Authorize the manual close carrier before any backend call.
+
+    The manual declaration is required only when a PROTECTED target is in play. Asking
+    every consumer's ordinary `close-with-comment` for a new mandatory flag would be a
+    global floor change smuggled in as a scoped fix, so the permissive probe runs
+    first and the declaration is demanded only once the gate says it applies.
+    """
+    probe = _AUTHZ.authorize(
+        invoked_targets=[{"repository": repo, "issue_number": number, "source": "cli-target"}],
+        carrier_targets=[],
+        carrier_source="close-with-comment",
+        repo_root=repo_root,
+    )
+    if not probe.get("applies"):
+        return probe
+    if probe.get("refusal") not in (None, "matrix_incomplete", "missing_invoked_target"):
+        # The probe already knows the definitive answer (a foreign repository, an
+        # out-of-scope carrier, a consumer-owned row). Demanding a manual declaration
+        # first would send the operator to supply a flag that cannot possibly help, so
+        # the real refusal is surfaced instead of being replaced by our own error text.
+        raise RuntimeError(_AUTHZ.refusal_message(probe))
+    declared = _AUTHZ.parse_manual_declaration(manual_target_declaration, repo, number)
+    return _AUTHZ.enforce(
+        invoked_targets=declared,
+        carrier_targets=[{"repository": repo, "issue_number": number, "source": "cli-target"}],
+        carrier_source="close-with-comment",
+        repo_root=repo_root,
+    )
+
+
 def close_with_comment(
     repo: str,
     number: int,
@@ -79,11 +113,21 @@ def close_with_comment(
     classification: str,
     backend: dict[str, Any] | None = None,
     reason: str = "completed",
+    manual_target_declaration: str | None = None,
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
     if not body_file.is_file():
         raise RuntimeError(f"close-comment body file not found: {body_file}")
     body = body_file.read_text(encoding="utf-8")
+    # Authorization runs before BOTH backend mutations, not just the close. A comment
+    # posted on the wrong issue is already an external side effect that cannot be
+    # taken back, and this function's own error path documents that the close can fail
+    # after the comment has landed — so "authorize before the close" would be a check
+    # placed after the first irreversible act.
+    authorization = _authorize_direct_close(
+        repo=repo, number=number, repo_root=repo_root, body=body,
+        manual_target_declaration=manual_target_declaration,
+    )
     floor_report = _CLOSE_COMMENT_FLOOR.evaluate_close_comment_floor(
         repo_root=repo_root, body=body, classification=classification, number=number
     )
@@ -176,6 +220,7 @@ def close_with_comment(
         "view_argv": view_argv,
         "verified_state": verified_state,
         "reason": reason,
+        "closeout_authorization": authorization,
         "review_advisory": review_advisory,
         "lifecycle_capture": lifecycle_capture,
     }

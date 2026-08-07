@@ -24,6 +24,19 @@ load_yaml_file_report = _adapter_lib_module.load_yaml_file_report
 uninterpreted_warnings = _adapter_lib_module.uninterpreted_warnings
 parse_failure_error = _adapter_lib_module.parse_failure_error
 
+def _load_capture_capability():
+    """Load the sibling capability module from either the source or installed layout.
+
+    Loaded by path rather than imported by package name because this file has no stable
+    package identity: the source tree puts it under `skills/public/issue/scripts/` and
+    the exported plugin under `skills/issue/scripts/`, and it is also loaded directly by
+    file path from several callers.
+    """
+    return SKILL_RUNTIME.load_local_skill_module(__file__, "issue_source_capture_capability")
+
+
+_CAPTURE_CAPABILITY = _load_capture_capability()
+
 ADAPTER_CANDIDATES = (
     Path(".agents/issue-adapter.yaml"),
     Path(".codex/issue-adapter.yaml"),
@@ -36,7 +49,6 @@ ADAPTER_CANDIDATES = (
 FEATURE_BRIEF_PAUSE_VALUES = ("on-open-decisions", "always", "never")
 DEFAULT_FEATURE_BRIEF_PAUSE = "on-open-decisions"
 
-
 def infer_defaults() -> dict[str, Any]:
     return {
         "version": 1,
@@ -44,6 +56,7 @@ def infer_defaults() -> dict[str, Any]:
         "default_repo": None,
         "remote_name": "origin",
         "issue_backend": default_backend(),
+        "issue_source_capture": _CAPTURE_CAPABILITY.default_source_capture(),
         "feature_brief_pause": DEFAULT_FEATURE_BRIEF_PAUSE,
         "harness_upstream": None,
     }
@@ -272,6 +285,9 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
             data[field] = value
 
     data["issue_backend"] = _parse_backend(raw_data.get("issue_backend"), errors, warnings)
+    data["issue_source_capture"] = _CAPTURE_CAPABILITY.parse_source_capture(
+        raw_data.get("issue_source_capture"), data["issue_backend"], errors, warnings, _string
+    )
     data["feature_brief_pause"] = _parse_feature_brief_pause(
         raw_data.get("feature_brief_pause"), errors
     )

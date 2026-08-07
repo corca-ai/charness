@@ -1,7 +1,39 @@
 from __future__ import annotations
 
+import importlib.util
 from pathlib import Path
 from typing import Any
+
+
+def _authorization_module():
+    """Sibling load: the authorization helper always ships beside this file."""
+    candidate = Path(__file__).resolve().with_name("issue_closeout_authorization.py")
+    if not candidate.is_file():
+        return None
+    spec = importlib.util.spec_from_file_location("draft_closeout_authorization", candidate)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _authorize_draft(repo_root: Path, repo: str, numbers: list[int], carrier: str) -> dict[str, Any]:
+    """Fold the authorization record into the draft verdict.
+
+    The draft validator mutates nothing, so this is not about preventing a side
+    effect — it is about what `draft_verified` MEANS. That status is the gate a close
+    is authorized against, so a draft that reports it while the close itself would be
+    refused sends an operator all the way to the close call before anything objects.
+    The refusal belongs at the first place the question is asked.
+    """
+    module = _authorization_module()
+    if module is None:
+        return {"authorized": True, "applies": False, "crosswalk_status": "authorization_module_unavailable"}
+    targets = [
+        {"repository": repo, "issue_number": number, "source": f"draft:{carrier}"} for number in numbers
+    ]
+    return module.authorize(
+        invoked_targets=targets, carrier_targets=[], carrier_source=carrier, repo_root=repo_root
+    )
 
 
 def validate_closeout_draft(
@@ -50,6 +82,11 @@ def validate_closeout_draft(
         str(commit_message_file) if commit_message_file is not None else None
     )
     result["draft"] = True
+    authorization = _authorize_draft(repo_root, repo, numbers, carrier)
+    result["closeout_authorization"] = authorization
+    if not authorization["authorized"]:
+        result["ok"] = False
+        result.setdefault("refusals", []).append(authorization)
     result["status"] = "draft_verified" if result["ok"] else "draft_failed"
     result["publication_status"] = (
         "ready_to_commit_push" if carrier == "direct-commit" else "ready_to_publish"

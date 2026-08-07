@@ -1,0 +1,157 @@
+{
+  "inspection_identity": "498785da1bf1f835299ad73ed8561758b550e0cd91330d2dffe0a656c38b96f7",
+  "issues": [
+    514,
+    515,
+    518
+  ],
+  "locators": [
+    {
+      "issue": 518,
+      "note": "Declares preset_id/preset_lineage (python-quality <- specdown-quality), gate_design_review_globs, product_surfaces, and adapter_review_sources. This is the declaration half of #518's declaration-to-verdict boundary: the file names surfaces without any structure binding each one to an executable reader.",
+      "path": ".agents/quality-adapter.yaml",
+      "role": "quality-declaration-surface",
+      "sha256": "1f4552536f228b5b42cad21f5d5681a923925cf6c422363ae38520b8010ffc0c"
+    },
+    {
+      "issue": 518,
+      "note": "The executable route that runs quality phases. #518's question is whether every surface the adapter declares reaches a phase here, and whether a declared-but-unreached surface is visible as a gap rather than absent from the final artifact.",
+      "path": "scripts/run-quality.sh",
+      "role": "quality-route-and-fold",
+      "sha256": "443d7216ee02b2f3cfc8f190796193ebd5c32801176dcce597ec78579cd7184a"
+    },
+    {
+      "issue": 515,
+      "note": "Owns the '## Surface Contract Review' packet fields (semantic coverage, surface, owner, projections, state scope, transitions, proof boundary, unexamined axes). This is #517's existing disclosure floor, which #515 must REUSE rather than re-solve.",
+      "path": "scripts/quality_surface_contract.py",
+      "role": "quality-surface-contract-validator",
+      "sha256": "cbf6190c0d6cf864f18276ccee5753f0dad1ecc35fbf87eb49715e820e99f6c3"
+    },
+    {
+      "issue": 515,
+      "note": "Final-reader tests for the surface-contract packet; the regression home for #515's routing/disclosure repair.",
+      "path": "tests/test_quality_surface_contract.py",
+      "role": "quality-surface-contract-tests",
+      "sha256": "85ac515b6f606efac98837e006a62970f90fc90143f3df004d61c31f57393585"
+    },
+    {
+      "issue": 514,
+      "note": "sha256-v2 identity binding between a verdict and its declared inputs, including the #460 working-tree/staged carve-out. #514's evidence assembly must bind through this rather than mint a second identity notion.",
+      "path": "scripts/reviewed_input_identity.py",
+      "role": "reviewed-input-identity",
+      "sha256": "8b13064c7a60de278d49637cbfa3ccbea71bbf06b3ac3d058982dc6bf731d3b1"
+    },
+    {
+      "issue": 514,
+      "note": "Executes the bounded local phases of a closeout bundle (kind charness.closeout-bundle, schema v1) and already refuses shell metacharacters in phase commands. #514's deterministic-assembly repair lands against this planner's producer coverage, runtime interpretation, and readback inputs.",
+      "path": "scripts/closeout_bundle_lib.py",
+      "role": "closeout-bundle-planner",
+      "sha256": "359a95f31adcfb0e85dc115cb2201be6e8352a74b9d7b6ee25adfd17f4c95e6a"
+    },
+    {
+      "issue": 514,
+      "note": "Plan/execute CLI over the bundle lib; the operator-facing entrypoint whose plan output #514 requires to be deterministically reviewable before execution.",
+      "path": "scripts/closeout_bundle.py",
+      "role": "closeout-bundle-cli",
+      "sha256": "37aadf2633c96449af564f39f4a605d9177486e1757127f68965e946fe5bd499"
+    },
+    {
+      "issue": 514,
+      "note": "Preflight consumed by the bundle lib; part of #514's producer-coverage surface.",
+      "path": "scripts/final_bundle_preflight_lib.py",
+      "role": "final-bundle-preflight",
+      "sha256": "47f6755220bfb401a19a100422384ce2887ae371ba24e6628ef68138eb57cf3f"
+    },
+    {
+      "issue": 514,
+      "note": "The only carrier that can block `git commit`. Creates a sanitized temp carrier file (`.charness-closeout-body`) BEFORE any per-issue verification runs, so protected-target authorization must be inserted ahead of that write, not after it.",
+      "path": "scripts/check_issue_closeout_commit_msg.py",
+      "role": "closeout-ingress-commit-msg",
+      "sha256": "95dfe2adb38f750486103240a1fbc4eb1794d45a8be895908fa30928afc738ee"
+    },
+    {
+      "issue": 514,
+      "note": "Owns iter_close_keyword_refs / strip_code_fences / verify_closeout and the ledger floors. Close-keyword parsing is the shared source of truth every ingress must reuse rather than re-regex.",
+      "path": "skills/public/issue/scripts/issue_verify_closeout.py",
+      "role": "closeout-ingress-verify",
+      "sha256": "90accf93369b4a0660c3ae73e1633df76d069f9d1bcd8178734ade39caed6fd0"
+    },
+    {
+      "issue": 514,
+      "note": "Pre-close draft validation reporting draft_verified; the gate the standing close approval is conditional on.",
+      "path": "skills/public/issue/scripts/issue_validate_closeout_draft.py",
+      "role": "closeout-ingress-draft",
+      "sha256": "ae0542e39e8c3b27987ee95d19e365bee75d8ca53cc1fc06ac600f9086871ef8"
+    },
+    {
+      "issue": 514,
+      "note": "close_with_comment() performs the comment and close backend mutations. Authorization must precede BOTH, since a comment on the wrong issue is already an external side effect.",
+      "path": "skills/public/issue/scripts/issue_close.py",
+      "role": "closeout-ingress-direct-close",
+      "sha256": "ba6e75b71e529c3f1c84f91787d21846286c6dea7824d20d6681dee374d8220d"
+    },
+    {
+      "issue": 514,
+      "note": "`close-with-comment` CLI. Its body carries no close keyword, so the CLI number would otherwise be self-authorizing; this is why the manual path needs an explicit repository-qualified manual_target_declaration.",
+      "path": "skills/public/issue/scripts/issue_tool.py",
+      "role": "closeout-ingress-tool",
+      "sha256": "fa46206aa9ba68548bca242bb205e647998ba90069c8ca4fa20f1e119fb392ea"
+    },
+    {
+      "issue": 514,
+      "note": "Adapter resolution and, as of this slice, the issue_source_capture capability contract. The capture adapter loads this module rather than reimplementing resolution so the receipt records the same adapter identity the issue lane resolves.",
+      "path": "skills/public/issue/scripts/resolve_adapter.py",
+      "role": "issue-adapter-resolver",
+      "sha256": "e6e493107742fce7fd9edcbef1e468f70afedad37284ffa18d18f2677dd20999"
+    },
+    {
+      "issue": 514,
+      "note": "ensure_release_issues_closed() path; a release-driven `gh issue close` is a bypass of the per-issue closeout floor unless it refuses protected targets first.",
+      "path": "skills/public/release/scripts/release_issue_closeout.py",
+      "role": "release-issue-closeout",
+      "sha256": "24d559c8f5644f973c210361c69f944fcbe63214d5e0d982c99202a5c5b7bcbd"
+    },
+    {
+      "issue": 514,
+      "note": "Builds the closeout temp message; refusal must precede temp-file creation, matching the commit-msg carrier's ordering.",
+      "path": "skills/public/release/scripts/release_issue_closeout_message.py",
+      "role": "release-closeout-message",
+      "sha256": "006b80f2a4534c073c60adb8bf73b8b9c991a8b4d6a4dcd766281b5c33516b98"
+    },
+    {
+      "issue": 514,
+      "note": "Publish path reaching bump/publish/tag. Out of scope for this goal, so it must refuse protected #514/#515/#518 closes rather than silently carry them.",
+      "path": "skills/public/release/scripts/publish_release_execute.py",
+      "role": "release-publish-execute",
+      "sha256": "cf21d4d787055fcbcb3e9a09e8b0d0fb4c0e6763f839ded2bd7cb4fc1a222ad3"
+    },
+    {
+      "issue": 514,
+      "note": "Resume path; a recovery entrypoint is the classic way a refusal added only to the happy path gets bypassed.",
+      "path": "skills/public/release/scripts/publish_release_resume.py",
+      "role": "release-publish-resume",
+      "sha256": "0f9ddfa7d66bd060ea49236254603cc873a7a653c159dcf3a3330b85d122382a"
+    },
+    {
+      "issue": 514,
+      "note": "Resume-closeout path reaching issue close during recovery.",
+      "path": "skills/public/release/scripts/publish_release_resume_closeout.py",
+      "role": "release-publish-resume-closeout",
+      "sha256": "dbee0aae030bc322aa5cf0fb27f5063035216bd306588a4d3b1bbc6bb8885964"
+    },
+    {
+      "issue": 514,
+      "note": "Shared release plumbing under the execute/resume paths.",
+      "path": "skills/public/release/scripts/publish_release_common.py",
+      "role": "release-publish-common",
+      "sha256": "137269d26968c3ad8172b5f3572436bb86b38aa8fda3947fe0ab88924106e532"
+    }
+  ],
+  "non_claims": [
+    "This inspection records WHICH owners were read and at what content, not that any of them is correct, complete, or repaired.",
+    "No product behavior of cmanki or craken-agents is claimed; those repos are read-only comparison evidence.",
+    "Listing a locator under an issue does not assert that issue's fix lives there; it asserts the surface was inspected while scoping that issue."
+  ],
+  "purpose": "Record which producer/consumer surfaces were actually read before the #514/#515/#518 acceptance matrix was built, bound to the digest each file carried at inspection time. A locator whose digest has moved invalidates the freeze: the conclusions drawn from reading it are no longer safe to build on.",
+  "schema": "issue-source-owner-inspection/v1"
+}

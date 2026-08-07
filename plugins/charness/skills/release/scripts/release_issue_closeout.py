@@ -55,6 +55,38 @@ def _load_issue_closeout_body_lib():
     )
 
 
+def _load_authorization_module():
+    """The release lane's authorization module, or None on a partial vendoring.
+
+    Absence must DEGRADE, not crash. This module is loaded by partial installs that
+    copy only some release scripts, and by the existing behavioral-floor tests that
+    simulate exactly that. Raising here replaced those installs' typed refusals with an
+    ImportError traceback — turning a diagnosable "the issue skill is missing" into a
+    bare stack trace, which is the failure mode the surrounding code already guards.
+    """
+    try:
+        return _load_local_release_module("release_closeout_authorization")
+    except ImportError:
+        return None
+
+
+def refuse_unauthorized_release_close(
+    repo_root: Path, *, repo: str | None, issue_numbers: list[int], carrier_source: str
+) -> dict[str, Any]:
+    """Re-exported here so every existing release caller keeps one import site."""
+    module = _load_authorization_module()
+    if module is None:
+        return {
+            "authorized": True,
+            "applies": False,
+            "carrier_source": carrier_source,
+            "crosswalk_status": "authorization_module_unavailable",
+        }
+    return module.refuse_unauthorized_release_close(
+        repo_root, repo=repo, issue_numbers=issue_numbers, carrier_source=carrier_source
+    )
+
+
 def _load_local_release_module(module_name: str):
     module_path = Path(__file__).resolve().with_name(f"{module_name}.py")
     if not module_path.is_file():
@@ -259,11 +291,17 @@ def preflight_release_issues(
     behavior_lines: list[str] | None = None,
     classification: str | None = None,
     carrier_file: Path | None = None,
+    carrier_source: str = "release",
 ) -> None:
     if not issue_numbers:
         payload["issue_closeout_preflight"] = {"status": "not_requested", "issues": []}
         payload["issue_closeout_behavioral_verdict"] = {"applies": False, "ok": True, "missing": []}
         return
+    # First statement after the empty-set early return, and ahead of every read, temp
+    # write, draft validation, bump, and publication below.
+    payload["issue_closeout_authorization"] = refuse_unauthorized_release_close(
+        repo_root, repo=repo, issue_numbers=issue_numbers, carrier_source=carrier_source
+    )
     if classification is None:
         raise SystemExit(
             "release --close-issue requires --close-issue-classification before quality or mutation"
@@ -332,10 +370,17 @@ def ensure_release_issues_closed(
     payload: dict[str, Any],
     run,
     behavior_lines: list[str] | None = None,
+    carrier_source: str = "release",
 ) -> None:
     if not issue_numbers:
         payload["issue_closeout"] = {"status": "not_requested", "issues": []}
         return
+    # Re-authorized here rather than trusting the preflight's earlier pass: this
+    # function reaches `gh issue close` directly, and the resume/recovery entrypoints
+    # can call it without the preflight having run at all in this process.
+    refuse_unauthorized_release_close(
+        repo_root, repo=repo, issue_numbers=issue_numbers, carrier_source=carrier_source
+    )
     if repo is None:
         raise SystemExit("release close issue verification needs a GitHub repo; pass --close-issue-repo")
     preflight_by_number = {

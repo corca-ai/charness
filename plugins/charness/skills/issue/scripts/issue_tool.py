@@ -150,6 +150,7 @@ def command_close_with_comment(args: argparse.Namespace) -> int:
             args.repo, args.number, args.body_file.resolve(),
             repo_root=args.repo_root.resolve(), classification=args.classification,
             backend=resolved["backend"], reason=args.reason,
+            manual_target_declaration=args.manual_target_declaration,
         ),
         lambda _result: 0,
     )
@@ -316,6 +317,12 @@ def build_parser() -> argparse.ArgumentParser:
         "any GitHub mutation",
     )
     close.add_argument("--reason", default="completed", help="Close reason passed to the backend (default: completed)")
+    close.add_argument(
+        "--manual-target-declaration", default=None,
+        help="Explicit repository-qualified close target (owner/repo#number). Required only "
+        "when closing an issue protected by the evidence-boundary crosswalk: this carrier's "
+        "body has no close keyword, so --number would otherwise authorize itself",
+    )
     close.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     close.set_defaults(func=command_close_with_comment)
 

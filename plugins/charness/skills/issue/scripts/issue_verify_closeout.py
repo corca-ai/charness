@@ -222,6 +222,32 @@ def _validate_verify_inputs(
         raise RuntimeError("final closeout verification requires --expect-state CLOSED")
 
 
+def _authorization_record(repo_root: Path, repo: str, numbers: list[int], carrier: str) -> dict[str, Any]:
+    """Attach the authorization record WITHOUT gating on it. Deliberate asymmetry.
+
+    Every pre-close ingress refuses on this record. This one does not, and the reason
+    is that `verify-closeout --expect-state CLOSED` is a post-publication READBACK: by
+    the time it runs, the close has already happened. Refusing here would suppress the
+    one channel that reports whether the irreversible act landed — trading a
+    protection that no longer has anything to protect for the loss of the confirmation
+    the closeout floor actually requires.
+
+    So the record is carried for the reader, and the teeth stay upstream where a
+    refusal can still prevent something. This is reported state, not a verdict.
+    """
+    bootstrap = _resolve_bootstrap()
+    if bootstrap is None:
+        return {"applies": False, "authorized": True, "crosswalk_status": "authorization_module_unavailable"}
+    runtime = SimpleNamespace(**runpy.run_path(str(bootstrap)))
+    module = runtime.load_local_skill_module(__file__, "issue_closeout_authorization")
+    record = module.authorize(
+        invoked_targets=[{"repository": repo, "issue_number": number, "source": f"verify:{carrier}"} for number in numbers],
+        carrier_targets=[], carrier_source=f"verify-readback:{carrier}", repo_root=repo_root,
+    )
+    record["gating"] = "reported-only: a post-publication readback cannot prevent a close that already happened"
+    return record
+
+
 def verify_closeout(
     *,
     repo_root: Path,
@@ -362,4 +388,5 @@ def verify_closeout(
         "verified_state": verified_state,
     }
     _fold_proof_mismatch(result, repo_root, body)
+    result["closeout_authorization"] = _authorization_record(repo_root, repo, numbers, carrier)
     return result

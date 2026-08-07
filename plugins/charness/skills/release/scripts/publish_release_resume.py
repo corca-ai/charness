@@ -257,7 +257,10 @@ def resume_publish(
     # current target. The original attempt already passed the file-triggered
     # adapter/real-host preflights on this unchanged worktree, so resume re-runs the
     # gates that can flake at push time, not those one-time file-delta checks.
-    _common.preflight_close_issue_carrier(repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli)
+    _common.preflight_close_issue_carrier(
+        repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli,
+        carrier_source="release-resume",
+    )
     if args.close_issue:
         head_commit_message = cli.run(
             ["git", "show", "-s", "--format=%B", "HEAD"], cwd=repo_root
@@ -346,5 +349,6 @@ def resume_publish(
         issue_repo=issue_repo,
         payload=payload,
         cli=cli,
+        carrier_source="release-resume",
     )
     print(json.dumps(payload, ensure_ascii=False, indent=2))
