@@ -1,6 +1,7 @@
 # Achieve Goal: Close every open issue: repair the declaration-to-verdict boundary, then the surfaces that grew on top of it
 
-Status: active — 6 of the original 19 closed; next action is `#544`
+Status: active — 7 closed (`#544` landed at `1a667f45`); next action is the
+`#535`/`#532`/`#519`/`#520` slice-shaped group
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md`
 
@@ -11,13 +12,16 @@ Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
 
-- **Next action: `#544` (runtime-budget drift). Start here.** It is not the most
-  important issue; it is the one most likely to block the next push, and a blocked
-  push blocks every close in this goal. The data is already gathered — see
-  `## Slice 544 Starting Data` below — so this is a decision, not an investigation.
-- Status: 6 issues closed and verified through the adapter (`#529`, `#533`, `#526`,
-  `#541`, `#543`, `#540`). `pytest` is at 0 failures and the pre-push gate passes.
-  `main` is current; the working tree is clean.
+- **Next action: the genuinely slice-shaped group — `#535`, `#532`, `#519`/`#520`.**
+  `#544` is CLOSED. `#528` still looks ready and is not: root-before-consumer puts
+  it behind the parked `#530`.
+- Status: 7 issues closed and verified through the adapter (`#529`, `#533`, `#526`,
+  `#541`, `#543`, `#540`, `#544`). `pytest` is at 0 failures (7,671 passed) and the
+  pre-push gate passes at `1a667f45`. `main` is current; the working tree is clean.
+- **`## Slice 544 Starting Data` below is now HISTORICAL — do not paste it.** Its
+  suggested bars were derived from windows that were still regime mixtures. The
+  decision recorded in Slice 544 is that no bar moves until the enforced windows
+  turn over (twenty full-queue runs from `1a667f45`).
 - **Read `## Re-Scope Required` before picking anything else.** The plan assumed 19
   slice-shaped defects. Three of four issues attempted had a named remedy whose
   premise did not hold, and one (`#534`) was BUILT green — seven passing tests, clean
@@ -472,6 +476,67 @@ non-claim warns about.
 goal whose named remedy did not survive its own premise check (`#530`, `#534`, and
 partially `#526`). The plan assumed 19 slice-shaped defects; the measured rate says
 otherwise. Verify the premise before building, not after.
+
+### Slice 544 — Stop budgeting one label against a mixture (`#544`) — CLOSED
+
+**Carrier `1a667f45`; `verify-closeout --expect-state CLOSED` returned `verified`.**
+
+**The issue's stated cause was refuted, and that refutation is the result.** The
+report said budgets drift up from contention and every fix is a ratchet. Measured:
+the recent window is a fixed-size 20-sample FIFO, so retries cannot ratchet the
+median; `check-secrets` had already fallen back to 15,679 ms from the 17,669 ms
+peak the issue cites, statistically identical to the 15,672 ms it calls the
+"before" value; bars demonstrably fall (`check-coverage` 55000→16500); and
+`check-secrets: 19500`, the headline example, was set tighter than the 1.4x
+convention by judgment rather than at it. **No bar was changed, recorded as a
+decision.** The goal's `## Slice 544 Starting Data` block is exactly what NOT to
+paste: it would have raised every bar from a still-mixed window to justify drift
+that does not exist.
+
+**The real defect, one layer over.** A sample records elapsed time but not the
+GATE SET it ran in, so the 14-gate docs-only pre-push subset and the ~85-gate full
+queue pooled into one window. All fourteen docs-only labels are mixtures, 2.10x to
+4.78x apart; three carry budgets. For `check-references-link-inventory` the mixture
+pulls the median DOWN, so its bar is LOOSER than intended — the inverse failure,
+hiding a regression rather than manufacturing a false red. The aggregate label had
+refused to record under a filter since it was added, for exactly this reason; the
+per-gate path had no such guard, and the repo had already fixed the same class one
+level up (`pytest` vs `pytest-release`). Fix: `<profile>.<regime>` keying. The
+enforcement rule is untouched.
+
+**Three delegated reviews, all boundary-verified clean, and round 2 paid for
+itself.** The causal review refuted four of the issue's five claims before any code
+was written. Round 1 found a blocker confirmed by execution: the exported regime
+leaked into the pytest gate and reddened three recorder tests — the fix carrying
+the class it fixes. Round 2, reading the repairs, caught two things round 1 could
+not have seen because round 1 introduced them: a **false proof count in the closeout
+carrier** ("four runner tests, three mutants" against six and ten actual), and a
+second widening opt-in (`CHARNESS_SUPPLY_CHAIN_ONLINE`) that the first repair's
+one-name carve-out missed.
+
+**Ten mutants, all killed**, re-run against the final code rather than quoted from
+memory. One initially SURVIVED: the test for the `export` set the variable itself,
+so the child inherited it and the assertion held with the line deleted. That is the
+goal's own "construct the input that triggers it" rule catching a vacuous test.
+
+**Proof channel distinct from the fix.** The fix was driven by `pytest`; the verdict
+came from the CLI — the real docs-only subset filed its sample into a new
+`local-linux-x86_64-36cpu.docs-only` profile while the enforced window stayed
+byte-identical, and `check_runtime_budget.py` exits 0.
+
+**Gate refused once and was right.** The pre-push gate blocked on a stale
+`validate-debug-seam-index`; repaired by running the tool it names, not bypassed.
+
+**Issues filed:** `#546` (a budgeted label with no sample WARNs and exits 0, so a
+bar can be permanently unenforceable), `#547` (`refreeze` re-stamps all 19 locator
+digests silently, so a one-file re-bind can launder unreviewed drift).
+
+**Non-claims.** No claim that contention is absent — `check-secrets` is 7,482 ms
+standalone against 15,672–17,669 in-gate, roughly 2.3x. No claim about why the
+full-queue mode moved ~10% and back. No claim that `check-secrets`, `doc-duplicates`
+or `run-evals` are affected: they never run in a subset. Residual stated rather than
+hidden — enforced windows still hold pre-fix subset samples (seven of twenty for
+`check-markdown`) which age out after twenty full-queue runs.
 
 ### Slice 1 — Repair the issue lane's own report contract (`#529`)
 
