@@ -1,7 +1,9 @@
 # Achieve Goal: Close every open issue: repair the declaration-to-verdict boundary, then the surfaces that grew on top of it
 
-Status: active — 7 closed (`#544` landed at `1a667f45`); next action is the
-`#535`/`#532`/`#519`/`#520` slice-shaped group
+Status: active — 8 closed (`#544` at `1a667f45`, `#538` at `a0dde3ca`). **The
+plan's central premise is measurably wrong; read `## Re-Scope Required` and the
+Slice 538 entry before continuing.** 24 issues are open, MORE than the 19 this
+goal was drafted against.
 Created: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-close-every-open-issue-declaration-to-verdict.md`
 
@@ -476,6 +478,43 @@ non-claim warns about.
 goal whose named remedy did not survive its own premise check (`#530`, `#534`, and
 partially `#526`). The plan assumed 19 slice-shaped defects; the measured rate says
 otherwise. Verify the premise before building, not after.
+
+### Slice 538 — Name the script that owns the write target (`#538`) — CLOSED
+
+**Carrier `a0dde3ca`; `verify-closeout --expect-state CLOSED` returned `verified`.**
+
+**The issue understated its own severity, and the delegated review found it.** The
+report called the impact "milder than a silent wrong answer — the agent gets a
+loud argparse error". The loud error only fires if you pass `--intent` to the
+scaffold. An agent who reasonably skips a flag the scaffold does not take, and
+uses the `write_artifact_path` the scaffold DOES emit, hits the silent path: that
+key is the current pointer — `latest.md`, or that symlink's target, the PREVIOUS
+review's dated file. Following step 8 literally overwrote the last review, and
+because the path IS dated, nothing signalled it.
+
+**A floor was measured and then NOT added, which is the reusable part.** The
+causal review recommended a repo-wide doc-to-helper gate. I prototyped it and got
+25 fires for ~2 real defects — then the resolution critique showed my prototype
+was WEAKER than the proposal, so that number is not evidence about the proposed
+gate and is not recorded as if it were. The reason that survives is coverage: such
+a gate probes `--help`, which says nothing about payload key semantics, so it
+catches the loud half of this bug and misses the silent overwrite that is its
+entire severity. Drift rate is one real defect in seventeen public skills.
+
+**The tests were presence-only until the critique said so.** A compaction reading
+"write the scaffold payload's `write_artifact_path`; keep the resolver for a
+rolling summary" keeps every asserted token and reintroduces the whole defect.
+That exact flipped step was constructed, shown to pass both presence tests, and
+killed by a third test that binds polarity.
+
+**Issue filed:** `#548` — the payload-level cause the doc fix cannot reach:
+`scaffold_quality_artifact.py` and `scaffold_debug_artifact.py` both publish
+`write_artifact_path` and only debug's is safe to write to, so the two skills
+correctly give opposite instructions about identically-named keys.
+
+**Non-claims.** No repo-wide doc-to-helper gate. The nine other skills the sweep
+cleared were read, not executed. `setup/SKILL.md`'s `normalization.findings` and
+`recommendations[]` are recorded as a typography trap, not filed as defects.
 
 ### Slice 544 — Stop budgeting one label against a mixture (`#544`) — CLOSED
 
