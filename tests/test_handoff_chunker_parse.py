@@ -463,6 +463,13 @@ def test_cli_with_issues_resolves_installed_issue_skill_layout(tmp_path):
         "'labels': [], 'body': ''}]\n",
         encoding="utf-8",
     )
+    # #555: handoff resolves backend commands through the `issue` skill's OWNER
+    # (`issue_backend.try_resolve_op`) instead of reimplementing the rule, so the installed
+    # layout must carry it. Copied REAL rather than stubbed: a stub here would agree with
+    # whatever this test's author had in mind, and this test exists to prove the installed
+    # cross-skill route actually works.
+    for name in ("issue_backend.py", "issue_local_import.py"):
+        shutil.copy2(REPO_ROOT / "skills/public/issue/scripts" / name, issue_scripts / name)
     docs = tmp_path / "docs"
     docs.mkdir()
     handoff = docs / "handoff.md"

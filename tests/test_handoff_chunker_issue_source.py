@@ -560,7 +560,17 @@ def test_list_open_issues_default_runner_resolves_backend_json(backend, monkeypa
             calls["argv"] = argv
             return [{"number": 9, "title": "t", "labels": [], "body": ""}]
 
-    monkeypatch.setattr(backend, "_load_issue_module", lambda root, name: _Runtime)
+    # Name-AWARE: handoff now resolves the argv through the `issue` skill's backend owner as
+    # well as loading the runner from it, so a blind stub would hand `_Runtime` to
+    # `try_resolve_op` and raise AttributeError before the runner was ever reached. Stub only
+    # the runner; let the real owner resolve, which is what this test wants to observe anyway.
+    real_loader = backend._load_issue_module
+    monkeypatch.setattr(
+        backend,
+        "_load_issue_module",
+        lambda root, name: _Runtime if name == "issue_runtime" else real_loader(root, name),
+    )
+    backend._ISSUE_BACKEND_OWNER = None
     out = backend.list_open_issues("o/r", runner=None)
     assert out[0]["number"] == 9
     assert calls["argv"][0] == "gh"

@@ -1857,6 +1857,13 @@
     },
     {
       "class": "intentional",
+      "id": "b6162ea7c2be7c0c",
+      "note": "The `issue` skill's sibling-import preamble — `runpy.run_path(.../issue_local_import.py)[\"sibling_loader\"](__file__)` plus the module bindings it produces. It is irreducible by construction: the preamble EXISTS to bootstrap loading a sibling module, so it cannot itself be loaded from a sibling without the chicken-and-egg it solves. `issue_close.py`, `issue_tool.py`, and `issue_read.py` already carried it; this slice added it to `issue_runtime.py` so that module could stop re-deriving the backend binary/template rule and call `issue_backend.resolve_op` instead — trading a three-line bootstrap idiom for the removal of a duplicated verdict rule that had no placeholder validation. Same rationale as the already-accepted `e2be6ebfbea2ac95` entry for per-entrypoint runtime bootstraps. Not claimed as measured against a prior scan of the tree.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b65c38f8d0eb8e4f",
       "note": "The two check-doc-links regions handle different source and consumer reader positions. Their similar traversal scaffolding is deliberate because the ownership and false-positive rules differ.",
       "reviewed_at": "2026-08-06",

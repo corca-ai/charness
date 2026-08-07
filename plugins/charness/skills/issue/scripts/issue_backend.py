@@ -98,6 +98,39 @@ def resolve_op(
     return [binary, *rendered]
 
 
+def op_is_declared(backend: dict[str, Any], op: str) -> bool:
+    """Whether this backend can build `op` at all: it declared a template, or it is `gh`."""
+    if (backend.get("commands") or {}).get(op) is not None:
+        return True
+    return backend.get("id", "gh") == "gh"
+
+
+def try_resolve_op(
+    backend: dict[str, Any],
+    op: str,
+    default: list[str],
+    allowed: frozenset[str],
+    required: frozenset[str] = frozenset(),
+    **subs: str,
+) -> list[str] | None:
+    """`resolve_op`, except an UNDECLARED op on a non-`gh` backend returns None.
+
+    Same rendering, same placeholder validation, one different answer to one question.
+    `resolve_op` raises there because its callers are acting on the tracker and an
+    unconfigured op is a configuration error. A reader that only reports FACTS needs the
+    opposite: `handoff`'s staleness path turns None into UNKNOWN, and raising -- or guessing
+    -- would manufacture the stale verdict that surface exists to refuse.
+
+    That difference is why the rule was copied into two other modules instead of reused. It is
+    the only difference, so it is expressed as one extra entry point here rather than as a
+    second implementation of the binary/template/substitution rules. Everything else still
+    raises: a bad placeholder is a caller bug in both worlds and must not become a silent None.
+    """
+    if not op_is_declared(backend, op):
+        return None
+    return resolve_op(backend, op, default, allowed, required, **subs)
+
+
 def run_probe(binary: str, args: list[str]) -> dict[str, Any]:
     try:
         result = subprocess.run(

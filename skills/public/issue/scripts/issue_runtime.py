@@ -2,9 +2,13 @@ from __future__ import annotations
 
 import json
 import re
+import runpy
 import subprocess
 from pathlib import Path
 from typing import Any
+
+_load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
+_resolve_op = _load_local("issue_backend", "issue_runtime_backend").resolve_op
 
 REMOTE_PATTERNS = (
     re.compile(r"^git@[^:]+:(?P<owner>[^/]+)/(?P<repo>.+?)(?:\.git)?$"),
@@ -143,19 +147,23 @@ GH_NEWEST_OPEN_ARGS = [
 ]
 
 
+NEWEST_OPEN_PLACEHOLDERS: frozenset[str] = frozenset({"repo"})
+
+
 def newest_open_issue(repo: str, backend: dict[str, Any] | None = None) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    binary = backend.get("binary") or backend.get("id") or "gh"
-    commands = backend.get("commands") or {}
-    template = commands.get("search_newest_open")
-    if template is None:
-        if backend.get("id", "gh") != "gh":
-            raise RuntimeError(
-                f"issue_backend.id={backend.get('id')} did not declare commands.search_newest_open; "
-                "configure the adapter or pass an explicit selector."
-            )
-        template = GH_NEWEST_OPEN_ARGS
-    argv = [binary] + [part.replace("{repo}", repo) for part in template]
+    # This used to re-derive the binary, the built-in `gh` default, the template
+    # lookup, and the substitution itself -- the same rule `issue_backend.resolve_op` already
+    # owned, in the SAME skill, minus its placeholder validation. Delegating gains that
+    # validation: an adapter can no longer smuggle an unknown placeholder into this op.
+    argv = _resolve_op(
+        backend,
+        "search_newest_open",
+        GH_NEWEST_OPEN_ARGS,
+        NEWEST_OPEN_PLACEHOLDERS,
+        required=frozenset({"repo"}),
+        repo=repo,
+    )
     payload = _backend_json(argv)
     if isinstance(payload, dict) and "issues" in payload:
         payload = payload.get("issues")
