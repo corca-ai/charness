@@ -38,12 +38,6 @@ _resolve_quality_artifact = import_repo_module(
     ROOT / "skills/public/quality/scripts/resolve_quality_artifact.py",
     "skills.public.quality.scripts.resolve_quality_artifact",
 )
-_inventory = import_repo_module(
-    ROOT / "scripts/inventory_current_pointer_layouts.py", "scripts.inventory_current_pointer_layouts"
-)
-
-_POINTER_CASES = ("absent", "regular_file", "symlink_to_existing", "symlink_to_missing")
-
 _scaffold_debug = import_repo_module(
     ROOT / "skills/public/debug/scripts/scaffold_debug_artifact.py",
     "skills.public.debug.scripts.scaffold_debug_artifact",
@@ -129,16 +123,6 @@ def _seed_pointer(repo: Path, case: str) -> Path:
     return pointer
 
 
-# Every module that once resolved a current pointer itself, or that produces a payload
-# naming a write target. `scaffold_debug_artifact.py` is here because a bounded round found
-# a FIFTH private copy in it -- kept alive by the owner filtering the symlink-target key out
-# of `published_pointer_state`, so the delegation could not supply what debug needed.
-_CONSUMER_SOURCES = (
-    "scripts/resolve_artifact_path.py",
-    "scripts/inventory_current_pointer_layouts.py",
-    "skills/public/quality/scripts/resolve_quality_artifact.py",
-    "skills/public/debug/scripts/scaffold_debug_artifact.py",
-)
 # Spellings that resolve a symlink. `os.readlink(` alone was too narrow to be the guard it
 # claimed to be: `Path.readlink()` is the idiom used elsewhere in this repo, so the easiest
 # way to reintroduce a private copy was also the one the check could not see.
@@ -148,30 +132,86 @@ _SYMLINK_RESOLUTION_SPELLINGS = (
     "os.path.realpath(",
     "from os import readlink",
 )
+_OWNER_REL = "scripts/scaffold_artifact_lib.py"
+# How a module may legitimately obtain the write-target facts: by stamping them, by using the
+# owner's shared record shape, or by being the owner.
+_FACT_ROUTES = (
+    "with_write_target_facts(",
+    "dated_record_payload(",
+    "write_target_facts(",
+    "current_pointer_payload(",
+    # A planner may ECHO the scaffold payload's fact rather than recompute it; that is the
+    # correct thing for a surface that reports someone else's write target.
+    '"write_artifact_effect"',
+)
 
 
-def test_no_consumer_resolves_a_pointer_symlink_itself() -> None:
+def _modules_naming_a_write_target() -> dict[str, str]:
+    """DERIVED FROM THE TREE, never hand-listed.
+
+    The first version of this guard kept a hand-maintained list of producers — which is the
+    same defect one level up: a producer added later silently falls outside the list and ships
+    green, exactly as the two new keys fell outside `scaffold_debug_artifact`'s hand-maintained
+    key list. A bounded round found the list already missing four producers. Globbing means a
+    new one cannot be added without this test seeing it.
+    """
+    found: dict[str, str] = {}
+    for root in ("scripts", "skills/public"):
+        for path in sorted((ROOT / root).rglob("*.py")):
+            source = path.read_text(encoding="utf-8")
+            # A PRODUCER emits the key into a payload; a CONSUMER only reads it back out.
+            # The distinction matters: `inventory_current_pointer_layouts.py` reports other
+            # skills' write targets and owes no facts of its own. Producers are matched by the
+            # dict-literal key form, or by passing it to the owner's shared record shape.
+            produces = '"write_artifact_path":' in source or "write_artifact_path=write_artifact_path" in source
+            if produces:
+                found[str(path.relative_to(ROOT))] = source
+    assert len(found) >= 8, f"the sweep found suspiciously few producers: {sorted(found)}"
+    return found
+
+
+def test_no_module_resolves_a_pointer_symlink_except_the_owner() -> None:
     """The consolidation's structural guard: a re-grown private copy fails here.
 
     Comparing outputs would pass on the day a copy is reintroduced with identical behaviour
-    and only start failing once it drifted -- which is the window this defect lived in. So the
+    and only start failing once it drifted — which is the window this defect lived in. So the
     invariant is structural: resolving a current pointer belongs to one module.
 
-    Honest about its reach: this greps for the spellings below, so a sufficiently novel one
-    evades it. It is a ratchet against the LIKELY regression, not a proof.
+    Honest about its reach: it greps for the spellings above, so a copy that reimplements the
+    rule some other way evades it. A bounded round found exactly that — a copy derived from
+    the published pointer keys rather than from `readlink` — so this is a ratchet against the
+    likely regression, not a proof.
     """
-    owner = (ROOT / "scripts/scaffold_artifact_lib.py").read_text(encoding="utf-8")
+    owner = (ROOT / _OWNER_REL).read_text(encoding="utf-8")
     assert any(spelling in owner for spelling in _SYMLINK_RESOLUTION_SPELLINGS), (
         "the owner no longer resolves the symlink; re-anchor this test"
     )
 
-    for relative in _CONSUMER_SOURCES:
-        source = (ROOT / relative).read_text(encoding="utf-8")
+    for relative, source in _modules_naming_a_write_target().items():
+        if relative == _OWNER_REL:
+            continue
         for spelling in _SYMLINK_RESOLUTION_SPELLINGS:
             assert spelling not in source, (
                 f"{relative} resolves a pointer symlink itself ({spelling}) instead of calling "
                 "scaffold_artifact_lib; that is the second owner this consolidation removed"
             )
+
+
+def test_every_module_naming_a_write_target_routes_through_the_owner_for_the_facts() -> None:
+    """Structural half of "every payload says what writing would destroy".
+
+    Behavioural coverage below can only reach producers a test can seed. This reaches all of
+    them, and fails when a NEW producer is added without the facts — the regression the
+    hand-maintained list could not see.
+    """
+    for relative, source in _modules_naming_a_write_target().items():
+        if relative == _OWNER_REL:
+            continue
+        assert any(route in source for route in _FACT_ROUTES), (
+            f"{relative} names a write_artifact_path but never routes through "
+            f"scaffold_artifact_lib for the write-target facts; one of {_FACT_ROUTES} is "
+            "how a payload says whether writing there destroys content"
+        )
 
 
 def test_the_owner_stays_importable_with_no_package_context() -> None:

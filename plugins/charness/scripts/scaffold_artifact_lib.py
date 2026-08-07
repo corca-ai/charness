@@ -139,6 +139,10 @@ def write_target_facts(repo_root: Path, write_path: str) -> dict[str, object]:
     (`debug` continues an open investigation in place; `quality` must never overwrite a
     finished review), so each skill's own contract decides what to do with it.
     """
+    # `.exists()`, not `.is_file()`: the question is "would a write here destroy something",
+    # and a directory or a symlink-to-existing at that path both mean yes-something-is-there.
+    # Two planner surfaces answer a narrower question with `.is_file()`; those report whether
+    # the artifact is READABLE, which is a different fact with a different name.
     exists = (repo_root / write_path).exists()
     return {
         "write_artifact_target_exists": exists,
@@ -187,7 +191,10 @@ def with_write_target_facts(repo_root: Path, payload: dict[str, object]) -> dict
     told the agent to trust the key. Recomputing from the final value is what makes a later
     key addition unable to go stale the same way; a longer copy list would not.
 
-    Idempotent, so it is safe to call even where nothing was replaced.
+    Idempotent for payloads that HAVE a write target: it recomputes the two fact keys and
+    touches nothing else. It raises `KeyError` on a payload with no `write_artifact_path`,
+    which is deliberate -- a producer that names no write target should not be asking for
+    facts about one -- but it is not "safe to call on anything".
     """
     payload.update(write_target_facts(repo_root, str(payload["write_artifact_path"])))
     return payload

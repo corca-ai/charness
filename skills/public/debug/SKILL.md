@@ -48,10 +48,11 @@ scaffold payload's `write_artifact_path`, not `latest.md` by habit; it resolves 
 symlinked current pointer to its actual target. The payload also says whether that
 target already holds content: `write_artifact_effect: overwrite_existing_content`
 means the file is there and its content is the investigation you are continuing, so
-append rather than replace it; `create_new_file` means nothing is there yet — a
-fresh repo, a resolved previous record, or a pointer whose target is missing. The
-key reports what is on disk, not why, so pair it with `write_artifact_role` and
-`intent` when the distinction matters.
+append rather than replace it; `create_new_file` means nothing is at THAT path —
+among other causes a fresh repo, a resolved previous record, a dangling pointer, or
+a same-day follow-up whose pointer was never refreshed. The key reports what is on
+disk, not why, and that cause list is not exhaustive, so pair it with
+`write_artifact_role` and `intent` when the distinction matters.
 
 Before stopping, run the `validator_command` emitted by the scaffold helper or
 the planner's `debug-artifact-shape` packet. Do not replace it with a guessed

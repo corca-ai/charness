@@ -220,6 +220,10 @@ def _gate_packets(repo_root: Path, adapter: dict[str, Any], scaffold: dict[str, 
             "deterministic scaffold payload; trust write target and validator command",
             command="python3 $SKILL_DIR/scripts/scaffold_retro_artifact.py --repo-root .",
             write_artifact_path=scaffold["write_artifact_path"],
+            # Echoed, not recomputed: a planner that names someone else's write target must
+            # carry the fact about it too, or the surface an agent reads first is the one
+            # surface that stays silent about whether writing destroys a finished record.
+            write_artifact_effect=scaffold["write_artifact_effect"],
             validator_command=scaffold["validator_command"],
         ),
         _packet(

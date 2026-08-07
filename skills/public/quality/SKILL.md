@@ -81,10 +81,11 @@ that retains existing comments.
    `update_current_pointer_after_write=true`; keep `--intent current` only for
    an explicitly rolling-summary edit. Do NOT write to the scaffold payload's
    `write_artifact_path`: it is `latest.md`, or that symlink's target — the
-   PREVIOUS review's dated file — so writing there overwrites the previous review
-   in either layout. That prohibition stands on its own — `create_new_file` on the
-   SCAFFOLD payload is not a green light, because writing a fresh `latest.md`
-   defeats the dated-record-plus-pointer layout. Use `write_artifact_effect` on the
+   PREVIOUS review's dated file. Writing there either overwrites that review, or
+   (when the pointer dangles) files today's review under the previous review's
+   DATE; both are wrong, so the prohibition holds regardless of what
+   `write_artifact_effect` says on the scaffold payload. `create_new_file` there is
+   not a green light. Use `write_artifact_effect` on the
    `--intent record` payload instead: `overwrite_existing_content` there means
    today's review already exists, so append to it or pass an explicit distinct
    `--slug`, never silently replace it. Validate once with

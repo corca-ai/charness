@@ -1648,7 +1648,7 @@
     {
       "class": "intentional",
       "id": "9b344dba944af0db",
-      "note": "The records-only scaffold triple (critique, retro, ideation) shares its module shape: `default_title`, `_slug`, `validator_command`, and a `payload_for` that names a dated write target. The genuinely shared RULE was extracted this slice into `scaffold_artifact_lib.dated_record_payload`, which is now the single owner of the payload shape and of the write-target facts. What remains is per-skill-package portability boilerplate: each public skill package must stand alone when installed, and these three entrypoints are loaded independently (ideation loads the shared lib by file path with no package context). Collapsing the remaining wrappers would couple three portable packages without changing any verdict. Measured: the family became visible only after the write-target facts made three already-near-identical bodies identical, so this is a detection-threshold crossing, not new duplication.",
+      "note": "The records-only scaffold triple (critique, retro, ideation) shares its module shape: `default_title`, `_slug`, `validator_command`, and a `payload_for` that names a dated write target. The genuinely shared RULE was extracted this slice into `scaffold_artifact_lib.dated_record_payload`, which is now the single owner of the payload shape and of the write-target facts. What remains is per-skill-package portability boilerplate: each public skill package must stand alone when installed, and these three entrypoints are loaded independently (ideation loads the shared lib by file path with no package context). Collapsing the remaining wrappers would couple three portable packages without changing any verdict. Not claimed as measured: the family was first reported after the write-target facts were added to all three, which is consistent with a detection-threshold crossing rather than newly written duplication, but no scan of the prior tree state is cited for that and it should not be read as one.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
     },
@@ -1699,6 +1699,13 @@
       "id": "a549b7f526d975f1",
       "note": "The final-bundle CLI keeps the repository-root/runtime-bootstrap preamble explicit like other directly executable repo scripts. This is portable entrypoint plumbing, not planner behavior; centralizing it would replace the per-script startup contract with an indirection every exported CLI still needs.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a5afbb9f4f8d35d8",
+      "note": "The `debug` and `retro` run planners build their gate-packet lists the same way, in two independently portable skill packages. This slice added one echoed line to each (`write_artifact_effect`, so the surface an agent reads FIRST carries the write-target fact instead of leaving it only on the scaffold payload), and that pushed two already-similar packet builders past the scan threshold. The shared RULE the slice owns -- resolving a current pointer and stating what writing there destroys -- is in `scripts/scaffold_artifact_lib.py` and is called from both, and a tree-derived test now fails if any module naming a write target stops routing through it. What remains is per-package planner boilerplate: extracting it would couple two portable packages' packet vocabularies without changing any verdict. Not claimed as measured against a prior scan of the tree.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {

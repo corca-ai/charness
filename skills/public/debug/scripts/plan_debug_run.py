@@ -33,6 +33,7 @@ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapt
 scaffold_debug_artifact = SKILL_RUNTIME.load_local_skill_module(__file__, "scaffold_debug_artifact")
 risk_interrupt_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.risk_interrupt_lib")
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+_scaffold_artifact_lib = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.scaffold_artifact_lib")
 declarations = SKILL_RUNTIME.load_local_skill_module(__file__, "debug_artifact_declarations")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
@@ -59,11 +60,15 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
 def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, Any]:
     artifact_rel = str(scaffold["artifact_path"])
     artifact_path = repo_root / artifact_rel
-    current_target = scaffold.get("current_pointer_target_path")
-    write_rel = (
-        str(current_target)
-        if scaffold.get("current_pointer_is_symlink") and isinstance(current_target, str)
-        else artifact_rel
+    # A SIXTH derivation of the pointer rule used to live here, reimplemented from the
+    # published pointer keys rather than by resolving the symlink -- so the single-owner
+    # guard, which greps for readlink-shaped spellings, structurally could not see it. The
+    # pair below now comes from the owner, which also fixes what a bounded round found: this
+    # summary paired a pointer-derived `write_path` with `write_role` copied from the
+    # scaffold AFTER its resolved-followup swap, so in that branch it reported a finished
+    # resolved record labelled `durable_record`.
+    write_rel, write_role, _ = _scaffold_artifact_lib.current_pointer_write_path(
+        repo_root, Path(artifact_rel)
     )
     write_path = repo_root / write_rel
     exists = artifact_path.is_file()
@@ -92,7 +97,7 @@ def _artifact_summary(repo_root: Path, scaffold: dict[str, Any]) -> dict[str, An
         "role": scaffold["artifact_role"],
         "write_path": write_rel,
         "write_exists": write_exists,
-        "write_role": scaffold["write_artifact_role"],
+        "write_role": write_role,
         "current_pointer_symlink_target": scaffold["current_pointer_symlink_target"],
     }
     summary.update(declarations.risk_summary(artifact_path, risk_interrupt_lib))
@@ -293,6 +298,10 @@ def _next_action(artifact: dict[str, Any], scaffold: dict[str, Any]) -> dict[str
         "artifact_path": scaffold["artifact_path"],
         "write_artifact_path": scaffold["write_artifact_path"],
         "write_artifact_role": scaffold["write_artifact_role"],
+        # The planner is the surface `SKILL.md` routes to FIRST, so it must carry the fact
+        # about the write target and not leave it only on the scaffold payload.
+        "write_artifact_effect": scaffold["write_artifact_effect"],
+        "write_artifact_target_exists": scaffold["write_artifact_target_exists"],
     }
     if scaffold.get("update_current_pointer_after_write"):
         next_action["instruction"] = (
