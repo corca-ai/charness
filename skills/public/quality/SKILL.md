@@ -73,11 +73,16 @@ that retains existing comments.
    the payload as the artifact contract: write to fit its `size_budget.max_lines` on the first pass
    and heed `size_budget.guidance` on the judgment-heavy sections, rather than
    writing long and then trimming to fit against a ceiling the validator only
-   reveals at the end. For a fresh review, resolve with `--intent record`, write
-   the dated `write_artifact_path`, then run the emitted
-   `refresh_current_pointer_command` when
+   reveals at the end. Take the WRITE TARGET from a different script: the
+   scaffold's own `write_artifact_path` is the CURRENT POINTER, not the record to
+   write. Run `resolve_quality_artifact.py --repo-root . --intent record` for a
+   fresh review, write the path it returns as `write_artifact_path`, then run its
+   emitted `refresh_current_pointer_command` when
    `update_current_pointer_after_write=true`; keep `--intent current` only for
-   an explicitly rolling-summary edit. Validate once with
+   an explicitly rolling-summary edit. Do NOT write to the scaffold payload's
+   `write_artifact_path`: it is `latest.md`, or that symlink's target — the
+   PREVIOUS review's dated file — so writing there overwrites the previous review
+   in either layout. Validate once with
    `validate_quality_artifact.py` — it
    reports every remaining violation in one pass, so fix them together rather than
    iterating one error at a time.

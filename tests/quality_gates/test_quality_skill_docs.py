@@ -379,3 +379,90 @@ def test_create_cli_carries_external_capability_contract() -> None:
     assert "allowed_path_prefixes" in external
     assert "host-only executor boundary" in external
     assert "raw request bodies" in CREATE_CLI_QUALITY_GATES
+
+
+def _workflow_step(text: str, number: int) -> str:
+    """One numbered workflow step, sliced by its own number.
+
+    Scoped to a single step because that is the unit an agent executes: a flag
+    named three steps from the script that accepts it is not the same defect as
+    one named beside it. Sliced by NUMBER rather than by searching for the flag,
+    because `--intent record` also appears correctly in the Bootstrap fence at
+    the top of the file -- searching would have anchored on that and silently
+    measured the wrong region.
+    """
+    start = text.index(f"\n{number}. ")
+    end = text.index(f"\n{number + 1}. ", start)
+    return text[start:end]
+
+
+def test_the_step_that_instructs_intent_names_the_script_that_accepts_it() -> None:
+    """#538: step 8 instructed `--intent record` while naming only the scaffold.
+
+    `scaffold_quality_artifact.py` exits 2 on `--intent` and emits neither
+    `refresh_current_pointer_command` nor `update_current_pointer_after_write`;
+    all three belong to `resolve_quality_artifact.py`, which the step never named.
+
+    Pinned by co-occurrence inside ONE step rather than by a repo-wide
+    doc-key-to-helper gate. That gate was prototyped against every public
+    SKILL.md and fired 25 times for ~2 real defects — `git status --short`,
+    `rg --files`, and subcommand flags dominate the signal — so it would have
+    been a wolf-crier over a class the sibling sweep measured at one instance in
+    seventeen skills.
+    """
+    step = _workflow_step(QUALITY_SKILL, 8)
+
+    assert "resolve_quality_artifact.py" in step, (
+        "the step instructing --intent must name the script that accepts it"
+    )
+    for owned in (
+        "--intent record",
+        "--intent current",
+        "refresh_current_pointer_command",
+        "update_current_pointer_after_write",
+    ):
+        assert owned in step, f"{owned} left the step it is documented in"
+
+
+def test_the_step_warns_that_the_scaffold_write_path_is_the_previous_record() -> None:
+    """The severity the issue understated: this is an overwrite, not a null read.
+
+    `scaffold_quality_artifact.py`'s `write_artifact_path` is the CURRENT pointer
+    target, which `test_quality_scaffold.py` pins to the pre-existing dated file.
+    Following "write the dated `write_artifact_path`" from the scaffold payload on
+    any day after the last review therefore writes over that review — and because
+    the path IS dated, nothing signals the mistake.
+    """
+    step = _workflow_step(QUALITY_SKILL, 8)
+
+    assert "overwrites" in step
+    assert "previous" in step.lower()
+    # Both live layouts, because the warning was once symlink-only and a consumer
+    # repo whose `latest.md` is a regular file would have read it as not applying.
+    assert "latest.md" in step
+
+
+def test_the_scaffold_is_never_the_thing_step_eight_says_to_write_to() -> None:
+    """Polarity, not just presence — the gap the resolution critique found.
+
+    The two assertions above are satisfied by any step that merely CONTAINS the
+    right script and the right words. A compaction that flips the instruction --
+    "write the scaffold payload's `write_artifact_path`; the resolver is for a
+    rolling summary" -- reintroduces the whole defect with both of them green.
+    So bind the direction: the sentence naming the scaffold's write path must
+    forbid it, and the sentence telling you to write must name the resolver.
+    """
+    step = _workflow_step(QUALITY_SKILL, 8)
+
+    scaffold_clause = next(
+        part for part in step.split(".") if "scaffold payload" in part
+    )
+    assert "Do NOT" in scaffold_clause, (
+        "the clause naming the scaffold's write path must forbid writing there, "
+        f"not merely mention it: {scaffold_clause.strip()!r}"
+    )
+
+    write_clause = next(part for part in step.split(".") if "write the path" in part)
+    assert "resolve_quality_artifact.py" in _workflow_step(QUALITY_SKILL, 8)[
+        : step.index(write_clause)
+    ], "the write instruction must follow the resolver that produces the path"
