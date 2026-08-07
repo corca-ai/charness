@@ -28,14 +28,18 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - When the host permits spawning, do not wait for a second user message. Task-completing `setup`, `quality`, `critique`, `release`, and GitHub `issue` resolution/closeout review runs spawn bounded reviewers immediately when the contract calls for them.
 - A higher-priority system, developer, or host instruction may prohibit a spawn; this repo request cannot override it. If the host blocks subagent spawning at runtime (Agent tool absent, API-level rejection), stop and report the concrete host signal explicitly.
 - Do not substitute a same-agent pass. Fresh-eye review means a different agent context; if that context cannot be obtained, leave the review unproven.
-- **Spawn shape, for EVERY spawn — not only fresh-eye reviews (#458).** Spawn one-shot subagents **without** a host addressing or team `name`. On at least one host a `name` silently routes the spawn onto a teammate protocol: the spawn succeeds, the agent runs correctly, and completion emits an idle notification instead of returning the result — findings the parent can never read, because the matching retrieval tool (`SendMessage`) is often not exposed in that session. Reserve a `name` for an agent you will address repeatedly, and only after confirming the retrieval tool exists in this session. A spawned agent is not a received result: an idle notification reads like success and is not one. If findings do not arrive, that is a delivery failure to report and to retry once unnamed, never a subagent that returned nothing and never grounds for a same-agent substitute. Full rule, upstream lineage, and non-claims: [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
-- Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit (#258); the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
-- Bounded reviewers run read-only: on hosts with typed subagents, spawn them as `bounded-reviewer` ([.claude/agents/bounded-reviewer.md](./.claude/agents/bounded-reviewer.md)), and parents prove worktree+index integrity around each review with [skills/shared/scripts/reviewer_boundary_fingerprint.py](./skills/shared/scripts/reviewer_boundary_fingerprint.py) snapshot/verify (#428); a failed verify quarantines that review's approvals.
+- **Spawn shape, for EVERY spawn — not only fresh-eye reviews.** Spawn one-shot subagents **without** a host addressing or team `name`. On at least one host a `name` silently routes the spawn onto a teammate protocol: the spawn succeeds, the agent runs correctly, and completion emits an idle notification instead of returning the result — findings the parent can never read, because the matching retrieval tool (`SendMessage`) is often not exposed in that session. Reserve a `name` for an agent you will address repeatedly, and only after confirming the retrieval tool exists in this session. A spawned agent is not a received result: an idle notification reads like success and is not one. If findings do not arrive, that is a delivery failure to report and to retry once unnamed, never a subagent that returned nothing and never grounds for a same-agent substitute. Full rule, upstream lineage, and non-claims: [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
+- Bounded reviewers run in the **shared parent worktree**: inspect prior versions read-only (`git show <ref>:<path>`) and never run index- or worktree-mutating git ops (`git checkout`/`restore`/`reset`/`stash`, or `git add` of files touched only to inspect them). Staging a base reversion silently corrupts the closeout commit; the canonical rule lives in [skills/shared/references/fresh-eye-subagent-review.md](./skills/shared/references/fresh-eye-subagent-review.md).
+- Bounded reviewers run read-only: on hosts with typed subagents, spawn them as `bounded-reviewer` ([.claude/agents/bounded-reviewer.md](./.claude/agents/bounded-reviewer.md)), and parents prove worktree+index integrity around each review with [skills/shared/scripts/reviewer_boundary_fingerprint.py](./skills/shared/scripts/reviewer_boundary_fingerprint.py) snapshot/verify; a failed verify quarantines that review's approvals.
 - **A slice that changes VERDICT LOGIC on a proof surface (a gate, validator, or any code rendering a verdict about other code or artifacts) owes a SECOND bounded review round reading the repaired surface** — one round is not enough for this class: every measured slice shipped a fix carrying the class it fixed, and the round that read the REPAIRS has caught blockers the first round could not see. The trigger is what the surface decides, not that its file was touched, a first round that produced no repairs discharges the obligation, and the cap is two rounds (round-2 repairs are recorded as accepted-unreviewed). Full rule: [docs/conventions/operating-contract.md](./docs/conventions/operating-contract.md) Critique Discipline.
-- **Subagent defaults are per-host contracts (user standing request, split 2026-07-17):** the model/effort request is scoped to the host family, not one global value.
-  - **Codex hosts:** request `gpt-5.6-terra` with `medium` reasoning effort for every Charness-spawned coding, review, and dynamic-workflow subagent. In Codex MultiAgent V2, pair caller-provided model/reasoning overrides with `fork_turns: "none"` unless a bounded parent-history count is needed: the default `fork_turns: "all"` rejects those overrides. Omit `agent_type` or ensure its role does not override the requested model/effort.
-  - **Claude Code hosts:** use the host's own subagent controls — typed agents (`bounded-reviewer` for read-only review scopes) with session-model inheritance by default; choose a Claude model tier only when the task clearly warrants it. Do not request the Codex model here and do not record a `gpt-5.6-terra` not-exposed limitation — under the per-host split that request does not apply to this host, so the omission is contract-conformant, not a degradation to report.
-  - On any other host, or when a higher-priority policy restricts per-subagent controls, proceed and state that limitation.
+- **Subagent model/effort defaults are per-host, not one global value.** Use the
+  host's own subagent controls and its typed agents where they exist
+  (`bounded-reviewer` for read-only review scopes), inheriting the session model
+  by default; choose a different tier only when the task clearly warrants it. A
+  host-specific model or flag request belongs in that host's adapter or preset,
+  not here — naming one in this file bakes a model id into the contract and it
+  goes stale silently. When a higher-priority policy restricts per-subagent
+  controls, proceed and state that limitation.
 
 ## Dynamic Workflows
 
@@ -48,29 +52,23 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 
 ## External Side Effects
 
-- **Filing a GitHub issue is a STANDING approval (user standing request,
-  recorded 2026-08-02).** Do not ask, and do not make an operator re-grant it
-  per goal. Observing something worth filing and not filing it because the
-  approval was not restated is the failure this removes: an unfiled finding is
-  lost, while an issue is a reversible, low-cost record that can be closed.
-  Recorded here after three consecutive goals re-granted the same permission —
-  the repeat grant was the signal that it belonged in the contract, not in each
-  goal's boundaries.
-- **`git push` to `main` is a STANDING approval CONDITIONAL ON THE GATES (user
-  standing request, recorded 2026-08-02): push when the pre-push gate passes,
-  and never bypass or weaken a gate to get there.** The condition is the whole
-  authorization — a refusing gate withdraws it. `--no-verify`, disarming a
-  check, loosening a floor, or shrinking a test's scope to reach a green push
-  all revoke this approval and need an explicit grant. Measured basis: the
-  pre-push changed-line mutation lane refused five times across three goals and
-  was correct every time, twice naming a real uncovered branch and once naming
-  DEAD code.
-- Pushing still owes the P4 confirmation: remote CI verified by a different
-  observer AND a different channel than the push exit code. A green push is not
-  a green build.
-- **Closing an issue is a STANDING approval CONDITIONAL ON THE CLOSEOUT FLOOR
-  (user standing request, recorded 2026-08-02): close it when the work is
-  genuinely finished, and the floor is what defines "finished".** Concretely:
+- **Filing a GitHub issue is a STANDING approval.** Do not ask, and do not make
+  an operator re-grant it per goal. Observing something worth filing and not
+  filing it because the approval was not restated is the failure this removes: an
+  unfiled finding is lost, while an issue is a reversible, low-cost record that
+  can be closed.
+- **`git push` is NOT standing. Ask for it, every time.** Committing is part of
+  finishing repo work; publishing it is a separate act the operator owns, and a
+  gate that happens to be green is not a request to push. When a push IS granted,
+  the grant is conditional on the gates: `--no-verify`, disarming a check,
+  loosening a floor, or shrinking a test's scope to reach a green push all revoke
+  it. The gate refuses for real reasons and has been right every time it has.
+- A granted push still owes the P4 confirmation: remote CI verified by a
+  different observer AND a different channel than the push exit code. A green
+  push is not a green build.
+- **Closing an issue is a STANDING approval CONDITIONAL ON THE CLOSEOUT FLOOR:
+  close it when the work is genuinely finished, and the floor is what defines
+  "finished".** Concretely:
   `issue_tool.py validate-closeout-draft` reports `draft_verified`, a DELEGATED
   resolution critique ran BEFORE the close call, the classification's full
   ledger is carried by the carrier (for `bug`: `jtbd`, `root_cause`,
@@ -83,12 +81,12 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - **The floor is the authorization, not a checklist to route around.** Weakening
   a ledger field to a placeholder, skipping the delegated critique, or reusing
   the fix's own channel for the behavioural verdict all revoke this approval.
-- **Still per-goal, and NOT covered by the three standing approvals above:**
-  reopening an issue, PR creation, a release publish, a tag, a version bump, and
-  any `cautilus evaluate` run. Each needs an explicit grant for the goal or
-  phase that wants it, and that grant does not carry forward. The three standing
-  ones are carved out because each is reversible AND already has teeth in front
-  of it; the rest change state other people depend on with no such gate.
+- **Still per-request, and NOT covered by the standing approvals above:**
+  `git push`, reopening an issue, PR creation, a release publish, a tag, a
+  version bump, and any `cautilus evaluate` run. Each needs an explicit grant for
+  the goal or phase that wants it, and that grant does not carry forward. The two
+  standing ones are carved out because each is reversible AND already has teeth
+  in front of it; the rest change state other people depend on.
 - An issue filed under this standing approval still owes the `issue` skill's
   shape: the observed problem before any proposed solution, and a real
   reproduction or evidence path rather than a hunch.
@@ -102,8 +100,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
 - After verification passes for task-completing repo work, commit before answering follow-up usage/status questions or checking installed-machine state.
 - **Do not pipe a GATE through `tail`/`head`.** Redirect it to a file and read that
   (`cmd > /tmp/x.txt 2>&1; grep -nE '^FAIL ' /tmp/x.txt`). Truncating a gate destroys the
-  one fact you need and costs a full re-run to recover; it has cost ~10 minutes in a
-  single session. This is reinforcement, not the mechanism — `run-quality.sh` and
+  one fact you need and costs a full re-run to recover. This is reinforcement, not the mechanism — `run-quality.sh` and
   `run_slice_closeout.py` now NAME their failures in the last line, and `run-quality.sh`
   keeps each failing check's full output under `.charness/quality-failure-logs/`, so a
   truncated read stays actionable. The rule matters for gates that have not been taught

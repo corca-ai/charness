@@ -325,10 +325,23 @@ check proves shape only; closeout workflows prove the values and identities:
 
 ## Off-Goal Findings
 
+- **`#549` — durable failure output is a HABIT, not a quality feature, and it is
+  built in exactly one script.** `run-quality.sh` copies failing phase logs to a
+  stable directory and names the failing check in its last line; no other script
+  in the repo does. The consumer-facing contract
+  (`setup/references/hook-failure-visibility.md`) has no executable reader — its
+  tests assert the document is mirrored, never that a consumer's hook satisfies
+  it. And the agent-facing rule ("do not pipe a gate through `tail`") lives only
+  in this repo's `AGENTS.md`, so an installing repo gets the affordance without
+  the habit.
+  This is the SAME shape as the goal's root — a declaration nobody reconciles —
+  one layer out, at the boundary between charness and the repos that install it.
+  It is NOT a slice here yet: per this goal's premise-check boundary, first
+  measure whether consumer hooks actually ignore the contract, because a floor
+  that fires across every consumer repo is exactly the wolf-crier this goal's
+  Non-Goals forbid. Decide to build only after that measurement.
 - The predecessor's remaining open issues stay tracked and unclaimed by this
-  goal: `#514`, `#515`, `#519`, `#520`, `#521`, `#523`, `#524`, `#525`, `#527`,
-  `#531`, `#532`, `#534`, `#535`, `#536`, `#537`, `#539`, `#542`, `#545`, `#546`,
-  `#547`, `#548`. Recount rather than trusting this list.
+  goal. Recount rather than trusting any list written here.
 - `#534` may not be worth building at all; its stated cause was refuted and the
   build was reverted. Any future attempt re-measures first.
 - Anything surfaced while reading consumer repos is a separate owner and is
