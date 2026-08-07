@@ -38,6 +38,8 @@ _scripts_artifact_naming_lib_module = import_repo_module(__file__, "scripts.arti
 current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact_filename
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
+_scripts_adapter_key_registry_module = import_repo_module(__file__, "scripts.adapter_key_registry")
+unreconciled_keys = _scripts_adapter_key_registry_module.unreconciled_keys
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 PER_FILE_MIN_STATEMENTS = _scripts_check_coverage_lib_module.PER_FILE_MIN_STATEMENTS
@@ -316,6 +318,31 @@ def validate_adapter_yaml(path: Path) -> None:
     validate_charness_quality_adapter_contract(path, data)
 
 
+def report_unreconciled_keys(root: Path, adapter_yaml: list[Path]) -> list[dict[str, str]]:
+    """WARN -- never refuse -- on a declared key no module reads (#530).
+
+    This is the tier the operator chose, and the distinction is the whole point. Every
+    other verdict in this file raises `ValidationError` and fails the gate; this one
+    prints and returns 0, because the population that matters is consumer adapters this
+    repo has never seen and `docs/deferred-decisions.md` D46 refuses to escalate a refusal
+    from a repo-local zero. Repo-local zero is literal: `unknown` fires 0 times across
+    this repo's 445 declared keys, which is why the warned input is CONSTRUCTED in the
+    tests rather than observed here.
+
+    The count goes in the SUMMARY line, not only in the warnings. A gate that prints
+    nothing when it finds nothing leaves an operator unable to tell "checked, clean" from
+    "never ran" -- and this whole goal exists because a check reported success it had not
+    established. `0 unreconciled declared key(s)` is a claim; silence is not.
+    """
+    warnings = unreconciled_keys(root, adapter_yaml)
+    for warning in warnings:
+        print(
+            f"WARNING {warning['adapter']}: `{warning['key']}` is {warning['state']} -- {warning['detail']}",
+            file=sys.stderr,
+        )
+    return warnings
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
@@ -335,7 +362,11 @@ def main() -> int:
         validate_adapter_yaml(path)
         validate_adapter_integration_schema(path)
 
-    print(f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s).")
+    warnings = report_unreconciled_keys(root, adapter_yaml)
+    print(
+        f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s); "
+        f"{len(warnings)} unreconciled declared key(s)."
+    )
     return 0
 
 

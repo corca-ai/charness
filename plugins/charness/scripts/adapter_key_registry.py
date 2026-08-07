@@ -18,27 +18,32 @@ false signal.
 So the unit is the READER, not the key list. `.agents` files have multiple readers, and
 "the shared loader has not heard of this" is a fact about one reader, not about the key.
 
-KNOWN DESIGN GAP -- READ THIS BEFORE TRUSTING A `reader` VERDICT. Resolution is
-KEY-scoped, not (FILE, KEY)-scoped: it asks "does any module parse this key name",
-not "does any module that reads THIS adapter file parse this key". So a key declared in
-adapter A can resolve to a module that only ever loads adapter B. Live instance, found
-by bounded review and confirmed by measurement: `.agents/cautilus-adapters/
-chatbot-benchmark.yaml` has no parsing reader at all -- `scripts/cautilus_adapter_lib.py`
-pins `ADAPTER_PATH = .agents/cautilus-adapter.yaml`, the SINGULAR file, and its only
-mention of the `cautilus-adapters/*.yaml` glob is inside an unrelated
-`DEFAULT_PROMPT_AFFECTING_PATTERNS` list. Yet nine of that file's keys resolve to it,
-purely because the names collide with its own field list. `held_out_command_templates`
-and `comparison_command_templates` sit in the same declaration with identical epistemic
-status and get opposite verdicts for that reason alone.
+WHAT IS ARMED, AND WHAT DELIBERATELY IS NOT. This paragraph used to say the opposite --
+"this module must not be wired to anything that refuses or warns an operator" -- because
+resolution was KEY-scoped rather than (FILE, KEY)-scoped, so a key declared in adapter A
+could resolve to a module that only ever loads adapter B. That gap is closed:
+`resolve_declared_keys` takes `adapter_relative`, `associated_modules` scopes the parse
+list to modules that actually read the file, and `survey` passes it. The prohibition
+outlived its reason and was itself a false claim on the instrument built to find them.
 
-Consequence: a `reader` verdict is currently a claim about the REPO, not about the
-adapter -- "some module parses a key by this name" -- and the count of `reader` states
-overstates how much is genuinely reconciled. `unknown` is still sound (no module parses
-the name anywhere), and `text-asserted` is sound for the instance it names. The fix is
-path association, which is tracked, not done. Until then this module must not be wired
-to anything that refuses or warns an operator: it would flag on evidence it does not
-have. This is exactly the class the goal targets, found inside the instrument built to
-find it, which is why it is written here rather than in a commit message.
+`unknown` IS armed: `unreconciled_keys` below feeds `scripts/validate_adapters.py`, which
+warns an operator by name. It is the sound state -- no module in `scripts/` or `skills/`
+parses the name ANYWHERE -- and `find_readers`' bias (see its KNOWN LIMIT) is toward
+calling a key owned, so `unknown` under-reports gaps and cannot invent one.
+
+`reader-elsewhere` is NOT armed, and the number is why. Of its 23 instances measured
+across this repo's 37 adapters, 20 are genuine (`.agents/cautilus-adapters/chatbot-*.yaml`,
+which `scripts/cautilus_adapter_lib.py` never reads -- it pins `ADAPTER_PATH` to the
+SINGULAR `.agents/cautilus-adapter.yaml`), but 3 are association residue that a warning
+would report as defects: `chunk_policy` in `skills/public/handoff/adapter.example.yaml` is
+genuinely read by `chunked_routing_agentic_policy.py`, and `session_routing` /
+`skill_anchor_edit_guard` in `.agents/usage-episodes-adapter.yaml` are genuinely read
+through `host_hook_registry.py`'s `getattr` dispatch. All three are invisible to a literal
+scan. A 13% false-positive rate is a wolf-crier, and one of the three ships to consumers
+inside a shipped example -- so arming it would greet every new consumer with a wrong
+warning. Widening `associated_modules` to absorb them is refused separately: that is how
+`#553` happened, and how a verdict stops meaning anything. They stay reported by `survey`
+and unwarned.
 
 WHY THE READER LIST IS DISCOVERED, NOT DECLARED. A checked-in table mapping key ->
 reader would be a second declaration nobody reconciles -- this repo's own recurring
@@ -494,6 +499,48 @@ def survey(repo_root: Path) -> dict[str, Any]:
         "gaps": gaps,
         "registry_problems": audit_registry(repo_root),
     }
+
+
+WARN_STATES = ("unknown",)
+
+
+def unreconciled_keys(repo_root: Path, paths: list[Path]) -> list[dict[str, str]]:
+    """Declared keys that reach an ARMED state, for the operator-visible warn tier.
+
+    Only `WARN_STATES` -- `unknown` -- is returned. The module docstring owns why
+    `reader-elsewhere` is excluded (measured 13% association residue, one instance inside
+    a shipped example); this function is where that decision is executable rather than
+    prose, so widening the tier means editing `WARN_STATES` and re-measuring, not quietly
+    adding a state at a call site.
+
+    NO `associated` ARGUMENT, AND THAT IS NOT A WEAKENING. `resolve_key` reaches `unknown`
+    only when `parsing` is empty, and `scoped` is a subset of `parsing` -- so the scoped
+    and unscoped verdicts are identical for exactly this state, and only for it. Skipping
+    it also skips `associated_modules`/`_reference_edges`, the whole import-graph closure,
+    which is the expensive half: 4.6s to 3.1s over this repo's 445 declared keys. That
+    matters because `validate_adapters.py` runs at commit time, and a gate that gets slow
+    is a gate that gets moved somewhere it stops running. The equivalence is pinned by
+    test, not left to this comment: a future state added to `WARN_STATES` would NOT
+    inherit it.
+    """
+    findings: list[dict[str, str]] = []
+    for path in paths:
+        # No `relative_to` fallback and no `isinstance(key, str)` guard. Both were written,
+        # both SURVIVED the mutation check, and reading why killed them instead: the only
+        # caller passes paths `iter_matching_repo_files` globbed from `repo_root`, so the
+        # ValueError branch is unreachable, and this repo's minimal loader coerces every
+        # key to `str` (`1:` parses to `"1"`), so the type guard is unreachable too. A
+        # branch that cannot run still reads as though a real hazard were handled -- the
+        # same false claim this tier exists to warn about, one layer down.
+        relative = str(path.relative_to(repo_root))
+        declared = _load_yaml_file(path)
+        for key in declared:
+            resolution = resolve_key(repo_root, key)
+            if resolution.state in WARN_STATES:
+                findings.append(
+                    {"adapter": relative, "key": key, "state": resolution.state, "detail": resolution.detail}
+                )
+    return findings
 
 
 def main() -> int:

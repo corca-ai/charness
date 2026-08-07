@@ -1,6 +1,7 @@
 {
   "candidate_keys": [
     "tests/control_plane/test_lock_schema_resilience.py::scripts/doctor.py",
+    "tests/quality_gates/test_adapter_key_warn_tier.py::scripts/validate_adapters.py",
     "tests/quality_gates/test_artifact_naming.py::scripts/resolve_artifact_path.py",
     "tests/quality_gates/test_check_doc_links.py::scripts/check_doc_links.py",
     "tests/quality_gates/test_check_spec_evidence_durability.py::scripts/check_spec_evidence_durability.py",
@@ -63,10 +64,10 @@
   "policy": "no_increase",
   "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
   "summary": {
-    "candidate_count": 45,
-    "candidate_key_count": 58,
+    "candidate_count": 46,
+    "candidate_key_count": 59,
     "convertible_count": 0,
-    "internal_boundary_count": 32,
-    "keep_boundary_count": 23
+    "internal_boundary_count": 33,
+    "keep_boundary_count": 24
   }
 }
