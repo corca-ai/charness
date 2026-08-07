@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-08",
   "source_artifact_count": 455,
-  "candidate_count": 1872,
+  "candidate_count": 1873,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -1066,10 +1066,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:9b7b27e3e434",
+      "candidate_id": "next_improvement:e973ce595fc2",
       "kind": "next_improvement",
-      "lesson": "**capability** — Add a `refreeze` subcommand to `scripts/validate_issue_source_freeze.py` that performs stamp-inspection → freeze → crosswalk `source_identity` rebind atomically, with a test. This removes the untested heredoc from the loop and is the direct Engelbart repair.",
-      "normalized_key": "capability add a refreeze subcommand to scripts validate issue source freeze py that performs",
+      "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`).",
+      "normalized_key": "capability applied issue 534 filed https github com corca ai charness issues 534 structural",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1087,15 +1087,15 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability** — Add a `refreeze` subcommand to `scripts/validate_issue_source_freeze.py` that performs stamp-inspection → freeze → crosswalk `source_identity` rebind atomically, with a test. This removes the untested heredoc from the loop and is the direct Engelbart repair."
+          "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`)."
         }
       ]
     },
     {
-      "candidate_id": "next_improvement:d854267800fb",
+      "candidate_id": "next_improvement:b7c298e53537",
       "kind": "next_improvement",
-      "lesson": "**capability** — File an issue on the dup-ratchet's split-induced family rotation: `--accept-rotation` covers membership shrink but a module split re-blocks on already-classified families, producing review churn with no new duplication. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`).",
-      "normalized_key": "capability file an issue on the dup ratchet s split induced family rotation accept",
+      "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`.",
+      "normalized_key": "capability applied issue 535 filed https github com corca ai charness issues 535 carrying",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1113,7 +1113,33 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability** — File an issue on the dup-ratchet's split-induced family rotation: `--accept-rotation` covers membership shrink but a module split re-blocks on already-classified families, producing review churn with no new duplication. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`)."
+          "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f723f7a011bf",
+      "kind": "next_improvement",
+      "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair.",
+      "normalized_key": "capability applied scripts validate issue source freeze py refreeze stamp inspection freeze crosswalk source",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair."
         }
       ]
     },

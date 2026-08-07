@@ -18,6 +18,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.script_loader import load_script_module
+
 from .support import ROOT
 
 SCRIPT = ROOT / "scripts" / "check_quality_tool_fixtures.py"
@@ -179,6 +181,37 @@ def test_an_unreadable_fixture_is_refused(tmp_path: Path, name: str, body: str) 
     directory = _fixture_dir(tmp_path)
     (directory / name).write_text(body, encoding="utf-8")
     assert _run(tmp_path).returncode == 1
+
+
+def test_containment_is_exercised_in_process(tmp_path: Path) -> None:
+    """Every other test drives the script through `subprocess`, which is the honest way to
+    test a CLI but leaves the containment helper invisible to in-process coverage -- so
+    the changed-line mutation gate reads it as untested. This calls it directly.
+    """
+    module = load_script_module(
+        "check_quality_tool_fixtures_under_test",
+        ROOT / "scripts" / "check_quality_tool_fixtures.py",
+    )
+    fixtures = tmp_path / "charness-artifacts" / "quality" / "fixtures"
+    fixtures.mkdir(parents=True)
+    inside = fixtures / "out.txt"
+    inside.write_text("x\n", encoding="utf-8")
+    (tmp_path / "charness-artifacts" / "quality" / "sibling.txt").write_text("x\n", encoding="utf-8")
+
+    contained = module._contained(tmp_path, "charness-artifacts/quality/fixtures/out.txt")
+    assert contained == inside.resolve()
+    # nested is still inside
+    assert module._contained(tmp_path, "charness-artifacts/quality/fixtures/a/b.txt") is not None
+    # absolute path silently overrides the `/` join -- the escape the helper exists for
+    assert module._contained(tmp_path, "/etc/hostname") is None
+    # upward traversal
+    assert module._contained(tmp_path, "../../../outside.txt") is None
+    # a sibling directory inside the repo is still outside the FIXTURE dir
+    assert module._contained(tmp_path, "charness-artifacts/quality/sibling.txt") is None
+    # non-string and empty inputs
+    assert module._contained(tmp_path, None) is None
+    assert module._contained(tmp_path, "") is None
+    assert module._contained(tmp_path, 7) is None
 
 
 def test_a_fixture_with_no_digests_is_not_invented_into_a_failure(tmp_path: Path) -> None:

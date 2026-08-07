@@ -135,8 +135,18 @@ semantics.
 
 - Resolution: resolved
 - Critique Required: yes
-- Next Step: issue-closeout-complete
+- Next Step: spec
 - Handoff Artifact: charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md
+
+<!-- `Next Step` was authored as `issue-closeout-complete`, which is not in the
+validator's enum (`impl` | `spec`), so `build_debug_seam_risk_index.py --check` refused
+this artifact from `bb3ff353` onward and the pre-push gate stayed red across ten unpushed
+commits. Corrected to `spec`, which is not a free choice: `Risk Class: external-seam` is a
+FORCED risk class, and `risk_interrupt_lib.py` requires a forced interrupt to record
+`Next Step: spec` (and `Critique Required: yes`, which this artifact already had).
+Completion is carried by `Resolution: resolved`, the field the planner reads to demote a
+closed investigation, so nothing about this record's meaning changed. -->
+
 
 ## Prevention
 

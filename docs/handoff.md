@@ -14,6 +14,8 @@
 - Do not let #518 consume #515's taxonomy, #515 consume #514's taxonomy, or any issue wait on another. Share fields only when one canonical projection producer per field and at least two real readers with identical semantics are proven; source facts may have separate producers.
 - At irreversible boundaries, a green gate, `CLOSED` state, or local artifact is provisional; require a different observer and evidence channel.
 - Any reviewed input change invalidates packet identity and the verification lock.
+- Refresh kept, because each changes the next action: the unified #514/#515/#518 repair goal, the conditional shared-seam decision, independent issue slices, read-only sibling-repo comparison, and the current CI non-claim.
+- Refresh non-claims: #516/#517 implementation detail, consumer browser/provider behavior, and any current-head green verdict not proven by an independent run.
 
 ## Current State
 
@@ -60,6 +62,3 @@
 - [#514](https://github.com/corca-ai/charness/issues/514)
 - [#515](https://github.com/corca-ai/charness/issues/515)
 - [#518](https://github.com/corca-ai/charness/issues/518)
-
-Refresh kept: the unified #514/#515/#518 repair goal, conditional shared-seam decision, independent issue slices, read-only sibling-repo comparison, and current CI non-claim because each changes the next action.
-Refresh non-claims: #516/#517 implementation detail, consumer browser/provider behavior, and any current-head green verdict not proven by an independent run.
