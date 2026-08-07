@@ -51,8 +51,29 @@ runs the activation command.
   survived — counted from a re-run, not from memory. The one mutant that first
   SURVIVED (section-scoping of the AGENTS.md policy check) is why the count is
   reported rather than assumed.
-- Next action: Slice 2 — the reader registry. `scripts/adapter_lib.py` now has
-  82 lines of headroom, which slice 1 had to create before slice 2 could use it.
+- Slice 2 premise check (verdict BEFORE the build): **HOLDS, and the refutation
+  is stronger than recorded.** `.agents/setup-adapter.yaml` declares
+  `defaults_version`, `policy_sources`, `recommendation_sets`, and `surfaces`.
+  None is known to the shared `simple_skill` loader — its `STRING_FIELDS` is
+  `(repo, language, output_dir, preset_id, preset_version, customized_from)`.
+  All four have real named readers, measured not assumed:
+  `skills/public/setup/scripts/setup_adapter.py` reads all four;
+  `scripts/setup_inspect_lib.py` reads three; `surfaces` alone has 13 distinct
+  readers including `scripts/surfaces_lib.py` and `scripts/validate_surfaces.py`.
+  So a loader-scoped known-key set would call four CORRECT declarations typos on
+  day one, which is exactly what `#530`'s posted causal review predicted. The
+  unit has to be "which reader owns this key", not "does the loader know it".
+- Current slice: Slice 2 — the reader registry. Built, proven, and **PARTIAL**:
+  bounded review found the resolution is KEY-scoped rather than (FILE, KEY)-scoped,
+  confirmed by measurement. Typed states and the mechanism are sound; the `reader`
+  verdict overstates. Deliberately NOT wired to any gate, and the Operator
+  Decision Queue's warn-vs-refuse call must NOT be made from these counts.
+  Tracked as `#553`.
+- Next action: repair `#553` (associate each adapter file with the modules that
+  actually read it) before wiring anything, then re-measure — including the
+  shipped `adapter.example.yaml` population the Decision Queue asks for and the
+  parser's dropped-line report. Slices 3 (#518) and 4 (#528) both consume slice
+  2's output and should NOT start until that resolution is trustworthy.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -221,6 +242,10 @@ ordered them behind a root it never repaired.
   Revisit trigger: if slice 2 finds ANY unknown key in this repo that is not a
   known second-reader key, that is evidence the warning tier is already earning
   its place and the refusal question gets easier.
+  STATUS 2026-08-07: NOT YET ANSWERABLE. Slice 2 measured 0 unknown and 1
+  text-asserted, but its `reader` resolution is key-scoped and overstates (`#553`),
+  and the shipped example-adapter population the unblock action names was not
+  measured. Do not decide the tier from these numbers.
 - Decision: whether `#521` (prompt-surface deletion policy) is still worth its
   instrument chain, now that "close every issue" is no longer the frame.
   Owner: operator.
@@ -329,6 +354,20 @@ only place activation depends on them.
 - Off-goal findings: Two length WARNs surfaced and are recorded rather than acted on: scripts/setup_agent_docs_lib.py at 462/480 and skills/public/quality/scripts/adapter_validators.py at 332/360. Neither is over its cap. Splitting either is a separate concept-separation decision, and this slice already carried one such split.
 - Lessons carried forward: The gate asked a question this slice could answer cheaply and precisely because the edit was uniform. A slice whose public-skill edits were heterogeneous could not have answered it in one paragraph -- which is an argument for keeping mechanical substitutions in their own slice.
 - Metrics: Non-claim: no Cautilus run, no evaluator observation, no consumer-repo dogfood execution. This is a reasoned decision from the diff and the suite, not evaluator evidence.
+
+### Slice 3: Slice 2 (partial) — the reader registry, and the defect its own review found in it
+
+- Objective: Answer the question slice 1 could not: which reader owns a declared adapter key. Deliver typed states (`shared-core`/`reader`/`text-asserted`/`extension`/`retired`/`unknown`) plus the measured counts the Operator Decision Queue needs for the warn-vs-refuse call.
+- Why this approach: PREMISE CHECK BEFORE THE BUILD -- HOLDS, and the refutation is stronger than recorded. `.agents/setup-adapter.yaml` declares `defaults_version`, `policy_sources`, `recommendation_sets`, `surfaces`; the shared `simple_skill` loader knows none of them (its STRING_FIELDS is six unrelated names), and all four are parsed by `skills/public/setup/scripts/setup_adapter.py`. A loader-scoped key set would call four CORRECT declarations typos on day one. So the unit is the reader, not the key list -- exactly as `#530`'s posted causal review predicted.
+- Commits:
+- What changed: New `scripts/adapter_key_registry.py`: reader lists are DISCOVERED from the repo's own Python (via `ast` string constants) rather than declared in a table, because a checked-in key->reader table would be a second declaration nobody reconciles -- this repo's defect rebuilt inside the tool meant to detect it. The small registry that remains (retired keys, dynamic readers) is itself audited against the tree by `audit_registry`. A `text-asserted` state separates 'a validator greps for the raw line `key:`' from 'a module parses the value', because those are different facts and collapsing them is the false green this goal targets.
+- Alternatives rejected: Rejected: a loader-scoped known-key set (refuted before building, see premise). Rejected: a hand-maintained key->reader table (a declaration nobody reconciles). Rejected during the build: a quote-regex for literal extraction -- it alternates quote pairs, so on `("alpha", "beta")` it pairs one literal's closing quote with the next one's opening quote and loses both, UNDER-reporting readers and inventing gaps. Replaced with `ast`, which is exact and also faster.
+- Targeted verification: 16 tests; 6 mutants constructed, 6 killed after repair. One mutant SURVIVED first -- deleting the plugin-mirror guard changed nothing, because `READER_ROOTS` already excluded it -- so the guard was unpinned dead code; it is now pinned directly. Performance: the first version cost ~40s (per-key full-tree regex), which is expensive enough that the check would eventually be moved out of the fast gates, which is how a check stops running. Extracting each module's string constants once brought it to ~3s.
+- Test duplication pressure: Tests are parametrized over one fixture table; the repo-wide measurement asserts SHAPE (no unknown keys, every reader state naming a reader) rather than pinning counts, since pinned totals fail on any legitimate adapter edit and then get deleted.
+- Critique: Round-1 bounded review returned two blockers and I confirmed both by measurement rather than accepting them. BLOCKER: resolution is KEY-scoped, not (FILE, KEY)-scoped -- it asks 'does any module parse a key of this name', not 'does a module that reads THIS file parse it'. `.agents/cautilus-adapters/chatbot-benchmark.yaml` has NO parsing reader (`scripts/cautilus_adapter_lib.py` pins the SINGULAR `.agents/cautilus-adapter.yaml`; its only mention of the `cautilus-adapters/*.yaml` glob is an unrelated prompt-pattern list), yet nine of its keys resolve to it on name collision alone. Its three `*_command_templates` siblings are declared together, read by nothing, and graded differently for that reason only. BLOCKER: the module's own headline claim -- `surfaces` is read by thirteen modules -- was false in the way it mattered; only three concern the setup adapter, and several 'readers' merely EMIT a dict with that key. Both are now corrected in the module text, and the test that pinned 'only one text-asserted key' was replaced: it asserted a name-collision artifact as though it were a property.
+- Off-goal findings: Filed `#553` for the key-scoping redesign, with the measured instance and the hard part named (transitive association: `setup_inspect_lib.py` reads the setup adapter through an imported `load_adapter`, never by path, so a path-literal rule alone would invert the bias into false `unknown`s).
+- Lessons carried forward: The instrument reproduced the defect it was built to detect, twice, and neither instance was visible from inside the build. Its own docstring quoted an adapter key, so the first run counted the module as that key's reader -- the tool manufacturing the evidence it then reported. Then bounded review found the deeper one: a `reader` verdict is a claim about the REPO ('some module parses this name') dressed as a claim about the ADAPTER ('this declaration is reconciled'). Measuring the specific instance, rather than accepting or dismissing the review, is what separated the sound states (`unknown`, `text-asserted`) from the overstated one (`reader`).
+- Metrics: STATUS: PARTIAL, and deliberately NOT WIRED. Nothing calls this module, and that is the correct state given the key-scoping gap: arming a warning on these verdicts would flag operators on evidence the tool does not have. The goal's acceptance criterion for slice 2 is therefore NOT met -- the typed states and the mechanism exist and are proven, the reader-resolution is not yet trustworthy, and the Operator Decision Queue's warn-vs-refuse call must NOT be made from these counts. Measured today, with that caveat attached: 227 declared keys across 18 adapters -- 74 shared-core, 152 reader, 1 text-asserted, 0 unknown. `unknown` is sound; the `reader` count overstates. Also unmeasured: the shipped `adapter.example.yaml` population the Decision Queue explicitly asks for, and keys the YAML parser silently dropped (`load_yaml_file_report` exists for that and is not used here).
 
 ## Context Sources
 
