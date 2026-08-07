@@ -84,8 +84,8 @@ _EXTENSION_CONTAINER = "host_extensions"
 class KeyResolution(NamedTuple):
     """One declared key's verdict.
 
-    `state` is one of: `shared-core`, `reader`, `text-asserted`, `extension`, `retired`,
-    `unknown`. `readers` is the evidence for `reader`/`shared-core`/`text-asserted`, and
+    `state` is one of: `shared-core`, `reader`, `reader-elsewhere`, `text-asserted`,
+    `extension`, `retired`, `unknown`. `readers` is the evidence for `reader`/`shared-core`/`text-asserted`, and
     is empty otherwise.
     """
 
@@ -201,7 +201,152 @@ def find_readers(
     return tuple(parsing), tuple(asserting)
 
 
-def resolve_key(repo_root: Path, key: str, *, files: list[Path] | None = None) -> KeyResolution:
+def _module_name(relative: str) -> str:
+    """`scripts/setup_inspect_lib.py` -> `scripts.setup_inspect_lib`, the form this repo's
+    dynamic loaders name modules by."""
+    return relative.removesuffix(".py").replace("/", ".")
+
+
+def _references(literals: frozenset[str], relative: str) -> bool:
+    """Does a module whose literals these are reference the module at ``relative``?
+
+    Matches both the dotted module name (static import, and the string this repo's
+    `load_repo_module_from_skill_script` takes) and the bare file name, which is how
+    several skill scripts name a sibling.
+    """
+    name = _module_name(relative)
+    tail = name.rsplit(".", 1)[-1]
+    return name in literals or tail in literals or relative in literals
+
+
+def _import_names(path: Path) -> frozenset[str]:
+    """Dotted names this module imports, so association follows real edges."""
+    try:
+        tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"))
+    except (OSError, SyntaxError, ValueError):
+        return frozenset()
+    names: set[str] = set()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            names.update(alias.name for alias in node.names)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            names.add(node.module)
+            names.update(f"{node.module}.{alias.name}" for alias in node.names)
+    return frozenset(names)
+
+
+def _convention_owners(repo_root: Path, adapter_relative: str) -> set[str]:
+    """Owners that name no path because they BUILD it.
+
+    Most skill resolvers never contain their adapter's path: the shared helper composes
+    it from the skill id (`.agents/{skill_id}-adapter.yaml`), so `find_adapter(repo_root,
+    "release")` owns `.agents/release-adapter.yaml` without the literal appearing
+    anywhere. Seeding on exact literals alone therefore reported nine correct
+    `release-adapter.yaml` declarations as unread -- the inverted bias this module is
+    written to avoid, caught by measuring before shipping rather than by review.
+
+    So the repo's own naming contract seeds ownership too, and like every other entry
+    here it is VERIFIED rather than asserted: a candidate counts only if the file exists.
+    """
+    parts = Path(adapter_relative).parts
+    name = Path(adapter_relative).name
+    if name.endswith("-adapter.yaml"):
+        # `.agents/<skill>-adapter.yaml`
+        skill = name.removesuffix("-adapter.yaml")
+    elif name == "adapter.example.yaml" and len(parts) >= 2:
+        # A shipped example lives beside the resolver that reads its real counterpart:
+        # `skills/public/<skill>/adapter.example.yaml`, `integrations/<id>/...`. Without
+        # this every example key read as unreconciled, which is the population the
+        # operator's warn-vs-refuse decision depends on -- so the miss would have been
+        # invisible in this repo's own adapters and decisive in the number that matters.
+        skill = parts[-2]
+    else:
+        return set()
+    candidates = (
+        f"skills/public/{skill}/scripts/resolve_adapter.py",
+        f"scripts/{skill.replace('-', '_')}_adapter_lib.py",
+        f"skills/public/{skill}/scripts/{skill.replace('-', '_')}_adapter_policy.py",
+    )
+    return {candidate for candidate in candidates if (repo_root / candidate).is_file()}
+
+
+def _exemplified_owners(repo_root: Path, adapter_relative: str) -> set[str]:
+    """A shipped example inherits the association of the adapter it exemplifies.
+
+    `skills/public/setup/adapter.example.yaml` is a template for
+    `.agents/setup-adapter.yaml`; by construction the modules that read one read the
+    other. Without this the SAME key resolved differently in the two files -- `surfaces`
+    was `reader` in the real adapter and `reader-elsewhere` in its own example -- which
+    is a verdict that contradicts itself on identical evidence, and would have inflated
+    the example-adapter gap count the operator's decision depends on.
+    """
+    parts = Path(adapter_relative).parts
+    if Path(adapter_relative).name != "adapter.example.yaml" or len(parts) < 2:
+        return set()
+    real = f".agents/{parts[-2]}-adapter.yaml"
+    return set(associated_modules(repo_root, real)) if (repo_root / real).is_file() else set()
+
+
+_EDGES_CACHE: dict[Path, dict[str, tuple[frozenset[str], frozenset[str]]]] = {}
+_ASSOCIATED_CACHE: dict[tuple[Path, str], frozenset[str]] = {}
+
+
+def _reference_edges(repo_root: Path) -> dict[str, tuple[frozenset[str], frozenset[str]]]:
+    """`relative -> (string literals, imported dotted names)`, built once per tree.
+
+    Rebuilding this per adapter re-parsed every module ~18 times and made the check cost
+    ~24s. Same reasoning as the literal cache: a check that gets expensive gets moved out
+    of the fast gates, and then it stops running.
+    """
+    if repo_root not in _EDGES_CACHE:
+        _EDGES_CACHE[repo_root] = {
+            relative: (literals, _import_names(repo_root / relative))
+            for relative, literals in _reader_literals(repo_root, None)
+        }
+    return _EDGES_CACHE[repo_root]
+
+
+def associated_modules(repo_root: Path, adapter_relative: str) -> frozenset[str]:
+    """Modules that read the adapter at ``adapter_relative``, directly or transitively.
+
+    Seeded by OWNERS -- modules naming the adapter's exact path, plus the resolver the
+    repo's naming convention points at -- then closed over module references until it
+    stops growing. The closure is what keeps injected and dynamically
+    loaded readers in scope; see this module's docstring for why dropping it would invert
+    the bias into false typo reports.
+    """
+    cache_key = (repo_root, adapter_relative)
+    if cache_key in _ASSOCIATED_CACHE:
+        return _ASSOCIATED_CACHE[cache_key]
+    edges = _reference_edges(repo_root)
+    owners = {relative for relative, (literals, _) in edges.items() if adapter_relative in literals}
+    owners |= _convention_owners(repo_root, adapter_relative)
+    owners |= _exemplified_owners(repo_root, adapter_relative)
+    if not owners:
+        _ASSOCIATED_CACHE[cache_key] = frozenset()
+        return _ASSOCIATED_CACHE[cache_key]
+    associated = set(owners)
+    frontier = set(owners)
+    while frontier:
+        wanted = {_module_name(member) for member in frontier} | {
+            _module_name(member).rsplit(".", 1)[-1] for member in frontier
+        } | set(frontier)
+        found = {
+            relative
+            for relative, (literals, imports) in edges.items()
+            if relative not in associated
+            and (literals & wanted or any(name.split(".")[0:2] and name in wanted for name in imports)
+                 or any(name.rsplit(".", 1)[0] in wanted for name in imports))
+        }
+        associated |= found
+        frontier = found
+    _ASSOCIATED_CACHE[cache_key] = frozenset(associated)
+    return _ASSOCIATED_CACHE[cache_key]
+
+
+def resolve_key(
+    repo_root: Path, key: str, *, files: list[Path] | None = None, associated: frozenset[str] | None = None
+) -> KeyResolution:
     """Classify ONE declared key. Order matters: the explicit answers come first, so a
     retired key never reports as unknown and an extension key is never scanned for."""
     if key in RETIRED_KEYS:
@@ -214,8 +359,17 @@ def resolve_key(repo_root: Path, key: str, *, files: list[Path] | None = None) -
     parsing, asserting = find_readers(repo_root, key, files=files)
     if key in SHARED_CORE_KEYS:
         return KeyResolution(key, "shared-core", parsing, "shared adapter core, owned by scripts/adapter_lib.py")
+    scoped = tuple(module for module in parsing if module in associated) if associated is not None else parsing
+    if scoped:
+        return KeyResolution(key, "reader", scoped, f"parsed by {len(scoped)} module(s) that read this adapter")
     if parsing:
-        return KeyResolution(key, "reader", parsing, f"parsed by {len(parsing)} module(s)")
+        return KeyResolution(
+            key,
+            "reader-elsewhere",
+            parsing,
+            "a module parses a key of this name, but nothing that reads THIS adapter file "
+            "does; the declaration is unreconciled here even though the name is live",
+        )
     if asserting:
         return KeyResolution(
             key,
@@ -233,9 +387,17 @@ def resolve_key(repo_root: Path, key: str, *, files: list[Path] | None = None) -
     )
 
 
-def resolve_declared_keys(repo_root: Path, declared: dict[str, Any]) -> list[KeyResolution]:
-    """Classify every top-level key of one parsed adapter."""
-    return [resolve_key(repo_root, key) for key in declared if isinstance(key, str)]
+def resolve_declared_keys(
+    repo_root: Path, declared: dict[str, Any], *, adapter_relative: str | None = None
+) -> list[KeyResolution]:
+    """Classify every top-level key of one parsed adapter.
+
+    ``adapter_relative`` is what makes the answer about THIS adapter. Omitting it falls
+    back to repo-wide resolution, which is weaker and is why `#553` existed; callers that
+    know the file should always pass it.
+    """
+    associated = associated_modules(repo_root, adapter_relative) if adapter_relative else None
+    return [resolve_key(repo_root, key, associated=associated) for key in declared if isinstance(key, str)]
 
 
 def audit_registry(repo_root: Path) -> list[str]:
@@ -263,3 +425,75 @@ def audit_registry(repo_root: Path) -> list[str]:
     ]
     problems += [f"RETIRED_KEYS[{key!r}] carries no reason" for key, reason in RETIRED_KEYS.items() if not reason.strip()]
     return problems
+
+
+ADAPTER_GLOBS = (
+    ".agents/*-adapter.yaml",
+    ".agents/cautilus-adapters/*.yaml",
+    "skills/public/*/adapter.example.yaml",
+    "integrations/*/adapter.example.yaml",
+)
+GAP_STATES = ("unknown", "reader-elsewhere", "text-asserted")
+
+
+def _load_yaml_file(path: Path) -> Any:
+    """Import the shared loader lazily and layout-independently.
+
+    A module-level `from scripts.adapter_lib import ...` works when this file is imported
+    as part of the package but not when it is executed directly, which is exactly how the
+    survey CLI runs. The repo's own direct-execution bootstrap handles both layouts.
+    """
+    from runtime_bootstrap import import_repo_module
+
+    return import_repo_module(__file__, "scripts.adapter_lib").load_yaml_file(path)
+
+
+def survey(repo_root: Path) -> dict[str, Any]:
+    """Every declared key in every adapter this repo owns or ships, typed.
+
+    Reports rather than refuses. The warn-vs-refuse tier is an operator decision, and
+    arming one from a repo-local zero is precisely what `docs/deferred-decisions.md` D46
+    argues against: the population that matters is consumer adapters this repo has never
+    seen. This produces the number that decision needs; it does not make the decision.
+    """
+    counts: dict[str, int] = {}
+    gaps: list[dict[str, Any]] = []
+    files = sorted({path for glob in ADAPTER_GLOBS for path in repo_root.glob(glob)})
+    for path in files:
+        relative = str(path.relative_to(repo_root))
+        declared = _load_yaml_file(path)
+        if not isinstance(declared, dict):
+            continue
+        for resolution in resolve_declared_keys(repo_root, declared, adapter_relative=relative):
+            counts[resolution.state] = counts.get(resolution.state, 0) + 1
+            if resolution.state in GAP_STATES:
+                gaps.append(
+                    {
+                        "adapter": relative,
+                        "key": resolution.key,
+                        "state": resolution.state,
+                        "detail": resolution.detail,
+                    }
+                )
+    return {
+        "adapters": len(files),
+        "keys": sum(counts.values()),
+        "counts": counts,
+        "gaps": gaps,
+        "registry_problems": audit_registry(repo_root),
+    }
+
+
+def main() -> int:
+    import argparse
+    import json
+
+    parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
+    parser.add_argument("--repo-root", type=Path, default=Path("."))
+    args = parser.parse_args()
+    print(json.dumps(survey(args.repo_root.resolve()), indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

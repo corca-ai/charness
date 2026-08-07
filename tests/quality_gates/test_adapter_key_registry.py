@@ -22,11 +22,13 @@ sys.path.insert(0, str(ROOT))
 from scripts.adapter_key_registry import (  # noqa: E402
     EXCLUDED_READERS,
     _is_reader_file,
+    associated_modules,
     audit_registry,
     find_readers,
     iter_reader_files,
     resolve_declared_keys,
     resolve_key,
+    survey,
 )
 from scripts.adapter_lib import load_yaml_file  # noqa: E402
 
@@ -52,7 +54,9 @@ def test_the_four_multi_reader_setup_keys_stay_clean(key: str) -> None:
     declared = load_yaml_file(ROOT / ".agents/setup-adapter.yaml")
     assert key in declared, f"{key} is the fixture; if setup-adapter.yaml dropped it, re-pick the fixture"
 
-    resolution = resolve_key(ROOT, key)
+    resolution = resolve_key(
+        ROOT, key, associated=associated_modules(ROOT, ".agents/setup-adapter.yaml")
+    )
 
     assert resolution.state == "reader", f"{key} is a correct declaration and must not read as {resolution.state}"
     assert resolution.readers, f"{key} resolved to `reader` with no named reader, which is not an answer"
@@ -189,33 +193,121 @@ def test_every_key_declared_in_this_repo_resolves_to_a_reader_or_a_typed_gap() -
     assert unnamed == [], f"resolved to a reader state without naming a reader: {unnamed}"
 
 
-def test_the_key_scoped_gap_is_pinned_rather_than_hidden() -> None:
-    """Pins the instrument's OWN known defect, so it cannot be forgotten or re-measured
-    away.
+def test_the_three_sibling_keys_now_agree_because_nothing_reads_their_file() -> None:
+    """This replaces the test that pinned the key-scoping gap (`#553`), per its own
+    instruction to replace rather than widen once repaired.
 
-    Resolution is key-scoped, not (file, key)-scoped. `.agents/cautilus-adapters/
-    chatbot-benchmark.yaml` has no parsing reader -- `scripts/cautilus_adapter_lib.py`
-    loads the SINGULAR `.agents/cautilus-adapter.yaml` -- yet most of its keys resolve to
-    that module because the names collide with its field list. Its three
-    `*_command_templates` siblings are declared together, are read by nothing, and are
-    graded differently for that reason alone.
-
-    An earlier version of this file asserted `comparison_command_templates` was the only
-    text-asserted key in the repo, which reads as a property and is really an artifact of
-    which names happen to collide. That assertion is replaced by this one: the DISCREPANCY
-    is the fact worth pinning, and it should fail when the key-scoping gap is repaired --
-    at which point all three siblings should agree.
+    `.agents/cautilus-adapters/chatbot-benchmark.yaml` has no parsing reader --
+    `cautilus_adapter_lib.py` pins the SINGULAR `.agents/cautilus-adapter.yaml`. Before
+    the repair its three `*_command_templates` siblings, declared together and read by
+    nothing, got two different verdicts purely because two of the names collided with an
+    unrelated module's field list. Now they agree: none is `reader`.
     """
-    declared = load_yaml_file(ROOT / ".agents/cautilus-adapters/chatbot-benchmark.yaml")
-    states = {r.key: r.state for r in resolve_declared_keys(ROOT, declared)}
+    rel = ".agents/cautilus-adapters/chatbot-benchmark.yaml"
+    states = {r.key: r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel)}
 
     siblings = ("comparison_command_templates", "held_out_command_templates", "full_gate_command_templates")
-    assert all(key in states for key in siblings)
-    assert len({states[key] for key in siblings}) == 2, (
-        "the three sibling keys now agree. If key-scoping was repaired, replace this test "
-        "with one asserting all three resolve to the same honest state; do not widen it."
+    assert all(states[key] != "reader" for key in siblings), (
+        "a key in a file nothing parses must not read as `reader`; this is the #553 regression"
     )
+    assert states["held_out_command_templates"] == "reader-elsewhere"
     assert states["comparison_command_templates"] == "text-asserted"
-    assert states["held_out_command_templates"] == "reader", (
-        "this verdict is the DEFECT, not the contract: no module parses this file at all"
-    )
+
+
+def test_a_glob_literal_does_not_confer_ownership() -> None:
+    """The precise trap `#553` turned on.
+
+    `scripts/cautilus_adapter_lib.py` contains the literal
+    `.agents/cautilus-adapters/*.yaml` inside an unrelated
+    `DEFAULT_PROMPT_AFFECTING_PATTERNS` list, while actually loading the SINGULAR
+    adapter. A glob-based ownership rule would re-admit the exact module this repair
+    exists to exclude, and every assertion above would still pass.
+    """
+    associated = associated_modules(ROOT, ".agents/cautilus-adapters/chatbot-benchmark.yaml")
+
+    assert associated, "the chatbot adapter has owners; an empty set would disable scoping silently"
+    assert "scripts/cautilus_adapter_lib.py" not in associated
+    assert "scripts/cautilus_scenarios_lib.py" in associated
+
+
+def test_a_resolver_that_builds_its_path_still_owns_its_adapter() -> None:
+    """The inverted bias, caught by measurement before shipping.
+
+    Most skill resolvers never contain their adapter's path -- the shared helper composes
+    `.agents/{skill_id}-adapter.yaml` from the skill id. Seeding ownership on exact
+    literals alone reported nine CORRECT `release-adapter.yaml` declarations as unread,
+    which is the false-typo signal this goal's Non-Goals forbid.
+    """
+    associated = associated_modules(ROOT, ".agents/release-adapter.yaml")
+
+    assert "skills/public/release/scripts/resolve_adapter.py" in associated
+    rel = ".agents/release-adapter.yaml"
+    states = {r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel)}
+    assert "reader-elsewhere" not in states, "a real adapter's own declarations must not read as unreconciled"
+
+
+def test_an_injected_reader_is_still_associated() -> None:
+    """`scripts/setup_inspect_lib.py` receives its adapter loader as a CALLABLE PARAMETER
+    and names neither the adapter path nor its owner. Only the transitive closure over
+    module references keeps it in scope; without it, correct setup declarations would
+    read as unreconciled."""
+    assert "scripts/setup_inspect_lib.py" in associated_modules(ROOT, ".agents/setup-adapter.yaml")
+
+
+def test_reader_elsewhere_is_not_collapsed_into_unknown() -> None:
+    """Telling an operator their correct declaration looks like a typo, on the strength
+    of an import graph, is the mistake this repo has already shipped once. The two states
+    say different things and must not render alike."""
+    rel = ".agents/cautilus-adapters/chatbot-proposals.yaml"
+    states = {r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel)}
+
+    assert "reader-elsewhere" in states
+    assert "unknown" not in states
+
+
+def test_an_example_adapter_agrees_with_the_adapter_it_exemplifies() -> None:
+    """A verdict that contradicts itself on identical evidence is not a verdict.
+
+    `skills/public/setup/adapter.example.yaml` is a template for
+    `.agents/setup-adapter.yaml`. Before examples inherited the real adapter's
+    association, `surfaces` was `reader` in one and `reader-elsewhere` in the other --
+    same key, same readers, opposite answers -- and the difference silently inflated the
+    example-adapter gap count that the operator's warn-vs-refuse decision depends on.
+    """
+    shared = ("defaults_version", "policy_sources", "recommendation_sets", "surfaces")
+    real_rel, example_rel = ".agents/setup-adapter.yaml", "skills/public/setup/adapter.example.yaml"
+    real = {r.key: r.state for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / real_rel), adapter_relative=real_rel)}
+    example = {
+        r.key: r.state
+        for r in resolve_declared_keys(ROOT, load_yaml_file(ROOT / example_rel), adapter_relative=example_rel)
+    }
+
+    for key in shared:
+        assert real[key] == example[key] == "reader", f"{key}: real={real[key]} example={example.get(key)}"
+
+
+def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
+    """The Operator Decision Queue's unblock action asks for the measured gap count
+    across this repo PLUS every shipped example adapter. A survey that quietly covered
+    only `.agents/` would answer a different question than the one asked."""
+    result = survey(ROOT)
+
+    assert result["adapters"] >= 35, "the adapter population shrank; a glob is stale"
+    assert result["keys"] >= 400
+    assert result["registry_problems"] == []
+    assert any(gap["adapter"].startswith(".agents/") for gap in result["gaps"]) or not result["gaps"]
+    covered = {gap["adapter"] for gap in result["gaps"]}
+    assert covered <= {
+        ".agents/cautilus-adapters/chatbot-benchmark.yaml",
+        ".agents/cautilus-adapters/chatbot-proposals.yaml",
+    }, f"a new unreconciled adapter surface appeared and needs a decision: {sorted(covered)}"
+
+
+def test_the_survey_reports_rather_than_refuses() -> None:
+    """The warn-vs-refuse tier is the operator's call (D46: the population that matters
+    is consumer adapters this repo has never seen). The survey must therefore return
+    findings, not raise or exit nonzero on them -- it currently has 21."""
+    result = survey(ROOT)
+
+    assert result["gaps"], "this repo has known gaps; a survey reporting none is broken, not clean"
+    assert all(gap["detail"].strip() for gap in result["gaps"])

@@ -63,17 +63,23 @@ runs the activation command.
   So a loader-scoped known-key set would call four CORRECT declarations typos on
   day one, which is exactly what `#530`'s posted causal review predicted. The
   unit has to be "which reader owns this key", not "does the loader know it".
-- Current slice: Slice 2 — the reader registry. Built, proven, and **PARTIAL**:
-  bounded review found the resolution is KEY-scoped rather than (FILE, KEY)-scoped,
-  confirmed by measurement. Typed states and the mechanism are sound; the `reader`
-  verdict overstates. Deliberately NOT wired to any gate, and the Operator
-  Decision Queue's warn-vs-refuse call must NOT be made from these counts.
-  Tracked as `#553`.
-- Next action: repair `#553` (associate each adapter file with the modules that
-  actually read it) before wiring anything, then re-measure — including the
-  shipped `adapter.example.yaml` population the Decision Queue asks for and the
-  parser's dropped-line report. Slices 3 (#518) and 4 (#528) both consume slice
-  2's output and should NOT start until that resolution is trustworthy.
+- Current slice: Slice 2 — the reader registry. **COMPLETE.** The key-scoping
+  defect its own round-1 review found (`#553`) is repaired within the slice:
+  resolution is now (file, key)-scoped, the registry is wired behind a reporting
+  `survey()` CLI, and the measurement the Operator Decision Queue asked for is
+  done across the full population.
+- Slice 2 acceptance: MET. Every declared key resolves to a named reader or a
+  typed state (`shared-core` / `reader` / `reader-elsewhere` / `text-asserted` /
+  `extension` / `retired` / `unknown`). `setup-adapter.yaml`'s four multi-reader
+  keys stay clean — the regression fixture for the refuted approach holds, and a
+  mutant that reverts to the refuted design is killed by it.
+- Measured across 37 adapter files / 445 keys: 167 shared-core, 257 reader, 20
+  reader-elsewhere, 1 text-asserted, **0 unknown**. All 21 gaps sit in the two
+  `.agents/cautilus-adapters/*.yaml` files, which the repo documents as having no
+  per-skill resolver.
+- Next action: Slice 3 (`#518`) — reconcile every declared quality surface to a
+  reader or a typed gap. It is now unblocked: slice 2's resolution is
+  trustworthy, and `survey()` is the seam it consumes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -242,10 +248,15 @@ ordered them behind a root it never repaired.
   Revisit trigger: if slice 2 finds ANY unknown key in this repo that is not a
   known second-reader key, that is evidence the warning tier is already earning
   its place and the refusal question gets easier.
-  STATUS 2026-08-07: NOT YET ANSWERABLE. Slice 2 measured 0 unknown and 1
-  text-asserted, but its `reader` resolution is key-scoped and overstates (`#553`),
-  and the shipped example-adapter population the unblock action names was not
-  measured. Do not decide the tier from these numbers.
+  STATUS 2026-08-07: ANSWERABLE, and the data is in. `#553` is repaired, so the
+  resolution is trustworthy, and the measurement now covers the full population
+  the unblock action names (this repo PLUS every shipped example adapter): 37
+  files, 445 keys, 0 unknown, 21 gaps ALL inside the two
+  `.agents/cautilus-adapters/*.yaml` files. The gaps are one real, contiguous,
+  explicable cluster rather than scattered noise, which is evidence a warning
+  tier would fire on something true. Still the operator's call: `survey()`
+  reports and does not refuse, and D46's reasoning about the unseen consumer
+  population is unchanged by a repo-local measurement.
 - Decision: whether `#521` (prompt-surface deletion policy) is still worth its
   instrument chain, now that "close every issue" is no longer the frame.
   Owner: operator.
@@ -368,6 +379,20 @@ only place activation depends on them.
 - Off-goal findings: Filed `#553` for the key-scoping redesign, with the measured instance and the hard part named (transitive association: `setup_inspect_lib.py` reads the setup adapter through an imported `load_adapter`, never by path, so a path-literal rule alone would invert the bias into false `unknown`s).
 - Lessons carried forward: The instrument reproduced the defect it was built to detect, twice, and neither instance was visible from inside the build. Its own docstring quoted an adapter key, so the first run counted the module as that key's reader -- the tool manufacturing the evidence it then reported. Then bounded review found the deeper one: a `reader` verdict is a claim about the REPO ('some module parses this name') dressed as a claim about the ADAPTER ('this declaration is reconciled'). Measuring the specific instance, rather than accepting or dismissing the review, is what separated the sound states (`unknown`, `text-asserted`) from the overstated one (`reader`).
 - Metrics: STATUS: PARTIAL, and deliberately NOT WIRED. Nothing calls this module, and that is the correct state given the key-scoping gap: arming a warning on these verdicts would flag operators on evidence the tool does not have. The goal's acceptance criterion for slice 2 is therefore NOT met -- the typed states and the mechanism exist and are proven, the reader-resolution is not yet trustworthy, and the Operator Decision Queue's warn-vs-refuse call must NOT be made from these counts. Measured today, with that caveat attached: 227 declared keys across 18 adapters -- 74 shared-core, 152 reader, 1 text-asserted, 0 unknown. `unknown` is sound; the `reader` count overstates. Also unmeasured: the shipped `adapter.example.yaml` population the Decision Queue explicitly asks for, and keys the YAML parser silently dropped (`load_yaml_file_report` exists for that and is not used here).
+
+### Slice 4: Slice 2 (completed) — repair #553: resolution is now (file, key)-scoped
+
+- Objective: Make the reader resolution trustworthy enough to wire and to decide from, which is what slices 3 and 4 were blocked on.
+- Why this approach: PREMISE CHECK ON THE REMEDY ITSELF, before building it: the obvious fix -- credit only modules containing the adapter's path literal -- was verified against the tree FIRST and would have been wrong. `scripts/setup_inspect_lib.py` receives its adapter loader as an INJECTED CALLABLE and names neither the path nor its owner, and most skill resolvers never contain their adapter's path at all because the shared helper composes `.agents/{skill_id}-adapter.yaml` from the skill id. A path-literal rule alone would have reported correct declarations as unread -- inverting the bias into false typo reports, which is the exact wolf-crier this goal's Non-Goals forbid. So the remedy needed three seeds, not one.
+- Commits:
+- What changed: Ownership seeds from (1) exact path literals -- never globs, because `cautilus_adapter_lib.py` carries `.agents/cautilus-adapters/*.yaml` inside an unrelated `DEFAULT_PROMPT_AFFECTING_PATTERNS` list and a glob rule would re-admit the very module the repair excludes; (2) the repo's naming convention, verified by requiring the file to exist; (3) inheritance for shipped examples, since `skills/public/setup/adapter.example.yaml` is a template for `.agents/setup-adapter.yaml` and by construction shares its readers. Association then closes transitively over module references -- static imports AND the dotted-name string literals this repo's dynamic loaders take. A key parsed only by unassociated modules gets its own state, `reader-elsewhere`, rather than being collapsed into `unknown`: telling an operator a correct declaration looks like a typo on the strength of an import graph is a mistake this repo has already shipped once.
+- Alternatives rejected: Rejected: glob-based ownership (re-admits the excluded module; pinned by a mutant). Rejected: collapsing `reader-elsewhere` into `unknown` (false typo reports). Rejected: leaving examples unassociated -- it made the SAME key resolve `reader` in `.agents/setup-adapter.yaml` and `reader-elsewhere` in its own example, a verdict contradicting itself on identical evidence, and it inflated the example-adapter gap count the operator decision depends on.
+- Targeted verification: 23 tests. 6 mutants against the repair, 6 killed -- each one re-creates a specific wrong design (key-scoped, glob owners, no convention seed, no example inheritance, collapsed states, no transitive closure) rather than flipping an operator. Suite 7785 passed / 0 failed. Runtime held to ~9s by caching the import graph and the closure; the naive version cost ~24s, and a check that gets expensive gets moved out of the fast gates and then stops running.
+- Test duplication pressure: The intermediate wrong answers are pinned as tests rather than deleted: a glob does not confer ownership, a path-building resolver still owns its adapter, an injected reader stays associated, an example agrees with what it exemplifies. Each of those was a real defect in an intermediate version of this slice, found by measuring rather than by review.
+- Critique: Round-1 review's two blockers are both repaired and both pinned. The reviewer's diagnosis was correct and its suggested direction was incomplete in the way it predicted -- it named transitive association as the hard part, and measurement showed there were two further seeds it had not seen (convention-built paths and example inheritance), each of which produced false gaps on real adapters before being fixed.
+- Off-goal findings: `#553` is resolved by this slice's own work. `comparison_command_templates` remains a genuine finding, now correctly typed rather than accidentally singled out.
+- Lessons carried forward: Every intermediate version of this repair was wrong in a way review had not predicted and only measurement exposed: exact-literal ownership produced 9 false gaps on `release-adapter.yaml`, and example adapters disagreed with the adapters they exemplify on identical keys. Running the instrument against the whole population after each change -- not just the fixture -- is what caught all three. A fixture that stays green while the population goes wrong is the failure mode an instrument is most prone to, because the fixture is the part the author was thinking about.
+- Metrics: MEASUREMENT, and it now answers the Operator Decision Queue's unblock action in full -- this repo PLUS every shipped example adapter, which the earlier partial measurement omitted. 37 adapter files, 445 declared keys: 167 shared-core, 257 reader, 20 reader-elsewhere, 1 text-asserted, 0 unknown. Every one of the 21 gaps sits in the two `.agents/cautilus-adapters/*.yaml` files, which the repo itself documents as having no per-skill resolver. Revisit-trigger reading: there are NO unknown keys and no scattered noise -- the gaps are one real, contiguous, explicable cluster. That is evidence a warning tier would fire on something true rather than cry wolf, and it is the operator's call to make from it; `survey()` reports and does not refuse, per D46. Non-claim: no consumer repo was read, and the consumer population remains the one this measurement cannot speak for.
 
 ## Context Sources
 
