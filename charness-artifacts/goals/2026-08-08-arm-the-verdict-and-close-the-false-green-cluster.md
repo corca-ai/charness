@@ -9,10 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed.
-- Next action: activate and run Slice 1 (arm the warning tier).
+- Current slice: Slice 1 (`#530`, arm the WARN tier) — built, round-1 reviewed,
+  repaired at `f6ead5ea`; round-2 bounded review of the repairs in flight.
+- Current slice intent: the WARN tier is ARMED for `unknown` only, across 37
+  adapters (18 repo-owned + 19 shipped examples). `reader-elsewhere` and
+  `text-asserted` stay reported-but-unarmed on measured evidence.
+- Next action: disposition round-2 findings, then decide `#530`'s closability —
+  see the OPEN QUESTION below, which the slice measured and did not resolve.
+- OPEN QUESTION for `#530`: the gate now warns on the issue's exact
+  reproduction, but the RESOLVER (`skills/public/*/scripts/resolve_adapter.py`)
+  still returns `valid: true, errors: [], warnings: []` for a typo'd key — the
+  literal string in the issue title. Half (b) (unchecked `version`) IS fixed
+  (`version: 7` → `errors: ['version must be 1']`). Arming the resolver was
+  rejected on measured cost (3.1s reader scan × 16 resolvers, including the 16
+  the gate itself spawns). `#530` is therefore NOT claimed closed.
+- Tracker recount 2026-08-08 (post-activation): 28 open issues, not the 25 this
+  goal was shaped against.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye proof at slice boundaries; broad/live proof at closeout.
 - Gate cadence: `run_slice_closeout.py --skip-broad-pytest` per slice AND

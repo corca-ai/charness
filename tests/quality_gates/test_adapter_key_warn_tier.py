@@ -153,6 +153,40 @@ def test_the_real_command_warns_on_a_typo_in_a_shipped_example(tmp_path: Path) -
     assert "1 unreconciled declared key(s) across 2 declaring file(s)." in completed.stdout, completed.stdout
 
 
+def test_the_warn_scope_reaches_the_flattened_installed_layout(tmp_path: Path) -> None:
+    """The layout CONSUMERS receive, which this repo's own tree cannot exercise.
+
+    The export flattens `skills/public/<id>/` to `skills/<id>/`, so `ADAPTER_GLOBS`'
+    `skills/public/*/adapter.example.yaml` matches nothing in an installed tree. Round-2
+    review caught that: the widening's stated purpose is "shipped examples are what
+    consumers copy", and without the flattened pattern the warn scope finds zero of them
+    in exactly the layout consumers get -- while the summary still prints a confident file
+    count that is accurate about what it read and useless for the population named.
+
+    Adding the pattern is unobservable from this repo (`skills/` here holds `public/`,
+    `shared/`, `support/`, so it matches nothing), which is precisely why the proof has to
+    be a constructed tree. `iter_resolvers` already carries the same dual-layout handling.
+    """
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents/example-adapter.yaml").write_text("version: 1\nrepo: constructed\n", encoding="utf-8")
+    example = tmp_path / "skills/handoff/adapter.example.yaml"
+    example.parent.mkdir(parents=True)
+    example.write_text("version: 1\nrepo: my-repo\nchunk_polcy: {}\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/validate_adapters.py"), "--repo-root", str(tmp_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    warned = [line for line in completed.stderr.splitlines() if line.startswith("WARNING ")]
+    assert len(warned) == 1, completed.stderr
+    assert "skills/handoff/adapter.example.yaml" in warned[0], warned[0]
+    assert "1 unreconciled declared key(s) across 2 declaring file(s)." in completed.stdout, completed.stdout
+
+
 def test_the_four_multi_reader_setup_keys_survive_arming() -> None:
     """THE regression fixture for the refuted approach, carried across the arming.
 
@@ -204,8 +238,16 @@ def test_the_warn_scope_covers_shipped_examples() -> None:
     scope = {str(path.relative_to(ROOT)) for path in iter_warn_scope_adapters(ROOT)}
     assert "skills/public/handoff/adapter.example.yaml" in scope, sorted(scope)
 
-    examples = {path for path in scope if path.endswith("adapter.example.yaml")}
-    assert len(examples) >= 15, f"shipped examples fell out of the warn scope: {sorted(examples)}"
+    # BOTH example families, named separately. Round 2 caught the first version asserting
+    # `len(examples) >= 15` against 16 `skills/public/` + 3 `integrations/` files: dropping
+    # the `integrations/*` glob entirely left 16 and passed, so the tier could have gone
+    # back to claiming a scope it never read -- this slice's own blocker at reduced scale.
+    # A threshold that survives deleting a whole family is not a scope assertion.
+    public_examples = {path for path in scope if path.startswith("skills/public/")}
+    integration_examples = {path for path in scope if path.startswith("integrations/")}
+    assert len(public_examples) == 16, sorted(public_examples)
+    assert len(integration_examples) == 3, sorted(integration_examples)
+    assert len(scope) == 37, f"the measured warn population changed: {len(scope)}"
     # And the gate's own narrower validation scope must still be a strict subset, so this
     # widening never silently pulls a template into the REFUSING checks.
     assert {str(path.relative_to(ROOT)) for path in iter_adapter_yaml(ROOT)} < scope
@@ -215,7 +257,7 @@ def test_reader_elsewhere_is_reported_but_never_warned() -> None:
     """The tier boundary, on real data rather than a constructed case.
 
     `.agents/cautilus-adapters/chatbot-benchmark.yaml` is the strongest instance in the
-    repo: `survey` types ten of its keys as gaps, and the warn tier must stay silent about
+    repo: `survey` types eleven of its keys as gaps (10 `reader-elsewhere` + 1 `text-asserted`), and the warn tier must stay silent about
     every one. Excluding `reader-elsewhere` is not squeamishness -- 3 of its 23 instances
     are association residue where the reader genuinely does read the file through dynamic
     dispatch, and one of those ships inside `skills/public/handoff/adapter.example.yaml`,
@@ -223,7 +265,7 @@ def test_reader_elsewhere_is_reported_but_never_warned() -> None:
     """
     benchmark = ROOT / ".agents/cautilus-adapters/chatbot-benchmark.yaml"
     reported = [gap for gap in survey(ROOT)["gaps"] if gap["adapter"].endswith("chatbot-benchmark.yaml")]
-    assert reported, "fixture moved: this adapter is supposed to be the repo's largest reported gap"
+    assert len(reported) == 11, f"fixture moved: expected 11 reported gaps, got {len(reported)}"
     assert {gap["state"] for gap in reported} <= {"reader-elsewhere", "text-asserted"}
 
     assert unreconciled_keys(ROOT, [benchmark]) == [], "the warn tier must not reach reported-but-unarmed states"

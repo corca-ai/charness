@@ -544,8 +544,8 @@ def unreconciled_keys(repo_root: Path, paths: list[Path]) -> list[dict[str, str]
     for path in paths:
         # No `relative_to` fallback and no `isinstance(key, str)` guard. Both were written,
         # both SURVIVED the mutation check, and reading why killed them instead: the only
-        # caller passes paths `iter_matching_repo_files` globbed from `repo_root`, so the
-        # ValueError branch is unreachable, and this repo's minimal loader coerces every
+        # caller (`validate_adapters.iter_warn_scope_adapters`) lists paths rooted at this
+        # same `repo_root`, so the ValueError branch is unreachable, and this repo's minimal loader coerces every
         # key to `str` (`1:` parses to `"1"`), so the type guard is unreachable too. A
         # branch that cannot run still reads as though a real hazard were handled -- the
         # same false claim this tier exists to warn about, one layer down.

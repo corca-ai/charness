@@ -318,7 +318,7 @@ def validate_adapter_yaml(path: Path) -> None:
     validate_charness_quality_adapter_contract(path, data)
 
 
-def iter_warn_scope_adapters(root: Path) -> list[Path]:
+def iter_warn_scope_adapters(root: Path, *, require_git: bool = False) -> list[Path]:
     """Every adapter the WARN tier reads -- DELIBERATELY WIDER than `iter_adapter_yaml`.
 
     Round-1 bounded review caught this as a blocker, and it was the slice's own defect
@@ -338,13 +338,31 @@ def iter_warn_scope_adapters(root: Path) -> list[Path]:
 
     Widening ships with its measured upper bound in the same commit, per this repo's most
     transferable lesson: over the 19 added shipped-example files (218 declared keys), the
-    tier fires 0 times. The widening adds coverage, not noise.
+    tier fires 0 times. That zero is PINNED by `test_this_repo_warns_about_nothing`, which
+    reads this function's own output; the 19 and 218 are prose and are not.
+
+    Listed through `iter_matching_repo_files`, like every other surface in this file, and
+    NOT through a bare `root.glob`. Round-2 review caught the bare glob: it silently
+    abandoned the `git ls-files` filter that `--require-git-file-listing` exists to
+    enforce, so a generated or gitignored example could produce a WARNING naming a file
+    that is not part of the repo -- an unactionable warning, which is the wolf-crier the
+    whole tier decision was made to avoid. One scope difference from `iter_adapter_yaml`
+    (the glob set) was intended; a second, undisclosed one (the listing mechanism) was the
+    fixed class riding along in the fix.
+
+    The `skills/*/adapter.example.yaml` pattern is the INSTALLED layout, and it is here for
+    the same reason `iter_resolvers` carries it. The export flattens `skills/public/<id>/`
+    to `skills/<id>/`, so without it the warn scope finds zero shipped examples in exactly
+    the layout consumers receive -- the summary would report a confident file count that is
+    accurate about what it read and useless for the population the widening names. It adds
+    nothing in this repo (`skills/` here holds `public/`, `shared/`, `support/`), so the
+    measured bound above is unchanged.
     """
-    globs = _scripts_adapter_key_registry_module.ADAPTER_GLOBS
-    return sorted({path for glob in globs for path in root.glob(glob)})
+    globs = (*_scripts_adapter_key_registry_module.ADAPTER_GLOBS, "skills/*/adapter.example.yaml")
+    return iter_matching_repo_files(root, globs, require_git=require_git)
 
 
-def report_unreconciled_keys(root: Path, adapter_yaml: list[Path]) -> list[dict[str, str]]:
+def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> list[dict[str, str]]:
     """WARN -- never refuse -- on a declared key no module reads (#530).
 
     This is the tier the operator chose, and the distinction is the whole point. Every
@@ -363,7 +381,7 @@ def report_unreconciled_keys(root: Path, adapter_yaml: list[Path]) -> list[dict[
     key(s) across 37 declaring file(s)` is a claim; silence is not, and a bare zero is
     only half of one.
     """
-    warnings = unreconciled_keys(root, adapter_yaml)
+    warnings = unreconciled_keys(root, warn_scope)
     for warning in warnings:
         print(
             f"WARNING {warning['adapter']}: `{warning['key']}` is {warning['state']} -- {warning['detail']}",
@@ -381,7 +399,7 @@ def main() -> int:
     root = args.repo_root.resolve()
     resolvers = iter_resolvers(root, require_git=args.require_git_file_listing)
     adapter_yaml = iter_adapter_yaml(root, require_git=args.require_git_file_listing)
-    warned_files = iter_warn_scope_adapters(root)
+    warned_files = iter_warn_scope_adapters(root, require_git=args.require_git_file_listing)
     # `warned_files` joins the emptiness test because the warn scope is WIDER than
     # `adapter_yaml`. A repo holding only shipped examples -- no `.agents/` and no
     # resolvers -- used to take the early return and print `No adapter surfaces found.`

@@ -315,7 +315,14 @@ def test_the_survey_covers_the_population_the_operator_decision_needs() -> None:
 def test_the_survey_reports_rather_than_refuses() -> None:
     """The warn-vs-refuse tier is the operator's call (D46: the population that matters
     is consumer adapters this repo has never seen). The survey must therefore return
-    findings, not raise or exit nonzero on them -- it currently has 21."""
+    findings, not raise or exit nonzero on them -- it currently has 24 (23
+    `reader-elsewhere` plus 1 `text-asserted`).
+
+    That count is prose and is deliberately NOT asserted: pinning it here would make every
+    new adapter a test edit. It said 21 until round-2 review flagged the disagreement with
+    the 23 recorded elsewhere, which is the hazard of an unpinned number -- so it is now
+    stated with its breakdown, and the adapter WHITELIST above is what actually holds the
+    line."""
     result = survey(ROOT)
 
     assert result["gaps"], "this repo has known gaps; a survey reporting none is broken, not clean"
