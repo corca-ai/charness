@@ -53,8 +53,9 @@ def _scan_file(text: str) -> list[tuple[str, str]]:
 def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
     public_root = repo_root / "skills" / "public"
     findings: list[dict] = []
+    consumed: set[tuple[str, str, str]] = set()
     if not public_root.is_dir():
-        return {"findings": findings, "scanned_skills": 0}
+        return {"findings": findings, "scanned_skills": 0, "stale_allowlist": []}
     skill_count = 0
     for skill_dir in sorted(public_root.iterdir()):
         if not skill_dir.is_dir():
@@ -77,6 +78,7 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
                 if owner == sid:
                     continue
                 if (sid, kind, owner) in allowlist:
+                    consumed.add((sid, kind, owner))
                     continue
                 findings.append(
                     {
@@ -87,7 +89,29 @@ def scan(repo_root: Path, allowlist: set[tuple[str, str, str]]) -> dict:
                         "allowlist_entry": f"{sid}:{kind}:{owner}:<reason>",
                     }
                 )
-    return {"findings": findings, "scanned_skills": skill_count}
+    # A waiver nobody consumed is a design decision the code no longer makes, written in
+    # the present tense in a file whose entries are REQUIRED to carry a `<reason>` so the
+    # boundary stays explicit. Left unreported, the allowlist can only grow: it is
+    # reviewed when an entry is added and silent when one stops being needed.
+    #
+    # The repo already decided this posture and already built it -- the header of
+    # `scripts/validate_scenario_conditional_reads.allowlist.txt` says a waiver that is no
+    # longer needed is "surfaced as a stale-allowlist advisory, never silently dropped",
+    # and `validate_scenario_conditional_reads.py` implements it. This is that same
+    # sentence applied to the other allowlist, not a new principle.
+    #
+    # Advisory, not a violation, matching the sibling. A stale waiver is a documentation
+    # defect, not an ownership breach, and the scan is what proves it stale -- so failing
+    # the gate on it would block a correct repo on a bookkeeping lag.
+    stale = sorted(entry for entry in allowlist if entry not in consumed)
+    return {
+        "findings": findings,
+        "scanned_skills": skill_count,
+        "stale_allowlist": [
+            {"skill": sid, "kind": kind, "owner": owner, "entry": f"{sid}:{kind}:{owner}"}
+            for sid, kind, owner in stale
+        ],
+    }
 
 
 def main() -> int:
@@ -101,10 +125,18 @@ def main() -> int:
     if args.json:
         print(json.dumps({**result, "allowlist_size": len(allowlist)}, indent=2))
     else:
+        for entry in result["stale_allowlist"]:
+            print(
+                f"  advisory: {ALLOWLIST_PATH} entry `{entry['entry']}` looks stale "
+                "(this scan no longer produces that overlap; re-check the entry's reason "
+                "before deleting, because the scan reads only top-level .py/.md under "
+                "each skill and a real mention can sit outside it)"
+            )
         if not result["findings"]:
             print(
                 f"check_skill_ownership_overlap: ok "
-                f"({result['scanned_skills']} skills, allowlist={len(allowlist)})"
+                f"({result['scanned_skills']} skills, allowlist={len(allowlist)}, "
+                f"stale={len(result['stale_allowlist'])})"
             )
             return 0
         print("check_skill_ownership_overlap: violations")

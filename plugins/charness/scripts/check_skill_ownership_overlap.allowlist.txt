@@ -2,6 +2,11 @@
 # kind = artifact | adapter
 # Each entry declares an intentional cross-namespace mention so the boundary
 # is explicit. Silent overlap creates drift the next operator hits.
+# A waiver that is no longer needed is surfaced as a stale-allowlist advisory,
+# never silently dropped -- the same posture the scenario-conditional-reads
+# allowlist states, so entries here get retired instead of only accumulating.
+# The advisory is a prompt to re-check the reason, not proof the mention is gone:
+# the scan reads only top-level .py/.md under each skill.
 
 handoff:artifact:release:read-only spill target -- handoff cites release/latest.md as where release detail belongs
 handoff:artifact:quality:read-only spill target -- handoff cites quality/latest.md as where quality numbers belong
@@ -12,7 +17,6 @@ setup:adapter:retro:seed-only -- setup seeds .agents/retro-adapter.yaml via seed
 setup:adapter:worktree:seed-only -- setup seeds .agents/worktree-adapter.yaml; runtime owns to worktree integration
 setup:adapter:t-events:seed-only -- setup seeds .agents/t-events-adapter.yaml via seed_t_events_adapter.py; runtime owns to t-events integration
 setup:adapter:usage-episodes:seed-only -- setup seeds .agents/usage-episodes-adapter.yaml via seed_usage_episodes_adapter.py; runtime owns to usage-episodes integration
-setup:artifact:spec:read-only cite -- seed_t_events_adapter.py template comment cites issue-135 umbrella spec for traceability; runtime owns to spec
 issue:artifact:gather:read-only cite -- issue resolve flow references gather artifacts as evidence sources
 release:artifact:critique:read-only proof -- release helper validates a tracked critique artifact path before rendering review proof in release/latest.md
 critique:artifact:retro:read-only cite -- code-critique reference cross-links charness-artifacts/retro/recent-lessons.md as the defect-class memory home
@@ -20,7 +24,6 @@ critique:artifact:spec:read-only scan -- autonomous trigger scans spec artifacts
 critique:artifact:skill-t-mechanism:read-only cite -- angle-selection lineup cites skill-t-mechanism/inventory as the Tier C anchor_invoked evidence sink
 critique:adapter:retro:boundary cite -- adapter-contract.md names .agents/retro-adapter.yaml as the seam where a future retro-prepare slot would live; ownership stays retro-side
 quality:artifact:cautilus:read-only cite -- cautilus-on-demand.md cites charness-artifacts/cautilus/latest.md as the behavior-proof artifact home so the planner-consult contract can name it
-quality:adapter:usage-episodes:read-only gate -- quality reads .agents/usage-episodes-adapter.yaml to run the integration validator; runtime capture owns to usage-episodes
 achieve:artifact:goals:owns -- achieve owns charness-artifacts/goals/<date-slug>.md as the goal lifecycle artifact namespace; no other skill writes there
 achieve:artifact:retro:read-only proof -- After-phase closeout binds a retro artifact as the prescribed-skill evidence; lifecycle.md cites retro/ as the evidence namespace, ownership stays retro
 achieve:artifact:probe:read-only proof -- After-phase closeout binds a host-log probe artifact as portability evidence; lifecycle.md cites probe/ as the evidence namespace, ownership stays probe

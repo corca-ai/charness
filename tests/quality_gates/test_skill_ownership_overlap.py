@@ -98,3 +98,92 @@ def test_unallowlisted_adapter_namespace_mention_fails(tmp_path: Path, monkeypat
     finding = payload["findings"][0]
     assert finding["kind"] == "adapter"
     assert finding["owner"] == "quality"
+
+
+# --- stale-waiver advisory -----------------------------------------------------------
+#
+# The allowlist could only grow: it was reviewed on the way in and silent on the way out,
+# so two entries described boundary decisions the code had already stopped making while
+# the gate counted 27 and printed ok. The repo had already decided the right posture and
+# built it for the OTHER allowlist -- "a waiver that is no longer needed is surfaced as a
+# stale-allowlist advisory, never silently dropped" -- so this is scope, not a new rule.
+
+
+def _seed(tmp_path: Path, allowlist_lines: list[str]) -> Path:
+    """A minimal repo whose scanner produces exactly one real overlap."""
+    skill = tmp_path / "skills" / "public" / "alpha"
+    (skill / "scripts").mkdir(parents=True)
+    (skill / "SKILL.md").write_text(
+        "See `.agents/beta-adapter.yaml` for the boundary.\n", encoding="utf-8"
+    )
+    (tmp_path / "skills" / "public" / "beta").mkdir(parents=True)
+    (tmp_path / "scripts").mkdir(exist_ok=True)
+    (tmp_path / _ownership_overlap.ALLOWLIST_PATH).write_text(
+        "".join(f"{line}\n" for line in allowlist_lines), encoding="utf-8"
+    )
+    return tmp_path
+
+
+def test_a_waiver_nobody_consumed_is_reported_as_stale(monkeypatch, capsys, tmp_path: Path) -> None:
+    """The escape: a waiver for an overlap the scanner no longer produces.
+
+    Its `<reason>` keeps asserting a coupling in the present tense, and a later session
+    reading the allowlist as documentation -- which the required reason field invites --
+    preserves a boundary that is not there.
+    """
+    _seed(tmp_path, [
+        "alpha:adapter:beta:real -- alpha reads beta's adapter",
+        "alpha:artifact:gamma:this overlap no longer exists",
+    ])
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
+
+    assert result.returncode == 0, result.stdout
+    assert "alpha:artifact:gamma` looks stale" in result.stdout
+    # The consumed waiver must NOT be reported; a stale advisory that fires on live
+    # entries is noise, and noise is how an advisory stops being read.
+    assert "alpha:adapter:beta` looks stale" not in result.stdout
+
+
+def test_a_fully_consumed_allowlist_reports_no_stale_entries(monkeypatch, capsys, tmp_path: Path) -> None:
+    _seed(tmp_path, ["alpha:adapter:beta:real -- alpha reads beta's adapter"])
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
+
+    assert result.returncode == 0
+    assert "looks stale" not in result.stdout
+    assert "stale=0" in result.stdout
+
+
+def test_the_checked_in_allowlist_has_no_stale_entries() -> None:
+    """Pinned against the live tree: this is the state the fix established, and a waiver
+    going stale again should be visible as a failing pin rather than a line nobody reads.
+    """
+    result = run_script(SCRIPT, "--repo-root", str(ROOT), "--json")
+    assert result.returncode == 0, result.stderr
+    stale = json.loads(result.stdout)["stale_allowlist"]
+    assert stale == [], (
+        "allowlist entries no longer produced by the scan: "
+        f"{[e['entry'] for e in stale]}. Re-check each reason, then delete the entry — "
+        "the scan reads only top-level .py/.md under each skill, so confirm the mention "
+        "is really gone rather than merely out of scan scope."
+    )
+
+
+def test_a_tree_with_no_public_skills_claims_no_staleness(monkeypatch, capsys, tmp_path: Path) -> None:
+    """It reports zero stale entries because it SCANNED nothing, not because it checked.
+
+    Worth pinning rather than leaving implicit: "no stale entries" after measuring
+    nothing is the same declaration-without-a-reader shape this issue is about. The
+    empty answer is the right one -- an unrun scan cannot call a waiver dead, and
+    listing all 25 would be pure noise -- but the ok line must still say `0 skills`
+    so the reader can tell an empty scan from a clean one.
+    """
+    (tmp_path / "scripts").mkdir(parents=True)
+    (tmp_path / _ownership_overlap.ALLOWLIST_PATH).write_text(
+        "alpha:adapter:beta:a waiver nothing can consume here\n", encoding="utf-8"
+    )
+    result = run_ownership_overlap(monkeypatch, capsys, "--repo-root", str(tmp_path))
+
+    assert result.returncode == 0
+    assert "looks stale" not in result.stdout
+    assert "0 skills" in result.stdout and "stale=0" in result.stdout
+
