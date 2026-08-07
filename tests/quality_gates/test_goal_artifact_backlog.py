@@ -8,9 +8,11 @@ contract never asks for.
 Two properties carry the design and both are pinned here rather than argued in prose.
 PRESENCE-ONLY: the floor never grades WHICH issues a goal claims, because that judgement
 is the operator's and a floor grading it would be a new false-verdict surface inside the
-tool built to stop them. GRANDFATHERED BY THE GOAL'S OWN `Created:` DATE, failing CLOSED
-on a missing or malformed one: nineteen historical artifacts predate the rule, and a
-floor that reddens the whole corpus is a floor that gets disarmed rather than obeyed.
+tool built to stop them. GRANDFATHERED ON TWO AXES, each failing CLOSED: the goal's own `Created:` date (missing
+or malformed evaluates) and its status (only a RECOGNISED non-shaping status skips). Of
+this repo's 156 goal artifacts 153 predate the rule, and 7 of the 8 live drafts do, so a
+floor without the grandfather would redden the corpus -- which is how a floor gets
+disarmed rather than obeyed.
 """
 from __future__ import annotations
 
@@ -231,9 +233,22 @@ def test_the_floor_cannot_be_disarmed_by_removing_or_mis_casing_the_status() -> 
     import goal_artifact_lib as gal  # noqa: PLC0415
 
     base = "# Achieve Goal: T\n\n{status}Activation: `/goal @x.md`\n\n## Goal\n\nx\n"
-    for status_line in ("", "Status: Draft\n", "Status: DRAFT\n", "Status: nonsense\n"):
+    for status_line in ("", "Status: Draft\n", "Status: DRAFT\n", "Status: nonsense\n",
+                        "Status: draft — slice 2 in flight\n"):
         report = gal.pursue_readiness(base.format(status=status_line))
         assert report["backlog_recount_missing_fields"] == list(backlog.REQUIRED_FIELDS), status_line
+        # The SIBLING gate, which the first repair left on `== "draft"`. Round 2 found it:
+        # dropping `Closeout Binding Plan` from the required set disarms both its heading
+        # requirement and its five-field check, so the same one-line edit that this test
+        # was written about still activated a goal with no closeout plan at all. This
+        # file's own docstring named that hole and asserted nothing about it.
+        # The fixture has no `## Closeout Binding Plan` heading, so the proof that the
+        # sibling gate still APPLIES is the section being required at all. (A missing
+        # heading surfaces in `missing_sections`; `closeout_plan_missing_fields` only
+        # fills once exactly one heading exists, so asserting that here would pass
+        # vacuously on `[]` and prove nothing.)
+        assert "Closeout Binding Plan" in report["missing_sections"], status_line
+        assert report["pursue_ready"] is False, status_line
 
     # The recognised non-shaping statuses still skip it — that scoping is deliberate.
     for status_line in ("Status: active\n", "Status: blocked\n", "Status: complete\n"):
@@ -280,3 +295,46 @@ def test_the_sibling_loaders_name_what_they_could_not_find(monkeypatch) -> None:
             assert expected in str(exc), (expected, str(exc))
         else:  # pragma: no cover - the loader must not succeed with a None spec
             raise AssertionError(f"{expected} loader did not refuse a None spec")
+
+
+def test_the_pass_sentence_does_not_call_a_pre_rule_draft_a_non_draft() -> None:
+    """The skip REASON must be the real one, and there are two of them.
+
+    `applies: False` has two producers — the non-shaping-status skip and the `Created:`
+    grandfather. Collapsing them to a boolean made the green sentence assert "this
+    artifact is not a draft" about an artifact that IS a draft, and by this floor's own
+    denominators that is 7 of the 8 live drafts: the false branch was the MAJORITY draft
+    path. A narrow measurement in wrong vocabulary, inside the sentence added to stop it.
+    """
+    import goal_artifact_lib as gal  # noqa: PLC0415
+
+    shaped = (
+        "# Achieve Goal: T\n\nStatus: draft\nCreated: 2026-08-07\nActivation: `/goal @x.md`\n\n"
+        "## User Acceptance\n\nUser runs X and sees Y.\n"
+        + "".join(f"\n## {s}\n" for s in gal.REQUIRED_SECTIONS + gal.PORTABILITY_SECTIONS)
+        + "\n## Closeout Binding Plan\n"
+        + "".join(f"- {f} fixture value\n" for f in gal.CLOSEOUT_PLAN_FIELDS)
+    )
+    reason = gal.pursue_readiness(shaped)["reason"]
+
+    assert "`Created:` date precedes the rule" in reason, reason
+    assert "this artifact is not a draft" not in reason, reason
+
+
+def test_a_quoted_example_line_cannot_satisfy_the_floor() -> None:
+    """A goal must not pass on evidence QUOTED from another artifact.
+
+    The shared grammar's date parser de-prioritises `>`-quoted lines for exactly this
+    reason. The field reader had taken its bullet/emphasis tolerance without that
+    disambiguation, so a `> Claims: ...` example sitting above an empty `- Claims:`
+    satisfied the floor from someone else's recount.
+    """
+    quoted = (
+        IN_SCOPE
+        + "\n## Backlog Recount\n\n- Counted: 28\n"
+        + "> Claims: #530, #554\n- Claims:\n- Not claimed: none\n"
+    )
+    report = backlog.check(quoted)
+
+    assert report["ok"] is False
+    assert report["missing_fields"] == ["Claims"]

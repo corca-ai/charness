@@ -61,12 +61,22 @@ claim nothing tracked — but the word has to be written. An empty `Claims:` lin
 tells the next session exactly as much as no line at all while LOOKING
 satisfied, so both are refused identically.
 
-Scope and grandfathering, so the rule does not redden the corpus it lands in:
-the floor applies to DRAFT artifacts only (it is a shaping floor, and `/goal`
-pursues a draft; an already-active or complete goal's scope was set before the
-rule existed and cannot be re-decided), and to goals whose own `Created:` date
-is on or after the rule date. It fails CLOSED on a missing or malformed
-`Created:` line, so the floor cannot be removed by deleting one line.
+Scope and grandfathering, so the rule does not redden the corpus it lands in.
+Two axes, and each fails CLOSED:
+
+- **Status.** The floor is skipped only for a RECOGNISED non-shaping status —
+  `active`, `blocked`, `complete` — because those artifacts' scope was set before
+  the rule existed and cannot be re-decided. A missing `Status:` line,
+  `Status: Draft`, or `Status: draft — slice 2 in flight` all still evaluate. It
+  is deliberately not `== "draft"`: that spelling made the floor removable by
+  deleting one line, and it disarmed the closeout-binding-plan gate in the same
+  edit. Both now share one predicate.
+- **`Created:` date.** A goal dated before the rule date is grandfathered off —
+  and the report says NOT EVALUATED rather than reading as a satisfied floor. A
+  missing or malformed `Created:` line evaluates.
+
+So "the floor cannot be removed by deleting one line" is true of both axes, not
+just the date.
 
 ### Mode disambiguation
 

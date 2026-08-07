@@ -1529,6 +1529,21 @@
         "status=\"skipped\""
       ],
       "rationale": "Web-fetch skipped acquisition attempts are explicit trace entries."
+    },
+    "skills/public/achieve/scripts/goal_artifact_pursue.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "skipped",
+        "not evaluated",
+        "backlog recount"
+      ],
+      "rationale": "The backlog-recount floor is a SHAPING floor, so `pursue_readiness` skips it for a recognised non-shaping status (`active`/`blocked`/`complete`). That skip is never silent. It is a distinct third state in the operator-facing PASS sentence -- `the backlog recount was NOT evaluated (shaping floor; this artifact is not a draft)` -- kept separate from the `Created:`-grandfather skip, which renders its own clause naming the date. Collapsing the two into one boolean is exactly what a bounded round caught: the sentence then asserted `this artifact is not a draft` about pre-rule DRAFTS, which are 7 of the 8 live ones. The state is also carried structurally in the `backlog_recount` payload (`applies`, `evaluated`, `status_skipped`, `reason`), so a machine reader can tell 'checked and clean' from 'not checked' without parsing prose."
     }
   }
 }

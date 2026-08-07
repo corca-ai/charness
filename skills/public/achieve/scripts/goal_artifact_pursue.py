@@ -61,6 +61,20 @@ _BACKLOG = _load_backlog_floor()
 NON_SHAPING_STATUSES = frozenset({"active", "blocked", "complete"})
 
 
+def is_shaping_status(status: str | None) -> bool:
+    """Whether SHAPING floors apply to an artifact with this status.
+
+    Shared by the backlog-recount floor here and the closeout-binding-plan section gate in
+    `goal_artifact_lib`, because round-2 review found the two had diverged: one was
+    hardened and the other left on `== "draft"`, which made the un-hardened one reachable
+    by the same single-line edit. A predicate both call cannot drift that way again.
+
+    Fail-closed: only a RECOGNISED non-shaping status skips, so a missing `Status:` line,
+    `Status: Draft`, or a trailing annotation all still evaluate.
+    """
+    return (status or "").strip().lower() not in NON_SHAPING_STATUSES
+
+
 SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",
@@ -80,7 +94,7 @@ def _reason(
     closeout_plan_missing_fields: list[str],
     closeout_plan_duplicate: bool,
     backlog_recount_missing_fields: list[str],
-    backlog_evaluated: bool,
+    backlog_state: str,
     activation_ready: bool,
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
@@ -102,11 +116,20 @@ def _reason(
         # recount is recorded" on a non-draft, where it was skipped entirely, would be the
         # narrow-measurement-in-wide-vocabulary defect this docstring warns about -- and
         # the pass sentence read identically in both cases until round-1 review said so.
-        backlog_clause = (
-            "the backlog recount is recorded"
-            if backlog_evaluated
-            else "the backlog recount was NOT evaluated (shaping floor; this artifact is not a draft)"
-        )
+        # THREE states, not a boolean. `applies: False` has TWO producers -- the
+        # non-shaping-status skip AND the `Created:` grandfather -- and collapsing them
+        # made the sentence assert "this artifact is not a draft" about a pre-rule DRAFT.
+        # By this floor's own denominators that is 7 of the 8 live drafts, so the false
+        # branch was the MAJORITY draft path, not an edge case: a narrow measurement in
+        # wrong vocabulary, inside the sentence added to stop exactly that.
+        if backlog_state == "recorded":
+            backlog_clause = "the backlog recount is recorded"
+        elif backlog_state == "status-skipped":
+            backlog_clause = "the backlog recount was NOT evaluated (shaping floor; this artifact is not a draft)"
+        else:
+            backlog_clause = (
+                "the backlog recount was NOT evaluated (this artifact's `Created:` date precedes the rule)"
+            )
         return (
             "shaped: no Before-phase placeholders remain, every required/portability heading is present, "
             "the closeout-plan heading/minimum binding fields are present, and "
@@ -233,7 +256,13 @@ def pursue_readiness(
                     re.MULTILINE,
                 )
                 match = field_pattern.search(body)
-                if match is None or not re.sub(r"[\s`*_~\[\](){}<>#|:-]+", "", match.group(1)):
+                # `_BACKLOG._SUBSTANTIVE`, not a local punctuation class. Round-2 review
+                # found the backlog floor had DIAGNOSED this class in prose (the em-dash
+                # in `Counted: —` slipped straight through an enumerated list) and fixed
+                # only its own copy, ~130 lines away, leaving `- Frozen target: —` still
+                # satisfying this floor. Migrating the diagnosis without the fix is the
+                # defect shape this goal exists to remove.
+                if match is None or not _BACKLOG._SUBSTANTIVE.sub("", match.group(1)):
                     closeout_plan_missing_fields.append(field)
     # `shape_ready` keeps its established meaning (no Before-phase marker) so the
     # placeholder signal stays readable on its own; completeness is a separate
@@ -257,12 +286,12 @@ def pursue_readiness(
     # closeout-plan floor in the same edit. The docstring below claimed the opposite. So
     # the skip is keyed to a RECOGNISED non-shaping status: missing, mis-cased or
     # unrecognised all evaluate.
-    _status = (status or "").strip().lower()
     backlog_report = (
-        {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
-         "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
-        if _status in NON_SHAPING_STATUSES
-        else _BACKLOG.check(text)
+        _BACKLOG.check(text)
+        if is_shaping_status(status)
+        else {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
+              "status_skipped": True,
+              "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
     )
     backlog_recount_missing_fields = list(backlog_report.get("missing_fields") or [])
     activation_ready = (
@@ -306,7 +335,13 @@ def pursue_readiness(
             closeout_plan_missing_fields=closeout_plan_missing_fields,
             closeout_plan_duplicate=closeout_plan_duplicate,
             backlog_recount_missing_fields=backlog_recount_missing_fields,
-            backlog_evaluated=bool(backlog_report.get("applies")),
+            backlog_state=(
+                "recorded"
+                if backlog_report.get("applies")
+                else "status-skipped"
+                if backlog_report.get("status_skipped")
+                else "pre-rule"
+            ),
             activation_ready=activation_ready,
         ),
         "activation_discussion_warning": discussion_warning,

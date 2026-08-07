@@ -37,6 +37,17 @@ def _assert_goal_shape(text: str) -> None:
     assert f"## {backlog.SECTION}" in text
     for field in backlog.REQUIRED_FIELDS:
         assert f"- {field}: " in text, field
+    # And the floor's own READER must find them. The round-1 symptom was
+    # `--pursue-ready` refusing every pickup-generated goal, and string assertions alone
+    # would stay green if the heading were demoted to `###`, moved below a fence, or its
+    # fields rendered inside a code block — all of which reproduce that refusal.
+    #
+    # Asserted on the field reader, NOT on `backlog.check(text)`: these fixtures render a
+    # pre-rule `Created:` date, so `check` short-circuits to the grandfather and would
+    # pass vacuously no matter how broken the section was.
+    body = backlog.joined_section_body(text, backlog.SECTION)
+    assert body is not None, "the floor's own reader cannot find the section it scaffolds"
+    assert backlog.missing_fields(body) == []
 
 
 def test_goal_artifact_producers_share_current_shape(tmp_path: Path) -> None:

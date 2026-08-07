@@ -318,7 +318,14 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         required_sections=(
             REQUIRED_SECTIONS
             + PORTABILITY_SECTIONS
-            + (CLOSEOUT_PLAN_SECTIONS if read_status(text) == "draft" else ())
+            # Same fail-closed status test as the backlog floor, NOT `== "draft"`.
+            # Round-2 review found this sibling left behind when the backlog floor was
+            # hardened: dropping this section from `required_sections` disarms BOTH the
+            # heading requirement and the five-field check (which is itself gated on the
+            # section being required), so `Status: Draft`, a deleted `Status:` line, or
+            # `Status: draft — slice 2 in flight` activated a goal with no Closeout
+            # Binding Plan at all. Hardening one of two gates makes the other reachable.
+            + (CLOSEOUT_PLAN_SECTIONS if _pursue.is_shaping_status(read_status(text)) else ())
         ),
         status=read_status(text),
         deploy_vocab=deploy_vocab,

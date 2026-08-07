@@ -21,9 +21,22 @@ artifact. The floor makes the reasoning VISIBLE and auditable; a human or a revi
 grades it. Every other conditional floor in this module's siblings is presence-shaped for
 the same reason.
 
-WHY A DATE GRANDFATHER. This repo holds 176 goal artifacts and 173 of them predate the
-rule; of the 8 that are still `draft` -- the only ones a shaping floor can reach -- 7 are
-pre-rule. Making the floor unconditional would redden the whole corpus and the broad gate
+WHY A GRANDFATHER. `charness-artifacts/goals/` holds 176 files, but 20 of them are
+`*-early-close-report.md` companions with no `Status:` or `Created:` line and are never
+passed to `--pursue-ready`. So there are 156 goal artifacts: 153 dated before the rule and
+3 dated on it. Of the 8 still `draft`, 7 are pre-rule.
+
+(The first draft of this paragraph said 173 -- 176 minus 3 -- which counted the 20
+early-close reports as goal artifacts. That is the second wrong number in this same
+sentence: it replaced "nineteen", carried in from the PRECEDING slice's unrelated count of
+19 shipped example adapters. Both were DERIVED rather than measured, and a verdict surface
+quantifying its own design argument from arithmetic it did not check is precisely the
+defect this goal family removes. The provenance stays as a warning.)
+
+The reachable set is NOT "the drafts": the status axis skips only a RECOGNISED non-shaping
+status, so a missing, mis-cased or annotated `Status:` line evaluates too -- this corpus
+contains `Status: active — 8 closed (…)` and `Status: COMPLETE (2026-06-07) — …`, which
+escape on the DATE axis rather than the status one. Making the floor unconditional would redden the whole corpus and the broad gate
 with it, which is how a floor gets disarmed rather than obeyed. (The first draft of this
 paragraph said "nineteen", carried in from the PRECEDING slice's unrelated count of 19
 shipped example adapters. A verdict surface quantifying its own design argument with a
@@ -92,7 +105,12 @@ REQUIRED_FIELDS = ("Counted", "Claims", "Not claimed")
 # markdown punctuation so `Claims: **` -- present, saying nothing -- is refused like an
 # empty one. Round-1 review found both: the first refused a visibly-present field, and the
 # second ACCEPTED a field with no content, which is the look-alike the floor exists to kill.
-_FIELD_RE = r"^[ \t>]*[-*+]?[ \t]*[`*_~]*{field}[`*_~]*[ \t]*:[ \t]*(?P<value>.*)$"
+# NO `>` in the prefix class. The shared grammar's `parse_created_date` de-prioritises
+# quoted lines precisely because a body that QUOTES another artifact's line could satisfy
+# a floor from someone else's evidence; this reader took the tolerance and, until round-2
+# review, not the disambiguation. A quoted `Claims:` example above an empty `- Claims:`
+# passed on the quote.
+_FIELD_RE = r"^[ \t]*[-*+]?[ \t]*[`*_~]*{field}[`*_~]*[ \t]*:[ \t]*(?P<value>.*)$"
 # "Says something" == contains at least one word character. An explicit punctuation
 # class kept missing members (the em-dash in `Counted: —` slipped straight through the
 # first list), and `[^0-9A-Za-z]` would refuse a perfectly good non-Latin value — this
