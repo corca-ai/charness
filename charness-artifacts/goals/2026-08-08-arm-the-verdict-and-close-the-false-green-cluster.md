@@ -22,14 +22,16 @@ runs the activation command.
   `## Operator Decision Queue`; do not re-derive it here.
 - Tracker recount 2026-08-08 (post-activation): 28 open issues, not the 25 this
   goal was shaped against.
-- SLICE 2 REVISED TARGET (the Slice Plan's remedy was REFUTED; verdict in the
-  Slice Log): `achieve` consumes the **`issue`** skill's backend — not
-  `handoff`'s — mirroring the dual-layout `_load_issue_module` route that
-  `handoff`'s own `chunked_routing_issue_backend` already uses to import from
-  `issue`. `handoff` is not the owner: it holds a SECOND backend implementation
-  duplicating `issue_runtime` (filed as `#555`). Routing through `issue` keeps
-  the graph acyclic (`issue` is a leaf), inherits no handoff adapter gating, and
-  adds no third backend. The `--pursue-ready` floor stays PRESENCE-only: which
+- SLICE 2 REVISED TARGET, with one CORRECTION to the premise record: the
+  adapter-gating objection applies to `chunked_routing_issue_SOURCE`
+  (`load_issue_source_config` reads handoff's `issue_source:` block), NOT to
+  `chunked_routing_issue_BACKEND` underneath it — `list_open_issues` takes
+  explicit args and reads no adapter. The Slice Log's original wording overstated
+  this and is corrected here rather than left standing. The objections that DO
+  survive are ownership (`handoff` holds a duplicate of `issue_runtime`'s
+  resolution, filed as `#555`; `issue` is the contractual owner) and direction
+  (`handoff` already imports `achieve`, so `achieve` importing `handoff` points
+  the coupling backwards). The `--pursue-ready` floor stays PRESENCE-only: which
   issues a goal claims is the operator's judgement, and a floor checking
   correctness would be a new false-verdict surface inside the tool built to stop
   them. That floor is verdict logic on a proof surface, so slice 2 owes BOTH
@@ -153,6 +155,12 @@ Ordered by what unlocks the most and what is least likely to be refuted:
 | 5 | One-command re-bind that reports which identities moved | #535, #547 | Same shape as slice 1: a tool that reports success it did not establish | planned |
 | 6 | Close the false-green gate cluster | #546, #536, #537, #534 | Cheapest last: each is local, and slices 1-5 will have exercised the gates that surface them | planned |
 | 7 | Bundle proof, goal closeout, successor goal | (none) | Composition can drop what each slice proved alone | planned |
+
+## Backlog Recount
+
+- Counted: 28 open issues on 2026-08-08 via `gh issue list --repo corca-ai/charness --state open`, recounted AFTER activation. The goal was shaped against 25, so the shaping number was already stale — which is the defect this section exists to expose, found by the floor's own first use.
+- Claims: `#530` (slice 1, armed but NOT closed — see the Operator Decision Queue), `#554` (slice 2, this floor), `#518`, `#528`, `#535`, `#547`, `#546`, `#536`, `#537`, `#534` (slices 3-6, planned and not yet started).
+- Not claimed: the prompt-surface cluster (`#519`, `#520`, `#521`, `#523`, `#524`, `#525`, `#527`, `#531`, `#532`) — a different question, measuring prompt efficacy, and mixing it in is how a goal stops being reviewable. `#514`/`#515` — they predate this line of work and carry consumer ownership. `#549`, `#548`, `#545`, `#542`, `#539`, `#550`, `#552` — unclaimed, no reason beyond scope. `#555` — filed BY this run during slice 2's premise check and deliberately left for a successor, because consolidating two tracker backends is a cross-skill change that would swallow the slice that found it.
 
 ## Operator Decision Queue
 

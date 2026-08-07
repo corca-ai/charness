@@ -27,6 +27,11 @@ _REMAINING_SECTIONS = (
     "\n## Closeout Binding Plan\n"
     "- Reviewed inputs: fixture\n- Frozen target: fixture\n- Fresh-eye: fixture\n"
     "- Verification lock: fixture\n- Complete flip: fixture\n"
+    # The backlog-recount floor, for the same reason as the closeout-plan fields above:
+    # these fixtures isolate other dimensions, and it applies to every DRAFT with no
+    # parseable `Created:` line because it fails closed.
+    "\n## Backlog Recount\n"
+    "- Counted: fixture\n- Claims: fixture\n- Not claimed: fixture\n"
 )
 
 

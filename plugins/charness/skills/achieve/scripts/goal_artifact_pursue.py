@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 # Before-phase placeholder marker the handoff auto-draft leaves until shaping
@@ -38,6 +39,24 @@ CLOSEOUT_PLAN_FIELDS = (
 #: What a ``pursue_readiness`` verdict does NOT establish, carried in the payload
 #: so the caller reads the answer's scope from the answer instead of re-deriving
 #: it from the flag's help text. The full ``check_goal`` sweep is what covers these.
+def _load_backlog_floor():
+    """The backlog-recount floor, loaded by path like every other sibling here."""
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location(
+        "goal_artifact_backlog",
+        Path(__file__).resolve().parent / "goal_artifact_backlog.py",
+    )
+    if spec is None or spec.loader is None:
+        raise ImportError("goal_artifact_backlog.py not found beside goal_artifact_pursue.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_BACKLOG = _load_backlog_floor()
+
+
 SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",
@@ -56,6 +75,7 @@ def _reason(
     discussion_warning: str,
     closeout_plan_missing_fields: list[str],
     closeout_plan_duplicate: bool,
+    backlog_recount_missing_fields: list[str],
     activation_ready: bool,
 ) -> str:
     """Every reason this verdict refuses, not only the first one found.
@@ -108,6 +128,13 @@ def _reason(
     if closeout_plan_duplicate:
         clauses.append(
             "incomplete: Closeout Binding Plan appears more than once -- keep one unambiguous plan before `/goal`"
+        )
+    if backlog_recount_missing_fields:
+        clauses.append(
+            "incomplete: backlog recount absent or empty ("
+            + ", ".join(backlog_recount_missing_fields)
+            + ") -- recount the tracker and record what this goal claims and does not; "
+            "`Claims:`/`Not claimed:` may say `none`, but presence is the floor"
         )
     if discussion_warning:
         clauses.append(
@@ -197,12 +224,31 @@ def pursue_readiness(
     # placeholder signal stays readable on its own; completeness is a separate
     # dimension that gates activation alongside it.
     shape_ready = not placeholders
+    # DRAFT ONLY, exactly like the closeout-binding-plan floor above, and for the same
+    # reason: this is a SHAPING floor. `/goal` pursues a draft, so the recount belongs to
+    # the phase that decides scope. Grading an already-`active`/`blocked`/`complete`
+    # artifact against it would be retroactive -- the artifact's scope was set before the
+    # rule existed and cannot be re-decided now -- and it is what made three legacy
+    # heading-compatibility fixtures refuse.
+    #
+    # The date grandfather inside `check` covers DATED pre-rule drafts; this covers the
+    # undated legacy ones. Both are needed: `applies` fails CLOSED on a missing `Created:`
+    # so the floor cannot be removed by deleting one line, which is right for a draft and
+    # wrong for a historical record.
+    backlog_report = (
+        _BACKLOG.check(text)
+        if status == "draft"
+        else {"applies": False, "ok": True, "evaluated": False, "missing_fields": [],
+              "reason": f"not evaluated: backlog recount is a shaping floor and status is {status!r}"}
+    )
+    backlog_recount_missing_fields = list(backlog_report.get("missing_fields") or [])
     activation_ready = (
         shape_ready
         and balanced
         and not missing_sections
         and not closeout_plan_missing_fields
         and not closeout_plan_duplicate
+        and not backlog_recount_missing_fields
         and discussion["discussion_ready"]
     )
     discussion_warning = (
@@ -219,6 +265,8 @@ def pursue_readiness(
         "missing_sections": missing_sections,
         "closeout_plan_missing_fields": closeout_plan_missing_fields,
         "closeout_plan_duplicate": closeout_plan_duplicate,
+        "backlog_recount": backlog_report,
+        "backlog_recount_missing_fields": backlog_recount_missing_fields,
         # False means the heading facts above were read from a FAIL-OPEN mask (the
         # raw text, fenced examples included), so they are not established.
         "sections_reading_established": balanced,
@@ -234,6 +282,7 @@ def pursue_readiness(
             discussion_warning=discussion_warning,
             closeout_plan_missing_fields=closeout_plan_missing_fields,
             closeout_plan_duplicate=closeout_plan_duplicate,
+            backlog_recount_missing_fields=backlog_recount_missing_fields,
             activation_ready=activation_ready,
         ),
         "activation_discussion_warning": discussion_warning,

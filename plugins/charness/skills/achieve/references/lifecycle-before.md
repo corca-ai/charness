@@ -32,6 +32,42 @@ Establish:
 Ask a small number of high-leverage questions. Do not interrogate the user for
 detail that a strong default or the request wording already settles.
 
+### Backlog Recount Before Scope
+
+Shape scope only after recounting the tracker, and record the split in
+`## Backlog Recount`: `Counted:` (how many open issues, when, by what command),
+`Claims:` (issues this goal takes), `Not claimed:` (issues it deliberately
+leaves, with the reason).
+
+The Before phase used to shape outcome, non-goals, boundaries, acceptance and a
+slice sequence without ever opening the tracker, and `--pursue-ready` — the
+surface that decides a goal may activate — validated headings, placeholders and
+closeout-plan fields, so a goal whose scope contradicted the tracker passed
+cleanly. A floor cannot catch what the contract never asks for. The measured
+cost in one run: a duplicate issue filed, the issue the whole run was fixing
+left open and unreferenced, and a known issue re-discovered and worked around
+instead of linked. None of those is a judgement failure in the moment; each is
+what happens when the shaping phase has no reason to open the tracker.
+
+The floor is **presence-only, deliberately**. It never grades WHICH issues a
+goal claims, because that judgement is the operator's and a floor grading it
+would be a new false-verdict surface inside the tool built to stop them — it
+would have to answer "should this goal have claimed that one", which nothing can
+decide from the artifact. Presence makes the reasoning visible; a human or a
+bounded reviewer grades it.
+
+`Claims: none` and `Not claimed: none` are legal answers — a goal may genuinely
+claim nothing tracked — but the word has to be written. An empty `Claims:` line
+tells the next session exactly as much as no line at all while LOOKING
+satisfied, so both are refused identically.
+
+Scope and grandfathering, so the rule does not redden the corpus it lands in:
+the floor applies to DRAFT artifacts only (it is a shaping floor, and `/goal`
+pursues a draft; an already-active or complete goal's scope was set before the
+rule existed and cannot be re-decided), and to goals whose own `Created:` date
+is on or after the rule date. It fails CLOSED on a missing or malformed
+`Created:` line, so the floor cannot be removed by deleting one line.
+
 ### Mode disambiguation
 
 One mode question is high-leverage often enough to call out: is this an

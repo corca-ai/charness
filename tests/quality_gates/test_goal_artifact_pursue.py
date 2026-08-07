@@ -11,6 +11,10 @@ gal = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gal)
 
 
+_BACKLOG_SECTION = gal._BACKLOG.SECTION if hasattr(gal, "_BACKLOG") else "Backlog Recount"
+_BACKLOG_FIELDS = gal._BACKLOG.REQUIRED_FIELDS if hasattr(gal, "_BACKLOG") else ("Counted", "Claims", "Not claimed")
+
+
 def _goal_text(tmp_path: Path, slug: str = "g", date: str = "2026-05-27") -> str:
     path = gal.goal_path(tmp_path, date, slug)
     return path.read_text(encoding="utf-8")
@@ -37,6 +41,14 @@ def _with_required_sections(body: str) -> str:
         chunks.append(f"\n## {section}\n")
         if section in gal.CLOSEOUT_PLAN_SECTIONS:
             chunks.append("".join(f"- {field} fixture value\n" for field in gal.CLOSEOUT_PLAN_FIELDS))
+    # The backlog-recount floor, for the same reason as the closeout-plan fields above.
+    # It is NOT in the section tuples: it is a conditional floor gated on the goal's own
+    # `Created:` date, and these fixtures carry no date at all -- which makes it apply,
+    # because the floor fails CLOSED so it cannot be removed by deleting one line. Each
+    # test here isolates a different dimension, so satisfying it keeps them doing that.
+    if f"## {_BACKLOG_SECTION}" not in body:
+        chunks.append(f"\n## {_BACKLOG_SECTION}\n")
+        chunks.append("".join(f"- {field}: fixture value\n" for field in _BACKLOG_FIELDS))
     return body + "".join(chunks)
 
 

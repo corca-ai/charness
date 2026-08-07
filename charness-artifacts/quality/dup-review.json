@@ -2568,6 +2568,20 @@
       "note": "Stdlib plus scripts.adapter_lib import preamble shared by two independently portable adapter libraries (cautilus, narrative). They import the same shared field validators because they validate the same field contract; the preamble carries no verdict logic and centralizing an import block would add indirection without removing any behavior.",
       "reviewed_at": "2026-08-07",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8dc7bd9985a9904b",
+      "note": "Each conditional goal-artifact floor binds its OWN `RULE_DATE` to the shared `goal_artifact_floor_grammar.is_floor_in_scope` helper through a two-line `applies()`. The extraction this family suggests has already been done: the date comparison and the fail-closed-on-missing-`Created:` semantics live in the grammar, and what repeats is only the per-floor binding of a distinct landing date. Collapsing those bindings would mean one shared rule date across floors that landed on different days, which would retroactively apply a new floor to goals shaped before it existed — the exact corpus-reddening the grandfather exists to prevent. blocked-matrix, operator-queue, and backlog-recount are three independent floors, not three copies of one.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "637bb6af7e7552e5",
+      "note": "The `spec_from_file_location` sibling-loader preamble, shared by thirteen members across `achieve` and `handoff`. Twelve are untouched and pre-date this slice: the family is REVEALED by adding a fourteenth, not introduced by it. Same rationale this file already records for e2be6ebfbea2ac95 and 1190bcd05d674cea: these modules are executed directly as often as they are imported, and the export flattens `skills/public/<id>/` to `skills/<id>/`, so a dotted import resolves in one layout and not the other. `goal_artifact_closeout_loaders.py` already collected the loaders it could, and its own docstring records that each stays VERBATIM so behavior is preserved exactly — a generic loader would have to re-register module names and would break the one-directional leaf dependency these floors rely on to avoid circular imports.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

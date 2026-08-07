@@ -44,6 +44,17 @@ What the user can do to verify completion directly.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 
+## Backlog Recount
+
+Recount the tracker BEFORE shaping scope, then record the split. Presence is the
+floor; the judgement stays the operator's. `Claims:` and `Not claimed:` may say
+`none`, but the word has to be written — an empty line reads as satisfied while
+telling the next session nothing.
+
+- Counted: To be filled by the achieve Before-phase
+- Claims: To be filled by the achieve Before-phase
+- Not claimed: To be filled by the achieve Before-phase
+
 ## Operator Decision Queue
 
 Record decisions, confirmations, credential actions, manual proof steps, and

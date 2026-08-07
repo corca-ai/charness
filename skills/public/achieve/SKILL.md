@@ -47,8 +47,8 @@ depth; read that file, not the full contract, and follow its `closeout_handoff` 
      ambiguous between artifact-only and implementation-continuation paths,
      ask at least one question before saving, or state the assumed interpretation
      when a strong default settles it
-   - establish outcome, non-goals, boundaries, user acceptance, verification
-     plan, outcome capability or failed capability, proof cost,
+   - establish the `## Backlog Recount`, outcome, non-goals, boundaries, user
+     acceptance, verification plan, outcome/failed capability, proof cost,
      test-duplication pressure, slice sequence, critique plan, stop conditions,
      reporting expectations, closeout binding plan (minimum fields: semantic
      inputs, fixed target/SHA, fresh-eye channel, lock evidence, terminal-record
