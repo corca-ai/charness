@@ -222,3 +222,44 @@ def test_the_floor_cannot_be_disarmed_by_removing_or_mis_casing_the_status() -> 
     for status_line in ("Status: active\n", "Status: blocked\n", "Status: complete\n"):
         report = gal.pursue_readiness(base.format(status=status_line))
         assert report["backlog_recount_missing_fields"] == [], status_line
+
+
+def test_a_section_missing_a_whole_field_line_names_only_that_field() -> None:
+    """The partial-section case: heading present, one field line absent entirely.
+
+    Distinct from the empty-value case above — there the line exists and says nothing;
+    here the line is gone. The verdict must name the ONE missing field rather than
+    reporting the whole section absent, or the operator re-writes a section that is
+    mostly correct.
+    """
+    partial = IN_SCOPE + "\n## Backlog Recount\n\n- Counted: 28\n- Claims: none\n"
+    report = backlog.check(partial)
+
+    assert report["ok"] is False
+    assert report["missing_fields"] == ["Not claimed"]
+
+
+def test_the_sibling_loaders_name_what_they_could_not_find(monkeypatch) -> None:
+    """Both floor modules fail with a NAMED diagnostic, not an AttributeError later.
+
+    These loaders are unreachable in a well-formed tree, which is exactly why they are
+    worth a test: if the export ever drops a sibling, the failure should say which file is
+    missing at import time rather than surfacing as a mystery attribute error deep in a
+    verdict. Driven by forcing the spec to None rather than by deleting a shipped file.
+    """
+    import importlib.util  # noqa: PLC0415
+
+    import goal_artifact_pursue as pursue  # noqa: PLC0415
+
+    monkeypatch.setattr(importlib.util, "spec_from_file_location", lambda *a, **k: None)
+
+    for loader, expected in (
+        (backlog._load_floor_grammar, "goal_artifact_floor_grammar.py"),
+        (pursue._load_backlog_floor, "goal_artifact_backlog.py"),
+    ):
+        try:
+            loader()
+        except ImportError as exc:
+            assert expected in str(exc), (expected, str(exc))
+        else:  # pragma: no cover - the loader must not succeed with a None spec
+            raise AssertionError(f"{expected} loader did not refuse a None spec")

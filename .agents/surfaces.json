@@ -860,6 +860,7 @@
         "scripts/*.py",
         "tests/*.py",
         "tests/*.sh",
+        "tests/fixtures/*",
         "runtime_bootstrap.py",
         "skill_runtime_bootstrap.py"
       ],
