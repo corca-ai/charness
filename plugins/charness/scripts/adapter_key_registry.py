@@ -208,18 +208,6 @@ def _module_name(relative: str) -> str:
     return relative.removesuffix(".py").replace("/", ".")
 
 
-def _references(literals: frozenset[str], relative: str) -> bool:
-    """Does a module whose literals these are reference the module at ``relative``?
-
-    Matches both the dotted module name (static import, and the string this repo's
-    `load_repo_module_from_skill_script` takes) and the bare file name, which is how
-    several skill scripts name a sibling.
-    """
-    name = _module_name(relative)
-    tail = name.rsplit(".", 1)[-1]
-    return name in literals or tail in literals or relative in literals
-
-
 def _import_names(path: Path) -> frozenset[str]:
     """Dotted names this module imports, so association follows real edges."""
     try:
@@ -484,9 +472,10 @@ def survey(repo_root: Path) -> dict[str, Any]:
     files = sorted({path for glob in ADAPTER_GLOBS for path in repo_root.glob(glob)})
     for path in files:
         relative = str(path.relative_to(repo_root))
+        # No `isinstance(declared, dict)` guard: this repo's loader always returns a
+        # mapping, so the guard was unreachable and read as though a real hazard were
+        # handled.
         declared = _load_yaml_file(path)
-        if not isinstance(declared, dict):
-            continue
         for resolution in resolve_declared_keys(repo_root, declared, adapter_relative=relative):
             counts[resolution.state] = counts.get(resolution.state, 0) + 1
             if resolution.state in GAP_STATES:

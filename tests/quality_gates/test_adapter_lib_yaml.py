@@ -184,3 +184,18 @@ def test_adapter_lib_loads_block_scalars_without_dropping_body() -> None:
 def test_adapter_lib_rejects_unsupported_yaml_constructs_loudly(yaml_text: str) -> None:
     with pytest.raises(ValueError, match="unsupported YAML construct"):
         ADAPTER_LIB.load_yaml(yaml_text)
+
+
+def test_render_yaml_round_trips_a_list_item_carrying_nested_mappings_and_lists() -> None:
+    """The nested branches inside a LIST ITEM had no coverage.
+
+    A list of mappings whose values are themselves a mapping and a list is the shape
+    adapter files actually use (reviewer tiers, quality phases), and it is the one the
+    emitter renders through its deepest path. Round-tripped rather than string-matched,
+    so the assertion pins the emitter's contract with the parser rather than its
+    formatting.
+    """
+    value = [{"id": "a", "opts": {"k": "v"}, "tags": ["x", "y"], "empty": []}]
+    rendered = ADAPTER_RENDER_LIB.render_yaml_mapping([("items", value)])
+
+    assert ADAPTER_LIB.load_yaml(rendered) == {"items": value}

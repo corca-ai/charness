@@ -389,3 +389,101 @@ def test_shared_core_names_its_owner_rather_than_a_scan_result() -> None:
     for resolution in resolve_declared_keys(ROOT, load_yaml_file(ROOT / rel), adapter_relative=rel):
         if resolution.state == "shared-core":
             assert resolution.readers == ("scripts/adapter_lib.py",)
+
+
+def test_a_retired_key_says_retired_rather_than_unknown(monkeypatch) -> None:
+    """`RETIRED_KEYS` is empty, so this path had no coverage and no live subject.
+
+    The distinction it exists for is real: an operator still declaring a withdrawn key
+    deserves "this was removed", not "this looks like a typo". Constructed, because an
+    empty registry proves nothing about the branch that reads it.
+    """
+    from scripts import adapter_key_registry
+
+    monkeypatch.setattr(adapter_key_registry, "RETIRED_KEYS", {"old_key": "withdrawn in v2; use new_key"})
+    resolution = adapter_key_registry.resolve_key(ROOT, "old_key")
+
+    assert resolution.state == "retired"
+    assert "withdrawn in v2" in resolution.detail
+
+
+def test_a_dynamic_reader_key_resolves_to_its_registered_owner(monkeypatch) -> None:
+    """The registry's other branch, also without a live subject. It exists for readers
+    that build the key name at runtime, which a literal scan cannot see."""
+    from scripts import adapter_key_registry
+
+    monkeypatch.setattr(adapter_key_registry, "DYNAMIC_READER_KEYS", {"built_key": "scripts/adapter_lib.py"})
+    resolution = adapter_key_registry.resolve_key(ROOT, "built_key")
+
+    assert resolution.state == "reader"
+    assert resolution.readers == ("scripts/adapter_lib.py",)
+
+
+def test_an_unparseable_module_is_skipped_rather_than_failing_the_survey(tmp_path: Path) -> None:
+    """One module that will not parse must not take down the classification of every key.
+
+    The fallback is deliberate, so it is pinned: a syntax error in some unrelated script
+    should cost that script's contribution, not the whole verdict.
+    """
+    from scripts import adapter_key_registry
+
+    broken = tmp_path / "scripts" / "broken.py"
+    broken.parent.mkdir(parents=True)
+    broken.write_text("def (((\n", encoding="utf-8")
+
+    assert adapter_key_registry._literals(broken) == frozenset()
+    assert adapter_key_registry._import_names(broken) == frozenset()
+    assert adapter_key_registry.find_readers(tmp_path, "anything", files=[broken]) == ((), ())
+
+
+def test_the_survey_cli_runs_and_emits_parseable_json() -> None:
+    """The CLI is the only callable surface this module has. An entry point nobody
+    executes is an instrument nobody runs, which is the shape this goal targets."""
+    import json
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts" / "adapter_key_registry.py"), "--repo-root", str(ROOT)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert completed.returncode == 0, completed.stderr[-2000:]
+    payload = json.loads(completed.stdout)
+    assert payload["adapters"] >= 35
+    assert payload["registry_problems"] == []
+
+
+def test_the_commit_gate_refuses_an_adapter_that_is_not_a_mapping(tmp_path: Path) -> None:
+    """A list-shaped adapter is still refused, and the reason is honest.
+
+    This started as a test for a `must parse to a mapping` branch. Writing it proved the
+    branch was UNREACHABLE -- this repo's loader parses a top-level list to `{}` -- so the
+    dead branch was deleted rather than covered. What is pinned is the property that
+    actually matters: the gate refuses, and says the true thing about why.
+    """
+    import importlib.util
+
+    spec = importlib.util.spec_from_file_location("gate_probe", ROOT / "scripts" / "validate_adapters.py")
+    gate = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(gate)
+    probe = tmp_path / ".agents" / "probe-adapter.yaml"
+    probe.parent.mkdir(parents=True)
+    probe.write_text("- not\n- a\n- mapping\n", encoding="utf-8")
+
+    with pytest.raises(gate.ValidationError) as excinfo:
+        gate.validate_adapter_yaml(probe)
+    assert "version is required" in str(excinfo.value)
+
+
+def test_an_adapter_with_no_owner_associates_nothing(tmp_path: Path) -> None:
+    """The no-owner early return, and the honest floor of this whole mechanism.
+
+    An adapter nothing claims must associate NOTHING, so every key it declares falls to
+    `reader-elsewhere` or `unknown` rather than borrowing some unrelated module's
+    parsing. If this returned a non-empty set, scoping would silently stop being scoping
+    for exactly the files that need it most.
+    """
+    assert associated_modules(tmp_path, ".agents/nobody-claims-this-adapter.yaml") == frozenset()

@@ -267,9 +267,11 @@ def _require_declared_version(path: Path) -> None:
     verdict anywhere. Running first also means the version answer does not depend on
     which resolver branch a filename happens to match.
     """
+    # No not-a-mapping branch: this repo's loader always returns a mapping (a top-level
+    # list parses to `{}`), so the guard was unreachable and read as though a real hazard
+    # were handled. A list-shaped adapter is still refused here -- as a missing version --
+    # and the shape check below owns the clearer message.
     data = load_yaml_file(path)
-    if not isinstance(data, dict):
-        raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
     errors: list[str] = []
     validate_adapter_version(data, {}, errors, required=True)
     if errors:
@@ -296,9 +298,10 @@ def validate_adapter_yaml(path: Path) -> None:
         payload = load_quality_adapter_strict(path.parent.parent.resolve())
         if not payload["valid"]:
             raise ValidationError(f"{path}: {'; '.join(payload['errors'])}")
+    # `_require_declared_version` above already read and refused this file, and this
+    # repo's loader always returns a mapping, so the not-a-mapping branch that used to
+    # sit here was unreachable twice over once the version floor was hoisted.
     data = load_yaml_file(path)
-    if not isinstance(data, dict):
-        raise ValidationError(f"{path}: adapter YAML must parse to a mapping")
     # The version verdict now runs in `_require_declared_version`, above the early
     # returns. It was the 18th site and the one that disagreed hardest: the predicate it
     # used to carry accepted every value the resolvers refuse -- `version: 9` (a positive

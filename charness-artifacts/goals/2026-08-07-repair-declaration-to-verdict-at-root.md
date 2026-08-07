@@ -68,11 +68,26 @@ runs the activation command.
   resolution is now (file, key)-scoped, the registry is wired behind a reporting
   `survey()` CLI, and the measurement the Operator Decision Queue asked for is
   done across the full population.
-- Slice 2 acceptance: MET. Every declared key resolves to a named reader or a
-  typed state (`shared-core` / `reader` / `reader-elsewhere` / `text-asserted` /
-  `extension` / `retired` / `unknown`). `setup-adapter.yaml`'s four multi-reader
-  keys stay clean — the regression fixture for the refuted approach holds, and a
-  mutant that reverts to the refuted design is killed by it.
+- Slice 2 acceptance: MET, **verified by execution against the criterion text
+  rather than asserted here.** Clause by clause: (a) every declared key across
+  the 37-file population resolves either to a named reader or to a typed state —
+  measured, zero keys that are neither; (b) `setup-adapter.yaml`'s four
+  multi-reader keys all resolve `reader` with named readers, and a mutant
+  reverting to the refuted design is killed by that fixture. DIVERGENCE STATED:
+  the criterion enumerates `unknown`/`retired`/`extension`, and the
+  implementation adds `reader-elsewhere` and `text-asserted`. That is a superset,
+  not a substitution — every criterion state still exists and is reachable
+  (proved by constructed inputs, since `retired`/`unknown` have no live subject
+  in this repo). The two extra states exist because collapsing them into the
+  enumerated ones is precisely what would have produced the false verdicts the
+  slice was built to remove.
+- Pre-push gate acceptance: MET at this slice boundary. `./scripts/run-quality.sh
+  --read-only` exits 0 with 85 passed, 0 failed, and one honestly-reported
+  UNPROVEN (`check-changed-line-mutation-coverage` ran and established part of
+  its scope). It FAILED on first run and caught real defects this session would
+  otherwise have shipped: dead code my own repair orphaned (`_references`), two
+  unreachable branches, and three genuinely uncovered verdict paths. `pytest
+  tests/ -q`: 7796 passed, 0 failed.
 - Measured across 37 adapter files / 445 keys (after the round-2 narrowing):
   167 shared-core, 254 reader, 23 reader-elsewhere, 1 text-asserted, **0 unknown**.
   24 gaps across 4 files. Two are the `.agents/cautilus-adapters/*.yaml` pair with
