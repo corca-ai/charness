@@ -318,21 +318,50 @@ def validate_adapter_yaml(path: Path) -> None:
     validate_charness_quality_adapter_contract(path, data)
 
 
+def iter_warn_scope_adapters(root: Path) -> list[Path]:
+    """Every adapter the WARN tier reads -- DELIBERATELY WIDER than `iter_adapter_yaml`.
+
+    Round-1 bounded review caught this as a blocker, and it was the slice's own defect
+    class turned on itself. `iter_adapter_yaml` globs 18 files (`.agents/`); the fire-rate
+    measurement that justified arming covered 37, because `adapter_key_registry.ADAPTER_GLOBS`
+    also reaches `skills/public/*/adapter.example.yaml` and `integrations/*/adapter.example.yaml`.
+    Arming the narrower set while reporting the wider set's zero is a check claiming a
+    scope it never read -- the exact shape this tier exists to warn about. Reproduced
+    before repairing: a typo'd key added to `skills/public/handoff/adapter.example.yaml`
+    produced `0 unreconciled declared key(s)` and left all 40 tests green.
+
+    Shipped examples are the ones that MATTER here: they are what a consumer copies, so a
+    typo in one propagates to every repo that adopts it. They are excluded from
+    `iter_adapter_yaml` for a good reason that does not apply to this pass -- they are
+    templates, so `validate_adapter_yaml`'s `repo` and version floors would refuse them --
+    but a warn-only read has no such objection.
+
+    Widening ships with its measured upper bound in the same commit, per this repo's most
+    transferable lesson: over the 19 added shipped-example files (218 declared keys), the
+    tier fires 0 times. The widening adds coverage, not noise.
+    """
+    globs = _scripts_adapter_key_registry_module.ADAPTER_GLOBS
+    return sorted({path for glob in globs for path in root.glob(glob)})
+
+
 def report_unreconciled_keys(root: Path, adapter_yaml: list[Path]) -> list[dict[str, str]]:
     """WARN -- never refuse -- on a declared key no module reads (#530).
 
     This is the tier the operator chose, and the distinction is the whole point. Every
     other verdict in this file raises `ValidationError` and fails the gate; this one
     prints and returns 0, because the population that matters is consumer adapters this
-    repo has never seen and `docs/deferred-decisions.md` D46 refuses to escalate a refusal
-    from a repo-local zero. Repo-local zero is literal: `unknown` fires 0 times across
-    this repo's 445 declared keys, which is why the warned input is CONSTRUCTED in the
-    tests rather than observed here.
+    repo has never seen, and `docs/deferred-decisions.md` D46 refuses to escalate a
+    REFUSAL from a repo-local zero. The zero is literal: `unknown` fires 0 times across
+    the 445 declared keys in this repo's 37 adapters, which is why the warned input is
+    CONSTRUCTED in the tests rather than observed here.
 
-    The count goes in the SUMMARY line, not only in the warnings. A gate that prints
-    nothing when it finds nothing leaves an operator unable to tell "checked, clean" from
-    "never ran" -- and this whole goal exists because a check reported success it had not
-    established. `0 unreconciled declared key(s)` is a claim; silence is not.
+    The count goes in the SUMMARY line, not only in the warnings, and the line names the
+    number of files read. A gate that prints nothing when it finds nothing leaves an
+    operator unable to tell "checked, clean" from "never ran", and one that prints a count
+    without its scope cannot distinguish "clean across 37" from "clean across 18" -- which
+    is precisely how this function shipped its first round. `0 unreconciled declared
+    key(s) across 37 declaring file(s)` is a claim; silence is not, and a bare zero is
+    only half of one.
     """
     warnings = unreconciled_keys(root, adapter_yaml)
     for warning in warnings:
@@ -352,7 +381,13 @@ def main() -> int:
     root = args.repo_root.resolve()
     resolvers = iter_resolvers(root, require_git=args.require_git_file_listing)
     adapter_yaml = iter_adapter_yaml(root, require_git=args.require_git_file_listing)
-    if not resolvers and not adapter_yaml:
+    warned_files = iter_warn_scope_adapters(root)
+    # `warned_files` joins the emptiness test because the warn scope is WIDER than
+    # `adapter_yaml`. A repo holding only shipped examples -- no `.agents/` and no
+    # resolvers -- used to take the early return and print `No adapter surfaces found.`
+    # over a tree full of declared keys, which is the "never ran" reading this whole tier
+    # exists to make impossible.
+    if not resolvers and not adapter_yaml and not warned_files:
         print("No adapter surfaces found.")
         return 0
 
@@ -362,10 +397,10 @@ def main() -> int:
         validate_adapter_yaml(path)
         validate_adapter_integration_schema(path)
 
-    warnings = report_unreconciled_keys(root, adapter_yaml)
+    warnings = report_unreconciled_keys(root, warned_files)
     print(
         f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s); "
-        f"{len(warnings)} unreconciled declared key(s)."
+        f"{len(warnings)} unreconciled declared key(s) across {len(warned_files)} declaring file(s)."
     )
     return 0
 

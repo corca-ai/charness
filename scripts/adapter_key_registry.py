@@ -31,6 +31,16 @@ warns an operator by name. It is the sound state -- no module in `scripts/` or `
 parses the name ANYWHERE -- and `find_readers`' bias (see its KNOWN LIMIT) is toward
 calling a key owned, so `unknown` under-reports gaps and cannot invent one.
 
+READ THIS BEFORE ADDING A STATE TO `WARN_STATES`. The armed path does NOT use the file
+scoping described above: `unreconciled_keys` calls `resolve_key` with no `associated`
+argument, which is purely KEY-scoped -- the very shape the deleted prohibition named. That
+is sound for `unknown` and ONLY for `unknown`, because `unknown` is scope-INVARIANT: it is
+reached only when `parsing` is empty, and `scoped` is a subset of `parsing`, so the file
+scoping cannot change the answer. Every other state depends on it. So the closed
+(FILE, KEY) gap is what makes `survey` trustworthy; scope-invariance is what makes the
+ARMED path trustworthy. A second state added to `WARN_STATES` inherits the first property
+and not the second, and would warn on file-scoped-correct declarations.
+
 `reader-elsewhere` is NOT armed, and the number is why. Of its 23 instances measured
 across this repo's 37 adapters, 20 are genuine (`.agents/cautilus-adapters/chatbot-*.yaml`,
 which `scripts/cautilus_adapter_lib.py` never reads -- it pins `ADAPTER_PATH` to the
@@ -192,7 +202,9 @@ def find_readers(
     `surfaces`; the rest read `.agents/surfaces.json`, the hotl adapter, or merely emit a
     dict with that key. So the bias is toward reporting a key as OWNED, which means this
     UNDER-reports gaps rather than inventing them -- the safe direction for a warn tier,
-    and part of why no tier is armed. Found the hard way twice: this module's own
+    and part of why `unknown` is the state that got armed. The cost of that direction is
+    a stated non-claim: an armed `unknown` stays SILENT for a typo whose name happens to
+    collide with any unrelated string constant in `scripts/` or `skills/`. Found the hard way twice: this module's own
     docstring quotes a key and the first run counted itself as that key's reader, and a
     bounded review found the unrelated-dict case the first write-up had missed.
     """
@@ -467,10 +479,14 @@ def _load_yaml_file(path: Path) -> Any:
 def survey(repo_root: Path) -> dict[str, Any]:
     """Every declared key in every adapter this repo owns or ships, typed.
 
-    Reports rather than refuses. The warn-vs-refuse tier is an operator decision, and
-    arming one from a repo-local zero is precisely what `docs/deferred-decisions.md` D46
-    argues against: the population that matters is consumer adapters this repo has never
-    seen. This produces the number that decision needs; it does not make the decision.
+    Reports rather than refuses, and still does. What changed is what happens NEXT: the
+    operator read this survey's numbers and chose WARN for `unknown`, which
+    `unreconciled_keys` now arms and `scripts/validate_adapters.py` prints. D46 is not
+    violated by that -- it argues against escalating a REFUSAL from a repo-local zero, and
+    no refusal was armed. This function still makes no decision; it produces the
+    population count (37 adapters, 445 keys) that one was made from, and it remains the
+    only surface reporting `reader-elsewhere` and `text-asserted`, which are deliberately
+    NOT armed.
     """
     counts: dict[str, int] = {}
     gaps: list[dict[str, Any]] = []
@@ -517,7 +533,8 @@ def unreconciled_keys(repo_root: Path, paths: list[Path]) -> list[dict[str, str]
     only when `parsing` is empty, and `scoped` is a subset of `parsing` -- so the scoped
     and unscoped verdicts are identical for exactly this state, and only for it. Skipping
     it also skips `associated_modules`/`_reference_edges`, the whole import-graph closure,
-    which is the expensive half: 4.6s to 3.1s over this repo's 445 declared keys. That
+    which is the expensive half: over `survey`'s full 37-adapter / 445-key population the
+    same walk costs 4.6s with the closure and 3.1s without it. That
     matters because `validate_adapters.py` runs at commit time, and a gate that gets slow
     is a gate that gets moved somewhere it stops running. The equivalence is pinned by
     test, not left to this comment: a future state added to `WARN_STATES` would NOT

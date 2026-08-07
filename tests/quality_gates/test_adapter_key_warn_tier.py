@@ -8,10 +8,14 @@ prove nothing about whether the warning can fire at all, so the warned input is
 CONSTRUCTED rather than observed, and `test_the_real_command_warns_on_a_constructed_typo`
 goes through the actual CLI as a subprocess rather than calling the library.
 
-The tier's SCOPE is the other half. `WARN_STATES` is `unknown` alone; `reader-elsewhere`
-is deliberately excluded on measured evidence (13% association residue, one instance in a
-shipped example). `test_reader_elsewhere_is_reported_but_never_warned` is the fixture that
-fails if a later change widens the tier without re-measuring.
+The tier's SCOPE is the other half, and it has two axes that round-1 review showed are
+easy to confuse. WHICH STATES: `WARN_STATES` is `unknown` alone; `reader-elsewhere` is
+deliberately excluded on measured evidence (13% association residue, one instance in a
+shipped example), pinned by `test_reader_elsewhere_is_reported_but_never_warned`. WHICH
+FILES: the tier reads `iter_warn_scope_adapters`' 37 adapters, deliberately wider than the
+18 `.agents/` files the REFUSING checks read, because shipped examples are what consumers
+copy -- pinned by `test_the_warn_scope_covers_shipped_examples`. The first cut armed 18
+while reporting 37's zero, and no test noticed.
 """
 from __future__ import annotations
 
@@ -31,6 +35,7 @@ from scripts.adapter_key_registry import (  # noqa: E402
     unreconciled_keys,
 )
 from scripts.adapter_lib import load_yaml_file  # noqa: E402
+from scripts.validate_adapters import iter_adapter_yaml, iter_warn_scope_adapters  # noqa: E402
 
 SETUP_ADAPTER = ".agents/setup-adapter.yaml"
 # The same four keys `#530`'s causal review named, re-asserted against the ARMED tier
@@ -43,9 +48,11 @@ def test_the_real_command_warns_on_a_constructed_typo(tmp_path: Path) -> None:
     """The acceptance criterion, proven end to end through `validate_adapters.py`.
 
     A constructed repo, not this one: this repo has no `unknown` key, so the only honest
-    way to show the warning fires is to build the input that reaches it. The adapter
-    carries two shared-core keys and one typo, so the test also shows the warning is
-    SELECTIVE -- it names the typo and stays silent about `version` and `repo`.
+    way to show the warning fires is to build the input that reaches it. What this proves
+    is the PLUMBING -- that a reachable `unknown` becomes a named, reasoned, operator-visible
+    line on stderr with a zero exit and a counted summary. It does NOT prove the tier can
+    tell a typo from a correct key; see the note in the body for why, and the real-tree
+    tests below for where that is proven.
 
     Run as a subprocess on purpose. The criterion is "operator-visible through a real
     command, not just a library return value", and only the process boundary proves the
@@ -55,6 +62,12 @@ def test_the_real_command_warns_on_a_constructed_typo(tmp_path: Path) -> None:
     (tmp_path / ".agents/example-adapter.yaml").write_text(
         "version: 1\nrepo: constructed\nsurfacs: []\n", encoding="utf-8"
     )
+    # NOTE, so this test is not read as proving more than it does: `tmp_path` has no
+    # `scripts/`or `skills/` tree, so EVERY non-shared-core key resolves `unknown` here.
+    # The silence about `version`/`repo` therefore proves the `SHARED_CORE_KEYS` early
+    # return, not that the tier can tell a typo from a correct key. That discrimination is
+    # proven over the real tree by `test_this_repo_warns_about_nothing` and
+    # `test_the_four_multi_reader_setup_keys_survive_arming`.
     completed = subprocess.run(
         [sys.executable, str(ROOT / "scripts/validate_adapters.py"), "--repo-root", str(tmp_path)],
         check=False,
@@ -77,15 +90,18 @@ def test_the_real_command_warns_on_a_constructed_typo(tmp_path: Path) -> None:
     # explaining, since a typo and a deleted reader look identical from the gate.
     assert "no module in scripts/ or skills/ reads it" in warned[0], warned[0]
     # The count is in the summary, so a clean run is a CLAIM rather than silence.
-    assert "1 unreconciled declared key(s)." in completed.stdout, completed.stdout
+    assert "1 unreconciled declared key(s) across 1 declaring file(s)." in completed.stdout, completed.stdout
 
 
 def test_a_clean_repo_still_states_the_count(tmp_path: Path) -> None:
     """"Checked, clean" must be distinguishable from "never ran".
 
-    This repo's own run prints `0 unreconciled declared key(s).`, and that zero is the
-    whole reason the tier is safe to ship. If the summary reported the count only when it
-    was non-zero, an operator reading a green would be back where `#530` started.
+    This repo's own run prints `0 unreconciled declared key(s) across 37 declaring
+    file(s).`, and that zero is the whole reason the tier is safe to ship. If the summary
+    reported the count only when it was non-zero, an operator reading a green would be
+    back where `#530` started -- and if it reported the count without the file scope, a
+    clean-across-18 would be indistinguishable from a clean-across-37, which is exactly
+    the defect round-1 review found in this function's first cut.
     """
     (tmp_path / ".agents").mkdir()
     (tmp_path / ".agents/example-adapter.yaml").write_text("version: 1\nrepo: constructed\n", encoding="utf-8")
@@ -97,8 +113,44 @@ def test_a_clean_repo_still_states_the_count(tmp_path: Path) -> None:
     )
 
     assert completed.returncode == 0, completed.stderr
-    assert "0 unreconciled declared key(s)." in completed.stdout, completed.stdout
+    assert "0 unreconciled declared key(s) across 1 declaring file(s)." in completed.stdout, completed.stdout
     assert "WARNING" not in completed.stderr
+
+
+def test_the_real_command_warns_on_a_typo_in_a_shipped_example(tmp_path: Path) -> None:
+    """The WIRING, not the helper -- the gap that survived the first repair.
+
+    `test_the_warn_scope_covers_shipped_examples` asserts `iter_warn_scope_adapters`
+    returns the wide set, and a mutation that reverted `main()`'s CALL SITE to
+    `iter_adapter_yaml(root)` passed it anyway: the helper was still correct, and the gate
+    still read 18 files. That is the round-1 blocker reproduced one level up, and it is why
+    this test drives the actual CLI over a constructed tree containing a shipped example.
+
+    The `.agents/` adapter is clean and present on purpose: it keeps the run off the
+    `No adapter surfaces found.` early return, so the only thing that can produce a warning
+    here is the example being genuinely in the gate's scope.
+    """
+    (tmp_path / ".agents").mkdir()
+    (tmp_path / ".agents/example-adapter.yaml").write_text("version: 1\nrepo: constructed\n", encoding="utf-8")
+    example = tmp_path / "skills/public/handoff/adapter.example.yaml"
+    example.parent.mkdir(parents=True)
+    example.write_text("version: 1\nrepo: my-repo\nchunk_polcy: {}\n", encoding="utf-8")
+
+    completed = subprocess.run(
+        [sys.executable, str(ROOT / "scripts/validate_adapters.py"), "--repo-root", str(tmp_path)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    warned = [line for line in completed.stderr.splitlines() if line.startswith("WARNING ")]
+    assert len(warned) == 1, completed.stderr
+    assert "skills/public/handoff/adapter.example.yaml" in warned[0], warned[0]
+    assert "`chunk_polcy`" in warned[0], warned[0]
+    # 2 files: the `.agents/` adapter AND the shipped example. If the call site narrows,
+    # this reads 1 and the test fails on the scope rather than on the warning.
+    assert "1 unreconciled declared key(s) across 2 declaring file(s)." in completed.stdout, completed.stdout
 
 
 def test_the_four_multi_reader_setup_keys_survive_arming() -> None:
@@ -124,10 +176,39 @@ def test_this_repo_warns_about_nothing() -> None:
     the contract rather than a happy accident. If this fails, either a real unreconciled
     key was introduced (fix the declaration) or the tier widened (re-measure before
     shipping) -- and the failure says which by naming the keys.
+
+    The adapter list comes from `iter_warn_scope_adapters` rather than being re-globbed
+    here. Round-1 review caught the earlier version hardcoding the scope: that made this a
+    SECOND declaration of which files the tier reads -- the anti-pattern the registry
+    module exists to detect -- and it is why the gate's 18-file blind spot was invisible
+    from the test side. Widening the gate now widens this test automatically.
     """
-    adapters = sorted(ROOT.glob(".agents/*-adapter.yaml")) + sorted(ROOT.glob(".agents/cautilus-adapters/*.yaml"))
-    findings = unreconciled_keys(ROOT, adapters)
+    findings = unreconciled_keys(ROOT, iter_warn_scope_adapters(ROOT))
     assert findings == [], f"unreconciled declared keys appeared: {findings}"
+
+
+def test_the_warn_scope_covers_shipped_examples() -> None:
+    """The blocker round 1 found, pinned as a regression fixture.
+
+    The first cut armed `iter_adapter_yaml`'s 18 `.agents/` files while reporting the
+    37-adapter measurement's zero -- a check claiming a scope it never read, which is this
+    goal's own defect class. Reproduced before repair: a typo'd key in
+    `skills/public/handoff/adapter.example.yaml` produced `0 unreconciled declared key(s)`
+    with all 40 tests green.
+
+    Shipped examples are the ones that matter: a consumer COPIES them, so a typo in one
+    propagates to every repo that adopts it. Asserting the count alone would not catch a
+    regression here (both scopes report zero on a clean tree), so this asserts the
+    SCOPE -- that example adapters are actually in the set of files read.
+    """
+    scope = {str(path.relative_to(ROOT)) for path in iter_warn_scope_adapters(ROOT)}
+    assert "skills/public/handoff/adapter.example.yaml" in scope, sorted(scope)
+
+    examples = {path for path in scope if path.endswith("adapter.example.yaml")}
+    assert len(examples) >= 15, f"shipped examples fell out of the warn scope: {sorted(examples)}"
+    # And the gate's own narrower validation scope must still be a strict subset, so this
+    # widening never silently pulls a template into the REFUSING checks.
+    assert {str(path.relative_to(ROOT)) for path in iter_adapter_yaml(ROOT)} < scope
 
 
 def test_reader_elsewhere_is_reported_but_never_warned() -> None:
