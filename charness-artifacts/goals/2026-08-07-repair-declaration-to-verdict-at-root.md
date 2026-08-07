@@ -73,13 +73,21 @@ runs the activation command.
   `extension` / `retired` / `unknown`). `setup-adapter.yaml`'s four multi-reader
   keys stay clean — the regression fixture for the refuted approach holds, and a
   mutant that reverts to the refuted design is killed by it.
-- Measured across 37 adapter files / 445 keys: 167 shared-core, 257 reader, 20
-  reader-elsewhere, 1 text-asserted, **0 unknown**. All 21 gaps sit in the two
-  `.agents/cautilus-adapters/*.yaml` files, which the repo documents as having no
-  per-skill resolver.
+- Measured across 37 adapter files / 445 keys (after the round-2 narrowing):
+  167 shared-core, 254 reader, 23 reader-elsewhere, 1 text-asserted, **0 unknown**.
+  24 gaps across 4 files. Two are the `.agents/cautilus-adapters/*.yaml` pair with
+  no parsing reader at all; two are under-association residue, kept visible
+  because a false `reader-elsewhere` is a report an operator dismisses in one
+  reading while a false `reader` is a false green. Association is bounded to
+  under 10% of the repo per adapter by an executable test.
+- `#553` closeout carrier is COMMITTED and `draft_verified` (delegated critique,
+  `Behavior #553:` verdict on a distinct channel, full bug ledger). It carries
+  `Closes #553`, which fires on PUSH — not granted, so the issue is still open
+  and `verify-closeout --expect-state CLOSED` has not run. That readback is the
+  only floor step outstanding.
 - Next action: Slice 3 (`#518`) — reconcile every declared quality surface to a
   reader or a typed gap. It is now unblocked: slice 2's resolution is
-  trustworthy, and `survey()` is the seam it consumes.
+  trustworthy and bounded, and `survey()` is the seam it consumes.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
