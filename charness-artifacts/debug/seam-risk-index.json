@@ -3,11 +3,11 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 117,
-  "indexed_artifact_count": 105,
+  "source_artifact_count": 119,
+  "indexed_artifact_count": 107,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
-    "external-seam": 13,
+    "external-seam": 15,
     "host-disproves-local": 2,
     "none": 37,
     "operator-visible-recovery": 22,
@@ -15,7 +15,7 @@
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 89,
+    "monitor": 91,
     "none": 11
   },
   "entries": [
@@ -1478,17 +1478,45 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "gather-510-markdown-representation-selection",
+      "artifact_path": "charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "mutation-516-historical-baseline-identity-and-portability",
       "risk_classes": [
         "external-seam"
       ],
-      "seam": "public provider representation -> acquisition classifier -> gather record",
+      "seam": "scheduled GitHub Actions checkout -> durable claim/packet path -> local",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-08-06-issue-510-markdown-negotiation-contract.md",
+      "handoff_artifact": "charness-artifacts/spec/mutation-baseline-observation-identity.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-07-issue-518-quality-declaration-reconciliation-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-518-declaration-to-verdict",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "consumer adapter/preset declaration → quality helper/adapter mirror →",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-518-declaration-to-verdict",
+      "risk_classes": [
+        "external-seam"
+      ],
+      "seam": "consumer adapter/preset declaration → quality helper/adapter mirror →",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-07-issue-518-quality-declaration-reconciliation-contract.md",
       "forced": true
     }
   ],

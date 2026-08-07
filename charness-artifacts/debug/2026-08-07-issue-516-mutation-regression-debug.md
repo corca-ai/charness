@@ -136,7 +136,7 @@ semantics.
 - Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
-- Handoff Artifact: charness-artifacts/critique/2026-08-07-issue-516-mutation-regression-resolution-critique.md
+- Handoff Artifact: charness-artifacts/spec/mutation-baseline-observation-identity.md
 
 <!-- `Next Step` was authored as `issue-closeout-complete`, which is not in the
 validator's enum (`impl` | `spec`), so `build_debug_seam_risk_index.py --check` refused
@@ -145,7 +145,12 @@ commits. Corrected to `spec`, which is not a free choice: `Risk Class: external-
 FORCED risk class, and `risk_interrupt_lib.py` requires a forced interrupt to record
 `Next Step: spec` (and `Critique Required: yes`, which this artifact already had).
 Completion is carried by `Resolution: resolved`, the field the planner reads to demote a
-closed investigation, so nothing about this record's meaning changed. -->
+closed investigation, so nothing about this record's meaning changed.
+
+`Handoff Artifact` pointed at the resolution critique, which the same forced-interrupt rule
+refuses: it must name a `charness-artifacts/spec/*.md`. The spec was owed and never
+written, so it was written rather than the requirement being edited away; the critique is
+still cited from the spec's Source line. -->
 
 
 ## Prevention

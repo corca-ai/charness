@@ -11,8 +11,17 @@ Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
 
-- Current slice: Slice 0 complete. The baseline is zero, so from here a `pytest`
-  red is a regression this goal caused, not inherited noise.
+- Current slice: Slice 0b — restore the PRE-PUSH gate's baseline. Slice 0 fixed
+  `pytest`; the pre-push gate turned out to have its own standing red, and it
+  blocks every closeout in this goal.
+- **The plan had a hole and this is it.** Slice 0's boundary said "no other slice
+  may claim a green suite before Slice 0 closes" and treated `pytest` as *the*
+  baseline. It is not: the gate that decides whether work may leave this machine
+  is the pre-push gate, and nobody had run it in 13 commits. `Closes #N` only
+  fires on the default branch, so an unpushable repo is a repo where all 19
+  issues stay open no matter how good the local work is. Slice 0b is therefore a
+  prerequisite in exactly the sense Slice 0 was, and the same rule applies: do not
+  weaken a check to reach the green.
 - Current slice intent: close all 19 open issues by repairing the shared
   declaration-to-verdict boundary first, then the surfaces that accumulated on
   top of it — in an order where each slice's tools already exist.
@@ -193,7 +202,8 @@ Every issue keeps its own carrier, delegated resolution critique, distinct
 | Slice | Objective | Issues | Why here | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Restore the baseline nobody owns | (none; filed #536, #537) | Every later green is read against 34 standing reds. `docs/handoff.md` lost its publish-state claim block at `0659d5a0`; 26 tests + the ledger CLI have been red for 6 commits | **complete** — 35 measured (not 34), 0 remaining |
-| 1 | Repair the issue lane's own report contract | #529 | This goal performs 19 closeouts; a wrong `{repo, number, url}` ledger costs 19 times if fixed late | planned |
+| 1 | Repair the issue lane's own report contract | #529 | This goal performs 19 closeouts; a wrong `{repo, number, url}` ledger costs 19 times if fixed late | implemented (`10de65a9`), NOT closed — carrier is local until the pre-push gate passes |
+| 0b | Restore the PRE-PUSH gate's own unowned baseline | (none) | Discovered after Slice 1: the pre-push gate has been red across 13 unpushed commits, and auto-close only fires on the default branch — so **no issue in this goal can close until it is green**. Same shape as Slice 0, one gate over. | in progress |
 | 2 | Make adapters able to refuse unrecognized input | #530 | Root of the declaration family: 16/17 resolvers accept any `version` and absorb typo'd keys as defaults | planned |
 | 3 | Let a repo declare a sub-key ABSENT | #528 | Needs Slice 2's absent/defaulted/declared distinction; deletions currently refill silently | planned |
 | 4 | Reconcile every declared quality surface to a reader or a typed gap (+ awiki) | #518 | The flagship declaration-to-verdict repair; consumes Slices 2-3 | planned |

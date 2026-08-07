@@ -10,17 +10,23 @@ short because they are not where the danger lives.
 from __future__ import annotations
 
 import json
+import runpy
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
+import scripts.capture_issue_source as capture_module
+import scripts.issue_source_capture_lib as capture_lib
 from scripts.capture_issue_source import resolve_adapter_module, run_capture
 from scripts.issue_source_capture_lib import (
     CaptureRefusal,
     build_page_argv,
     capture_issue,
     capture_issues,
+    run_gh,
 )
 from scripts.issue_source_normalize_lib import (
     build_clause_inventory,
@@ -329,6 +335,351 @@ def test_a_backend_that_cannot_declare_its_enumeration_refuses_only_capture(tmp_
 
     assert excinfo.value.reason == "unsupported_capability"
     assert "issue_source_capture" in excinfo.value.detail
+
+
+def _adapter_repo(tmp_path: Path, body: str = "version: 1\n") -> Path:
+    (tmp_path / ".agents").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".agents" / "issue-adapter.yaml").write_text(body, encoding="utf-8")
+    return tmp_path
+
+
+def test_a_tree_with_no_resolver_refuses_instead_of_capturing_with_an_unknown_adapter(
+    tmp_path: Path,
+) -> None:
+    """No resolver means no provable adapter identity, so there is nothing to record.
+
+    Capturing anyway would write a snapshot whose `adapter` block was invented here
+    rather than resolved by the issue lane, and every criterion id later derived from
+    it would inherit that fiction.
+    """
+    with pytest.raises(CaptureRefusal) as excinfo:
+        resolve_adapter_module(tmp_path)
+
+    assert excinfo.value.reason == "resolver_missing"
+    assert str(tmp_path) in excinfo.value.detail
+
+
+def test_an_invalid_adapter_refuses_before_any_backend_request(tmp_path: Path) -> None:
+    """A malformed adapter is refused, not silently replaced by the inferred defaults.
+
+    `load_adapter` still returns a usable `data` block when it reports errors. Reading
+    that block anyway would capture against defaults the operator never chose while the
+    receipt recorded the adapter file as its authority.
+    """
+    repo_root = _adapter_repo(tmp_path, "version: not-an-integer\n")
+
+    with pytest.raises(CaptureRefusal) as excinfo:
+        run_capture(
+            repo_root=repo_root, repo="corca-ai/charness", numbers=[514],
+            snapshot_path=repo_root / "source.json", runner=_runner([]),
+        )
+
+    assert excinfo.value.reason == "invalid_adapter"
+    assert "version must be an integer" in excinfo.value.detail
+    assert not (repo_root / "source.json").exists()
+
+
+def test_a_resolver_that_reports_no_capture_capability_refuses(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The capability block is required, not optional-with-a-fallback.
+
+    This repo's own resolver always populates it, so the guard only fires against an
+    older or foreign installed `resolve_adapter.py` — exactly the case where guessing a
+    default enumeration would let a stale resolver produce a snapshot claiming a
+    completeness contract it never had. Stubbed here because that is the only way to
+    present a resolver that omits the block.
+    """
+    stub = SimpleNamespace(
+        load_adapter=lambda repo_root: {
+            "valid": True, "errors": [], "path": None, "found": True,
+            "data": {"issue_backend": GH_BACKEND},
+        }
+    )
+    monkeypatch.setattr(capture_module, "resolve_adapter_module", lambda *_, **__: stub)
+
+    with pytest.raises(CaptureRefusal) as excinfo:
+        run_capture(
+            repo_root=tmp_path, repo="corca-ai/charness", numbers=[514],
+            snapshot_path=tmp_path / "source.json", runner=_runner([]),
+        )
+
+    assert excinfo.value.reason == "missing_capability"
+    assert "issue_source_capture" in excinfo.value.detail
+
+
+def _run_main(argv: list[str], monkeypatch: pytest.MonkeyPatch) -> int:
+    """Drive the CLI entrypoint in-process, through the `__main__` guard."""
+    monkeypatch.setattr(sys, "argv", ["capture_issue_source.py", *argv])
+    with pytest.raises(SystemExit) as exit_info:
+        runpy.run_path(str(REPO_ROOT / "scripts" / "capture_issue_source.py"), run_name="__main__")
+    assert isinstance(exit_info.value.code, int)
+    return exit_info.value.code
+
+
+def test_cli_resolves_a_relative_snapshot_against_the_repo_root_it_was_given(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """`--snapshot` is relative to `--repo-root`, never to the process cwd.
+
+    Joining against cwd would write the frozen snapshot outside the repo whose adapter
+    authorized the capture, and the receipt's `snapshot_path` — computed relative to the
+    repo root — would then name a file that is not there.
+    """
+    repo_root = _adapter_repo(tmp_path)
+    monkeypatch.setattr(
+        capture_lib,
+        "run_gh",
+        _runner([_page([_node("c1")], total=1, has_next=False, cursor=None)]),
+    )
+
+    code = _run_main(
+        ["--repo-root", str(repo_root), "--repo", "corca-ai/charness",
+         "--numbers", "514", "--snapshot", "spec/source.json"],
+        monkeypatch,
+    )
+
+    assert code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is True
+    assert payload["snapshot_path"] == "spec/source.json"
+    assert payload["per_issue"] == [
+        {"number": 514, "comment_total_count": 1, "captured_comment_count": 1, "pages": 1}
+    ]
+    assert (repo_root / "spec" / "source.json").is_file()
+    assert (repo_root / "spec" / "source-capture-receipt.json").is_file()
+
+
+def test_cli_renders_a_refusal_as_nonzero_json_and_writes_no_snapshot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A refused capture must exit nonzero and leave nothing behind.
+
+    A refusal that still wrote a partial snapshot, or that exited 0 with the refusal
+    only on stderr, is how an unprovable capture gets frozen by the next step in a
+    script that checked the exit code.
+    """
+    repo_root = _adapter_repo(tmp_path, "issue_backend:\n  id: acme\n  binary: acme\n")
+
+    code = _run_main(
+        ["--repo-root", str(repo_root), "--repo", "corca-ai/charness",
+         "--numbers", "514", "515", "--snapshot", str(repo_root / "spec" / "source.json")],
+        monkeypatch,
+    )
+
+    assert code == 1
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert payload["ok"] is False
+    assert payload["refusal"] == "unsupported_capability"
+    assert "capture_issue_source: REFUSED (unsupported_capability)" in captured.err
+    assert not (repo_root / "spec").exists()
+
+
+def test_run_gh_reports_the_exit_code_and_output_instead_of_raising() -> None:
+    """The default runner must hand a failing backend call back as data.
+
+    Every completeness refusal in this lane branches on `returncode`/`stdout`; a runner
+    that raised on a nonzero exit would turn a backend error into a traceback, which
+    `run_cli` deliberately does not render as a refusal.
+    """
+    ok = run_gh([sys.executable, "-c", "print('hello')"])
+    assert ok.returncode == 0
+    assert ok.stdout == "hello\n"
+
+    failed = run_gh([sys.executable, "-c", "import sys; sys.stderr.write('nope'); sys.exit(3)"])
+    assert failed.returncode == 3
+    assert failed.stderr == "nope"
+
+
+def test_a_repo_that_is_not_owner_slash_name_is_refused_before_any_request() -> None:
+    """`owner`/`name` are separate GraphQL variables, so a bare name has no query.
+
+    Without this the partition yields an empty owner and the request is sent anyway,
+    coming back as an absent issue — a refusal that blames the backend for the caller's
+    malformed argument.
+    """
+    for repo in ("charness", "", "corca-ai/"):
+        with pytest.raises(CaptureRefusal) as excinfo:
+            build_page_argv(GH_BACKEND, repo, 514, 10, None)
+        assert excinfo.value.reason == "invalid_repo"
+        assert repr(repo) in excinfo.value.detail
+
+
+def test_a_response_missing_the_issue_path_entirely_is_refused() -> None:
+    """A backend answering with an unrelated shape cannot be read as "no comments".
+
+    `{"data": {}}` has no `repository`, so nothing in it reports whether more source
+    exists; treating the absent path as empty would capture a zero-comment issue and
+    call it complete.
+    """
+    with pytest.raises(CaptureRefusal) as excinfo:
+        _capture(['{"data": {}}'])
+
+    assert excinfo.value.reason == "unknown_enumeration"
+    assert "data.repository.issue" in excinfo.value.detail
+
+
+def test_a_comments_block_whose_nodes_are_not_a_list_is_refused() -> None:
+    """`nodes: null` is not an empty page.
+
+    Iterating it would raise, and defaulting it to `[]` would silently collect nothing
+    from a page the backend said existed — which the totalCount cross-check only catches
+    when the total happens to disagree.
+    """
+    payload = json.loads(_page([], total=0, has_next=False, cursor=None))
+    payload["data"]["repository"]["issue"]["comments"]["nodes"] = None
+
+    with pytest.raises(CaptureRefusal) as excinfo:
+        _capture([json.dumps(payload)])
+
+    assert excinfo.value.reason == "unknown_enumeration"
+    assert "comment nodes list" in excinfo.value.detail
+
+
+def test_a_null_total_count_is_refused_rather_than_compared_against() -> None:
+    """`totalCount: null` is present but unknown, and unknown fails no cross-check.
+
+    The field-presence check passes, so without this guard the capture reaches the
+    count comparison with `None`, where `0 != None` would refuse for the wrong reason
+    and any nonzero page would crash instead of refusing.
+    """
+    payload = json.loads(_page([], total=0, has_next=False, cursor=None))
+    payload["data"]["repository"]["issue"]["comments"]["totalCount"] = None
+
+    with pytest.raises(CaptureRefusal) as excinfo:
+        _capture([json.dumps(payload)])
+
+    assert excinfo.value.reason == "empty_capture"
+    assert "corca-ai/charness#514" in excinfo.value.detail
+
+
+def test_a_declared_capability_is_parsed_field_by_field_and_warns_without_a_command(
+    tmp_path: Path,
+) -> None:
+    """A non-`gh` backend that names its enumeration keeps the adapter valid.
+
+    Every field is asserted individually because a parser that dropped one would fall
+    back to the `gh` default and capture against a contract the backend never declared.
+    The missing `commands.source_capture` is a warning, not an error: the declaration is
+    well-formed, and it is `capture_issue_source.py` that refuses when the template is
+    needed.
+    """
+    repo_root = _adapter_repo(
+        tmp_path,
+        "issue_backend:\n  id: acme\n  binary: acme\n"
+        "issue_source_capture:\n"
+        "  enumeration: page\n"
+        "  page_size: 25\n"
+        "  has_next_field: more\n"
+        "  cursor_field: next\n"
+        "  total_count_field: total\n"
+        "  normalization: github-issue-v1\n",
+    )
+
+    adapter = resolve_adapter_module(REPO_ROOT).load_adapter(repo_root)
+
+    assert adapter["valid"] is True
+    assert adapter["data"]["issue_source_capture"] == {
+        "enumeration": "page",
+        "page_size": 25,
+        "has_next_field": "more",
+        "cursor_field": "next",
+        "total_count_field": "total",
+        "normalization": "github-issue-v1",
+        "declared": True,
+        "supported": True,
+        "unsupported_reason": None,
+    }
+    assert any(
+        "declared issue_source_capture without commands.source_capture" in warning
+        for warning in adapter["warnings"]
+    )
+
+
+def test_a_backend_that_declares_both_the_capability_and_its_command_is_not_warned(
+    tmp_path: Path,
+) -> None:
+    """The warning must name a real gap, not fire on every non-`gh` backend.
+
+    A warning that cannot be silenced by fixing exactly what it describes gets tuned
+    out, and with it the one that says the capture will refuse.
+    """
+    repo_root = _adapter_repo(
+        tmp_path,
+        "issue_backend:\n  id: acme\n  binary: acme\n"
+        "  commands:\n    source_capture:\n      - issues\n      - read\n"
+        "issue_source_capture:\n  page_size: 10\n",
+    )
+
+    adapter = resolve_adapter_module(REPO_ROOT).load_adapter(repo_root)
+
+    assert adapter["valid"] is True
+    assert adapter["data"]["issue_source_capture"]["page_size"] == 10
+    assert adapter["data"]["issue_source_capture"]["declared"] is True
+    assert not any("commands.source_capture" in warning for warning in adapter["warnings"])
+
+
+def test_every_malformed_capability_field_is_reported_and_the_default_is_kept(
+    tmp_path: Path,
+) -> None:
+    """One bad field must not be rounded off to the built-in `gh` contract silently.
+
+    Each error names its field so the operator repairs the declaration; the adapter is
+    invalid, so `capture_issue_source.py` refuses rather than capturing against a
+    contract that was half-understood. `page_size: true` is included because `True` is
+    an `int` in Python and would otherwise parse as page size 1.
+
+    Rejected values fall back to the default EXCEPT `normalization`, which is a plain
+    string field and is kept as written before the policy check reports it. That is only
+    safe because `valid` is False: the errors are the gate, not the returned block.
+    """
+    repo_root = _adapter_repo(
+        tmp_path,
+        "issue_source_capture:\n"
+        "  enumeration: firehose\n"
+        "  page_size: true\n"
+        "  has_next_field: ''\n"
+        "  normalization: bespoke-v9\n",
+    )
+
+    adapter = resolve_adapter_module(REPO_ROOT).load_adapter(repo_root)
+
+    assert adapter["valid"] is False
+    assert adapter["errors"] == [
+        "issue_source_capture.enumeration must be one of: cursor, page",
+        "issue_source_capture.page_size must be a positive integer",
+        "issue_source_capture.has_next_field must be a non-empty string",
+        "issue_source_capture.normalization must be one of: github-issue-v1",
+    ]
+    capability = adapter["data"]["issue_source_capture"]
+    assert capability["enumeration"] == "cursor"
+    assert capability["page_size"] == 100
+    assert capability["has_next_field"] == "hasNextPage"
+    assert capability["normalization"] == "bespoke-v9"
+
+
+def test_a_zero_page_size_and_a_non_mapping_capability_are_both_refused(tmp_path: Path) -> None:
+    """A scalar `issue_source_capture:` is a declaration nobody can read.
+
+    It must land as an adapter error rather than being ignored as absent: ignored, a
+    `gh` backend would silently serve the built-in default and the operator's attempted
+    override would vanish without a word.
+    """
+    scalar_root = _adapter_repo(tmp_path / "scalar", "issue_source_capture: yes-please\n")
+    adapter = resolve_adapter_module(REPO_ROOT).load_adapter(scalar_root)
+
+    assert adapter["valid"] is False
+    assert adapter["errors"] == ["issue_source_capture must be a mapping"]
+    # The returned block is the untouched default, marked undeclared -- so nothing
+    # downstream can read the unparsable scalar as a declared contract.
+    assert adapter["data"]["issue_source_capture"]["declared"] is False
+    assert adapter["data"]["issue_source_capture"]["page_size"] == 100
+
+    zero_root = _adapter_repo(tmp_path / "zero", "issue_source_capture:\n  page_size: 0\n")
+    zero = resolve_adapter_module(REPO_ROOT).load_adapter(zero_root)
+
+    assert zero["errors"] == ["issue_source_capture.page_size must be a positive integer"]
 
 
 def test_clause_ids_move_when_comments_reorder_so_pointers_cannot_be_reassigned() -> None:

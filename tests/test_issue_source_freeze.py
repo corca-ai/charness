@@ -11,15 +11,18 @@ re-derivation from captured bytes.
 from __future__ import annotations
 
 import json
+import runpy
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
 
 from scripts.issue_source_capture_lib import build_snapshot_and_receipt, capture_issues
 from scripts.issue_source_freeze_lib import _RECEIPT_IDENTITY_EXCLUDED, FreezeError
-from scripts.issue_source_normalize_lib import sha256_payload
+from scripts.issue_source_normalize_lib import sha256_payload, sha256_text
 from scripts.validate_issue_source_freeze import (
+    main,
     run_freeze,
     run_refreeze,
     run_validate,
@@ -65,10 +68,14 @@ def _response(number: int, body: str, nodes: list[dict], total: int) -> str:
     )
 
 
-def _build_world(tmp_path: Path, *, numbers=(514, 515, 518), bodies=None) -> None:
+def _build_world(tmp_path: Path, *, numbers=(514, 515, 518), bodies=None, comments=None) -> None:
     """Write a complete, valid freeze world into `tmp_path`."""
     bodies = bodies or {number: f"- criterion for {number}\n- second criterion" for number in numbers}
-    queue = [_response(number, bodies[number], [], 0) for number in sorted(numbers)]
+    comments = comments or {}
+    queue = [
+        _response(number, bodies[number], list(comments.get(number, [])), len(comments.get(number, [])))
+        for number in sorted(numbers)
+    ]
 
     def runner(argv):
         return subprocess.CompletedProcess(argv, 0, queue.pop(0), "")
@@ -139,6 +146,34 @@ def _edit_receipt(tmp_path: Path, mutate) -> None:
         {key: value for key, value in payload.items() if key not in _RECEIPT_IDENTITY_EXCLUDED}
     )
     _write_json(path, payload)
+
+
+def _comment(node_id: str, body: str) -> dict:
+    return {"id": node_id, "body": body, "createdAt": "2026-08-01T00:00:00Z", "author": {"login": "owner"}}
+
+
+_TWO_COMMENTS = [_comment("C_a", "- criterion from comment a"), _comment("C_b", "- criterion from comment b")]
+
+
+def _edit_raw_page(tmp_path: Path, number: int, mutate) -> None:
+    """Edit one captured raw page AND reseal the receipt digest that commits to it.
+
+    Same reason `_edit_receipt` reseals: without this every raw-page test would stop at
+    `raw_response_digest_mismatch`, which is already proven above and would shadow the
+    specific refusal each of these tests exists to prove. Resealing hands the tamperer
+    the digest they would have had to forge anyway.
+    """
+    raw = next((tmp_path / "spec" / "source-raw").glob(f"*{number}*.json"))
+    payload = json.loads(raw.read_text(encoding="utf-8"))
+    mutate(payload)
+    raw.write_text(json.dumps(payload, ensure_ascii=False), encoding="utf-8")
+    digest = sha256_text(raw.read_text(encoding="utf-8"))
+    _edit_receipt(
+        tmp_path,
+        lambda receipt: [
+            i["pages"][0].__setitem__("raw_response_sha256", digest) for i in receipt["issues"] if i["number"] == number
+        ],
+    )
 
 
 def test_a_complete_freeze_validates_and_reports_rederivation(tmp_path: Path) -> None:
@@ -552,3 +587,401 @@ def test_the_checked_in_charness_freeze_for_514_515_518_validates() -> None:
 
     assert payload["ok"] is True
     assert payload["snapshot_rederived_from_raw_responses"] is True
+
+
+def test_a_freeze_receipt_that_was_never_written_is_refused_not_treated_as_absent_bind(tmp_path: Path) -> None:
+    """No receipt is not "no objection".
+
+    A validator that treats a missing bind file as nothing-to-check would authorize
+    every consumer of a freeze that was never taken.
+    """
+    _build_world(tmp_path)
+
+    with pytest.raises(FreezeError) as excinfo:
+        run_validate(tmp_path, SNAPSHOT_REL, INSPECTION_REL, "spec/never-frozen.json", [514, 515, 518])
+
+    assert excinfo.value.code == "missing_file"
+    assert "spec/never-frozen.json" in excinfo.value.detail
+
+
+def test_a_truncated_snapshot_file_is_refused_as_unreadable_not_crashed_on(tmp_path: Path) -> None:
+    """A half-written artifact is a routine outcome of an interrupted capture.
+
+    It must surface as this lane's refusal shape — a stable code an operator and a
+    caller can branch on — rather than as a raw `JSONDecodeError` traceback that the
+    CLI's `run_cli` would deliberately not catch.
+    """
+    _build_world(tmp_path)
+    (tmp_path / SNAPSHOT_REL).write_text('{"schema": "issue-source-sna', encoding="utf-8")
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "invalid_json"
+    assert SNAPSHOT_REL in excinfo.value.detail
+
+
+def test_a_well_formed_file_of_the_wrong_kind_cannot_stand_in_for_the_snapshot(tmp_path: Path) -> None:
+    """Every artifact in this lane is JSON with a digest-shaped field somewhere.
+
+    Without the declared-schema check, pointing `--snapshot` at the freeze receipt (or
+    at a future v2 snapshot) would fail deep inside re-derivation with a KeyError, or
+    worse, coincidentally pass a check that never noticed it was reading the wrong file.
+    """
+    _build_world(tmp_path)
+    _edit_json(tmp_path / SNAPSHOT_REL, lambda payload: payload.__setitem__("schema", "issue-source-snapshot/v2"))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "wrong_schema"
+    assert "issue-source-snapshot/v2" in excinfo.value.detail
+
+
+def test_an_inspected_file_that_has_been_deleted_is_refused_not_skipped(tmp_path: Path) -> None:
+    """Deletion is the strongest form of the staleness the inspection exists to catch.
+
+    If a missing locator merely dropped out of the recomputation, the cheapest way to
+    keep an owner inspection "current" would be to delete the file it claims to have
+    inspected — the inspection would stay green about a file that no longer exists.
+    """
+    _build_world(tmp_path)
+    (tmp_path / "owner.py").unlink()
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "missing_file"
+    assert "owner.py" in excinfo.value.detail
+
+
+def test_a_raw_page_whose_issue_node_is_null_is_refused(tmp_path: Path) -> None:
+    """`{"data":{"repository":{"issue":null}}}` is what a backend returns for an issue the
+    token cannot see. It is a syntactically perfect response carrying no source at all,
+    so re-derivation must refuse it rather than fold an empty issue into the snapshot."""
+    _build_world(tmp_path)
+    _edit_raw_page(tmp_path, 514, lambda payload: payload["data"]["repository"].__setitem__("issue", None))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "raw_response_incomplete"
+    assert "no issue node" in excinfo.value.detail
+
+
+def test_a_raw_page_that_reports_no_has_next_page_cannot_prove_completeness(tmp_path: Path) -> None:
+    """Absence must refuse, not default to "complete".
+
+    `hasNextPage` is the ONLY field that distinguishes a full enumeration from a
+    truncated one. Treating a missing `pageInfo` as a finished page would let a
+    stripped-down response assert completeness by saying nothing.
+    """
+    _build_world(tmp_path)
+    _edit_raw_page(tmp_path, 514, lambda p: p["data"]["repository"]["issue"]["comments"].pop("pageInfo"))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "raw_response_incomplete"
+    assert "hasNextPage" in excinfo.value.detail
+
+
+def test_a_repeated_comment_node_makes_a_short_capture_look_complete(tmp_path: Path) -> None:
+    """Duplicating one comment is how a short capture reaches its declared `totalCount`.
+
+    With comment B dropped and comment A returned twice, the collected length equals
+    `totalCount` and the count check passes — so the criterion sitting in B disappears
+    from the frozen source with every arithmetic check green. Only node identity sees it.
+    """
+    _build_world(tmp_path, comments={514: _TWO_COMMENTS})
+    _edit_raw_page(tmp_path, 514, lambda p: p["data"]["repository"]["issue"]["comments"]["nodes"][1].__setitem__("id", "C_a"))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "duplicate_comment"
+    assert "C_a" in excinfo.value.detail
+
+
+def test_an_issue_the_receipt_claims_but_captured_no_page_for_is_refused(tmp_path: Path) -> None:
+    """A page-less issue re-derives to nothing, and nothing compares equal to nothing.
+
+    Every declared count for it is zero and self-consistent, so without this floor an
+    issue could be listed in the receipt with no captured evidence behind it at all.
+    """
+    _build_world(tmp_path)
+    _edit_receipt(tmp_path, lambda receipt: receipt["issues"][0].__setitem__("pages", []))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "raw_response_incomplete"
+    assert "no captured page" in excinfo.value.detail
+
+
+def test_a_receipt_advertising_a_comment_set_the_raw_bytes_do_not_carry_is_refused(tmp_path: Path) -> None:
+    """`comment_node_ids` is the receipt's own summary of what it captured.
+
+    It is what a reader diffs across freezes to see which comments are new, so it must
+    be the set the raw responses actually carry. Dropping one id there is a quiet way to
+    make a comment invisible to every consumer that reads the summary instead of the bytes.
+    """
+    _build_world(tmp_path, comments={514: _TWO_COMMENTS})
+    _edit_receipt(
+        tmp_path,
+        lambda receipt: [i.__setitem__("comment_node_ids", ["C_a"]) for i in receipt["issues"] if i["number"] == 514],
+    )
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "receipt_comment_set_mismatch"
+
+
+def test_a_raw_response_path_inside_the_repo_but_outside_the_raw_dir_is_refused(tmp_path: Path) -> None:
+    """Repo containment alone is not enough.
+
+    `../../../etc/hostname` is the loud escape; aiming a page at another artifact in the
+    same repo is the quiet one. Here the receipt points its "captured bytes" at the
+    snapshot itself — fully inside the repo root, so the repo-containment clause passes —
+    which would let a hand-authored snapshot be re-derived from itself.
+    """
+    _build_world(tmp_path)
+    _edit_receipt(tmp_path, lambda r: r["issues"][0]["pages"][0].__setitem__("raw_response_path", SNAPSHOT_REL))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "raw_response_escape"
+    assert "spec/source-raw" in excinfo.value.detail
+
+
+def test_a_receipt_that_does_not_assert_a_complete_enumeration_overall_is_refused(tmp_path: Path) -> None:
+    """The per-issue flags and the whole-capture flag are separate assertions.
+
+    An issue the capture never reached has no per-issue record to mark incomplete, so
+    only the top-level flag can report "this capture did not finish".
+    """
+    _build_world(tmp_path)
+    _edit_receipt(tmp_path, lambda receipt: receipt.__setitem__("pagination_complete", False))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "incomplete_pagination"
+    assert "complete enumeration" in excinfo.value.detail
+
+
+def test_a_page_with_no_raw_response_path_is_refused_before_rederivation(tmp_path: Path) -> None:
+    """A page that names no bytes is a page with no evidence behind it.
+
+    Left unchecked it would surface as a `KeyError` from inside the re-derivation
+    loop — an unhandled crash, which `run_cli` deliberately does not render as a
+    refusal — instead of this lane's stable code.
+    """
+    _build_world(tmp_path)
+    _edit_receipt(tmp_path, lambda receipt: receipt["issues"][0]["pages"][0].pop("raw_response_path"))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "missing_raw_response"
+    assert "no raw response path" in excinfo.value.detail
+
+
+def test_a_snapshot_declaring_a_digest_its_own_content_does_not_imply_is_refused(tmp_path: Path) -> None:
+    """`source_snapshot_sha256` is the anchor every clause id is derived from.
+
+    Consumers cite that scalar rather than re-digesting the document, so a snapshot
+    whose declared digest is not its content's would let the whole inventory be bound
+    to a source nobody can reproduce.
+    """
+    _build_world(tmp_path)
+    _edit_json(tmp_path / SNAPSHOT_REL, lambda payload: payload.__setitem__("source_snapshot_sha256", "0" * 64))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "snapshot_digest_mismatch"
+
+
+def test_a_forged_clause_inventory_identity_is_refused_even_with_the_inventory_intact(tmp_path: Path) -> None:
+    """The identity scalar is the handle downstream artifacts bind to.
+
+    The crosswalk copies `clause_inventory_identity` and later re-checks it to detect
+    drift. Forging it in the snapshot is how a crosswalk bound to an OLD inventory could
+    be made to look current, so the scalar must be recomputed rather than believed.
+    """
+    _build_world(tmp_path)
+    _edit_json(tmp_path / SNAPSHOT_REL, lambda payload: payload.__setitem__("clause_inventory_identity", "0" * 64))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "clause_identity_mismatch"
+
+
+def test_a_capture_receipt_pointing_at_a_different_snapshot_is_refused(tmp_path: Path) -> None:
+    """The receipt and the snapshot are separate files that must name the same source.
+
+    A receipt left over from an earlier capture is internally perfect — its own identity
+    reseals, its raw pages are on disk — and would otherwise vouch for a snapshot it
+    never produced.
+    """
+    _build_world(tmp_path)
+    _edit_receipt(tmp_path, lambda receipt: receipt.__setitem__("source_snapshot_sha256", "0" * 64))
+
+    with pytest.raises(FreezeError) as excinfo:
+        _validate(tmp_path)
+
+    assert excinfo.value.code == "receipt_snapshot_mismatch"
+
+
+def test_an_issue_with_criteria_only_in_comments_and_an_empty_body_is_still_refused(tmp_path: Path) -> None:
+    """The per-issue clause floor is not enough on its own.
+
+    Here #514 has a real clause — it just lives in a comment — so the issue-level
+    `clause_count >= 1` floor passes. The body is where an issue's acceptance criteria
+    are stated, and an empty one that slipped through would leave the matrix binding to
+    a source unit that can never carry a criterion.
+    """
+    with pytest.raises(FreezeError) as excinfo:
+        _build_world(
+            tmp_path,
+            bodies={514: "", 515: "- x", 518: "- y"},
+            comments={514: [_comment("C_a", "- criterion stated in a comment instead")]},
+        )
+
+    assert excinfo.value.code == "empty_body_unit"
+    assert "514" in excinfo.value.detail
+
+
+def test_a_tilde_fenced_paste_does_not_mint_criteria_out_of_its_bullet_lines(tmp_path: Path) -> None:
+    """Pasted evidence is not acceptance criteria, and `~~~` is markdown's other fence.
+
+    A tilde fence carries none of the backtick fence's info-string restriction, so it
+    opens unconditionally. If it did not, the log lines below would each be normalized
+    into a clause and the crosswalk's per-clause floor would demand a disposition for
+    every line of somebody's pasted output.
+    """
+    fenced = "- a real criterion\n~~~\n- pasted log line\n- another pasted log line\n~~~"
+    _build_world(tmp_path, bodies={514: fenced, 515: "- x", 518: "- y"})
+
+    assert _validate(tmp_path)["ok"] is True
+    snapshot = json.loads((tmp_path / SNAPSHOT_REL).read_text(encoding="utf-8"))
+    body_unit = snapshot["clause_inventory"]["issues"][0]["source_units"][0]
+    excerpts = [clause["excerpt"] for clause in body_unit["clauses"]]
+    assert body_unit["source_unit_id"] == "514:body"
+    assert excerpts[0] == "- a real criterion"
+    assert excerpts[1].startswith("~~~")
+    assert "another pasted log line" in excerpts[1]
+    assert len(excerpts) == 2
+
+
+def _cli(monkeypatch, *args: str) -> int:
+    monkeypatch.setattr(sys, "argv", ["validate_issue_source_freeze.py", *args])
+    return main()
+
+
+def _cli_args(tmp_path: Path, command: str, *extra: str) -> list[str]:
+    return [command, "--repo-root", str(tmp_path), "--snapshot", SNAPSHOT_REL,
+            "--inspection", INSPECTION_REL, "--freeze-receipt", FREEZE_REL, *extra]
+
+
+def test_the_cli_validate_command_exits_zero_and_prints_the_bound_identities(tmp_path, monkeypatch, capsys) -> None:
+    """The CLI is what a gate actually invokes, so its exit code and its stdout payload
+    are the contract — not `run_validate`'s return value, which no gate can see."""
+    _build_world(tmp_path)
+
+    code = _cli(monkeypatch, *_cli_args(tmp_path, "validate", "--require-issues", "514", "515", "518"))
+
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert payload["ok"] is True
+    assert payload["issues"] == [514, 515, 518]
+    assert payload["snapshot_rederived_from_raw_responses"] is True
+
+
+def test_the_cli_renders_a_refusal_as_a_nonzero_exit_with_a_machine_readable_code(tmp_path, monkeypatch, capsys) -> None:
+    """A refusal that exits 0 is worse than no validator: every gate downstream reads
+    the exit code, and a tidy JSON body on stdout is invisible to all of them."""
+    _build_world(tmp_path)
+    (tmp_path / "owner.py").write_text("# owner changed after inspection\n", encoding="utf-8")
+
+    code = _cli(monkeypatch, *_cli_args(tmp_path, "validate", "--require-issues", "514", "515", "518"))
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert code == 1
+    assert payload["ok"] is False
+    assert payload["error"] == "stale_inspection"
+    assert payload["detail"].startswith("owner.py is now ")
+    assert "REFUSED (stale_inspection)" in captured.err
+
+
+def test_the_cli_defaults_cover_the_three_protected_issues_without_being_asked(tmp_path, monkeypatch, capsys) -> None:
+    """`--require-issues` defaults to the protected set on purpose.
+
+    If the default were empty, the ordinary invocation — the one a gate copies out of
+    the module docstring — would validate a freeze while requiring no issue at all, and
+    a snapshot missing #518 entirely would pass it.
+    """
+    _build_world(tmp_path, numbers=(514, 515))
+
+    code = _cli(monkeypatch, *_cli_args(tmp_path, "validate"))
+
+    assert code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["error"] == "missing_protected_issue"
+    assert "518" in payload["detail"]
+
+
+def test_each_cli_subcommand_dispatches_to_its_own_action(tmp_path: Path, monkeypatch, capsys) -> None:
+    """One dispatch table maps four command names to four different effects.
+
+    A table that routed two names to the same action would still exit 0 on both, so the
+    proof has to be each command's distinct observable effect: `stamp-inspection`
+    rewrites digests and writes nothing else, `freeze` writes the receipt and leaves the
+    crosswalk alone, `refreeze` also rebinds the crosswalk.
+    """
+    _build_world(tmp_path)
+    crosswalk_rel = "spec/crosswalk.json"
+    _write_json(tmp_path / crosswalk_rel, {"schema": "evidence-boundary-crosswalk/v1"})
+    (tmp_path / "owner.py").write_text("# the inspected owner changed\n", encoding="utf-8")
+    (tmp_path / FREEZE_REL).unlink()
+
+    assert _cli(monkeypatch, *_cli_args(tmp_path, "stamp-inspection")) == 0
+    stamped = json.loads(capsys.readouterr().out)
+    assert stamped["stamped"] == INSPECTION_REL
+    assert not (tmp_path / FREEZE_REL).exists(), "stamp-inspection must not write the freeze receipt"
+
+    assert _cli(monkeypatch, *_cli_args(tmp_path, "freeze", "--require-issues", "514", "515", "518")) == 0
+    frozen = json.loads(capsys.readouterr().out)
+    assert frozen["written"] == FREEZE_REL
+    assert (tmp_path / FREEZE_REL).is_file()
+    assert "source_identity" not in json.loads((tmp_path / crosswalk_rel).read_text(encoding="utf-8"))
+
+    args = _cli_args(tmp_path, "refreeze", "--require-issues", "514", "515", "518")
+    assert _cli(monkeypatch, *args, "--crosswalk", crosswalk_rel) == 0
+    refrozen = json.loads(capsys.readouterr().out)
+    assert refrozen["crosswalk_rebound"]["rebound"] is True
+    bound = json.loads((tmp_path / crosswalk_rel).read_text(encoding="utf-8"))["source_identity"]
+    assert bound["freeze_identity"] == refrozen["freeze_identity"]
+
+
+def test_the_script_entrypoint_propagates_the_refusal_exit_code(tmp_path: Path, monkeypatch) -> None:
+    """Run as `__main__`, not imported — the guard itself is the thing under test.
+
+    `raise SystemExit(main())` is one line, and dropping the `main()` result from it
+    (`main()` alone, or `raise SystemExit(0)`) makes every refusal in this module exit 0
+    while still printing a perfectly correct refusal body. No in-process call of `main()`
+    can catch that, so this drives the file the way a shell does.
+    """
+    _build_world(tmp_path)
+    (tmp_path / SNAPSHOT_REL).unlink()
+    monkeypatch.setattr(sys, "argv", ["validate_issue_source_freeze.py", *_cli_args(tmp_path, "validate")])
+
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(REPO_ROOT / "scripts" / "validate_issue_source_freeze.py"), run_name="__main__")
+
+    assert excinfo.value.code == 1

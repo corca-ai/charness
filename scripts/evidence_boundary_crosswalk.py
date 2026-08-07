@@ -234,14 +234,6 @@ def authorize_closeout(
         )
 
     distinct = {_key(target) for target in aggregate}
-    if len(distinct) != 1:
-        return _refusal(
-            "not_singleton",
-            "a protected target makes the WHOLE carrier subject to exact singleton equality; "
-            f"this carrier closes {sorted(f'{repo}#{number}' for repo, number in distinct)}. "
-            "Split protected references cannot be evidenced independently.",
-            target=None, **base,
-        )
     if not invoked:
         return _refusal(
             "missing_invoked_target",
@@ -249,11 +241,36 @@ def authorize_closeout(
             "content alone (this is what makes close-with-comment declare its target explicitly)",
             target=None, **base,
         )
-    if carrier and {_key(item) for item in invoked} != {_key(item) for item in carrier}:
+    # `target_disagreement` is checked BEFORE the singleton rule, and only for the case it
+    # actually names: BOTH sides declare exactly one target and those targets DIFFER.
+    #
+    # It used to sit after the singleton check, where it was unreachable -- by then
+    # `distinct` held one key and both operand sets were non-empty subsets of it, so they
+    # could never differ. A real disagreement (`--invoked 514 --carrier 518`) produced two
+    # keys and was reported as `not_singleton`: "this carrier closes two issues", when the
+    # actual problem is that the CLI and the body name DIFFERENT issues. Wrong remedy.
+    #
+    # The both-singleton guard is what keeps the split-carrier case where it belongs:
+    # invoked {514} with carrier {514, 999} is a carrier closing two issues, not a
+    # disagreement, and must stay `not_singleton`.
+    #
+    # Neither ordering can change an authorize-vs-refuse verdict -- both arms refuse. Only
+    # the refusal the operator is told changes, and the specific one is now reachable.
+    invoked_keys = {_key(item) for item in invoked}
+    carrier_keys = {_key(item) for item in carrier}
+    if len(invoked_keys) == 1 and len(carrier_keys) == 1 and invoked_keys != carrier_keys:
         return _refusal(
             "target_disagreement",
-            f"invoked target(s) {sorted(_key(item) for item in invoked)} disagree with carrier-derived "
-            f"target(s) {sorted(_key(item) for item in carrier)}",
+            f"invoked target(s) {sorted(invoked_keys)} disagree with carrier-derived "
+            f"target(s) {sorted(carrier_keys)}",
+            target=None, **base,
+        )
+    if len(distinct) != 1:
+        return _refusal(
+            "not_singleton",
+            "a protected target makes the WHOLE carrier subject to exact singleton equality; "
+            f"this carrier closes {sorted(f'{repo}#{number}' for repo, number in distinct)}. "
+            "Split protected references cannot be evidenced independently.",
             target=None, **base,
         )
 

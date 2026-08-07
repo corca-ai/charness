@@ -29,7 +29,6 @@ from scripts.closeout_refusal_lib import RefusalError
 from scripts.issue_source_normalize_lib import (
     build_clause_inventory,
     build_source_document,
-    canonical_json,
     clause_inventory_identity,
     sha256_payload,
     sha256_text,
@@ -280,10 +279,12 @@ def capture_issues(
         )
         for number in sorted(numbers)
     ]
-    returned = {issue["number"] for issue in captured}
-    missing = sorted(set(numbers) - returned)
-    if missing:
-        raise CaptureRefusal("missing_issue", f"requested but not captured: {missing}")
+    # No cross-check of `numbers` against the captured numbers here on purpose. The one
+    # that used to sit at this spot could not fail: `capture_issue(number=number)` always
+    # returns a dict carrying that same `number`, so the difference was always empty. It
+    # read as defence in depth and provided none. The real "requested issue did not come
+    # back" refusal lives inside `capture_issue`, which compares the BACKEND's answer to
+    # the requested number and is exercised by its own test.
     return captured
 
 
@@ -367,7 +368,3 @@ def _adapter_identity(adapter: dict[str, Any], capability: dict[str, Any]) -> di
         "command_template_declared": bool((backend.get("commands") or {}).get("source_capture")),
         "capability": dict(capability),
     }
-
-
-def snapshot_payload_text(snapshot: dict[str, Any]) -> str:
-    return canonical_json(snapshot)
