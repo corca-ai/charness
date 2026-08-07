@@ -197,7 +197,25 @@ granted and which shipped as v3.5.0.
 - `#549` (durable failure output is a habit built in one script) remains unbuilt
   and unmeasured. The predecessor's judgement stands: measure whether consumer
   hooks actually ignore the contract before building a floor.
-- `#550`, `#551`, `#552` were filed by the predecessor and are unclaimed here.
+- `#550`, `#552` were filed by the predecessor and are unclaimed here. `#551`
+  was ALSO filed by it and is now closed as a duplicate of `#547` — filed 2.5
+  hours earlier, same defect, same function. That is the cost of not recounting
+  the backlog before filing.
+- **`#530` is still OPEN and is the issue the predecessor actually spent its
+  whole run fixing.** Both halves shipped in v3.5.0 and neither commit referenced
+  it. It now carries a comment with the evidence. It is not closable yet: a
+  typo'd key resolves to a typed state, but nothing is armed to warn on it, so
+  the `valid: true, errors: []` symptom in its title is only half-answered.
+  Closing needs the operator's warn/refuse decision plus the resolution-critique
+  floor.
+- **The backlog was NOT recounted before this goal was shaped.** It was designed
+  from the predecessor's slice plan and lessons. A recount afterwards found 28
+  open issues, and at least three intersect this goal's subject: `#534` (the dup
+  ratchet re-blocks on already-classified families when a module split rotates
+  content-addressed ids — hit and worked around during the predecessor with
+  `--accept-rotation`), `#547`, and `#530` itself. Slice 1 must open by
+  recounting and deciding which of the 28 this goal actually claims, rather than
+  inheriting a two-issue scope that was never checked against the tracker.
 
 ## Final Verification
 
