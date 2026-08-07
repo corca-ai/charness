@@ -14,13 +14,30 @@ floor that reddens the whole corpus is a floor that gets disarmed rather than ob
 """
 from __future__ import annotations
 
+import importlib.util
 import sys
 
 from .support import ROOT
 
+# Loaded by its quoted PATH, like every sibling floor test. A bare
+# `import goal_artifact_backlog` after a `sys.path` insert works at runtime but is
+# invisible to `suggest_mutation_coverage_command`, whose reference mapper looks for the
+# quoted path, the dotted module, or the stem as a call argument. That is not cosmetic:
+# the changed-line mutation gate selects its focused pytest targets from that mapping, so
+# an unmappable import left this floor's own tests out of the selected set and its lines
+# reported as UNCOVERED while they were in fact exercised.
+_BACKLOG_PATH = ROOT / "skills/public/achieve/scripts/goal_artifact_backlog.py"
 sys.path.insert(0, str(ROOT / "skills/public/achieve/scripts"))
 
-import goal_artifact_backlog as backlog  # noqa: E402
+
+def _load(path, name):
+    spec = importlib.util.spec_from_file_location(name, path)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+backlog = _load(_BACKLOG_PATH, "goal_artifact_backlog")
 
 PRE_RULE = "Status: draft\nCreated: 2026-08-07\n\n## Goal\n\nsomething\n"
 IN_SCOPE = "Status: draft\nCreated: 2026-08-08\n\n## Goal\n\nsomething\n"
