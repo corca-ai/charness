@@ -9,22 +9,32 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 (`#530`, arm the WARN tier) — built, round-1 reviewed,
-  repaired at `f6ead5ea`; round-2 bounded review of the repairs in flight.
+- Current slice: Slice 1 (`#530`) is DONE through `ebc483dc` — armed, both bounded
+  review rounds run and their findings repaired, gates green. Slice 2 (`#554`) next.
 - Current slice intent: the WARN tier is ARMED for `unknown` only, across 37
-  adapters (18 repo-owned + 19 shipped examples). `reader-elsewhere` and
+  adapters (18 repo-owned + 19 shipped examples) plus the flattened
+  `skills/<id>/` layout the export produces. `reader-elsewhere` and
   `text-asserted` stay reported-but-unarmed on measured evidence.
-- Next action: disposition round-2 findings, then decide `#530`'s closability —
-  see the OPEN QUESTION below, which the slice measured and did not resolve.
-- OPEN QUESTION for `#530`: the gate now warns on the issue's exact
-  reproduction, but the RESOLVER (`skills/public/*/scripts/resolve_adapter.py`)
-  still returns `valid: true, errors: [], warnings: []` for a typo'd key — the
-  literal string in the issue title. Half (b) (unchecked `version`) IS fixed
-  (`version: 7` → `errors: ['version must be 1']`). Arming the resolver was
-  rejected on measured cost (3.1s reader scan × 16 resolvers, including the 16
-  the gate itself spawns). `#530` is therefore NOT claimed closed.
+- Next action: Slice 2 premise check (`#554`). Two facts already refute the
+  remedy as the Slice Plan names it — see the Slice 2 premise note below.
+- `#530` is NOT closed and no closeout is staged: the gate warns, the resolver
+  still does not. The full reasoning is one operator decision in the
+  `## Operator Decision Queue`; do not re-derive it here.
 - Tracker recount 2026-08-08 (post-activation): 28 open issues, not the 25 this
   goal was shaped against.
+- SLICE 2 PREMISE NOTE (recorded before shaping, per the Work Phase Map): the
+  Slice Plan says "reuse `handoff`'s backlog seam
+  (`parse_handoff_entries.py --with-issues`)". Two facts refute that as written.
+  (1) `parse_handoff_entries.py` is a handoff-ARTIFACT parser; the reusable piece
+  is `skills/public/handoff/scripts/chunked_routing_issue_source.py`
+  (`build_issue_entries`), and `achieve` shaping has no handoff artifact to
+  parse. (2) That seam is GATED behind the handoff adapter's optional
+  `issue_source:` block, so `achieve` importing it would make goal-shaping
+  recounts silently depend on handoff's configuration. Also
+  `skills/public/handoff/scripts/draft_goal_from_chunk.py:55` already imports
+  `achieve`'s `goal_artifact_lib`, so the naive direction creates a cycle. A
+  third option `#554` does not name — extracting the issue-listing seam to the
+  existing `skills/shared/scripts/` — avoids both. VERIFY BEFORE BUILDING.
 - Verification cadence: cheap deterministic checks at commit boundaries; bounded
   fresh-eye proof at slice boundaries; broad/live proof at closeout.
 - Gate cadence: `run_slice_closeout.py --skip-broad-pytest` per slice AND
@@ -137,7 +147,7 @@ Ordered by what unlocks the most and what is least likely to be refuted:
 
 | Slice | Objective | Issues | Why HERE in the sequence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Arm the WARN tier on unreconciled adapter keys; measure the fire rate first | #530 | The operator's decision is made; arming is what turns v3.5.0's seam into something an operator sees | planned |
+| 1 | Arm the WARN tier on unreconciled adapter keys; measure the fire rate first | #530 | The operator's decision is made; arming is what turns v3.5.0's seam into something an operator sees | done (`ebc483dc`) — armed for `unknown` only; `#530` NOT closed, see Decision Queue |
 | 2 | Make `achieve` recount the tracker, reusing `handoff`'s backlog seam rather than building a second reader | #554 | Early, because every later slice's scope is shaped by it; this goal is its first test | planned |
 | 3 | Reconcile every declared quality surface to a reader or a typed gap | #518 | Expressible only once a declaration resolves to a reader, and useful only once armed | planned |
 | 4 | Let a repo declare a sub-key ABSENT | #528 | Needs declared/defaulted/absent as three states | planned |
@@ -150,6 +160,21 @@ Ordered by what unlocks the most and what is least likely to be refuted:
 - Decision: RESOLVED 2026-08-08 — unreconciled adapter keys WARN (not refuse).
   Owner: operator. Recorded here because slices 1 and 3 both depend on it and a
   future reader will ask why the tier is what it is.
+- Decision: is the GATE the right surface for `#530`, or must the RESOLVER warn too?
+  Owner: operator.
+  Why deferred: slice 1 armed `scripts/validate_adapters.py`, which catches the
+  issue's exact reproduction and reaches an operator at commit time and in
+  `run-quality.sh`. But `#530`'s TITLE names the resolver payload, and
+  `skills/public/*/scripts/resolve_adapter.py` still returns
+  `valid: true, errors: [], warnings: []` for a typo'd key. Half (b) (unchecked
+  `version`) IS fixed and verified. Arming the resolver was rejected on measured
+  cost: a 3.1s reader scan on every resolver invocation, including the 16
+  subprocesses the gate itself spawns.
+  Unblock action: operator says whether the commit-time gate discharges `#530`,
+  or the resolver owes a `warnings` entry too.
+  Revisit trigger: any consumer report of a typo'd key surviving to runtime.
+  Until resolved, `#530` stays OPEN and no closeout is staged.
+
 - Decision: whether the prompt-surface cluster becomes its own goal.
   Owner: operator.
   Why deferred: explicitly out of scope here; it is a measurement question, not a
@@ -190,6 +215,20 @@ for an unattended overnight run.
 - Critique: Deferred to the build's round-1 bounded review; this entry is the premise phase only. Carried forward as a reviewer question: the `unknown` verdict's soundness rests on `find_readers`' quoted-literal match, whose stated limit is that ANY string constant equal to the key counts as a parse -- including one in a docstring or an emitted payload. That bias under-reports gaps, so it cannot manufacture a false warning, but it does mean an armed `unknown` will stay quiet for a typo that happens to collide with an unrelated string constant anywhere in `scripts/` or `skills/`. That is a non-claim to state, not a defect to fix here.
 - Off-goal findings:
 - Lessons carried forward: The premise check has now paid 4 for 4 across this goal family. This time it inverted a build decision twice over: it found the instrument's own docstring forbidding the arming (stale, repairable), and it turned the goal's explicitly-open warn-scope question into a measured answer rather than a judgment call. Reading the three suspicious readers cost minutes and converted 'reader-elsewhere is noisy residue, probably' into '13%, and one of them ships to consumers'.
+- Metrics:
+
+### Slice 2: Slice 1 complete — the WARN tier is armed (#530)
+
+- Objective: Arm the operator-visible WARN tier on unreconciled adapter keys, after measuring the fire rate, and carry it through the two bounded review rounds a verdict-logic change on a proof surface owes.
+- Why this approach: The operator's WARN decision was made; arming is the smallest change that turns v3.5.0's seam into something an operator sees. Ordered first because every later slice's value depends on the registry being consumed rather than merely correct.
+- Commits: b8453c02 (arm) -> f6ead5ea (round-1 repairs) -> ebc483dc (round-2 repairs). Base 58be4025.
+- What changed: scripts/adapter_key_registry.py (WARN_STATES, unreconciled_keys, three docstrings rewritten); scripts/validate_adapters.py (iter_warn_scope_adapters, report_unreconciled_keys, summary line, early-return condition); tests/quality_gates/test_adapter_key_warn_tier.py (new, 10 tests); tests/quality_gates/test_adapter_key_registry.py (stale count corrected); scripts/boundary-bypass-baseline.json (deliberate +1); docs/handoff.md; plugins/ mirror synced.
+- Alternatives rejected: REJECTED -- arming each skill's `resolve_adapter.py`, the surface where an operator literally reads `valid: true, errors: []`. It is the truer symptom surface but costs a 3.1s reader scan on every resolver invocation, including the 16 subprocesses the gate itself spawns. This is the reason #530 is NOT claimed closed; see Off-goal. REJECTED -- arming `reader-elsewhere`: measured 13% false-positive rate (3 of 23 are association residue where the reader genuinely reads the file through dynamic dispatch), one of them inside a SHIPPED example, so arming it would greet every new consumer with a wrong warning. REJECTED -- widening `associated_modules` to absorb that residue: forbidden by this goal's Non-Goals and the mechanism by which #553 happened. REJECTED -- arming a REFUSAL: the operator chose WARN and D46 forbids escalating from a repo-local zero.
+- Targeted verification: ARMED SURFACE: `python3 scripts/validate_adapters.py --repo-root .` prints `Validated 16 adapter resolvers and 18 adapter YAML file(s); 0 unreconciled declared key(s) across 37 declaring file(s).` and exits 0. FIRE RATE (the Boundaries' precondition, measured BEFORE arming and re-pinned after): 37 adapters / 445 declared keys; `unknown` 0 REPO-WIDE and 0 ACROSS SHIPPED EXAMPLES (18 repo-owned/227 keys, 19 shipped examples/218 keys). ACCEPTANCE: the warned input is CONSTRUCTED, not observed -- `unknown` fires zero times here, so a green suite proves nothing; three subprocess tests drive the real CLI over constructed trees (a typo in `.agents/`, a typo in a `skills/public/` shipped example, and a typo in the FLATTENED `skills/<id>/` installed layout). REGRESSION FIXTURE: `setup-adapter.yaml`'s four multi-reader keys warn about nothing, asserted at the arming layer rather than trusting the resolver. MUTATION: 14 mutants across three rounds, 13 killed. Survivors were dispositioned rather than tolerated -- two were unreachable branches DELETED (a `relative_to` fallback and an `isinstance(key, str)` guard, both provably unreachable), one was killed by asserting the warning's REASON text, one by proving the call site rather than the helper, one by naming both example families separately. M14 (require_git not threaded) SURVIVES and is disclosed: `iter_matching_repo_files` already applies the git listing whenever the repo is a git repo, so the flag only changes strictness when git is unavailable. GATES: `run_slice_closeout.py --skip-broad-pytest` completed at every commit; `./scripts/run-quality.sh --read-only` 85 passed / 0 failed at both slice boundaries; changed-line mutation coverage clean (analyzed 2, blocking []) -- it first refused a verdict on a dirty worktree, which is the gate behaving correctly. 42 tests green.
+- Test duplication pressure: `check_dup_ratchet.py --repo-root . --summary`: OK, no new fixable-eligible families; fixable_ceiling=0 <= floor_F=0. Advisory nose families 1-5 are pre-existing resolver/portability boilerplate, unchanged by this slice.
+- Critique: TWO ROUNDS, as the contract requires for verdict logic on a proof surface, and round 2 earned its cost again. ROUND 1 (2 blockers): (a) the gate armed `iter_adapter_yaml`'s 18 `.agents/` files while reporting the 37-adapter measurement's zero -- a check claiming a scope it never read, reproduced before repair as a typo in a shipped example passing with `0 unreconciled` and 40 green tests; (b) three live claims still said `no tier is armed`, in `find_readers`, in `survey`'s docstring (which misread D46 as forbidding what shipped -- D46 forbids escalating a REFUSAL), and in `docs/handoff.md`, the surface a next session reads first. Plus a MODERATE: the module docstring justified arming with (FILE, KEY) scoping while the armed path is deliberately KEY-scoped, sound only because `unknown` is scope-invariant. ROUND 2, reading the repairs (2 moderates): (a) the warn scope listed through a bare `root.glob`, silently abandoning the `git ls-files` filter every other listing in the validator uses, so `--require-git-file-listing` no longer governed the whole command -- a SECOND, undisclosed scope difference riding inside the fix for the first; (b) the widening never reached the flattened `skills/<id>/` layout the export produces, so it found zero shipped examples in exactly the layout consumers receive. It also caught the scope test being too loose to notice a deleted glob family (`>= 15` against 16+3) and two stale prose counts, one of which disagreed with the 23 that is the sole justification for not arming `reader-elsewhere`. Round 2 has now caught real defects in every measured slice that ran it.
+- Off-goal findings: #530 is NOT claimed closed and no closeout was staged. The gate now warns on the issue's exact reproduction and half (b) (unchecked `version`) is genuinely fixed (`version: 7` -> `errors: ['version must be 1']`, verified at the resolver). But the issue's TITLE names the resolver payload, and `resolve_adapter.py` still returns `valid: true, errors: [], warnings: []` for a typo'd key. Whether the gate is the right surface for that symptom is an operator decision, recorded in the Operator Decision Queue rather than resolved by fiat.
+- Lessons carried forward: PROCESS ERROR to carry forward: for round 2 the reviewer-boundary window was verified AFTER committing the repairs, not before starting them. The contract says the window closes before the parent repairs. The verdict was recoverable -- `--parent-head-moved` resolved it to `parent-attributed` with zero reviewer-attributable drift -- but the ordering discipline slipped and a real reviewer-side write would have been indistinguishable from my own commit at that point. Round 1 was done correctly; the difference was momentum. SUBSTANTIVE: a mutation that survives at the CALL SITE while every test passes is the signature of tests proving a helper rather than the wiring, and it is the same defect as a check claiming a scope it never read, one level up. Both appeared in this slice, and the second appeared inside the fix for the first.
 - Metrics:
 
 ## Context Sources
