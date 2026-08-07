@@ -9,24 +9,31 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 of 9 — `#552`, a checker requiring a token its renderer never
-  emits. THREE delegated reviews complete (slice round 1, slice round 2, and the
-  closeout resolution critique), all repairs committed, behavioural verdict taken
-  from a detached worktree at `fe1546ed`. Remaining: post the closeout and close
-  `#552`.
-- Current slice intent: make the routing block `charness setup` writes readable
-  as charness-managed, so the two AGENTS.md policy checks gated behind
-  `charness_managed` can fire at all. Spans `37886090` (build + round-1 repairs),
-  `6d0b308e` (round-2 repairs), `fe1546ed` (resolution-critique repairs), and the
-  closeout commit. This intent is unchanged since activation, so critique and
-  broad proof do not re-fire within it (meaningful-slice-cadence).
-- Next action: post the closeout and close `#552` (`validate-closeout-draft`
-  reports `draft_verified`, then `verify-closeout --expect-state CLOSED`), then
-  premise-check `#548` before shaping slice 2.
-- Carried into slice 2: the round-2 lesson is that a verdict-logic repair can
-  reintroduce its own class through the SHAPE of its matcher, not its tokens —
-  the one-sentence rule made punctuation load-bearing. For `#548`, expect the
-  same trap in whatever mechanism replaces `write_artifact_path`'s two meanings.
+- Current slice: 2 of 9 COMPLETE. `#552` and `#548` are both CLOSED and verified
+  through the adapter (`status: verified`, `state: CLOSED`). Slice 3 (`#555`, one
+  tracker backend one owner) is next and has NOT been premise-checked yet.
+- Current slice intent: none in progress. The last completed intent was `#548` —
+  give the current-pointer rule one owner and make a payload say what writing
+  destroys — spanning `acdcc5a8`, `58b5a66c`, `4fbd24a5`.
+- Next action: premise-check `#555` and record the verdict in the Slice Log BEFORE
+  any build, per this goal's User Acceptance. Two premise checks in two slices have
+  now changed the remedy, so this is not a formality.
+- Grouping premise CONFIRMED, which the plan critique flagged as the goal's main
+  open risk. Slices 1 and 2 shared their mechanism closely: both were one-rule
+  many-owners with reader/writer drift, both had the repair carry the class it
+  fixed, and both needed the guard's own POPULATION corrected. The goal is not
+  re-cut; the class grouping is paying for itself.
+- Cost measured, for scoping the remainder: each slice ran three delegated bounded
+  reviews (two slice rounds plus the closeout resolution critique), and EVERY round
+  found a real defect the previous could not see — including, twice, a defect
+  inside the repair. Budget three reviews plus three to four commits per slice; do
+  not assume later slices are cheaper because the mechanism is now familiar.
+- Carried into slice 3: (a) a guard's population is a verdict surface — when a
+  check claims `every X`, ask `selected how`, because three successive versions of
+  one sweep were wrong about which producers exist; (b) fix staleness at the
+  recompute, never by lengthening a copy list; (c) the duplicate-ratchet gate found
+  two of six owners in slice 2 and hard-blocked three times, all correct — run it
+  early rather than at the commit-message boundary.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
