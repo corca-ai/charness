@@ -9,36 +9,34 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 of 9 COMPLETE. `#552` and `#548` are both CLOSED and verified
-  through the adapter (`status: verified`, `state: CLOSED`). Slice 3 (`#555`, one
-  tracker backend one owner) is next and has NOT been premise-checked yet.
-- Current slice intent: none in progress. The last completed intent was `#548` —
-  give the current-pointer rule one owner and make a payload say what writing
-  destroys — spanning `acdcc5a8`, `58b5a66c`, `4fbd24a5`.
-- Next action: BUILD slice 3 (`#555`). Its premise check is recorded in the Slice
-  Log and it refuted the issue's suggested remedy: consolidate the MECHANICAL part
-  of backend resolution (built-in `gh` default, binary resolution, template lookup,
-  placeholder substitution) into one owner, and leave the missing-template POLICY
-  to each caller — `issue` raises a configuration error, `handoff` must return
-  UNKNOWN because `chunked_routing_staleness.py` consumes it and a guess there
-  manufactures a stale verdict. Do NOT route `handoff` through
-  `issue_runtime.newest_open_issue`.
-- Grouping premise CONFIRMED, which the plan critique flagged as the goal's main
-  open risk. Slices 1 and 2 shared their mechanism closely: both were one-rule
-  many-owners with reader/writer drift, both had the repair carry the class it
-  fixed, and both needed the guard's own POPULATION corrected. The goal is not
-  re-cut; the class grouping is paying for itself.
-- Cost measured, for scoping the remainder: each slice ran three delegated bounded
-  reviews (two slice rounds plus the closeout resolution critique), and EVERY round
-  found a real defect the previous could not see — including, twice, a defect
-  inside the repair. Budget three reviews plus three to four commits per slice; do
-  not assume later slices are cheaper because the mechanism is now familiar.
-- Carried into slice 3: (a) a guard's population is a verdict surface — when a
-  check claims `every X`, ask `selected how`, because three successive versions of
-  one sweep were wrong about which producers exist; (b) fix staleness at the
-  recompute, never by lengthening a copy list; (c) the duplicate-ratchet gate found
-  two of six owners in slice 2 and hard-blocked three times, all correct — run it
-  early rather than at the commit-message boundary.
+- Current slice: 3 of 9 COMPLETE. `#552`, `#548`, and `#555` are all CLOSED and
+  verified through the adapter. Slice 4 (`#537`, a bundle-preflight refusal that
+  reports itself) is next and has NOT been premise-checked.
+- Current slice intent: none in progress. The last completed intent was `#555` —
+  one owner for tracker backend resolution, keeping both callers' opposite refusal
+  contracts — spanning `53d4b33d`, `bd47ab96`, `f781ec2b`.
+- Next action: premise-check `#537` and record the verdict in the Slice Log BEFORE
+  any build. THREE premise checks have now each changed the build, so this is the
+  highest-leverage step in the slice, not a formality.
+- Grouping premise CONFIRMED and now measured three times. All three slices were
+  one-rule-many-owners with reader/writer or caller/caller drift; all three shipped
+  a repair carrying the class it fixed; and in all three the last thing needing
+  repair was a GUARD — its population, its tells, or its counts — rather than the
+  code it guarded.
+- Issues filed while working, not planned: `#556` (a policy check reachable only
+  for a directory named `charness`), `#557` (a fourth backend-rule copy whose
+  default is not a template), `#558` (`{repo}` is the unclosed half of an issue's
+  identity), `#559` (a fifth backend-rule copy over the release key, already
+  drifted). Each was found by a delegated review or a gate, not by planning.
+- Carried into slice 4: (a) a guard is only as good as what it matches ON, not just
+  what it scans — anchor tells on the verdict-bearing step, and never on a
+  condition that correct callers also use; (b) `runpy.run_path` returns a COPY of
+  module globals, so patches into it silently do nothing and tests pass for the
+  wrong reason — load a real module object when a test must patch; (c) state a
+  ledger's population and its removals as SEPARATE numbers, because counting the
+  owner among the consolidated things has been the blocking finding in all three
+  closeouts; (d) a `-k` filtered run is not the suite — the read-only gate caught a
+  break in slice 3 that a filtered run missed.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
