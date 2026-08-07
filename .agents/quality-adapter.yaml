@@ -134,7 +134,8 @@ runtime_budgets:
   # generalized to an unmeasured machine — loose on purpose, for the same
   # fail-open-not-block reason as the aarch64 block below.
   check-markdown: 17000
-  check-secrets: 16500
+  # Tracks the x86_64 profile's 2026-08-07 relevel (measured max 17669ms there).
+  check-secrets: 19500
   run-evals: 6500
   specdown: 10500
 runtime_budget_profiles:
@@ -389,8 +390,23 @@ runtime_budget_profiles:
       doc-duplicates: 11500
       # (contended) was 8000; post-change max 12098
       check-markdown: 17000
-      # (contended) was 6000; post-change max 11639
-      check-secrets: 16500
+      # (contended) was 6000; post-change max 11639. 2026-08-07 relevel to 19500:
+      # measured max 17669ms had grown past the 16500 bar.
+      #
+      # This profile's convention is 1.4x the contended max rounded to 500ms (header
+      # above; `runtime_budget_sizing_lib.SLACK_SUGGESTION_HEADROOM = 1.4`), which would
+      # give 25000. 19500 is deliberately TIGHTER -- 1.10x, the tightest ratio any current
+      # sibling exhibits -- because the escape margin a bar buys is real and this one is
+      # being raised to unblock a push, which is exactly when it should be raised least.
+      # The smallest merely-passing value was ~16700 and would have re-blocked on the next
+      # contended sample.
+      #
+      # What this is NOT: a slowdown in the check. Standalone it runs 7.6s (gitleaks
+      # reports ~7.1s scanning 56.48 MB), i.e. 46% of the OLD bar. Every recorded sample
+      # comes from the check running concurrently with ~85 sibling gates, so no
+      # uncontended sample can exist for it, and the bar necessarily encodes contention
+      # rather than the check's own cost. See #543.
+      check-secrets: 19500
       # (contended) was 2000; post-change max 2089
       run-evals: 3000
       # (contended) was 5000; post-change max 6269

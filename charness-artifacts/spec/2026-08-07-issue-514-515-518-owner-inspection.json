@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "d62d8937507fb3e0ceecddbb163c0d23e424abf71e0d0d206858d3757f893c6f",
+  "inspection_identity": "6a2fae4811b2e23b2d9d3ae77b2723d99240041c33bfce54e8b36e32119a9faa",
   "issues": [
     514,
     515,
@@ -11,7 +11,7 @@
       "note": "Declares preset_id/preset_lineage (python-quality <- specdown-quality), gate_design_review_globs, product_surfaces, and adapter_review_sources. This is the declaration half of #518's declaration-to-verdict boundary: the file names surfaces without any structure binding each one to an executable reader.",
       "path": ".agents/quality-adapter.yaml",
       "role": "quality-declaration-surface",
-      "sha256": "1f4552536f228b5b42cad21f5d5681a923925cf6c422363ae38520b8010ffc0c"
+      "sha256": "4462a98789e14afd392dceedba4d684df0aeec15aac2d72e873344157f0f6c74"
     },
     {
       "issue": 518,
