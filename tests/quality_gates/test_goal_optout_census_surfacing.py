@@ -24,6 +24,8 @@ _spec = importlib.util.spec_from_file_location("_coordination_floor_fixtures", _
 _fixtures = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(_fixtures)
 
+cga = _fixtures.cga
+desc = _fixtures._load("describe_goal_closeout_shape")
 _URL_SOURCE = _fixtures._URL_SOURCE
 _SCRIPTS = _fixtures._SCRIPTS
 _full_goal = _fixtures._full_goal
@@ -115,3 +117,42 @@ def test_describe_shape_renders_the_census_count_not_just_a_title(tmp_path: Path
     rendered = proc.stdout
     assert "opt-out census" in rendered
     assert "declined: gather" in rendered  # the COUNT survives rendering
+
+
+# --- in-process coverage of the two surfaces the subprocess tests cannot reach
+# The CLI tests above prove behavior end to end, but they run the scripts in a
+# CHILD process, so the parent's coverage never sees those lines and the
+# changed-line mutation gate reads them as untested. These drive the same two
+# code paths in-process.
+
+
+def _complete_goal(tmp_path: Path, created: str = "2026-05-31") -> Path:
+    _seed_other_evidence(tmp_path, created)
+    text = _full_goal(created=created, context_sources=_URL_SOURCE, coordination=_COORDINATION)
+    path = gal.goal_path(tmp_path, created, "goal")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(text.replace("Status: active", "Status: complete"), encoding="utf-8")
+    return path
+
+
+def test_check_goal_artifact_main_emits_the_advisory_in_process(tmp_path, capsys, monkeypatch) -> None:
+    path = _complete_goal(tmp_path)
+    monkeypatch.setattr(
+        sys, "argv",
+        ["check_goal_artifact.py", "--repo-root", str(tmp_path), "--goal-path", str(path)],
+    )
+    cga.main()
+    payload = json.loads(capsys.readouterr().out)
+    assert any("coordination opt-out census" in a for a in payload["advisories"])
+
+
+def test_described_shape_carries_the_declined_obligations_in_process(tmp_path) -> None:
+    path = _complete_goal(tmp_path)
+    report = desc.goal_conditional_shape(tmp_path, path.read_text(encoding="utf-8"))
+    census = [r for r in report["triggered"] if r["floor"] == "coordination_optout_aggregate"]
+    assert len(census) == 1
+    assert "declined: gather" in census[0]["label"]
+    # and it survives RENDERING -- the renderer prints bare `label` for satisfied
+    # rows, so a detail-carried census would be discarded here
+    rendered = desc.render_goal_conditional(report, "goal.md")
+    assert "declined: gather" in rendered
