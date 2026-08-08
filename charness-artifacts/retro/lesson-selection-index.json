@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 461,
-  "candidate_count": 1896,
+  "source_artifact_count": 462,
+  "candidate_count": 1897,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -1550,722 +1550,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:7733bbed69a8",
-      "kind": "current_focus",
-      "lesson": "One goal, three slices, three commits, three issues repaired (#494, #493, #492).",
-      "normalized_key": "one goal three slices three commits three issues repaired 494 493 492",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One goal, three slices, three commits, three issues repaired (#494, #493, #492)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:fedbf18f7161",
-      "kind": "current_focus",
-      "lesson": "Reviews the pre-0 bootstrap slice of the unified goal covering issues 514, 515, and 518 (commit `8bc8e0e4`).",
-      "normalized_key": "reviews the pre 0 bootstrap slice of the unified goal covering issues 514 515",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "Reviews the pre-0 bootstrap slice of the unified goal covering issues 514, 515, and 518 (commit `8bc8e0e4`)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:8676cd95b4af",
-      "kind": "current_focus",
-      "lesson": "This retro reviews the #517 semantic-quality repair and the #516 mutation-regression diagnosis, portability repair, and closeout.",
-      "normalized_key": "this retro reviews the 517 semantic quality repair and the 516 mutation regression diagnosis",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retro reviews the #517 semantic-quality repair and the #516 mutation-regression diagnosis, portability repair, and closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5490f6ff4b81",
-      "kind": "next_improvement",
-      "lesson": "begin the next session with a read-only identity/state scan, then write a two-column triage lock (`historical fact` / `current behavior to prove`) before any broad gate or issue action.",
-      "normalized_key": "begin the next session with a read only identity state scan then write a",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "begin the next session with a read-only identity/state scan, then write a two-column triage lock (`historical fact` / `current behavior to prove`) before any broad gate or issue action."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:e973ce595fc2",
-      "kind": "next_improvement",
-      "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`).",
-      "normalized_key": "capability applied issue 534 filed https github com corca ai charness issues 534 structural",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`)."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b7c298e53537",
-      "kind": "next_improvement",
-      "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`.",
-      "normalized_key": "capability applied issue 535 filed https github com corca ai charness issues 535 carrying",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:f723f7a011bf",
-      "kind": "next_improvement",
-      "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair.",
-      "normalized_key": "capability applied scripts validate issue source freeze py refreeze stamp inspection freeze crosswalk source",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:dffc38f2679b",
-      "kind": "next_improvement",
-      "lesson": "freeze goal/spec/critique packet inputs before broad verification; any later mutation invalidates packet identity and review scope rather than producing a bookkeeping-only repair.",
-      "normalized_key": "freeze goal spec critique packet inputs before broad verification any later mutation invalidates packet",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "freeze goal/spec/critique packet inputs before broad verification; any later mutation invalidates packet identity and review scope rather than producing a bookkeeping-only repair."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b975e32c342a",
-      "kind": "next_improvement",
-      "lesson": "make a cheap dry-run evidence-boundary preflight report aggregate authoring-path, containment, target-vs-ambient, and producer-coverage gaps before sync or remote execution; keep the existing gates and floors.",
-      "normalized_key": "make a cheap dry run evidence boundary preflight report aggregate authoring path containment target",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "make a cheap dry-run evidence-boundary preflight report aggregate authoring-path, containment, target-vs-ambient, and producer-coverage gaps before sync or remote execution; keep the existing gates and floors."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:529cfef1b4ad",
-      "kind": "next_improvement",
-      "lesson": "**memory (claim discipline)** — Two docstrings in this slice overstated their guarantees (freeze \"unforgeability\"; clause-digest rewrap tolerance) and were corrected only because a reviewer read them adversarially. For proof surfaces, the docstring is part of the verdict logic and deserves the same review as the code.",
-      "normalized_key": "memory claim discipline two docstrings in this slice overstated their guarantees freeze unforgeability clause",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory (claim discipline)** — Two docstrings in this slice overstated their guarantees (freeze \"unforgeability\"; clause-digest rewrap tolerance) and were corrected only because a reviewer read them adversarially. For proof surfaces, the docstring is part of the verdict logic and deserves the same review as the code."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:68bab981ba4c",
-      "kind": "next_improvement",
-      "lesson": "**memory** — This artifact, plus the digest refresh, so the `release-proof-identity-churn` class carries its *second* instance and the \"new identity surface needs a re-bind command\" rule is inherited rather than rediscovered.",
-      "normalized_key": "memory this artifact plus the digest refresh so the release proof identity churn class",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory** — This artifact, plus the digest refresh, so the `release-proof-identity-churn` class carries its *second* instance and the \"new identity surface needs a re-bind command\" rule is inherited rather than rediscovered."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:2fc105fca7ec",
-      "kind": "next_improvement",
-      "lesson": "treat `31118030353` as external `Service Unavailable` until a later independent run proves otherwise; never use it as current-head quality proof.",
-      "normalized_key": "treat 31118030353 as external service unavailable until a later independent run proves otherwise never",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "treat `31118030353` as external `Service Unavailable` until a later independent run proves otherwise; never use it as current-head quality proof."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:74a451dc283f",
-      "kind": "next_improvement",
-      "lesson": "update handoff around the first next action and explicit non-claims, with #515 as the next bug boundary and #514 as deferred unless a concrete second consumer appears.",
-      "normalized_key": "update handoff around the first next action and explicit non claims with 515 as",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "update handoff around the first next action and explicit non-claims, with #515 as the next bug boundary and #514 as deferred unless a concrete second consumer appears."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:04d467f85608",
-      "kind": "next_improvement",
-      "lesson": "**workflow** — Never start a broad verification run while artifacts are still being re-bound. Freeze first, then verify. This is a re-statement of a lesson already in the digest, which is why it belongs as a workflow change and not just a note.",
-      "normalized_key": "workflow never start a broad verification run while artifacts are still being re bound",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — Never start a broad verification run while artifacts are still being re-bound. Freeze first, then verify. This is a re-statement of a lesson already in the digest, which is why it belongs as a workflow change and not just a note."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:1cc814fbed8b",
-      "kind": "next_improvement",
-      "lesson": "**workflow** — Run `check_python_lengths.py --repo-root . --headroom --paths <files>` before adding more than ~30 lines to an existing gated file, not after verification refuses. Three forced splits this session; the tool exists for exactly this call.",
-      "normalized_key": "workflow run check python lengths py repo root headroom paths files before adding more",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — Run `check_python_lengths.py --repo-root . --headroom --paths <files>` before adding more than ~30 lines to an existing gated file, not after verification refuses. Three forced splits this session; the tool exists for exactly this call."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:19d7e4f3608f",
-      "kind": "next_improvement",
-      "lesson": "**workflow** — Run the commit-msg hook against the draft message file before `git commit` when the message references protected issue numbers.",
-      "normalized_key": "workflow run the commit msg hook against the draft message file before git commit",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
-          "date": "2026-08-07",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**workflow** — Run the commit-msg hook against the draft message file before `git commit` when the message references protected issue numbers."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f57ea23fa8c1",
-      "kind": "repeat_trap",
-      "lesson": "**A doc correction shipped FALSE.** Slice B's repair of a wrong claim about `mutation_testing` asserted a new wrong claim (that every blank sub-key errors; a blank nested BLOCK header does not). Caught by round 2. The repair was to pin it with a test, not to word it more carefully.",
-      "normalized_key": "a doc correction shipped false slice b s repair of a wrong claim about",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A doc correction shipped FALSE.** Slice B's repair of a wrong claim about `mutation_testing` asserted a new wrong claim (that every blank sub-key errors; a blank nested BLOCK header does not). Caught by round 2. The repair was to pin it with a test, not to word it more carefully."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:a4462ca4f487",
-      "kind": "repeat_trap",
-      "lesson": "**A false-positive control varied the wrong axis.** Slice B's control used DEFAULT values, so `merged == default` masked the mis-naming bug; the broad suite found it. A control is only a control against the inputs it varies, and mine varied presence without varying value. (ONE measured instance — an earlier draft said \"every\" and \"twice\" and could name only this one.)",
-      "normalized_key": "a false positive control varied the wrong axis slice b s control used default",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A false-positive control varied the wrong axis.** Slice B's control used DEFAULT values, so `merged == default` masked the mis-naming bug; the broad suite found it. A control is only a control against the inputs it varies, and mine varied presence without varying value. (ONE measured instance — an earlier draft said \"every\" and \"twice\" and could name only this one.)"
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:2ce7ef4aaa87",
-      "kind": "repeat_trap",
-      "lesson": "**A guard went to the wrong boundary FIVE times, across three surfaces.** Slice A attached shape checks to the TRANSPORT (`--fields-file`) when the property belonged to the VALUE, so the documented-safe argv channel walked past them. Slice B guarded a TYPE (`isinstance(x, dict)`) when `{}` is a dict, then an EQUALITY (`merged != default`) which mis-named a fully-specified block. Slice C's shape fallback was wrong TWICE in opposite directions: it broke on a cycle MARKER (too narrow), then unless the error was a wrong-shape SPELLING (too wide). That is 1 + 2 + 2 = five, not four; an earlier draft compressed C's two into one and then reported four — the same assert-without-counting class this section is about. Every one cost a review round or a broad run. The common shape: each cut asked about the form the failure happened to take rather than about what the guard was for.",
-      "normalized_key": "a guard went to the wrong boundary five times across three surfaces slice a",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**A guard went to the wrong boundary FIVE times, across three surfaces.** Slice A attached shape checks to the TRANSPORT (`--fields-file`) when the property belonged to the VALUE, so the documented-safe argv channel walked past them. Slice B guarded a TYPE (`isinstance(x, dict)`) when `{}` is a dict, then an EQUALITY (`merged != default`) which mis-named a fully-specified block. Slice C's shape fallback was wrong TWICE in opposite directions: it broke on a cycle MARKER (too narrow), then unless the error was a wrong-shape SPELLING (too wide). That is 1 + 2 + 2 = five, not four; an earlier draft compressed C's two into one and then reported four — the same assert-without-counting class this section is about. Every one cost a review round or a broad run. The common shape: each cut asked about the form the failure happened to take rather than about what the guard was for."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:5688e007cb6d",
-      "kind": "repeat_trap",
-      "lesson": "Broad closeout work discovered authoring and readback problems later than the cheapest dry-run boundary. This is the unresolved operator-memory problem described by #514, not a reason to weaken the closeout floor.",
-      "normalized_key": "broad closeout work discovered authoring and readback problems later than the cheapest dry run",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Broad closeout work discovered authoring and readback problems later than the cheapest dry-run boundary. This is the unresolved operator-memory problem described by #514, not a reason to weaken the closeout floor."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:b4c42fc3c4e0",
-      "kind": "repeat_trap",
-      "lesson": "Consumer-root portability was discovered only in remote verification: a locally valid absolute packet path was invalid under the runner checkout. The validator correctly refused; the producer-side artifact should have prevented the value earlier.",
-      "normalized_key": "consumer root portability was discovered only in remote verification a locally valid absolute packet",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Consumer-root portability was discovered only in remote verification: a locally valid absolute packet path was invalid under the runner checkout. The validator correctly refused; the producer-side artifact should have prevented the value earlier."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c09044e82610",
-      "kind": "repeat_trap",
-      "lesson": "Historical and current observations were initially close enough to be conflated: a later local green could have been mistaken for proof that the old SHA was healthy. The #516 debug/critique records corrected this by separating historical fact, present failure, and distinct current proof.",
-      "normalized_key": "historical and current observations were initially close enough to be conflated a later local",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Historical and current observations were initially close enough to be conflated: a later local green could have been mistaken for proof that the old SHA was healthy. The #516 debug/critique records corrected this by separating historical fact, present failure, and distinct current proof."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:0b9695a1351c",
-      "kind": "repeat_trap",
-      "lesson": "Not waste, and worth separating: broad-suite wall time was 623.8s / 625.7s / 623.4s across three runs (source: the `pytest` summary lines). It was the only observer that caught two real defects. It earned its cost twice.",
-      "normalized_key": "not waste and worth separating broad suite wall time was 623 8s 625 7s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Not waste, and worth separating: broad-suite wall time was 623.8s / 625.7s / 623.4s across three runs (source: the `pytest` summary lines). It was the only observer that caught two real defects. It earned its cost twice."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d6ea477ec1af",
-      "kind": "repeat_trap",
-      "lesson": "**Slice 1's `Metrics:` field was left blank** while slices 2 and 3 each recorded an explicit \"host log exposes no per-slice totals; not claimed\". A blank field is not a recorded non-claim.",
-      "normalized_key": "slice 1 s metrics field was left blank while slices 2 and 3 each",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Slice 1's `Metrics:` field was left blank** while slices 2 and 3 each recorded an explicit \"host log exposes no per-slice totals; not claimed\". A blank field is not a recorded non-claim."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c5edb71ac90d",
-      "kind": "repeat_trap",
-      "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against.",
-      "normalized_key": "slice a was committed with its broad run recorded as pending and the number",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4461ac975eea",
-      "kind": "repeat_trap",
-      "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of.",
-      "normalized_key": "the enumeration in slice c was wrong three times repo root shims imported by",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:0e44dd0ea8aa",
-      "kind": "repeat_trap",
-      "lesson": "The latest remote failure consumed a full setup wait without producing code evidence. It is not actionable as a code fix until the service failure repeats or a repository-owned retry/readback contract is shown to be missing.",
-      "normalized_key": "the latest remote failure consumed a full setup wait without producing code evidence it",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
-          "date": "2026-08-07",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The latest remote failure consumed a full setup wait without producing code evidence. It is not actionable as a code fix until the service failure repeats or a repository-owned retry/readback contract is shown to be missing."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 132,
+      "source_count": 133,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-v3-5-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3322,6 +2620,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3331,15 +2637,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 12,
+      "source_count": 13,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-v3-5-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3432,6 +2738,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-07-v3-5-0-release-auto-retro.md",
           "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+          "date": "2026-08-08",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -3445,15 +2759,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 12,
+      "source_count": 13,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-07-v3-5-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-07",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -3550,6 +2864,742 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7d84a89efd46",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v4.0.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v4 0 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-v4-0-0-release-auto-retro.md",
+          "date": "2026-08-08",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v4.0.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:7733bbed69a8",
+      "kind": "current_focus",
+      "lesson": "One goal, three slices, three commits, three issues repaired (#494, #493, #492).",
+      "normalized_key": "one goal three slices three commits three issues repaired 494 493 492",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "One goal, three slices, three commits, three issues repaired (#494, #493, #492)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:fedbf18f7161",
+      "kind": "current_focus",
+      "lesson": "Reviews the pre-0 bootstrap slice of the unified goal covering issues 514, 515, and 518 (commit `8bc8e0e4`).",
+      "normalized_key": "reviews the pre 0 bootstrap slice of the unified goal covering issues 514 515",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Reviews the pre-0 bootstrap slice of the unified goal covering issues 514, 515, and 518 (commit `8bc8e0e4`)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:8676cd95b4af",
+      "kind": "current_focus",
+      "lesson": "This retro reviews the #517 semantic-quality repair and the #516 mutation-regression diagnosis, portability repair, and closeout.",
+      "normalized_key": "this retro reviews the 517 semantic quality repair and the 516 mutation regression diagnosis",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retro reviews the #517 semantic-quality repair and the #516 mutation-regression diagnosis, portability repair, and closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5490f6ff4b81",
+      "kind": "next_improvement",
+      "lesson": "begin the next session with a read-only identity/state scan, then write a two-column triage lock (`historical fact` / `current behavior to prove`) before any broad gate or issue action.",
+      "normalized_key": "begin the next session with a read only identity state scan then write a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "begin the next session with a read-only identity/state scan, then write a two-column triage lock (`historical fact` / `current behavior to prove`) before any broad gate or issue action."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:e973ce595fc2",
+      "kind": "next_improvement",
+      "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`).",
+      "normalized_key": "capability applied issue 534 filed https github com corca ai charness issues 534 structural",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — `applied: issue #534 filed` — https://github.com/corca-ai/charness/issues/534. Structural pattern: *a content-addressed baseline treats a refactor as new debt.* Triggering instances: four families rotated by three length-cap-forced module splits in commit `8bc8e0e4`. Destination: repo-local gate (`skills/public/quality/scripts/check_dup_ratchet.py`)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b7c298e53537",
+      "kind": "next_improvement",
+      "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`.",
+      "normalized_key": "capability applied issue 535 filed https github com corca ai charness issues 535 carrying",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — `applied: issue #535 filed` — https://github.com/corca-ai/charness/issues/535, carrying the critique-packet sibling gap and the proposed \"every content-digest artifact names its re-bind command\" rule. Structural pattern: *a new identity-binding surface ships without a one-command re-bind, so staleness is discharged by hand.* Triggering instances: the prior retro's `release-proof-identity-churn` on the critique packet, and six manual re-bind cycles on the freeze surface in commit `8bc8e0e4`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:f723f7a011bf",
+      "kind": "next_improvement",
+      "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair.",
+      "normalized_key": "capability applied scripts validate issue source freeze py refreeze stamp inspection freeze crosswalk source",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — `applied: scripts/validate_issue_source_freeze.py refreeze` — stamp-inspection → freeze → crosswalk `source_identity` rebind → validate, in one command, covered by two tests (`test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command`, `test_refreeze_is_usable_before_a_crosswalk_exists`). Removes the untested heredoc from the loop; the direct Engelbart repair."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:dffc38f2679b",
+      "kind": "next_improvement",
+      "lesson": "freeze goal/spec/critique packet inputs before broad verification; any later mutation invalidates packet identity and review scope rather than producing a bookkeeping-only repair.",
+      "normalized_key": "freeze goal spec critique packet inputs before broad verification any later mutation invalidates packet",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "freeze goal/spec/critique packet inputs before broad verification; any later mutation invalidates packet identity and review scope rather than producing a bookkeeping-only repair."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b975e32c342a",
+      "kind": "next_improvement",
+      "lesson": "make a cheap dry-run evidence-boundary preflight report aggregate authoring-path, containment, target-vs-ambient, and producer-coverage gaps before sync or remote execution; keep the existing gates and floors.",
+      "normalized_key": "make a cheap dry run evidence boundary preflight report aggregate authoring path containment target",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "make a cheap dry-run evidence-boundary preflight report aggregate authoring-path, containment, target-vs-ambient, and producer-coverage gaps before sync or remote execution; keep the existing gates and floors."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:529cfef1b4ad",
+      "kind": "next_improvement",
+      "lesson": "**memory (claim discipline)** — Two docstrings in this slice overstated their guarantees (freeze \"unforgeability\"; clause-digest rewrap tolerance) and were corrected only because a reviewer read them adversarially. For proof surfaces, the docstring is part of the verdict logic and deserves the same review as the code.",
+      "normalized_key": "memory claim discipline two docstrings in this slice overstated their guarantees freeze unforgeability clause",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory (claim discipline)** — Two docstrings in this slice overstated their guarantees (freeze \"unforgeability\"; clause-digest rewrap tolerance) and were corrected only because a reviewer read them adversarially. For proof surfaces, the docstring is part of the verdict logic and deserves the same review as the code."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:68bab981ba4c",
+      "kind": "next_improvement",
+      "lesson": "**memory** — This artifact, plus the digest refresh, so the `release-proof-identity-churn` class carries its *second* instance and the \"new identity surface needs a re-bind command\" rule is inherited rather than rediscovered.",
+      "normalized_key": "memory this artifact plus the digest refresh so the release proof identity churn class",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory** — This artifact, plus the digest refresh, so the `release-proof-identity-churn` class carries its *second* instance and the \"new identity surface needs a re-bind command\" rule is inherited rather than rediscovered."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2fc105fca7ec",
+      "kind": "next_improvement",
+      "lesson": "treat `31118030353` as external `Service Unavailable` until a later independent run proves otherwise; never use it as current-head quality proof.",
+      "normalized_key": "treat 31118030353 as external service unavailable until a later independent run proves otherwise never",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "treat `31118030353` as external `Service Unavailable` until a later independent run proves otherwise; never use it as current-head quality proof."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:74a451dc283f",
+      "kind": "next_improvement",
+      "lesson": "update handoff around the first next action and explicit non-claims, with #515 as the next bug boundary and #514 as deferred unless a concrete second consumer appears.",
+      "normalized_key": "update handoff around the first next action and explicit non claims with 515 as",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "update handoff around the first next action and explicit non-claims, with #515 as the next bug boundary and #514 as deferred unless a concrete second consumer appears."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:04d467f85608",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — Never start a broad verification run while artifacts are still being re-bound. Freeze first, then verify. This is a re-statement of a lesson already in the digest, which is why it belongs as a workflow change and not just a note.",
+      "normalized_key": "workflow never start a broad verification run while artifacts are still being re bound",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — Never start a broad verification run while artifacts are still being re-bound. Freeze first, then verify. This is a re-statement of a lesson already in the digest, which is why it belongs as a workflow change and not just a note."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:1cc814fbed8b",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — Run `check_python_lengths.py --repo-root . --headroom --paths <files>` before adding more than ~30 lines to an existing gated file, not after verification refuses. Three forced splits this session; the tool exists for exactly this call.",
+      "normalized_key": "workflow run check python lengths py repo root headroom paths files before adding more",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — Run `check_python_lengths.py --repo-root . --headroom --paths <files>` before adding more than ~30 lines to an existing gated file, not after verification refuses. Three forced splits this session; the tool exists for exactly this call."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:19d7e4f3608f",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — Run the commit-msg hook against the draft message file before `git commit` when the message references protected issue numbers.",
+      "normalized_key": "workflow run the commit msg hook against the draft message file before git commit",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-pre0-issue-source-freeze-and-closeout-authorization.md",
+          "date": "2026-08-07",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — Run the commit-msg hook against the draft message file before `git commit` when the message references protected issue numbers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f57ea23fa8c1",
+      "kind": "repeat_trap",
+      "lesson": "**A doc correction shipped FALSE.** Slice B's repair of a wrong claim about `mutation_testing` asserted a new wrong claim (that every blank sub-key errors; a blank nested BLOCK header does not). Caught by round 2. The repair was to pin it with a test, not to word it more carefully.",
+      "normalized_key": "a doc correction shipped false slice b s repair of a wrong claim about",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A doc correction shipped FALSE.** Slice B's repair of a wrong claim about `mutation_testing` asserted a new wrong claim (that every blank sub-key errors; a blank nested BLOCK header does not). Caught by round 2. The repair was to pin it with a test, not to word it more carefully."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a4462ca4f487",
+      "kind": "repeat_trap",
+      "lesson": "**A false-positive control varied the wrong axis.** Slice B's control used DEFAULT values, so `merged == default` masked the mis-naming bug; the broad suite found it. A control is only a control against the inputs it varies, and mine varied presence without varying value. (ONE measured instance — an earlier draft said \"every\" and \"twice\" and could name only this one.)",
+      "normalized_key": "a false positive control varied the wrong axis slice b s control used default",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A false-positive control varied the wrong axis.** Slice B's control used DEFAULT values, so `merged == default` masked the mis-naming bug; the broad suite found it. A control is only a control against the inputs it varies, and mine varied presence without varying value. (ONE measured instance — an earlier draft said \"every\" and \"twice\" and could name only this one.)"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:2ce7ef4aaa87",
+      "kind": "repeat_trap",
+      "lesson": "**A guard went to the wrong boundary FIVE times, across three surfaces.** Slice A attached shape checks to the TRANSPORT (`--fields-file`) when the property belonged to the VALUE, so the documented-safe argv channel walked past them. Slice B guarded a TYPE (`isinstance(x, dict)`) when `{}` is a dict, then an EQUALITY (`merged != default`) which mis-named a fully-specified block. Slice C's shape fallback was wrong TWICE in opposite directions: it broke on a cycle MARKER (too narrow), then unless the error was a wrong-shape SPELLING (too wide). That is 1 + 2 + 2 = five, not four; an earlier draft compressed C's two into one and then reported four — the same assert-without-counting class this section is about. Every one cost a review round or a broad run. The common shape: each cut asked about the form the failure happened to take rather than about what the guard was for.",
+      "normalized_key": "a guard went to the wrong boundary five times across three surfaces slice a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**A guard went to the wrong boundary FIVE times, across three surfaces.** Slice A attached shape checks to the TRANSPORT (`--fields-file`) when the property belonged to the VALUE, so the documented-safe argv channel walked past them. Slice B guarded a TYPE (`isinstance(x, dict)`) when `{}` is a dict, then an EQUALITY (`merged != default`) which mis-named a fully-specified block. Slice C's shape fallback was wrong TWICE in opposite directions: it broke on a cycle MARKER (too narrow), then unless the error was a wrong-shape SPELLING (too wide). That is 1 + 2 + 2 = five, not four; an earlier draft compressed C's two into one and then reported four — the same assert-without-counting class this section is about. Every one cost a review round or a broad run. The common shape: each cut asked about the form the failure happened to take rather than about what the guard was for."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:5688e007cb6d",
+      "kind": "repeat_trap",
+      "lesson": "Broad closeout work discovered authoring and readback problems later than the cheapest dry-run boundary. This is the unresolved operator-memory problem described by #514, not a reason to weaken the closeout floor.",
+      "normalized_key": "broad closeout work discovered authoring and readback problems later than the cheapest dry run",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Broad closeout work discovered authoring and readback problems later than the cheapest dry-run boundary. This is the unresolved operator-memory problem described by #514, not a reason to weaken the closeout floor."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:b4c42fc3c4e0",
+      "kind": "repeat_trap",
+      "lesson": "Consumer-root portability was discovered only in remote verification: a locally valid absolute packet path was invalid under the runner checkout. The validator correctly refused; the producer-side artifact should have prevented the value earlier.",
+      "normalized_key": "consumer root portability was discovered only in remote verification a locally valid absolute packet",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Consumer-root portability was discovered only in remote verification: a locally valid absolute packet path was invalid under the runner checkout. The validator correctly refused; the producer-side artifact should have prevented the value earlier."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c09044e82610",
+      "kind": "repeat_trap",
+      "lesson": "Historical and current observations were initially close enough to be conflated: a later local green could have been mistaken for proof that the old SHA was healthy. The #516 debug/critique records corrected this by separating historical fact, present failure, and distinct current proof.",
+      "normalized_key": "historical and current observations were initially close enough to be conflated a later local",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Historical and current observations were initially close enough to be conflated: a later local green could have been mistaken for proof that the old SHA was healthy. The #516 debug/critique records corrected this by separating historical fact, present failure, and distinct current proof."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0b9695a1351c",
+      "kind": "repeat_trap",
+      "lesson": "Not waste, and worth separating: broad-suite wall time was 623.8s / 625.7s / 623.4s across three runs (source: the `pytest` summary lines). It was the only observer that caught two real defects. It earned its cost twice.",
+      "normalized_key": "not waste and worth separating broad suite wall time was 623 8s 625 7s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Not waste, and worth separating: broad-suite wall time was 623.8s / 625.7s / 623.4s across three runs (source: the `pytest` summary lines). It was the only observer that caught two real defects. It earned its cost twice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d6ea477ec1af",
+      "kind": "repeat_trap",
+      "lesson": "**Slice 1's `Metrics:` field was left blank** while slices 2 and 3 each recorded an explicit \"host log exposes no per-slice totals; not claimed\". A blank field is not a recorded non-claim.",
+      "normalized_key": "slice 1 s metrics field was left blank while slices 2 and 3 each",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Slice 1's `Metrics:` field was left blank** while slices 2 and 3 each recorded an explicit \"host log exposes no per-slice totals; not claimed\". A blank field is not a recorded non-claim."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c5edb71ac90d",
+      "kind": "repeat_trap",
+      "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against.",
+      "normalized_key": "slice a was committed with its broad run recorded as pending and the number",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Slice A was committed with its broad run recorded as `pending`, and the number was never written back** until the closeout review caught it. This retro's own thesis is that the broad suite was the only observer that caught two real defects, so shipping a slice without recording one is the gap it argues against."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4461ac975eea",
+      "kind": "repeat_trap",
+      "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of.",
+      "normalized_key": "the enumeration in slice c was wrong three times repo root shims imported by",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-finish-the-sweeps-this-run-left-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The enumeration in slice C was wrong three times** — repo-root shims imported by 135 scripts, then `support/`, then `shared/`. Each was found by an inversion test, none by listing. The first cut's completeness test named the families the pattern already matched, which cannot fail for a family nobody thought of."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0e44dd0ea8aa",
+      "kind": "repeat_trap",
+      "lesson": "The latest remote failure consumed a full setup wait without producing code evidence. It is not actionable as a code fix until the service failure repeats or a repository-owned retry/readback contract is shown to be missing.",
+      "normalized_key": "the latest remote failure consumed a full setup wait without producing code evidence it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "latest_source_date": "2026-08-07",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-07-session-retro.md",
+          "date": "2026-08-07",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The latest remote failure consumed a full setup wait without producing code evidence. It is not actionable as a code fix until the service failure repeats or a repository-owned retry/readback contract is shown to be missing."
         }
       ]
     },
