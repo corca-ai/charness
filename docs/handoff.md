@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- **Next pickup: activate the drafted goal.** Run `/goal @charness-artifacts/goals/2026-08-08-make-the-docs-graph-a-checked-surface.md`. It is `draft`, `--pursue-ready` passes, and it is shaped with four ordered slices. `/goal` is pursue-only — it shapes nothing, so re-shape with `/achieve @...` if the acceptance boundary has changed.
-- **The slice ORDER is the design, not a preference.** The docs graph must reach `exit 0` BEFORE the gate is promoted. Promoting red creates pressure to weaken the floor to get past it, which is the condition that forfeits the push.
+- **Next pickup: activate the drafted goal.** Run `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`. It is `draft`, `--pursue-ready` passes, and it is shaped with four ordered slices. `/goal` is pursue-only — it shapes nothing, so re-shape with `/achieve @...` if the acceptance boundary has changed.
+- **The slice ORDER is the design, not a preference.** Slice 1 (rules-before-authoring) comes first because it changes how every later slice is written. Every gate must be green BEFORE it is promoted — promoting red creates pressure to weaken the floor, which is the condition that forfeits the push.
 - **Do not re-run the `## Next Session` list from the previous handoff.** Items 2 and 3 shipped (`0c82364e`, `7caa9b5b`); item 1 was DROPPED on its premise check exactly as that item instructed — the `-packet.md` is the reviewer-facing surface and the `.json` is sha-bound, so neither is the redundant copy.
 
 ## Continuation Capability
@@ -18,7 +18,7 @@
 
 ## Current State
 
-- [make-the-docs-graph-a-checked-surface](../charness-artifacts/goals/2026-08-08-make-the-docs-graph-a-checked-surface.md) is `draft` (`2f569520`): hub + orphans, then the `check_doc_links.py` overlap matrix, then gate promotion, then release+push.
+- [make-proof-surfaces-report-what-they-observed](../charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md) is `draft`: eight slices. It supersedes the awiki-only draft, WIDENED by operator decision to the four proof surfaces that report a verdict they never observed — the routing floor's keyword guess, a describe module that hardcodes what it says it renders, and an attention-state gate that cannot tell English prose from a status value.
 - `#566` step 1 is DONE (`c772f147`): [integrations/tools/awiki.json](../integrations/tools/awiki.json) validates and `charness tool doctor awiki` is `ok`. The lock is generated and gitignored. Step 2 is the goal above. `#518`'s quality-dependency clause is still unmet and is called out on `#566` rather than left looking satisfied.
 - **A large unpushed range is outstanding** — recount with `git log --oneline origin/main..HEAD | wc -l`. Push is approved ONLY with the release at the goal's final bundle, and only if the gates are green by their own strength: `--no-verify`, a disarmed check, or a lowered floor revokes it. Remote CI is an explicit non-claim for every commit in this range.
 - `awiki lint -root docs -recursive` exits 1 today: `documents=40 orphans=7 islands=0 link_only_lines=229`. Re-measure rather than trusting this line.
