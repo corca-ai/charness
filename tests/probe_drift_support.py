@@ -35,6 +35,10 @@ DECISION_RECORD = "docs/deferred-decisions.md"
 # Where the thresholds actually live. Both measure scripts import this module rather than
 # defining the rule, so a rule change shows up HERE and in neither measure script.
 GATE_MODULE = "scripts/validate_inventory_consumption.py"
+# The exported mirror carries the same transcribed numbers, and it is generated rather than
+# hand-written — so it is a surface with a COMMAND, not an `edit by hand` entry.
+GATE_MIRROR = "plugins/charness/scripts/validate_inventory_consumption.py"
+MIRROR_SYNC_COMMAND = "python3 scripts/sync_root_plugin_manifests.py"
 CONSUMER_FIELDS = "skills/public/quality/references/inventory-consumer-fields.json"
 
 # Each command prints ONLY its measured payload. Neither script writes a probe, and neither
@@ -44,6 +48,12 @@ MARKER_RECURSIVE_COMMAND = (
     "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"
 )
 FLOOR_COMMAND = "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json"
+# The counterfactual the floor probe and the gate comment BOTH transcribe. It is a different
+# invocation, not a different field of the same run, so it has to be re-run separately; it
+# exits non-zero by design at this floor, because everything it reports is a refusal.
+FLOOR_COUNTERFACTUAL_COMMAND = (
+    "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --floor 20 --json"
+)
 
 # Surface -> the command whose output replaces it, or None where the edit is by hand. Paired
 # explicitly rather than as free prose: a round found that swapping two commands in a prose list
@@ -72,22 +82,49 @@ UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
         None,
     ),
     (
-        f"{MARKER_PROBE} `_provenance.current_corpus` — this one quotes the counts in prose. The"
-        " floor probe has NO such field; do not go looking for it",
+        f"{MARKER_PROBE} `_provenance.current_corpus` AND `_provenance.why` — each quotes the"
+        " counts in prose, and `why` is the one that hides: it ENDS on the presence-only total,"
+        " so updating only `current_corpus` leaves a stale figure one key away. The floor probe"
+        " has NO such field, but do NOT read that as a figure-free block: its `_provenance`"
+        " quotes counts in THREE other keys (`why`, `synchronized_after`, and"
+        " `counterfactual_floor_20`), and `why` is the one that says the headline figures are not"
+        " transcribed there — a scope limited to the headline pair, not a promise about the key",
         None,
     ),
     (
-        f"{DECISION_RECORD} D47 — it quotes marker-probe figures (the artifact count and the"
-        " presence-only total) and its refresh bullet counts the refreshes. It does NOT name the"
-        " floor probe, so a floor-only drift still needs a D47 edit whenever a figure it quotes"
-        " moved",
+        f"{FLOOR_PROBE} `_provenance.counterfactual_floor_20` — a SECOND measurement, not a field"
+        " of the run above. It quotes how many citations and label values a floor of 20 would"
+        " refuse, both of which move with the corpus. Read the two numbers by running"
+        f" `{FLOOR_COUNTERFACTUAL_COMMAND}` and then REWRITE THE SENTENCE by hand. Do NOT paste"
+        " that payload anywhere: it has the same key shape as this probe's top-level payload with"
+        " `floor` set to 20, so pasting it pins a threshold the gate does not use — a rule change"
+        " wearing a corpus change's clothes, which is the one outcome this whole message exists"
+        " to prevent. The command also exits NON-ZERO at that floor by design, because"
+        " everything it reports is a refusal",
         None,
     ),
     (
-        f"{GATE_MODULE} — its comments transcribe the corpus label minimum and a"
-        " counterfactual-floor count. A partial update leaves the gate defending its floor with"
-        " a number no probe reports",
+        f"{DECISION_RECORD} D47 — it quotes marker-probe figures throughout its prose, shallow and"
+        " recursive, and its refresh bullet counts the refreshes. Re-read the whole entry against"
+        " the payload rather than updating the figures you remember; it carries far more than the"
+        " headline two. It does NOT name the floor probe, so a floor-only drift still needs a D47"
+        " edit whenever a figure it quotes moved",
         None,
+    ),
+    (
+        f"{GATE_MODULE} — its comments transcribe the corpus label minimum TWICE (once in the"
+        " floor rationale, once in `_labelled_line_engages`'s docstring — NOT in `residual_chars`,"
+        " whose docstring carries no figure) and the same counterfactual-floor pair the floor"
+        " probe carries. A partial update leaves the gate defending its floor with a number no"
+        " probe reports",
+        None,
+    ),
+    (
+        f"{GATE_MIRROR} — the exported mirror of the file above, carrying the same transcribed"
+        " numbers. It is GENERATED, so do not hand-edit it and do not skip it: regenerate after"
+        " editing the owner, or a staged-mirror-drift gate blocks the commit while the mirror"
+        " still cites the old figures",
+        MIRROR_SYNC_COMMAND,
     ),
 )
 

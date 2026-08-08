@@ -14,6 +14,7 @@ names a script or a probe that does not exist.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 from tests.probe_drift_support import (
@@ -21,11 +22,14 @@ from tests.probe_drift_support import (
     DECISION_RECORD,
     DISCRIMINATION_PATHS,
     FLOOR_COMMAND,
+    FLOOR_COUNTERFACTUAL_COMMAND,
     FLOOR_PROBE,
+    GATE_MIRROR,
     GATE_MODULE,
     MARKER_COMMAND,
     MARKER_PROBE,
     MARKER_RECURSIVE_COMMAND,
+    MIRROR_SYNC_COMMAND,
     RULE_CAUSES,
     UPDATE_SURFACES,
     probe_drift_message,
@@ -148,6 +152,10 @@ def test_each_surface_is_paired_with_the_command_that_actually_produces_it() -> 
             assert command == MARKER_COMMAND, surface
         elif FLOOR_PROBE in surface:
             assert command == FLOOR_COMMAND, surface
+        elif GATE_MIRROR in surface:
+            # Generated, so it gets a REGENERATE command rather than a paste target. It is the
+            # one paired surface whose command does not print a payload at all.
+            assert command == MIRROR_SYNC_COMMAND, surface
         else:
             raise AssertionError(f"a command was paired with a surface it cannot produce: {surface}")
 
@@ -157,6 +165,167 @@ def test_each_surface_is_paired_with_the_command_that_actually_produces_it() -> 
     assert len(keepers) == 2, keepers
     assert any(MARKER_PROBE in surface for surface in keepers)
     assert any(FLOOR_PROBE in surface for surface in keepers)
+
+
+def test_each_command_carries_the_flags_that_make_it_the_command_it_is_paired_with() -> None:
+    """The pairing test compares CONSTANT to CONSTANT, so it cannot see a swap of their contents.
+
+    The resolution critique constructed it: move `--recursive` off `MARKER_RECURSIVE_COMMAND` onto
+    `MARKER_COMMAND` and every assertion in this file stays green, because the pairing check asks
+    `command == MARKER_RECURSIVE_COMMAND` and the existence check only splits out the script name,
+    which is the same file for both. The reader is then told to paste recursive output over the
+    top-level payload — round 2's exact harm, reproduced through the pin that was written to stop
+    it. Identity is not enough; the FLAGS are what distinguish these three invocations.
+    """
+    assert "--recursive" in MARKER_RECURSIVE_COMMAND
+    assert "--recursive" not in MARKER_COMMAND, (
+        "the top-level marker command grew `--recursive`; its output belongs in "
+        "`_provenance.recursive_variant`, not in the top-level payload"
+    )
+    # `--floor` selects a COUNTERFACTUAL measurement. Recording one as the probe would pin a
+    # threshold the gate does not use, which is a rule change wearing a corpus change's clothes.
+    assert "--floor" not in FLOOR_COMMAND, (
+        "the floor probe's own command grew a `--floor` override; the probe records the DEFAULT"
+    )
+    assert "--floor 20" in FLOOR_COUNTERFACTUAL_COMMAND
+    # And all three must remain the same measured-payload shape: JSON, this repo, no probe write.
+    for command in (MARKER_COMMAND, MARKER_RECURSIVE_COMMAND, FLOOR_COMMAND,
+                    FLOOR_COUNTERFACTUAL_COMMAND):
+        assert "--json" in command, command
+        assert "--repo-root ." in command, command
+
+
+def test_every_file_a_rule_cause_names_is_a_path_the_reader_is_told_to_diff() -> None:
+    """The discrimination list can be gutted while the rule causes still point at the gutted file.
+
+    Only `GATE_MODULE` and the corpus directory were pinned as members, so deleting
+    `scripts/measure_inventory_marker_rule.py` from `DISCRIMINATION_PATHS` left every assertion
+    green — while the rule-cause list kept naming a marker predicate in that very file. A reader
+    would diff what the message listed, see nothing, and re-record a rule regression: version 2's
+    failure, reachable again through the list rather than through the prose.
+    """
+    # Round 2 refuted the first version of this parse: it required a `/` and an extension in
+    # {py, json}, so a bare filename, a `.md`/`.yaml` threshold home, a markdown link, or a
+    # trailing `:`/`)` all made a cause INVISIBLE to the pin, which then reported green over a
+    # cause it never checked. A guard's POPULATION is a verdict surface too, so the population is
+    # asserted here rather than inferred: every rule cause must name at least one file, and the
+    # total is pinned so a cause cannot go silently unmeasured.
+    path_re = re.compile(r"[\w./-]+\.[A-Za-z]{1,6}")
+    per_cause = [
+        {token.rstrip(".,;:)") for token in path_re.findall(cause.replace("`", " "))}
+        for cause in RULE_CAUSES
+    ]
+    for cause, named in zip(RULE_CAUSES, per_cause):
+        assert named, (
+            "a rule cause names no file at all, so a reader cannot diff it and this pin cannot "
+            f"measure it: {cause}"
+        )
+    named_files = {name for names in per_cause for name in names}
+    assert len(per_cause) == len(RULE_CAUSES) == 3, (
+        "the rule-cause list changed size; re-derive what each new cause names before widening "
+        "this pin, because an unmeasured cause reads exactly like a measured one"
+    )
+    missing = sorted(name for name in named_files if name not in DISCRIMINATION_PATHS)
+    assert not missing, (
+        f"a rule cause names {missing}, but the message does not tell the reader to diff it — "
+        "so the cause is unfalsifiable at the point the reader needs it"
+    )
+
+
+def test_the_message_names_the_prose_fields_that_hide_corpus_counts() -> None:
+    """The surface list claimed `current_corpus` was THE prose field. `why` carries one too.
+
+    Found by the resolution critique: the marker probe's `_provenance.why` ends on the
+    presence-only total, so a reader following the list literally refreshes `current_corpus` and
+    leaves a stale figure one key away — an exclusive claim about where numbers live, made without
+    opening the file, which is the exact class this whole message exists to repair.
+    """
+    payload = json.loads((ROOT / MARKER_PROBE).read_text(encoding="utf-8"))
+    provenance = payload["_provenance"]
+    # `any digit` was too weak: a date satisfies it. The CLAIM is that `why` ENDS on the
+    # presence-only total, so that is what is asserted.
+    total = str(payload["field_mentions_presence_only"])
+    assert provenance["why"].rstrip().rstrip(".").endswith(total), (
+        "the marker probe's `_provenance.why` no longer ends on the presence-only total; the "
+        "message tells the reader that is the figure hiding there"
+    )
+    message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
+    assert "`_provenance.why`" in message
+
+    # Round 2's blocker: the first repair claimed the floor probe's `_provenance` was figure-free.
+    # Three of its keys quote counts. Assert the CORRECTED claim over EVERY key, so the next
+    # reword cannot re-narrow it to the one key that happens to be checked.
+    floor_provenance = json.loads((ROOT / FLOOR_PROBE).read_text(encoding="utf-8"))["_provenance"]
+    quoting = sorted(
+        key
+        for key, value in floor_provenance.items()
+        if isinstance(value, str) and any(char.isdigit() for char in value.replace("2026", ""))
+    )
+    assert "counterfactual_floor_20" in quoting and len(quoting) >= 3, (
+        f"the floor probe's `_provenance` quotes figures in {quoting}; the message must not "
+        "describe it as figure-free"
+    )
+    assert "do NOT read that as a figure-free block" in message
+    assert "NOT transcribed here" in floor_provenance["why"], (
+        "the floor probe's `why` stopped scoping its no-transcription claim to the headline "
+        "figures; the message explains that scope to the reader"
+    )
+
+
+def test_the_counterfactual_floor_surface_carries_its_own_rerun_command() -> None:
+    """A second measurement, transcribed in two places, with no command to regenerate it.
+
+    `_provenance.counterfactual_floor_20` and the gate module's floor rationale both quote the
+    same pair, and both move with the corpus. The bookkeeping item named only `date`,
+    `repo_head_at_run`, `worktree` and the `synchronized_*` prose, so a literal follow left both
+    stale — "one surface citing a figure no other surface reports", which is the sentence the
+    message uses to justify its own list.
+    """
+    floor_provenance = json.loads((ROOT / FLOOR_PROBE).read_text(encoding="utf-8"))["_provenance"]
+    assert "counterfactual_floor_20" in floor_provenance
+    message = probe_drift_message("floor", probe=FLOOR_PROBE)
+    assert "_provenance.counterfactual_floor_20" in message
+    assert FLOOR_COUNTERFACTUAL_COMMAND in message
+    assert "exits NON-ZERO" in message, (
+        "the counterfactual command exits 1 by design; a reader who reads that as a broken "
+        "command will not re-run it"
+    )
+    # Round 2's blocker: this surface was first paired as `run:`, and the pairing contract at the
+    # top of the module says a paired command's OUTPUT REPLACES the surface. The `--floor 20`
+    # payload has the probe's exact key shape with `floor` set to 20, so a literal follow pins a
+    # threshold the gate does not use. It must be an unpaired, rewrite-by-hand surface that names
+    # the command as something to READ.
+    counterfactual = [
+        (surface, command)
+        for surface, command in UPDATE_SURFACES
+        if surface.startswith(f"{FLOOR_PROBE} `_provenance.counterfactual_floor_20`")
+    ]
+    assert len(counterfactual) == 1, counterfactual
+    surface, command = counterfactual[0]
+    assert command is None, (
+        "the counterfactual surface is paired as a paste target again; its payload is a complete "
+        "floor-probe payload measured at the WRONG floor"
+    )
+    assert "Do NOT paste that payload" in surface
+    assert "REWRITE THE SENTENCE by hand" in surface
+    # The gate module carries the same pair, so the message must not imply the probe is its
+    # only home, and must say the label minimum is transcribed more than once.
+    assert "TWICE" in message
+    # Round 2 also found a NINTH surface: the exported mirror of the gate module carries the same
+    # transcribed numbers. It is generated, so it is named with its sync command rather than as a
+    # hand edit, and it must actually exist and actually carry the figure.
+    assert GATE_MIRROR in message
+    assert MIRROR_SYNC_COMMAND in message
+    mirror = ROOT / GATE_MIRROR
+    assert mirror.is_file(), f"the message names a mirror that does not exist: {GATE_MIRROR}"
+    assert "at floor 20" in mirror.read_text(encoding="utf-8"), (
+        "the mirror stopped carrying the counterfactual figures; if the export narrowed, drop "
+        "it from the surface list rather than leaving a surface a reader cannot verify"
+    )
+    # And the second transcription's location must be named correctly: round 2 caught it pointing
+    # at `residual_chars`, whose docstring carries no figure at all.
+    assert "_labelled_line_engages" in message
+    assert "NOT in `residual_chars`" in message
 
 
 def test_the_cause_lists_are_not_swapped() -> None:

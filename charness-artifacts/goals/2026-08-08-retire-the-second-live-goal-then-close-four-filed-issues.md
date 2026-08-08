@@ -1,6 +1,6 @@
 # Achieve Goal: Retire the second live goal, then close the four filed issues that reach a verdict
 
-Status: draft
+Status: active
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`
 
@@ -9,13 +9,31 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`, then premise-check slice 1 (`#536`'s closeout) BEFORE building — including which OWNER its remedy names, since the predecessor's slice 2 was refuted on exactly that.
+- Current slice: 1 — `#536`'s closeout. Premise CONFIRMED (both delivery and the
+  owner claim, at definition sites). Both delegated rounds are complete and the
+  seven blockers they found are repaired. `validate-closeout-draft` reports
+  `draft_verified`. Remaining: commit the carrier, close through the adapter,
+  verify `CLOSED`, then retire the `one-rule-one-owner` goal.
+- Current slice intent: close `#536` through the full floor and retire the second
+  live goal artifact. Spans the closeout commit and the goal-retirement commit.
+- Next action: run the closeout aggregate, commit the carrier, then
+  `close-with-comment` + `verify-closeout --expect-state CLOSED`. Then flip
+  `2026-08-08-one-rule-one-owner-one-check-its-own-voice.md` to a terminal status
+  — and NOT before `#536` reads back `CLOSED`, because that goal's only remaining
+  obligation is this closeout.
+- 9-FOR-9, and slice 1 is the first where BOTH rounds landed on the REPAIRS rather
+  than the build. Round 1 found four blockers in the shipped closeout draft; round
+  2 found three more inside round 1's repairs, including a claim I had already
+  read the refuting evidence for in the same session. Budget round 2 on every
+  remaining slice; it is not optional on a verdict surface.
+- Opening a file is NECESSARY AND NOT SUFFICIENT. The predecessor's lesson was
+  `open every location an instruction names`. I did — printed the whole block,
+  read three keys quoting counts — and then wrote `transcribes no figures at all`
+  two steps later. Write the claim from what the read RETURNED.
+- A NEW surface added to a list must be checked against the LIST'S OWN CONTRACT,
+  not only against its neighbours. Pairing a counterfactual command with a prose
+  sentence passed every neighbour test and violated the header's definition of
+  what a pairing means; executed, that instruction pins the wrong threshold.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -148,7 +166,7 @@ Five slices, ordered by MEASURED cost and leverage rather than by size.
 
 | Slice | Objective | Why HERE | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Close `#536` and retire the still-active `one-rule-one-owner` goal | It is BUILT and reviewed; one closeout retires a whole goal artifact, and two live goals is the "one issue, two owners" defect this family keeps repairing | `validate-closeout-draft` reports `draft_verified`, a DELEGATED resolution critique runs BEFORE the close, `verify-closeout --expect-state CLOSED` reads back through the adapter, and that goal reaches a terminal status | planned |
+| 1 | Close `#536` and retire the still-active `one-rule-one-owner` goal | It is BUILT and reviewed; one closeout retires a whole goal artifact, and two live goals is the "one issue, two owners" defect this family keeps repairing | `validate-closeout-draft` reports `draft_verified`, a DELEGATED resolution critique runs BEFORE the close, `verify-closeout --expect-state CLOSED` reads back through the adapter, and that goal reaches a terminal status | in progress — closeout floor met (`draft_verified`, two delegated rounds, seven blockers repaired); carrier + readback + goal retirement remain |
 | 2 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo `CLOSED` verdict is a FALSE GREEN at an irreversible boundary — the highest-severity item in the filed set | The wrong-repo answer is refused or detected, proven by a constructed input rather than by a passing suite | planned |
 | 3 | `#557` and `#559`: the fourth and fifth copies of the backend rule | `#559` had ALREADY drifted from the owner when it was filed, which is the copy-rot this family exists to stop | Each consolidated or classified with a measured reason; the exemption list shrinks | planned |
 | 4 | `#556`: a check reachable only for a directory named `charness` | Cheapest of the filed set, same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | planned |
@@ -261,6 +279,34 @@ A Before-phase summary of any consequential activation decision.
   claimed so the cut is visible rather than implied.
 
 ## Slice Log
+
+### Slice 1: Slice 1 premise check (#536's closeout) — CONFIRMED, including the OWNER the remedy names
+
+- Objective: Before building the closeout, establish by execution rather than by reading the predecessor's record that `#536`'s remedy is genuinely delivered — and, because the predecessor's slice 2 was refuted on exactly that, establish which OWNER the remedy's central claim names and whether that owner is real.
+- Why this approach: This goal's `## User Acceptance` requires each slice to record its premise-check verdict BEFORE the build, including the owner the remedy names. Slice 1 also flips a SECOND goal artifact to a terminal status, so a premise that failed here would mean stopping and recording a blocker rather than retiring a goal on an unmet floor — the open risk this goal's `## Plan Critique Findings` named.
+- Commits: none — this record precedes the closeout build, per this goal's User Acceptance.
+- What changed: No source changed. Read: `tests/probe_drift_support.py`, `tests/test_probe_drift_message.py`, the three drift sites, `scripts/measure_inventory_marker_rule.py`, `scripts/measure_inventory_consumption_floor.py`, `scripts/validate_inventory_consumption.py`. Executed: the two pinned test files against a constructed markdown artifact under `charness-artifacts/quality/`, then removed it and verified the tree clean. Read through the adapter: `issue_tool.py read --repo corca-ai/charness --number 536` with `comments_read: true` and 0 comments.
+- Alternatives rejected: Rejected: taking the predecessor goal's `## Active Operating Frame` line (`#536` built and BOTH review rounds complete) on trust. That line is a claim like any other, and this goal exists because a goal artifact is a verdict surface downstream sessions plan against. Rejected: inferring the owner claim from the round-2 commit message, which states it — the commit is the thing under test.
+- Targeted verification: VERDICT: CONFIRMED on both halves. (1) DELIVERY: all three drift sites import `probe_drift_message` from one module (`tests/test_inventory_marker_rule_measurement.py:18`, `tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py:18`), and a constructed markdown write produced `3 failed, 57 passed` with the full message rendered at all three — the corpus-versus-rule split, six discrimination paths, and the surface list with per-surface commands. The `.json`-versus-`.md` correction the predecessor's premise check made still holds. (2) OWNER: the message's central and most load-bearing claim is that `MIN_ENGAGEMENT_RESIDUAL_CHARS`, `residual_chars`, `ENFORCED_FROM_DATE` and `ARTIFACT_DATE_RE` live in `scripts/validate_inventory_consumption.py` and NOT in either measure script — the exact claim whose earlier wrong version would have sent a rule regression to the corpus remedy. Checked at DEFINITION sites rather than by grep count: all four are defined at `validate_inventory_consumption.py:42,43,113,125`, and every other occurrence in `inventory_measurement_lib.py`, `measure_inventory_consumption_floor.py` and `measure_inventory_marker_rule.py` is a `gate.`-qualified reference through an import. The owner the remedy names is real.
+- Test duplication pressure: n/a — no tests added or expanded in this record; it is a read-only premise verdict.
+- Critique: The premise held, which this goal family's record says is the less common outcome — the predecessor was refuted or corrected on all three of its premise checks. Worth stating why it held here: this remedy had already survived two bounded rounds, and both of those rounds were specifically about the location claims a premise check re-tests. The check still paid rather than merely confirming: it converted `built and reviewed` from an inherited assertion into an executed reproduction plus a definition-site owner verdict, and the reproduction is what the closeout's behavioural verdict now cites as a channel distinct from the unit pins. A premise check that confirms is not a wasted one.
+- Off-goal findings: None filed from this record. Noted for the build: the reproduction is the only channel available that is genuinely distinct from the pins, and it is the same TOOL as the pins — the closeout should say so rather than claim an independent implementation.
+- Lessons carried forward: Verifying the OWNER separately from the REMEDY was the right split, and it is cheap: four definition-site checks, one command. Carry into slice 2 (`#558`) — where the identity claim is `(repo, number)` and the question is again which surface owns it.
+- Metrics:
+
+### Slice 2: Slice 1 build (#536's closeout) — two more rounds, seven blockers, all of them in the repairs
+
+- Objective: Close `#536` through the full floor: `validate-closeout-draft` reporting `draft_verified`, a DELEGATED resolution critique BEFORE the close call, a behavioural verdict from a channel distinct from the fix's own, and `verify-closeout --expect-state CLOSED` read back through the adapter. Retiring the second live goal follows from this closeout, not the other way round.
+- Why this approach: First because one closeout retires an entire active goal artifact, and because two live goals is the `one issue, two owners` shape this goal family has repaired three times in code. Ordered by leverage rather than by size, per `## Interview Decisions`.
+- Commits: the closeout commit carrying this record, the critique artifact, and the two rounds' repairs. The message itself was built at `67beced4` (build plus round-1 repairs) and `1fa7fd75` (round-2 repairs) by the predecessor goal.
+- What changed: `tests/probe_drift_support.py`: new `FLOOR_COUNTERFACTUAL_COMMAND`, `GATE_MIRROR` and `MIRROR_SYNC_COMMAND`; the surface list grows from seven entries to nine and two existing entries are corrected. `tests/test_probe_drift_message.py`: ten pins become fourteen, and three existing pins are tightened. New: `charness-artifacts/critique/2026-08-08-issue-536-resolution-critique.md`. No exported surface changed, so `check_changed_surfaces.py` planned NO sync commands.
+- Alternatives rejected: Rejected: closing on the predecessor's two rounds alone. The closeout floor requires a delegated resolution critique before the close call, and that critique found four blockers the build's own two rounds had not. Rejected: treating the resolution critique's repairs as bookkeeping and closing on one round. Those repairs changed verdict logic on a proof surface (the pins), which this repo's contract says owes a SECOND round reading the repaired surface — and that round found three more blockers, including the worst one of the slice. Rejected during round-2 repairs: keeping the new counterfactual surface paired with a `run:` command and merely warning about it in prose, because the module's own pairing contract says a paired command's output REPLACES the surface; the entry is unpaired now, which is a shape change rather than a wording change.
+- Targeted verification: Behavioural verdict by reproduction, twice: a constructed markdown artifact under `charness-artifacts/quality/` produces `3 failed, 57 passed` across exactly the two files the issue names, with the full repaired message rendered at all three sites (both closeout-added surfaces appear in all three renders). Tree verified clean after each run. Mutation on the REPAIRS, not the original code: 8/8 killed on the round-1 repairs (swap `--recursive` between the two marker commands, which is round 2's exact harm; give `FLOOR_COMMAND` a `--floor`; delete the marker measure script from `DISCRIMINATION_PATHS`; drop `_provenance.why`; pair the counterfactual surface with the default command; drop the NON-ZERO warning; drop `TWICE`; delete the counterfactual surface), then 6/6 on the round-2 repairs (restore the refuted figure-free claim; re-pair the counterfactual surface as a paste target; soften the do-not-paste warning; delete the exported-mirror surface; revert to the misnamed transcription location; add a rule cause naming a `.md` file the old parse could not see). `check_dup_ratchet.py --summary` reports `status: clean`, `hard_block: false`, `new_code_family_count: 0`. `check_python_lengths.py --headroom`: 188/800 and 312/800, no pressure. `validate_critique_artifacts.py` exits 0. `validate-closeout-draft --carrier direct-commit` reports `status: draft_verified` with no missing fields and the critique bound to 536.
+- Test duplication pressure: Four pins added and three tightened, all in one existing module. `check_dup_ratchet.py --summary` run after the additions: clean, zero new code or doc families, no hard block; the only messages are two ADVISORY membership REDUCTIONS in unrelated families. Length headroom checked before adding rather than after: the two touched files sit at 188/800 and 312/800.
+- Critique: Two delegated bounded rounds, both boundary-fingerprinted `clean` and both VERIFIED THE MOMENT THE REVIEWER RETURNED, before any repair — the thing the predecessor missed on all three of its slices. Seven blockers, and every one was in a repair rather than in the shipped build. Round 1 found two omitted surfaces (the marker probe's `_provenance.why` ends on the presence-only total while the list framed `current_corpus` as THE prose field; the floor probe's `_provenance.counterfactual_floor_20` transcribes a corpus-moving pair with no regenerating command) and CONSTRUCTED two pin holes: the pairing pin compared constant to constant, so moving `--recursive` between the two marker constants kept all ten pins green while instructing a paste of recursive output over the top-level payload; and `DISCRIMINATION_PATHS` could be gutted while a rule cause still named the deleted file. Round 2 read those repairs and found three more. The factual one is the sharpest indictment: my repair for the omitted prose field asserted that the floor probe's `_provenance` transcribes no figures at all, when three of its keys quote counts and I had PRINTED those keys in the same session before writing the sentence. The structural one is worse in effect: I paired the new counterfactual surface with `run:`, and executed, `--floor 20 --json` emits a payload whose key set is IDENTICAL to the probe's top-level payload with `floor` set to 20 — so a literal follow does not leave stale prose, it pins a threshold the gate does not use, which is the single outcome the whole message exists to prevent. The third was the new population parse silently measuring nothing for whole classes of cause. None of the seven was mutation-findable; fourteen mutants were killed across both repair sets, and every one was written from what the code already met.
+- Off-goal findings: No new issues filed. Two existing ones carried as siblings with proof rather than re-derived: `#561` (a third probe pins the INVARIANT and has never needed a refresh) and `#562` (the same re-stamp reflex on the source-freeze locator pin, 0/5 measured true positives). Recorded, not repaired: the recursive pin's `refused_citation_count` branch cannot fire against the checked-in probe — pre-existing, and a dead branch rather than a misleading message.
+- Lessons carried forward: 1) The class this goal family keeps measuring is now 9-for-9, and slice 1 is the first instance where BOTH rounds landed on repairs rather than on the build. The rule `round 2 reads the REPAIRS` earned its place again: round 1's repairs were the most defective code in the slice. 2) A stronger statement of the recurring root cause than `open every location an instruction names`: I had ALREADY OPENED the location. I printed the floor probe's whole `_provenance` block, read three keys quoting counts, and then wrote `transcribes no figures at all` two steps later. Opening the file is necessary and not sufficient — the claim has to be written from what the read RETURNED, not from the shape the sentence wants. 3) A surface added to fix an omission can be worse than the omission, and the tell is the CONTRACT the surface list already declares: `run:` means output-replaces-surface, so pairing a counterfactual command with a prose sentence was a category error the list's own header defines. Check a new entry against the list's contract, not only against its neighbours. 4) A pin that parses prose to build its own population is a verdict surface twice over — once for what it asserts, once for what it selected. Assert the population.
+- Metrics:
 
 ## Context Sources
 
