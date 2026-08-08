@@ -10,6 +10,9 @@ from scripts.setup_agent_docs_fresh_eye_lib import (
 )
 from scripts.setup_artifact_policy_lib import detect_charness_artifact_policy
 from scripts.setup_commit_discipline_lib import detect_commit_discipline_policy
+from scripts.setup_critique_adapter_inspection import (
+    _detect_critique_adapter_normalization,
+)
 from scripts.setup_markdown_section_lib import extract_section
 from scripts.setup_skill_routing_lib import (
     COMPACT_SKILL_ROUTING_CALL_RE,
@@ -21,11 +24,6 @@ from scripts.setup_skill_routing_lib import (
 RETRO_ADAPTER_RELATIVE_PATH = Path(".agents/retro-adapter.yaml")
 RETRO_SUMMARY_RELATIVE_PATH = Path("charness-artifacts/retro/recent-lessons.md")
 CRITIQUE_ADAPTER_RELATIVE_PATH = Path(".agents/critique-adapter.yaml")
-CODEX_DEFAULT_REVIEWER_TIER_FIELDS = {
-    "model": "gpt-5.6-terra",
-    "reasoning_effort": "medium",
-    "fork_turns": "none",
-}
 RECOMMENDATION_PRIORITY_ORDER = {
     "review_required": 0,
     "high": 1,
@@ -120,82 +118,6 @@ def _detect_retro_memory_normalization(repo_root: Path, agents_text: str) -> tup
             "adapter_exists": adapter_exists,
             "summary_exists": summary_exists,
             "agents_mentions_summary": agents_mentions_summary,
-        },
-        findings,
-    )
-
-
-def _detect_critique_adapter_normalization(
-    repo_root: Path,
-    *,
-    agents_text: str,
-    fresh_eye_review: dict[str, object],
-) -> tuple[dict[str, object], list[dict[str, str]]]:
-    from scripts.critique_adapter_lib import load_adapter
-
-    adapter = load_adapter(repo_root)
-    data = adapter.get("data", {}) if isinstance(adapter.get("data"), dict) else {}
-    reviewer_tiers = data.get("reviewer_tiers", {}) if isinstance(data.get("reviewer_tiers"), dict) else {}
-    high_leverage = (
-        reviewer_tiers.get("high-leverage", {})
-        if isinstance(reviewer_tiers.get("high-leverage"), dict)
-        else {}
-    )
-    medium = reviewer_tiers.get("medium", {}) if isinstance(reviewer_tiers.get("medium"), dict) else {}
-    model = str(high_leverage.get("model", ""))
-    reasoning_effort = str(high_leverage.get("reasoning_effort", ""))
-    stop_gate_detected = bool(fresh_eye_review.get("stop_gate_detected"))
-    findings: list[dict[str, str]] = []
-    if stop_gate_detected and not adapter.get("found"):
-        findings.append(
-            {
-                "type": "critique_adapter_missing_for_fresh_eye_review",
-                "message": (
-                    "Fresh-eye or critique review policy is present, but no critique adapter pins reviewer tiers; "
-                    "Codex subagents may inherit the parent turn's reasoning effort instead of the intended medium tier."
-                ),
-                "recommended_action": "run_critique_init_adapter_or_add_reviewer_tiers",
-            }
-        )
-    codex_policy_evidenced = repo_root.name == "charness" or "codex multiagent v2" in agents_text.lower()
-    if adapter.get("found") and codex_policy_evidenced:
-        tiers = {"high-leverage": high_leverage, "medium": medium}
-        drifted_tiers = {
-            name: {
-                field: tier.get(field)
-                for field, expected in CODEX_DEFAULT_REVIEWER_TIER_FIELDS.items()
-                if tier.get(field) != expected
-            }
-            for name, tier in tiers.items()
-        }
-        drifted_tiers = {name: fields for name, fields in drifted_tiers.items() if fields}
-    else:
-        drifted_tiers = {}
-    if drifted_tiers:
-        findings.append(
-            {
-                "type": "critique_adapter_codex_profile_drift",
-                "message": (
-                    "Critique adapter's Codex reviewer tiers drift from the default "
-                    "`gpt-5.6-terra` / `medium` / `fork_turns: none` profile: "
-                    f"{', '.join(sorted(drifted_tiers))}."
-                ),
-                "recommended_action": "set_codex_reviewer_tiers_default_profile",
-            }
-        )
-    return (
-        {
-            "found": bool(adapter.get("found")),
-            "valid": bool(adapter.get("valid")),
-            "path": (
-                Path(str(adapter["path"])).resolve().relative_to(repo_root.resolve()).as_posix()
-                if adapter.get("path")
-                else None
-            ),
-            "high_leverage_model": model or None,
-            "high_leverage_reasoning_effort": reasoning_effort or None,
-            "medium_model": str(medium.get("model", "")) or None,
-            "medium_reasoning_effort": str(medium.get("reasoning_effort", "")) or None,
         },
         findings,
     )
