@@ -1,0 +1,7 @@
+// lint_failed documents=4 orphans=0 islands=1 link_only_lines=0 largest_component_ratio=0.5000 orphan_rate=0.0000 content_coverage=1.0000
+// island=1
+// why: this component links internally but is disconnected from the main wiki, so related knowledge is hard to reach.
+// fix: add one or two bridge links between a page below and a relevant page in the main component.
+// example: connect the island's strongest overview page to one main-component page with a real relationship.
+[[main]]: The main page points at [Second](./second.md) for detail.
+[[second]]: Second returns to [Main](./main.md) for context.

@@ -180,7 +180,12 @@ UNESTABLISHED_EXIT=3
 # not the push decision. Same opt-in discipline as 3 -- a label joins this list
 # after its own exit-code contract has been read, never by global reinterpretation.
 PARTIAL_EXIT=4
-UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones"
+# `docs-graph` joins after its exit contract was read, per the rule above: it
+# exits 3 only when it could not OBSERVE the graph -- awiki absent, an unreadable
+# summary line, a scan that read zero documents, or an awiki exit code outside
+# its clean/findings pair -- and never when it observed a bad graph. An
+# unobserved orphan count is not zero, and this is the byte that says so.
+UNESTABLISHED_CAPABLE_LABELS="check-changed-line-mutation-coverage inventory-nose-clones docs-graph"
 
 label_may_report_unestablished() {
   case " $UNESTABLISHED_CAPABLE_LABELS " in
@@ -734,6 +739,15 @@ queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imp
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"
 queue_selected "check-doc-links" python3 scripts/check_doc_links.py --repo-root "$REPO_ROOT" --require-git-file-listing
+# Separate from `check-doc-links` because it asks a question that one cannot:
+# `check_doc_links.py` validates that each link RESOLVES, and stayed correctly
+# green while seven pages were unreachable from the rest of the docs. This lane
+# gates REACHABILITY (orphans/islands) via awiki. It gates on the connectivity
+# metrics rather than awiki's exit code, reports UNPROVEN rather than passing
+# whenever it could not observe the graph (see the UNESTABLISHED_CAPABLE_LABELS
+# note above for the full trigger list), and names what it did not judge on every
+# run. The measured split is in docs/docs-graph-checks.md.
+queue_selected "docs-graph" python3 scripts/check_docs_graph.py --repo-root "$REPO_ROOT"
 # Separate from `check-doc-links` because it judges from a different reader
 # position: `check_doc_links.py` validates links where they are AUTHORED, and this
 # one validates them where they are READ, after the exporter has moved the file

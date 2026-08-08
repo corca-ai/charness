@@ -30,7 +30,7 @@ question, honestly, and nobody was asking this one.
 | Is a page reachable from the rest of the docs? | **NO.** It validates each link where it is written; reachability is never computed. | **YES — hard fail.** `orphans=N`, and names each page. |
 | Is a cluster of pages cut off from the main component? | **NO.** | **YES — hard fail.** `islands=N`, plus `largest_component_ratio`. |
 | Is a page an empty stub? | No opinion. | **Metric only.** `content_coverage` drops; lint still reports `ok`. |
-| Does a link line carry local context? | No opinion. | **Hard fail** on `link_only_lines`, evaluated per PHYSICAL line. |
+| Does a link line carry local context? | No opinion. | **Hard fail** on `link_only_lines`, evaluated per PHYSICAL line — so hard-wrapped prose trips it. |
 | What is covered? | [the repo readme](../README.md), `AGENTS.md`, `docs/**`, `presets/**`, `profiles/**`, and the portable skill packages. | `docs/**` only, as passed via `-root`. |
 
 ## What this means for the gate
@@ -39,10 +39,14 @@ The repo gates on awiki's **connectivity** answer — `orphans` and `islands` �
 not on its exit code. Two reasons, both measured:
 
 1. **The exit code is dominated by a rule we are not adopting yet.** It also
-   fails on `link_only_lines`, of which this repo has 229. 139 of those are its
-   own 80-column prose wrapping putting a link alone on a physical line, not
-   context-free links. The rule is worth pursuing; a reflow sweep across 28 files
-   is not the way, and it is not what this gate is for.
+   fails on `link_only_lines`, which this repo has hundreds of. Recount rather
+   than trusting a number here — `awiki lint -root docs -recursive` prints it, and
+   the checked-in capture and a live run already disagree, because the count moves
+   with every docs edit. Measured on 2026-08-09, roughly three-fifths of them were
+   this repo's own 80-column prose wrapping putting a link alone on a physical
+   line rather than context-free links; the rest are genuine bare list items. The
+   rule is worth pursuing; a reflow sweep across the whole docs tree is not the
+   way, and it is not what this gate is for.
 2. **Nothing else answers the connectivity question.** Before the docs index hub
    existed, seven pages were unreachable while `check_doc_links.py` was green —
    correctly green, because every link in the repo resolved. That is the exact

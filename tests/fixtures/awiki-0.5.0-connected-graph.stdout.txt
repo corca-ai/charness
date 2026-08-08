@@ -1,0 +1,1 @@
+// ok connected_graph documents=2 largest_component_ratio=1.0000 orphan_rate=0.0000 content_coverage=1.0000

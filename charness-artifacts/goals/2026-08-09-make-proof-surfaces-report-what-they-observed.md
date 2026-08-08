@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 — promote awiki as a named `run-quality.sh` lane.
+- Current slice: 5 — replace `goal_artifact_phase_routing`'s content guess with a declaration.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: add the docs-graph lane to `run-quality.sh` gating on
-  `orphans`/`islands`, prove it NOT-RUN with the binary absent, and observe it
-  red on purpose before trusting its green.
+- Next action: pin the OLD trigger's verdicts over the checked-in goal corpus as
+  a test BEFORE swapping it, so a floor that stops refusing anything is visible
+  as a regression rather than celebrated as a simplification.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -158,7 +158,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 1 | DONE. Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | done |
 | 2 | DONE. Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `orphans=0 islands=0 ratio=1.0000` measured; negative test observed red; hub adds ZERO link-only lines; `check_doc_links.py` still green | done |
 | 3 | DONE. Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer, every row measured, with runnable reproductions | done |
-| 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
+| 4 | DONE. Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | `PASS docs-graph` named in the summary; FAIL and UNPROVEN both observed through the runner; doctor still `ok`; two review rounds | done |
 | 5 | `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Corpus replay over checked-in goals with every verdict change explained; the plain-English debug case no longer slips; the `airport gate` case no longer fires | pending |
 | 6 | `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No literal floor numbers left in the file; a test that changes the constant and asserts the rendered text follows | pending |
 | 7 | `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | The recorded false positives pass; a genuine exit-zero `skipped` status still fails | pending |
@@ -239,6 +239,35 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 4 — the docs-graph gate (done)
+
+- `scripts/check_docs_graph.py` is a named `docs-graph` lane in `run-quality.sh`.
+  It gates CONNECTIVITY (`orphans`, `islands`), reuses the runner's existing
+  `UNESTABLISHED_EXIT=3` -> UNPROVEN channel rather than inventing one, and names
+  what it did NOT judge on every run, including the passing one.
+- All three arms observed through the real runner, not just the script:
+  `PASS docs-graph` in the summary; a planted orphan produced
+  `FAIL docs-graph` naming `unreachable: stray-check`; a `PATH` without awiki
+  produced `UNPROVEN docs-graph` and a summary reading "established nothing".
+- **The slice plan's "tighten the advisory doctor/version policies" step was
+  measured WRONG and not done.** `doctor_policy: required` makes any machine
+  without awiki a `blocking-install-needed` doctor failure (measured: exit 1),
+  which the same plan's verification forbids. A non-advisory version policy would
+  block a maintainer who merely upgrades awiki. Neither buys safety: the risk is
+  handled at the point of CONSUMPTION, where the lane reports UNPROVEN on the
+  actual breakage instead of on a version number. The manifest note that told a
+  future session to tighten them is replaced with the measurement.
+- Two bounded review rounds, boundary fingerprint verified clean before each
+  repair. Round one found a REAL fail-open: no `documents` floor, so an empty
+  scan root passes vacuously — confirmed live, an empty root prints
+  `ok ... documents=0` and EXITS 0. It also found the return code discarded, a
+  `float()` crash that would render FAIL on an unobserved graph, and that the
+  passing fixture was INVENTED with no captured `ok` run in the repo.
+- Round two caught the same invented-fixture defect one level down: the
+  `// island=1` block header was my belief, not a capture. Now captured. Three
+  real awiki outputs live in `tests/fixtures/` and drive the tests.
+- Round-two repairs are accepted unreviewed per the two-round cap.
 
 ### Slice 3 — the overlap matrix (done)
 

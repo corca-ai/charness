@@ -342,6 +342,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-plugin-import-smoke", "check_plugin_import_smoke.py"),
     ("check-command-docs", "check_command_docs.py"),
     ("check-doc-links", "check_doc_links.py"),
+    ("docs-graph", "check_docs_graph.py"),
     ("check-plugin-doc-links", "check_plugin_doc_links.py"),
     ("check-plugin-dir-references", "check_plugin_dir_references.py"),
     ("check-plugin-asset-command-carriers", "check_plugin_asset_command_carriers.py"),
