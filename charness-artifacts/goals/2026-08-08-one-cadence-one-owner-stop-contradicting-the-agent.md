@@ -84,8 +84,10 @@ The predecessor's other structural findings, each measured rather than supposed:
   restates when broad proof runs; it points at `## Active Operating Frame`'s gate
   cadence, which the achieve scaffold owns. Proven by a validator that REFUSES an
   artifact whose acceptance demands per-slice broad proof while its cadence defers it.
-- The five checked-in goal artifacts carrying the contradicting sentence are repaired,
-  and the scaffold no longer seeds a shape that invites it.
+- The scaffold no longer seeds a shape that invites the contradiction, and the two
+  artifacts a session will still read — the active predecessor and the activatable draft
+  — are repaired. Terminal records are NOT rewritten, by operator decision, so the
+  validator skips `complete` artifacts rather than reddening on records nobody may fix.
 - A new sweep-shaped guard inherits its POPULATION from one owner rather than
   hand-rolling it, and the owner is the `git ls-files`-derived precedent this repo
   already has — proven by pointing at least one existing hand-rolled sweep at it and
@@ -134,7 +136,7 @@ The predecessor's other structural findings, each measured rather than supposed:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | The cadence contradiction: acceptance stops restating it, and a validator refuses the restatement | Measured cost is ~2.5h of wall clock in one session, the sentence is in five artifacts, and no reader reconciles the two sections | The validator refuses a reconstructed contradicting artifact and passes the repaired ones; all five artifacts repaired; the scaffold no longer seeds the shape | planned |
+| 1 | The cadence contradiction: fix the SOURCE, add the validator, repair only the artifacts still being read | Measured cost is ~2.5h in one session, and the source keeps reproducing the sentence | The validator refuses a reconstructed contradicting artifact, passes the repaired ones, and SKIPS `complete` artifacts; the scaffold no longer seeds the shape; the active and draft artifacts are repaired | planned |
 | 2 | One owner for a sweep's population, pointed at the `git ls-files` precedent | Three successive guards were wrong about their own population, each caught by a different reviewer | An existing hand-rolled sweep delegates and its population is unchanged, measured before and after | planned |
 | 3 | Closeout ledger states population and removals separately | The same arithmetic error blocked three of four closeouts at the resolution-critique stage | The blocked phrasing now fails a check rather than a reviewer, and the repaired phrasing passes | planned |
 | 4 | The two lessons a gate cannot hold, written where the next session reads them | Both cost real rework and neither is gate-shaped | `recent-lessons.md` carries them; no new gate is added | planned |
@@ -237,14 +239,17 @@ applies.
   measured slices; every proof-level non-claim is named in `## Agent Verification Plan`
   and repeated at each closeout; no push, release, tag, or Cautilus run is implied by
   activation, and each stays per-request.
-- Discuss before activation: HELD FOR THE OPERATOR, and slice 1 must not start without
-  it. Slice 1 repairs the contradicting acceptance sentence in FIVE checked-in goal
-  artifacts, and three of them belong to CLOSED goals. Editing a closed goal's
-  acceptance criteria rewrites a terminal record, which this repo treats as different in
-  kind from editing a live one. Options: repair only the live and draft artifacts and
-  leave the closed ones with a note; repair all five because the sentence is an idiom the
-  scaffold will keep reproducing; or repair the scaffold only and leave every artifact
-  as-is. The operator owns this, and the answer changes slice 1's scope.
+- Discuss before activation: RESOLVED 2026-08-08 by explicit operator instruction —
+  "이미 지난 건 상관없음" (what is already past does not matter). Slice 1 does NOT
+  rewrite terminal records. It repairs the SOURCE that keeps reproducing the sentence
+  (`goal_artifact_scaffold.py`), adds the validator, and repairs only the artifacts a
+  session will still READ: `2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
+  (active, still owes `#536`'s closeout) and
+  `2026-08-08-finish-the-declaration-to-verdict-sequence.md` (draft, activatable).
+  Left untouched as past: `2026-08-08-arm-the-verdict-and-close-the-false-green-cluster.md`
+  (complete) and the two superseded 2026-08-07 goals. The validator must therefore scope
+  itself to non-complete artifacts, or it reddens on records nobody is allowed to fix —
+  which would be the wolf-crier this goal's Non-Goals forbid.
 
 ## Slice Log
 
@@ -304,8 +309,11 @@ itself so a fresh session sees the design space, not only the closed point.
   frequency, because restating the cadence there is the defect it repairs. If a later
   edit adds one, the goal has reproduced its own subject — and slice 1's validator
   should catch it, which is the cheapest possible dogfood.
-- Open risk, not resolved: slice 1's scope depends on the operator decision above about
-  editing closed goals' terminal records. Do not start slice 1 before it is answered.
+- Resolved, was the one blocking risk: slice 1's scope. The operator ruled that past
+  records are out of scope, so slice 1 fixes the source and the two live-read artifacts
+  and the validator must skip `complete` ones. That scoping is itself the interesting
+  part — a validator that refuses what nobody is permitted to repair is a wolf-crier by
+  construction.
 - Open risk, not resolved: slices 2 and 3 add checks, and this goal's Non-Goals forbid
   wolf-criers. The justification is frequency — three guard-population failures and
   three ledger failures out of four closeouts — but if either check fires on correct
