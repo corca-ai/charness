@@ -297,6 +297,12 @@ per the bullets above when that boundary is crossed):
 
 Recorded during the run:
 
+- Successor goal: n/a — this goal is STILL ACTIVE with slices 4-9 unbuilt, so the
+  successor is itself. `docs/handoff.md` `## Workflow Trigger` points a fresh
+  session back at this artifact rather than at a new one; designing a successor
+  from a goal that has not closed would spend lessons the run has not finished
+  measuring.
+
 - Routing: achieve — this run is a goal lifecycle, and `achieve` owns activation, the slice cadence, the slice log, and the closeout floors; slice 1's work was instruction-surface plus validator repair inside `achieve`'s own package, so no separate implementation owner was warranted.
 - Gather: n/a — `## Context Sources` names only in-repo paths and one live `gh` recount; no external URL, Slack, Notion, Docs, or Drive source applies.
 - Release: n/a — slice 1 touches no version bump and no install manifest; the `plugins/` mirror resync is a generated-surface sync, not a release surface.
