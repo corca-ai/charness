@@ -205,8 +205,8 @@ ordered them behind a root it never repaired.
 - Every quality surface the adapter declares resolves to an executable reader or
   a typed gap; no declared-but-unreached surface renders as `clean`.
 - A repo can declare a sub-key ABSENT and the resolver honors it.
-- `pytest tests/ -q` reports zero failures and the pre-push gate passes at each
-  slice boundary.
+- Every slice is proven green at the cadence `## Active Operating Frame` states.
+  This line names no command and no boundary frequency on purpose; the frame owns that.
 - The Slice Log records, per slice, the premise-check verdict BEFORE the build —
   including the slices where the premise held.
 

@@ -27,17 +27,13 @@ _MIN_SECTION_CHARS = 20
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
+from goal_artifact_markdown import section_bounds as _section_bounds  # noqa: E402
 
 
 def _section_body(masked: str, heading: str) -> str | None:
-    headings = list(_H2.finditer(masked))
-    for index, match in enumerate(headings):
-        if match.group(1).strip().lower() != heading.lower():
-            continue
-        body_start = masked.find("\n", match.start())
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        return masked[body_start + 1 if body_start != -1 else match.end() : body_end]
-    return None
+    """``None`` (not ``""``) when the heading is absent -- callers distinguish them."""
+    bounds = _section_bounds(masked, heading, casefold=True)
+    return None if bounds is None else masked[bounds[0]:bounds[1]]
 
 
 def is_report_label(label: str) -> bool:

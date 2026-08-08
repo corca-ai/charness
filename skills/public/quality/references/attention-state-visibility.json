@@ -935,6 +935,21 @@
       ],
       "rationale": "Author-time shape SOURCE for the goal-closeout preflight: it prints the enforced `skipped: <enum>: <detail>` author syntax (the exact form `check_goal_artifact.py` accepts) to stdout so an author learns it before the flip. The `skipped` token is documentation of the author syntax surfaced verbatim to the operator, never a runtime exit-zero status of this script."
     },
+    "skills/public/achieve/scripts/goal_artifact_cadence_owner.py": {
+      "states": [
+        "skipped"
+      ],
+      "visibility": [
+        "hard_failure_or_blocker",
+        "structured_warning"
+      ],
+      "evidence_terms": [
+        "skipped: terminal record",
+        "applies",
+        "reason"
+      ],
+      "rationale": "Gate-cadence one-owner floor. The only skip is `complete` artifacts, and it is a DELIBERATE scope boundary rather than an unproven surface: a terminal record is one the operator has ruled nobody may repair, so reddening on it would be a wolf-crier by construction. The skip is never a silent clean pass -- the report carries `applies: false` alongside the `skipped: terminal record` reason, both surfaced in `check_goal_artifact.py`'s JSON under `cadence_owner`. Every non-skipped refusal is a hard blocker: it fails the default check and refuses `--pursue-ready` activation."
+    },
     "skills/public/achieve/scripts/goal_artifact_closeout_delegation.py": {
       "states": [
         "skipped"

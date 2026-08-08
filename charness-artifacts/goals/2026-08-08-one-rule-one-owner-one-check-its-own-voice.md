@@ -142,8 +142,8 @@ re-homed here rather than run under a frame that did not name what they share.
 - `#518`, `#528`, `#546`, `#547`: no declared-but-unreached surface renders as
   clean; a repo can declare a sub-key ABSENT; a budgeted label with no sample
   stops reading as protection; a re-bind reports WHICH identities moved.
-- `./scripts/run-quality.sh --read-only` exits 0 at EVERY slice boundary, and
-  `pytest tests/ -q` reports zero failures.
+- Every slice is proven green at the cadence `## Active Operating Frame` states.
+  This line names no command and no boundary frequency on purpose; the frame owns that.
 - The Slice Log records the premise-check verdict BEFORE each build.
 
 ## Agent Verification Plan

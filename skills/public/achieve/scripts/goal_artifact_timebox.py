@@ -47,6 +47,7 @@ _MIN_SUFFICIENCY_REASON_CHARS = 40
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
+from goal_artifact_markdown import section_bounds as _section_bounds  # noqa: E402
 
 
 def _first(pattern: re.Pattern[str], text: str) -> str | None:
@@ -157,14 +158,8 @@ def _early_close_readiness(final_verification: str) -> dict[str, Any]:
 
 
 def _section(text: str, heading: str) -> str:
-    headings = list(_H2.finditer(text))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != heading:
-            continue
-        body_start = text.find("\n", match.start())
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
-        return text[body_start + 1 if body_start != -1 else match.end():body_end]
-    return ""
+    bounds = _section_bounds(text, heading)
+    return "" if bounds is None else text[bounds[0]:bounds[1]]
 
 
 def _iso(value: datetime | None) -> str | None:

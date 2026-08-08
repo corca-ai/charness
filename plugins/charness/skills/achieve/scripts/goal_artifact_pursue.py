@@ -75,6 +75,44 @@ def is_shaping_status(status: str | None) -> bool:
     return (status or "").strip().lower() not in NON_SHAPING_STATUSES
 
 
+def status_token(status: str | None) -> str:
+    """The leading word of a ``Status:`` value, case-folded and unpunctuated.
+
+    ``read_status`` returns the whole remainder of the line, and this repo
+    annotates statuses in prose -- `COMPLETE (2026-06-07) — ...`, `draft — slice 2
+    in flight`, `complete.` -- so any predicate over the raw value is really a
+    predicate over one repo's punctuation habits.
+
+    Deliberately NOT retrofitted onto ``is_shaping_status`` in the same change.
+    That predicate's fail-closed direction is toward APPLYING shaping floors, and
+    making it annotation-tolerant would make it apply them LESS -- a real
+    behavioural change to a hardened gate, which belongs in its own reviewed slice
+    rather than riding along in a round-2 repair. Recorded here so the divergence
+    is a decision on the record and not a second copy nobody noticed.
+    """
+    words = (status or "").strip().lower().split()
+    return words[0].strip(".,;:") if words else ""
+
+
+def is_terminal_status(status: str | None) -> bool:
+    """Whether this artifact is a TERMINAL record nobody is expected to repair.
+
+    Sibling of ``is_shaping_status`` and here for the same reason: a floor that
+    skips terminal records must recognise one, and ``read_status`` returns the
+    whole remainder of the ``Status:`` line rather than a normalized enum. The
+    repo's own house style annotates them -- `Status: COMPLETE (2026-06-07) —
+    gate-phase coverage closed; see ...` -- so a bare ``== "complete"`` test
+    silently DISARMS the skip and the floor can redden on a record the operator
+    has ruled out of scope. Matching the leading token, case-folded, is what both
+    live spellings have in common — see ``status_token``, which owns that
+    normalisation.
+
+    Fail-closed in the other direction from its sibling: only a recognised
+    terminal status skips, so a missing `Status:` line still evaluates.
+    """
+    return status_token(status) == "complete"
+
+
 SCOPE_NOT_CHECKED = (
     "status validity",
     "activation-line shape",

@@ -21,14 +21,12 @@ def _load_floor_grammar():
 
 
 _GRAMMAR = _load_floor_grammar()
-_mask_fences = _GRAMMAR.mask_fences
 parse_created_date = _GRAMMAR.parse_created_date
 is_floor_in_scope = _GRAMMAR.is_floor_in_scope
 grandfathered_report = _GRAMMAR.grandfathered_report
 
 RULE_DATE = date(2026, 6, 17)
 SECTION = "Operator Decision Queue"
-_H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _EMPTY = re.compile(r"^\s*(?:[-*]\s*)?none\s+—\s+\S.{20,}", re.IGNORECASE)
 _ITEM = re.compile(r"^\s*(?:[-*]\s*)?Decision:\s+\S", re.MULTILINE)
 _SCAFFOLD = re.compile(
@@ -41,23 +39,7 @@ def applies(text: str) -> bool:
     return is_floor_in_scope(parse_created_date(text), RULE_DATE)
 
 
-def _section_body(text: str, heading: str) -> str | None:
-    masked = _mask_fences(text)
-    headings = list(_H2.finditer(masked))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != heading:
-            continue
-        body_start = masked.find("\n", match.end())
-        if body_start == -1:
-            return ""
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        # Slice the MASKED copy, not the raw text: the headings were located on
-        # the masked copy, and returning the raw span un-masked every fenced
-        # example inside the section, so an illustrative `- Decision: …` in a code
-        # fence was read as the author's real operator decision. Masking preserves
-        # offsets, so the span is identical apart from the blanked fence regions.
-        return masked[body_start + 1:body_end].strip()
-    return None
+_section_body = _GRAMMAR.masked_section_body
 
 
 def check(text: str) -> dict[str, Any]:

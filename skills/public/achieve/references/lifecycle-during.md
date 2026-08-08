@@ -51,6 +51,18 @@ gate cadence: pre-lock slices run `run_slice_closeout.py --skip-broad-pytest`;
 final or bundle proof records the verification lock and reruns with
 `--verification-lock` before claiming broad pytest evidence.
 
+**That `Gate cadence:` line is the only owner of when broad proof runs.**
+`## User Acceptance` states OUTCOMES and points here; it must not restate the
+cadence. A goal artifact whose acceptance demands broad pytest per slice while
+its frame defers it is refused by `goal_artifact_cadence_owner` — at
+`--pursue-ready` (before activation, where the cost is still avoidable) and at
+the default `check_goal_artifact.py` check. The floor was written from a measured
+instance: an agent reading its own acceptance criteria obeyed the acceptance
+criteria and ran a 12-minute suite about thirteen times, roughly two and a half
+hours of pure waiting. It is scoped narrowly — it skips `complete` artifacts, it
+needs BOTH owners present, and it does not touch `run-quality.sh --read-only`,
+which is a ~110s gate that per-slice cadence *agrees* with.
+
 ### External-side-effect approval is phase-scoped
 
 Operator approval for an external side effect — publish, push, remote CI watch,

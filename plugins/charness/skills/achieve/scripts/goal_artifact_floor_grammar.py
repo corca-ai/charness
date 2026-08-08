@@ -29,7 +29,12 @@ from pathlib import Path
 _SCRIPT_DIR = Path(__file__).resolve().parent
 if str(_SCRIPT_DIR) not in sys.path:
     sys.path.insert(0, str(_SCRIPT_DIR))
-from goal_artifact_markdown import fences_balanced, join_soft_wraps, mask_fences  # noqa: E402
+from goal_artifact_markdown import (  # noqa: E402
+    fences_balanced,
+    join_soft_wraps,
+    mask_fences,
+    section_bounds,
+)
 
 # Permissive ``Created:`` line: tolerant of a leading ``>``/``-``/``*`` prefix,
 # surrounding whitespace, and case, so a blockquoted or list-item ``Created:`` line
@@ -166,6 +171,32 @@ def section_body(masked: str, heading: str) -> str | None:
     if span is None:
         return None
     return masked[span[0] : span[1]]
+
+
+def masked_section_body(text: str, heading: str) -> str | None:
+    """Fence-masked, stripped body of one section; ``None`` when absent.
+
+    Locate the section on the masked copy AND parse the masked slice, so an
+    illustrative line inside a code fence cannot satisfy a floor.
+
+    Built on ``section_bounds`` -- the FLAT, exact-name, case-SENSITIVE ``## ``
+    walk -- and deliberately NOT on ``section_body``/``section_span``. The
+    operator-queue and blocked-matrix floors are its callers, and ``section_span``
+    above says in as many words that those two keep the flat variant "unless a
+    divergence-exposing proof migrates them". A first cut of this helper routed
+    them through ``section_span`` anyway: that would have widened them to
+    ``#``..``######``, made them case-insensitive, and made them accept trailing
+    text after the heading name -- so an ordinary ``### Operator Decision Queue``
+    block quoted inside a slice log could satisfy a ``complete``-state floor while
+    the real H2 section still held scaffold prose. A false green at a terminal
+    boundary, latent in every artifact. Round-2 review caught it.
+
+    ``None`` and ``""`` stay distinct: "no such heading" and "heading present but
+    empty" are different facts, and callers branch on it.
+    """
+    masked = mask_fences(text)
+    bounds = section_bounds(masked, heading)
+    return None if bounds is None else masked[bounds[0]:bounds[1]].strip()
 
 
 def joined_section_body(text: str, heading: str) -> str | None:

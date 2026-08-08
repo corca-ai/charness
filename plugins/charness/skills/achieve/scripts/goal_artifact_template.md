@@ -29,7 +29,14 @@ runs the activation command.
 
 ## User Acceptance
 
-What the user can do to verify completion directly.
+What the user can do to verify completion directly — the OUTCOMES, not the
+verification cadence. Whichever line of `## Active Operating Frame` states when
+broad or expensive proof runs (`Gate cadence:` in the charness default frame; a
+consumer adapter may seed its own) is the one owner of that answer. Restating it
+here creates a second owner, and an agent reading its own acceptance criteria
+obeys the acceptance criteria: one measured session paid roughly two and a half
+hours re-running a 12-minute suite that way. Name what is true when the goal is
+done, and point at `## Active Operating Frame` for when it is proven.
 
 ## Agent Verification Plan
 

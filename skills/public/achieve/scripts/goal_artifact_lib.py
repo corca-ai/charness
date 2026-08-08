@@ -26,6 +26,7 @@ def _load_sibling(module_name: str):
 
 
 _blocked_matrix = _load_sibling("goal_artifact_blocked_matrix")
+_cadence_owner = _load_sibling("goal_artifact_cadence_owner")
 _closeout = _load_sibling("goal_artifact_closeout_evidence")
 _discussion = _load_sibling("goal_artifact_discussion")
 _draft_frame = _load_sibling("goal_artifact_draft_frame")
@@ -49,9 +50,23 @@ record_metric_window = _metric_window.record_metric_window
 metric_window_attention = _metric_window.metric_window_attention
 check_timebox_closeout = _timebox.check_timebox_closeout
 check_blocked_matrix = _blocked_matrix.check
+
 _mask_fences = _markdown.mask_fences
 _fences_balanced = _markdown.fences_balanced
 slice_plan_data_row_count = _markdown.slice_plan_data_row_count
+
+
+def check_cadence_owner(text: str, *, status: str | None) -> dict[str, Any]:
+    """Whether `## User Acceptance` restates a gate cadence the frame defers."""
+    return _cadence_owner.check(
+        text,
+        status=status,
+        masked=_mask_fences(text),
+        markdown=_markdown,
+        is_terminal=_pursue.is_terminal_status,
+        balanced=_fences_balanced(text),
+    )
+
 
 GOAL_DIR = "charness-artifacts/goals"
 VALID_STATUSES = ("draft", "active", "blocked", "complete")
@@ -313,7 +328,7 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
     facts this module owns -- the artifact's status and the required-heading set
     ``check_goal`` enforces -- so the readiness module never reaches back here.
     """
-    return _pursue.pursue_readiness(
+    report = _pursue.pursue_readiness(
         text,
         required_sections=(
             REQUIRED_SECTIONS
@@ -334,6 +349,28 @@ def pursue_readiness(text: str, *, deploy_vocab: tuple[str, ...] | list[str] | N
         discussion_readiness=discussion_readiness,
         draft_frame_disposition=_draft_frame.draft_frame_disposition,
     )
+    # Activation is where this floor is worth the most: the contradiction's whole
+    # cost is paid AFTER the goal goes active, one broad suite per slice.
+    cadence = check_cadence_owner(text, status=read_status(text))
+    report["cadence_owner"] = cadence
+    if not cadence["ok"]:
+        # JOIN, never replace. `_reason` is deliberately every-reason-not-the-first
+        # (its docstring records that a single-winner chain made a second `/goal`
+        # attempt discover the rest), and clobbering it here would rebuild that
+        # defect along a new dimension. Round-1 review caught this.
+        pass_reason = report["pursue_ready"]
+        # BOTH keys. `pursue_readiness` publishes the same fact twice
+        # (`pursue_ready` and `activation_ready`), and updating one left a payload
+        # asserting `activation_ready: true` about a goal it refused -- one fact
+        # with two owners, which is this slice's own subject. Round-2 review.
+        report["pursue_ready"] = False
+        report["activation_ready"] = False
+        # Not the reserved `unshaped:` vocabulary: that verdict routes a reader to
+        # the achieve Before-phase, and this one's remedy is a one-sentence edit to
+        # `## User Acceptance`.
+        clause = "contradictory: " + cadence["reason"]
+        report["reason"] = clause if pass_reason else report["reason"] + "; " + clause
+    return report
 
 
 def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
@@ -358,19 +395,15 @@ def render_slice_block(number: int, name: str, fields: dict[str, str]) -> str:
 
 def append_slice(text: str, slice_block: str) -> str:
     """Insert a slice block at the end of the ``## Slice Log`` section."""
-    headings = list(_H2.finditer(_mask_fences(text)))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != "Slice Log":
-            continue
-        newline = text.find("\n", match.start())
-        heading_line_end = len(text) if newline == -1 else newline + 1
-        section_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
-        existing = text[heading_line_end:section_end].strip("\n")
-        block = slice_block.strip("\n")
-        body = f"{existing}\n\n{block}" if existing else block
-        suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
-        return f"{text[:heading_line_end]}\n{body}{suffix}"
-    raise ValueError("artifact has no `## Slice Log` section")
+    bounds = _markdown.section_bounds(_mask_fences(text), "Slice Log")
+    if bounds is None:
+        raise ValueError("artifact has no `## Slice Log` section")
+    heading_line_end, section_end = bounds
+    existing = text[heading_line_end:section_end].strip("\n")
+    block = slice_block.strip("\n")
+    body = f"{existing}\n\n{block}" if existing else block
+    suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
+    return f"{text[:heading_line_end]}\n{body}{suffix}"
 
 
 def check_goal(text: str) -> dict[str, Any]:
@@ -404,8 +437,12 @@ def check_goal(text: str) -> dict[str, Any]:
             + ", ".join(portability_missing)
             + " — every goal keeps these headings (use `N/A — <reason>` if a section is empty)"
         )
+    cadence = check_cadence_owner(text, status=status)
+    if not cadence["ok"]:
+        issues.append("gate-cadence owner floor — " + cadence["reason"])
     return {
         "ok": not issues,
+        "cadence_owner": cadence,
         "status": status,
         "missing_sections": missing,
         "portability_missing_sections": portability_missing,

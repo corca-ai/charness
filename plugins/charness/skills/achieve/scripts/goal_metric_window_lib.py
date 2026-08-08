@@ -9,9 +9,14 @@ from __future__ import annotations
 
 import re
 import shlex
+import sys
+from pathlib import Path
+
+_SCRIPT_DIR = Path(__file__).resolve().parent
+sys.path.insert(0, str(_SCRIPT_DIR))
+from goal_artifact_markdown import section_bounds as _section_bounds  # noqa: E402
 
 _WINDOW_LINE = re.compile(r"^Host metric window:[^\n]*$", re.MULTILINE)
-_H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _WINDOW_REQUIRED_KEYS = ("started_at", "completed_at")
 # Exactly one per line; which one names the host that produced the session.
 _WINDOW_SESSION_KEYS = ("codex_session_file", "claude_session_file")
@@ -115,15 +120,11 @@ def record_metric_window(
     existing = _WINDOW_LINE.search(text)
     if existing is not None:
         return text[:existing.start()] + line + text[existing.end():]
-    headings = list(_H2.finditer(text))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != "Final Verification":
-            continue
-        newline = text.find("\n", match.start())
-        heading_line_end = len(text) if newline == -1 else newline + 1
-        section_end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
-        existing_body = text[heading_line_end:section_end].strip("\n")
-        body = f"{existing_body}\n\n{line}" if existing_body else line
-        suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
-        return f"{text[:heading_line_end]}\n{body}{suffix}"
-    raise ValueError("artifact has no `## Final Verification` section")
+    bounds = _section_bounds(text, "Final Verification")
+    if bounds is None:
+        raise ValueError("artifact has no `## Final Verification` section")
+    heading_line_end, section_end = bounds
+    existing_body = text[heading_line_end:section_end].strip("\n")
+    body = f"{existing_body}\n\n{line}" if existing_body else line
+    suffix = "\n" if section_end == len(text) else f"\n\n{text[section_end:]}"
+    return f"{text[:heading_line_end]}\n{body}{suffix}"

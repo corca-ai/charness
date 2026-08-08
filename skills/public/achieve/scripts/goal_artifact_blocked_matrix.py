@@ -36,7 +36,6 @@ def _load_floor_grammar():
 
 
 _GRAMMAR = _load_floor_grammar()
-_mask_fences = _GRAMMAR.mask_fences
 parse_created_date = _GRAMMAR.parse_created_date
 is_floor_in_scope = _GRAMMAR.is_floor_in_scope
 grandfathered_report = _GRAMMAR.grandfathered_report
@@ -55,7 +54,6 @@ BLOCKING_TOKENS = frozenset({"approval-required", "read-only", "blocked"})
 SETTLED_TOKENS = frozenset({"verified", "dispositioned"})
 ALL_TOKENS = RUNNABLE_TOKENS | BLOCKING_TOKENS | SETTLED_TOKENS
 
-_H2 = re.compile(r"^## (.+?)[ \t]*\r?$", re.MULTILINE)
 _LANE = re.compile(
     r"^\s*(?:[-*]\s*)?Lane:\s*(?P<name>[^|\n]{2,}?)\s*\|\s*classification:\s*(?P<token>[a-z][a-z-]*)\b",
     re.MULTILINE | re.IGNORECASE,
@@ -72,20 +70,7 @@ def applies(text: str) -> bool:
     return is_floor_in_scope(parse_created_date(text), RULE_DATE)
 
 
-def _section_body(text: str, heading: str) -> str | None:
-    masked = _mask_fences(text)
-    headings = list(_H2.finditer(masked))
-    for index, match in enumerate(headings):
-        if match.group(1).strip() != heading:
-            continue
-        body_start = masked.find("\n", match.end())
-        if body_start == -1:
-            return ""
-        body_end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
-        # Parse the fence-masked slice so an illustrative fenced lane line cannot
-        # satisfy the floor; real matrices are plain list items.
-        return masked[body_start + 1:body_end].strip()
-    return None
+_section_body = _GRAMMAR.masked_section_body
 
 
 def _lanes(body: str) -> list[dict[str, str]]:

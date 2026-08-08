@@ -401,6 +401,13 @@
     },
     {
       "class": "intentional",
+      "id": "2d3c005af60a8720",
+      "note": "the per-module `importlib` sibling-loader preamble shared by goal_artifact_blocked_matrix, goal_artifact_operator_queue and goal_artifact_backlog. Surfaced as NEW purely by rotation: this slice DELETED the now-dead `_H2` / `_mask_fences` lines from the first two after migrating them onto floor_grammar's `masked_section_body`, and removing that intervening text is what let the remaining preambles hash together. All three preambles predate this slice and none was edited. Not extractable: it is the bootstrap that makes cross-module loading possible in the first place, so a shared home would itself need loading by the same preamble.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "2dd39753778c7cb1",
       "note": "planner required-read `_read(...)` + adapter-contract-on-adapter-trouble guard mirrored across handoff/debug portable planners for agent-facing consistency; each planner stays skill-local-portable — intentional",
       "reviewed_at": "2026-07-02",
@@ -439,6 +446,13 @@
       "id": "2f8e4eee7183a670",
       "note": "two independent JSONL validators sharing the read-lines/skip-blank/json.loads/jsonschema.validate loop shape (usage_episode_records.read_schema_valid_records, rca_ledger_lib.validate_ledger); they return different error record shapes (list[str] with path-qualified messages vs list[dict] keyed by line) and apply different timestamp rules, so a shared helper would need a per-caller formatter callback and would couple the usage-episode and RCA-ledger schemas without centralizing any behavior. Surfaced as new when a deferred `import jsonschema` was added to the first (41ms of run_slice_closeout.py startup), matching the lazy import rca_ledger_lib already had",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2f95a48e67c2f1b5",
+      "note": "the `_SCRIPT_DIR` / `sys.path.insert` / `from goal_artifact_markdown import (...)` bootstrap block shared by goal_artifact_floor_grammar, goal_artifact_figure_form and goal_artifact_evidence_distinctness. Only floor_grammar changed, and only by adding `section_bounds` to an existing import so it could give the operator-queue and blocked-matrix floors back their FLAT ##-only section walk. Recorded with its cost, because this family is measured: an earlier attempt to reshape this exact import to dodge the ratchet is what routed those two floors through the level-aware, case-insensitive `section_span` instead -- a latent false-green at a `complete`-state boundary that round-2 bounded review caught. Letting a duplicate-hash chase drive the design of a proof surface cost more than the duplication does. It is a sys.path bootstrap; there is no behaviour to centralize.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {
@@ -1076,6 +1090,13 @@
       "id": "62e19bb7ee0fbe0a",
       "note": "cross-skill `_package_root` import-bootstrap helper repeated across portable skill-local scripts (handoff chunked_routing_issue_backend.py + draft_goal_from_chunk.py, release release_issue_closeout.py); it resolves the package root that ENABLES cross-skill imports, so it cannot be extracted into a shared module without first importing that module (chicken-and-egg) — intentional portable bootstrap, not extractable debt. Fingerprint surfaced by the dup_ratchet scanner module split (52ad19dd).",
       "reviewed_at": "2026-07-05",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "6357d732d5680de4",
+      "note": "the `## <heading>` section-locating walk, shared by `achieve`'s `goal_artifact_markdown.section_bounds` and `handoff`'s `chunked_routing_parser`. The CLASSIFICATION is the cross-package boundary: `achieve` and `handoff` ship as independent portable skill packages and must not import each other's private scripts, so the only real fix is a `skills/shared/` home -- a cross-package move with its own compatibility surface, which belongs in its own slice rather than smuggled into this one. SCOPE, stated precisely because a first draft of this note overclaimed and round-2 review caught it: this slice migrated the SEVEN call sites in its review scope onto one owner (draft_frame, early_close_report, timebox, metric_window, lib.append_slice, and operator_queue/blocked_matrix via floor_grammar's masked_section_body). It did NOT finish the package. Same-shaped walks REMAIN, un-migrated and recorded as an off-goal finding, in goal_artifact_markdown.slice_plan_data_row_count (in the very file that now hosts the owner, and with a deliberately different body_start == -1 fallback), goal_artifact_closeout_evidence, goal_artifact_pursue, goal_artifact_discussion, goal_artifact_section_placeholders, goal_artifact_closeout_delegation, and goal_artifact_early_close_report's remaining walk. This entry accepts ONE cross-package family; it is not a claim that the package is consolidated.",
+      "reviewed_at": "2026-08-08",
       "surface": "code"
     },
     {

@@ -88,8 +88,8 @@ half of the same question — the half the root repair exists to make possible.
   a typed gap; no declared-but-unreached surface renders as `clean`.
 - A repo can declare a sub-key ABSENT and the resolver honors it, distinguishably
   from `defaulted`.
-- `pytest tests/ -q` reports zero failures AND `./scripts/run-quality.sh
-  --read-only` exits 0 at each slice boundary.
+- Every slice is proven green at the cadence `## Active Operating Frame` states.
+  This line names no command and no boundary frequency on purpose; the frame owns that.
 - The Slice Log records the premise-check verdict BEFORE each build, including
   where the premise held.
 - Any new verdict state ships with a measured upper bound on its own breadth.

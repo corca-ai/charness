@@ -1,6 +1,6 @@
 # Achieve Goal: One cadence, one owner: stop the harness contradicting itself to the agent
 
-Status: draft
+Status: active
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent.md`
 
@@ -9,14 +9,30 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent.md` after confirming the draft is
-  still intended.
+- Current slice: 2 — one owner for a sweep's population.
+- Current slice intent: slice 1 is BUILT and verified (the cadence contradiction:
+  source, validator, three live artifacts). Next intent unit is slice 2: point an
+  existing hand-rolled sweep at the `git ls-files`-derived population owner and
+  show the population is unchanged. Critique and broad proof do not re-fire within
+  one unchanged intent — update this when the intent changes, not per commit
+  (meaningful-slice-cadence).
+- Slice 1 premise check (verdict BEFORE the build): **HOLDS, but the goal
+  OVERCOUNTS.** Measured over all 190 checked-in artifacts: THREE carry the
+  contradiction, not five. The two `complete` ones the goal named carry an
+  acceptance line but no deferring `Gate cadence:` line, so they were never
+  two-owner contradictions; a live artifact the goal did NOT name
+  (`2026-08-07-repair-declaration-to-verdict-at-root.md`, active) does, and was
+  repaired under the goal's own stated criterion.
+- Slice 1 review: TWO bounded rounds, both delegated. Round 1 found 8 (including
+  a clobbered refusal reason and a `complete` skip disarmed by the repo's own
+  annotated `Status:` style); round 2 read the REPAIRS and found the fix had
+  carried its own class — one fact left with two owners, and a consolidation that
+  routed two `complete`-state floors onto a level-aware section walk, a latent
+  false green. All repaired; round-2 repairs accepted-unreviewed per the cap.
+- Next action: premise-check slice 2 before building it. Its own subject (one
+  owner for a population) now has two concrete un-migrated instances from slice 1
+  in `## Off-Goal Findings`; check them against the `git ls-files` precedent
+  before shaping the slice around either.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -136,7 +152,7 @@ The predecessor's other structural findings, each measured rather than supposed:
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | The cadence contradiction: fix the SOURCE, add the validator, repair only the artifacts still being read | Measured cost is ~2.5h in one session, and the source keeps reproducing the sentence | The validator refuses a reconstructed contradicting artifact, passes the repaired ones, and SKIPS `complete` artifacts; the scaffold no longer seeds the shape; the active and draft artifacts are repaired | planned |
+| 1 | The cadence contradiction: fix the SOURCE, add the validator, repair only the artifacts still being read | Measured cost is ~2.5h in one session, and the source keeps reproducing the sentence | The validator refuses a reconstructed contradicting artifact, passes the repaired ones, and SKIPS `complete` artifacts; the scaffold no longer seeds the shape; THREE live artifacts repaired (not two — see the premise check) | done |
 | 2 | One owner for a sweep's population, pointed at the `git ls-files` precedent | Three successive guards were wrong about their own population, each caught by a different reviewer | An existing hand-rolled sweep delegates and its population is unchanged, measured before and after | planned |
 | 3 | Closeout ledger states population and removals separately | The same arithmetic error blocked three of four closeouts at the resolution-critique stage | The blocked phrasing now fails a check rather than a reviewer, and the repaired phrasing passes | planned |
 | 4 | The two lessons a gate cannot hold, written where the next session reads them | Both cost real rework and neither is gate-shaped | `recent-lessons.md` carries them; no new gate is added | planned |
@@ -222,6 +238,12 @@ per the bullets above when that boundary is crossed):
 
 - `Routing: <skill> — <why this phase needs it>`
 
+Recorded during the run:
+
+- Routing: achieve — this run is a goal lifecycle, and `achieve` owns activation, the slice cadence, the slice log, and the closeout floors; slice 1's work was instruction-surface plus validator repair inside `achieve`'s own package, so no separate implementation owner was warranted.
+- Gather: n/a — `## Context Sources` names only in-repo paths and one live `gh` recount; no external URL, Slack, Notion, Docs, or Drive source applies.
+- Release: n/a — slice 1 touches no version bump and no install manifest; the `plugins/` mirror resync is a generated-surface sync, not a release surface.
+
 ## Discuss Before Activation
 
 A Before-phase summary of any consequential activation decision — surfaced from
@@ -252,6 +274,20 @@ applies.
   which would be the wolf-crier this goal's Non-Goals forbid.
 
 ## Slice Log
+
+### Slice 1: The cadence contradiction — fix the source, add the validator, repair what is still read
+
+- Objective: Stop a goal artifact from carrying two owners for one rule. `## Active Operating Frame`'s `Gate cadence:` line owns WHEN broad proof runs; several hand-written `## User Acceptance` sections restated it as per-slice broad pytest, and the measured cost was ~2.5h of wall-clock waiting in one predecessor session (a 12-minute suite run about thirteen times). Repair the scaffold that keeps reproducing the sentence, add a validator that refuses the pair, and repair only the artifacts a session will still read.
+- Why this approach: First because its instance is still costing. The instruction-surface repairs come before the filed issues because they change how the remaining slices are executed.
+- Commits: one commit on `main` (local); nothing pushed
+- What changed: NEW `skills/public/achieve/scripts/goal_artifact_cadence_owner.py` (the floor). `goal_artifact_lib.py` — `check_cadence_owner`, wired into BOTH `check_goal` and `pursue_readiness`; `append_slice` delegated. `goal_artifact_pursue.py` — NEW `status_token` + `is_terminal_status`, sibling of `is_shaping_status`. `goal_artifact_markdown.py` — NEW `section_bounds` / `logical_lines`; `join_soft_wraps` delegates. `goal_artifact_floor_grammar.py` — NEW `masked_section_body` over the FLAT walk. `goal_artifact_template.md` + `references/lifecycle-during.md` — the source repair and its contract. `attention-state-visibility.json` — declares the new module's `skipped` state. Six sibling modules migrated off hand-rolled section walks (draft_frame, early_close_report, timebox, metric_window, operator_queue, blocked_matrix). Three live goal artifacts repaired: `2026-08-08-one-rule-one-owner-one-check-its-own-voice.md` (active), `2026-08-08-finish-the-declaration-to-verdict-sequence.md` (draft), `2026-08-07-repair-declaration-to-verdict-at-root.md` (active). Tests: `test_goal_artifact_cadence_owner.py` (22), `test_flat_section_walk_divergence.py` (8).
+- Alternatives rejected: REJECTED a generic `two surfaces disagree` detector — the Non-Goals forbid it and the measured instances come first. REJECTED rewriting `complete` artifacts — explicit operator ruling; the floor skips them, because a validator that reddens on records nobody may repair is a wolf-crier by construction. REJECTED matching `run-quality.sh --read-only` as broad proof: it is a ~110s gate that per-slice cadence AGREES with, and the predecessor measured it naming four real defects nothing else caught. REJECTED classifying the section-walk duplication away when the ratchet blocked; consolidating was the correct repair and is the goal's own subject.
+- Targeted verification: PREMISE CHECK (verdict BEFORE the build): **HOLDS, but the goal OVERCOUNTS.** The goal claims the acceptance sentence appears verbatim in FIVE checked-in artifacts. Measured over all 190: THREE carry a per-slice broad-proof acceptance line, and only those three carry BOTH it and a deferring `Gate cadence:` line. The two `complete` artifacts the goal named carry an acceptance line but NO cadence line, so they were never two-owner contradictions. A third live artifact the goal did NOT name — `2026-08-07-repair-declaration-to-verdict-at-root.md` (active) — does carry the pair, and was repaired under the goal's own stated criterion (artifacts still being read). Confirmed separately: `check_goal_artifact.py` compares the two sections nowhere, and the scaffold does seed the correct cadence. — PROOF: 22 + 8 new tests; 550 passing across the goal/achieve suites; 152 passing across the indirect-consumer paths round 2 named (`test_goal_helpers`, `test_record_metric_window`, `test_handoff_chunker_auto_draft`, `test_goal_coordination_floors`, `test_artifact_naming`). Corpus scan: 3 refused before repair, 0 after. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: `Closeout verdict: completed`. Cautilus: `not-required`, no run. Reviewer boundary fingerprinted snapshot/verify around BOTH rounds: round 1 `clean`; round 2 `parent-attributed` with 17/17 declared and zero undeclared drift. MUTATION: 20 mutants constructed, 20 killed, counted from re-runs. Round-1 set (10): the `complete` skip, deferral-always-true, re-adding `run-quality.sh` to the broad matcher, dropping the frequency requirement, dropping the subdirectory lookahead, physical-vs-logical lines, an INVERSION swapping the two roles in the refusal message, and both CALL SITES. Round-1-repair set (6). Round-2-repair set (4): `activation_ready`, the unbalanced-fence guard, `status_token` punctuation, and `masked_section_body` back onto the level-aware walk.
+- Test duplication pressure: `check_dup_ratchet.py --summary` hard-blocked FOUR times and was right every time. The first block is the one that mattered: it caught that the new floor was shipping a 6th copy of a section-locating walk already hand-rolled across the package — in a slice whose subject is one rule having one owner. Consolidating seven call sites was the repair. Final state: `ok: true`, 0 new families. Three families classified `intentional` with reasons (one cross-package `achieve`/`handoff` pair; two rotation artifacts of the consolidation itself).
+- Critique: TWO bounded fresh-eye rounds, both delegated, both `parent-delegated` context. ROUND 1 found 8: `pursue_readiness` CLOBBERED the joined refusal reason (rebuilding the single-winner defect `_reason`'s own docstring records repairing) and borrowed the reserved `unshaped:` vocabulary; `status == "complete"` was DISARMED by the repo's own annotated `Status: COMPLETE (date) — ...` house style; the two owners were read with DIFFERENT line models, so a `Gate cadence:` value wrapping before `--skip-broad-pytest` (two live corpus instances) disarmed the floor entirely while it reported the reassuring "no cadence line that defers broad proof"; the acceptance body was scanned UNMASKED, so an artifact quoting the banned shape to warn against it was refused; `pytest -q tests/` was invisible; the exclusion's stated rationale was FACTUALLY WRONG (`run-quality.sh` does queue `run_standing_pytest.py`, so scope was the wrong argument — the right one is measured cost); the template asserted a `Gate cadence:` line no adapter is required to seed; and the repair had duplicated its own rationale into three artifacts — the same defect one layer down. ALL REPAIRED. ROUND 2 read the REPAIRS and earned its keep exactly as the contract predicts: the round-1 fix CARRIED THE CLASS IT FIXED. `pursue_readiness` set `pursue_ready: False` but left `activation_ready: True` in the same payload — one fact with two owners, in the slice about one fact having one owner. And the unplanned consolidation had routed the operator-queue and blocked-matrix floors onto the LEVEL-AWARE, case-insensitive `section_span` — against a sentence in that function's own docstring saying those two keep the flat variant "unless a divergence-exposing proof migrates them". Under it an ordinary `### Operator Decision Queue` quoted in a slice log becomes the section, so a `- Decision:` line there satisfies a `complete`-state floor while the real H2 holds scaffold prose: a false green at a terminal boundary, latent in every artifact. Also: the floor was the one new reader consuming a possibly-fail-open mask while claiming fenced examples could not act as an owner; `is_terminal_status` was a third normalisation owner and missed the live `Status: complete.` spelling; and the `intentional` dup note made a completeness claim seven remaining copies contradicted. ALL REPAIRED; round-2 repairs are accepted-unreviewed per the two-round cap. NOTE — three of the four round-2 repairs initially SURVIVED their mutants; the tests were added and re-run until all four were killed. One test-side defect was found the same way in round 1: a `startswith` assertion went vacuous once reasons were joined.
+- Off-goal findings: (1) The section-locating walk still has ~7 un-migrated copies inside the `achieve` package — `slice_plan_data_row_count` (in the very file that now hosts the owner, with a deliberately different `body_start == -1` fallback), `closeout_evidence`, `pursue`, `discussion`, `section_placeholders`, `closeout_delegation`, and `early_close_report`'s remaining walk. Recorded in the dup-review note rather than claimed as finished. (2) The `achieve`/`handoff` copies need a `skills/shared/` home; that is a cross-package move with its own compatibility surface. Both are slice-2 shaped (its objective is one owner for a population) and should be premise-checked against it rather than filed blind.
+- Lessons carried forward: (1) PREMISE-CHECK THE POPULATION, NOT JUST THE PREMISE. The goal's count was wrong in both directions — two named artifacts were not contradictions, one unnamed live artifact was. A grep for the sentence would have inherited the overcount; running the floor over the whole corpus is what produced the real number. (2) THE RATCHET WAS RIGHT AND THEN THE RATCHET WAS THE PROBLEM. Its first block caught a real defect. But chasing a later rotated hash is what routed two `complete`-state floors onto the wrong section walk — a latent false green. A duplicate-hash chase must not drive the design of a proof surface; classify with a reason instead. (3) A REPAIR VERIFIED ONLY AGAINST THE FINDING THAT PROMPTED IT IS UNVERIFIED. Three of four round-2 repairs survived their mutants on the first pass. Mutate every repair, not only the original code. (4) VERIFY THE REVIEWER BOUNDARY BEFORE REPAIRING, not after — round 2's window had to be reconciled by declaring 17 parent paths because I went straight into repairs.
+- Metrics: Host metrics not exposed to this session; no token/time figures claimed.
 
 ## Context Sources
 
@@ -341,6 +377,25 @@ check proves shape only; closeout workflows prove the values and identities:
 ## Off-Goal Findings
 
 Issues or deferred findings discovered during the run.
+
+- **The section-locating walk has ~7 un-migrated copies left inside the `achieve`
+  package** (slice 1). Consolidating seven call sites onto one owner was forced by
+  the duplicate ratchet mid-slice and is genuinely done; the package is NOT
+  finished. Remaining: `goal_artifact_markdown.slice_plan_data_row_count` — in the
+  very file that now hosts the owner, and with a deliberately DIFFERENT
+  `body_start == -1` fallback — plus `closeout_evidence`, `pursue`, `discussion`,
+  `section_placeholders`, `closeout_delegation`, and `early_close_report`'s
+  remaining walk. Recorded in the `dup-review.json` note rather than claimed as
+  finished, because a first draft of that note asserted completeness and round-2
+  review refuted it.
+- **The `achieve`/`handoff` copies need a `skills/shared/` home** (slice 1). The
+  one duplicate family left unclassified-by-repair spans two independently-shipped
+  skill packages, which cannot import each other's private scripts. Accepted as
+  `intentional` with that reasoning; the real fix is a cross-package move with its
+  own compatibility surface.
+- Both are slice-2 shaped — its objective is one owner for a population — and
+  should be premise-checked against the `git ls-files` precedent rather than filed
+  blind. Not filed as GitHub issues yet for that reason.
 
 ## Final Verification
 

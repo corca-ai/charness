@@ -84,13 +84,51 @@ def join_soft_wraps(section_body: str) -> str:
     the content is substantively present across the wrap; it is not a path for a
     wrong answer to reach an irreversible boundary.
     """
-    out: list[str] = []
-    for raw in section_body.splitlines():
+    return "\n".join(text for _, text in logical_lines(section_body))
+
+
+def logical_lines(section_body: str) -> list[tuple[int, str]]:
+    """``(1-based physical line where it starts, joined text)`` per logical line.
+
+    The reflow rule is ``join_soft_wraps``'; this is the same walk keeping the
+    origin of each logical line, so a floor can both READ a soft-wrapped value and
+    SAY where it is. Reporting the joined text with no location leaves the author
+    hunting for a line that, by construction, is not the one they see.
+    """
+    out: list[tuple[int, str]] = []
+    for index, raw in enumerate(section_body.splitlines(), start=1):
         if out and raw.strip() and not _BLOCK_STARTER.match(raw):
-            out[-1] = f"{out[-1]} {raw.strip()}"
+            out[-1] = (out[-1][0], f"{out[-1][1]} {raw.strip()}")
         else:
-            out.append(raw)
-    return "\n".join(out)
+            out.append((index, raw))
+    return out
+
+
+def section_bounds(masked: str, section: str, *, casefold: bool = False) -> tuple[int, int] | None:
+    """Offsets of one ``## <section>`` body inside a fence-masked artifact.
+
+    ``(body_start, body_end)``: the offset just past the heading line, and the
+    offset of the next ``##`` heading (or end of text). Offsets rather than the
+    slice itself, because the two things callers do with a section need the same
+    two numbers — READ the body, or INSERT at its end (``start`` is exactly the
+    insertion point after the heading line).
+
+    ONE owner. Six modules across `achieve` and `handoff` had hand-rolled this
+    same nine-line walk, each subtly its own: masked-vs-raw, ``""``-vs-``None``
+    for absent, case-sensitive or not. Adding a seventh copy while shipping a
+    slice about one rule having one owner is what made this a real repair rather
+    than hygiene — and the duplicate-ratchet gate is what refused it.
+    """
+    headings = list(_H2.finditer(masked))
+    for index, match in enumerate(headings):
+        name = match.group(1).strip()
+        if (name.lower() != section.lower()) if casefold else (name != section):
+            continue
+        body_start = masked.find("\n", match.start())
+        start = match.end() if body_start == -1 else body_start + 1
+        end = headings[index + 1].start() if index + 1 < len(headings) else len(masked)
+        return start, end
+    return None
 
 
 def slice_plan_data_row_count(text: str) -> int:
