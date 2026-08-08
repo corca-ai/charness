@@ -31,6 +31,16 @@ runs the activation command.
 
 ## Goal
 
+**SUPERSEDED on 2026-08-09 by
+[`2026-08-09-refuse-the-verdict-a-surface-never-earned.md`](./2026-08-09-refuse-the-verdict-a-surface-never-earned.md).
+Do not activate this file.** The successor adopts this draft's narrowing intact —
+the mutation sweep stays cut, `#564`'s filed remedy stays declined, `#565`
+survives as the tool that goes first — and adds `#563` (resolved as a DELETION
+after the operator asked whether the checker should be code at all), `#546`,
+`#521` (a NO-OBSERVED-EFFECT census over the queued checks), and `#523` as the
+consumer-facing pick this draft's own audit instruction called for. Read this
+file only for the reasoning behind the narrowing; the live plan is the successor.
+
 **NARROWED after a 7-day value audit — read this before shaping.** This draft was
 designed at its predecessor's closeout and is no longer the default pickup
 (`docs/handoff.md` points elsewhere). Two of its three planned items did not
