@@ -1,6 +1,6 @@
 # Achieve Goal: Refuse the verdict a surface never earned, and shrink the surface every session pays for
 
-Status: draft
+Status: active
 Created: 2026-08-09
 Activation: `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`
 
@@ -9,14 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md` after confirming the draft is
-  still intended.
+- Current slice: 2 — `#564` re-scoped onto slice 1's helper. Slice 1 is DONE.
+- Current slice intent: slice 1 shipped `scripts/mutate_and_restore.py` and is
+  closed. The next reviewable-intent unit makes the CALL-SITE question the
+  tool's behaviour rather than a rule in the goal template, then closes or
+  re-scopes `#564` with the declined-remedy reasoning recorded. Critique and
+  broad proof do not re-fire within one unchanged intent — update this when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- Next action: slice 2. Note slice 1's helper already KILLED a call-site mutant
+  in its own dogfood run, so the capability exists; slice 2 is about making the
+  tool ASK for one rather than leaving it to the author's memory.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -368,6 +370,20 @@ applies.
 - Discuss before activation: RESOLVED — four consequential decisions were settled with the operator during shaping. (1) **Direction**: the operator chose the false-green cluster over the consumer-facing tier, then chose to add `#523` back, so this goal is deliberately not single-class. (2) **`#563` becomes a DELETION**: the operator asked whether the checker should be code at all; measurement showed it is advisory, exits 0 everywhere, reports 0 findings on its default scope, and has two lifetime commits, and the operator decided to delete rather than repair — overruling `78a1790b`'s "demote, do not delete" with a year of no observed effect. Deletion is on the north star's irreversible list, which is why its completeness bar is in `## Boundaries`. (3) **Slice 4 census added**: the operator asked whether many such checks exist; a Sonnet-backed dynamic workflow with adversarial refutation was the requested instrument. It ranks and does not delete. (4) **Issue closes**: this goal intends to close tracked issues, each through the full closeout floor with a delegated resolution critique before the close call. No live/prod proof, no push, and no release is claimed.
 
 ## Slice Log
+
+### Slice 1: Slice 1 -- #565: a mutation sweep runner that cannot report a kill it did not earn
+
+- Objective: Build the repo-owned mutate-and-restore helper #565 asks for: refuse to report a kill unless the unmutated baseline first reported a PASSING TEST COUNT, and restore even when the test command raises. Every later slice's proof depends on it, so it goes first.
+- Why this approach: Hand-authored inline sweeps were the norm and one reported NINE FALSE KILLS (zsh does not word-split an unquoted parameter, so pytest got one nonexistent path, exited non-zero, and all nine mutants read as `killed`; three of nine had actually SURVIVED). The parent hand-rolled the same harness five times earlier in this session, including a manual `cp` restore -- the premise was measured, not assumed.
+- Commits:
+- What changed: scripts/mutate_and_restore.py (new), tests/quality_gates/test_mutate_and_restore.py (new, 26 tests), charness-artifacts/quality/dup-review.json (two idiom-sized families classified intentional).
+- Alternatives rejected:
+- Targeted verification: 26 tests pass. Dogfooded through its own CLI against its own repairs: baseline stated first (26 passed), 4 of 5 mutants killed including a CALL-SITE mutant, 1 refused because the mutation broke the run rather than being caught -- the round-1 repair working in production. ruff clean; python-lengths clean; dup-ratchet clean.
+- Test duplication pressure: Two new files; dup-ratchet surfaced exactly two new families, both idiom-sized (parallel 2-line property accessors, and the repo's standard CLI error-exit shape shared with check_skill_surface_preflight.py). Both classified `intentional` with reasons rather than restructured, because collapsing either would couple independently-owned surfaces for no behavioural gain.
+- Critique: TWO delegated bounded rounds, both returned DEFECTIVE on first read; seven blockers total. Round 1: the `killed` verdict rested on a bare non-zero exit (#565's own defect one level in -- a syntax error from the replacement, a collection error, or a crashed runner all exit non-zero with nothing caught); `invalidate_bytecode` was scoped to the sweep process's interpreter while `test_command` is arbitrary; a failure between the write and the bytecode drop left the tree mutated with the pristine bytes in a dead local; and the test guarding the restore property passed even with `apply_mutation` made a no-op, confirmed by mutation before repair. Round 2, reading the repairs: `SURVIVED` still returned on a bare exit-0 with no scope accounting; `parse_passed` scanned the whole transcript for `no tests ran` and this runner's OWN test file contains that literal, so a real kill became a refusal on the very file it was dogfooded against; and the exit-1 collision between a crash and `survivors found` was never actually fixed. Repairs: verdicts read the SUMMARY LINE only, both KILLED and SURVIVED require the run to account for the baseline count, errors are checked after failures so a teardown-error beside a real failure is still a kill, crashes exit 3, and containment/missing-key refusals were added. Boundary fingerprints clean (parent-attributed) around both windows.
+- Off-goal findings: Filed #570 during this session's #567 closeout (chunked-routing runs briefed on a surface they must not write). Nothing new filed by this slice.
+- Lessons carried forward: A same-length mutant is invisible to CPython's bytecode cache: `a + b` -> `a * b` keeps the source SIZE identical, and a .pyc is validated by size plus mtime truncated to whole SECONDS, so stale bytecode ran and a real mutant reported SURVIVED. Found by the suite before either reviewer. The first regression test for it was itself a false green -- it passed with the guard deleted, for timing reasons -- and had to be replaced with a call-site assertion. Fixture arithmetic matters too: `add(2, 2) == 4` lets the `+` -> `*` mutant survive because 2+2 == 2*2.
+- Metrics:
 
 ## Context Sources
 
