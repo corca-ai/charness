@@ -54,7 +54,7 @@ Predecessor: `charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-con
 
 **Two inherited obligations that are not slices.**
 
-- **An OPERATOR DECISION blocks the bundle proof.** Three of twenty locators frozen by the `#514/#515/#518` source-freeze receipt are stale, changed by the predecessor's slices 2 and 3. Three tests are red. It was deliberately not re-stamped: `refreeze` would assert an inspection of files for issues neither goal owns. Both unblock paths are in the predecessor's `## Operator Decision Queue`. Resolve it BEFORE claiming any broad-suite green.
+- **An OPERATOR DECISION blocks the bundle proof.** FOUR of twenty locators frozen by the `#514/#515/#518` source-freeze receipt are stale, changed by the predecessor's slices 2 and 3 (including one from a round-2 repair). ONE test is red: `tests/test_issue_source_freeze.py`. It was deliberately not re-stamped: `refreeze` would assert an inspection of files for issues neither goal owns. Both unblock paths are in the predecessor's `## Operator Decision Queue`. Resolve it BEFORE claiming any broad-suite green.
 - **The section-locating walk is consolidated in seven call sites and NOT in seven others** inside the `achieve` package, including `slice_plan_data_row_count` in the very file that now hosts the owner. Recorded honestly in `dup-review.json` after a first draft overclaimed completeness and round 2 refuted it.
 
 ## Non-Goals

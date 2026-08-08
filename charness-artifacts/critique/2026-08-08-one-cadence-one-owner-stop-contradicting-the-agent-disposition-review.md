@@ -35,8 +35,8 @@ prose-only memory.
 
 ## Carried forward, not applied
 
-- **queued (operator)** — the `#514/#515/#518` source-freeze receipt has three
-  stale locators from slices 2 and 3. Recorded in the goal's
+- **queued (operator)** — the `#514/#515/#518` source-freeze receipt has FOUR
+  stale locators from slices 2 and 3 (corrected from three by re-measuring). Recorded in the goal's
   `## Operator Decision Queue` with both unblock paths. NOT re-stamped: that
   would assert an inspection this run did not perform.
 - **successor** — slices 4-9 move to

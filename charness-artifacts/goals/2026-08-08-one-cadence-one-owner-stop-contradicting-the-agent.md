@@ -235,8 +235,17 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 Recorded during the run:
 
-- Decision: how to clear the `#514/#515/#518` source-freeze receipt that slice 2's
-  one-line `run-quality.sh` change invalidated (three red tests).
+- Decision: how to clear the `#514/#515/#518` source-freeze receipt that this
+  goal's slices invalidated. CORRECTED after the terminal flip, by re-measuring
+  rather than re-reading: FOUR of twenty locators are stale, not three, and ONE
+  test is red, not three. `scripts/run-quality.sh` (slice 2),
+  `scripts/check_issue_closeout_commit_msg.py` and
+  `skills/public/issue/scripts/issue_verify_closeout.py` (slice 3), and
+  `skills/public/release/scripts/release_issue_closeout_message.py` (slice 3's
+  round-2 repair). Only `tests/test_issue_source_freeze.py` fails; the two
+  closeout-bundle tests were red from a DIRTY WORKTREE mid-slice and pass on the
+  committed tree. Recording the smaller true number matters as much as the
+  larger one: this goal is about surfaces that assert what nobody established.
   Owner: operator, or the goal that owns `#514`/`#515`/`#518`.
   Why deferred: the freeze is WORKING — a source file changed after inspection is
   exactly what it detects. Clearing it means re-inspecting `scripts/run-quality.sh`
@@ -514,9 +523,10 @@ To verify what shipped, without re-deriving it:
    --repo-root .` — both sibling ledger rules render from one owner.
 
 KNOWN RED, and the reason this goal claims no broad-suite green:
-`tests/test_issue_source_freeze.py`, `tests/quality_gates/test_closeout_bundle.py`,
-and `tests/quality_gates/test_closeout_headroom_and_mirror_gate.py` fail because
-three locators frozen for `#514/#515/#518` changed here. See
+`tests/test_issue_source_freeze.py` fails because FOUR locators frozen for
+`#514/#515/#518` changed here. (Corrected: an earlier draft also named
+`test_closeout_bundle.py` and `test_closeout_headroom_and_mirror_gate.py`; both
+were red from a dirty worktree mid-slice and pass on the committed tree.) See
 `## Operator Decision Queue`. That is an unresolved operator decision, not a
 passing state.
 
