@@ -1640,6 +1640,13 @@
     },
     {
       "class": "intentional",
+      "id": "989dc361e1b0dd7b",
+      "note": "two adjacent list-building functions in issue_verify_closeout_body: `_classification_requirements` (a per-classification table of required field ids and their aliases) and `_missing_ledger_fields` (the walk that evaluates that table). Same SHAPE — short function, builds a list, returns it — and entirely different content: one is data, the other is the verdict loop over it. Collapsing them would fuse the table with its interpreter, which is the opposite of the separation that makes the classification set readable. Surfaced as NEW by rotation: this slice ADDED the separate-counts rule to the sibling ledger, which changed `_missing_ledger_fields`'s length enough to hash against its neighbour. The slice already took the genuine consolidation available — both sibling-field shape rules (decision/proof, and population-vs-removals) now live in one owner, `issue_closeout_ledger_counts.missing_sibling_ledger_fields`, rather than inline at the call site — and the family persisted after it. Classified rather than chased: this run has already MEASURED that letting a rotated duplicate hash drive the design of a proof surface produces a worse verdict surface (see 2f95a48e67c2f1b5, where that chase routed two complete-state floors onto the wrong section walk and shipped a latent false green).",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "98b8f8037638d203",
       "note": "four-line environment-gated debug entrypoint idiom in two standalone SessionStart programs; local ownership prevents an every-session import dependency",
       "reviewed_at": "2026-07-13",

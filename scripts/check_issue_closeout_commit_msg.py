@@ -386,6 +386,27 @@ def _stub_evidence_lines(critique: dict[str, Any]) -> list[str]:
     ]
 
 
+def _ledger_field_lines(item: dict[str, Any]) -> list[str]:
+    """The ledger-field block, with each finding's own reason under it.
+
+    "missing" alone misdescribes the dominant post-B1 cause (the field is present
+    and carries a placeholder), and for a SHAPE finding the prefix is outright
+    wrong -- the field is present AND substantive, and only its shape failed. So
+    each finding whose owner can explain itself prints that explanation, for the
+    same reason the resolution-critique block does: this is the ONLY carrier that
+    can block `git commit`, and a bare snake_case token there is how a gate earns
+    a route-around.
+
+    Extracted rather than inlined so `_format_failure` stays inside its
+    complexity budget -- the gate refused the inline version, and it was right.
+    """
+    if not item.get("missing_fields"):
+        return []
+    lines = [f"  missing or placeholder ledger fields: {', '.join(item['missing_fields'])}"]
+    lines.extend(f"    {detail}" for detail in item.get("missing_field_reasons") or [])
+    return lines
+
+
 def _format_failure(report: dict[str, Any]) -> str:
     # #444 F5: a pause-only failure has exactly one remedy (the brief's
     # `AI-provenance:` line); the generic header/footer would misdirect the
@@ -428,10 +449,7 @@ def _format_failure(report: dict[str, Any]) -> str:
         if item.get("missing_close_keywords"):
             missing = ", ".join(f"#{number}" for number in item["missing_close_keywords"])
             lines.append(f"  missing close keywords: {missing}")
-        if item.get("missing_fields"):
-            # "missing" alone misdescribes the dominant post-B1 cause: the field
-            # is physically present and carries a placeholder (`N/A`, `TBD`).
-            lines.append(f"  missing or placeholder ledger fields: {', '.join(item['missing_fields'])}")
+        lines.extend(_ledger_field_lines(item))
         critique = item.get("resolution_critique_check", {})
         if not critique.get("ok", True):
             lines.append("  missing/invalid resolution critique evidence")

@@ -90,6 +90,7 @@ _body_fields = _BODY._body_fields
 _first_field = _BODY._first_field
 _has_substantive_value = _BODY._has_substantive_value
 _missing_ledger_fields = _BODY._missing_ledger_fields
+_ledger_counts = _load_local("issue_closeout_ledger_counts")
 _missing_close_keywords = _BODY._missing_close_keywords
 iter_close_keyword_refs = _BODY.iter_close_keyword_refs
 evaluate_source_preservation = _BODY.evaluate_source_preservation
@@ -248,6 +249,18 @@ def _authorization_record(repo_root: Path, repo: str, numbers: list[int], carrie
     return record
 
 
+def _ledger_field_reasons(body: str, missing_fields: list[str]) -> list[str]:
+    """`<finding id>: <reason>` for each finding whose owner can explain itself."""
+    siblings = _BODY._first_field(_body_fields(body), ("siblings", "sibling search"))
+    reasons = []
+    for finding_id in missing_fields:
+        reason = _ledger_counts.rule_reason(siblings, finding_id)
+        if reason:
+            reasons.append(f"{finding_id}: {reason}")
+    return reasons
+
+
+
 def verify_closeout(
     *,
     repo_root: Path,
@@ -371,6 +384,11 @@ def verify_closeout(
         "expect_state": expect_state,
         "missing_close_keywords": missing_close_keywords,
         "missing_fields": missing_fields,
+        # The author-facing REASON behind each shape finding, not only its id.
+        # The library builds a full diagnosis and the blocking commit-msg carrier
+        # had nothing to print; round-1 review found an author stopped at the
+        # pre-commit boundary got one unexplained snake_case token.
+        "missing_field_reasons": _ledger_field_reasons(body, missing_fields),
         # What the parser actually SAW, emitted only when a field is missing. A
         # bare `missing_fields: ["prevention"]` is unexplainable to an author
         # looking at a body whose `Prevention:` line is right there: the value

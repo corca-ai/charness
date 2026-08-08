@@ -22,6 +22,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _VERIFY = _load_local("issue_verify_closeout")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique")
+_ledger_counts = _load_local("issue_closeout_ledger_counts")
 
 
 def _min_signal_clause() -> str:
@@ -51,10 +52,11 @@ def _ledger_block() -> list[str]:
     for classification in _VERIFY.CLASSIFICATIONS:
         labels = [_field_label(fid, aliases) for fid, aliases in _BODY._classification_requirements(classification)]
         out.append(f"  - {classification}: {', '.join(labels)}")
-    out.append(
-        "  - bug `Siblings:` must name BOTH a decision and proof "
-        "(`siblings_decision_and_proof` fails otherwise)."
-    )
+    # Rendered from the OWNER's constant, never hand-typed here. This line used
+    # to state one of the two sibling rules and silently missed the other when it
+    # landed; this module's contract is that it re-declares nothing.
+    for finding_id, description in _ledger_counts.SIBLING_RULE_DESCRIPTIONS.items():
+        out.append(f"  - {description} (`{finding_id}` fails otherwise).")
     return out
 
 

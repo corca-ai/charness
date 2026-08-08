@@ -14,6 +14,7 @@ _load_local = runpy.run_path(
     str(Path(__file__).resolve().parent / "issue_local_import.py")
 )["sibling_loader"](__file__)
 _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
+_ledger_counts = _load_local("issue_closeout_ledger_counts")
 
 _CLOSING_KEYWORD_LAUNCH_RE = re.compile(
     r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
@@ -245,11 +246,14 @@ def _missing_ledger_fields(text: str, classification: str) -> list[str]:
         if not _has_substantive_value(_first_field(fields, aliases)):
             missing.append(field_id)
     if classification == "bug":
-        siblings = _first_field(fields, ("siblings", "sibling search"))
-        if siblings and not (
-            re.search(r"(?i)\bdecision\b", siblings) and re.search(r"(?i)\bproof\b", siblings)
-        ):
-            missing.append("siblings_decision_and_proof")
+        # What the sibling-search field must STATE is owned by
+        # `issue_closeout_ledger_counts`: the decision/proof pair, and — when it
+        # makes a counting claim — population and removals as separate numbers.
+        missing.extend(
+            _ledger_counts.missing_sibling_ledger_fields(
+                _first_field(fields, ("siblings", "sibling search"))
+            )
+        )
     return missing
 
 
