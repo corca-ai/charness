@@ -84,6 +84,9 @@ your question instead of opening four that mention it.
   evidence.
 - [Duplicate detection strategy](./duplicate-detection-strategy.md) — the intended
   posture for duplicate detection, and what its baselines do and do not assert.
+- [Docs graph checks](./docs-graph-checks.md) — a measured matrix of which
+  question `check_doc_links.py` answers and which one `awiki lint` answers, since
+  neither is a superset of the other and the gap between them hid seven orphans.
 - [Prompt mutation policy](./prompt-mutation-policy.md) — the owner surface for
   the prompt-mutation pipeline and what its verdicts mean.
 

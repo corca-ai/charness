@@ -9,14 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — the `check_doc_links.py` vs awiki overlap matrix.
+- Current slice: 4 — promote awiki as a named `run-quality.sh` lane.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: write the command-level matrix naming what `check_doc_links.py`
-  and `awiki lint` each do and do not answer.
+- Next action: add the docs-graph lane to `run-quality.sh` gating on
+  `orphans`/`islands`, prove it NOT-RUN with the binary absent, and observe it
+  red on purpose before trusting its green.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -156,7 +157,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | --- | --- | --- | --- | --- |
 | 1 | DONE. Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | done |
 | 2 | DONE. Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `orphans=0 islands=0 ratio=1.0000` measured; negative test observed red; hub adds ZERO link-only lines; `check_doc_links.py` still green | done |
-| 3 | Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer | pending |
+| 3 | DONE. Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer, every row measured, with runnable reproductions | done |
 | 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
 | 5 | `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Corpus replay over checked-in goals with every verdict change explained; the plain-English debug case no longer slips; the `airport gate` case no longer fires | pending |
 | 6 | `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No literal floor numbers left in the file; a test that changes the constant and asserts the rendered text follows | pending |
@@ -238,6 +239,28 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 3 — the overlap matrix (done)
+
+- [docs/docs-graph-checks.md](../../docs/docs-graph-checks.md) states the split in
+  one sentence: `check_doc_links.py` asks "does this reference RESOLVE?" per link;
+  `awiki lint` asks "is this page REACHABLE?" per graph. Neither is a superset.
+- **Measured, not asserted, and one row inverts the obvious assumption:**
+  `awiki lint` reports `ok` on a link to a page that does not exist. Broken links
+  are invisible to it, surfaced only by the separate `awiki wanted` and framed as
+  a page you might want to create. An empty stub likewise only moves
+  `content_coverage`; lint still passes. The rules that actually FAIL are orphan,
+  island, and link-only-line.
+- That is the promotion premise in one fact: before the index hub, seven pages
+  were unreachable while `check_doc_links.py` was correctly green, because every
+  link resolved. The green gate was answering a different question honestly.
+- The runnable reproductions were executed verbatim from the page and reproduce
+  the documented numbers exactly (`content_coverage=0.6667`, `islands=1
+  ratio=0.6000`).
+- The page builds its example brackets from shell variables, because this repo's
+  link gate validates markdown links inside fenced blocks too and the fixtures
+  deliberately link to files that must not exist. Written literally, the page
+  would fail the gate it documents.
 
 ### Slice 2 — docs index hub (done)
 
