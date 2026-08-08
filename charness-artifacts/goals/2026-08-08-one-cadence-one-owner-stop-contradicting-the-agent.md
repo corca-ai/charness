@@ -58,8 +58,17 @@ runs the activation command.
   rather than tuned"). A cheaper remedy may be to change the LEDGER SHAPE so the
   two numbers are separate fields and the arithmetic cannot be written wrong —
   which is the same move slices 1 and 2 made, and which needs no parser.
-- Slice 3 review: ONE bounded round; its repairs are UNREVIEWED (the round-2
-  obligation is unmet for this slice and is recorded as a gap, not discharged).
+- Slice 3 review: TWO bounded rounds — the round-2 gap recorded earlier is now
+  DISCHARGED. Round 2 found THREE blockers, all the predicted class (the repair
+  carrying the class it fixed): round 1's fix for `file.py:12` excluded a numeral
+  before any `.`, which swallowed every SENTENCE-FINAL count, so `bundled 3.`
+  passed silently; the trigger verbs were widened while the removal LABELS were
+  not, so `population: 4; pruned: 2` — exactly what the floor asks for — was
+  refused; and a shared suffix set could not inflect the new stems, leaving
+  `dropped`, `unified` and `removals` invisible and `unif` dead. Plus a SECOND
+  blocking carrier (`release_issue_closeout_message`) still dropping the
+  diagnosis, over-match on `inline`/`drop-in`, and the unpinned span. All
+  repaired; 6 further mutants, 6 killed.
   It endorsed the shape-not-parser trade and then found the floor barely fired on
   real text: the verb vocabulary had been written from the one measured sentence
   instead of from the authoring reference, so `bundled` — the word that reference

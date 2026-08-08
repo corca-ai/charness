@@ -257,6 +257,13 @@ def fail_release_closeout_draft_validation(result: dict[str, Any]) -> None:
         f"missing_close_keywords: {missing_keywords}\n"
         f"unexpected_close_keywords: {unexpected_keywords}\n"
         f"missing_fields: {missing_fields}\n"
+        # The SECOND blocking carrier. The commit-msg one was taught to print the
+        # library's diagnosis; this one was left dropping it, so an author refused
+        # here still got a bare snake_case id. Round-2 review found the repair had
+        # fixed one of two consumers -- the same one-call-site-of-two shape the
+        # repo's recent lessons already name.
+        + "".join(f"  {detail}\n" for detail in result.get("missing_field_reasons") or [])
+        +
         f"resolution_critique_ok: {resolution_critique_ok}\n"
         f"behavioral_verdict_ok: {result.get('behavioral_verdict', {}).get('ok')}\n"
         f"ai_provenance_ok: {result.get('ai_provenance', {}).get('ok')}"

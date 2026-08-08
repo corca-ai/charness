@@ -131,3 +131,97 @@ def test_the_bug_ledger_call_site_reports_the_missing_field() -> None:
     assert "siblings_separate_population_and_removal_counts" in blocked
     repaired = body._missing_ledger_fields(template.format(siblings=_REPAIRED), "bug")
     assert repaired == [], repaired
+
+
+# --- round-2 repairs -------------------------------------------------------
+
+
+def test_a_sentence_final_count_is_still_a_counting_claim() -> None:
+    """Counts sit at sentence ends, and the first cut excluded every one.
+
+    Round-1's fix for `file.py:12` / `2026-08-08` excluded a numeral followed by
+    ANY `.`, which silently swallowed `bundled 3.` — the exact ambiguity the floor
+    exists to refuse, written with the authoring reference's own verb.
+    """
+    assert evaluate("decision: bundle; proof: green. Four sibling sites; bundled 3.")["ok"] is False
+
+
+def test_removal_labels_stay_in_step_with_the_trigger_verbs() -> None:
+    """Widening the trigger without the labels refuses a CORRECT ledger.
+
+    `Population: 4 call sites; pruned: 2` is two facts, two labels, no
+    subtraction — exactly what the floor asks for — and it was refused, telling
+    the author to state a number they had already stated.
+    """
+    for verb, label in (
+        ("prune", "pruned"), ("retire", "retired"), ("drop", "dropped"),
+        ("eliminate", "eliminated"), ("absorb", "absorbed"), ("subsume", "subsumed"),
+    ):
+        text = f"decision: {verb}; proof: scan. population: 4 call sites; {label}: 2"
+        assert evaluate(text)["ok"] is True, label
+    # ...and the noun form of the canonical label, which also failed.
+    assert evaluate("decision: c; proof: g. consolidated 3. population: 4; removals: 2")["ok"] is True
+
+
+def test_inflected_verbs_the_shared_suffix_set_could_not_reach() -> None:
+    """`dropped` was invisible — the round-1 failure sentence, one verb swapped."""
+    for text in (
+        "decision: d; proof: g. four sibling sites, dropped two",
+        "decision: d; proof: g. four sibling sites, deduplicated two",
+        "decision: d; proof: g. removals of 2 from the 4 call sites",
+    ):
+        assert evaluate(text)["applies"] is True, text
+
+
+def test_ordinary_prose_using_those_words_is_not_a_consolidation_claim() -> None:
+    """Widening a trigger over-matches if the forms are not enumerated.
+
+    Both of these ledgers assert ZERO consolidation and were refused.
+    """
+    for text in (
+        "decision: intentional boundary; proof: scan. 3 of the 5 matches are inline code comments",
+        "decision: follow-up outside the slice; proof: scan. 2 of them are drop-in copies",
+        "decision: none; proof: rg across 3 folders found no other call sites",
+    ):
+        assert evaluate(text)["applies"] is False, text
+
+
+def test_the_clause_span_cap_is_pinned() -> None:
+    """The cap had ZERO test pressure: the old test named distance and tested a `.`.
+
+    Single clause, no `.`/`;`, so only the 80-character cap can decide.
+    """
+    near = "consolidated the shims, and 3 of them were private copies"
+    far = "consolidated the shims " + "x" * 90 + " and 3 were private"
+    assert evaluate(near)["applies"] is True
+    assert evaluate(far)["applies"] is False
+
+
+def test_a_placeholder_siblings_field_is_one_defect_not_two() -> None:
+    """`Siblings: TBD` is a MISSING field; the caller already reports it."""
+    loader = runpy.run_path(str(_SCRIPTS / "issue_local_import.py"))["sibling_loader"]
+    body = loader(str(_SCRIPTS / "issue_verify_closeout_body.py"))("issue_verify_closeout_body")
+    missing = body._missing_ledger_fields(
+        "Closes #1\n\nClassification: bug\nJTBD: x\nRoot cause: y\n"
+        "Debug artifact: a/b.md\nPrevention: z\nSiblings: TBD\n",
+        "bug",
+    )
+    assert "siblings" in missing
+    assert "siblings_decision_and_proof" not in missing
+
+
+def test_every_finding_id_the_owner_emits_has_an_author_facing_description() -> None:
+    """The drift the round-1 repair fixed, now PINNED.
+
+    Round 2: the stale copy was repaired but the blindness that allowed it was
+    not. A third rule id added without a description silently regresses BOTH
+    repaired consumers at once — the shape producer omits it, and the blocking
+    carrier prints it with no explanation.
+    """
+    mod = runpy.run_path(str(_SCRIPTS / "issue_closeout_ledger_counts.py"))
+    described = set(mod["SIBLING_RULE_DESCRIPTIONS"])
+    emitted = set(mod["missing_sibling_ledger_fields"]("consolidated 3 of them"))
+    assert emitted <= described, sorted(emitted - described)
+    assert mod["missing_sibling_ledger_fields"]("population: 4; removed: 2. decision: c; proof: g") == []
+    for finding_id in described:
+        assert mod["rule_reason"]("consolidated 3 of them", finding_id)

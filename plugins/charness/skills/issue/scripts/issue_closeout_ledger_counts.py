@@ -33,27 +33,49 @@ import re
 #: sentences later is not read as one claim.
 _NUMBER_WORDS = ("one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten")
 #: A COUNT, not merely a numeral. A hash-prefixed issue reference, an ISO date,
-#: and a `file.py:<line>` citation are all numbers an ordinary ledger is full of;
-#: treating them as counts refused real ledgers that made no consolidation claim
-#: at all (round-1 review found all three shapes). The lookarounds exclude a
-#: numeral introduced by a hash or joined into a `-`/`:`/`.`-separated token.
-_NUMBER = rf"(?<![#\w.:-])(?:\d+|{'|'.join(_NUMBER_WORDS)})(?![\w.:-])"
+#: and a `file.py:<line>` citation are all numbers an ordinary ledger is full of.
+#:
+#: The boundaries exclude only the JOINING forms, and that distinction is the
+#: round-2 repair: the first cut excluded a numeral followed by any `.`, which
+#: also excluded every count that ENDS A SENTENCE -- where counts most often sit.
+#: `Four sibling sites; bundled 3.` then passed silently, which is the exact
+#: ambiguity this floor exists to refuse. A `.` before a DIGIT is a version or
+#: decimal; a `.` before space or end-of-line is punctuation.
+_NUMBER = rf"(?<![#\w:.-])(?:\d+|{'|'.join(_NUMBER_WORDS)})(?![\w:-]|\.\d)"
 
-#: VERB FORMS, not bare stems: `fold` matched `folder`, `merg` matched `merger`,
-#: and `delet` matched a purely descriptive `deletion` -- each refusing a ledger
-#: that claimed nothing.
+#: Explicit VERB FORMS, enumerated rather than stem-plus-optional-suffix.
 #:
 #: The vocabulary is taken from the AUTHORING SURFACE that produces these
 #: sentences (`../references/causal-review.md`: "which siblings were BUNDLED into
-#: this commit and which were DEFERRED") plus the idioms in this repo's own
-#: checked-in closeout corpus -- not from the one measured sentence. Round-1
-#: review found the first cut had been written from the sentence alone, so the
-#: verb the reference literally instructs authors to use was invisible to the
-#: floor: `four sibling sites, three bundled into this fix` sailed through the
-#: gate written to catch exactly that shape.
+#: this commit and which were DEFERRED") plus this repo's checked-in closeout
+#: corpus -- not from the one measured sentence. Round-1 review found the first
+#: cut written from that sentence alone, so the verb the reference literally
+#: instructs authors to use was invisible.
+#:
+#: Round 2 then found the WIDENING carried its own defect twice over. A shared
+#: `(?:e|es|ed|ing|ion|ions)?` suffix set cannot inflect these stems: `dropped`,
+#: `unified` and `removals` were all invisible, and `unif` could match no real
+#: English word at all -- a comment-shaped no-op inside a proof surface. And
+#: bare `inlin`/`drop` over-matched ordinary ledger prose (`inline code
+#: comments`, `drop-in copies`), refusing ledgers that asserted ZERO
+#: consolidation. Enumerating the forms costs a few lines and has neither failure.
 _CONSOLIDATION_VERB = (
-    r"(?:consolidat|remov|delet|dedup|collaps|fold|merg|bundl|absorb|subsum"
-    r"|prun|retir|unif|inlin|eliminat|drop)(?:e|es|ed|ing|ion|ions)?"
+    r"(?:consolidat(?:e|es|ed|ing|ion|ions)"
+    r"|remov(?:e|es|ed|ing|al|als)"
+    r"|delet(?:e|es|ed|ing|ion|ions)"
+    r"|dedup(?:e|es|ed|ing|licate|licated|lication)"
+    r"|collaps(?:e|es|ed|ing)"
+    r"|fold(?:s|ed|ing)"
+    r"|merg(?:e|es|ed|ing)"
+    r"|bundl(?:e|es|ed|ing)"
+    r"|absorb(?:s|ed|ing)"
+    r"|subsum(?:e|es|ed|ing)"
+    r"|prun(?:e|es|ed|ing)"
+    r"|retir(?:e|es|ed|ing)"
+    r"|eliminat(?:e|es|ed|ing)"
+    # INFLECTED forms only. Bare `drop` matched `drop-in copies`, refusing a
+    # ledger that asserted zero consolidation; `dropped`/`drops` cannot.
+    r"|drop(?:s|ped|ping))"
 )
 #: Bounded to a clause: `.`/`;`/newline end the span, and 80 characters cap it.
 _CLAUSE = r"[^.;\n]{0,80}"
@@ -66,10 +88,20 @@ _COUNTING_CLAIM = re.compile(
 #: `total` were removed after round-1 review: they are generic tool-output words,
 #: so `matches found: 12` silently became the population and the report DISPLAYED
 #: a grep hit count as the verdict's first number.
-_POPULATION_LABEL = r"(?:population|implementations|instances|copies|sites|call sites)"
+_POPULATION_LABEL = r"(?:populations?|implementations?|instances?|copies|sites|call sites)"
 #: ...and the labels that name HOW MANY WENT AWAY. Disjoint from the above on
 #: purpose: a single label cannot satisfy both halves.
-_REMOVED_LABEL = r"(?:removed|deleted|consolidated|merged|folded|collapsed|bundled)"
+#:
+#: Kept IN STEP with the verb list, which round 2 found it was not. Widening the
+#: trigger while leaving the labels behind refused an author who had done exactly
+#: what the floor asks -- `Population: 4 call sites; pruned: 2` -- and told them
+#: to state a number they had already stated. That is the arbitrary refusal at an
+#: irreversible boundary that `_labeled_count` below warns about, rebuilt one
+#: field over.
+_REMOVED_LABEL = (
+    r"(?:removed|removals?|deleted|consolidated|merged|folded|collapsed|bundled"
+    r"|pruned|retired|absorbed|subsumed|eliminated|deduplicated|dropped)"
+)
 
 
 def _labeled_count(text: str, label_pattern: str) -> str | None:
@@ -147,7 +179,7 @@ _DECISION = re.compile(r"(?i)\bdecision\b")
 _PROOF = re.compile(r"(?i)\bproof\b")
 
 
-def missing_sibling_ledger_fields(siblings_value: str | None) -> list[str]:
+def missing_sibling_ledger_fields(siblings_value: str | None, substantive=bool) -> list[str]:
     """Every shape rule the sibling-search ledger fails, not just the first.
 
     Empty/absent is NOT this function's refusal -- the caller's substantive-value
@@ -156,7 +188,10 @@ def missing_sibling_ledger_fields(siblings_value: str | None) -> list[str]:
     """
     missing: list[str] = []
     value = (siblings_value or "").strip()
-    if value and not (
+    # `_has_substantive_value`, not truthiness: a PLACEHOLDER (`TBD`) is
+    # non-empty, so the caller already reports it as a missing field and adding
+    # a second finding names one defect twice. Round-2 review.
+    if substantive(value) and not (
         _DECISION.search(value) and _PROOF.search(value)
     ):
         missing.append("siblings_decision_and_proof")

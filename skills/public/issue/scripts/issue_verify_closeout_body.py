@@ -251,7 +251,8 @@ def _missing_ledger_fields(text: str, classification: str) -> list[str]:
         # makes a counting claim — population and removals as separate numbers.
         missing.extend(
             _ledger_counts.missing_sibling_ledger_fields(
-                _first_field(fields, ("siblings", "sibling search"))
+                _first_field(fields, ("siblings", "sibling search")),
+                substantive=_has_substantive_value,
             )
         )
     return missing
