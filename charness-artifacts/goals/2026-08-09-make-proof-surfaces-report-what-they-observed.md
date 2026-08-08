@@ -9,15 +9,15 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 5 — replace `goal_artifact_phase_routing`'s content guess with a declaration.
+- Current slice: 6 — render `describe_goal_closeout_shape`'s floors from live constants.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: pin the OLD trigger's verdicts over the checked-in goal corpus as
-  a test BEFORE swapping it, so a floor that stops refusing anything is visible
-  as a regression rather than celebrated as a simplification.
+- Next action: delete the hardcoded `>= 30 chars` / `~20+ chars` literals and
+  render them from the live constants, with a test that moves a constant and
+  asserts the rendered text follows.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -159,7 +159,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 2 | DONE. Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `orphans=0 islands=0 ratio=1.0000` measured; negative test observed red; hub adds ZERO link-only lines; `check_doc_links.py` still green | done |
 | 3 | DONE. Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer, every row measured, with runnable reproductions | done |
 | 4 | DONE. Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | `PASS docs-graph` named in the summary; FAIL and UNPROVEN both observed through the runner; doctor still `ok`; two review rounds | done |
-| 5 | `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Corpus replay over checked-in goals with every verdict change explained; the plain-English debug case no longer slips; the `airport gate` case no longer fires | pending |
+| 5 | DONE. `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Replay over 185 checked-in goals: 156 quality + 47 debug triggers dropped, ZERO gained, `impl`/`issue` unchanged — every change is the prose guess ceasing to fire. Both recorded false positives pinned as tests | done |
 | 6 | `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No literal floor numbers left in the file; a test that changes the constant and asserts the rendered text follows | pending |
 | 7 | `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | The recorded false positives pass; a genuine exit-zero `skipped` status still fails | pending |
 | 8 | Release `4.0.0` and push | The operator scoped the push to ride with this release | Release artifact, push, and a remote CI verdict from a distinct observer and channel | pending |
@@ -225,6 +225,7 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
+Phases: quality — this run's recorded work crossed the quality-gate boundary (a new `docs-graph` lane, three rewritten floors); no debug phase was entered, because nothing here started from an unexplained failure.
 Routing: impl — selected from installed skill metadata; the slices are code, docs, and gate-config changes against a stated contract, which `impl` owns, and it loads `prove` at its own stop gate. `quality` owns the gate-design review in slices 4-7, `release` owns slice 8, and `issue` stages the `#566`/`#567` closeouts; each is routed at its own boundary rather than pre-declared here.
 
 ## Discuss Before Activation
@@ -239,6 +240,38 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 5 — the routing floor declares instead of guessing (done)
+
+- The two prose guesses are DELETED. `_DEBUG_RECORD` (hypothesis|root-cause|rca)
+  and `_QUALITY_RECORD` (quality|gate|validator|pytest) decided what work a goal
+  DID by matching words, then refused `Status: complete` on the guess. Measured
+  first: the quality guess fired on 157 of 185 checked-in goals, mostly on the
+  word "gate" — a trigger that fires on 85% of a corpus is describing the repo's
+  vocabulary, not discriminating between goals.
+- `impl` and `issue` were KEPT, because neither is a prose guess: both read a
+  structural record the author wrote (`What changed:`/`Commits:`, a literal
+  `closes #N`). Only what was actually broken changed.
+- The author now declares `Phases:` in `## Coordination Cues`, and the floor
+  checks the declaration's FORM. The declaration is FORCED for goals created from
+  2026-08-09 that record work — otherwise trading the guess for an optional
+  declaration would hand every author a silent bypass. A gate may force a
+  question; it may not declare completion.
+- **Corpus replay:** 156 quality + 47 debug triggers dropped, ZERO gained, and
+  `impl`/`issue` moved for no goal. Every change is the same rule ceasing to
+  fire. This is a WEAKENING for those goals and is named as one, not celebrated.
+- **Dogfooding caught the repair carrying its own disease.** The first draft
+  searched the declaration's VALUE for phase names, so this goal's own
+  `Phases: quality — ... no debug phase was entered` DECLARED debug. The value is
+  now read as a token list, and everything after the separator is the author's
+  reason. Pinned by a test.
+- The tests that pin what the floor exists to catch were written BEFORE the swap
+  and pass on both sides, so a floor that stopped refusing anything would have
+  been visible rather than celebrated as a simplification.
+- Non-claim: `issue_closeout_triggered`'s close-keyword arm still reads recorded
+  work, but it requires a literal `closes #N` — a declaration of intent, not a
+  topic guess — and it is shared with the coordination floor, so it is out of
+  this slice's scope by the goal's own no-sweep boundary.
 
 ### Slice 4 — the docs-graph gate (done)
 

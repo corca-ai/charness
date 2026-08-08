@@ -83,11 +83,19 @@ table is inert exactly when the cue would fire.
 Four boundaries also earn presence-only closeout floors, because a prose cue
 alone gets skipped under context pressure and the miss is silent and costly:
 
-- **phase routing** — when recorded work shows implementation, bug/RCA,
-  quality-gate, or issue-closeout boundaries, the run records a `Routing:` line
-  naming the selected owner skill (`impl`, `debug`, `quality`, or `issue`) and
-  its basis, or `Routing: n/a — <reason>`. This proves the goal did not remain
-  `achieve`-only.
+- **phase routing** — the run DECLARES which phases its work crossed in a
+  `Phases:` line (`Phases: debug, quality`, or `Phases: n/a — <reason>`), and
+  records a `Routing:` line naming the selected owner skill and its basis, or
+  `Routing: n/a — <reason>`, for each declared phase plus the implementation and
+  issue-closeout work detected from records the author already wrote (a
+  `What changed:`/`Commits:` line, a literal `closes #N`). This proves the goal
+  did not remain `achieve`-only.
+
+  The floor asks rather than infers, deliberately. It used to decide what work a
+  goal did by matching words in its prose — and was wrong in both directions:
+  real debug work written in plain English did not register, while the word
+  `hypothesis` in passing, or an `airport gate` metaphor, demanded a route. Your
+  declaration is the input; the floor only checks its form.
 - **gather** — when `## Context Sources` names an external source (URL / Slack /
   Notion / Docs / Drive), the run records a `Gather:` step (or
   `Gather: n/a — <reason>`). Mandated by `CLAUDE.md`'s external-source routing.

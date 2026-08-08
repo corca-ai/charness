@@ -304,3 +304,19 @@ def test_the_gate_does_not_hardcode_a_link_only_count() -> None:
     source = (ROOT / "scripts" / "check_docs_graph.py").read_text(encoding="utf-8")
     assert "229" not in source
     assert "230" not in source
+
+
+def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The not-run RENDERING and its exit code, not just the dict. This is the
+    # operator-facing half: the runner prints this line and reads that byte, and a
+    # not-run that rendered as nothing would be indistinguishable from a pass.
+    _patch_awiki(monkeypatch, "", present=False)
+    rendered = _gate.format_human(_gate.evaluate(ROOT))
+
+    assert rendered.startswith("docs-graph: NOT RUN -- ")
+    assert "not on PATH" in rendered
+    # A not-run says nothing about what it did not judge, because it judged nothing.
+    assert "did NOT judge" not in rendered
+
+    monkeypatch.setattr(_gate.sys, "argv", ["check_docs_graph.py"])
+    assert _gate.main(["--repo-root", str(ROOT)]) == _gate.UNESTABLISHED_EXIT

@@ -443,7 +443,12 @@ def test_mixed_routing_evidence_is_censused_by_the_floors_own_verdict(order: str
     floor as `unsatisfied` (and dropped the authored opt-out, so no advisory was
     raised at all), and the verdict flipped purely on which cue line came first.
     """
-    text = _MIXED_GOAL.format(cues=order + "- Successor goal: charness-artifacts/goals/x.md\n")
+    # `Phases: quality` is what makes this fixture mixed now. It used to be mixed
+    # because the word "validator" appeared in its Slice Log, which is exactly the
+    # prose guess that got replaced by this declaration.
+    text = _MIXED_GOAL.format(
+        cues="- Phases: quality\n" + order + "- Successor goal: charness-artifacts/goals/x.md\n"
+    )
     report = _aggregate(text)
     assert report["phase_routing_floor"]["satisfied"] is True
     assert len(report["phase_routing_floor"]["required"]) >= 2  # the fixture really is mixed

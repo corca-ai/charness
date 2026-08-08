@@ -2687,6 +2687,13 @@
       "note": "the repo-standard gate `main()` shape: argparse --repo-root/--json, render json-or-human, return the verdict as an exit code. Every gate in scripts/ wears it, and extracting it would make each gate's exit contract -- the one thing a gate must own outright -- depend on a shared helper. The exit codes themselves DIFFER here (this gate adds UNESTABLISHED_EXIT), which is exactly why the shape is copied and the meaning is not (family id re-hashed when the gate gained --scan-root; same two members, same verdict)",
       "reviewed_at": "2026-08-09",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "9ee147f9cd673521",
+      "note": "the sibling-floor import header: goal_artifact_coordination_floors and goal_artifact_phase_routing both open with the same `sys.path.insert` + `from goal_artifact_floor_grammar import ...` block, and the family appeared only because the phase-routing floor started importing MIN_OPTOUT_REASON from that shared grammar too. That is two floors reading ONE source, which is the single-sourcing this goal is about -- collapsing the import block itself would add a shim between a portable skill module and the grammar it already shares",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

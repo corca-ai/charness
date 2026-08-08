@@ -80,10 +80,16 @@ model judgment — never a hard-coded phase-to-skill list here. Use the catalog
 only for hidden availability facts. `achieve` owns this slot and the floors
 below. Fill during the run:
 
+- **Phases** — name the phases this run's recorded work crossed, e.g.
+  `Phases: debug, quality`, or `Phases: n/a — <reason>` when it crossed none. YOU
+  say this; the floor used to infer it by matching words in your prose and was
+  wrong in both directions — plain-English debug work did not register, while the
+  word "gate" in an unrelated sentence demanded a quality route.
 - **Routing** — choose the skill for the current phase or boundary from installed
   metadata/model judgment, and record the route. At completion, recorded
-  implementation / debug / quality / issue work needs this `Routing:` evidence
-  or a `Routing: n/a — <reason>` opt-out.
+  implementation / issue work (both detected from records you wrote) and every
+  phase you declared above need this `Routing:` evidence or a
+  `Routing: n/a — <reason>` opt-out.
 - **Gather step** — when `## Context Sources` names an external source
   (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
   gathered asset, or write `Gather: n/a — <reason>` when no external context
@@ -111,6 +117,7 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
+- `Phases: <declared phases, or n/a — why none were crossed>`
 - `Routing: <skill> — <why this phase needs it>`
 
 ## Discuss Before Activation

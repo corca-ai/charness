@@ -68,6 +68,7 @@ def _load_repo_script(module_name: str) -> Any:
 _PRESCRIBED = _load_repo_script("check_prescribed_skill_executed_lib")
 _DISPOSITION_FORM = _load_repo_script("disposition_form")
 _DISPOSITION = _load_sibling("goal_artifact_disposition_grammar")
+_PHASE_ROUTING = _load_sibling("goal_artifact_phase_routing")
 # Attention-state visibility marker: the extracted closeout stub still surfaces
 # the allowed skip form `skipped: <allowed-reason>: <detail>`.
 _CLOSEOUT_STUB_TEMPLATE = (
@@ -81,6 +82,7 @@ def required_shape() -> str:
     min_skip_detail = _PRESCRIBED.MIN_SKIP_DETAIL_LENGTH
     min_optout = _DISPOSITION.MIN_OPTOUT_REASON
     valid_form = _DISPOSITION_FORM.VALID_FORM_SUMMARY
+    declarable_phases = ", ".join(f"`{phase}`" for phase in _PHASE_ROUTING.DECLARABLE_PHASES)
     dest_form = _DISPOSITION_FORM.DESTINATION_FORM_SUMMARY
     lines = [
         "goal-closeout required shape (enforced by `check_goal_artifact.py` at the",
@@ -98,9 +100,12 @@ def required_shape() -> str:
         f"    DETAIL after the enum head is >= {min_skip_detail} chars (the head itself does",
         "    not count toward the detail floor).",
         "",
-        "`## Coordination Cues` — `Routing:` must NAME the selected owner skill and basis",
-        "for recorded work (e.g. `Routing: impl — selected from installed metadata for the",
-        "goal lifecycle`), or `Routing: n/a — <reason>` (>= 30 chars). Gather/Release/Issue",
+        "`## Coordination Cues` — `Phases:` DECLARES which phases the recorded work",
+        f"crossed ({declarable_phases}), or `Phases: n/a — <reason>`; the floor checks the",
+        "declaration's form and never infers the phases from your prose. `Routing:` must then",
+        "NAME the selected owner skill and basis for each declared phase and for the",
+        "implementation/issue work read from your own records (e.g. `Routing: impl — selected",
+        "from installed metadata for the goal lifecycle`), or `Routing: n/a — <reason>`. Gather/Release/Issue",
         "closeout floors fire the same way — see `--type goal-coordination` for the full shape.",
         "",
         "`## Auto-Retro` — the disposition floor: replace the seeded `Retro dispositions: TODO`.",

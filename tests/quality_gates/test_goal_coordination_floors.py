@@ -590,16 +590,6 @@ def test_phase_route_triggers_are_recorded_work_only() -> None:
     }
 
 
-def test_phase_route_triggers_do_not_treat_regression_suite_as_debug() -> None:
-    text = "## Slice Log\n\n- Targeted verification: regression suite passed under pytest\n"
-    assert pr.phase_route_triggers(text) == {
-        "impl": False,
-        "debug": False,
-        "quality": True,
-        "issue": False,
-    }
-
-
 def test_phase_routing_selected_owner_skill_with_basis_satisfies(tmp_path: Path) -> None:
     created = "2026-06-04"
     _seed_other_evidence(tmp_path, created)
@@ -626,7 +616,10 @@ def test_phase_routing_satisfied_by_selected_owner_skill_reference(tmp_path: Pat
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: impl and quality selected from installed metadata for this slice\n",
+            coordination=(
+                "Phases: quality\n"
+                "Routing: impl and quality selected from installed metadata for this slice\n"
+            ),
             release_work=(
                 "- What changed: updated goal helper behavior\n"
                 "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
@@ -662,7 +655,10 @@ def test_phase_routing_satisfied_when_routed_skill_wraps_to_continuation(tmp_pat
         _full_goal(
             created=created,
             context_sources=_LOCAL_SOURCE,
-            coordination="Routing: impl selected from installed metadata\nquality for this slice\n",
+            coordination=(
+                "Phases: quality\n"
+                "Routing: impl selected from installed metadata\nquality for this slice\n"
+            ),
             release_work=(
                 "- What changed: updated goal helper behavior\n"
                 "- Targeted verification: pytest -q tests/quality_gates/test_goal_coordination_floors.py\n"
