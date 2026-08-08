@@ -15,6 +15,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from tests.probe_drift_support import FLOOR_PROBE, probe_drift_message
+
 from .support import ROOT, _load_script_module
 
 INVENTORY = _load_script_module(
@@ -362,12 +364,21 @@ def test_the_recorded_probe_still_matches_todays_tree():
         ROOT / "skills" / "public" / "quality" / "references" / "inventory-consumer-fields.json",
     )
 
-    assert live["floor"] == recorded["floor"]
+    # #536: these four had NO assertion message at all, so a drift here reported a bare number
+    # comparison — the least actionable of the three sites, and the one carrying the denominator
+    # D47 cites. All three sites now say the same things.
+    assert live["floor"] == recorded["floor"], probe_drift_message("floor", probe=FLOOR_PROBE)
     # The numbers other prose actually leans on: D47 cites the 169 denominator and the
     # gate comment cites the label minimum of 7. Pinning only the floor let them drift.
-    assert live["artifacts"] == recorded["artifacts"]
-    assert live["field_mention_residuals"] == recorded["field_mention_residuals"]
-    assert live["label_value_residuals"]["min"] == recorded["label_value_residuals"]["min"]
+    assert live["artifacts"] == recorded["artifacts"], probe_drift_message(
+        "artifacts", probe=FLOOR_PROBE
+    )
+    assert live["field_mention_residuals"] == recorded["field_mention_residuals"], (
+        probe_drift_message("field_mention_residuals", probe=FLOOR_PROBE)
+    )
+    assert live["label_value_residuals"]["min"] == recorded["label_value_residuals"]["min"], (
+        probe_drift_message("label_value_residuals.min", probe=FLOOR_PROBE)
+    )
     assert live["citations_lowered_below_requirement"] == []
     assert live["label_value_residuals"]["below_floor"] == 0
     assert live["exemption_counts"]["REFUSED-uncorroborated"] == 0

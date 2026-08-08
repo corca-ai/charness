@@ -15,6 +15,7 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
+from tests.probe_drift_support import MARKER_PROBE, probe_drift_message
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "measure_inventory_marker_rule.py"
@@ -147,7 +148,9 @@ def test_the_recorded_probe_still_matches_todays_tree():
     assert result.returncode == 0, result.stderr
     live = json.loads(result.stdout)
 
-    for key in (
+    # `probe_field`, not `key`: see the note on the recursive loop below — the secret scanner's
+    # generic-api-key rule matches the literal text `key, `, and both call sites had that shape.
+    for probe_field in (
         "artifacts_scanned",
         "field_mentions_presence_only",
         "field_mentions_clearing_todays_floor",
@@ -157,8 +160,8 @@ def test_the_recorded_probe_still_matches_todays_tree():
         "artifacts_refused_by_the_marker_rule",
         "artifacts_citing_a_declared_inventory",
     ):
-        assert live[key] == recorded[key], (
-            f"{key} drifted from the recorded probe; update D47 and the probe together"
+        assert live[probe_field] == recorded[probe_field], probe_drift_message(
+            probe_field, probe=MARKER_PROBE
         )
     # D47's headline figure is the CITATION count, not the artifact list, and pinning only
     # the list would let a merge or split of two citations inside one artifact go green
@@ -178,11 +181,18 @@ def test_the_recursive_variant_recorded_in_the_probe_is_reproducible():
     assert result.returncode == 0, result.stderr
     live = json.loads(result.stdout)
 
-    for key, expected in recorded.items():
-        if key == "refused_citation_count":
+    # `probe_field`, not `key`: the secret scanner's generic-api-key rule matches the literal
+    # text `key, ` and my first version of these call sites put a variable named `key` right
+    # before a comma, so the repo's own secret gate flagged a test as a leak. Renaming is the
+    # fix rather than an allowlist entry, which would have weakened a real scanner to accommodate
+    # a variable name.
+    for probe_field, expected in recorded.items():
+        if probe_field == "refused_citation_count":
             assert len(live["citations_refused_by_the_marker_rule"]) == expected
         else:
-            assert live[key] == expected, f"{key} drifted from the recorded recursive run"
+            assert live[probe_field] == expected, probe_drift_message(
+                probe_field, probe=MARKER_PROBE, variant="recursive variant"
+            )
 
 
 def test_the_presence_only_count_reproduces_the_denominator_d47_cited():
