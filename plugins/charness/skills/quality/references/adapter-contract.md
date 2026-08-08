@@ -539,6 +539,27 @@ When rules are explicitly empty and discoverable skills exist, validation
 remains a pass but must emit a warning. This keeps deliberate downstream
 opt-outs visible in `run-quality`.
 
+### `regenerable_facts`
+
+Gates FORWARD-LOOKING prose against transcribed facts a command can regenerate.
+A number in prose is read as today's answer, so it must be the command that
+produces it, not the output of one run.
+
+- `surfaces`: globs of prose a reader treats as current. Defaults to the agent
+  prompt files, `README.md`, `docs/*.md`, and `docs/conventions/*.md`. Dated,
+  append-only records — retros, critiques, audits, slice logs — are deliberately
+  absent by DEFAULT rather than exempted: a number there describes one moment,
+  which is the whole reason it is written.
+- `exemptions`: `path -> reason`. The reason is required, and a blank one is
+  refused with an error. An unexplained exemption is exactly the unfalsifiable
+  claim the rule removes, one level up.
+
+The remedy the gate names depends on what the command COSTS. A cheap command
+(`git describe`, a grep, an issue list) goes in the prose by itself. An expensive
+one — a multi-minute suite, a fan-out census, a full-corpus sweep — carries the
+command AND a link to the checked-in artifact holding its output, because telling
+every future reader to re-run it moves the cost onto all of them forever.
+
 ## Artifact Rule
 
 The current quality pointer filename is fixed:

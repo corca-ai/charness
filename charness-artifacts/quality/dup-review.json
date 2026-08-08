@@ -520,6 +520,13 @@
     },
     {
       "class": "intentional",
+      "id": "34d2614d0d48fb61",
+      "reviewed_at": "2026-08-09",
+      "surface": "code",
+      "note": "A glob-then-filter scan loop shared by regenerable_facts_lib and the quality skill's find_inline_prompt_bulk reference script. Both walk repo globs and collect per-line hits; the shapes rhyme because the task does, and the predicates, outputs, and owning surfaces differ. A shared walker would couple a shipped gate to a reference utility for no behavioural gain."
+    },
+    {
+      "class": "intentional",
       "id": "34ea3910e5c6cb5a",
       "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
@@ -1374,6 +1381,13 @@
     },
     {
       "class": "intentional",
+      "id": "7d465427b8198be1",
+      "reviewed_at": "2026-08-09",
+      "surface": "code",
+      "note": "Per-skill `resolve_adapter` shims. Each skill package ships its own so it stays self-contained in a consuming repo; that portability is the point, and #550 tracks the resolver-body duplication as its own decision rather than something a gate should force here."
+    },
+    {
+      "class": "intentional",
       "id": "7dd66ad639d0d9db",
       "note": "the preflight/inventory `argparse -> build report -> emit JSON or human -> exit code` main() shape, shared by four unrelated repo scripts. Only check_skill_surface_preflight.py is in this diff (its named-scope refusal), and the other three are untouched. This is the repo's CLI contract surfacing as duplication.",
       "reviewed_at": "2026-07-30",
@@ -1959,6 +1973,13 @@
       "note": "low-value early-return guard family rotated when route helpers split; extracting a shared guard would add coupling for no behavior gain",
       "reviewed_at": "2026-06-26",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b989fb81bcc1a770",
+      "reviewed_at": "2026-08-09",
+      "surface": "code",
+      "note": "The REQUIRED skill-runtime bootstrap block (`_load_skill_runtime_bootstrap` walking parents for skill_runtime_bootstrap.py), shared by publish_release, issue_tool, publish_release_preflight, issue_verify_closeout, and now check_regenerable_facts. It cannot be factored into a helper: its whole job is to LOCATE the helper loader before any shared import is possible. Identical by contract, and check_bootstrap_shim_consistency already guards it against drift."
     },
     {
       "class": "intentional",

@@ -395,6 +395,43 @@ def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], w
         warnings.append(warning)
 
 
+def _apply_regenerable_facts(
+    data: dict[str, Any], validated: dict[str, Any], errors: list[str], warnings: list[str]
+) -> None:
+    """Carry the forward-looking prose surfaces and their reasoned exemptions.
+
+    An exemption without a reason is refused rather than honoured: the whole rule
+    exists to remove unfalsifiable claims from prose, so an unexplained escape
+    hatch reintroduces one at the gate level.
+    """
+    block = data.get("regenerable_facts")
+    if block is None:
+        return
+    if not isinstance(block, dict):
+        errors.append("regenerable_facts must be a mapping")
+        return
+    surfaces = block.get("surfaces")
+    exemptions = block.get("exemptions") or {}
+    if surfaces is not None and (
+        not isinstance(surfaces, list) or not all(isinstance(item, str) for item in surfaces)
+    ):
+        errors.append("regenerable_facts.surfaces must be a list of glob strings")
+        return
+    if not isinstance(exemptions, dict):
+        errors.append("regenerable_facts.exemptions must be a mapping of path -> reason")
+        return
+    unreasoned = sorted(path for path, reason in exemptions.items() if not str(reason or "").strip())
+    if unreasoned:
+        errors.append(
+            "regenerable_facts.exemptions needs a reason for: " + ", ".join(unreasoned)
+        )
+        return
+    validated["regenerable_facts"] = {
+        "surfaces": list(surfaces) if surfaces else [],
+        "exemptions": {str(k): str(v).strip() for k, v in exemptions.items()},
+    }
+
+
 def validate_quality_adapter_data(
     data: dict[str, Any], repo_root: Path
 ) -> tuple[dict[str, Any], list[str], list[str]]:
@@ -421,6 +458,7 @@ def validate_quality_adapter_data(
     _apply_dup_ratchet(data, validated, errors, warnings)
     _apply_test_file_discovery(data, validated, errors, warnings)
     _apply_lint_ignore_discovery(data, validated, errors, warnings)
+    _apply_regenerable_facts(data, validated, errors, warnings)
 
     _apply_deliberate_absence(data, validated, warnings)
     if data.get("repo") == "CHANGE_ME":

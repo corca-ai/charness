@@ -204,14 +204,55 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   - When a number replaces a number in a durable record, grep the repo for the
     OLD value before closing. Superseded figures linger in sibling docstrings,
     generated mirrors, and dogfood records that no reader will cross-check.
-  - State the UNIT before the value when comparing measurements. "5 reviews" and
-    "5 citations across 4 artifacts" are not the same claim, and a measurement
+  - State the UNIT before the value when comparing measurements. `5 reviews` and
+    `5 citations across 4 artifacts` are not the same claim, and a measurement
     that lands near an expected number invites narrating agreement that the units
     do not support.
 - `Critique: not-applicable <reason>` is reserved for inspect-only, status-only,
   or routing-only requests that do not complete repo work.
 - If the required bounded-review path is blocked by the host, stop and record
   `Critique: blocked <host-signal>` instead of substituting same-agent review.
+
+## Regenerable-Fact Discipline
+
+**A number in forward-looking prose is banned by default. Carry the command, not
+its output.** A transcribed version, sha, or count is true on the day it is
+written and misleading every day after, and the next reader acts on it instead of
+checking. This is a stance, not a style note: it already had teeth on one file and
+those teeth are now repo-wide.
+
+The seam that decides whether a surface is in scope:
+
+- **Dated, append-only RECORDS** — retros, critiques, audits, goal slice logs,
+  commit messages. A number there describes one moment that will never be true
+  again, and that is exactly what it is for. Permanently OUT OF SCOPE, by nature
+  rather than by grandfather.
+- **Rolling, FORWARD-LOOKING surfaces** — agent prompt files, conventions, docs,
+  skill prose. A reader treats these as today's answer. IN SCOPE.
+
+Two ways to satisfy it, and the difference is what the command COSTS:
+
+- A **cheap** command (`git describe`, `gh issue list`, a grep): carry the command
+  alone. The reader runs it and gets today's answer for nothing.
+- An **expensive** command (a multi-minute suite, a fan-out census, a full-corpus
+  sweep): carry the command AND link the checked-in artifact holding its output.
+  Telling a reader to re-run an expensive gate to learn one number is not a fix —
+  it moves the cost onto every future reader, forever. The artifact is the
+  provenance: it records what was run, when, and against what, so the prose links
+  it rather than copying numbers out of it. **An expensive measurement that exists
+  only in a chat reply has not been recorded.**
+
+Three narrow exceptions, and each owes a stated reason in the adapter rather than
+a silent pass: historical context (the figures a decision was TAKEN on, which
+rewriting to today's numbers would falsify), a pinned tool version a documented
+behaviour was observed against, and provenance for a past decision such as the
+commit that moved a gate between timing layers.
+
+Enforced by [check_regenerable_facts.py](../../skills/public/quality/scripts/check_regenerable_facts.py), which
+ships to consuming repos through `quality`. Surfaces and exemptions come from each
+repo's own quality adapter under `regenerable_facts`, so nothing here is bound to
+this tree's layout — and an exemption with no recorded reason is REFUSED, because
+an unexplained escape hatch is the same unfalsifiable claim the rule removes.
 
 ## Skill And Metadata Discipline
 

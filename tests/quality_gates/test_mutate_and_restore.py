@@ -469,3 +469,17 @@ def test_a_crash_exits_three_so_it_cannot_be_read_as_survivors_found(tmp_path: P
 
     assert completed.returncode == 3, completed.stderr
     assert "CRASHED" in completed.stderr
+
+
+def test_a_no_op_mutant_is_refused_not_reported_as_survived(tmp_path: Path) -> None:
+    # Found by using this runner on another gate: a mutant whose replacement equals
+    # its find text changes nothing, so it can only ever come back SURVIVED -- a
+    # verdict about code that was never changed. The author reads it as an
+    # uncovered line and goes hunting for a test that already exists.
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    plan = _plan(mutants=[{"id": "noop", "path": "subject.py", "find": "a + b", "replace": "a + b"}])
+
+    sweep = mar.run_sweep(plan, repo, emit=lambda _l: None)
+
+    assert [m.verdict for m in sweep.mutants] == [mar.REFUSED]
+    assert "no-op mutant" in sweep.mutants[0].detail

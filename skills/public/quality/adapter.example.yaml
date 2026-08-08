@@ -152,3 +152,25 @@ dup_ratchet:
   scope_paths: []
   review_artifact_path: charness-artifacts/quality/dup-review.json
   gate_baseline_path: charness-artifacts/quality/dup-ratchet-baseline.json
+
+# Forward-looking prose surfaces gated against transcribed facts a command can
+# regenerate (versions, shas, as-of counts). A number in prose is read as current;
+# carry the COMMAND instead. If that command is EXPENSIVE, carry the command AND
+# link the checked-in artifact holding its output -- never make every future
+# reader re-run a multi-minute gate to learn one number.
+#
+# Dated append-only records (retros, critiques, audits) are deliberately NOT
+# listed: a number there describes one moment, which is what it is for.
+regenerable_facts:
+  # Omit to accept the defaults (AGENTS.md, CLAUDE.md, README.md, docs/*.md,
+  # docs/conventions/*.md). List your own globs when your prose lives elsewhere.
+  surfaces:
+    - AGENTS.md
+    - README.md
+    - docs/*.md
+  # path -> reason. A reason is REQUIRED: an unexplained exemption is the same
+  # unfalsifiable claim this rule exists to remove, so a blank one is refused.
+  exemptions:
+    docs/decisions.md: >-
+      historical context: records the figures each decision was TAKEN on, which
+      rewriting to today's numbers would falsify.

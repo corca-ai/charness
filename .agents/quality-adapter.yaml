@@ -735,3 +735,35 @@ dup_ratchet:
     - skills/support
   review_artifact_path: charness-artifacts/quality/dup-review.json
   gate_baseline_path: charness-artifacts/quality/dup-ratchet-baseline.json
+
+# The forward-looking prose surfaces this repo gates against transcribed facts,
+# and the exemptions, each with a reason a reader can judge. Dated append-only
+# records (charness-artifacts/**) are absent by design, not by exemption: a number
+# there describes one moment and that is what it is for.
+regenerable_facts:
+  surfaces:
+    - AGENTS.md
+    - README.md
+    - docs/*.md
+    - docs/conventions/*.md
+  exemptions:
+    docs/deferred-decisions.md: >-
+      historical context: every entry records the figures its decision was TAKEN
+      on, and rewriting them to today's numbers would falsify why the decision was
+      made. An entry quoting a LIVE toll still owes the command that regenerates it.
+    docs/conventions/validator-timing-layers.md: >-
+      each row cites the commit that MOVED a gate between timing layers; the sha is
+      provenance for a past decision, not a claim about today's tree.
+    docs/duplicate-detection-strategy.md: >-
+      pins the jscpd version the documented thresholds were calibrated against.
+    docs/docs-graph-checks.md: >-
+      pins the awiki version the documented behaviour was observed against.
+    docs/north-star-overhaul-roadmap.md: >-
+      a dated planning record kept for its reasoning; its counts describe the state
+      the roadmap was written from.
+    docs/testability-dsl-initiative.md: >-
+      a dated initiative record; its counts describe the state it was scoped from.
+    docs/handoff-chunked-routing.md: >-
+      documents measured routing behaviour with the corpus it was measured on.
+    docs/prescribed-skill-closeout-contract.md: >-
+      quotes the corpus size a contract clause was sized against.

@@ -176,6 +176,11 @@ def invalidate_bytecode(path: Path) -> None:
 
 def apply_mutation(path: Path, find: str, replace: str) -> bytes:
     """Replace exactly one occurrence, returning the original bytes for restore."""
+    if find == replace:
+        raise SweepError(
+            "mutation text equals its replacement; a no-op mutant can only ever be "
+            "reported SURVIVED, which is a verdict about code that was never changed"
+        )
     original = path.read_bytes()
     text = original.decode("utf-8")
     occurrences = text.count(find)
