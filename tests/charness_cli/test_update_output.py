@@ -92,7 +92,7 @@ def test_installed_cli_update_all_without_json_prints_progress_and_summary(tmp_p
     assert payload["scope"] == "all"
     assert payload["response_level"] == "summary"
     assert payload["tool_update"]["response_level"] == "summary"
-    assert payload["tool_update"]["summary"]["tool_count"] == 13
+    assert payload["tool_update"]["summary"]["tool_count"] == 14
     assert {"cautilus", "github-gh"}.issubset(payload["tool_update"]["attention"]["manual_tool_ids"])
     assert payload["tool_update"]["attention"]["not_ready_tool_ids"]
     assert "results" not in payload["tool_update"]
