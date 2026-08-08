@@ -236,6 +236,25 @@ Queue item form:
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
 
+Recorded during the run:
+
+- Decision: how to clear the `#514/#515/#518` source-freeze receipt that slice 2's
+  one-line `run-quality.sh` change invalidated (three red tests).
+  Owner: operator, or the goal that owns `#514`/`#515`/`#518`.
+  Why deferred: the freeze is WORKING — a source file changed after inspection is
+  exactly what it detects. Clearing it means re-inspecting `scripts/run-quality.sh`
+  for those issues and re-stamping. This run did not perform that inspection, and
+  `stamp-inspection`/`refreeze` would assert it did; this goal's Backlog Recount
+  explicitly does not claim those issues. Faking the stamp to reach green is the
+  false-evidence class the north star forbids, so the run proceeded and reported
+  instead.
+  Unblock action: either (a) the owner re-inspects `scripts/run-quality.sh` and
+  re-stamps via `scripts/validate_issue_source_freeze.py` with the receipt's own
+  paths, or (b) the operator rules that a locator hash change from an unrelated
+  slice may be re-stamped without re-inspection — a policy answer, not a command.
+  Revisit trigger: before this goal's bundle proof at slice 9, since the broad
+  suite is red until it is resolved.
+
 ## Coordination Cues
 
 Phase-appropriate routing for this run, chosen from installed skill metadata and
