@@ -9,36 +9,34 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 of 9 COMPLETE. `#552`, `#548`, `#555`, and `#537` are all CLOSED
-  and verified through the adapter. Slice 5 (`#536`, `#549`, `#542` — failures that
-  name what they did not establish) is next and has NOT been premise-checked.
-- Current slice intent: none in progress. The last completed intent was `#537` — make
-  a correct bundle-preflight refusal report itself — spanning `15b15c78`, `a4feee83`,
-  `dfbfa54e`.
-- Next action: premise-check `#536`, `#549`, and `#542` together and record the
-  verdicts in the Slice Log BEFORE any build. Slice 5 bundles three issues, so the
-  premise check should also test whether they really share a mechanism; if they do
-  not, split the slice rather than building one fix for three symptoms.
-- Grouping premise CONFIRMED, four for four, and now with a measured cost: every
-  slice was one-rule- or one-question-many-owners, every slice shipped a repair
-  carrying the class it fixed, and in every slice the last thing needing repair was a
-  GUARD or a MEASUREMENT rather than the code under repair.
-- The sharpest cross-slice lesson: I fixed the instance the issue reported and
-  measured the fix against THAT instance. In slice 4 the class turned out to be two
-  greps wider — the mirror class, then the manifest class — and the worst instance
-  (a bare `KeyError` naming nothing) was found third, by the closeout critique. Before
-  claiming a class is closed, enumerate the OTHER inputs that produce the same symptom
-  and measure each one.
-- Issues filed while working, none planned: `#556`, `#557`, `#558`, `#559`, `#560`.
-  Every one came from a delegated review or a gate rather than from the backlog.
-- Carried into slice 5: (a) a test whose subject IS live repo state cannot be
-  mutation-tested by editing the worktree — the edit is itself a state change, so
-  prove discriminating power by INJECTION; (b) when a review calls an assertion dead,
-  check whether it is a redundant cross-layer AGREEMENT check, which is different and
-  often defensible; (c) read WHICH assertion failed before concluding anything about a
-  mutant — I got this wrong while fixing the issue about exactly that; (d) state a
-  count with its scope, because two closeouts were blocked on arithmetic and a third
-  on a count that matched neither total.
+- Current slice: 5 — `#536` built and BOTH review rounds complete. `#552`, `#548`,
+  `#555`, `#537` are CLOSED and verified. Remaining for slice 5: post the `#536`
+  closeout and close it.
+- Current slice intent: `#536` — make a probe-drift failure name its cause,
+  distinguish a corpus change from a rule change, and list every surface a re-record
+  must touch. Spans `67beced4` and the round-2 repairs.
+- Next action: post the `#536` closeout and close it. Then slices 5a (`#549`) and 5b
+  (`#542`), which slice 5's premise check RE-HOMED because they share this issue's
+  face and not its remedy — do not rebuild them as one slice.
+- SLICE PLAN NOW HAS 11 ROWS, not 9. Rows 5a and 5b were added by slice 5's premise
+  check. The goal is still described as 9-slice in prose above; read the table.
+- Grouping premise CONFIRMED for the CLASS and REFUTED for one bundle: slices 1-4 each
+  shared a mechanism, and slice 5's three issues shared only a face. That is the
+  distinction to carry — a shared face predicts nothing about a shared remedy.
+- Cross-slice lesson that keeps paying: I fix the instance an issue reports and measure
+  against that instance. In slice 4 the class was two greps wider; in slice 5 the
+  MESSAGE I wrote was twice worse than the number it replaced, both times because I
+  asserted where something lived instead of checking. Version 1 would have deleted
+  `_provenance`; version 2 sent a rule change to the corpus remedy by naming the wrong
+  files. Check the location of every fact a message states.
+- Issues filed while working, none planned: `#556`, `#557`, `#558`, `#559`, `#560`,
+  `#561`. Every one came from a delegated review or a gate.
+- Carried forward: (a) a test whose subject IS live repo state cannot be
+  mutation-tested by editing the worktree — prove it by injection; (b) a substring pin
+  over a message cannot see an INVERSION (swapped lists, swapped command pairings), so
+  pin the pairing and the ordering, not the vocabulary; (c) the commit-msg gate reads
+  prose for close keywords — `a fix: #536` in a sentence blocked two commits, and it
+  was right to.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -176,10 +174,10 @@ re-homed here rather than run under a frame that did not name what they share.
 
 | Slice | Objective | Issues | Why HERE in the sequence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | A checker requiring a token its renderer never emits — two policy checks that can never fire | #552 | Sharpest instance of the class, smallest surface, and a PERMANENT green today | planned |
-| 2 | One key name meaning opposite things in two scaffolds | #548 | Same shape, and one branch can overwrite the previous review | planned |
-| 3 | One tracker backend, one owner | #555 | Unblocks `#554` part 2; the duplicate was found by the predecessor's premise check | planned |
-| 4 | A correct refusal that reports itself | #537 | Hit LIVE in the predecessor and worked around; also unblocks honest gate reads for later slices | planned |
+| 1 | A checker requiring a token its renderer never emits — two policy checks that can never fire | #552 | Sharpest instance of the class, smallest surface, and a PERMANENT green today | done |
+| 2 | One key name meaning opposite things in two scaffolds | #548 | Same shape, and one branch can overwrite the previous review | done |
+| 3 | One tracker backend, one owner | #555 | Unblocks `#554` part 2; the duplicate was found by the predecessor's premise check | done |
+| 4 | A correct refusal that reports itself | #537 | Hit LIVE in the predecessor and worked around; also unblocks honest gate reads for later slices | done |
 | 5 | A drift failure that names its cause and its full update set | #536 | Reproduced, and the only one of the three whose remedy is a message | done |
 | 5a | A survive-truncation mechanism built once, and a consumer contract with no reader | #549 | RE-HOMED from slice 5 by its premise check: shares the face, not the remedy | planned |
 | 5b | A refusal that cannot name a CLI/body disagreement | #542 | RE-HOMED from slice 5: needs a design decision about threading the carrier source, not a message | planned |
@@ -413,6 +411,20 @@ slices, and pull in the related open issues.
 - Critique: The three issues share a FACE and not a REMEDY, and the remedies are not merely different in size, they are different in kind. `#536` needs a failure message that names its cause and its full regeneration set — a message change plus a coupling between two probes and one prose document. `#549` needs either a mechanism generalized beyond one script or an executable reader for a consumer contract that currently has none; generalizing to every long-running script is exactly the wolf-crier trade this goal's Non-Goals forbid, so its honest core is the missing reader. `#542` needs a refusal that cannot be made correct without threading the carrier SOURCE through the crosswalk — a design decision the source code already documents as deliberately deferred, not a wording fix. Building these as one slice would have produced one commit whose reviewable intent was three unrelated things, which is the condition this goal's Boundaries call a slice that stops being reviewable.
 - Off-goal findings: Noted for the build: the two probe failures use DIFFERENT wordings for the same class of drift (`drifted from the recorded probe; update D47 and the probe together` versus `drifted from the recorded recursive run`), and only the first names D47. Whatever fix lands should make both say the same things, or the next reader will learn the remedy from one failure and not the other.
 - Lessons carried forward: SLICE SPLIT, recorded as the verdict rather than discovered mid-build: slice 5 takes `#536` alone. `#549` and `#542` are re-homed as their own slices with the reasons above, because a shared face is not a shared fix. Also: the fifth premise check is the first to correct a REPRODUCTION rather than a remedy — the issue's own recipe (`adding one artifact`) does not reproduce, because the probe counts markdown. An issue's reproduction steps are a claim like any other.
+- Metrics:
+
+### Slice 10: Slice 5 build (#536) — a drift failure that names its cause, after two versions that were worse than the number
+
+- Objective: Make the probe-drift failure name what caused it and what a re-record must touch, so a correct measurement mismatch stops arriving as three drifted numbers the reader has to reverse-engineer.
+- Why this approach: Fifth instance of the goal's class, and the only one of slice 5's three issues whose remedy is a message. The premise check split the slice rather than stretching one fix over three unrelated remedies.
+- Commits: `67beced4` (build + slice round-1 repairs), plus the round-2 repairs and closeout commit that follow.
+- What changed: New `tests/probe_drift_support.py` (the shared message, its cause lists, its surface/command pairings, and the discrimination paths) and `tests/test_probe_drift_message.py` (10 pins). Wired into the three drift sites in `tests/test_inventory_marker_rule_measurement.py` and `tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py`. Goal artifact: Slice Plan rows 5/5a/5b, the User Acceptance split, and the Status column.
+- Alternatives rejected: Rejected by the premise check: building `#536`, `#549`, and `#542` as one slice. Rejected during round-2 repairs: rewording the git-availability cause instead of REMOVING it — it named a field and value no code produces, got a shallow checkout backwards, and cannot move any pinned number on this corpus because every artifact resolves `not-claimed` before git is consulted. A cause that cannot fire is the wolf-crier this goal's Non-Goals forbid. Recorded as a deliberate absence with a pin asserting it stays absent.
+- Targeted verification: Acceptance measured by reproduction: with a markdown artifact under the corpus, all three failures print the corpus-versus-rule split, the files to diff, and all seven surfaces with per-surface commands. Mutation: 4/4 on the first pin set, then the round-2 pins killed two INVERSIONS that the first set could not see — swapping the corpus and rule cause lists, and swapping the marker and floor commands in the surface list, both of which left every substring assertion green while making the message actively harmful. `./scripts/check-secrets.sh` reports no leaks; `./scripts/run-quality.sh --read-only` exits 0 with 86 passed, 0 failed; `pytest tests/` 7866 passed at the round-1 boundary; dup ratchet clean; closeout aggregate `completed`; both reviewer boundaries verified with no unattributed drift.
+- Test duplication pressure: No new duplicate families. The message lives in one module both gate files import rather than copied into each, which is the shape this goal keeps repairing.
+- Critique: Two bounded rounds, and BOTH found the message worse than the number it replaced — the same failure twice, from the same root cause: I asserted where a fact lived instead of checking. Round 1: my instruction said `copy each payload into the probe file`, but `--json` emits only the payload while a probe is `_provenance` PLUS that payload, and the recursive payload nests under `_provenance.recursive_variant`. Following it deleted `_provenance` and produced a bare `KeyError` on the next run. Round 1 also found `the fix is to re-record, not to undo the write` unhedged and wrong for any rule change, and `three surfaces` an undercount. Round 2 read those repairs and found: the discrimination step still pointed at the wrong files, because three of the four thresholds it named live in `scripts/validate_inventory_consumption.py` and not in either measure script — so a reader would diff the measure scripts, see nothing, and re-record a rule regression, which is the exact harm round 1 had just repaired; a SEVENTH surface, the gate module's own comments, which transcribe the corpus label minimum twice; that the floor probe has no `_provenance.current_corpus` field my message claimed it had; that D47 does not name the floor probe or `field_mention_residuals` at all, so my stated reason for the coupling was false even though the coupling is real; and that the `_provenance` bookkeeping fields (`date`, `repo_head_at_run`, `worktree`, the refresh counts) would be left stale by a literal follow, producing a payload wearing a provenance block that names an older run.
+- Off-goal findings: Filed `#561`: a THIRD probe pins the INVARIANT (`min_residual >= floor`) rather than equality and has never needed a refresh, which is the difference between making a recurring tax cheaper and removing it — an alternative this slice never considered on the record until a review pointed at it, and a decision D47's owner should take deliberately. `#561` also carries that third site's missing drift message. Recorded, not repaired: the recursive pin's `refused_citation_count` branch cannot fire against the checked-in probe (pre-existing), and the gitleaks `key,` trap is entropy-gated so other sites in the repo pass by luck rather than design.
+- Lessons carried forward: 1) The same mistake twice, and it is worth naming precisely: I stated WHERE something lived — a payload's shape, a threshold's module, a document's citation — without opening the file. Every one of those was wrong, and each wrong one made an instruction that would have caused the harm it was written to prevent. For any message that tells a reader where to look, open each location first. 2) A substring pin over a message cannot see an INVERSION. Swapping two lists or two command pairings left ten assertions green while turning the message harmful; pinning the PAIRING and the ORDERING is what catches it. 3) The repo's own commit-msg gate blocked two commits because prose containing `a fix: #536` parses as a GitHub close keyword — it would have auto-closed the issue on push with no ledger. A gate reading prose for side effects is not over-reach; it caught a real one.
 - Metrics:
 
 ## Context Sources
