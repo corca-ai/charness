@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — build the docs index hub and link the 7 orphans.
-- Current slice intent: slice 1 is DONE and committed. The reviewable-intent
-  unit now in progress is the docs graph reaching `orphans=0` honestly, so
-  awiki can be promoted green rather than promoted red and excused. Critique
-  and broad proof do not re-fire within one unchanged intent — update this when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: re-measure `awiki lint -root docs -recursive`, then design the
-  index hub around what the 7 orphans actually are.
+- Current slice: 3 — the `check_doc_links.py` vs awiki overlap matrix.
+- Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
+  progress is writing the overlap matrix that is the stated PREMISE for
+  promoting awiki, then promoting it on the connectivity metrics. Critique and
+  broad proof do not re-fire within one unchanged intent — update this when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- Next action: write the command-level matrix naming what `check_doc_links.py`
+  and `awiki lint` each do and do not answer.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -90,7 +90,18 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 
 ## User Acceptance
 
-- `awiki lint -root docs -recursive` exits **0** with `orphans=0 islands=0`.
+- `awiki lint -root docs -recursive` reports `orphans=0 islands=0` with
+  `largest_component_ratio=1.0000`. **AMENDED 2026-08-09 by operator decision**,
+  after the original "exits 0" criterion was measured unreachable: awiki's exit
+  code also fails on `link_only_lines`, of which this repo has 229 — and 139 of
+  those are its own 80-column prose wrapping putting a link alone on a physical
+  line, not context-free links. Proven on a 2-page synthetic wiki: zero orphans
+  plus one bare bullet link still exits 1, and lint has no rule-selection flag.
+  Reaching exit 0 would mean reflowing ~224 lines across 28 files, which
+  Non-Goals forbids. The gate therefore asks the CONNECTIVITY question awiki's
+  own manifest says it is for, and says out loud that it does not judge
+  link-only style. The link-only rule is worth pursuing (operator), just not as
+  this gate and not by a reflow sweep.
 - `bash scripts/run-quality.sh` shows the docs-graph check present, named, and
   passing — not silently absent.
 - Rename `awiki` off PATH, re-run: the gate reports the check NOT-RUN with a
@@ -144,7 +155,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | DONE. Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | done |
-| 2 | Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `awiki lint` exit 0, `orphans=0`; `check_doc_links.py` still green | pending |
+| 2 | DONE. Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `orphans=0 islands=0 ratio=1.0000` measured; negative test observed red; hub adds ZERO link-only lines; `check_doc_links.py` still green | done |
 | 3 | Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer | pending |
 | 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
 | 5 | `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Corpus replay over checked-in goals with every verdict change explained; the plain-English debug case no longer slips; the `airport gate` case no longer fires | pending |
@@ -227,6 +238,26 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 2 — docs index hub (done)
+
+- `docs/README.md` groups all 40 pages by the question each one answers, so the
+  seven orphans are reachable without already knowing their filenames. Measured
+  after: `documents=41 orphans=0 islands=0 largest_component_ratio=1.0000`.
+- **The stated remedy's premise failed, and the check caught it before the
+  slice was shaped around it.** "Link the orphans, then awiki exits 0" is false:
+  exit 0 also requires `link_only_lines=0`. Proven on a synthetic 2-page wiki
+  (zero orphans + one bare bullet link still exits 1) and by the absent
+  rule-selection flags. Of this repo's 229, 139 are its own 80-column wrapping
+  putting a link alone on a physical line. Operator amended the acceptance
+  criterion to the connectivity metrics.
+- The hub adds **zero** link-only lines. Measured, then repaired: a first draft
+  added 3, because a long path pushed the description onto the next physical
+  line. The rule is line-based, so a few words before the link satisfy it.
+- Negative test observed: an unlinked `docs/stray-check.md` moved the count to
+  `orphans=1` and named the page, then reverted to 0.
+- Passed `check_doc_authoring_preflight`, `check_doc_links`, and markdownlint on
+  the FIRST try, which is slice 1's own acceptance criterion demonstrated.
 
 ### Slice 1 — declared routing + rules-before-authoring (done)
 
@@ -393,8 +424,11 @@ Disposition review: TODO — create or explicitly skip only when policy allows b
 
 Run these yourself; none requires trusting this run's report.
 
-1. `awiki lint -root docs -recursive; echo "exit=$?"` — expect `exit=0`,
-   `orphans=0 islands=0`.
+1. `awiki lint -root docs -recursive` — expect `orphans=0 islands=0` and
+   `largest_component_ratio=1.0000` on the summary line. It still exits 1, on
+   `link_only_lines` alone; that is the amended criterion above, not a failure
+   of this goal, and the gate in step 2 reads the metrics rather than the exit
+   code.
 2. `bash scripts/run-quality.sh > /tmp/q.txt 2>&1; grep -n 'awiki\|docs-graph' /tmp/q.txt`
    — the lane must appear BY NAME. A gate you cannot find is not a gate you have.
 3. Break it on purpose: add an unlinked `docs/stray-check.md`, re-run step 1,

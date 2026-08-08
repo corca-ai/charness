@@ -163,6 +163,8 @@ See [Support Skill Policy](./docs/support-skill-policy.md) for the boundary and
 README is the first-touch orientation surface. Deeper contracts live in the
 docs and artifacts that own them:
 
+- every docs page, grouped by the question it answers:
+  [docs/README.md](./docs/README.md)
 - CLI command reference: [docs/generated/cli-reference.md](./docs/generated/cli-reference.md)
 - workflow route examples: [docs/workflow-routes.md](./docs/workflow-routes.md)
 - repo-local development and dogfood paths:
