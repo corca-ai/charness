@@ -502,3 +502,37 @@ def test_probe_sample_declines_rather_than_inventing_one(tmp_path: Path) -> None
     # `docs/README.md` that does not exist there.
     (tmp_path / "docs").mkdir()
     assert _rules._probe_sample(tmp_path) is None
+
+
+def test_rules_mode_reports_no_portable_package_when_the_repo_has_none(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A repo with no `skills/public|support/<name>/` package has no tree-marker
+    # rule to teach; the probe must decline rather than invent a package root.
+    assert _rules._portable_package_probe(set()) is None
+    assert _rules._portable_package_probe({"docs/guide.md", "scripts/tool.py"}) is None
+
+
+def test_rules_mode_falls_back_when_the_probe_stops_tripping_the_rule(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # If the version class is narrowed or dropped upstream while the sha/count
+    # classes remain, the probe raises nothing. Render the classes alone rather
+    # than the literal word `None` above three correct rows.
+    monkeypatch.setattr(_rules, "_regenerable_verdict", lambda: None)
+    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+
+    assert "regenerable-facts: the classes this surface refuses" in rendered
+    assert "regenerable-facts: None" not in rendered
+
+
+def test_regenerable_verdict_is_none_when_nothing_is_refused(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(_handoff, "REGENERABLE_PATTERNS", ())
+    assert _rules._regenerable_verdict() is None
+
+
+def test_rules_mode_says_markdownlint_was_not_forecast_when_absent(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The binary-absent arm must SAY the class was not forecast; a rules mode
+    # silently omitting it would read as "no markdownlint rules apply here".
+    monkeypatch.setattr(_pf, "_resolve_markdownlint_cmd", lambda: None)
+    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+
+    assert "binary unavailable here" in rendered
