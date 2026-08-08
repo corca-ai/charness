@@ -191,9 +191,13 @@ repair; re-read that before scoping either.
 
 ## Group E — filed by this session, and honestly small
 
-- **`#566`** (docs never checked as a graph) was filed by this session from
-  `../craken-agents`. It opens as a measurement, not a gate: count the orphans over
-  `docs/` and `skills/**/references/` first, and close it on a zero.
+- **`#566`** was filed by this session and MIS-FRAMED; the correction is in its
+  comments. It is not a fresh doc-graph finding — charness had already run awiki,
+  captured a fixture, written an awiki contract critique under `#518`, and recorded 7
+  orphans. The real gap is that awiki has no integration manifest, so no consumer can
+  declare it, and that was an unfilled operator instruction rather than a discovery.
+  I also pruned that state out of the handoff as stale in the same session, which was
+  wrong; it is restored.
 - **`#565`** (a mutation sweep with a broken baseline reports every mutant as
   killed). Re-confirmed LIVE during the audit: the same zsh word-split defect
   recurred in a command verifying an audit charge, an hour after being filed.
@@ -220,10 +224,13 @@ repair; re-read that before scoping either.
 
 1. `#523`, with `## Subagent Delegation` held out — a deletion, a dogfood violation
    against guidance we ship, and measured at 11.8–18.3 KB across all five consumers
-2. **`#566`** — a doc-graph (orphan/island) gap plus craken's "unenforced, run it
-   yourself" disclosure discipline. Filed by this session from the reference repo;
-   opinion: the single best thing to take from craken, and it opens as a
-   MEASUREMENT (count the orphans; a zero closes it) rather than as a new gate
+2. **`#566`, as CORRECTED in its comments** — not a doc-graph discovery. awiki was
+   asked for as a support binary and never installed as one: `integrations/tools/`
+   and `integrations/locks/` declare eleven binaries and awiki is in neither, while
+   `docs/support-skill-policy.md:37-39` names the integration manifest as its home.
+   The orphan count was already measured (7, transcribed, scope unverified), so my
+   "open it as a measurement" framing was wrong too. craken's transferable half is
+   the DISCLOSURE discipline, not the graph check
 3. `#560` — close it; the work is done and proven
 4. `#531` — the first surface every session in every consumer touches
 5. Re-scope `#519`/`#520` onto Cautilus cadence rather than onto new measurement
@@ -236,6 +243,11 @@ repair; re-read that before scoping either.
   `craken-agents` does not install charness and is a shape comparison only.
 - Artifact presence proves a skill RAN at least once, not that it is used often or
   that it worked. `create-cli` at 0/5 may simply leave no artifact.
+- This file's `#566` entry was wrong when first written. Treat every "verified this
+  session" claim here as verified against THIS repo's tree at one moment, not against
+  the repo's history — the awiki case shows the difference: the code said no
+  doc-graph checker exists, and the HISTORY said awiki had already been run against
+  it. Grep the artifacts, not only the scripts.
 - The 7-day audit's own structural charges were largely refuted; anything in this
   file that reads as "the repo is bloated" is opinion that the evidence did not
   support.
