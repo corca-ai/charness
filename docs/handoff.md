@@ -2,41 +2,27 @@
 
 ## Workflow Trigger
 
-- **Next pickup:** the [close-the-gap-between-a-repair-and-its-caller goal](../charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md), a `draft` designed from what its predecessor MEASURED. Shape it with `/achieve @charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md` before activating — its `## Slice Plan` is an empty table and the sweep's scope needs a decision. Its predecessor, [close-the-copies](../charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md), is `Status: complete`: three slices of three, `#562` closed and verified, `#561` put to D47's owner with both costs measured, `#560` built and proven but its closeout floor NOT run (see that goal's `## Operator Decision Queue`).
-- **The repo has ONE live goal for the first time in three days.** [retire-the-second-live-goal](../charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md) is `Status: complete` — the FIRST goal in this family to finish its plan, five slices of five — and [one-rule-one-owner](../charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md) is `complete` too, closed EARLY at five of eleven rows.
-- **Closed and verified this session: `#536`, `#558`, `#557`, `#559`, `#556`.** Each through the full floor — `validate-closeout-draft` reporting `draft_verified` BEFORE any GitHub mutation, a DELEGATED resolution critique before the close call, and `verify-closeout --expect-state CLOSED` read back through the adapter against its own carrier commit. Backlog: **28 open**, down from 33.
-- **ASK FOR THE PUSH BEFORE ANYTHING ELSE.** 68 local commits are unpushed (`git log --oneline origin/main..HEAD`), six carrying issue closeouts (`#562` is the newest). `git push` is NOT a standing approval and must be requested every time. Remote CI is an explicit non-claim for every commit in this range.
-- **EIGHTEEN blockers across TEN delegated rounds, and NOT ONE was in a first diagnosis.** Every premise check was right about the defect; every blocker was in a REPAIR. This is the measurement that should change the next plan: budget two rounds per verdict-logic slice as a COST, not as a rule to remember.
-- **A repair inherits HALVES.** The sharpest theme of the run. One inherited half a layout (source tree but not installed, so every installed capture would have died with an untyped error), one half an exception contract (a typed refusal swallowed by the caller's broad `except RuntimeError`), one half an owner (delegating to a consolidated function while passing its `required` set empty, one slice after building that floor). Ask of every repair what it did NOT inherit.
-- **Opening the file is necessary and NOT sufficient.** The predecessor's rule was "open every location an instruction names". This run opened one, PRINTED the refuting evidence, and wrote the opposite two steps later. Quote the read back into the claim.
-- **A test that re-implements its subject is another copy of the rule.** Shipped one inside the slice about copies of rules: it rebuilt a loader's candidate list and asserted on its own copy, so it would have passed with the loader deleted. Call the function. And pin the SOURCE — a mutant survived a pin that read the generated `plugins/` mirror, because the mirror lags until the next sync.
-- **A premise check verifies the claim it is pointed at, and nothing else.** It correctly refuted two issues' stated blockers and was silent about the one that actually held: `release_backend` templates INCLUDE the binary while `issue_backend` templates exclude it, so a consolidation would have doubled it for every release adapter. Found by executing the replacement, not by analysing it. Smoke-test a consolidation before believing any analysis of it.
-- **The bundle boundary earned its cost in one run.** Every slice was green at its own gate; the broad suite then returned `4 failed, 7964 passed`. Three were invisible from inside any single slice and one was a real regression whose blast radius crossed into a shared test double. After repair: `7968 passed, 0 failed` in 758s, with the verification lock recorded.
-- **A test whose fixture is a LIVE artifact inherits that artifact's lifecycle.** Two `cadence_owner` tests broke because this goal flipped another goal to `complete` — which was its own acceptance criterion. Normalise the axis the test is not about.
-- **The `#514/#515/#518` freeze was re-stamped again, with a recorded basis — continuing a practice the PREVIOUS session started, not starting it.** A closeout claim that this was the first such re-stamp was wrong and is corrected: `8d540d78` already recorded a basis on each of its three locators, and `#562`'s own body says so. **`#562` is now CLOSED** — the locator pin was retired and the close was verified through the adapter, so it is no longer work to claim.
-- **One operator decision is queued and blocks nothing:** the renderer-versus-reference spelling split in `setup` — the renderer is gated against baking a model id into the AGENTS.md contract while `default-surfaces.md` instructs an agent to write exactly that.
-- Recount the backlog with `gh issue list --repo corca-ai/charness --state open` before reshaping scope; the successor's `## Backlog Recount` describes how to reconcile it.
+- **Next pickup: a small cleanup batch, NOT a goal.** Three items in `## Next Session`, none goal-sized. Take them directly with `impl`, then choose the next real goal from the consumer-facing backlog.
+- **A 7-day value audit ran and mostly REFUTED its own thesis — do not re-run it.** It asked whether the repo had been improving itself rather than its users. Four structural charges broke on contact with the code: critique growth was dominated by machine-generated packet pairs while the `critique` SKILL barely moved; `skills/public` growth was `achieve`/`issue`, which consumer repos use most; the length floors are `MIN_OPTOUT_REASON` on escape hatches only, never on real values; and every new `scripts/` file ships to consumers with a large minority referenced by `skills/public`. Re-measure any of it with `git diff --numstat <base>..HEAD -- <path>` rather than trusting a transcribed figure.
+- **What survived: one duplication and one prioritization finding.** Each critique run checks in a `-packet.json` AND a `-packet.md` that is a deterministic re-rendering of it; count the cost with `git diff --numstat <base>..HEAD -- charness-artifacts/critique/`. And the work shifted after `#516` from consumer defects to internal proof surfaces — that is a choice to make differently, not a mess to clean.
+- **ASK FOR THE PUSH BEFORE ANYTHING ELSE.** 68 local commits are unpushed (`git log --oneline origin/main..HEAD`), six carrying issue closeouts. `git push` is NOT a standing approval and must be requested every time. Remote CI is an explicit non-claim for every commit in this range.
+- Recount the backlog before shaping scope: `gh issue list --repo corca-ai/charness --state open` (28 at last count).
 
 ## Continuation Capability
 
-- Keep semantic coverage, proof execution, evidence identity, execution root, final consumer, and external observation as separate claims.
-- Do not let #518 consume #515's taxonomy, #515 consume #514's taxonomy, or any issue wait on another. Share fields only when one canonical projection producer per field and at least two real readers with identical semantics are proven; source facts may have separate producers.
+- **Do not hand a fan-out your own conclusion as its premise.** The audit put "the owner suspects the repo has been improving itself" into every agent's prompt, and 11 agents upheld it; the operator's three follow-up questions refuted it. The adversarial pass challenged individual issue labels and never the framing. Anchor a workflow on the QUESTION, not the answer.
+- **A number from a subagent is a claim, not a read.** The audit repeated "1 of 41 new scripts is consumer-referenced" without checking; it is 10 of 41, and all 41 ship. Verify any figure before it enters a conclusion.
 - At irreversible boundaries, a green gate, `CLOSED` state, or local artifact is provisional; require a different observer and evidence channel.
 - Any reviewed input change invalidates packet identity and the verification lock.
-- Refresh kept, because each changes the next action: the unified #514/#515/#518 repair goal, the conditional shared-seam decision, independent issue slices, read-only sibling-repo comparison, and the current CI non-claim.
-- Refresh non-claims: #516/#517 implementation detail, consumer browser/provider behavior, and any current-head green verdict not proven by an independent run.
+- Refresh kept: the push non-claim, the audit's two surviving items, the operator decisions, and the publish-state claim block below.
+- Refresh non-claims: the `#514`/`#515`/`#518` + awiki state and the predecessor lesson block, both spilled to their owners ([recent lessons](../charness-artifacts/retro/recent-lessons.md), the issues themselves); no consumer product behavior; no remote CI verdict.
 
 ## Current State
 
-- #516 and #517 are closed; use them only as typed regression fixtures, not new work.
-- #515 is open and contains consumer-repo browser/sync/support-skill evidence whose fresh-eye proof is not yet closeout-grade.
-- #514 is open and asks for deterministic closeout evidence assembly without weakening gates or building a monolithic orchestrator.
-- #518 is open and requires a full Charness repair of adapter/preset/surface reconciliation and false-green final verdicts; its pinned consumer reproduction and sibling comparison are recorded in the [debug artifact](../charness-artifacts/debug/2026-08-07-issue-518-quality-declaration-reconciliation-debug.md).
-- The current awiki run is non-clean evidence for #518: `awiki 0.5.0` was detected at `/home/hwidong/.cargo/bin/awiki`, and `awiki lint -root docs -recursive` returned exit 1 with 40 documents, 7 orphans, 0 islands, and 230 link-only lines. It must become an explicit quality integration dependency and final-artifact disposition; it is not a clean result.
-- Existing Charness `check-doc-links`, `markdownlint`, `check-links-internal`, and `nose` document-duplicate review have distinct observed semantics from awiki's graph check. No deletion is authorized until a command-level overlap matrix proves a full replacement.
-- The goal draft now binds all three issues in one lifecycle while preserving consumer ownership, independent carriers, and separate readbacks.
-- Quality Core run `31118030353` for head `0e469e917c6fa1b07f0351da639ac4431f519acc` failed at GitHub action metadata with `Service Unavailable`; mutation was cancelled. Treat it as an external CI non-claim.
-- The publish-state claim below remains a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`; it is not a current version or tag claim. The release record separately binds `v3.4.0` to tag SHA `7bf3893b`, and the post-publish bookkeeping is committed at `c34b3dc0`. This block is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json), not prose: rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group, which is exactly what `0659d5a0` did. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
+- [close-the-copies](../charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md) is `Status: complete`: three slices of three. `#562` closed and verified through the adapter. `#561` is open BY DESIGN — a decision for D47's owner, with both costs measured in its Operator Decision Queue. `#560` is built and proven but its closeout floor was never run, so it is closable and not closed.
+- [close-the-gap-between-a-repair-and-its-caller](../charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md) is a `draft` and is **no longer the default pickup**. Its `#565` half is real and was re-confirmed live during the audit; its sweep was cut as unbounded and its `#564` half is rulebook growth. Re-scope before activating, or leave it.
+- `#564` and `#565` were filed by that run. `#547` needs a RE-SCOPE, not a close: its literal subject died with the locator digests, but `refreeze` now re-stamps the locator set and the artifact's prose while reporting no diff of what moved.
+- The publish-state claim below is a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json), not prose: rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -45,33 +31,19 @@
 
 ## Next Session
 
-1. Activate the successor goal above. Its slice 1 (`#552`) is the sharpest
-   instance in the tracker: a gate that can never fire is a permanent green.
-2. **Open every slice with a premise check.** The record is 5 for 5 that the
-   named remedy is wrong — including where the premise held. Slice 2's check
-   refuted the plan's own wording and rerouted the work to a different skill.
-3. **`#534` is NOT claimed and should not be re-shaped from its issue title.** A
-   prior goal built it green, refuted it, reverted it in full, and posted the
-   refutation to the issue, concluding it may not be worth building at all.
-4. Two operator decisions are open and block nothing: whether the GATE discharges
-   `#530` (the resolver still emits the string in its title), and whether `#535`
-   is worth claiming at all. Both are in the successor's Operator Decision Queue.
-5. Recount before shaping anything: `gh issue list --repo corca-ai/charness
-   --state open` (29 at last count). `achieve` now REFUSES a draft goal that does
-   not record what it claims and does not.
+1. **Packet double-storage, premise check FIRST.** Every critique run checks in a `-packet.json` and a `-packet.md`, where the `.md` is `critique_packet_lib.render_markdown(packet)` of the JSON beside it. Before deleting anything, establish whether any reader needs the `.md` that cannot read the `.json` — `critique_inventory` verifies `packet_md == render_markdown(packet_data)` and the durable critique binding declares `packet markdown sha256`. If a human reader owns the `.md`, the JSON is the redundant one. **This touches irreversible-boundary evidence; if the premise fails, drop the item.**
+2. **Fix the `Routing:` matcher's false refusal.** A `Routing:` line wrapped in backticks is invisible to `goal_artifact_phase_routing.py`, so a correctly-filled cue is refused. The repo already strips inline markup elsewhere (`_strip_markup`, `_LEADING_MARKUP_RE`); apply it. One line, and it cost four closeout round-trips.
+3. **Surface the opt-out AGGREGATE.** `MIN_OPTOUT_REASON` guards each `n/a — <reason>` individually and nothing counts them, so a goal opting out of 4 of 6 coordination floors reads the same as one opting out of none. Render the count and hand it to the disposition review. Consider promoting the coordination opt-outs to an enum, as `skipped:` already has.
+4. **Then pick a consumer-facing goal.** The audit's only durable instruction. Verified candidate gaps: 22 public skills with 0 human-facing choice docs and 0 `"working if"` signals (`#527`), and `release`/`issue` frontmatter carrying no invocation lock while the guard against publishing a release is one prose line at `skills/public/release/SKILL.md:61` (observed, and the operator declined to act on it).
 
 ## Discuss
 
-- No standalone CI retry, Cautilus run, browser/provider roundtrip, release, push, or consumer product claim is implied by the failed setup run or this goal activation. A remote carrier, if required at issue closeout, is a separate gated publish boundary after local proof.
-- Do not create a generic evidence framework before Slice 0 proves a common representation, owner, and final reader.
+- Four operator decisions are open and block nothing: `#561`'s equality-versus-invariant pin (D47's owner), whether to run `#560`'s closeout floor, `#547`'s re-scope, and the renderer-versus-reference spelling split in `setup`.
+- No CI retry, Cautilus run, release, push, or consumer product claim is implied by anything above.
 
 ## References
 
-- [Unified goal](../charness-artifacts/goals/2026-08-07-repair-evidence-boundary-close-514-515.md)
 - [Current quality posture](../charness-artifacts/quality/latest.md)
-- [Session retro](../charness-artifacts/retro/2026-08-07-session-retro.md)
+- [Closing retro](../charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md)
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md) — read this before changing repo operating contracts, prompt or skill surfaces, exports, or artifacts. It is a machine-read obligation of this file, not a courtesy link.
-- [#516 debug record](../charness-artifacts/debug/2026-08-07-issue-516-mutation-regression-debug.md)
-- [#514](https://github.com/corca-ai/charness/issues/514)
-- [#515](https://github.com/corca-ai/charness/issues/515)
-- [#518](https://github.com/corca-ai/charness/issues/518)
+- [Disposition review that refused the first closeout](../charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured-disposition-review.md)

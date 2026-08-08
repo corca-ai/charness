@@ -31,6 +31,28 @@ runs the activation command.
 
 ## Goal
 
+**NARROWED after a 7-day value audit — read this before shaping.** This draft was
+designed at its predecessor's closeout and is no longer the default pickup
+(`docs/handoff.md` points elsewhere). Two of its three planned items did not
+survive:
+
+- The SWEEP is CUT. Its scope was unbounded and its only product was more internal
+  test coverage.
+- `#564` (add a step to the goal template's verification plan) is rulebook growth
+  and was reconsidered on P3 grounds — prefer letting `#565`'s tool ask the
+  question over writing another rule.
+- `#565` SURVIVES and was re-confirmed live during the audit: the same zsh
+  word-split defect recurred in a command that was verifying an audit charge, an
+  hour after being filed. It is small.
+
+The audit also refuted the premise that this repo has been over-investing in its
+own machinery — see `docs/handoff.md` `## Workflow Trigger` for which four charges
+broke and how to re-measure them. So do NOT shape this as a bloat-reduction goal.
+If `#565` is worth doing, it is a cleanup item, not a goal. The audit's durable
+instruction was to choose consumer-facing work next.
+
+## Goal (as originally drafted)
+
 Predecessor: `charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md`. It reached all three planned slices, closed and verified `#562`, put `#561` to its owner with both costs measured, and built `#560`'s ready-by-construction fixture. This goal is designed from what it MEASURED, not from what it left over.
 
 **The one finding that repeated in every slice, and is the reason this goal exists.**
