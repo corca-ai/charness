@@ -76,6 +76,10 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_resolution_critique")
+# The identity parse lives in the backend owner, not here: which repository a payload says it
+# describes is the same question the handoff staleness reader asks, and a second copy of it is
+# the defect the backend consolidation removed.
+_ANSWER_REPO = _load_local("issue_backend", "issue_verify_issue_backend").answer_repo
 GIT_TIMEOUT_SECONDS = 10
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
@@ -304,27 +308,38 @@ def verify_closeout(
                 repo_root, repo=repo, number=number, backend=backend, json_fields=json_fields
             )
             verified_state.append(state_payload)
+            # Three facts are checked against one answer -- the issue's number, the issue's
+            # REPOSITORY, and its state -- and each records the same mismatch shape. Built by
+            # one helper rather than three literal dicts: the duplicate ratchet caught the
+            # third copy the moment it was added, and it was right, because a field added to
+            # two of three records is exactly how a mismatch report starts lying.
+            def mismatch(*, expected_value, actual_value, field=None):
+                record = {
+                    "number": number,
+                    "expected": expected_value,
+                    "actual": actual_value,
+                    "url": state_payload.get("url"),
+                }
+                if field is not None:
+                    record["field"] = field
+                state_mismatches.append(record)
+
             returned_number = state_payload.get("number")
             if returned_number != number:
-                state_mismatches.append(
-                    {
-                        "number": number,
-                        "expected": number,
-                        "actual": returned_number,
-                        "field": "number",
-                        "url": state_payload.get("url"),
-                    }
-                )
+                mismatch(expected_value=number, actual_value=returned_number, field="number")
+            # The OTHER half of the identity. This surface already required `{repo}` in the
+            # template, so the backend is always TOLD which repository to answer about -- but
+            # being told is not obeying, and a wrong-repo answer carries the RIGHT number, so
+            # the check above passes it. The repository was already in hand: `url` is fetched
+            # and reported in every mismatch record here, and was never read. Silence is not a
+            # mismatch -- a payload naming no repository yields None and is accepted, because
+            # refusing every backend whose payload omits one would fail correct closeouts.
+            answered_repo = _ANSWER_REPO(state_payload)
+            if answered_repo is not None and answered_repo.lower() != repo.strip().lower():
+                mismatch(expected_value=repo, actual_value=answered_repo, field="repository")
             actual = str(state_payload.get("state", "")).upper()
             if actual != expected:
-                state_mismatches.append(
-                    {
-                        "number": number,
-                        "expected": expected,
-                        "actual": state_payload.get("state"),
-                        "url": state_payload.get("url"),
-                    }
-                )
+                mismatch(expected_value=expected, actual_value=state_payload.get("state"))
             if carrier == "manual-fallback" and not _manual_comment_found(body, state_payload):
                 manual_comment_missing.append(number)
 

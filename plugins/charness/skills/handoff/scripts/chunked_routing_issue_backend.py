@@ -30,8 +30,12 @@ GH_LIST_OPEN_ARGS = [
 # the newest issues, so the old closed number a stale backlog line cites is
 # exactly the one a listing would miss. Callers ask only about numbers the open
 # listing did not already account for, so the call count stays small.
+# `url` is requested for a reason beyond reporting: it is the only field this provider offers
+# that names the ANSWER's repository (there is no `repository` JSON field -- `gh` rejects it),
+# and the state guard below checks the answer came from the repo that was asked about. Without
+# it, that guard would be a check that can never fire on the default path.
 GH_VIEW_STATE_ARGS = [
-    "issue", "view", "{number}", "--repo", "{repo}", "--json", "number,state",
+    "issue", "view", "{number}", "--repo", "{repo}", "--json", "number,state,url",
 ]
 
 
@@ -119,7 +123,24 @@ LIST_OPEN_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "limit"})
 # was asked about -- reporting a live backlog citation as CLOSED, silently, with
 # `issue_states_checked: true`. That is the manufactured stale verdict this module exists to
 # refuse, so it is a loud error instead.
-VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"number"})
+# `{repo}` is the OTHER half of the identity, and leaving it optional had the same shape as
+# leaving `{number}` optional: a template that does not spell it drops the caller's repo
+# silently, so a repo-agnostic binary answers about ITS default repo's issue N. The number
+# guard below cannot catch that, because the wrong repo's issue N also has number N —
+# reproduced against a constructed repo-agnostic binary, which reported a live citation CLOSED
+# with `LAST_STATE_RESOLUTION_DIAGNOSTIC` left at None.
+#
+# The reason it was optional was real — a host binary genuinely bound to one repository
+# declares no `{repo}` — so the OWNER now takes a declared waiver naming the repository (`repo_scoped: owner/repo`) rather
+# than treating omission as consent. The issue skill's own closeout verifier already required
+# both halves; this makes the two callers of one identity rule agree.
+VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"repo", "number"})
+# This reader OPTS IN to the declared repo-scope waiver; the closeout verifier deliberately does
+# not. The asymmetry is the point: a wrong answer here is one stale pickup line, and a wrong
+# answer there closes a real issue. Waiving by default at both would have loosened the
+# irreversible boundary to fix the reversible one -- which a bounded round caught this slice
+# doing, because the waiver was first subtracted globally inside the owner.
+VIEW_STATE_WAIVABLE: frozenset[str] = frozenset({"repo"})
 LIST_OPEN_REQUIRED: frozenset[str] = frozenset()
 
 
@@ -129,6 +150,7 @@ def _resolve_command(
     gh_default: list[str],
     allowed: frozenset[str],
     required: frozenset[str],
+    waivable: frozenset[str] = frozenset(),
     **subs: str,
 ) -> tuple[list[str] | None, str]:
     """Build the argv for one backend command, or report why it cannot be built.
@@ -160,7 +182,7 @@ def _resolve_command(
     # asked-about issue's state. See VIEW_STATE_REQUIRED / LIST_OPEN_REQUIRED above for what each
     # op requires and why. The allowlist always refuses an UNKNOWN placeholder.
     argv = _issue_backend_owner().try_resolve_op(
-        backend, command_key, gh_default, allowed, required, **subs
+        backend, command_key, gh_default, allowed, required, waivable, **subs
     )
     return argv, backend_id
 
@@ -169,6 +191,30 @@ def _default_runner(runner: Callable[[list[str]], Any] | None) -> Callable[[list
     if runner is not None:
         return runner
     return _memoized_issue_module("issue_runtime")._backend_json
+
+
+def answer_repo(payload: dict[str, Any]) -> str | None:
+    """The `owner/repo` an issue payload says it describes, or None when it does not say.
+
+    Delegates to the `issue` skill's backend owner rather than implementing the parse here.
+    That module is the contractual owner of tracker access, and the identity question this
+    answers -- which repository did the backend actually answer about -- is the same question
+    at both call sites, so a second implementation is the exact defect the consolidation of
+    backend resolution removed. Returns None when the owner module is unavailable, which this
+    module's contract already treats as UNKNOWN rather than as an answer.
+    """
+    try:
+        return _issue_backend_owner().answer_repo(payload)
+    except Exception:  # noqa: BLE001 - a missing/partial install is UNKNOWN, not a wrong repo
+        return None
+
+
+def _answer_names_requested_repo(payload: dict[str, Any], repo: str) -> bool:
+    """True when the payload does not name a repository, or names the one that was asked for."""
+    named = answer_repo(payload)
+    if named is None:
+        return True
+    return named.strip().lower() == repo.strip().lower()
 
 
 def issue_state(
@@ -198,7 +244,7 @@ def issue_state(
     try:
         argv, _ = _resolve_command(
             backend, "view_state", GH_VIEW_STATE_ARGS, VIEW_STATE_PLACEHOLDERS,
-            VIEW_STATE_REQUIRED, repo=repo, number=str(number),
+            VIEW_STATE_REQUIRED, VIEW_STATE_WAIVABLE, repo=repo, number=str(number),
         )
     except Exception as exc:  # noqa: BLE001 - see LAST_STATE_RESOLUTION_DIAGNOSTIC below
         # `except Exception`, not `except RuntimeError`. A first version of this guard named
@@ -228,6 +274,18 @@ def issue_state(
     # row's state here is how a live citation becomes a CLOSED verdict.
     reported = payload.get("number")
     if isinstance(reported, int) and reported != number:
+        return None
+    # And the same question for the OTHER half of the identity. `(repo, number)` names an
+    # issue; checking only the number accepts the right number from the wrong repository, which
+    # is exactly what a template omitting `{repo}` produces. Required in the template is the
+    # primary guard; this is the second, and it is the one that still works when a host binary
+    # is given the repo and ignores it.
+    #
+    # `when the payload names one` is load-bearing, not a hedge: a host's payload shape is its
+    # own, and refusing every answer that does not name a repository would turn UNKNOWN into
+    # the default for backends that are answering correctly. The gh default requests `url`
+    # precisely so this guard is not inert on the path most installs take.
+    if not _answer_names_requested_repo(payload, repo):
         return None
     state = payload.get("state")
     return state.strip().upper() if isinstance(state, str) and state.strip() else None

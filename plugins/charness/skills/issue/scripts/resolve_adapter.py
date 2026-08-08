@@ -64,7 +64,7 @@ def infer_defaults() -> dict[str, Any]:
 
 
 def default_backend() -> dict[str, Any]:
-    return {"id": "gh", "binary": "gh", "commands": None}
+    return {"id": "gh", "binary": "gh", "commands": None, "repo_scoped": None}
 
 
 def _parse_feature_brief_pause(raw: Any, errors: list[str]) -> str:
@@ -206,7 +206,48 @@ def _parse_backend(raw: Any, errors: list[str], warnings: list[str]) -> dict[str
             f"issue_backend.id={backend_id} declared without commands; "
             "agent must follow the host-documented command shape until commands templates are filled in"
         )
-    return {"id": backend_id, "binary": binary, "commands": commands}
+    # A binary genuinely bound to ONE repository declares which one, as `owner/repo`. It is
+    # parsed here or it does not exist: every real caller receives its backend from this
+    # function, so a key the parser drops is a key the runtime never sees no matter what the
+    # adapter says. A bare `true` is refused deliberately -- it cannot answer "scoped to
+    # WHICH repository", and this skill routes to two targets (upstream and local), so an
+    # unqualified waiver would drop the repo on the target the binary is NOT bound to.
+    repo_scoped = raw.get("repo_scoped")
+    scoped_repo: str | None = None
+    if repo_scoped is not None:
+        # WARN and ignore rather than invalidate the adapter. This file's own norm is that a
+        # consumer-authored adapter mistake warns instead of refusing (see the note on the
+        # deferred arming decision below), and ignoring is also the FAIL-CLOSED direction here:
+        # no scope declared means no waiver, which means a template omitting `{repo}` gets a
+        # loud placeholder error rather than a silent drop. Refusing the whole adapter would
+        # take the entire issue lane red over an optional key.
+        if isinstance(repo_scoped, bool):
+            warnings.append(
+                "issue_backend.repo_scoped must be the `owner/repo` the binary is bound to, "
+                "not a boolean; an unqualified waiver cannot say which repository it covers. "
+                "Ignoring it: `{repo}` stays required."
+            )
+        else:
+            value = _string(repo_scoped, "issue_backend.repo_scoped", errors)
+            if value is not None:
+                candidate = value.strip().strip("/")
+                parts = candidate.split("/")
+                # `>= 2` segments rather than exactly two: a nested namespace (a GitLab
+                # group/subgroup/project, a nested org) is a real repository path, and refusing
+                # it would leave that host class unable to declare its scope at all.
+                if len(parts) < 2 or not all(part.strip() for part in parts):
+                    warnings.append(
+                        "issue_backend.repo_scoped must be a repository path such as "
+                        f"`owner/repo`; got {value!r}. Ignoring it: `{{repo}}` stays required."
+                    )
+                else:
+                    scoped_repo = candidate
+    return {
+        "id": backend_id,
+        "binary": binary,
+        "commands": commands,
+        "repo_scoped": scoped_repo,
+    }
 
 
 def find_adapter(repo_root: Path) -> Path | None:

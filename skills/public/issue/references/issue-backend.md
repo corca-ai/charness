@@ -59,6 +59,81 @@ Behavior:
 - **unset / unresolved**: `ambiguous: true`; keep findings repo-local and state
   the ambiguity. The skill never files a harness issue into a guessed repo.
 
+## Issue Identity: `{repo}` And `{number}`
+
+An issue is named by `(repo, number)`. Both halves are **required** by every
+command template that reads back or verifies one issue's state — the handoff
+staleness reader's `view_state`, the closeout verifier's `view`, and the
+post-close readback inside `close-with-comment`. The requirement is *rendered*
+by the backend owner but *chosen* per call site (`required=`), so a surface that
+does not ask for it does not get it; the three named above ask.
+
+This is not cosmetic. `resolve_op` validates that every placeholder a template
+*uses* is allowed and that every *required* one is used — but a substitution the
+caller SUPPLIES and the template never consumes is dropped without comment. A
+`view_state` template spelled `["view", "{number}"]` therefore silently discards
+the repository, and a host binary whose default repository differs from the one
+being asked about answers about **its own** issue with that number. The
+downstream number check cannot catch it, because the wrong repository's issue N
+also has number N. The observed result is a live backlog citation reported
+`CLOSED`.
+
+### Declaring a repo-scoped binary
+
+A host binary genuinely bound to one repository has no `{repo}` to spell. Say so
+explicitly instead of omitting the placeholder:
+
+```yaml
+issue_backend:
+  id: acme
+  binary: acme
+  repo_scoped: corca-ai/charness   # the ONE repository this binary is bound to
+  commands:
+    view_state: ["view", "{number}"]
+```
+
+`repo_scoped` names the repository, and a bare `true` is **refused**. This skill
+routes to two targets (`upstream_target` and `local_target`), so a waiver that
+could not say *which* repository it covers would drop the identity for whichever
+target the binary is not bound to — the same defect, reintroduced through the
+escape hatch. Asked about any other repository, the placeholder is required
+again.
+
+The waiver covers `{repo}` and **only** `{repo}`. `{number}` is never waivable —
+no binary carries an issue number implicitly, and a template omitting it resolves
+to a listing whose first row gets read as the asked-about issue's state.
+
+It is also **opt-in per call site**, not global. The handoff staleness reader
+accepts it, because a wrong answer there is one stale pickup line. Closeout
+verification does **not**, because a wrong answer there closes a real issue and
+that boundary is not reversible — so a `repo_scoped` backend still must spell
+`{repo}` in its `view` template.
+
+Omitting `{repo}` **without** the declaration is now a loud error naming the
+missing placeholder, not a silent waiver. Declared, defaulted, and absent are
+three different states.
+
+### The answer is checked too
+
+Requiring the placeholder cannot catch a binary that is *given* the repository
+and ignores it, so the reported answer is checked as well: when a payload names
+the repository it describes — a `repository` object (`nameWithOwner`, or an
+`owner`/`name` pair) or an issue `url` — it must be the repository that was
+asked about. A payload that names **no** repository is accepted, because
+refusing every backend whose payload shape omits one would turn correct answers
+into permanent `UNKNOWN`.
+
+The default `gh` invocations request `url` for this reason: `gh issue view` has
+no `repository` JSON field (`--json repository` exits with `Unknown JSON field`),
+so `url` is the only field that names the answer's repository, and without it the
+check would be one that can never fire.
+
+The URL parse requires the path to be exactly `<owner>/<repo>/issues/<number>`
+after the host, and a `repository` string without an owner is treated as *not
+saying* rather than as an answer. Returning a **wrong** repository would be worse
+than returning none: silence is accepted, while a wrong value refuses a correct
+verdict.
+
 ## Required Operations
 
 The skill consumes these operations through the adapter when available:

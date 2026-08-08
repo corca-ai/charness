@@ -677,3 +677,113 @@ def test_issue_verify_closeout_accepts_single_keyword_comma_list(tmp_path: Path)
     assert result.returncode == 0, result.stdout
     payload = json.loads(result.stdout)
     assert payload["missing_close_keywords"] == []
+
+
+def test_issue_verify_closeout_rejects_a_right_number_from_the_wrong_repository(tmp_path: Path) -> None:
+    """The other half of an issue's identity, at the boundary where a wrong verdict is final.
+
+    This surface always REQUIRED `{repo}` in its template, so the backend is always told which
+    repository to answer about — but being told is not obeying, and a wrong-repo answer carries
+    the right number, so the number check above passes it. The repository was already in hand:
+    `url` is fetched and reported in both existing mismatch records, and was never read.
+
+    Constructed rather than inferred: this backend returns the asked-for number and the expected
+    state, and differs from a correct answer only in the repository its URL names.
+    """
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, sys",
+                "if 'view' in sys.argv:",
+                "    print(json.dumps({'number': 42, 'state': 'CLOSED',",
+                "        'url': 'https://github.com/someone-else/charness/issues/42'}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+        "--expect-state",
+        "CLOSED",
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 2, result.stdout
+    payload = json.loads(result.stdout)
+    mismatch = next(m for m in payload["state_mismatches"] if m.get("field") == "repository")
+    assert mismatch["expected"] == "corca-ai/charness"
+    assert mismatch["actual"] == "someone-else/charness"
+    # And the verdict sentence must not be rendered over a refused result.
+    assert payload["confirmation"]["line"] is None
+
+
+def test_issue_verify_closeout_accepts_a_payload_that_names_no_repository(tmp_path: Path) -> None:
+    """Silence is not a mismatch, or every backend whose payload omits a URL fails closeout.
+
+    The boundary the repository check depends on, asserted rather than assumed. Note the
+    contrast with the test above: same number, same state, and the ONLY difference is whether
+    the payload names a repository at all.
+    """
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    fake = bin_dir / "gh"
+    fake.write_text(
+        "\n".join(
+            [
+                "#!/usr/bin/env python3",
+                "import json, sys",
+                "if 'view' in sys.argv:",
+                "    print(json.dumps({'number': 42, 'state': 'CLOSED'}))",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+    fake.chmod(0o755)
+    seed_commit(tmp_path, bug_closeout_body(close_line="Close #42."))
+
+    result = run_script(
+        SCRIPT,
+        "verify-closeout",
+        "--repo-root",
+        str(tmp_path),
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "42",
+        "--classification",
+        "bug",
+        "--carrier",
+        "direct-commit",
+        "--commit-ref",
+        "HEAD",
+        "--expect-state",
+        "CLOSED",
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin"},
+    )
+
+    assert result.returncode == 0, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["state_mismatches"] == []
+    assert payload["status"] == "verified"

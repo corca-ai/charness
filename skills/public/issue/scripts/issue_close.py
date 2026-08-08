@@ -9,6 +9,7 @@ _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_
 _BACKEND = _load_local("issue_backend", "issue_close_backend")
 _run_backend = _BACKEND.run_backend
 _resolve_op = _BACKEND.resolve_op
+answer_repo = _BACKEND.answer_repo
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
 _AUTHZ = _load_local("issue_closeout_authorization")
@@ -161,11 +162,19 @@ def close_with_comment(
             "comment plus close command success is not issue closeout"
         )
     if backend.get("id", "gh") == "gh" or commands.get("view") is not None:
+        # `required=`, which this call omitted. This view is the POST-CLOSE readback -- the
+        # evidence that the mutation landed -- so it verifies one issue's state and owes the
+        # same identity floor as every other surface that does. `(repo, number)` names an
+        # issue; a template spelling only `{number}` drops the repository silently and a
+        # repo-agnostic binary confirms ITS OWN issue N as CLOSED. No waiver is offered here:
+        # this is the irreversible boundary, and the reader that can afford one is the
+        # staleness path, not this.
         view_argv = _resolve_op(
             backend,
             "view",
             GH_VIEW_DEFAULT,
             VIEW_PLACEHOLDERS,
+            required=frozenset({"repo", "number"}),
             repo=repo,
             number=str(number),
             json_fields="number,state,url",
@@ -194,6 +203,24 @@ def close_with_comment(
             verified_state = json.loads(view_result.stdout)
         except Exception as exc:
             raise RuntimeError(f"close state verification returned invalid JSON: {exc}") from exc
+        # The other half of the identity, checked against the ANSWER. Requiring `{repo}` in the
+        # template means the backend is TOLD which repository to read back; it does not mean it
+        # obeyed, and a wrong-repo answer carries the right number and the expected state. The
+        # `url` needed to check it was already being fetched and stored, and never read.
+        # Silence is not a mismatch: a payload that names no repository yields None here, and
+        # refusing those would fail every backend whose payload shape omits one.
+        answered_repo = answer_repo(verified_state)
+        if answered_repo is not None and answered_repo.lower() != repo.strip().lower():
+            raise RuntimeError(
+                "close state verification answered about a different repository: asked "
+                f"{repo}#{number}, backend reported {answered_repo}#{verified_state.get('number')}"
+            )
+        reported_number = verified_state.get("number")
+        if isinstance(reported_number, int) and reported_number != number:
+            raise RuntimeError(
+                "close state verification answered about a different issue: asked "
+                f"{repo}#{number}, backend reported #{reported_number}"
+            )
         if verified_state.get("state") != "CLOSED":
             raise RuntimeError(
                 f"close state verification failed: {repo}#{number} is {verified_state.get('state')!r}"

@@ -222,9 +222,13 @@ def test_handoff_resolves_through_the_issue_owner_rather_than_its_own_copy() -> 
     # could not fail for the choice its own message was about. The behavioural test below is
     # what actually catches a regression here; this keeps the two constants from being merged
     # back into one all-or-nothing value.
-    assert 'VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"number"})' in source, (
-        "`view_state` must REQUIRE the identity-bearing `{number}`: without it a template "
-        "resolves to a listing whose first row is read as the asked-about issue's state"
+    assert 'VIEW_STATE_REQUIRED: frozenset[str] = frozenset({"repo", "number"})' in source, (
+        "`view_state` must REQUIRE BOTH halves of an issue's identity. Without `{number}` a "
+        "template resolves to a listing whose first row is read as the asked-about issue's "
+        "state; without `{repo}` the caller's repository is dropped silently and a "
+        "repo-agnostic binary answers about ITS default repo's issue N, which the number "
+        "guard cannot see because that issue's number is also N. A host genuinely bound to "
+        "one repository declares `repo_scoped: <owner/repo>` instead of omitting the placeholder."
     )
     assert "LIST_OPEN_REQUIRED: frozenset[str] = frozenset()" in source, (
         "`list_open` must require nothing: a host paging internally declares no `{limit}`, and "
@@ -263,21 +267,36 @@ def _handoff_state(backend_dict, *, runner):
 def test_handoff_accepts_an_adapter_template_that_omits_an_allowed_placeholder() -> None:
     """The one shape the delegation narrowed, asserted through the PUBLIC caller.
 
-    A host whose binary carries the repo declares no `{repo}`; one whose listing pages
-    internally declares no `{limit}`. Both were valid before. Requiring every allowed
-    placeholder would have rejected them, and no fixture in the slice would have noticed
-    because each one happens to spell every placeholder.
+    A host whose listing pages internally declares no `{limit}`. That was valid before,
+    requiring every allowed placeholder would have rejected it, and no fixture in the
+    originating slice would have noticed because each one happens to spell every placeholder.
+
+    This test USED to make the same claim about `{repo}` on `view_state`, and that half was a
+    defect rather than a protection: an omitted `{repo}` is not a host declaring it has none,
+    it is the caller's repository being dropped silently, and the answer can then be a
+    different repository's issue with the same number. The identity case moved to
+    `test_a_repo_scoped_host_declares_the_waiver_instead_of_omitting_the_placeholder` in
+    `tests/test_issue_identity_is_repo_and_number.py`, where the host DECLARES the waiver. The
+    non-identity case below is the part that was always right.
     """
-    backend = {"id": "acme", "binary": "acme", "commands": {"view_state": ["issue", "view", "{number}"]}}
+    backend = {
+        "id": "acme",
+        "binary": "acme",
+        "commands": {"list_open": ["issue", "list", "--repo", "{repo}"]},
+    }
 
     seen: dict[str, list[str]] = {}
 
     def runner(argv):
         seen["argv"] = argv
-        return {"number": 7, "state": "OPEN"}
+        return [{"number": 7, "title": "t", "labels": [], "body": ""}]
 
-    assert _handoff_state(backend, runner=runner) == "OPEN"
-    assert seen["argv"] == ["acme", "issue", "view", "7"]
+    issues = _load_handoff_backend().list_open_issues(
+        "corca-ai/charness", backend=backend, runner=runner
+    )
+
+    assert [issue["number"] for issue in issues] == [7]
+    assert seen["argv"] == ["acme", "issue", "list", "--repo", "corca-ai/charness"]
 
 
 def test_handoff_reports_UNKNOWN_rather_than_crashing_on_a_misconfigured_adapter() -> None:
