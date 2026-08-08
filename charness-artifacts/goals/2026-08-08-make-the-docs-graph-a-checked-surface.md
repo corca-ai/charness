@@ -147,13 +147,18 @@ Operator decisions already taken, recorded so a later session does not relitigat
   gate report not-run`
 - Revisit trigger: slice 3, at the moment the gate lane is written
 
-- Decision: whether the release is a version bump or a re-cut of the existing
-  candidate, given 76 unrelated commits ride out with it
-- Owner: operator
-- Why deferred: it is a release-shape question, not a gate question, and slices
-  1-3 are unaffected either way
-- Unblock action: name the version, or say "carry the existing candidate scope"
-- Revisit trigger: slice 4, before any publish command runs
+- Decision: RESOLVED 2026-08-08 — the release is a MAJOR bump, `3.5.0` -> `4.0.0`
+- Owner: operator (answered during shaping)
+- Why deferred: no longer deferred; recorded here so slice 4 does not re-ask
+- Unblock action: none outstanding. Slice 4 bumps to `4.0.0` across the version
+  surfaces (`plugins/charness/.claude-plugin/plugin.json`,
+  `.claude-plugin/marketplace.json`, and whatever `bump_version` owns), and the
+  `release` skill owns the actual cut
+- Revisit trigger: if slice 3 lands a change that is NOT backward compatible for
+  an installing repo, re-confirm that `4.0.0` still describes it honestly — a
+  major number is a promise about breakage, and this goal's gate is deliberately
+  internal-only, so the bump is carrying 77 unrelated commits' worth of change
+  rather than this goal's
 
 ## Coordination Cues
 
