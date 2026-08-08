@@ -68,8 +68,8 @@ def build_protected_world(tmp_path: Path, *, matrix_state: str = "bootstrap") ->
     (tmp_path / "owner.py").write_text("# owner\n", encoding="utf-8")
     _write_json(
         tmp_path / INSPECTION_REL,
-        {"schema": "issue-source-owner-inspection/v1", "issues": list(PROTECTED),
-         "locators": [{"role": "owner", "path": "owner.py", "sha256": "", "note": "n"}],
+        {"schema": "issue-source-owner-inspection/v2", "issues": list(PROTECTED),
+         "locators": [{"role": "owner", "path": "owner.py", "note": "n"}],
          "inspection_identity": ""},
     )
     stamp_inspection(tmp_path, INSPECTION_REL)

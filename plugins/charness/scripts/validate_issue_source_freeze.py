@@ -59,7 +59,7 @@ def load_inputs(repo_root: Path, snapshot_rel: str, inspection_rel: str):
     snapshot = load_json(repo_root, snapshot_rel, SNAPSHOT_SCHEMA)
     capture_rel = capture_receipt_path_for(snapshot_rel)
     capture = load_json(repo_root, capture_rel, CAPTURE_RECEIPT_SCHEMA)
-    inspection = load_json(repo_root, inspection_rel, INSPECTION_SCHEMA)
+    inspection = _freeze_lib.load_inspection(repo_root, inspection_rel)
     return snapshot, capture_rel, capture, inspection
 
 
@@ -89,13 +89,55 @@ def run_validate(
     }
 
 
-def run_freeze(
-    repo_root: Path, snapshot_rel: str, inspection_rel: str, freeze_rel: str, required: list[int]
-) -> dict[str, object]:
+def preflight(
+    repo_root: Path,
+    snapshot_rel: str,
+    inspection_rel: str,
+    required: list[int],
+    *,
+    require_inspection_identity: bool = True,
+):
+    """Every read-only refusal a write path owes, run BEFORE the first byte is written.
+
+    This exists because fixing one writer's ordering did not fix the class. `refreeze`
+    writes three checked-in artifacts in sequence and each later step could still refuse
+    after an earlier one had written — demonstrated: `refreeze --require-issues 514 515`
+    stamped the inspection, wrote the freeze receipt, rebound the closeout-authorization
+    crosswalk, and THEN raised `freeze_issue_set_mismatch`. A refusing command had mutated
+    all three.
+
+    The issue-set check is the one that has to move rather than merely run early: it lived
+    only in `run_validate`, which is `refreeze`'s LAST step, so it was structurally
+    incapable of protecting the writes that preceded it.
+
+    `require_inspection_identity=False` is what `refreeze` needs, and the distinction is
+    the whole reason this is a parameter rather than a fixed sequence. A STALE inspection
+    identity is `refreeze`'s input condition — repairing it is the command's purpose — so
+    enforcing it in the preflight would refuse every legitimate refreeze. The per-locator
+    rules still run, because those are never something a refreeze is entitled to fix
+    silently: a retired pin, an escaping path, or a missing file must stop the run before
+    it launders them into a freshly stamped identity.
+    """
     snapshot, capture_rel, capture, inspection = load_inputs(repo_root, snapshot_rel, inspection_rel)
     verify_issue_coverage(snapshot, required)
     verify_capture(repo_root, snapshot, capture)
-    verify_inspection(repo_root, inspection)
+    if require_inspection_identity:
+        verify_inspection(repo_root, inspection)
+    else:
+        _freeze_lib.verify_locators(repo_root, inspection)
+    requested = sorted(snapshot.get("requested_numbers") or [])
+    if requested != sorted(required):
+        raise FreezeError(
+            "freeze_issue_set_mismatch",
+            f"the snapshot covers {requested}, required {sorted(required)}; refusing before writing",
+        )
+    return snapshot, capture_rel, capture, inspection
+
+
+def run_freeze(
+    repo_root: Path, snapshot_rel: str, inspection_rel: str, freeze_rel: str, required: list[int]
+) -> dict[str, object]:
+    snapshot, capture_rel, capture, inspection = preflight(repo_root, snapshot_rel, inspection_rel, required)
     receipt = build_freeze_receipt(
         snapshot_path=snapshot_rel,
         snapshot=snapshot,
@@ -112,16 +154,20 @@ def run_freeze(
 
 
 def stamp_inspection(repo_root: Path, inspection_rel: str) -> dict[str, object]:
-    """Fill in each locator's current digest and the derived inspection identity.
+    """Derive the inspection identity from the locator set.
 
-    Digests are STAMPED, never hand-typed. A hand-typed digest is a number an agent
-    can produce without opening the file, which is precisely the claim the digest is
-    supposed to make falsifiable.
+    Under `#562` this no longer stamps a per-locator content digest — that pin is
+    retired, so there is nothing per-file left to fill in.
+
+    It enforces the SAME per-locator rules the reader does, via the shared
+    `verify_locators`, and it enforces them BEFORE writing. Both halves of that matter: a
+    writer holding a weaker rule than its reader exits 0 on an artifact `validate` will
+    refuse, and a writer that checks after writing leaves `refreeze` having rewritten the
+    file it then refused.
     """
     path = repo_root / inspection_rel
-    inspection = load_json(repo_root, inspection_rel, INSPECTION_SCHEMA)
-    for locator in inspection["locators"]:
-        locator["sha256"] = _freeze_lib.file_sha256(repo_root, locator["path"])
+    inspection = _freeze_lib.load_inspection(repo_root, inspection_rel)
+    _freeze_lib.verify_locators(repo_root, inspection)
     inspection["inspection_identity"] = inspection_identity(inspection)
     path.write_text(json.dumps(inspection, ensure_ascii=False, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return {"ok": True, "stamped": inspection_rel, "inspection_identity": inspection["inspection_identity"]}
@@ -137,9 +183,12 @@ def run_refreeze(
 ) -> dict[str, object]:
     """Re-stamp, re-freeze, and re-bind the crosswalk in ONE command.
 
-    The owner inspection binds working-tree digests of the very files a slice edits,
-    so every code change correctly stales the freeze — which makes re-freezing a
-    routine act, not a rare one. Left as three separate steps, the third (copying four
+    Re-freezing is now RARE rather than routine. It used to fire on every code change,
+    because the owner inspection pinned working-tree digests of the very files a slice
+    edits; `#562` retired that pin after measuring 0 of 5 true positives, so what
+    remains stales only when something real moves — the captured source, the
+    normalization policy, or the locator set itself. The atomicity below is what still
+    earns this subcommand: left as three separate steps, the third (copying four
     identity fields into the crosswalk) has no tool at all, and the session that built
     this validator performed it six times as an untested shell heredoc.
 
@@ -148,6 +197,10 @@ def run_refreeze(
     silently drifts. Atomic here means the crosswalk is never left bound to a
     superseded freeze — the rebind happens in the same run that produced the receipt.
     """
+    # Read-only first, and NOT as a courtesy: everything below writes a checked-in
+    # artifact, and a refusal discovered after the first write leaves the repo in a state
+    # no command claimed to produce.
+    preflight(repo_root, snapshot_rel, inspection_rel, required, require_inspection_identity=False)
     stamped = stamp_inspection(repo_root, inspection_rel)
     frozen = run_freeze(repo_root, snapshot_rel, inspection_rel, freeze_rel, required)
     rebound = rebind_crosswalk(repo_root, freeze_rel, crosswalk_rel)

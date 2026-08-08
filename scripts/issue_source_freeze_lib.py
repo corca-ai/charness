@@ -24,9 +24,26 @@ adapter rather than typed by hand. Both halves matter and they fail differently:
   version, and the owner-inspection identity together. Change any one and the bind
   fails; nothing is allowed to drift alone.
 
-The owner inspection is checked the same way: each declared locator carries the
-digest of the file at inspection time, so "I read `closeout_bundle_lib.py`" becomes
-falsifiable the moment that file changes.
+The owner inspection is checked DIFFERENTLY, and deliberately less. It declares which
+files the owner read, each locator's path must still resolve to a real file, and the
+inspection identity still binds the locator SET — so a locator cannot be added,
+dropped, or re-roled without the bind failing. What it no longer does is pin each
+inspected file's CONTENT.
+
+That pin was removed under `#562`, which measured it: over the `#514`/`#515`/`#518`
+freeze, 6 of 20 locators changed in about one day, the inspection was re-stamped 5
+times, and every refusal was incidental to the issues' scope — an observed 0 of 5 true
+positives. The rationale was sound and the proxy was wrong: a whole-file content hash
+is maximally sensitive and minimally specific, so a comment or a message string
+invalidates it exactly as loudly as a semantic change. Worse, the remedy is one
+mechanical command, so the gate trained the reflex that see-`stale_inspection`-run-
+`refreeze` — which would fire on the day a locator's semantics genuinely changed too.
+A gate that teaches its own bypass is the wolf-crier shape `docs/design-north-star.md`
+warns about, so it is gone rather than narrowed.
+
+The SOURCE half above is untouched by that removal and is not the same kind of claim:
+it defends a genuinely external mutable dependency (issue bodies someone else can
+edit) by re-deriving from raw bytes, and it has teeth for a reason.
 """
 
 from __future__ import annotations
@@ -45,7 +62,12 @@ from scripts.issue_source_normalize_lib import (
 
 SNAPSHOT_SCHEMA = "issue-source-snapshot/v1"
 CAPTURE_RECEIPT_SCHEMA = "issue-source-capture-receipt/v1"
-INSPECTION_SCHEMA = "issue-source-owner-inspection/v1"
+# v2 dropped the per-locator content pin (`#562`). The bump is load-bearing rather
+# than cosmetic: `inspection_identity` used to hash each locator's `sha256`, so a v1
+# artifact's declared identity is not computable under the v2 rule and vice versa.
+# Refusing the old schema is what stops a v1 file from being read as though its pin
+# were still being enforced.
+INSPECTION_SCHEMA = "issue-source-owner-inspection/v2"
 FREEZE_RECEIPT_SCHEMA = "issue-source-freeze-receipt/v1"
 
 # Fields the capture CLI stamps onto the receipt AFTER its identity is computed, so
@@ -75,11 +97,47 @@ def load_json(repo_root: Path, rel: str, expected_schema: str | None = None) -> 
     return payload
 
 
-def file_sha256(repo_root: Path, rel: str) -> str:
-    path = repo_root / rel
-    if not path.is_file():
+def load_inspection(repo_root: Path, rel: str) -> dict[str, Any]:
+    """Load an owner inspection, naming the migration when a pre-`#562` file shows up.
+
+    `load_json`'s generic `wrong_schema` is the right refusal and the wrong message here:
+    this repo SHIPS this module to consumers under `plugins/`, so a consumer upgrading
+    arrives holding a v1 artifact and a bare version mismatch gives them no path forward.
+    The refusal names the remedy instead of making them derive it.
+    """
+    payload = load_json(repo_root, rel)
+    declared = payload.get("schema")
+    if declared != INSPECTION_SCHEMA:
+        remedy = ""
+        # ONLY the version this remedy actually describes. A `startswith` prefix match also
+        # caught a FORWARD version and told whoever held it to downgrade — worse advice than
+        # the generic refusal it replaced, since the whole point is a path forward.
+        if declared == "issue-source-owner-inspection/v1":
+            remedy = (
+                ". #562 retired the per-locator sha256 content pin; to migrate, delete every locator's "
+                f"sha256 key, set schema to {INSPECTION_SCHEMA}, then run "
+                "`validate_issue_source_freeze.py refreeze`"
+            )
+        raise FreezeError(
+            "wrong_schema",
+            f"{rel} declares schema {declared!r}, expected {INSPECTION_SCHEMA!r}{remedy}",
+        )
+    return payload
+
+
+def require_file(repo_root: Path, rel: str) -> None:
+    """Refuse a declared path that is not a real file.
+
+    This is what SURVIVES the `#562` pin removal, and it has to: the digest recompute
+    was the only code that touched an inspected file at all, so dropping the pin
+    without keeping this would have taken the existence check with it — and "I
+    inspected `foo.py`" would go back to being unfalsifiable prose for a path that
+    never existed. Deletion also stays the one form of staleness worth refusing: if a
+    missing locator merely dropped out, the cheapest way to keep an inspection green
+    would be to delete the file it claims to have read.
+    """
+    if not (repo_root / rel).is_file():
         raise FreezeError("missing_file", f"{rel} does not exist")
-    return sha256_text(path.read_text(encoding="utf-8"))
 
 
 def _rederive_issue(receipt_issue: dict[str, Any], repo_root: Path) -> dict[str, Any]:
@@ -289,23 +347,68 @@ def verify_issue_coverage(snapshot: dict[str, Any], required: list[int]) -> None
                 raise FreezeError("empty_body_unit", f"issue {issue['number']} body normalized to zero clauses")
 
 
-def verify_inspection(repo_root: Path, inspection: dict[str, Any]) -> str:
-    """Recompute every inspected locator's digest and the inspection identity.
+def verify_locators(repo_root: Path, inspection: dict[str, Any]) -> None:
+    """Every per-locator rule, in ONE place both the reader and the WRITER call.
 
-    "I inspected the closeout planner" is unfalsifiable prose; "I inspected it at
-    this digest" stops being true the moment the file changes, which is exactly when
-    the inspection's conclusions stop being safe to build on.
+    Split out because the writer inherited only half of it. `verify_inspection` refused a
+    retired pin and a missing file; `stamp_inspection` re-provided only the second, so
+    `stamp-inspection` exited 0 on an artifact carrying a dead pin and — worse — `refreeze`
+    stamped a new identity onto that artifact and only then aborted inside the freeze,
+    leaving a command that REFUSED having already rewritten the file it refused. One
+    owner for the rules is what makes the writer's pre-write check the same check.
     """
     locators = inspection.get("locators") or []
     if not locators:
         raise FreezeError("empty_inspection", "the owner inspection declares no locators")
     for locator in locators:
-        actual = file_sha256(repo_root, locator["path"])
-        if actual != locator["sha256"]:
+        # BOTH keys, because the identity below reads both. Guarding only `path` left
+        # `role` raising a bare `KeyError` out of `inspection_identity` — through all three
+        # subcommands — which is the same untyped-refusal defect this check was added to
+        # remove, half-inherited. `role` is as load-bearing as `path`: it is the field that
+        # makes a re-roled locator detectable.
+        missing = [key for key in ("path", "role") if key not in locator]
+        if missing:
             raise FreezeError(
-                "stale_inspection",
-                f"{locator['path']} is now {actual[:12]}, inspected at {locator['sha256'][:12]}",
+                "malformed_locator",
+                f"an owner-inspection locator declares no {', '.join(missing)}",
             )
+        if "sha256" in locator:
+            # A leftover digest is a DEAD claim: it reads exactly like a pin to a human
+            # skimming the artifact, and nothing enforces it any more. Refusing is what
+            # keeps the artifact's appearance and its teeth the same shape.
+            raise FreezeError(
+                "retired_locator_pin",
+                f"{locator['path']} still carries a sha256 content pin; {INSPECTION_SCHEMA} retired it "
+                f"(#562), and leaving the field would assert a pin nothing enforces. Remedy: delete every "
+                f"locator's sha256 key, set schema to {INSPECTION_SCHEMA}, then run "
+                "`validate_issue_source_freeze.py refreeze`",
+            )
+        _require_locator_contained(repo_root, locator["path"])
+        require_file(repo_root, locator["path"])
+
+
+def _require_locator_contained(repo_root: Path, rel: str) -> None:
+    """A locator path is untrusted input, exactly like a raw-response path.
+
+    It arrives from the artifact under review, so `/etc/hostname` or `../../elsewhere`
+    would otherwise satisfy the existence check and let the freeze go green asserting
+    inspection of a file nobody in this repo can review. `_require_contained` already
+    applies this reasoning to the source half's paths; this is that idiom, applied to the
+    one locator check `#562` left standing.
+    """
+    if not (repo_root / rel).resolve().is_relative_to(repo_root.resolve()):
+        raise FreezeError("locator_escape", f"{rel} resolves outside the repo root")
+
+
+def verify_inspection(repo_root: Path, inspection: dict[str, Any]) -> str:
+    """Prove the inspection names real files and still declares its own locator set.
+
+    Scoped by `#562`: the per-locator content pin is gone, so an incidental edit to an
+    inspected file is no longer a refusal. What remains is the part that was never
+    noise — every declared path must exist inside the repo, and the identity must be the
+    one this inspection's own content implies, so the locator SET cannot drift silently.
+    """
+    verify_locators(repo_root, inspection)
     identity = inspection_identity(inspection)
     if inspection.get("inspection_identity") != identity:
         raise FreezeError("inspection_identity_mismatch", "the declared inspection identity is not its content's")
@@ -313,12 +416,36 @@ def verify_inspection(repo_root: Path, inspection: dict[str, Any]) -> str:
 
 
 def inspection_identity(inspection: dict[str, Any]) -> str:
+    """One identity over the locator SET and the artifact's PROSE — never file content.
+
+    Two decisions, and they pull in opposite directions on purpose.
+
+    Dropping `sha256` is what stops this value churning on every incidental edit, and it is
+    why the schema had to move to v2: this is not the value a v1 artifact declared.
+
+    Adding `purpose`, `non_claims`, and each locator's `note` is the other half, and it
+    closes the hole that produced this slice's only blocker. Those fields were outside the
+    identity, so the artifact's `purpose` asserted a content pin for an entire schema
+    generation — "bound to the digest each file carried at inspection time" — with every
+    gate green, and correcting the prose moved no identity at all. Unbound prose on an
+    authorization artifact is the declaration-without-corroboration shape this repo exists
+    to refuse. Binding it is cheap in a way the file pin never was: ordinary work edits
+    inspected FILES constantly and this artifact's prose almost never, so the churn the pin
+    was removed for does not come back.
+
+    Locators stay SORTED by path so a pure reordering is not a refusal.
+    """
     return sha256_payload(
         {
             "schema": inspection.get("schema"),
             "issues": sorted(inspection.get("issues") or []),
+            "purpose": inspection.get("purpose"),
+            "non_claims": list(inspection.get("non_claims") or []),
             "locators": sorted(
-                ({"path": item["path"], "role": item["role"], "sha256": item["sha256"]} for item in inspection["locators"]),
+                (
+                    {"path": item["path"], "role": item["role"], "note": item.get("note")}
+                    for item in inspection["locators"]
+                ),
                 key=lambda item: item["path"],
             ),
         }

@@ -106,9 +106,9 @@ def _build_world(tmp_path: Path, *, numbers=(514, 515, 518), bodies=None, commen
     _write_json(
         tmp_path / INSPECTION_REL,
         {
-            "schema": "issue-source-owner-inspection/v1",
+            "schema": "issue-source-owner-inspection/v2",
             "issues": list(numbers),
-            "locators": [{"role": "owner", "path": "owner.py", "sha256": "", "note": "n"}],
+            "locators": [{"role": "owner", "path": "owner.py", "note": "n"}],
             "inspection_identity": "",
         },
     )
@@ -288,20 +288,38 @@ def test_an_issue_whose_body_normalizes_to_nothing_is_refused(tmp_path: Path) ->
     assert "514" in excinfo.value.detail
 
 
-def test_an_inspection_whose_inspected_file_has_changed_is_stale(tmp_path: Path) -> None:
-    """An owner map is a claim about content, and content moves.
+def test_an_edit_to_an_inspected_file_is_no_longer_a_refusal(tmp_path: Path) -> None:
+    """`#562`: the content pin is retired, and this is the behaviour that replaced it.
 
-    "I inspected the closeout planner" stays true forever. "I inspected it at this
-    digest" stops being true exactly when the conclusions drawn from it stop being
-    safe to build on.
+    The pin refused on any change to an inspected file. Measured over the real
+    `#514`/`#515`/`#518` freeze, that was 0 true positives in 5 refusals — a comment or
+    a message string invalidated it exactly as loudly as a semantic change, and the
+    one-command remedy trained the reflex that would have fired on a real change too.
+    Asserting ACCEPTANCE here is the pin's grave marker: if someone reintroduces a
+    whole-file digest check, this test is what goes red.
     """
     _build_world(tmp_path)
     (tmp_path / "owner.py").write_text("# owner changed after inspection\n", encoding="utf-8")
 
+    assert _validate(tmp_path)["ok"] is True
+
+
+def test_a_locator_still_carrying_a_retired_content_pin_is_refused(tmp_path: Path) -> None:
+    """A leftover `sha256` is a DEAD claim, and dead claims are the repo's worst shape.
+
+    It reads exactly like an enforced pin to anyone skimming the artifact while nothing
+    enforces it, so the artifact's appearance and its teeth would disagree.
+    """
+    _build_world(tmp_path)
+    _edit_json(
+        tmp_path / INSPECTION_REL,
+        lambda payload: payload["locators"][0].__setitem__("sha256", "0" * 64),
+    )
+
     with pytest.raises(FreezeError) as excinfo:
         _validate(tmp_path)
 
-    assert excinfo.value.code == "stale_inspection"
+    assert excinfo.value.code == "retired_locator_pin"
 
 
 def test_an_inspection_with_a_forged_identity_is_refused(tmp_path: Path) -> None:
@@ -526,9 +544,10 @@ def test_a_raw_response_path_escaping_the_repo_is_refused(tmp_path: Path) -> Non
 def test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command(tmp_path: Path) -> None:
     """The retro repair: the maintenance ritual is a tool, not a shell heredoc.
 
-    Editing an inspected owner correctly stales the freeze, so re-freezing is routine
-    rather than rare. As three separate steps the third — copying identity fields into
-    the crosswalk — had no tool at all and was hand-executed six times in one session.
+    As three separate steps the third — copying identity fields into the crosswalk — had
+    no tool at all and was hand-executed six times in one session. The staleness trigger
+    here is a change to the locator SET, not an edit to an inspected file: `#562` retired
+    the content pin, so an ordinary edit no longer stales anything.
     """
     _build_world(tmp_path)
     crosswalk_rel = "spec/crosswalk.json"
@@ -539,12 +558,16 @@ def test_refreeze_restamps_refreezes_and_rebinds_the_crosswalk_in_one_command(tm
             "source_identity": {"freeze_receipt_path": FREEZE_REL, "source_snapshot_sha256": "stale"},
         },
     )
-    (tmp_path / "owner.py").write_text("# the inspected owner changed\n", encoding="utf-8")
+    (tmp_path / "second_owner.py").write_text("# a second owner the map now claims\n", encoding="utf-8")
+    _edit_json(
+        tmp_path / INSPECTION_REL,
+        lambda payload: payload["locators"].append({"role": "owner", "path": "second_owner.py", "note": "n"}),
+    )
 
     # The staleness is real before the repair runs.
     with pytest.raises(FreezeError) as stale:
         _validate(tmp_path)
-    assert stale.value.code == "stale_inspection"
+    assert stale.value.code == "inspection_identity_mismatch"
 
     payload = run_refreeze(
         tmp_path, SNAPSHOT_REL, INSPECTION_REL, FREEZE_REL, [514, 515, 518], crosswalk_rel
@@ -644,6 +667,11 @@ def test_an_inspected_file_that_has_been_deleted_is_refused_not_skipped(tmp_path
     If a missing locator merely dropped out of the recomputation, the cheapest way to
     keep an owner inspection "current" would be to delete the file it claims to have
     inspected — the inspection would stay green about a file that no longer exists.
+
+    Both entry points are covered because `#562` left this the ONLY check that opens an
+    inspected file. `stamp-inspection` is the one an operator runs by hand, and stamping
+    an identity over an unopenable path would launder the unfalsifiable prose the whole
+    inspection exists to replace.
     """
     _build_world(tmp_path)
     (tmp_path / "owner.py").unlink()
@@ -653,6 +681,11 @@ def test_an_inspected_file_that_has_been_deleted_is_refused_not_skipped(tmp_path
 
     assert excinfo.value.code == "missing_file"
     assert "owner.py" in excinfo.value.detail
+
+    with pytest.raises(FreezeError) as stamping:
+        stamp_inspection(tmp_path, INSPECTION_REL)
+
+    assert stamping.value.code == "missing_file"
 
 
 def test_a_raw_page_whose_issue_node_is_null_is_refused(tmp_path: Path) -> None:
@@ -906,7 +939,7 @@ def test_the_cli_renders_a_refusal_as_a_nonzero_exit_with_a_machine_readable_cod
     """A refusal that exits 0 is worse than no validator: every gate downstream reads
     the exit code, and a tidy JSON body on stdout is invisible to all of them."""
     _build_world(tmp_path)
-    (tmp_path / "owner.py").write_text("# owner changed after inspection\n", encoding="utf-8")
+    (tmp_path / "owner.py").unlink()
 
     code = _cli(monkeypatch, *_cli_args(tmp_path, "validate", "--require-issues", "514", "515", "518"))
 
@@ -914,9 +947,9 @@ def test_the_cli_renders_a_refusal_as_a_nonzero_exit_with_a_machine_readable_cod
     payload = json.loads(captured.out)
     assert code == 1
     assert payload["ok"] is False
-    assert payload["error"] == "stale_inspection"
-    assert payload["detail"].startswith("owner.py is now ")
-    assert "REFUSED (stale_inspection)" in captured.err
+    assert payload["error"] == "missing_file"
+    assert payload["detail"].startswith("owner.py does not exist")
+    assert "REFUSED (missing_file)" in captured.err
 
 
 def test_the_cli_defaults_cover_the_three_protected_issues_without_being_asked(tmp_path, monkeypatch, capsys) -> None:
@@ -941,13 +974,12 @@ def test_each_cli_subcommand_dispatches_to_its_own_action(tmp_path: Path, monkey
 
     A table that routed two names to the same action would still exit 0 on both, so the
     proof has to be each command's distinct observable effect: `stamp-inspection`
-    rewrites digests and writes nothing else, `freeze` writes the receipt and leaves the
-    crosswalk alone, `refreeze` also rebinds the crosswalk.
+    rewrites the inspection identity and writes nothing else, `freeze` writes the receipt
+    and leaves the crosswalk alone, `refreeze` also rebinds the crosswalk.
     """
     _build_world(tmp_path)
     crosswalk_rel = "spec/crosswalk.json"
     _write_json(tmp_path / crosswalk_rel, {"schema": "evidence-boundary-crosswalk/v1"})
-    (tmp_path / "owner.py").write_text("# the inspected owner changed\n", encoding="utf-8")
     (tmp_path / FREEZE_REL).unlink()
 
     assert _cli(monkeypatch, *_cli_args(tmp_path, "stamp-inspection")) == 0

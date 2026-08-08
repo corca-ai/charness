@@ -83,8 +83,8 @@ def _freeze_world(tmp_path: Path) -> dict:
     (tmp_path / "owner.py").write_text("# owner\n", encoding="utf-8")
     _write_json(
         tmp_path / INSPECTION_REL,
-        {"schema": "issue-source-owner-inspection/v1", "issues": list(PROTECTED),
-         "locators": [{"role": "owner", "path": "owner.py", "sha256": "", "note": "n"}], "inspection_identity": ""},
+        {"schema": "issue-source-owner-inspection/v2", "issues": list(PROTECTED),
+         "locators": [{"role": "owner", "path": "owner.py", "note": "n"}], "inspection_identity": ""},
     )
     stamp_inspection(tmp_path, INSPECTION_REL)
     run_freeze(tmp_path, SNAPSHOT_REL, INSPECTION_REL, FREEZE_REL, list(PROTECTED))
