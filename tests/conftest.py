@@ -9,7 +9,12 @@ from pathlib import Path
 
 import pytest
 
-pytest_plugins = ["tests.repo_copy", "tests.quality_gates.support", "tests.charness_cli.support"]
+pytest_plugins = [
+    "tests.repo_copy",
+    "tests.quality_gates.support",
+    "tests.quality_gates.bundle_ready_world",
+    "tests.charness_cli.support",
+]
 
 _REPO_ROOT = Path(__file__).resolve().parents[1]
 

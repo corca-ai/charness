@@ -18,6 +18,9 @@ from scripts.final_bundle_preflight_lib import (
     packaging_mirror_inventory,
 )
 
+from .bundle_ready_world import BEHAVIOR_CHANNEL as BUNDLE_READY_BEHAVIOR_CHANNEL
+from .bundle_ready_world import REVIEWED_SPEC
+from .bundle_ready_world import _restamp_reviewed_binding as restamp_bundle_binding
 from .support import ROOT, bundle_blocker_report, bundle_payload_or_report, run_script
 
 MANIFEST = "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
@@ -288,7 +291,9 @@ def test_critique_inventory_refusal_matrix(monkeypatch: pytest.MonkeyPatch, tmp_
     assert blockers[0]["code"] == "unbound_critique"
 
 
-def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+def test_final_bundle_private_error_and_render_branches(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, bundle_ready_repo: dict[str, str]
+) -> None:
     from scripts import final_bundle_preflight_lib as lib
 
     monkeypatch.setattr(lib, "_git", lambda *_args, **_kwargs: subprocess.CompletedProcess([], 1, stdout="", stderr="failed"))
@@ -358,7 +363,18 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
     monkeypatch.setattr(lib, "_candidate_snapshot", lambda *_args: (_ for _ in ()).throw(lib.BundleError("bad snapshot")))
     monkeypatch.setattr(lib._surfaces, "load_surfaces", lambda *_args, **_kwargs: (_ for _ in ()).throw(RuntimeError("bad surfaces")))
     monkeypatch.setattr(lib, "packaging_mirror_inventory", lambda *_args: ({"status": "matched"}, []))
-    payload = build_plan(ROOT, manifest_path=manifest, critique_paths=[], behavior_channels=[])
+    # #560's second gap: this scenario is about four MONKEYPATCHED error branches, and it used to
+    # read the LIVE manifest. `base_sha` comes from the raw file's `premise.local_head_sha`, so a
+    # broken or half-edited live manifest means two of the four codes are never produced and this
+    # test reddens under a name about monkeypatched branches for a reason about live manifest
+    # state. The fixture manifest is valid by construction and does not move under the test.
+    fixture_root = Path(bundle_ready_repo["repo"])
+    payload = build_plan(
+        fixture_root,
+        manifest_path=fixture_root / bundle_ready_repo["manifest"],
+        critique_paths=[],
+        behavior_channels=[],
+    )
     assert payload["status"] == "blocked"
     codes = {item["code"] for item in payload["blockers"]}
     assert {"candidate_base_not_ancestor", "changed_path_collection_failed", "candidate_snapshot_failed", "surface_inventory_failed"} <= codes
@@ -423,3 +439,173 @@ def test_this_repo_is_currently_bundle_ready() -> None:
     # their owners: this test IS that owner for the critique inventory.
     assert payload["critique_inventory"][0]["status"] == "current"
     assert payload["mirror_inventory"]["status"] == "matched"
+
+
+def test_the_ready_path_is_owned_by_a_fixture_that_is_ready_by_construction(
+    bundle_ready_repo: dict[str, str],
+) -> None:
+    """`#560`: the same ready-path assertions, in a repo whose readiness is not the live one's.
+
+    `test_this_repo_is_currently_bundle_ready` above owns "is THIS repo ready right now" and
+    correctly fails whenever a blocker is live. The consequence was that while it failed, NOTHING
+    exercised the ready payload — so a ready-path regression would arrive as nothing at all, in
+    exactly the window where it is most likely to be introduced. Reproduced before this was
+    written: one probe file under `charness-artifacts/spec/` turns both suites' readiness tests
+    red, and every ready-path assertion lives inside them.
+
+    This asserts the payload the preflight PRODUCES, never a value recomputed with the
+    preflight's own helpers — the fixture builds identities that way, and a test that asserted
+    them that way would pass with the subject deleted.
+    """
+    result = run_script(
+        "scripts/final_bundle_preflight.py",
+        "--repo-root", bundle_ready_repo["repo"],
+        "--manifest", bundle_ready_repo["manifest"],
+        "--critique-path", bundle_ready_repo["critique"],
+        "--behavior-channel", BUNDLE_READY_BEHAVIOR_CHANNEL,
+        "--json",
+    )
+    payload = bundle_payload_or_report(result, "final_bundle_preflight")
+
+    assert payload["status"] == "ready", bundle_blocker_report(payload, "final_bundle_preflight")
+    assert result.returncode == 0, result.stdout[:400]
+    # The four things #537 left owned only by the live-coupled test.
+    closeout = [item for item in payload["planned_commands"] if item["phase"] == "closeout"]
+    assert closeout, "the ready plan carries no closeout entry"
+    assert bundle_ready_repo["base"] in closeout[0]["command"], (
+        "the closeout command must bind the plan's own base SHA"
+    )
+    assert payload["critique_inventory"][0]["status"] == "current"
+    assert payload["mirror_inventory"]["status"] == "matched"
+    assert all("reason_surface_ids" in item for item in payload["planned_commands"])
+
+
+def test_the_ready_plan_is_derived_from_the_fixtures_own_git_not_the_live_repo(
+    bundle_ready_repo: dict[str, str],
+) -> None:
+    """Independence, asserted through the plan's own identity rather than through a probe.
+
+    The first version of this test ran the live preflight with `--paths <absent>` and asserted the
+    result was not `ready`. That was VACUOUS: `diagnostic = explicit_paths is not None`, and the
+    status line short-circuits to `diagnostic` whenever it is set — so the assertion held for any
+    repo in any state, including a pristine one, and the two subprocesses had no causal link
+    anyway. It could not have failed, and its docstring claimed independence it never checked.
+
+    What is actually checkable in-process is that the plan's identity comes from the FIXTURE's
+    history: its base is the fixture's pre-manifest commit, which exists in no other repo. A plan
+    that had leaked live state would not carry it.
+
+    The live-blocked behaviour itself is proven by construction outside the suite — with a probe
+    artifact making the live repo blocked, the two live readiness tests fail and these
+    fixture-owned tests still pass — and that construction is recorded in the slice log rather
+    than faked here, because a test that dirtied the real worktree to prove independence would be
+    the coupling in reverse.
+    """
+    repo = Path(bundle_ready_repo["repo"])
+    base = bundle_ready_repo["base"]
+    payload = build_plan(
+        repo,
+        manifest_path=repo / bundle_ready_repo["manifest"],
+        critique_paths=[bundle_ready_repo["critique"]],
+        behavior_channels=[BUNDLE_READY_BEHAVIOR_CHANNEL],
+    )
+
+    assert payload["status"] == "ready", bundle_blocker_report(payload, "final_bundle_preflight")
+    assert payload["candidate_snapshot"]["base_sha"] == base
+    # The live repo cannot contain the fixture's base, so this is the discriminating check
+    # rather than a restatement of readiness.
+    live_head = subprocess.run(
+        ["git", "-C", str(ROOT), "cat-file", "-t", base],
+        capture_output=True, text=True, check=False,
+    )
+    assert live_head.returncode != 0, (
+        "the fixture's base SHA exists in the live repo, so it cannot discriminate between a "
+        "plan derived from the fixture and one that leaked live state"
+    )
+
+
+def test_the_fixtures_critique_binding_is_bound_to_the_fixture_not_the_live_tree(
+    bundle_ready_repo: dict[str, str], tmp_path: Path
+) -> None:
+    """The coupling a bounded round found, pinned so it cannot come back.
+
+    `critique_inventory` verifies the binding with `check_current=True`, which resolves the repo
+    root by walking up to the nearest `.git` and RECOMPUTES the reviewed-input identity there.
+    Under `sha256-v2` working-tree mode that digest is the bytes of one file — the preflight
+    contract spec. The fixture copies that spec from the live tree, so a copied-but-not-restamped
+    binding would stale the instant anyone edited the live spec, reddening all three fixture tests
+    beside the two live ones: a five-test fan-out for one cause, and zero ready-path coverage in
+    the very window the fixture exists to cover.
+
+    So the fixture re-stamps with the real producer, and this asserts the result differs from the
+    live artifact's declared identity — which is what proves the re-stamp happened at all.
+    """
+    repo = Path(bundle_ready_repo["repo"])
+    rows, blockers = critique_inventory(repo, [bundle_ready_repo["critique"]], _safe_relative)
+    assert blockers == [], blockers
+    assert rows[0]["status"] == "current"
+
+    # The assertion above cannot DISCRIMINATE on its own: the fixture copies the spec byte for
+    # byte, so the re-stamped digest equals the live one today and a missing re-stamp looks
+    # identical. What the re-stamp buys only appears once the copy diverges from the packet's
+    # recorded bytes, which is exactly what a live contract amendment produces. So this makes the
+    # divergence happen, in a minimal repo rather than another full clone.
+    minimal = tmp_path / "minimal"
+    for relative in (
+        bundle_ready_repo["critique"],
+        "charness-artifacts/critique/2026-08-06-041231-packet.json",
+        "charness-artifacts/critique/2026-08-06-041231-packet.md",
+        REVIEWED_SPEC,
+    ):
+        destination = minimal / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes((repo / relative).read_bytes())
+    for command in (["init", "-q"], ["add", "-A"]):
+        subprocess.run(["git", *command], cwd=minimal, check=True, capture_output=True)
+    subprocess.run(
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "minimal"],
+        cwd=minimal, check=True, capture_output=True,
+    )
+    (minimal / REVIEWED_SPEC).write_text(
+        (repo / REVIEWED_SPEC).read_text(encoding="utf-8") + "\n<!-- the contract was amended -->\n",
+        encoding="utf-8",
+    )
+
+    stale_rows, stale_blockers = critique_inventory(minimal, [bundle_ready_repo["critique"]], _safe_relative)
+    assert [item["code"] for item in stale_blockers] == ["unbound_critique"], (
+        "a diverged reviewed spec no longer stales the binding, so this test can no longer tell "
+        "whether the fixture re-stamps"
+    )
+    assert stale_rows[0]["status"] == "invalid"
+
+    restamp_bundle_binding(minimal)
+    fresh_rows, fresh_blockers = critique_inventory(minimal, [bundle_ready_repo["critique"]], _safe_relative)
+    assert fresh_blockers == [], fresh_blockers
+    assert fresh_rows[0]["status"] == "current"
+
+
+def test_the_builder_actually_calls_the_rebinding_step() -> None:
+    """The WIRING, which no behavioural test in this suite can reach.
+
+    `test_the_fixtures_critique_binding_is_bound_to_the_fixture_not_the_live_tree` pins what
+    `_restamp_reviewed_binding` DOES, by calling it. It cannot pin that the builder calls it,
+    because the fixture copies the reviewed spec byte for byte — so the re-stamped digest equals
+    the live one and a builder with the call deleted produces an identical tree. Measured: that
+    mutant survived the whole suite.
+
+    The divergence only appears once the live spec moves, which is a state no green test can
+    manufacture without editing the real repo. So the wiring is pinned at the source, the same
+    way this repo pins other repairs whose effect is invisible while everything agrees.
+    """
+    source = (Path(__file__).parent / "bundle_ready_world.py").read_text(encoding="utf-8")
+    builder = source.split("def build_bundle_ready_repo(")[1].split("\ndef ")[0]
+
+    assert "_restamp_reviewed_binding(repo)" in builder, (
+        "build_bundle_ready_repo no longer re-stamps the copied critique binding, so the fixture "
+        "is bound to LIVE spec bytes again and a contract amendment will red all three "
+        "fixture-owned ready-path tests beside the two live ones"
+    )
+    # Before the seed commit, or the committed tree carries the stale binding.
+    assert builder.index("_restamp_reviewed_binding(repo)") < builder.index('"commit", "-qm", "seed'), (
+        "the re-stamp must run before the seed commit"
+    )

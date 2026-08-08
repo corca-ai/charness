@@ -444,3 +444,30 @@ def test_this_repo_is_currently_closeout_bundle_ready() -> None:
     assert lock_phase["name"] == "verification_lock"
     assert lock_phase["command"], "a ready plan must carry the closeout command it locks on"
     assert "run_slice_closeout" in lock_phase["command"]
+
+
+def test_the_closeout_ready_plan_is_owned_by_a_fixture_that_is_ready_by_construction(
+    bundle_ready_repo: dict[str, str],
+) -> None:
+    """`#560`, the second of the two surfaces: the ready plan's `verification_lock` command.
+
+    `test_this_repo_is_currently_closeout_bundle_ready` owns it only while the live worktree is
+    clean, so the command a closeout actually locks on went unexercised in exactly the window
+    where a regression is most likely. Same fixture, same question, no dependence on live state.
+    """
+    repo = Path(bundle_ready_repo["repo"])
+    payload = lib.build_plan(
+        repo,
+        manifest_path=repo / bundle_ready_repo["manifest"],
+        critique_paths=[bundle_ready_repo["critique"]],
+        behavior_channels=["behavior=python3 -m pytest -q tests/quality_gates/test_closeout_bundle.py"],
+        bundle_id="closeout-bundle-fixture",
+    )
+
+    assert payload["status"] == "ready", bundle_blocker_report(payload, "closeout_bundle")
+    lock_phase = payload["phases"][-1]
+    assert lock_phase["name"] == "verification_lock"
+    assert "run_slice_closeout" in lock_phase["command"]
+    # The base the lock binds is the FIXTURE's, which is what proves the command is derived from
+    # the plan under test rather than inherited from the live repo's manifest.
+    assert bundle_ready_repo["base"] in lock_phase["command"]
