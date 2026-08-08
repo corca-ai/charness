@@ -39,20 +39,20 @@ Ambient repo findings: #514/#515 implementation, issue closeout, remote CI, rele
 
 ## Weak
 
-- The dependency has no checked-in Charness integration manifest or quality-runner route yet.
-- The current command is not a clean graph: `documents=40`, `orphans=7`, `islands=0`, `link_only_lines=230`, `largest_component_ratio=0.8250`, `orphan_rate=0.1750`, `content_coverage=1.0000`.
+- SUPERSEDED 2026-08-09: the dependency now has both. `integrations/tools/awiki.json` is checked in and a `docs-graph` lane runs it in `scripts/run-quality.sh`.
+- SUPERSEDED 2026-08-09: the graph is now connected — `orphans=0 islands=0 largest_component_ratio=1.0000`. Recount with `awiki lint -root docs -recursive` rather than trusting either number here; the link-only count is not gated on.
 - The result is not yet bound to a typed final quality-artifact disposition, so a green aggregate could still hide it until #518's fold is repaired.
 
 ## Missing
 
-- `integrations/tools/awiki.json`, dependency installation/discovery wiring, doctor/readiness state, update/degradation policy, and plugin projection.
+- RESOLVED 2026-08-09: manifest, installation/discovery wiring, doctor/readiness state, update/degradation policy, and plugin projection all landed.
 - A quality-skill command path that preserves version, exact args, exit code, parsed counts, and non-clean status.
-- A command-level overlap matrix proving whether any existing linter is fully subsumed; no deletion is justified by the current evidence.
+- RESOLVED 2026-08-09 by [the docs-graph checks matrix](../../docs/docs-graph-checks.md), which found NO subsumption in either direction: `awiki lint` cannot see a broken link at all, so no deletion is justified and none was made.
 
 ## Deferred
 
 - Do not delete `check-doc-links`, `markdownlint`, `check-links-internal`, or `nose` until their semantic boundaries are compared against awiki and a replacement proof exists.
-- Do not promote the current awiki graph failure to a repaired-quality claim; remediation belongs to the #518 implementation slice after the declaration/applicability/final-consumer contract is fixed.
+- SUPERSEDED 2026-08-09: the graph failure was repaired before promotion, not promoted as a claim. The gate reads the connectivity metrics, reports UNPROVEN when it cannot observe, and names what it does not judge on every run.
 
 ## Advisory
 

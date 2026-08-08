@@ -19,7 +19,7 @@
     "content_coverage": 1.0,
     "observed_result": "graph-findings"
   },
-  "final_consumer": null,
-  "non_claim": "This fixture proves the direct awiki observation only; it does not establish an aggregate verdict or prove the Charness final-consumer route until the implementation slice runs it.",
+  "final_consumer": "scripts/check_docs_graph.py (the `docs-graph` run-quality lane)",
+  "non_claim": "This fixture is the frozen 0.5.0 direct observation, captured when the docs graph had 7 orphans. It does not assert the CURRENT graph state -- `check_docs_graph.py` re-runs awiki live and the graph has since been repaired -- and it establishes no aggregate verdict.",
   "stderr_sha256_repair": "Recorded as e3b0c44298fc1c149af4c8996fb92427ae41e4649b934ca495991b7852b855 (62 chars) at capture: the empty-stream digest with two characters dropped in transcription. Repaired 2026-08-07 after re-running the same pinned command (`awiki lint -root docs -recursive`, awiki 0.5.0) and observing 0 bytes on stderr. Only the stderr digest was repaired; `stdout_sha256` is the frozen capture and is unchanged."
 }

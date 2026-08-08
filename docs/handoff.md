@@ -38,7 +38,7 @@
 
 ## Discuss
 
-- Open, and blocking nothing: whether `awiki` joins [the declared tool dependencies](../integrations/tools/dependencies.json) (the goal defers this to slice 3, because the honest answer depends on how the gate behaves when the binary is ABSENT), `#561`'s equality-versus-invariant pin, `#547`'s re-scope, and the renderer-versus-reference spelling split in `setup`.
+- Open, and blocking nothing: `#561`'s equality-versus-invariant pin, `#547`'s re-scope, and the renderer-versus-reference spelling split in `setup`.
 - Decided this session, so do not reopen: the awiki gate is charness-INTERNAL only, the orphan repair is a new docs index hub page rather than a baseline exception, and the release is a MAJOR bump (`3.5.0` -> `4.0.0`).
 - `check-changed-line-mutation-coverage` fails on six files inherited from the unpushed range; none belong to this session's slices.
 
