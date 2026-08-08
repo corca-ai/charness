@@ -27,7 +27,14 @@ grandfathered_report = _GRAMMAR.grandfathered_report
 
 RULE_DATE = date(2026, 6, 17)
 SECTION = "Operator Decision Queue"
-_EMPTY = re.compile(r"^\s*(?:[-*]\s*)?none\s+—\s+\S.{20,}", re.IGNORECASE)
+# The empty-queue reason floor, as a NAMED number rather than a digit retyped
+# into a regex and then into two prose surfaces. The pattern below and every
+# sentence that quotes the floor are built from this one value, so moving it
+# moves them (`describe_goal_closeout_shape.py` renders from it too).
+MIN_EMPTY_QUEUE_REASON = 21
+_EMPTY = re.compile(
+    rf"^\s*(?:[-*]\s*)?none\s+—\s+\S.{{{MIN_EMPTY_QUEUE_REASON - 1},}}", re.IGNORECASE
+)
 _ITEM = re.compile(r"^\s*(?:[-*]\s*)?Decision:\s+\S", re.MULTILINE)
 _SCAFFOLD = re.compile(
     r"Record decisions, confirmations, credential actions, manual proof steps",
@@ -56,8 +63,8 @@ def check(text: str) -> dict[str, Any]:
     # engineering the parser. The satisfying forms are `none — <reason>` (a
     # substantive empty-queue reason) or at least one `- Decision: <…>` item.
     _TARGET = (
-        "record `none — <reason>` (a substantive reason, ~20+ chars) when the queue "
-        "is empty, or at least one `- Decision: <operator-only decision>` item"
+        f"record `none — <reason>` (a substantive reason, >= {MIN_EMPTY_QUEUE_REASON} chars) "
+        "when the queue is empty, or at least one `- Decision: <operator-only decision>` item"
     )
     body = _section_body(text, SECTION)
     if body is None:

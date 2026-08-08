@@ -290,3 +290,62 @@ def test_closeout_stub_lives_in_template_asset() -> None:
         / "closeout_stub.txt"
     )
     assert template.read_text(encoding="utf-8") == desc.stub()
+
+
+# --- the module that documents the cure had the disease ----------------------
+#
+# Its own docstring says it "never re-declares the contract... rendered from the
+# LIVE enforced constants, so the surfaced shape cannot drift from the gate" --
+# and it typed the floor numbers by hand, so one constant edit silently staled
+# the operator-facing strings. These tests move each constant and require the
+# rendered text to follow, which is the only way that claim is checkable.
+
+
+def _shape() -> str:
+    return desc.required_shape()
+
+
+def test_no_floor_number_is_typed_into_this_module() -> None:
+    """The literal check the goal's acceptance names. A number written here is a
+    second copy of a floor, and a second copy is what drifts."""
+    source = _SCRIPT.read_text(encoding="utf-8")
+    body = "\n".join(
+        line for line in source.splitlines()
+        if "chars" in line and not line.lstrip().startswith("#")
+    )
+    assert "30 chars" not in body
+    assert "20+ chars" not in body
+    # Every rendered char-floor must interpolate rather than state a number.
+    for line in body.splitlines():
+        if ">= " in line and "chars" in line:
+            assert "{" in line, f"floor number typed by hand: {line.strip()}"
+
+
+def test_the_skip_reason_floor_is_rendered_from_the_live_constant(monkeypatch) -> None:
+    monkeypatch.setattr(desc._PRESCRIBED, "MIN_SKIP_LENGTH", 4321)
+    assert "4321 chars" in _shape()
+
+
+def test_the_disposition_optout_floor_is_rendered_from_the_live_constant(monkeypatch) -> None:
+    monkeypatch.setattr(desc._DISPOSITION, "MIN_OPTOUT_REASON", 4322)
+    assert "4322 chars" in _shape()
+
+
+def test_the_operator_queue_floor_is_rendered_from_the_live_constant(monkeypatch) -> None:
+    monkeypatch.setattr(desc._OPERATOR_QUEUE, "MIN_EMPTY_QUEUE_REASON", 4323)
+    assert "4323 chars" in _shape()
+
+
+def test_the_declarable_phases_are_rendered_from_the_live_tuple(monkeypatch) -> None:
+    monkeypatch.setattr(desc._PHASE_ROUTING, "DECLARABLE_PHASES", ("fabricated",))
+    assert "`fabricated`" in _shape()
+
+
+def test_the_queue_floor_number_and_its_own_regex_cannot_disagree() -> None:
+    """The number lived inside a regex quantifier AND in two prose surfaces. The
+    pattern is now built from the constant, so a change cannot move one without
+    the other."""
+    queue = desc._OPERATOR_QUEUE
+    minimum = queue.MIN_EMPTY_QUEUE_REASON
+    assert queue._EMPTY.search("none — " + "x" * minimum)
+    assert not queue._EMPTY.search("none — " + "x" * (minimum - 1))

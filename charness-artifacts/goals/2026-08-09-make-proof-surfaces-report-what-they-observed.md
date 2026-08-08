@@ -9,15 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 6 — render `describe_goal_closeout_shape`'s floors from live constants.
+- Current slice: 7 — let a docstring say "skipped" without tripping the attention-state gate.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: delete the hardcoded `>= 30 chars` / `~20+ chars` literals and
-  render them from the live constants, with a test that moves a constant and
-  asserts the rendered text follows.
+- Next action: separate a status VALUE from English prose, so the two recorded
+  false positives pass while a genuine exit-zero `skipped` status still fails.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -160,7 +159,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 3 | DONE. Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer, every row measured, with runnable reproductions | done |
 | 4 | DONE. Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | `PASS docs-graph` named in the summary; FAIL and UNPROVEN both observed through the runner; doctor still `ok`; two review rounds | done |
 | 5 | DONE. `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Replay over 185 checked-in goals: 156 quality + 47 debug triggers dropped, ZERO gained, `impl`/`issue` unchanged — every change is the prose guess ceasing to fire. Both recorded false positives pinned as tests | done |
-| 6 | `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No literal floor numbers left in the file; a test that changes the constant and asserts the rendered text follows | pending |
+| 6 | DONE. `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No typed floor number left in the file; four tests move a live constant and assert the rendered text follows; the queue floor's regex is built from its own constant | done |
 | 7 | `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | The recorded false positives pass; a genuine exit-zero `skipped` status still fails | pending |
 | 8 | Release `4.0.0` and push | The operator scoped the push to ride with this release | Release artifact, push, and a remote CI verdict from a distinct observer and channel | pending |
 
@@ -240,6 +239,24 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 6 — the describe module renders what it claims to render (done)
+
+- Its docstring says it "never re-declares the contract... rendered from the LIVE
+  enforced constants, so the surfaced shape cannot drift from the gate", and it
+  typed `~20+ chars` into two operator-facing strings. Now every char floor
+  interpolates a live constant.
+- The queue floor had no constant to render FROM: its length lived inside a regex
+  quantifier (`.{20,}`) and was retyped in two prose surfaces. Extracted as
+  `MIN_EMPTY_QUEUE_REASON`, with the regex BUILT from it, so the pattern and the
+  sentences cannot disagree. A test asserts the boundary matches the constant.
+- Four drift tests move a constant and require the rendered text to follow; that
+  is the only way the module's own claim is checkable.
+- Two duplicate families surfaced and were FIXED rather than classified away: a
+  repeated `applies`/`ok`/`reason` row shape became `_applies_row`, and two floor
+  functions re-deriving the recorded-work body now share `_recorded_work_body`.
+  The two that were classified intentional are the package's sibling-bootstrap
+  import header, which a shim cannot remove because the shim needs it too.
 
 ### Slice 5 — the routing floor declares instead of guessing (done)
 

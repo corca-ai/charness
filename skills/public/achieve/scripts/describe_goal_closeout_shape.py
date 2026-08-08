@@ -69,6 +69,7 @@ _PRESCRIBED = _load_repo_script("check_prescribed_skill_executed_lib")
 _DISPOSITION_FORM = _load_repo_script("disposition_form")
 _DISPOSITION = _load_sibling("goal_artifact_disposition_grammar")
 _PHASE_ROUTING = _load_sibling("goal_artifact_phase_routing")
+_OPERATOR_QUEUE = _load_sibling("goal_artifact_operator_queue")
 # Attention-state visibility marker: the extracted closeout stub still surfaces
 # the allowed skip form `skipped: <allowed-reason>: <detail>`.
 _CLOSEOUT_STUB_TEMPLATE = (
@@ -83,6 +84,7 @@ def required_shape() -> str:
     min_optout = _DISPOSITION.MIN_OPTOUT_REASON
     valid_form = _DISPOSITION_FORM.VALID_FORM_SUMMARY
     declarable_phases = ", ".join(f"`{phase}`" for phase in _PHASE_ROUTING.DECLARABLE_PHASES)
+    min_queue_reason = _OPERATOR_QUEUE.MIN_EMPTY_QUEUE_REASON
     dest_form = _DISPOSITION_FORM.DESTINATION_FORM_SUMMARY
     lines = [
         "goal-closeout required shape (enforced by `check_goal_artifact.py` at the",
@@ -117,7 +119,7 @@ def required_shape() -> str:
         "`## Operator Decision Queue` — the seeded scaffold prose (`Record decisions,",
         "confirmations, ...`) is intentionally non-satisfying and must be REPLACED before",
         "`complete` with EITHER `none — <reason>` (a substantive reason; the floor needs",
-        "~20+ chars) when the queue is empty, OR at least one `- Decision: <operator-only",
+        f">= {min_queue_reason} chars) when the queue is empty, OR at least one `- Decision: <operator-only",
         "decision>` item. The scaffold is seeded so the obligation is visible — leaving it",
         "verbatim is refused.",
     ]
@@ -174,6 +176,22 @@ def _evidence_unsatisfied(ev: dict[str, Any], name: str) -> str | None:
 def _evidence_row(name: str, label: str, ev: dict[str, Any], form_hint: str) -> dict[str, Any]:
     unsat = _evidence_unsatisfied(ev, name)
     return {"floor": name, "label": label, "triggered": True, "satisfied": unsat is None, "detail": unsat or form_hint}
+
+
+def _applies_row(floor_report: dict[str, Any], floor: str, label: str, remedy: str) -> dict[str, Any]:
+    """One `applies`/`ok`/`reason` floor payload as a describe row.
+
+    The rows differ only in their floor key, label, and fallback remedy; writing
+    that shape out per floor is how two of them drifted into byte-identical
+    blocks. The floor's own `reason` still wins when it has one.
+    """
+    return {
+        "floor": floor,
+        "label": label,
+        "triggered": bool(floor_report.get("applies")),
+        "satisfied": bool(floor_report.get("ok", True)),
+        "detail": floor_report.get("reason") or remedy,
+    }
 
 
 def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bool) -> list[dict[str, Any]]:
@@ -270,21 +288,17 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
                  "satisfied": not failures,
                  "detail": "; ".join(failures) if failures else "every delegated-proof item resolved (verified/skipped/issue #N)"})
     oq = ev.get("operator_decision_queue", {})
-    rows.append({"floor": "operator_decision_queue", "label": "`## Operator Decision Queue` scaffold cleared",
-                 "triggered": bool(oq.get("applies")),
-                 "satisfied": bool(oq.get("ok", True)),
-                 "detail": oq.get("reason")
-                 or "replace the seeded scaffold prose with `none — <reason>` (~20+ chars) or a `- Decision:` item"})
+    rows.append(_applies_row(
+        oq, "operator_decision_queue", "`## Operator Decision Queue` scaffold cleared",
+        "replace the seeded scaffold prose with `none — <reason>` "
+        f"(>= {_OPERATOR_QUEUE.MIN_EMPTY_QUEUE_REASON} chars) or a `- Decision:` item"))
     # Both floors added 2026-08-01. A blocking floor with no row here is invisible
     # to the describe-first preflight, which is the whole point of that step: the
     # author discovers the refusal by failing the flip instead of by reading it.
-    distinct = ev.get("closeout_evidence_distinctness", {})
-    rows.append({"floor": "closeout_evidence_distinctness",
-                 "label": "`Retro:` and `Disposition review:` resolve to different paths",
-                 "triggered": bool(distinct.get("applies")),
-                 "satisfied": bool(distinct.get("ok", True)),
-                 "detail": distinct.get("reason")
-                 or "point the disposition review at its own artifact, not the retro"})
+    rows.append(_applies_row(
+        ev.get("closeout_evidence_distinctness", {}), "closeout_evidence_distinctness",
+        "`Retro:` and `Disposition review:` resolve to different paths",
+        "point the disposition review at its own artifact, not the retro"))
     figures = ev.get("final_verification_figure_form", {})
     # `evaluated` is consulted, not just `applies`/`ok`. Both of this floor's
     # decline-to-answer branches return `applies: True, ok: True`, so a row keyed

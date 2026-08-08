@@ -91,18 +91,22 @@ def declaration_required(text: str) -> bool:
     return recorded_work_present(text)
 
 
+def _recorded_work_body(text: str) -> str:
+    """The archive sections' text, fence-masked. One reader, so the two callers
+    below cannot disagree about which sections count as recorded work."""
+    masked = _mask_fences(text)
+    return "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
+
+
 def recorded_work_present(text: str) -> bool:
     """Structural: do the archive sections carry any content?
 
     This asks whether anything is written there, never what it is about.
     """
-    masked = _mask_fences(text)
-    for heading in RECORDED_WORK_SECTIONS:
-        body = _section_body(masked, heading) or ""
-        for line in body.splitlines():
-            stripped = line.strip().lstrip("#>*-").strip()
-            if stripped and not stripped.startswith("("):
-                return True
+    for line in _recorded_work_body(text).splitlines():
+        stripped = line.strip().lstrip("#>*-").strip()
+        if stripped and not stripped.startswith("("):
+            return True
     return False
 
 
@@ -148,8 +152,7 @@ def phase_route_triggers(text: str) -> dict[str, bool]:
     `quality` come from the author's own `Phases:` declaration. Nothing here reads
     the prose to decide what the work was about.
     """
-    masked = _mask_fences(text)
-    work = "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
+    work = _recorded_work_body(text)
     _kind, declared, _value = declared_phases(text)
     triggers = {
         "impl": _IMPL_RECORD.search(work) is not None,
