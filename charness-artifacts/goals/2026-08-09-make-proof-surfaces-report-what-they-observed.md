@@ -119,10 +119,13 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 
 - Full `bash scripts/run-quality.sh`, redirected to a file and read whole (never
   piped through `tail`/`head`), at each slice boundary.
-- **Before/after corpus replay for every floor this goal rewrites**: run the old
-  and new trigger over the checked-in goal artifacts and diff the verdicts. A
-  rewrite that changes no verdict on real inputs has not been shown to fix
-  anything; a rewrite that changes many needs each one explained.
+- **Every rewritten floor keeps a test for the case it exists to catch.** Slice 5
+  replaces a content guess with a declaration, and the risk is a floor that stops
+  refusing anything: a goal that crossed a phase boundary and recorded NO routing
+  must still be refused. Pin that as a test before the swap, not as a judgment
+  after it. Replaying the old and new trigger over the checked-in goal artifacts
+  is a cheap way to see what moved, but it is a diagnostic — the test is the
+  contract.
 - A deliberate NEGATIVE test per gate: make it fail on purpose, observe red,
   revert. A gate never observed failing is not known to work.
 - Fresh-eye bounded review on each proof-surface slice, plus the second round
@@ -143,7 +146,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 1 | Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | pending |
 | 2 | Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `awiki lint` exit 0, `orphans=0`; `check_doc_links.py` still green | pending |
 | 3 | Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer | pending |
-| 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, decide `dependencies.json` membership | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
+| 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
 | 5 | `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Corpus replay over checked-in goals with every verdict change explained; the plain-English debug case no longer slips; the `airport gate` case no longer fires | pending |
 | 6 | `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No literal floor numbers left in the file; a test that changes the constant and asserts the rendered text follows | pending |
 | 7 | `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | The recorded false positives pass; a genuine exit-zero `skipped` status still fails | pending |
@@ -155,26 +158,22 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 - Owner: operator (answered during shaping)
 - Why deferred: not deferred; recorded so slice 8 does not re-ask
 - Unblock action: none outstanding
-- Revisit trigger: a major number is a promise about breakage. Four floors are
-  rewritten here and the awiki gate is internal-only, so at cut time re-confirm
-  that `4.0.0` describes what a CONSUMER experiences, not what this repo did
+- Revisit trigger: none. Release-note wording is explicitly NOT a gate on this
+  goal; do not reopen this as a drafting question.
 
-- Decision: whether `awiki` joins the declared tool dependencies, making a Rust
-  toolchain or a release-binary install a stated requirement for the full gate
-- Owner: operator
-- Why deferred: does not block slices 1-3, and the honest answer depends on how
-  the gate behaves when the binary is ABSENT, which slice 4 establishes
-- Unblock action: answer `declare it` or `keep it optional and let the gate
-  report not-run`
-- Revisit trigger: slice 4, when the gate lane is written
+Nothing else is queued, and two items that were queued here have been removed
+because they were not operator decisions:
 
-- Decision: how much verdict CHANGE is acceptable when slice 5 replaces the
-  routing guess with a declaration
-- Owner: operator
-- Why deferred: the corpus replay in slice 5 produces the number; deciding before
-  measuring would be the anchoring failure this repo has already recorded
-- Unblock action: review the replay diff and accept or bound it
-- Revisit trigger: slice 5, before the floor is swapped
+- **`dependencies.json` membership is already settled** by the internal-gate
+  decision, and asking again was a mistake. The file is `repo_root`-scoped —
+  charness's own — and a consumer gets its own copy seeded by `setup`. Its only
+  effect is a `staged: true|false` flag on tool-recommendation payloads. It
+  reaches no consumer, so it cannot conflict with keeping adoption opt-in.
+  Slice 4 registers `awiki` there as a plain consequence of charness's own gate
+  consuming it.
+- **"Acceptable verdict change" was invented ceremony.** Whether the rewritten
+  routing floor still refuses what it should is a TEST, not a judgment call, and
+  it belongs in the verification plan. Moved there.
 
 ## Coordination Cues
 
@@ -225,7 +224,7 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
+- Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
 
