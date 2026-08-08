@@ -54,6 +54,94 @@ query($owner:String!,$name:String!,$number:Int!,$first:Int!,$after:String){
 """
 
 
+def capture_subs(
+    repo: str, owner: str, name: str, number: int, page_size: int, after: str | None
+) -> dict[str, str]:
+    """Every substitution this lane offers a `source_capture` template.
+
+    ONE declaration, because the allowlist below is derived from it. A separate hand-written
+    allowlist would be two statements of one set: a missing entry silently REFUSES a template
+    that was valid before, an extra one re-opens the hole the allowlist closes, and neither is
+    visible from either site alone.
+    """
+    return {
+        "repo": repo,
+        "owner": owner,
+        "name": name,
+        "number": str(number),
+        "page_size": str(page_size),
+        "after": after or "",
+        "query": GRAPHQL_QUERY,
+    }
+
+
+# The owner refuses a template naming anything outside this set, and refuses a caller passing
+# anything outside it -- the validation this copy of the rule never had, and the reason a host
+# declaring an unknown placeholder used to get a raw `KeyError` out of `format` inside a lane
+# whose refusals are otherwise typed.
+SOURCE_CAPTURE_PLACEHOLDERS: frozenset[str] = frozenset(capture_subs("", "", "", 0, 0, None))
+# The identity-bearing placeholders the owner can require directly. `{number}` is flat, so it
+# lives here.
+SOURCE_CAPTURE_REQUIRED: frozenset[str] = frozenset({"number"})
+# The repository half is an OR — `{repo}`, or the `{owner}` + `{name}` pair — because both
+# spellings genuinely name it and this lane offers both. The owner's `required` is a flat set
+# and cannot express that, so it is checked here, where the vocabulary lives, rather than by
+# widening a proof surface to carry one caller's disjunction.
+SOURCE_CAPTURE_REPO_IDENTITY: tuple[frozenset[str], ...] = (
+    frozenset({"repo"}),
+    frozenset({"owner", "name"}),
+)
+
+_ISSUE_BACKEND_OWNER: Any = None
+
+
+def _issue_backend_owner():
+    """The `issue` skill's backend owner, loaded once, in BOTH layouts.
+
+    Repo-owned `scripts/` reading a public skill package is a cross-skill READ, which is
+    allowed; only file mutation across skills is gated. Memoized because `build_page_argv`
+    runs once per page inside a timed capture lane.
+
+    BOTH layouts, and that is not defensive padding. This module is exported to
+    `plugins/charness/scripts/`, where the sibling skills sit at `skills/issue/...` rather than
+    `skills/public/issue/...`. A first version knew only the source tree, and the failure was
+    worse than a missing feature: `spec_from_file_location` returns a spec WITH a loader for a
+    path that does not exist, so the shape guard below cannot fire and `exec_module` raises
+    `FileNotFoundError` — an untyped exception escaping a lane whose entire contract is typed
+    `CaptureRefusal` codes. It also fires before the built-in GraphQL default returns, so every
+    installed capture would have died, not only templated ones. This repo already owns the
+    two-layout pattern in `chunked_routing_issue_backend._issue_module_candidates` and in
+    `commit_msg_closeout_authorization`; this is that pattern, not a third rule.
+    """
+    global _ISSUE_BACKEND_OWNER
+    if _ISSUE_BACKEND_OWNER is None:
+        import importlib.util
+        from pathlib import Path as _Path
+
+        package_root = _Path(__file__).resolve().parent.parent
+        candidates = [
+            package_root / "skills/public/issue/scripts/issue_backend.py",
+            package_root / "skills/issue/scripts/issue_backend.py",
+        ]
+        source = next((c for c in candidates if c.is_file()), None)
+        if source is None:
+            raise CaptureRefusal(
+                "issue_backend_owner_missing",
+                "cannot load the tracker backend owner; looked in "
+                f"{[str(c) for c in candidates]}",
+            )
+        spec = importlib.util.spec_from_file_location("_capture_issue_backend", source)
+        if spec is None or spec.loader is None:  # pragma: no cover - import machinery guard
+            raise CaptureRefusal(
+                "issue_backend_owner_missing",
+                f"cannot build an import spec for the tracker backend owner at {source}",
+            )
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        _ISSUE_BACKEND_OWNER = module
+    return _ISSUE_BACKEND_OWNER
+
+
 class CaptureRefusal(RefusalError):
     """A capture that cannot be proven complete. Never downgraded to a warning."""
 
@@ -79,7 +167,19 @@ def build_page_argv(
     another backend's enumeration shape, and guessing wrong produces a capture that
     claims completeness it never checked.
     """
-    binary = backend.get("binary") or backend.get("id") or "gh"
+    # The binary rule comes from the owner too. Only the built-in GraphQL default below is
+    # local, because it is not a template; deriving the binary for it was the cheapest half of
+    # the rule and the half a re-grown copy reaches for first.
+    try:
+        binary = _issue_backend_owner().backend_binary(backend)
+    except CaptureRefusal:
+        # The loader's own refusal is already typed and already correct. Re-wrapping it as
+        # `invalid_capture_command` would send an operator to `.agents/issue-adapter.yaml` for
+        # what is a broken or partial INSTALL — `CaptureRefusal` subclasses `RuntimeError`, so
+        # the broad `except` below silently swallowed the code this repair added.
+        raise
+    except RuntimeError as exc:
+        raise CaptureRefusal("invalid_capture_command", str(exc)) from exc
     template = (backend.get("commands") or {}).get("source_capture")
     owner, _, name = repo.partition("/")
     if not owner or not name:
@@ -99,11 +199,63 @@ def build_page_argv(
         if after is not None:
             argv.extend(["-F", f"after={after}"])
         return argv
-    subs = {
-        "repo": repo, "owner": owner, "name": name, "number": str(number),
-        "page_size": str(page_size), "after": after or "", "query": GRAPHQL_QUERY,
+    # The TEMPLATE branch is the owner's rule and delegates to it. Only the built-in default
+    # above stays local, because it is not a template at all -- it is a conditionally assembled
+    # GraphQL invocation (`after` is appended only when a cursor exists), which the owner's
+    # render-a-template contract genuinely cannot express. The issue that filed this copy
+    # concluded from that one branch that the whole function could not be consolidated; the
+    # branch that needs the owner's placeholder ALLOWLIST is exactly the branch that fits it.
+    #
+    # The refusal TYPE stays local too. This capture lane's refusals are typed
+    # (`CaptureRefusal` with a reason code) and its callers read those codes, so the owner's
+    # `RuntimeError` is translated rather than allowed to escape -- the same
+    # mechanical-part/policy split the tracker-backend consolidation already established.
+    # A template that names the repository in NEITHER spelling drops it silently: the owner
+    # renders only what the template spells, so a repo-agnostic binary then enumerates ITS
+    # default repo's issue N. The wrong-issue guard downstream cannot catch that, because the
+    # other repository's issue N also has number N. This capture feeds the freeze receipt that
+    # closeout authorization reads, so it is the same severity class as the tracker's own state
+    # lookup, and the same rule: `(repo, number)` is the identity.
+    spelled = {
+        match
+        for part in template
+        for match in _issue_backend_owner().PLACEHOLDER_RE.findall(part)
     }
-    return [binary, *(part.format(**subs) if "{" in part else part for part in template)]
+    if not any(required <= spelled for required in SOURCE_CAPTURE_REPO_IDENTITY):
+        raise CaptureRefusal(
+            "invalid_capture_command",
+            f"source_capture template {template!r} names no repository: spell `{{repo}}`, or "
+            "`{owner}` and `{name}` together. Without it the caller's repository is dropped "
+            "and the backend answers about whichever repository it defaults to.",
+        )
+    subs = capture_subs(repo, owner, name, number, page_size, after)
+    try:
+        return _issue_backend_owner().resolve_op(
+            backend,
+            "source_capture",
+            [],
+            SOURCE_CAPTURE_PLACEHOLDERS,
+            SOURCE_CAPTURE_REQUIRED,
+            frozenset(),
+            "issue_backend",
+            **subs,
+        )
+    except CaptureRefusal:
+        raise
+    except RuntimeError as exc:
+        raise CaptureRefusal("invalid_capture_command", str(exc)) from exc
+    except (KeyError, ValueError, IndexError) as exc:
+        # `PLACEHOLDER_RE` matches only `{lower_snake}`, so a part carrying `{"q":1}`, `{0}` or
+        # `{Q}` clears the allowlist and then raises inside `str.format`. A `source_capture`
+        # template is GraphQL/JSON-shaped by nature, so brace-bearing parts are the EXPECTED
+        # case here rather than the exotic one, and an untyped escape from this lane is the
+        # exact defect this consolidation was filed to remove.
+        raise CaptureRefusal(
+            "invalid_capture_command",
+            f"source_capture template {template!r} could not be rendered with "
+            f"{sorted(subs)!r}: {type(exc).__name__}: {exc}. A literal brace that is not a "
+            "placeholder must be doubled (`{{`/`}}`).",
+        ) from exc
 
 
 def _require(payload: Any, path: str, page_index: int) -> Any:

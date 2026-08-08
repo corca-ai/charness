@@ -2659,6 +2659,13 @@
       "note": "two adapter-BACKEND parsers converged: issue's `_parse_backend` (issue_backend key) and release's `release_backend.py` (release_backend key). Same shape -- id/binary/commands validation with per-key errors -- and genuinely the same rule, which is why this slice's addition of a fourth field made them collide. NOT consolidated here, and the reason is a contract decision rather than reviewer taste: they read DIFFERENT adapter keys owned by different skills, and the release copy has already DRIFTED from the issue owner on rendering (`if subs and \"{\" in part` versus `if \"{\" in part`), so unifying them changes at least one skill's observable refusals. That measurement is filed as #559 and is this goal's slice 3; folding it into an identity-floor slice would make one commit's reviewable intent two unrelated things. The addition here is a single optional key with its own validation, not a re-derivation of the shared part.",
       "reviewed_at": "2026-08-08",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "846dda2456f220c1",
+      "note": "the placeholder-validation half of one command-resolution rule, in its owner (issue_backend.resolve_op) and in the release_backend copy (publish_release_helpers.backend_command). Deliberately NOT consolidated, and the reason is now MEASURED rather than asserted: the two adapter contracts differ in where the BINARY lives -- issue templates exclude it and the owner prepends `backend[\"binary\"]`, release templates INCLUDE it and backend_command never reads `backend[\"binary\"]` at all -- so delegating would hand every existing release adapter its binary twice, on the least reversible surface in this repo. That is executed rather than argued in tests/quality_gates/test_release_backend_agrees_with_the_owner.py, which also pins the parts that MUST agree (rendering, unknown-placeholder refusal, unknown-substitution refusal) so the pair cannot drift again silently; the drift that prompted it (`if subs and \"{\" in part` versus `if \"{\" in part`) is repaired. The filed issue #559's own stated blocker was refuted by the premise check -- the keys never needed unifying -- and this entry records the blocker that actually holds.",
+      "reviewed_at": "2026-08-08",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

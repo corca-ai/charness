@@ -165,6 +165,24 @@ def _scope_waived(
     return frozenset({"repo"})
 
 
+def backend_binary(backend: dict[str, Any], adapter_key: str = "issue_backend") -> str:
+    """The binary an adapter-declared backend runs, or a refusal naming the key to configure.
+
+    Split out of `resolve_op` so a caller whose BUILT-IN DEFAULT is not a template can still
+    reach the binary rule without re-deriving it. `issue_source_capture_lib` is that caller:
+    its gh default is a conditionally assembled GraphQL invocation, so it cannot delegate the
+    rendering, but it was re-implementing `backend.get("binary") or backend.get("id")` to build
+    it -- the cheapest half of this rule and the half a copy delegates first.
+    """
+    binary = backend.get("binary") or backend.get("id")
+    if not binary:
+        raise RuntimeError(
+            f"{adapter_key} produced no binary; configure {adapter_key}.id and "
+            f"{adapter_key}.binary in the adapter file."
+        )
+    return binary
+
+
 def resolve_op(
     backend: dict[str, Any],
     op: str,
@@ -172,6 +190,7 @@ def resolve_op(
     allowed: frozenset[str],
     required: frozenset[str] = frozenset(),
     waivable: frozenset[str] = frozenset(),
+    adapter_key: str = "issue_backend",
     **subs: str,
 ) -> list[str]:
     """Render one backend op template into a concrete argv.
@@ -187,18 +206,17 @@ def resolve_op(
             f"resolve_op({op}): caller passed placeholders {extra_subs!r} "
             f"not in op's allowlist {sorted(allowed)!r}"
         )
-    binary = backend.get("binary") or backend.get("id")
-    if not binary:
-        raise RuntimeError(
-            "issue_backend produced no binary; configure issue_backend.id and "
-            "issue_backend.binary in .agents/issue-adapter.yaml."
-        )
+    # `adapter_key` names the SUBJECT of the messages, not a second rule. The rendering rule
+    # reads only `binary`, `id` and `commands`, so it was already agnostic about which adapter
+    # key produced the dict -- the only coupling to `issue_backend` was in these strings, which
+    # is why a second skill had to copy the whole function to get a message naming its own key.
+    binary = backend_binary(backend, adapter_key)
     commands = backend.get("commands") or {}
     template = commands.get(op)
     if template is None:
         if backend.get("id", "gh") != "gh":
             raise RuntimeError(
-                f"issue_backend.id={backend.get('id')} did not declare commands.{op}; "
+                f"{adapter_key}.id={backend.get('id')} did not declare commands.{op}; "
                 "configure the adapter command template before calling this op."
             )
         template = default
@@ -233,6 +251,7 @@ def try_resolve_op(
     allowed: frozenset[str],
     required: frozenset[str] = frozenset(),
     waivable: frozenset[str] = frozenset(),
+    adapter_key: str = "issue_backend",
     **subs: str,
 ) -> list[str] | None:
     """`resolve_op`, except an UNDECLARED op on a non-`gh` backend returns None.
@@ -250,7 +269,7 @@ def try_resolve_op(
     """
     if not op_is_declared(backend, op):
         return None
-    return resolve_op(backend, op, default, allowed, required, waivable, **subs)
+    return resolve_op(backend, op, default, allowed, required, waivable, adapter_key, **subs)
 
 
 def run_probe(binary: str, args: list[str]) -> dict[str, Any]:
@@ -272,12 +291,9 @@ def run_probe(binary: str, args: list[str]) -> dict[str, Any]:
 
 
 def probe_backend(backend: dict[str, Any]) -> dict[str, Any]:
-    binary = backend.get("binary") or backend.get("id")
-    if not binary:
-        raise RuntimeError(
-            "issue_backend produced no binary; configure issue_backend.id and "
-            "issue_backend.binary in .agents/issue-adapter.yaml."
-        )
+    # Same binary rule as `resolve_op`, through the same helper — this function had its own
+    # copy of the expression, which is the shape the consolidation exists to remove.
+    binary = backend_binary(backend)
     binary_path = shutil.which(binary)
     selected: dict[str, Any] = {
         "id": backend.get("id", "gh"),

@@ -189,7 +189,18 @@ checking freshness. Use
 `cli_skill_surface_skill_paths` when the shipped skill does not live under
 `skills/public/*` or `skills/support/*`.
 
-`release_backend` mirrors the `issue_backend` shape so release auth probes,
+`release_backend` mirrors the `issue_backend` shape — with ONE measured exception, in the
+position that matters most for a template author: a `release_backend` command template
+**includes the binary as its first element**, and `backend_command` never reads
+`release_backend.binary`. (`issue_backend` templates exclude it and the issue backend prepends
+`issue_backend.binary`.) That difference is why the two rules are not one function, and it is
+executed rather than argued in
+`<authoring-repo>/tests/quality_gates/test_release_backend_agrees_with_the_owner.py`.
+
+A template part containing a literal brace that is not a placeholder (a JSON payload, say)
+is rendered through `str.format`, so double the braces (`{{"q":1}}`) or it fails fast.
+
+Otherwise `release_backend` mirrors `issue_backend` so release auth probes,
 release-existence checks, and release-create calls can route through the
 adapter-resolved CLI binary. Default is `{id: gh, binary: gh, commands: null}`,
 which keeps the existing `gh release ...` shape. Hosts that resolve releases

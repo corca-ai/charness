@@ -12,8 +12,10 @@ slice; the third could not be and is named in `_KNOWN_UNCONSOLIDATED` below.
 - `skills/public/handoff/scripts/chunked_routing_issue_backend.py::_resolve_command` — a copy
   in another skill, also without it. REMOVED.
 - `scripts/issue_source_capture_lib.py::build_page_argv` — found by bounded review, outside the
-  first version of this guard's scope. NOT removed; its built-in default is a conditionally
-  assembled GraphQL invocation rather than a template, so it needs its own slice.
+  first version of this guard's scope. NOW REMOVED. The reason it was deferred covered only ONE
+  of its two branches: its built-in gh default really is a conditionally assembled GraphQL
+  invocation rather than a template, and that branch stays local — but the adapter-TEMPLATE
+  branch was exactly the owner's rule, missing the owner's allowlist, and it delegates now.
 
 The premise check found why the copies existed, and it was not laziness: the two callers need
 OPPOSITE answers to one question. An op a non-`gh` backend never declared is a configuration
@@ -120,14 +122,17 @@ _TELLS = (_BINARY_DERIVATION, _TEMPLATE_RENDERING)
 # below asserts every entry still describes something real so the list cannot rot into an
 # excuse for nothing.
 _KNOWN_UNCONSOLIDATED = {
-    # Its built-in default is not a template but a conditionally assembled GraphQL invocation,
-    # so the owner's render-a-template contract does not fit it as written. Filed.
-    "scripts/issue_source_capture_lib.py",
-    # A DIFFERENT adapter key (`release_backend`), so a different contractual owner — but the
-    # same rule, and it has already drifted: it renders with `if subs and "{" in part` where the
-    # owner uses `if "{" in part`, so a brace-bearing template with no substitutions renders
-    # differently in the two. Filed rather than folded in, because unifying two adapter keys is
-    # a contract decision, not a refactor.
+    # A DIFFERENT adapter key (`release_backend`), and the reason it stays is now MEASURED
+    # rather than asserted. The filed reason was "unifying two adapter keys is a contract
+    # decision", which turned out to be the wrong blocker: `resolve_op` reads only `binary`,
+    # `id` and `commands` and was already adapter-key agnostic, so the keys never needed
+    # unifying. The real blocker is where the BINARY lives. `issue_backend` templates exclude
+    # it and the owner prepends `backend["binary"]`; `release_backend` templates INCLUDE it and
+    # `backend_command` never reads `backend["binary"]` at all. Delegating would hand every
+    # existing release adapter its binary twice, on the least reversible surface in this repo.
+    # That is executed, not argued, in
+    # `tests/quality_gates/test_release_backend_agrees_with_the_owner.py`, which also pins the
+    # parts that MUST still agree so the pair cannot drift again silently.
     "skills/public/release/scripts/publish_release_helpers.py",
 }
 

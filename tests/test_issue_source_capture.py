@@ -870,4 +870,3 @@ def test_a_backend_that_returns_a_different_issue_is_refused(tmp_path: Path) -> 
         )
     assert excinfo.value.code == "wrong_issue"
     assert "514" in str(excinfo.value) and "999" in str(excinfo.value)
-

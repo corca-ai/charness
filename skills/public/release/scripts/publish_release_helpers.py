@@ -148,7 +148,24 @@ def backend_command(
             f"backend_command({op}): adapter template uses unknown placeholders {unknown!r}; "
             f"allowed for {op}: {sorted(allowed)!r}"
         )
-    return [part.format(**subs) if subs and "{" in part else part for part in template]
+    # `if "{" in part`, NOT `if subs and "{" in part`. The `subs and` guard was the measured
+    # DRIFT from `issue_backend.resolve_op`, which owns this rule: with an empty `subs`, a
+    # brace-bearing template passed through VERBATIM here and raised in the owner. Reachable
+    # whenever every placeholder a template spells is in the op's allowlist but the caller
+    # supplies none -- the command then runs with a literal `{tag}` in its argv instead of
+    # failing, which on a release surface means publishing against a tag that does not exist.
+    # Loud is correct, and it is what the owner already did.
+    try:
+        return [part.format(**subs) if "{" in part else part for part in template]
+    except (KeyError, ValueError, IndexError) as exc:
+        # The refusal TYPE is this module's policy, not the owner's: release helpers run as a
+        # CLI whose callers expect a message and a status, so a raw `KeyError` from `format`
+        # would surface as a traceback naming only the placeholder. The owner raises the raw
+        # error for callers that handle it; both REFUSE, which is the part that must agree.
+        raise SystemExit(
+            f"backend_command({op}): template {template!r} could not be rendered with "
+            f"{sorted(subs)!r}: {type(exc).__name__}: {exc}"
+        ) from exc
 
 
 def release_exists(repo_root: Path, tag_name: str, backend: dict[str, Any] | None = None) -> bool:
