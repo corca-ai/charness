@@ -15,8 +15,12 @@ runs the activation command.
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: cut the `4.0.0` release, then push, then read the remote CI
-  verdict back through a different observer and channel than the push exit code.
+- Next action: run `publish_release_cli.py --repo-root . --part major
+  --critique-artifact <path>` (dry-run first). It owns bump + tag + push
+  together and needs a clean worktree; a hand bump is refused by
+  `validate-current-pointer-freshness` because the publish helper is what writes
+  the pointer. Then read the remote CI verdict back through a different observer
+  AND channel than the push exit code.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -239,6 +243,21 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 8 — release and push (NOT DONE)
+
+- Version surfaces are at the pre-release version; the tree is clean and green
+  at slice 7. A hand bump through `bump_version.py --part major` + sync was
+  correctly REFUSED at commit by `validate-current-pointer-freshness`: the
+  release pointer still claimed the old version, and the pointer is written by
+  the publish helper, so the bump cannot land ahead of it. Reverted rather than
+  left half-applied.
+- The remaining path is one command with its own prerequisites:
+  `publish_release_cli.py --part major --critique-artifact <path>`, dry-run
+  first, from a clean worktree. It owns bump, sync, tag, and push together.
+- The push is operator-approved for this bundle and still conditional on the
+  gates being green by their own strength. The remote CI verdict is an explicit
+  NON-CLAIM until read back through a different observer and channel.
 
 ### Slice 7 — a status value is not an English word (done)
 

@@ -2,9 +2,9 @@
 
 ## Workflow Trigger
 
-- **Next pickup: activate the drafted goal.** Run `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`. It is `draft`, `--pursue-ready` passes, and it is shaped with four ordered slices. `/goal` is pursue-only — it shapes nothing, so re-shape with `/achieve @...` if the acceptance boundary has changed.
-- **The slice ORDER is the design, not a preference.** Slice 1 (rules-before-authoring) comes first because it changes how every later slice is written. Every gate must be green BEFORE it is promoted — promoting red creates pressure to weaken the floor, which is the condition that forfeits the push.
-- **Do not re-run the `## Next Session` list from the previous handoff.** Items 2 and 3 shipped (`0c82364e`, `7caa9b5b`); item 1 was DROPPED on its premise check exactly as that item instructed — the `-packet.md` is the reviewer-facing surface and the `.json` is sha-bound, so neither is the redundant copy.
+- **Next pickup: slice 8 of the active goal — the `4.0.0` release and push.** Run `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`. Slices 1-7 are DONE and committed; the goal artifact's `## Slice Log` carries what each one measured.
+- **Slice 8 needs its own budget.** The publish helper owns bump + tag + push together (`publish_release_cli.py --part major`), requires a CLEAN worktree, and requires a release critique artifact via `--critique-artifact`. A previous attempt bumped the version by hand and was correctly refused by `validate-current-pointer-freshness`, because the release pointer still claimed the old version — the pointer is written by the publish helper, so the bump cannot be committed ahead of it. That attempt was reverted; the tree is clean at the pre-release version (`grep '"version"' packaging/charness.json`).
+- **The push is operator-APPROVED for this bundle** and still conditional on the gates being green by their own strength. Read the remote CI verdict back through a different observer AND channel than the push exit code.
 
 ## Continuation Capability
 
