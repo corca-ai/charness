@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "artifact_kind": "capability-catalog",
-  "generated_at": "2026-07-25T01:33:05Z",
+  "generated_at": "2026-08-08T13:22:23Z",
   "repo": "charness",
   "inventory": {
     "adapter": {
@@ -26,11 +26,11 @@
         "canonical_path": "skills/public/achieve/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
-          "skills/public/achieve/references/lifecycle.md",
           "skills/public/achieve/references/goal-artifact.md",
           "skills/public/achieve/references/lifecycle-after.md",
           "skills/shared/references/retro-issue-destination-split.md",
           "skills/public/achieve/references/coordination.md",
+          "skills/public/achieve/references/lifecycle.md",
           "skills/public/achieve/references/index.md"
         ],
         "source": "local-public",
@@ -51,7 +51,11 @@
           "skills/public/announcement/references/delivery-seams.md",
           "skills/shared/references/closeout-discipline.md",
           "skills/public/announcement/references/adapter-contract.md",
-          "skills/public/announcement/references/audience-policy.md"
+          "skills/public/announcement/references/audience-policy.md",
+          "skills/public/announcement/scripts/collect_commits.py",
+          "skills/public/announcement/scripts/infer_audience_tags.py",
+          "skills/public/announcement/scripts/preflight_sources.py",
+          "skills/public/announcement/scripts/record_announcement.py"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -189,6 +193,7 @@
           "skills/public/gather/references/google-workspace-access.md",
           "skills/support/web-fetch/references/routing-table.md",
           "skills/shared/references/closeout-discipline.md",
+          "skills/public/gather/scripts/advise_google_workspace_path.py",
           "skills/public/gather/scripts/gather_plan.py",
           "skills/public/gather/scripts/gather_public_url.py",
           "skills/public/gather/scripts/write_record.py"
@@ -358,7 +363,9 @@
           "skills/public/narrative/references/adapter-contract.md",
           "skills/public/narrative/references/source-map.md",
           "skills/shared/references/agent-assessment-invariant.md",
-          "skills/shared/references/success-criteria-review.md"
+          "skills/shared/references/success-criteria-review.md",
+          "skills/public/narrative/scripts/map_sources.py",
+          "skills/public/narrative/scripts/review_adapter.py"
         ],
         "source": "local-public",
         "layer": "public skill"
@@ -439,11 +446,11 @@
           "skills/public/retro/references/phase-aware-efficiency.md",
           "skills/public/retro/references/closeout-telemetry.md",
           "skills/public/retro/references/prepare-packet.md",
+          "skills/public/retro/references/section-guide.md",
           "skills/public/retro/references/waste-sibling-scan.md",
           "skills/shared/references/retro-issue-destination-split.md",
           "skills/shared/references/rca-ledger-append.md",
           "skills/public/retro/references/trigger-and-persistence.md",
-          "skills/public/retro/references/section-guide.md",
           "skills/public/debug/references/sibling-search.md"
         ],
         "source": "local-public",
@@ -459,6 +466,7 @@
         "canonical_path": "skills/public/setup/SKILL.md",
         "referenced_paths": [
           "skills/shared/references/bootstrap-resolution.md",
+          "skills/shared/references/fresh-eye-subagent-review.md",
           "skills/public/setup/references/greenfield-flow.md",
           "skills/public/setup/references/normalization-flow.md",
           "skills/public/setup/references/agent-docs-policy.md",
@@ -466,7 +474,7 @@
           "skills/public/setup/references/probe-surface.md",
           "skills/public/setup/references/retro-memory-seam.md",
           "skills/public/setup/references/bootstrap-seams.md",
-          "skills/shared/references/fresh-eye-subagent-review.md",
+          "skills/public/setup/references/hook-failure-visibility.md",
           "skills/public/setup/references/github-actions-defaults.md",
           "skills/public/setup/references/operator-acceptance-synthesis.md",
           "skills/shared/references/agent-assessment-invariant.md"
@@ -723,6 +731,47 @@
         "strong_intent_triggers": [],
         "recommendation_role": "runtime",
         "path": "integrations/tools/agent-browser.json",
+        "source": "local-integration",
+        "layer": "external integration"
+      },
+      {
+        "id": "awiki",
+        "kind": "external_binary",
+        "summary": "Flat-file Markdown wiki graph linter. Use when `quality` needs to ask whether the docs form a CONNECTED graph — orphan pages, disconnected islands, largest-component ratio — a question `check_doc_links.py` does not ask, because it validates whether each link RESOLVES, not whether a page is reachable at all.",
+        "access_modes": [
+          "binary",
+          "degraded"
+        ],
+        "support_state": "integration-only",
+        "support_skill_path": null,
+        "discovery_stub_path": null,
+        "capability_requirements": {},
+        "config_layers": [],
+        "readiness_checks": [],
+        "supports_public_skills": [
+          "quality"
+        ],
+        "intent_triggers": [
+          "awiki",
+          "docs graph",
+          "doc graph",
+          "orphan page",
+          "orphan docs",
+          "disconnected docs",
+          "doc island",
+          "wiki lint",
+          "doc gardening",
+          "docs:lint"
+        ],
+        "strong_intent_triggers": [
+          "awiki",
+          "docs graph",
+          "orphan page",
+          "doc island",
+          "doc gardening"
+        ],
+        "recommendation_role": "validation",
+        "path": "integrations/tools/awiki.json",
         "source": "local-integration",
         "layer": "external integration"
       },

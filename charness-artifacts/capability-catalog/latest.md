@@ -1,12 +1,12 @@
 # Capability Catalog
-Date: 2026-07-25
-Updated: 2026-07-25T01:33:05Z
+Date: 2026-08-08
+Updated: 2026-08-08T13:22:23Z
 
 ## Summary
 - public skills: 20
 - support skills: 2
 - support capabilities: 2
-- integrations: 11
+- integrations: 12
 - trusted skills: 0
 
 ## Public Skills
@@ -41,6 +41,7 @@ Updated: 2026-07-25T01:33:05Z
 
 ## Integrations
 - `agent-browser` (external integration): Browser automation CLI for JS-rendered pages, DOM inspection, interactive browser debugging, and browser-mediated `gather` fallback when private SaaS acquisition cannot stay on an official API/export path.
+- `awiki` (external integration): Flat-file Markdown wiki graph linter. Use when `quality` needs to ask whether the docs form a CONNECTED graph — orphan pages, disconnected islands, largest-component ratio — a question `check_doc_links.py` does not ask, because it validates whether each link RESOLVES, not whether a page is reachable at all.
 - `cautilus` (external integration): Standalone evaluation engine and bundled skill for bounded behavior review beyond repo-local deterministic gates.
 - `defuddle` (external integration): Article and documentation page cleaner used by gather/web-fetch to turn cluttered public HTML into readable markdown before falling back to browser-mediated acquisition.
 - `github-worker` (external integration): Authenticated GitHub CLI provider for repository, pull request, issue, and discussion gather flows.
