@@ -209,6 +209,16 @@ def main() -> int:
                 "After-phase prescribed-skill evidence not satisfied — "
                 + "; ".join(_evidence_missing_bits(evidence_report))
             )
+        # Non-blocking, and deliberately hoisted OUT of the refusal renderer. The
+        # opt-out census matters most on goals that PASS — every floor satisfied,
+        # each by an opt-out — and `_evidence_missing_bits` only runs when the
+        # evidence gate REFUSES. Left there it would have been invisible on exactly
+        # the runs it was built for.
+        aggregate = evidence_report.get("coordination_optout_aggregate")
+        if isinstance(aggregate, dict) and aggregate.get("reason"):
+            result.setdefault("advisories", []).append(
+                "coordination opt-out census — " + aggregate["reason"]
+            )
     print(json.dumps(result, ensure_ascii=False, indent=2, sort_keys=True))
     return 0 if result["ok"] else 1
 

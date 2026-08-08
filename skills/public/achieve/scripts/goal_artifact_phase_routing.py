@@ -8,27 +8,11 @@ from pathlib import Path
 from typing import Any
 
 PHASE_ROUTING_FLOOR_RULE_DATE = date(2026, 6, 4)
-MIN_OPTOUT_REASON = 30
 
 COORDINATION_SECTION = "Coordination Cues"
 CONTEXT_SOURCES_SECTION = "Context Sources"
 RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
 
-_ROUTING_REF = re.compile(r"^[\s>*-]*Routing\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
-_NA_VALUE = re.compile(r"^n/?a\b[ \t]*[—–:-]+[ \t]*(\S.*)$", re.IGNORECASE)
-_TRACKED_ISSUE_CONTEXT = re.compile(
-    r"\b(?:"
-    r"(?:github\s+)?(?:tracked\s+)?issues?\s+#\d+"
-    r"|https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+"
-    r"|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+"
-    r")\b",
-    re.IGNORECASE,
-)
-_CLOSE_KEYWORD = re.compile(
-    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
-    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+\b",
-    re.IGNORECASE,
-)
 _IMPL_RECORD = re.compile(r"^[\s>*-]*(?:What\s+changed|Commits)\s*:\s*\S", re.MULTILINE | re.IGNORECASE)
 _DEBUG_RECORD = re.compile(r"\b(?:bug-class|debug artifact|hypothesis|root[- ]cause|rca)\b", re.IGNORECASE)
 _QUALITY_RECORD = re.compile(
@@ -39,24 +23,25 @@ _QUALITY_RECORD = re.compile(
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
-from goal_artifact_floor_grammar import is_floor_in_scope  # noqa: E402
+from goal_artifact_floor_grammar import SATISFYING_CUE_KINDS as _SATISFYING  # noqa: E402
+from goal_artifact_floor_grammar import classify_cue_line as _classify_cue_line  # noqa: E402
+from goal_artifact_floor_grammar import cue_pattern as _cue_pattern  # noqa: E402
+from goal_artifact_floor_grammar import (  # noqa: E402
+    is_floor_in_scope,
+    issue_closeout_triggered,
+)
 from goal_artifact_floor_grammar import joined_section_body as _joined_section_body  # noqa: E402
 from goal_artifact_floor_grammar import parse_created_date as goal_created_date  # noqa: E402
 from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
 
+# Markup-tolerant per the shared cue grammar: a backticked or bolded `Routing:`
+# line is the same cue as a bare one.
+_ROUTING_REF = _cue_pattern("Routing")
+
 
 def phase_routing_floor_applies(text: str) -> bool:
     return is_floor_in_scope(goal_created_date(text), PHASE_ROUTING_FLOOR_RULE_DATE)
-
-
-def issue_closeout_triggered(text: str) -> bool:
-    masked = _mask_fences(text)
-    context = _section_body(masked, CONTEXT_SOURCES_SECTION) or ""
-    if _TRACKED_ISSUE_CONTEXT.search(context):
-        return True
-    work = "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
-    return _CLOSE_KEYWORD.search(work) is not None
 
 
 def phase_route_triggers(text: str) -> dict[str, bool]:
@@ -71,17 +56,6 @@ def phase_route_triggers(text: str) -> dict[str, bool]:
     }
 
 
-_SATISFYING = frozenset({"ref", "optout"})
-
-
-def _classify_step(value: str) -> tuple[str, str]:
-    na = _NA_VALUE.match(value)
-    if na is not None:
-        reason = na.group(1).strip()
-        return ("optout" if len(reason) >= MIN_OPTOUT_REASON else "optout_short"), reason
-    return "ref", value
-
-
 def _skill_named(value: str, skill: str) -> bool:
     return re.search(rf"\b{re.escape(skill)}\b", value, re.IGNORECASE) is not None
 
@@ -91,7 +65,9 @@ def _parse_routing_step(section_body: str | None, skill: str) -> tuple[str | Non
         return None, None
     first: tuple[str | None, str | None] = (None, None)
     for match in _ROUTING_REF.finditer(section_body):
-        kind, value = _classify_step(match.group(1).strip())
+        kind, value = _classify_cue_line(match.group(1))
+        if kind is None:
+            continue  # empty or still-a-placeholder reference: not a routing line
         if kind == "optout":
             return kind, value
         if kind == "ref" and _skill_named(value, skill):

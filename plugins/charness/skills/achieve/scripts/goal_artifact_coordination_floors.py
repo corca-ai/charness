@@ -23,8 +23,6 @@ ISSUE_CLOSEOUT_FLOOR_RULE_DATE = date(2026, 6, 2)
 # instruction that survives the session it was given in.
 SUCCESSOR_GOAL_FLOOR_RULE_DATE = date(2026, 8, 7)
 
-# Long enough that an opt-out cannot be a one-word bypass.
-MIN_OPTOUT_REASON = 30
 
 COORDINATION_SECTION = "Coordination Cues"
 CONTEXT_SOURCES_SECTION = "Context Sources"
@@ -32,18 +30,6 @@ RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
 
 _EXTERNAL_URL = re.compile(r"https?://\S", re.IGNORECASE)
 
-# Step lines are anchored so inline examples never satisfy a floor.
-_GATHER_REF = re.compile(r"^[\s>*-]*Gather\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
-_RELEASE_REF = re.compile(r"^[\s>*-]*Release\s*:\s*(\S.*?)[ \t]*$", re.MULTILINE | re.IGNORECASE)
-_ISSUE_CLOSEOUT_REF = re.compile(
-    r"^[\s>*-]*Issue\s+closeout\s*:\s*(\S.*?)[ \t]*$",
-    re.MULTILINE | re.IGNORECASE,
-)
-_SUCCESSOR_GOAL_REF = re.compile(
-    r"^[\s>*-]*Successor\s+goal\s*:\s*(\S.*?)[ \t]*$",
-    re.MULTILINE | re.IGNORECASE,
-)
-_NA_VALUE = re.compile(r"^n/?a\b[ \t]*[—–:-]+[ \t]*(\S.*)$", re.IGNORECASE)
 
 # Deliberately precise; the bare word "release" would over-trigger.
 _RELEASE_SURFACE_TOKENS = (
@@ -52,29 +38,38 @@ _RELEASE_SURFACE_TOKENS = (
     "marketplace.json",
     "charness-artifacts/release/",
 )
-_TRACKED_ISSUE_CONTEXT = re.compile(
-    r"\b(?:"
-    r"(?:github\s+)?(?:tracked\s+)?issues?\s+#\d+"
-    r"|https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+"
-    r"|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+"
-    r")\b",
-    re.IGNORECASE,
-)
-_CLOSE_KEYWORD = re.compile(
-    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
-    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+\b",
-    re.IGNORECASE,
-)
 
 
 _SCRIPT_DIR = Path(__file__).resolve().parent
 sys.path.insert(0, str(_SCRIPT_DIR))
-from goal_artifact_floor_grammar import is_floor_in_scope  # noqa: E402
+# `MIN_OPTOUT_REASON` and `_classify_step` are RE-EXPORTS, not used in this
+# module: both moved into the shared grammar, and this module stays their
+# published name for existing callers and the floor's own tests. The match loop
+# uses `classify_cue_line`, which wraps the classifier with markup stripping and
+# inert-value demotion.
+from goal_artifact_floor_grammar import MIN_OPTOUT_REASON as MIN_OPTOUT_REASON  # noqa: E402
+from goal_artifact_floor_grammar import SATISFYING_CUE_KINDS as _SATISFYING  # noqa: E402
+from goal_artifact_floor_grammar import classify_cue_line as _classify_cue_line  # noqa: E402
+from goal_artifact_floor_grammar import classify_cue_step as _classify_step  # noqa: E402,F401
+from goal_artifact_floor_grammar import cue_pattern as _cue_pattern  # noqa: E402
+from goal_artifact_floor_grammar import (  # noqa: E402
+    is_floor_in_scope,
+    issue_closeout_triggered,
+)
 from goal_artifact_floor_grammar import joined_section_body as _joined_section_body  # noqa: E402
 from goal_artifact_floor_grammar import parse_created_date as goal_created_date  # noqa: E402
 from goal_artifact_floor_grammar import section_body as _section_body  # noqa: E402
 from goal_artifact_floor_grammar import section_span as _section_span  # noqa: E402
 from goal_artifact_markdown import mask_fences as _mask_fences  # noqa: E402
+
+# Step lines are anchored so inline examples never satisfy a floor, and compiled
+# through the shared cue grammar so all four stay markup-tolerant together: the
+# backtick blindness that made a filled `` `Gather: …` `` cue invisible was
+# identical in every one of them, because every one was cloned from the same line.
+_GATHER_REF = _cue_pattern("Gather")
+_RELEASE_REF = _cue_pattern("Release")
+_ISSUE_CLOSEOUT_REF = _cue_pattern(r"Issue\s+closeout")
+_SUCCESSOR_GOAL_REF = _cue_pattern(r"Successor\s+goal")
 
 
 def coordination_floors_apply(text: str) -> bool:
@@ -122,33 +117,6 @@ def release_triggered(text: str) -> bool:
     return any(token in low for token in _RELEASE_SURFACE_TOKENS)
 
 
-def issue_closeout_triggered(text: str) -> bool:
-    """True when the goal records tracked issue resolution work.
-
-    Context Sources can name the tracked issue explicitly. Recorded work can
-    also trigger the floor through close keywords in the sections where achieved
-    work is archived, not in planning/boundary text.
-    """
-    masked = _mask_fences(text)
-    context = _section_body(masked, CONTEXT_SOURCES_SECTION) or ""
-    if _TRACKED_ISSUE_CONTEXT.search(context):
-        return True
-    work = "\n".join(_section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
-    return _CLOSE_KEYWORD.search(work) is not None
-_SATISFYING = frozenset({"ref", "optout"})
-
-
-def _classify_step(value: str) -> tuple[str, str]:
-    """Classify one step-line value: ``"ref"`` (a real reference), ``"optout"``
-    (a valid ``n/a — <reason>`` ≥ MIN_OPTOUT_REASON), or ``"optout_short"`` (an
-    opt-out below the floor — present but not satisfying)."""
-    na = _NA_VALUE.match(value)
-    if na is not None:
-        reason = na.group(1).strip()
-        return ("optout" if len(reason) >= MIN_OPTOUT_REASON else "optout_short"), reason
-    return "ref", value
-
-
 def _parse_step(section_body: str | None, ref_re: "re.Pattern[str]") -> tuple[str | None, str | None]:
     """Classify the gather/release step line(s) inside the Coordination Cues body.
 
@@ -163,7 +131,9 @@ def _parse_step(section_body: str | None, ref_re: "re.Pattern[str]") -> tuple[st
         return None, None
     first: tuple[str | None, str | None] = (None, None)
     for match in ref_re.finditer(section_body):
-        kind, value = _classify_step(match.group(1).strip())
+        kind, value = _classify_cue_line(match.group(1))
+        if kind is None:
+            continue  # empty or still-a-placeholder reference: not a step line
         if kind in _SATISFYING:
             return kind, value
         if first[0] is None:
@@ -273,3 +243,124 @@ def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
     if missing:
         report["coordination_missing"] = missing
         report["ok"] = False
+
+
+# The coordination floors each satisfy independently, and `MIN_OPTOUT_REASON`
+# guards each `n/a — <reason>` on its own. Nothing counted them, so a goal that
+# opted out of four of its six coordination obligations rendered EXACTLY like one
+# that routed every single one. The per-floor verdicts were all individually
+# legitimate; the pattern across them -- this run declined most of its
+# coordination -- was the fact no surface carried, and it is the fact a
+# disposition reviewer needs. Non-blocking by construction: each opt-out already
+# passed its own floor, so re-refusing here would punish a valve the contract
+# deliberately provides. This reports; the reviewer judges.
+_AGGREGATE_FLOOR_KEYS = (
+    ("gather", "gather_floor"),
+    ("release", "release_floor"),
+    ("issue_closeout", "issue_closeout_floor"),
+    ("successor_goal", "successor_goal_floor"),
+)
+
+
+def _routing_aggregate_kind(routing: dict[str, Any]) -> str | None:
+    """Collapse the per-skill routing evidence into ONE obligation's verdict.
+
+    `_parse_routing_step` answers per queried skill, and a single blanket
+    ``Routing: n/a — <reason>`` line returns ``optout`` for EVERY required route.
+    Counting those separately reported four opt-outs for one authored decision
+    and inflated both sides of the census — the headline number stopped being a
+    count of decisions, which is the only thing it is for. `## Coordination Cues`
+    carries one `Routing:` cue, so it contributes one obligation.
+
+    ``None`` when routing was never triggered.
+    """
+    if not routing.get("triggered"):
+        return None
+    evidence = routing.get("evidence")
+    if not isinstance(evidence, dict) or not evidence:
+        # Triggered but with no evidence map is a malformed payload. Every sibling
+        # floor fails CLOSED on one; dropping the obligation from the denominator
+        # instead would quietly shrink the census.
+        return "unsatisfied"
+    # Read the floor's OWN verdict first. A set-equality collapse got this wrong
+    # in both directions: a goal that routed `impl` explicitly and covered the
+    # rest with a blanket opt-out has evidence `{"impl": "ref", "quality":
+    # "optout"}` and SATISFIES the floor, but `{"ref","optout"}` matched neither
+    # equality and was censused `unsatisfied` — telling the reviewer an
+    # obligation was unmet on a floor that passed, and dropping the authored
+    # opt-out from the count so no advisory was raised at all. Worse, it was
+    # ORDER-DEPENDENT: putting the opt-out line first makes `_parse_routing_step`
+    # answer `optout` for every skill, so the same two decisions censused
+    # differently based only on which line the author typed first.
+    if not routing.get("satisfied"):
+        return "unsatisfied"
+    if any(kind == "optout" for kind in evidence.values()):
+        return "optout"
+    return "ref"
+
+
+def apply_coordination_optout_aggregate(report: dict[str, Any]) -> None:
+    """Attach the cross-floor opt-out census to ``report``. Never blocks.
+
+    Reads the verdicts the coordination and phase-routing floors already wrote,
+    so it must run AFTER both. Counts only obligations that actually FIRED: an
+    untriggered floor was never an obligation, and counting it would inflate the
+    denominator and make a disciplined goal look evasive.
+
+    ``routed`` is counted from real ``ref`` evidence rather than by subtracting
+    opt-outs from the total. Subtraction silently reported an UNMET floor (no cue
+    line at all, or a below-floor opt-out) as ``routed`` — telling a reviewer the
+    goal had routed the very obligation it never met, on exactly the refusal report
+    where they are most likely to read it.
+    """
+    eligible: list[str] = []
+    opted_out: list[str] = []
+    routed: list[str] = []
+    unsatisfied: list[str] = []
+
+    def _record(name: str, kind: str | None) -> None:
+        eligible.append(name)
+        if kind == "optout":
+            opted_out.append(name)
+        elif kind == "ref":
+            routed.append(name)
+        else:
+            unsatisfied.append(name)
+
+    for name, key in _AGGREGATE_FLOOR_KEYS:
+        floor = report.get(key)
+        if not isinstance(floor, dict) or not floor.get("triggered"):
+            continue
+        _record(name, floor.get("evidence"))
+
+    routing = report.get("phase_routing_floor")
+    if isinstance(routing, dict):
+        routing_kind = _routing_aggregate_kind(routing)
+        if routing_kind is not None:
+            _record("routing", routing_kind)
+
+    scope = report.get("coordination_scope")
+    in_scope = scope.get("in_scope") if isinstance(scope, dict) else None
+    aggregate: dict[str, Any] = {
+        # A grandfathered goal short-circuits before any floor key is written, so
+        # a bare `eligible: 0` was indistinguishable from an in-scope goal that
+        # triggered nothing. The census is the thing handed to a reviewer, so it
+        # carries its own scope rather than making them find `coordination_scope`.
+        "coordination_in_scope": in_scope,
+        "eligible": len(eligible),
+        "opted_out": len(opted_out),
+        "routed": len(routed),
+        "unsatisfied": len(unsatisfied),
+        "eligible_obligations": eligible,
+        "opted_out_obligations": opted_out,
+        "unsatisfied_obligations": unsatisfied,
+    }
+    if opted_out:
+        aggregate["reason"] = (
+            f"this goal opted out of {len(opted_out)} of its {len(eligible)} triggered "
+            "coordination obligation(s) ("
+            + ", ".join(opted_out)
+            + "). Each opt-out passed its own floor; the disposition review owns whether "
+            "declining this many coordination boundaries was the right call for this run"
+        )
+    report["coordination_optout_aggregate"] = aggregate

@@ -222,6 +222,41 @@ def _floor_rows(ev: dict[str, Any], tb: dict[str, Any], early_close_required: bo
         rows.append({"floor": key, "label": label, "triggered": bool(floor.get("triggered")),
                      "satisfied": bool(floor.get("satisfied", True)),
                      "detail": floor.get("reason") or "satisfied: a real step line or `n/a — <reason>` opt-out is recorded"})
+    # Non-blocking, and listed for exactly the reason the comment further down
+    # gives about blocking floors: a signal with no row here is invisible to the
+    # describe-first preflight. This one is MORE at risk than a blocking floor,
+    # because it never refuses anything — without a row, its only reader would be
+    # someone hand-scrolling the closeout JSON.
+    agg = ev.get("coordination_optout_aggregate", {})
+    if agg:
+        # The COUNT lives in the label, not in `detail`, because the renderer
+        # prints `label: detail` only for MISSING rows and bare `label` for
+        # satisfied ones. This row is permanently satisfied (it never refuses),
+        # so a detail-carried census would have rendered as a bare title with the
+        # number discarded — round 1's "computed but never surfaced" defect
+        # reappearing one layer up.
+        eligible = agg.get("eligible", 0)
+        if not eligible:
+            summary = (
+                "no triggered coordination obligations"
+                if agg.get("coordination_in_scope")
+                else "grandfathered: coordination floors inert for this goal"
+            )
+        else:
+            summary = (
+                f"{agg.get('opted_out', 0)} declined / {agg.get('routed', 0)} routed / "
+                f"{agg.get('unsatisfied', 0)} unmet of {eligible}"
+            )
+            declined = agg.get("opted_out_obligations") or []
+            if declined:
+                summary += " — declined: " + ", ".join(declined)
+        rows.append({"floor": "coordination_optout_aggregate",
+                     # Appended unconditionally so a zero-obligation goal still
+                     # appears in the "not triggered" tail rather than vanishing.
+                     "label": f"cross-floor opt-out census (advisory; never refuses) — {summary}",
+                     "triggered": bool(eligible),
+                     "satisfied": True,
+                     "detail": agg.get("reason") or summary})
     deleg = ev.get("closeout_delegation", {})
     mode = deleg.get("mode", "standalone")
     failures = deleg.get("failures", [])

@@ -223,6 +223,7 @@ EARLY_CLOSE_REPORT_EVIDENCE = _early_close_report.EARLY_CLOSE_REPORT_EVIDENCE
 
 _coordination = _load_sibling_coordination_floors()
 apply_coordination_floors = _coordination.apply_coordination_floors
+apply_coordination_optout_aggregate = _coordination.apply_coordination_optout_aggregate
 
 _phase_routing = _load_sibling_phase_routing()
 apply_phase_routing_floor = _phase_routing.apply_phase_routing_floor
@@ -354,6 +355,11 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # rule date), so it runs unconditionally; the module no-ops when inert.
     apply_coordination_floors(report, text)
     apply_phase_routing_floor(report, text)
+    # Cross-floor opt-out census. Runs AFTER both floors because it reads the
+    # verdicts they write. Non-blocking: every counted opt-out already satisfied
+    # its own floor; this exists so "declined 4 of 6" stops rendering identically
+    # to "declined none" when the disposition review reads the closeout.
+    apply_coordination_optout_aggregate(report)
 
     # Orchestrator/sub-goal closeout-proof delegation. Opt-in via a
     # `## Closeout Delegation` section; an absent section or `Closeout mode:

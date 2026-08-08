@@ -236,6 +236,7 @@ def upsert_goal(
         raise ValueError(f"invalid status {status!r}; expected one of {VALID_STATUSES}")
     path = goal_path(repo_root, date, slug)
     rel = goal_rel(repo_root, path)
+    optout_census: dict | None = None
     if path.exists():
         original = path.read_text(encoding="utf-8")
         if status == "complete" and read_status(original) != "complete":
@@ -272,6 +273,14 @@ def upsert_goal(
                     "section_placeholder_summary": placeholder_summary,
                     "timebox_report": timebox_report,
                 }
+            # The flip SUCCEEDED. Carry the opt-out census onto the success
+            # return: `evidence_report` is otherwise attached only to the
+            # `refused` branch, so on the canonical write path a goal that
+            # satisfied every floor — each one by an opt-out — reported nothing
+            # at all. That population is exactly the one the census exists for.
+            census = evidence_report.get("coordination_optout_aggregate")
+            if isinstance(census, dict) and census.get("reason"):
+                optout_census = census
         if status == "blocked":
             blocked_refusal = _blocked_matrix.flip_refusal(original, rel, read_status(original))
             if blocked_refusal is not None:
@@ -280,12 +289,16 @@ def upsert_goal(
         changed = updated != original
         if changed:
             path.write_text(updated, encoding="utf-8")
-        return {
+        result = {
             "action": "updated" if changed else "unchanged",
             "path": rel,
             "status": status,
             "note": "existing artifact: only Status was changed; title and goal body were left as-is",
         }
+        if optout_census is not None:
+            result["coordination_optout_aggregate"] = optout_census
+            result["advisories"] = ["coordination opt-out census — " + optout_census["reason"]]
+        return result
     adapter = _policy.load_adapter(repo_root)
     if adapter["found"] and not adapter["valid"]:
         return {"action": "refused", "path": rel, "status": "missing", "requested_status": status,

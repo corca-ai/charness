@@ -136,6 +136,218 @@ def grandfathered_report(text: str, rule_date: date, concept: str) -> dict:
     }
 
 
+# Inline markup must never HIDE a correctly-filled cue. The step-line matchers
+# each anchored on `^[\s>*-]*`, which tolerates a list/blockquote prefix but not
+# the backticks, bold, or quotes authors actually write, so a `` `Routing: impl` ``
+# line was invisible to the floor and a filled cue was refused outright. The repo
+# already reads markup-tolerantly elsewhere (`validate_critique_artifacts.
+# _LEADING_MARKUP_RE`); this is that same tolerance, shared by every cue.
+_CUE_PREFIX_CHARS = r"\s`*_\"'>-"
+# Value-side stripping deliberately omits `-` and `>`: those are PREFIX markers,
+# and a cue value is free to start with neither. Stripping them from the value
+# would eat real content for no gain.
+_LEADING_CUE_MARKUP = re.compile(r"^[\s`*_\"']+")
+_TRAILING_CUE_MARKUP = re.compile(r"[\s`*_\"']+$")
+
+
+def cue_pattern(label: str) -> "re.Pattern[str]":
+    """Compile the anchored ``<Label>: <value>`` coordination step-line matcher.
+
+    ``label`` is a regex FRAGMENT, not a literal, so a multi-word cue passes its
+    own separator (``r"Issue\\s+closeout"``). Anchored per physical line so an
+    inline example never satisfies a floor — the property the original patterns
+    had and this must keep.
+
+    Every ``## Coordination Cues`` cue compiles through here so the prefix
+    grammar cannot drift back apart: the backtick blindness this fixes was
+    present in all five matchers identically, because all five were cloned.
+    """
+    return re.compile(
+        rf"^[{_CUE_PREFIX_CHARS}]*{label}\s*:\s*(\S.*?)[ \t]*$",
+        re.MULTILINE | re.IGNORECASE,
+    )
+
+
+# A cue value that is still the TEMPLATE PLACEHOLDER never satisfies anything.
+# This guard is what makes markup tolerance safe: the old `^[\s>*-]*` prefix
+# rejected a backticked `` `Gather: n/a — <reason>` `` seed line only as a side
+# effect of being blind to backticks, so widening the prefix to fix the real
+# false refusal simultaneously exposed every documentation example that happens
+# to start a physical line. Anchoring alone cannot tell a seeded example from a
+# filled cue; the unreplaced `<...>` can, and it is the honest discriminator.
+# CONTAINS, not EQUALS. A first cut anchored this to the whole value, which two
+# real shapes walked straight through:
+#   - the template's own seeded cue form is TWO placeholders joined by prose
+#     (`Successor goal: <path-or-ref> — <why none was designed>`), and
+#   - `joined_section_body` folds a continuation line into the value, so
+#     `` `Gather: <ref>` `` + "(still deciding which artifact to point at)" became
+#     a value that merely *started* with a placeholder.
+# Both then classified as a real `ref` and SATISFIED a floor while saying in plain
+# English that they were unfilled. An unreplaced `<...>` anywhere in a cue value
+# means the author did not fill it in, wherever it sits.
+# A first cut spelled the token body as an explicit character class. It was
+# simultaneously too PERMISSIVE and too NARROW, and both directions were live
+# defects: `/` and `.` in the class swallowed an autolinked artifact path
+# (`<charness-artifacts/goals/2026-08-09-next.md>`) and a generic in an opt-out
+# reason (`Dict<str, int>`) into false REFUSALS — the very bug this slice exists
+# to fix — while `:` and `(` missing from it let `<TBD: the next goal>` and
+# `<link to the thread (if any)>` classify as real references and SATISFY a floor.
+# The body is therefore permissive, with two targeted exclusions instead:
+#   - it must START WITH A LETTER, so `... from <5 items to > 30` is prose, and
+#   - it must not be preceded by an identifier character, so `Dict<str, int>` and
+#     `List<String>` are generics, not placeholders.
+_ANGLE_TOKEN = re.compile(r"(?<![A-Za-z0-9_])<([A-Za-z][^<>\n]{0,79})>")
+# A markdown AUTOLINK is a filled value, not a placeholder: a path (contains `/`),
+# a scheme, or a bare filename with an extension. Checked on the token body so
+# `<charness-artifacts/goals/2026-08-09-next.md>` reads as the reference it is.
+_AUTOLINK_BODY = re.compile(
+    r"^(?:[a-z][a-z0-9+.-]*://\S+|mailto:\S+|[^\s]*/[^\s]*|[^\s]+\.[A-Za-z0-9]{1,8})$",
+    re.IGNORECASE,
+)
+
+
+def has_unfilled_placeholder(value: str) -> bool:
+    """True when the value still carries an unreplaced ``<placeholder>``.
+
+    CONTAINS, not EQUALS. An equals-the-whole-value check let two real shapes
+    through: the template's own seeded cue form is TWO placeholders joined by
+    prose (``<path-or-ref> — <why none was designed>``), and
+    ``joined_section_body`` folds a continuation line into the value, so
+    `` `Gather: <ref>` `` plus "(still deciding which artifact to point at)"
+    merely *started* with a placeholder. Both then classified as a real ``ref``
+    and satisfied a floor while saying in plain English that they were unfilled.
+    """
+    return any(
+        not _AUTOLINK_BODY.match(match.group(1))
+        for match in _ANGLE_TOKEN.finditer(value)
+    )
+
+
+def strip_cue_markup(value: str) -> str:
+    """Strip wrapping inline markup from a matched cue value.
+
+    ``` `Routing: impl` ``` captures a trailing backtick and ``**Routing:** impl``
+    captures a leading ``**``; both are markup the author wrapped the cue in, not
+    the value. Left in place they corrupt two decisions: the ``n/a — <reason>``
+    opt-out length measured against ``MIN_OPTOUT_REASON`` (markup would pad a
+    short reason over the floor), and the value echoed back in a refusal reason.
+    """
+    return _TRAILING_CUE_MARKUP.sub("", _LEADING_CUE_MARKUP.sub("", value)).strip()
+
+
+# Long enough that an opt-out cannot be a one-word bypass.
+MIN_OPTOUT_REASON = 30
+# A cue is satisfied by a real reference or a valid opt-out; `optout_short` is
+# present-but-not-satisfying, which is a near-miss worth reporting back.
+SATISFYING_CUE_KINDS = frozenset({"ref", "optout"})
+# ONE pattern for every opt-out, reasoned or not. Enumerating the separators
+# (`[—–:-]`) was the wrong shape twice over: a REASONLESS `n/a` fell through to
+# `ref` and SATISFIED the floor — making the emptiest possible opt-out the
+# strongest one, while a one-word reason was correctly refused — and any
+# separator outside the enumerated four did the same, so `n/a, nope` satisfied
+# while `n/a — nope` was refused, a one-character bypass of MIN_OPTOUT_REASON.
+# The separator run is therefore optional and open, the reason is optional, and
+# `n\s*/?\s*a` accepts `na` / `N/A` / `n / a`. The trailing `\b` keeps `national`
+# and `n/august` out.
+_NA_CUE_VALUE = re.compile(
+    r"^n\s*/?\s*a\b[ \t]*[—–:;.,()\[\]/\\-]*[ \t]*(.*)$",
+    re.IGNORECASE,
+)
+
+
+def classify_cue_step(value: str) -> tuple[str, str]:
+    """Classify one cue value: ``"ref"``, ``"optout"``, or ``"optout_short"``.
+
+    Rung-1: this is parse + a FORM floor (is the opt-out reason long enough to be
+    a sentence), never an honesty judgment about whether the reason is *true*.
+    That judgment stays with the author and the fresh-eye round.
+
+    Shared rather than cloned because the coordination and phase-routing floors
+    carried this function verbatim, down to the constant — exactly the third-copy
+    shape this substrate module exists to absorb. The first-satisfying-wins LOOP
+    stays in each floor, per this module's rung-1 boundary: routing additionally
+    requires the routed skill to be NAMED, so the two loops are genuinely
+    different policies over this one shared classifier.
+    """
+    na = _NA_CUE_VALUE.match(value)
+    if na is not None:
+        reason = na.group(1).strip()
+        return ("optout" if len(reason) >= MIN_OPTOUT_REASON else "optout_short"), reason
+    return "ref", value
+
+
+CONTEXT_SOURCES_SECTION = "Context Sources"
+RECORDED_WORK_SECTIONS = ("Slice Log", "Final Verification")
+_TRACKED_ISSUE_CONTEXT = re.compile(
+    r"\b(?:"
+    r"(?:github\s+)?(?:tracked\s+)?issues?\s+#\d+"
+    r"|https://github\.com/[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+/issues/\d+"
+    r"|[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+#\d+"
+    r")\b",
+    re.IGNORECASE,
+)
+_CLOSE_KEYWORD = re.compile(
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+"
+    r"(?:[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+)?#\d+\b",
+    re.IGNORECASE,
+)
+
+
+def issue_closeout_triggered(text: str) -> bool:
+    """True when the goal records tracked issue resolution work.
+
+    Context Sources can name the tracked issue explicitly. Recorded work can also
+    trigger through close keywords in the sections where achieved work is
+    archived, not in planning/boundary text.
+
+    This is the ONE trigger predicate that lives here rather than in a floor.
+    The module header says each floor's narrow trigger predicate stays in its own
+    module, and that rule holds where the floors ask different questions — but
+    the coordination floor and the phase-routing floor asked THIS one identically,
+    down to the regexes, in two verbatim copies. Two floors consuming one shared
+    answer is the substrate case; two floors with their own questions is not.
+    """
+    masked = mask_fences(text)
+    context = section_body(masked, CONTEXT_SOURCES_SECTION) or ""
+    if _TRACKED_ISSUE_CONTEXT.search(context):
+        return True
+    work = "\n".join(section_body(masked, heading) or "" for heading in RECORDED_WORK_SECTIONS)
+    return _CLOSE_KEYWORD.search(work) is not None
+
+
+def classify_cue_line(raw: str) -> tuple[str | None, str]:
+    """Full per-line cue classification, shared by every floor's match loop.
+
+    ``strip_cue_markup`` -> ``classify_cue_step`` -> demote inert values. Returns
+    ``(None, "")`` when the line is not a step line at all.
+
+    Two inert shapes, separated because they are different authoring facts and
+    the author deserves the right diagnostic for each:
+
+    - **A left-in ``<placeholder>``** — on either side of the opt-out grammar —
+      means the author never filled this cue. It is not a step line. The seeded
+      template lines are exactly this shape, and calling them a near-miss would
+      tell an author their opt-out reason is too short when they never wrote one.
+    - **A reasonless ``n/a``** (``n/a``, ``n/a —``) IS a step line: the author
+      typed the cue and declined it, they just gave no reason. It stays
+      ``optout_short`` — non-satisfying, which is what the floor acts on, while
+      keeping the actionable message ("your opt-out has no reason").
+
+    An empty REFERENCE (`` `Successor goal:` `` stripped to ``""``) is the first
+    shape, not the second: a bare label is not a decision.
+
+    Shared here rather than written into each loop: the two loops already had to
+    be collapsed once for the duplicate ratchet, and this is the exact seam that
+    would re-diverge.
+    """
+    kind, value = classify_cue_step(strip_cue_markup(raw))
+    if has_unfilled_placeholder(value):
+        return None, ""
+    if kind == "ref" and not value.strip():
+        return None, ""
+    return kind, value
+
+
 def section_span(masked: str, heading: str) -> tuple[int, int] | None:
     """Return ``(body_start, body_end)`` offsets for the named section's body in
     ``masked`` (already fence-masked), from just after the heading line to the

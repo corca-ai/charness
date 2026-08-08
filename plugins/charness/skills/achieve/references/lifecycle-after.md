@@ -302,6 +302,15 @@ made by an agent and recorded for a human, never by a regex.
   "not filed", narration-vs-action). It is **non-deterministic by nature** — made
   visible and auditable for a human, not a hidden pass — and near-zero marginal
   cost because it scopes an already-required review rather than adding an agent.
+  The reviewer also reads the **cross-floor opt-out census**
+  (`closeout_evidence.coordination_optout_aggregate`, surfaced as a
+  `coordination opt-out census` advisory on the `check_goal_artifact.py` result
+  and as a row in `describe_goal_closeout_shape.py --goal-path <artifact>`).
+  Each coordination opt-out passed
+  its own floor, so no gate refuses on the pattern; deciding whether declining
+  that many boundaries was right for this run is a judgment, and it is this
+  reviewer's. A goal that opted out of most of its triggered obligations owes an
+  explicit verdict, not silence.
   The reviewer's three substantive mandates — falsifying `novel:` recurrence-
   lineage claims, classifying the structural-follow-up destination, and (at an
   issue-bundle closeout) confirming each closed issue's behavior through an

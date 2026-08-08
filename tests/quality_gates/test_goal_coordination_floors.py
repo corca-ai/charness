@@ -1044,3 +1044,27 @@ def test_the_successor_floor_grandfathers_goals_created_before_it() -> None:
     assert cf.successor_goal_floor_applies("Created: 2026-08-07\n") is True  # inclusive
     assert cf.successor_goal_floor_applies("Created: 2026-08-06\n") is False
     assert _cues("- Routing: impl", created="2026-08-06")["triggered"] is False
+
+
+def test_optout_census_is_produced_by_the_real_closeout_path(tmp_path: Path) -> None:
+    """Wiring, not unit behavior: the census tests drive the three appliers
+    directly, so deleting the `apply_coordination_optout_aggregate` call in
+    `goal_artifact_closeout_evidence.py` would leave every one of them green.
+    This is the test that fails if the census is never actually computed.
+    """
+    created = "2026-05-31"
+    _seed_other_evidence(tmp_path, created)
+    report = ce.check_complete_evidence(
+        tmp_path,
+        _full_goal(
+            created=created,
+            context_sources=_URL_SOURCE,
+            coordination=(
+                "Routing: impl — selected from installed metadata\n"
+                "Gather: n/a — the external link is background context, never routed\n"
+            ),
+        ),
+    )
+    agg = report["coordination_optout_aggregate"]
+    assert "gather" in agg["opted_out_obligations"]
+    assert agg["reason"].startswith("this goal opted out of 1 of its")
