@@ -1,4 +1,4 @@
-# Open-Issue Opinion — 29 open, grouped by the decision each needs
+# Open-Issue Opinion — the open backlog, grouped by the decision each needs
 Date: 2026-08-08
 
 ## What this file is, and is not
@@ -27,19 +27,80 @@ Re-measure any figure below with the command beside it rather than trusting it.
 defects to internal proof surfaces, and the next pick should be consumer-facing.
 That is a prioritization finding, not a cleanup mandate.
 
-## The reference repo, and what it actually is
+## The reference repo: `../craken-agents`, for awiki and gardening
 
-`../craken-agents` (HEAD `4c49c96d`) is a TypeScript product repo. Verified: it does
-**NOT install charness** (`grep -rl charness ../craken-agents` → 0 hits outside
-`node_modules`). So it is not a consumer whose needs can be read off — it is a
-sibling well-run repo, useful as a comparison of OPERATING SHAPE only.
+`../craken-agents` (HEAD `4c49c96d`) is a TypeScript product repo and does **NOT**
+install charness (`grep -rl charness ../craken-agents` → 0 outside `node_modules`).
+It is a sibling shape comparison, not consumer evidence. The operator named the
+specific thing to learn: **its awiki usage and doc gardening.** Three transferable
+patterns, read from its own files:
 
-Two measurements from it change my view below, and both are cheap to re-run:
+1. **Docs checked as a GRAPH, not a set of files.** `package.json` has
+   `"docs:lint": "awiki lint -root docs"`, and `docs/documentation.md` states the
+   invariant: it "fails on orphan pages and disconnected components, so a new page
+   needs a link from `docs/index.md` and from at least one sibling page in body
+   prose." charness has `check_doc_links.py` for link VALIDITY and **no orphan or
+   island check at all** — a different question, unasked here.
+2. **The doc states that its own check is UNENFORCED, precisely.**
+   `docs/documentation.md`: "This check is manual and unenforced: `docs:lint` is not
+   part of `quality`, `quality:base`, `quality:fast`, `quality:commit`, or
+   `quality:push`, it is absent from the Husky pre-commit and pre-push hooks, and no
+   workflow under `.github/workflows/` runs it. Nothing will stop a merge that breaks
+   the graph, so run it yourself." Opinion: this is the most valuable thing in the
+   repo for us. It is the honest inverse of a false green — instead of arming a gate
+   so the question feels answered, it names exactly what is NOT protected and hands
+   the reader the job. charness's reflex is to arm; this is worth copying as prose
+   discipline, and it is P5 ("a gate may force a question; it may not declare
+   completion") expressed without a gate.
+3. **Exception tables carry a per-row REMOVAL CONDITION.**
+   `docs/quality-exceptions.md` has an `Entry | Kind | Why the check is low-signal |
+   Removal condition` table, where `Permanent` is an explicit allowed value and
+   others read "Remove if `awiki` becomes a project dependency". charness closed
+   `#526` (stale waiver signal) already, so this is a shape refinement rather than a
+   gap.
 
-| | craken-agents | charness |
-|---|---|---|
-| `AGENTS.md` | **1,105 bytes / 20 lines** | 15,806 bytes / 129 lines |
-| eval scaffolding | `evals/{baselines,scenarios,evaluation-output.schema.json}` | no baseline corpus per skill |
+The size comparison stays relevant but is NOT the lesson: craken's `AGENTS.md` is
+**1,105 bytes / 20 lines**, and one of those 20 lines is the awiki instruction.
+
+## Consumer repos, measured — this fills the audit's biggest hole
+
+The 7-day audit could not say whether its fixes reached anyone because it inspected
+no consumer. Five exist and the operator named them: `../ceal`, `../cmanki`,
+`../stdy.blog`, `../journal.stdy.blog`, `../cautilus`. All five install charness and
+all five carry `charness-artifacts/`.
+
+**Always-loaded surface, every consumer (`#523`'s real blast radius):**
+
+| repo | `AGENTS.md` |
+|---|---|
+| ceal | 18,349 bytes / 67 lines |
+| journal.stdy.blog | 17,714 / 251 |
+| **charness (this repo)** | **15,806 / 129** |
+| stdy.blog | 12,121 / 169 |
+| cautilus | 12,064 / 160 |
+| cmanki | 11,826 / 235 |
+| craken-agents (not a consumer) | 1,105 / 20 |
+
+**Every consuming repo sits at 11.8–18.3 KB, and two are LARGER than charness's
+own.** So `#523` is not an internal context-budget question — the shape propagates
+through `setup`, and my earlier claim that the beneficiary is mostly this repo was
+wrong.
+
+**Which skills consumers actually run** (counted by their real write paths, not by
+directory name — `achieve` writes `goals/`, `handoff` writes `docs/handoff.md`; my
+first count got both wrong):
+
+- 5/5 — `critique`, `quality`, `gather`, `retro`, `debug`, `setup`
+- 4/5 — `achieve`, `handoff`, `ideation`, `narrative`
+- 3/5 — `issue`, `spec`, `impl`
+- 2/5 — `release`, `hotl`
+- 1/5 — `hitl`, `announcement`, `create-skill`
+- 0/5 — `create-cli`
+
+Two consequences. `critique` at 5/5 is the most-used skill in the product, which is
+why criticising its growth was the wrong target. And **`#521`'s implied premise is
+weak**: only `create-cli` has no consumer trace, so the prompt surface is not
+carrying dead weight and there is essentially nothing to delete on usage grounds.
 
 ## Group A — consumer-surface gaps whose premise I verified
 
@@ -55,9 +116,13 @@ inferred.
   `skills/public/setup/references/default-surfaces.md:122` tells a consumer not to
   turn `AGENTS.md` into "a second handbook". That is a dogfood violation against a
   contract we ship. It is also a DELETION, so it reverses growth instead of adding
-  a surface, and `setup` propagates the pattern to consumer `AGENTS.md`, so the
-  benefit is not confined to this repo. Opinion: highest value per line changed of
-  anything open.
+  a surface, and the consumer table above shows the shape propagating to every
+  installing repo. Opinion: highest value per line changed of anything open.
+  **Scope correction from the operator: `## Subagent Delegation` is LOAD-BEARING and
+  is not the target.** It was added deliberately, at known cost, because without it
+  the bounded critique subagent does not run — and `critique` is the 5/5
+  most-used skill in the product, so that cost buys the most valuable thing here.
+  Shrink it further only if it can be done without losing that; cut the REST.
 - **`#527` (0 human-facing skill docs, 0 invocation lock).** Verified: 22 public
   skills, `find skills/public -name '*.md' ! -name SKILL.md` is entirely
   `references/` (agent procedure); `grep -ril "working if"` → 0; `grep -ril
@@ -81,17 +146,20 @@ inferred.
 ## Group B — measurement projects, and why the order matters
 
 - **`#519` (skill trigger accuracy never measured), `#520` (no-skill baseline on 1 of
-  20).** I previously argued these should wait because they mean building new
-  measurement infrastructure — the pattern this audit warned about. **craken-agents
-  weakens that objection**: it already has `evals/baselines` + `evals/scenarios` +
-  an output schema, so the shape can be copied rather than invented. Opinion: still
-  not first, but cheaper than I claimed, and they are the only issues that would
-  tell us whether the product WORKS rather than whether it is well-formed.
+  20).** **Owner correction: skill evaluation is `../cautilus`'s job, not
+  charness's.** So these are not a request to build measurement infrastructure here,
+  and my earlier framing — first "expensive new infra", then "copy craken's evals" —
+  was wrong twice, pointing at two wrong owners. The evaluator exists. The stated
+  problem is CADENCE: it is not run often. Note `AGENTS.md` makes Cautilus eval-only
+  and ask-before-run, gated behind `scripts/plan_cautilus_proof.py` and
+  `scripts/run_cautilus_eval.py`, so a run needs an explicit grant. Opinion: reframe
+  both issues as "the evaluator is not being run", which is a cadence and
+  authorization question, not a build.
 - **`#521` (prompt surface monotonically increasing — open a deletion path?).** A
-  decision request, not a defect. Opinion: my earlier argument that a skill catalog
-  is the precondition for this is now weaker, because the bloat premise it rested
-  on was refuted. `#523` is the better first cut at the same concern and needs no
-  new measurement.
+  decision request, not a defect. Now measured against real usage: only `create-cli`
+  has no consumer trace, so a NO-OBSERVED-EFFECT deletion path would find almost
+  nothing. Opinion: `#523` is the better first cut at the same concern — it shrinks
+  the surface every session pays for without deleting a skill anyone uses.
 
 ## Group C — consumer quality-contract defects
 
@@ -123,6 +191,9 @@ repair; re-read that before scoping either.
 
 ## Group E — filed by this session, and honestly small
 
+- **`#566`** (docs never checked as a graph) was filed by this session from
+  `../craken-agents`. It opens as a measurement, not a gate: count the orphans over
+  `docs/` and `skills/**/references/` first, and close it on a zero.
 - **`#565`** (a mutation sweep with a broken baseline reports every mutant as
   killed). Re-confirmed LIVE during the audit: the same zsh word-split defect
   recurred in a command verifying an audit charge, an hour after being filed.
@@ -147,16 +218,24 @@ repair; re-read that before scoping either.
 
 ## My ranking, as opinion
 
-1. `#523` — deletion, dogfood violation, 14× comparison, widest reach
-2. `#527`'s invocation-lock half — small, and teeth where the north star wants them
+1. `#523`, with `## Subagent Delegation` held out — a deletion, a dogfood violation
+   against guidance we ship, and measured at 11.8–18.3 KB across all five consumers
+2. **`#566`** — a doc-graph (orphan/island) gap plus craken's "unenforced, run it
+   yourself" disclosure discipline. Filed by this session from the reference repo;
+   opinion: the single best thing to take from craken, and it opens as a
+   MEASUREMENT (count the orphans; a zero closes it) rather than as a new gate
 3. `#560` — close it; the work is done and proven
-4. `#531` — first surface every session touches
-5. `#519`/`#520` — the only issues that measure whether the product works
+4. `#531` — the first surface every session in every consumer touches
+5. Re-scope `#519`/`#520` onto Cautilus cadence rather than onto new measurement
 
 ## Non-claims
 
-- No consumer repo was inspected for any claim here. `craken-agents` does not
-  install charness, so it is a shape comparison and nothing more.
+- Consumer repos WERE inspected for the table above (five, named by the operator).
+  What is measured is `AGENTS.md` size and which skills left artifacts; no consumer's
+  runtime behavior, no operator experience, and no defect rate was observed.
+  `craken-agents` does not install charness and is a shape comparison only.
+- Artifact presence proves a skill RAN at least once, not that it is used often or
+  that it worked. `create-cli` at 0/5 may simply leave no artifact.
 - The 7-day audit's own structural charges were largely refuted; anything in this
   file that reads as "the repo is bloated" is opinion that the evidence did not
   support.
