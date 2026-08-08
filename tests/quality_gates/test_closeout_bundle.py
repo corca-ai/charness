@@ -437,8 +437,9 @@ def test_this_repo_is_currently_closeout_bundle_ready() -> None:
     # CONTENT, not status. A round caught the first version asserting
     # `preflight["status"] == "ready"`, which `closeout_bundle_lib` derives from the same value
     # as `payload["status"]` — so it could not fail while the line above passed. The
-    # verification_lock command is pulled from the preflight's `planned_commands`, which are
-    # EMPTY when blocked, so a status mapping that always claims ready cannot fake this.
+    # verification_lock command is pulled from the preflight's CLOSEOUT planned command, which
+    # is the one entry gated on `not blockers` — a resolution critique corrected an earlier
+    # comment here that said all `planned_commands` were empty when blocked, which is false.
     lock_phase = payload["phases"][-1]
     assert lock_phase["name"] == "verification_lock"
     assert lock_phase["command"], "a ready plan must carry the closeout command it locks on"

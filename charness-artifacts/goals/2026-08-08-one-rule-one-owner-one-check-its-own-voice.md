@@ -9,34 +9,32 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 of 9 COMPLETE. `#552`, `#548`, and `#555` are all CLOSED and
-  verified through the adapter. Slice 4 (`#537`, a bundle-preflight refusal that
-  reports itself) is next and has NOT been premise-checked.
-- Current slice intent: none in progress. The last completed intent was `#555` —
-  one owner for tracker backend resolution, keeping both callers' opposite refusal
-  contracts — spanning `53d4b33d`, `bd47ab96`, `f781ec2b`.
-- Next action: premise-check `#537` and record the verdict in the Slice Log BEFORE
-  any build. THREE premise checks have now each changed the build, so this is the
-  highest-leverage step in the slice, not a formality.
-- Grouping premise CONFIRMED and now measured three times. All three slices were
-  one-rule-many-owners with reader/writer or caller/caller drift; all three shipped
-  a repair carrying the class it fixed; and in all three the last thing needing
-  repair was a GUARD — its population, its tells, or its counts — rather than the
-  code it guarded.
-- Issues filed while working, not planned: `#556` (a policy check reachable only
-  for a directory named `charness`), `#557` (a fourth backend-rule copy whose
-  default is not a template), `#558` (`{repo}` is the unclosed half of an issue's
-  identity), `#559` (a fifth backend-rule copy over the release key, already
-  drifted). Each was found by a delegated review or a gate, not by planning.
-- Carried into slice 4: (a) a guard is only as good as what it matches ON, not just
-  what it scans — anchor tells on the verdict-bearing step, and never on a
-  condition that correct callers also use; (b) `runpy.run_path` returns a COPY of
-  module globals, so patches into it silently do nothing and tests pass for the
-  wrong reason — load a real module object when a test must patch; (c) state a
-  ledger's population and its removals as SEPARATE numbers, because counting the
-  owner among the consolidated things has been the blocking finding in all three
-  closeouts; (d) a `-k` filtered run is not the suite — the read-only gate caught a
-  break in slice 3 that a filtered run missed.
+- Current slice: 4 of 9 — `#537` built and BOTH review rounds complete; the
+  resolution critique has run and its repairs are committed. `#552`, `#548`, `#555`
+  are CLOSED and verified. Remaining for slice 4: post the `#537` closeout and
+  close it.
+- Current slice intent: `#537` — make a correct bundle-preflight refusal report
+  itself rather than appear as five unrelated broken tests. Spans `15b15c78`,
+  `a4feee83`, and the resolution-critique repairs.
+- Next action: post the `#537` closeout and close it, then premise-check `#536`
+  before any slice-5 build.
+- Grouping premise CONFIRMED, four for four. Every slice has been one-rule- or
+  one-question-many-owners; every slice shipped a repair carrying the class it
+  fixed; and in every slice the last thing needing repair was a GUARD or a
+  MEASUREMENT rather than the code under repair.
+- The sharpest cross-slice lesson, and it cost real rework twice in slice 4: I fixed
+  the instance the issue reported and measured the fix against THAT instance. The
+  class was one grep wider than the report, twice over. Before claiming a class is
+  closed, enumerate the other inputs that produce the same symptom and measure each.
+- Issues filed while working, none planned: `#556`, `#557`, `#558`, `#559`, `#560`.
+  Every one came from a delegated review or a gate rather than from the backlog.
+- Carried into slice 5: (a) a test whose subject IS live repo state cannot be
+  mutation-tested by editing the worktree — the edit is itself a state change, so
+  prove discriminating power by INJECTION; (b) when a review says an assertion is
+  dead, check whether it is merely a redundant cross-layer agreement check, which is
+  a different and often defensible thing; (c) read WHICH assertion failed before
+  concluding anything about a mutant, the failure I made while fixing the issue about
+  exactly that.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -377,6 +375,20 @@ slices, and pull in the related open issues.
 - Critique: The issue's own framing of the fix is sound and its preference is right, which is a first for this goal: three earlier premise checks each refuted the named remedy. Worth stating plainly rather than assuming the pattern continues. What the reproduction adds is the reason the WEAKER direction (print the blocker on failure) is insufficient: the payload already leaks through a repr, so printing more is an improvement in legibility that leaves five tests failing for one cause. The count is the cost the issue actually measured — five failures for one finding, alongside thirty others — so the fix has to reduce the count, not just improve the text. That points at the split, with the printing as a secondary nicety on the ONE test that remains.
 - Off-goal findings: Noted, not filed: `assert result.returncode == 0, result.stderr` is a pattern worth checking elsewhere — passing `stderr` as an assertion message is silently empty for any script that reports on stdout, so the custom message reads as diagnostic and carries nothing. Whether that pattern appears in other gate tests is a sweep this slice should run rather than a separate issue, since it is the same defect on the same kind of surface.
 - Lessons carried forward: First premise check in this goal where the issue's named remedy SURVIVED. The check still paid: it corrected a factual claim about what the reader sees, and it converted `the preferred direction is probably feasible` into `every shape assertion survives a blocked repo, executed`. A premise check that confirms is not a wasted one — this goal's Boundaries already say 5 for 5 including where the premise held, and this is the fourth confirmation of that rule rather than of the remedy.
+- Metrics:
+
+### Slice 8: Slice 4 build (#537) — a bundle refusal that reports itself, measured on three blocker classes
+
+- Objective: Make a correct bundle-preflight refusal report ITSELF rather than appear as five unrelated broken tests, without dropping the readiness coverage the issue explicitly warned against removing.
+- Why this approach: Fourth instance of the goal's class, and the one where the harm was measured rather than theoretical: five tests were red for six commits alongside thirty others, so a correct finding about ten unowned artifacts went unread.
+- Commits: `15b15c78` (build + slice round-1 repairs), `a4feee83` (slice round-2 repairs), plus the resolution-critique repairs and closeout commit that follow.
+- What changed: `tests/quality_gates/support.py` gains `bundle_payload_or_report` (defensive parse that surfaces stderr when there is no payload) and `bundle_blocker_report` (renders `code`, `message`, `remediation`, and each `subject`). `tests/quality_gates/test_final_bundle_preflight.py` and `tests/quality_gates/test_closeout_bundle.py`: two new tests own readiness, one per surface; five shape tests keep their subjects and lose their live-repo verdict couplings; two tests renamed off `is_ready`.
+- Alternatives rejected: Rejected, and the issue rejects it too: dropping the `ready` assertion to make a red go away. Rejected as insufficient: the issue's weaker direction, printing the blocker on failure — the premise check found the payload already leaks through a truncated repr, so printing more would leave five tests failing for one cause, and the COUNT is what the issue measured. Rejected during round-2 repairs: asserting `preflight["status"] == "ready"` as the closeout readiness test's structural claim, because it is derived from the same value as the outer assertion.
+- Targeted verification: Acceptance measured by reproduction on THREE blocker classes, not one. `unmatched_surface_path`: 5 failures to 2, both named for readiness, each printing code, message, remediation, and the offending path. Drifted plugin mirror: 5 with 3 misnamed, to 3 all correctly named. Broken manifest: 5 with 3 misnamed and two bare `KeyError`s, to 3 with the cause named and no `KeyError` at all. Behavioural verdict from a DETACHED worktree at `a4feee83` using the issue's OWN reproduction recipe: `2 failed, 37 passed`, and the operator reads `final_bundle_preflight is not bundle-ready; status='blocked'` followed by the full blocker. Mutation: 3/3 reporting mutants killed, 2/2 round-1 repair mutants killed by precise mutation (the CLI taking its own error path; the preflight crashing before any payload), with the reason reaching the reader in both. `./scripts/run-quality.sh --read-only` exits 0 with 86 passed, 0 failed, no UNPROVEN; `pytest tests/` 7861 passed; dup ratchet clean; closeout aggregate `completed`.
+- Test duplication pressure: No new duplicate families. The shared helpers were put in `support.py` rather than copied into both gate files precisely because two copies of a reporter is the shape this goal keeps repairing.
+- Critique: Three delegated reviews, and each found a defect the previous could not — with the deepest one arriving last. Round 1 found a straight coverage DELETION: `closeout_bundle.py` emits an error payload with `status: "blocked"` for any exception, so accepting `{ready, blocked}` let a crashed CLI pass, and the readiness test could not recover it because it calls `build_plan` in process. Round 1 also found that parsing stdout before asserting the exit code made a CRASHING preflight report strictly LESS than before — a bare `JSONDecodeError` with the traceback discarded — and that `assert "Blockers:" in stdout` was vacuous because the ready branch prints `Blockers: none`, which contains it. Round 2 found the acceptance had been measured on ONE blocker class: a drifted mirror still fanned out to five failures with three misnamed, because `mirror_inventory["status"] == "matched"` and `critique_inventory[0]["status"] == "current"` were the same coupling as `ready`. The resolution critique then found a THIRD instance of that coupling — `candidate_snapshot["head_sha"]`, which is `{}` for the manifest-integrity classes and failed with a bare `KeyError` naming nothing, a worse diagnostic than the one the issue was filed about — plus a comment naming a critique-inventory OWNER that does not exist, leaving that verdict unowned, and a false claim in two comments that `planned_commands` is empty when blocked (measured: 56 entries, all carrying `reason_surface_ids`).
+- Off-goal findings: Filed `#560`: the ready-path payload and render shape are owned only by tests that require the live worktree to be clean, so while any blocker is live NOTHING exercises the ready path — the mirror image of this issue — and the spec already declared a fixture acceptance check nobody implemented. `#560` also carries the last misnamed failure, in a monkeypatch-heavy test that still reads the real manifest and needs a fixture manifest rather than a one-line change. NOT swept, and the decision is recorded rather than left implicit: `assert result.returncode == 0, result.stderr` occurs 913 times in the tree (910 in tests; the other three are this goal's own artifacts and a transcript). The idiom is CORRECT wherever failures go to stderr — the artifact validators print violations there — and is vacuous only for scripts reporting failure detail on stdout. A bounded round enumerated the 14 stdout-reporting scripts of that shape and found the right stream chosen everywhere it checked. A 913-site sweep is the wolf-crier trade this goal's Non-Goals forbid.
+- Lessons carried forward: 1) I fixed the instance the issue reported and measured the fix against that instance. The class was one grep wider than the report — twice: the mirror class, then the manifest class. When an issue names a symptom, enumerate the OTHER inputs that produce the same symptom before claiming the class is closed. 2) My process conclusion from round 2 was WRONG and the resolution critique corrected it. I had concluded that mutation testing is unreliable against live-repo-state assertions, because mutating a file dirtied the worktree and the test failed at an earlier assertion. The failure output already named the confound (`code: needs_sync`); I failed to read WHICH assertion failed — which is the exact failure mode `#537` is about, committed while fixing `#537`. The honest, narrow lesson is that a test whose subject IS the worktree's cleanliness cannot be mutation-tested by editing the worktree, and its discriminating power must be proven by INJECTION instead. Generalising further would license skipping mutation proof on the verdict surfaces this repo requires two rounds for. 3) The round-2 finding that prompted that mistake was itself a false positive: `preflight["status"] == "ready"` was a redundant cross-layer agreement check, not a dead assertion. The replacement (the `verification_lock` command, which comes from the readiness-gated closeout entry) is still better, for a different reason than the one first recorded.
 - Metrics:
 
 ## Context Sources

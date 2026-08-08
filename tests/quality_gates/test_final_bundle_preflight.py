@@ -57,13 +57,25 @@ def test_full_plan_has_provenance_and_inventories() -> None:
     # for subjects that were not the cause, because `mirror_inventory["status"] == "matched"`
     # and `critique_inventory[0]["status"] == "current"` are the same live-repo coupling as
     # `status == "ready"` was. Those verdicts have their own owners —
-    # `test_packaging_owner_mirror_is_current` and the critique-inventory tests below — so this
-    # test asserts the keys are populated and leaves the verdicts to them.
+    # `test_packaging_owner_mirror_is_current` for the mirror, and
+    # `test_this_repo_is_currently_bundle_ready` for the critique verdict — so this test asserts
+    # the keys are populated and leaves the verdicts to them. A resolution critique caught the
+    # first version of this comment naming "the critique-inventory tests below" as that owner:
+    # those tests all assert REFUSAL branches, and nothing anywhere asserted `status == "current"`,
+    # so the positive verdict had been left unowned by a comment that claimed otherwise.
     assert payload["mirror_inventory"]["owner"]
     assert payload["mirror_inventory"]["status"]
     assert payload["critique_inventory"][0]["path"]
     assert isinstance(payload["artifact_inventory"], list)
-    assert payload["candidate_snapshot"]["head_sha"]
+    # Holds blocked or ready: every entry is built by one helper that always sets the key.
+    assert all("reason_surface_ids" in item for item in payload["planned_commands"])
+    # `.get`, not `[...]`. A resolution critique found this was a SECOND blocked-repo coupling
+    # the premise check missed: `candidate_snapshot` is `{}` whenever `base_sha` cannot resolve
+    # — a deleted, truncated, or untracked manifest — so subscripting raised a bare
+    # `KeyError: 'head_sha'` that named no code, no subject, and no remediation. That is a WORSE
+    # diagnostic than the truncated repr #537 was filed about. The verdict belongs to the
+    # readiness test; the shape claim here is that the key exists.
+    assert "candidate_snapshot" in payload
 
 
 def test_explicit_paths_are_diagnostic_only() -> None:
@@ -296,7 +308,13 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
 
     monkeypatch.setattr(lib, "_git", drift_git)
     blockers = lib._current_manifest_blockers(ROOT, manifest)
-    assert {item["code"] for item in blockers} == {"manifest_worktree_drift", "manifest_index_drift"}
+    # SUBSET, not equality. This test's subject is that a failing git produces both drift codes,
+    # and it reads the REAL manifest — so an equality assertion also asserts that the live
+    # manifest is otherwise valid, which made this test redden for manifest-integrity blockers
+    # under a name about monkeypatched error branches. That was the last misnamed failure in the
+    # #537 fan-out, found by a resolution critique after two rounds had each fixed a different
+    # instance of the same coupling.
+    assert {"manifest_worktree_drift", "manifest_index_drift"} <= {item["code"] for item in blockers}
     missing_manifest = tmp_path / "missing-manifest.json"
     blockers = lib._current_manifest_blockers(tmp_path, missing_manifest)
     assert {item["code"] for item in blockers} == {"manifest_not_regular"}
@@ -359,7 +377,7 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
     # Same reason as above: this test is about monkeypatched error branches, so it must not
     # redden because the live mirror drifted.
     assert restored["mirror_inventory"]["status"]
-    assert restored["candidate_snapshot"]["head_sha"]
+    assert "candidate_snapshot" in restored
 
     rich = {
         "status": "ready", "changed_paths": ["x"],
@@ -395,7 +413,13 @@ def test_this_repo_is_currently_bundle_ready() -> None:
     # `result.stdout`, not `result.stderr`: these scripts report on stdout, so passing stderr
     # here is the empty-message idiom this slice exists to stop repeating.
     assert result.returncode == 0, result.stdout[:400]
-    # These live here rather than in the shape test because a blocked plan carries NO
-    # planned_commands, so asserting them anywhere else re-creates the coupling this slice removed.
+    # A blocked plan carries planned_commands — 56 of them, measured — and only the CLOSEOUT
+    # entry is gated on readiness. A first version of this comment said the list was empty when
+    # blocked, which was false, and moved the `reason_surface_ids` shape assertion here on that
+    # false premise; that assertion holds in a blocked plan and has gone back to the shape test.
+    # The CLOSEOUT entry is the readiness-gated one, so it belongs here.
     assert any(item["phase"] == "closeout" for item in payload["planned_commands"])
-    assert all("reason_surface_ids" in item for item in payload["planned_commands"])
+    # And the verdict the shape test can no longer make, now that live-state verdicts moved to
+    # their owners: this test IS that owner for the critique inventory.
+    assert payload["critique_inventory"][0]["status"] == "current"
+    assert payload["mirror_inventory"]["status"] == "matched"
