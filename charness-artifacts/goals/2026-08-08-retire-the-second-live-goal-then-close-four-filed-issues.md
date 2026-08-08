@@ -9,14 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — `#558`. Slice 1 is DONE: `#536` is `CLOSED` and verified
-  (`7c09bc2a`), and `one-rule-one-owner` is `Status: complete` at `30517c46`
-  with every triggered closeout floor satisfied. ONE live goal now, not two.
-- Current slice intent: `#558` — make a wrong-repo `CLOSED` verdict unreachable
-  by reading, proven by CONSTRUCTION rather than by a passing suite.
-- Next action: premise-check `#558` BEFORE building — read it through the
-  adapter, then establish by execution which surface OWNS the `(repo, number)`
-  identity and whether the remedy it names lands there.
+- Current slice: 3 — `#557` and `#559`. Slices 1 and 2 are DONE: `#536` and `#558`
+  are both `CLOSED` and verified through the adapter, and the second goal
+  artifact is `complete`. `#558`'s own readback ran through the close path this
+  slice hardened.
+- Current slice intent: `#557` and `#559`, the fourth and fifth copies of the
+  tracker-backend rule — PREMISE-CHECK THEM SEPARATELY before bundling. This
+  goal's `## Plan Critique Findings` names the risk explicitly, and the
+  predecessor measured twice that issues sharing a FACE do not share a REMEDY.
+- Next action: read `#557` and `#559` through the adapter, then establish by
+  execution whether each copy's premise holds and whether they are ONE repair or
+  two. Slice 2's dup ratchet already produced evidence for `#559`: adding one
+  field to `_parse_backend` made it converge with `release_backend.py`, and the
+  release copy has ALREADY drifted on rendering.
 - 9-FOR-9, and slice 1 is the first where BOTH rounds landed on the REPAIRS rather
   than the build. Round 1 found four blockers in the shipped closeout draft; round
   2 found three more inside round 1's repairs, including a claim I had already
@@ -163,7 +168,7 @@ Five slices, ordered by MEASURED cost and leverage rather than by size.
 | Slice | Objective | Why HERE | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Close `#536` and retire the still-active `one-rule-one-owner` goal | It is BUILT and reviewed; one closeout retires a whole goal artifact, and two live goals is the "one issue, two owners" defect this family keeps repairing | `validate-closeout-draft` reports `draft_verified`, a DELEGATED resolution critique runs BEFORE the close, `verify-closeout --expect-state CLOSED` reads back through the adapter, and that goal reaches a terminal status | done — `#536` CLOSED and verified at `7c09bc2a`; the goal artifact is `complete` at `30517c46`; two delegated rounds found seven blockers, all in repairs |
-| 2 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo `CLOSED` verdict is a FALSE GREEN at an irreversible boundary — the highest-severity item in the filed set | The wrong-repo answer is refused or detected, proven by a constructed input rather than by a passing suite | planned |
+| 2 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo `CLOSED` verdict is a FALSE GREEN at an irreversible boundary — the highest-severity item in the filed set | The wrong-repo answer is refused or detected, proven by a constructed input rather than by a passing suite | done — CLOSED and verified at `01d1c5a8`; refusal proven by CONSTRUCTION at three surfaces; two rounds, five blockers, all in repairs |
 | 3 | `#557` and `#559`: the fourth and fifth copies of the backend rule | `#559` had ALREADY drifted from the owner when it was filed, which is the copy-rot this family exists to stop | Each consolidated or classified with a measured reason; the exemption list shrinks | planned |
 | 4 | `#556`: a check reachable only for a directory named `charness` | Cheapest of the filed set, same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | planned |
 | 5 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | planned |
