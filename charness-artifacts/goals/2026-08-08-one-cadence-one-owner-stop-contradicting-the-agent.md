@@ -45,8 +45,21 @@ runs the activation command.
   used; round 2 found the blocker fix had CARRIED ITS OWN CLASS, silently
   dropping this repo's 25 in-repo `skills/support/` files under the same
   override — D9 again, in the file that carries the D9 scar. Repaired to a union.
-- Next action: premise-check slice 3 before building it. Read the predecessor's
-  three blocked closeouts for the actual phrasing that failed, not the summary.
+- Slice 3 premise check (PARTIAL — verdict not reached, do not build on this):
+  the failing phrasing is PROSE in a slice/issue closeout ledger
+  (`four implementations, three consolidated`), not a structured field. The
+  predecessor's own record confirms the frequency — its slice log states "Ledger
+  arithmetic has now been the blocking finding in all three closeouts, always the
+  same way". What is NOT established is that a CHECK is the right remedy: parsing
+  a count out of English is the shape most likely to fire on correct work, and
+  this goal's Non-Goals forbid a wolf-crier while its own Plan Critique Findings
+  already flag slice 3 as the open risk ("if either check fires on correct work
+  during its own slice, that is the wolf-crier signal and it should be withdrawn
+  rather than tuned"). A cheaper remedy may be to change the LEDGER SHAPE so the
+  two numbers are separate fields and the arithmetic cannot be written wrong —
+  which is the same move slices 1 and 2 made, and which needs no parser.
+- Next action: finish that premise check by reading the three blocked closeout
+  drafts verbatim, then decide SHAPE-vs-CHECK before writing code.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
