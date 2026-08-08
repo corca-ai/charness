@@ -313,13 +313,12 @@ def test_final_bundle_private_error_and_render_branches(
 
     monkeypatch.setattr(lib, "_git", drift_git)
     blockers = lib._current_manifest_blockers(ROOT, manifest)
-    # SUBSET, not equality. This test's subject is that a failing git produces both drift codes,
-    # and it reads the REAL manifest — so an equality assertion also asserts that the live
-    # manifest is otherwise valid, which made this test redden for manifest-integrity blockers
-    # under a name about monkeypatched error branches. That was the last misnamed failure in the
-    # #537 fan-out, found by a resolution critique after two rounds had each fixed a different
-    # instance of the same coupling.
-    assert {"manifest_worktree_drift", "manifest_index_drift"} <= {item["code"] for item in blockers}
+    # EQUALITY, deliberately — do not weaken this to a subset. `_current_manifest_blockers` reads
+    # no manifest CONTENT (only ls-files, is_file/is_symlink, and two git diffs), so under
+    # `drift_git` the single live input is `is_file()` and the reachable outputs are exactly this
+    # pair or `{manifest_not_regular}`. A third code is not producible, so a subset form would
+    # decouple nothing and would stop a future added drift code from being caught.
+    assert {item["code"] for item in blockers} == {"manifest_worktree_drift", "manifest_index_drift"}
     missing_manifest = tmp_path / "missing-manifest.json"
     blockers = lib._current_manifest_blockers(tmp_path, missing_manifest)
     assert {item["code"] for item in blockers} == {"manifest_not_regular"}
@@ -367,7 +366,11 @@ def test_final_bundle_private_error_and_render_branches(
     # read the LIVE manifest. `base_sha` comes from the raw file's `premise.local_head_sha`, so a
     # broken or half-edited live manifest means two of the four codes are never produced and this
     # test reddens under a name about monkeypatched branches for a reason about live manifest
-    # state. The fixture manifest is valid by construction and does not move under the test.
+    # state. The fixture manifest is decoupled from the live manifest's GIT state — drift, index,
+    # tracked-ness, ancestry to live HEAD — which is the coupling above. It is not decoupled from
+    # the live template's JSON SHAPE: `bundle_ready_world.py` seeds from that same artifact, so a
+    # live manifest saved as invalid JSON errors the fixture build. That surfaces as a fixture
+    # error naming the builder, not as a misattributed assertion here.
     fixture_root = Path(bundle_ready_repo["repo"])
     payload = build_plan(
         fixture_root,
