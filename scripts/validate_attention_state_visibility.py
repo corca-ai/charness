@@ -14,6 +14,7 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -75,14 +76,77 @@ def _portable_path(repo_root: Path, path: Path) -> str:
     return path.resolve().relative_to(repo_root).as_posix()
 
 
+# What separates a status VALUE from English prose that happens to use the word.
+#
+# A status is a TOKEN: the whole string is the state (`"skipped"`), or the state
+# is one delimiter-separated part of a state-shaped token (`"silently-skipped"`).
+# English prose is a sentence -- it has spaces, and the word inside it is being
+# used, not assigned.
+#
+# The gate scanned every string constant for the term as a SUBSTRING, so a
+# docstring explaining that something may be skipped tripped a check about
+# exit-zero status values. Twice recorded (#302's `silently-skipped` docstring,
+# and a parsing docstring). Both are prose; neither could ever be read as a state
+# by anything, which is why neither was a real finding.
+_TOKEN_SPLIT = re.compile(r"[^A-Za-z0-9]+")
+# A labelled field: `WARNING: skipped`, `status=not_configured`, `a; b`. Each side
+# is examined on its own, so a state carrying its visibility prefix still reads as
+# a state while the surrounding sentence does not.
+_FIELD_SPLIT = re.compile(r"[:=;,()\[\]{}\"\']|\s-\s")
+
+
+def _is_status_value(value: str, term: str) -> bool:
+    """Is `term` used as a STATE in `value`, rather than as a word in a sentence?
+
+    A state is token-shaped. It appears either as the whole value (`"skipped"`),
+    as one part of a state-shaped token (`"silently-skipped"`), or as one side of
+    a labelled field (`"WARNING: skipped"`, `"status=not_configured"`) -- which is
+    a state WITH its visibility marker, exactly the shape this gate wants declared.
+
+    An English sentence is not a state, however many of the words match.
+    """
+    term_parts = [part for part in _TOKEN_SPLIT.split(term) if part]
+    if not term_parts:
+        return False
+    for field in _FIELD_SPLIT.split(value):
+        stripped = field.strip()
+        if not stripped or any(character.isspace() for character in stripped):
+            continue  # a phrase, not a state token
+        value_parts = [part for part in _TOKEN_SPLIT.split(stripped) if part]
+        for index in range(len(value_parts) - len(term_parts) + 1):
+            if value_parts[index:index + len(term_parts)] == term_parts:
+                return True
+    return False
+
+
+def _docstring_nodes(tree: ast.AST) -> set[int]:
+    """Every constant that IS a docstring, by identity.
+
+    A docstring is documentation; nothing reads it as a state. Excluding it is
+    the structural half of the prose/value split above.
+    """
+    marked: set[int] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.Module, ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        body = getattr(node, "body", None)
+        if not body:
+            continue
+        first = body[0]
+        if isinstance(first, ast.Expr) and isinstance(first.value, ast.Constant) and isinstance(first.value.value, str):
+            marked.add(id(first.value))
+    return marked
+
+
 def _string_constants(path: Path) -> list[str]:
     try:
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
     except SyntaxError as exc:
         raise ValueError(f"cannot parse {path}: {exc}") from exc
+    docstrings = _docstring_nodes(tree)
     values: list[str] = []
     for node in ast.walk(tree):
-        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and id(node) not in docstrings:
             values.append(node.value)
     return values
 
@@ -183,7 +247,10 @@ def detect_attention_states(
             if relative in EXCLUDED_PATHS or "__pycache__" in path.parts:
                 continue
             constants = _string_constants(path)
-            hits = sorted({term for term in ATTENTION_TERMS if any(term in value for value in constants)})
+            hits = sorted({
+                term for term in ATTENTION_TERMS
+                if any(_is_status_value(value, term) for value in constants)
+            })
             if hits:
                 key = declaration_key(relative)
                 if key in detected and source_paths[key] != relative:

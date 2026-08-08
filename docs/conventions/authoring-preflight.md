@@ -13,11 +13,16 @@ Read this alongside the headroom and skill-surface preflight bullets in
 ## Attention-state banned vocabulary
 
 [validate_attention_state_visibility.py](../../scripts/validate_attention_state_visibility.py)
-scans Python **string constants**
-(status strings *and docstrings*) under `scripts/` and `skills/` for exit-zero
-attention-state terms. A new module that uses one of these as a bare status — or
-a docstring that contains one (the #302 `"silently-skipped"` detour, which
-matched `skipped`) — fails the gate unless the file is declared in
+scans Python **string constants** under `scripts/` and `skills/` for exit-zero
+attention-state terms, and reads them as STATUS VALUES rather than as words. A
+term counts when it is token-shaped — the whole value (`"skipped"`), one part of
+a state-shaped token (`"silently-skipped"`), or one side of a labelled field
+(`"WARNING: skipped"`, `"status=not_configured"`) — never when it is a word
+inside an English sentence, and never inside a docstring. That split is what
+ended the #302 `"silently-skipped"` docstring detour and its repeat; it also
+CAUGHT two real states a substring scan could not see, because they were spelled
+with a different separator (`advisory_only_no_cli_surface`, `not-configured`).
+A module that uses one of these as a status fails the gate unless it is declared in
 [skills/public/quality/references/attention-state-visibility.json](../../skills/public/quality/references/attention-state-visibility.json)
 with a visibility and rationale.
 

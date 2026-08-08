@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 7 — let a docstring say "skipped" without tripping the attention-state gate.
+- Current slice: 8 — release `4.0.0` and push the bundle.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: separate a status VALUE from English prose, so the two recorded
-  false positives pass while a genuine exit-zero `skipped` status still fails.
+- Next action: cut the `4.0.0` release, then push, then read the remote CI
+  verdict back through a different observer and channel than the push exit code.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -160,7 +160,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 4 | DONE. Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | `PASS docs-graph` named in the summary; FAIL and UNPROVEN both observed through the runner; doctor still `ok`; two review rounds | done |
 | 5 | DONE. `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Replay over 185 checked-in goals: 156 quality + 47 debug triggers dropped, ZERO gained, `impl`/`issue` unchanged — every change is the prose guess ceasing to fire. Both recorded false positives pinned as tests | done |
 | 6 | DONE. `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No typed floor number left in the file; four tests move a live constant and assert the rendered text follows; the queue floor's regex is built from its own constant | done |
-| 7 | `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | The recorded false positives pass; a genuine exit-zero `skipped` status still fails | pending |
+| 7 | DONE. `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | Both recorded false positives pass; bare/prefixed/labelled/separator-variant statuses still fire; 31 prose-only declarations retired and 2 REAL states caught that the substring scan could not see | done |
 | 8 | Release `4.0.0` and push | The operator scoped the push to ride with this release | Release artifact, push, and a remote CI verdict from a distinct observer and channel | pending |
 
 ## Operator Decision Queue
@@ -239,6 +239,31 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 7 — a status value is not an English word (done)
+
+- The gate substring-scanned every string constant, including docstrings, so
+  prose about an exit-zero state tripped a check about exit-zero states. Two
+  recorded instances (#302's `silently-skipped`, and a parsing docstring).
+- The split is structural: a status is TOKEN-shaped — the whole value
+  (`"skipped"`), one part of a state-shaped token (`"silently-skipped"`), or one
+  side of a labelled field (`"WARNING: skipped"`, `"status=not_configured"`).
+  An English sentence is not a state however many of its words match, and a
+  docstring is documentation that nothing reads as a state.
+- **The narrowing came with a WIDENING, which is the part worth keeping.** A
+  substring scan could not match a state spelled with a different separator, so
+  `advisory_only_no_cli_surface` and `not-configured` — two real exit-zero states
+  in this repo — escaped the gate entirely. Both are now caught and declared.
+- 31 declarations retired because their only hits were prose; each removal was
+  spot-checked (`"Codex marketplace update skipped."`, a module docstring, a
+  `"detect failed; healthcheck skipped"` message). 10 state lists corrected.
+- The best illustration is `validate_usage_episodes.py`: it keeps `no_adapter`
+  and `disabled` (real statuses at the head of the visible line) and loses
+  `skipped` (English in the same sentence).
+- One existing test fixture used `print('disabled by config')` to mean "a file
+  with a disabled state". It now carries a real status, because that test is
+  about path resolution in the exported layout and its fixture should carry the
+  thing the gate looks for.
 
 ### Slice 6 — the describe module renders what it claims to render (done)
 
