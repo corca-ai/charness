@@ -45,10 +45,13 @@ runs the activation command.
   `run_slice_closeout.py --skip-broad-pytest` -> `Closeout verdict: completed`.
   `#562` is not yet CLOSED — that rides the bundle boundary with the delegated
   resolution critique and the adapter readback.
-- Next action: slice 2 — `#561`, put the equality-versus-invariant probe decision
-  to D47's owner with both costs measured, and give
-  `test_measure_evidence_residual.py` the drift message the issue says needs no
-  decision.
+- Slice 2 status: DONE. `#561`'s decision is measured and queued for D47's owner
+  (the tax is paid entirely for a corpus COUNTER; every toll figure the deferral
+  turns on is stable), and the third site's drift message is built and proven by
+  construction. One delegated round, 9 findings, 7 repaired and 2 accepted with
+  reasons. `#561` stays OPEN by design — it is a decision, not a defect.
+- Next action: slice 3 — `#560`, exercise the bundle ready path without requiring a
+  clean worktree; then bundle proof, issue closeout for `#562`, and goal closeout.
 - Routing: `charness:achieve` owns the goal lifecycle; `charness:issue` owns the
   `#562`/`#561`/`#560` resolution and closeout shape at the bundle boundary;
   bounded `charness:bounded-reviewer` subagents own every fresh-eye round.
@@ -232,6 +235,48 @@ Queue item form:
 - Unblock action: exact action or answer needed
 - Revisit trigger: event, date, or proof boundary that reopens this
 
+### `#561`: equality-versus-invariant probe pins — D47's owner's call, both costs measured
+
+- Decision: for each pinned field in the two inventory probes, keep the EQUALITY pin
+  or replace it with an INVARIANT. This goal measured both costs and deliberately did
+  not take the decision (`## Non-Goals`).
+- Owner: D47's owner (operator).
+- **Cost of the equality pin, measured.** Adding ONE ordinary markdown artifact to
+  `charness-artifacts/quality/` reds 3 assertions across 2 files —
+  `test_inventory_marker_rule_measurement.py::test_the_recorded_probe_still_matches_todays_tree`,
+  `::test_the_recursive_variant_recorded_in_the_probe_is_reproducible`, and
+  `test_a_declaration_is_not_its_own_corroboration.py::test_the_recorded_probe_still_matches_todays_tree`.
+  Remediation spans the 9 surfaces `UPDATE_SURFACES` enumerates. The probe records 3
+  refreshes already (2026-08-01, 2026-08-06, 2026-08-07). The third site, which pins an
+  INVARIANT, stayed GREEN under the identical write and has never needed a refresh.
+- **What actually moved, which is the decisive fact and was not in the issue.** Diffing
+  both payloads across that same write, exactly one thing changed: the corpus COUNTER.
+  `artifacts_scanned` 131 -> 132, `artifacts` 131 -> 132, `rows` 131 -> 132 entries, and
+  `exemption_counts.not-claimed` 131 -> 132. Everything D47's decision actually rests on
+  was STABLE — `citations_refused_by_the_marker_rule`,
+  `artifacts_refused_by_the_marker_rule`, `field_mentions_carrying_a_value_marker`,
+  `field_mentions_without_a_marker`, `field_mentions_presence_only`, `marker_kinds`,
+  `floor`, `field_mention_residuals`, `label_value_residuals`.
+  **So the entire re-record tax is being paid for a corpus-size counter, and the toll
+  figures the deferral turns on do not move on their own.** That reframes the choice from
+  "equality or invariant" to "which FIELDS get which pin", and a split is available that
+  costs nothing D47 relies on: equality on the toll set, invariant or nothing on the
+  counters.
+- **Cost of dropping equality.** D47 quotes figures in prose, and the pin is the only
+  forcing function that makes a corpus move reach that prose. The marker probe records
+  that a transcribed number went stale for two refresh cycles even WITH the pin, so the
+  forcing function is real but demonstrably not sufficient on its own.
+- **Non-claim, and it bounds the recommendation.** Measured with ONE probe artifact that
+  does not cite a declared inventory. An artifact that DOES cite one would additionally
+  move the mention counts and possibly the refused set, so "the toll figures are stable"
+  is a claim about incidental quality writes, which is the population that caused the 3
+  refreshes — not a claim that they can never move.
+- Unblock action: choose per-field. If the split above is wanted, name which fields keep
+  equality; that is a follow-up slice, not a reinterpretation of this measurement.
+- Revisit trigger: the next refresh of either probe, or any D47 movement.
+- Already done, needing no decision (`#561` says so itself):
+  `test_measure_evidence_residual.py` now has a drift message.
+
 ### `#547`'s subject was deleted by slice 1, and this goal is not allowed to close it
 
 - Decision: close `#547` as resolved-by-deletion, or re-scope it.
@@ -331,6 +376,20 @@ applies.
 - Off-goal findings: Recorded rather than actioned: (1) `#547` is OPEN and its subject — `refreeze` re-stamping every locator digest silently — no longer exists, since this slice deleted the digests. It is one of the six issues the predecessor returned to the backlog unclaimed, so re-homing it is a stated Non-Goal; it goes to the Operator Decision Queue instead of being silently closed. (2) The freeze receipt does not record which inspection schema generation it bound; DEFERRED with round 2's reason, which is stronger than the finding — the schema is already transitively bound through `inspection_identity`, so adding a field would duplicate a bound fact. (3) `docs/handoff.md:16` still tells a successor to claim `#562`; belongs to the closeout handoff refresh. (4) `tests/test_issue_source_freeze.py` remains at 792/800 with 8 lines of headroom; the next addition there owes the same split this slice took.
 - Lessons carried forward: A DELETION is not a smaller change than an addition — it is an inheritance audit. The pin's removal had to re-provide file existence (its sole carrier), and two rounds found the writer holding weaker rules than the reader, a partial-write class the instance fix did not reach, and a `role` key the `path` guard did not cover. Second: a claim's TEETH and its APPEARANCE must be removed together. The blocker was prose in the one region no identity covered, and correcting it moved no identity at all — which is why the fix was to bind the prose, not just rewrite it. Third, and the sharpest for the next slice: a mutation harness is code, and mine reported nine false kills from one unquoted shell variable. A green mutant sweep must first prove its own baseline reports a real test COUNT, or it is measuring the harness rather than the subject.
 - Metrics: No host token/time telemetry exposed to this session; not fabricated. Countable: 2 delegated review rounds, 12 findings (1 BLOCKER, 2 HIGH, 4 MEDIUM, 5 LOW), 16 source-level mutants all killed, 3 construction proofs, 61 tests green in the two freeze modules, 13 tests added, 3 checked-in artifacts re-stamped.
+
+### Slice 2: Slice 2 — `#561`: measure the pin choice for D47's owner, and close the third site's diagnostic gap
+
+- Objective: Two separable halves. Put the equality-versus-invariant probe-pin choice to D47's owner with BOTH costs measured rather than taking it (a stated Non-Goal), and close the part `#561` itself says needs no decision: `test_measure_evidence_residual.py` reported a bare kind name on failure while its two siblings got `#536`'s rich drift message.
+- Why this approach: `#536` made the recurring re-record cheaper and harder to get wrong; it never asked whether the equality pin is the right CLAIM. That question turns on numbers nobody had measured, and the goal's acceptance is explicit that this run measures and does not adopt. The message half is independent, cheaper, and was the concrete defect a reader actually hits.
+- Commits:
+- What changed: `tests/probe_drift_support.py`: new `residual_floor_message` with its own `RESIDUAL_*` constants and a 5-entry `RESIDUAL_UPDATE_SURFACES`; `probe_drift_message` untouched. `tests/quality_gates/test_measure_evidence_residual.py`: 5 assertions now carry the message, including the exit-code one. `tests/test_probe_drift_message.py`: 6 new pins. The goal artifact's `## Operator Decision Queue` carries the `#561` decision packet.
+- Alternatives rejected: Reusing `probe_drift_message` was rejected and the review confirmed it: its `UPDATE_SURFACES` names the marker probe, the floor probe, D47 and the inventory gate, none of which carry a residual figure, and its remedy (re-record) is the OPPOSITE of this site's. Deciding the pin question from the measurement was rejected as a stated Non-Goal — the measurement is put to the owner instead. Posting the measurement as a GitHub comment on `#561` was deferred: commenting is not in the repo's standing-approval list, and the operator reads the goal artifact.
+- Targeted verification: MEASURED, not argued. Adding one ordinary markdown artifact to `charness-artifacts/quality/` reds 3 assertions across the 2 equality sites while the invariant site stays GREEN. Diffing both payloads across that write isolates what actually moves: ONLY the corpus counter (`artifacts_scanned`/`artifacts`/`rows`/`exemption_counts.not-claimed`, 131 -> 132). Every toll figure D47 rests on — the refused citations, the refused artifacts, the marker split, the floor, the residuals — stayed stable. CONSTRUCTION for the message half: a one-byte stub artifact placed in the corpus renders the full message, read back three times as it was corrected. 6 mutants on the repairs, all killed. Gate: `Closeout verdict: completed`; 25 tests green in the two message suites, 83 across all four probe suites.
+- Test duplication pressure: No new test module needed: `tests/test_probe_drift_message.py` was at 312/800 and `tests/probe_drift_support.py` at 188/800, so both additions landed with wide headroom — the opposite of slice 1's constraint, and checked before writing rather than after. Dup ratchet clean at the gate.
+- Critique: ONE delegated bounded round, boundary verified clean before repairing (`w-20260808T084443Z-149124`). Not two: this slice adds a MESSAGE and changes no verdict logic, so the two-round trigger does not fire — but one round was clearly owed, because a drift message is the exact artifact class this repo has twice shipped WORSE than what it replaced. The round earned it, returning 9 findings including 3 of that same class: the message named `kinds[*].count`, a key the residual probe does not have and which I had inherited from the INVENTORY probe's shape — an assertion about a file's contents made without opening it; the re-record list named ONE surface when the figures are transcribed in five, so a reader following it would leave the gate defending its floor with a number no probe reports AND hit an unwarned mirror-drift gate; and 'exits non-zero exactly when the invariant is broken' was false twice over, since the script uses a STRICT comparison (exit 1 when a minimum EQUALS the floor, which the gate itself passes) and also exits 1 on an empty corpus. Also real: one of the five messaged assertions compares the recorded probe to ITSELF, so 'drifted from the recorded measurement' was false for it and both remedy branches sent the reader to inspect a healthy live tree — it now has its own third branch. All repaired. Two findings accepted rather than fixed, with reasons: a bare `KeyError`/`TypeError` path if the measure script's `KINDS` are renamed or a kind empties (pre-existing, not what `#561` filed, and fixing it means restructuring the test rather than messaging it), and one assertion that is unreachable while the script keeps its exit contract (kept deliberately as belt-and-braces, now commented as such).
+- Off-goal findings: The `#561` decision itself is now an Operator Decision Queue item, not a finding. Recorded there: the split the measurement suggests — equality on the toll set, invariant or nothing on the corpus counters — is the OWNER's to take, and it is a follow-up slice rather than a reinterpretation of this measurement.
+- Lessons carried forward: The measurement reframed the question the issue asked. `#561` posed it as equality-versus-invariant; measuring showed the entire re-record tax is paid for a corpus-size COUNTER while every figure the deferral turns on is naturally stable. The real choice is per-FIELD, which neither the issue nor this goal's plan had seen. Second, and it repeats slice 1 exactly: my repair inherited the shape of the thing it was modelled on. Writing a residual message by analogy to the inventory message imported an inventory KEY NAME and an inventory-sized surface list into a probe that has neither. Analogy is how the first draft got written and also how it got three claims wrong. Third: the first version of this fix put the message on four assertions and left `assert code == 0` bare — and that is the ONLY one a stub artifact reaches, because the script exits 1 first. Construction caught it; reading the diff would not have.
+- Metrics: No host token/time telemetry exposed; not fabricated. Countable: 1 delegated round, 9 findings (1 BLOCKER, 2 HIGH, 2 MEDIUM, 4 LOW), 7 repaired and 2 accepted with reasons, 6 mutants all killed, 3 construction reads of the rendered message, 6 pins added, 25 tests green in the two message suites.
 
 ## Context Sources
 

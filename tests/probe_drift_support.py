@@ -211,3 +211,131 @@ def probe_drift_message(key: str, *, probe: str, variant: str | None = None) -> 
         ]
     )
     return "\n".join(lines)
+
+
+# --- The THIRD probe site (#561), which is a different claim and needs a different message ---
+#
+# `probe_drift_message` above must NOT be reused here, and the reason is the trap this module's
+# own docstring records: its `UPDATE_SURFACES` names the marker probe, the floor probe, D47, and
+# the inventory gate. None of those carry a residual-floor figure. A reader following it would
+# re-record two unrelated probes and edit a decision entry that never cited this number — the
+# "version 2 was worse than the bare number" failure, repeated.
+#
+# The deeper difference is the CLAIM. The other two sites pin equality on counts, so their
+# remedy is usually "re-record". This site pins a FLOOR by equality and an INVARIANT over the
+# counts (`min_residual >= floor`), which is why it has never needed a refresh — and it means a
+# failure here is almost never a re-record. It is a real finding about a real artifact.
+RESIDUAL_PROBE = "charness-artifacts/probe/2026-08-01-evidence-residual-floor.json"
+RESIDUAL_COMMAND = "python3 scripts/measure_evidence_residual.py --repo-root ."
+RESIDUAL_MEASURE_SCRIPT = "scripts/measure_evidence_residual.py"
+# The FILE, kept path-shaped so it stays usable with `ROOT /`. The symbol is a separate
+# constant: a `*_HOME` that ended in ` (SYMBOL)` broke the first time anyone joined it to a path.
+RESIDUAL_FLOOR_HOME = "scripts/check_prescribed_skill_executed_lib.py"
+RESIDUAL_FLOOR_SYMBOL = "MIN_BOUND_RESIDUAL_CHARS"
+RESIDUAL_FLOOR_MIRROR = "plugins/charness/scripts/check_prescribed_skill_executed_lib.py"
+RESIDUAL_CONTRACT_DOC = "docs/prescribed-skill-closeout-contract.md"
+RESIDUAL_TIMEBOX_TEST = "tests/quality_gates/test_goal_artifact_timebox.py"
+
+# Every surface transcribing the recorded residual figures. ONE entry was the first draft's
+# answer, and it was the `UPDATE_SURFACES` mistake repeated: the figures (`337`, `530`, `2168`,
+# `83`, the floor `8`) are quoted in the gate's own rationale, in its GENERATED mirror, in an
+# operator-facing contract doc, and in a sibling test's comment. A reader who re-recorded only
+# the probe would leave the gate defending its floor with a number no probe reports — and the
+# mirror half would block their commit on a drift gate nothing warned them about.
+RESIDUAL_UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
+    (
+        f"{RESIDUAL_PROBE} — the whole file; it has NO `_provenance`, unlike the marker and floor"
+        " probes, so the command's stdout IS the file",
+        RESIDUAL_COMMAND,
+    ),
+    (
+        f"{RESIDUAL_FLOOR_HOME} — the floor's own rationale comments transcribe the per-kind"
+        " minimums and file counts, and repeat the smallest residual a third time further down."
+        " This is the surface case 2 is ABOUT, so leaving it stale is self-refuting",
+        None,
+    ),
+    (
+        f"{RESIDUAL_FLOOR_MIRROR} — the GENERATED mirror of the file above, carrying the same"
+        " figures. Do not hand-edit it and do not skip it: regenerate, or a staged-mirror-drift"
+        " gate blocks the commit while the mirror still cites the old numbers",
+        MIRROR_SYNC_COMMAND,
+    ),
+    (
+        f"{RESIDUAL_CONTRACT_DOC} — operator-facing prose quoting the same per-kind minimums,"
+        " file counts, and the floor in one sentence",
+        None,
+    ),
+    (
+        f"{RESIDUAL_TIMEBOX_TEST} — a comment quoting the JSON host-log residual; a green test"
+        " with a stale comment is the quietest of these",
+        None,
+    ),
+)
+
+
+def residual_floor_message(key: str, *, kind: str | None = None, recorded_only: bool = False) -> str:
+    """Why the evidence-residual pin failed, and why re-recording is usually the WRONG answer."""
+    where = f"`{key}` for kind `{kind}`" if kind else f"`{key}`"
+    # Only point at a kind when one was actually named. The `exit_code` call site has none —
+    # the script exits 1 before any per-kind comparison runs — and telling that reader to look
+    # at "the kind named above" sends them to a line that is not there.
+    which_kind = f"for the kind `{kind}`" if kind else "for each kind"
+    if recorded_only:
+        # A THIRD case, and it belongs to exactly one assertion: the one comparing the recorded
+        # probe to ITSELF. Nothing live participates, so "drifted from the recorded measurement"
+        # is false for it and both cases below send the reader to inspect a healthy live tree.
+        return "\n".join(
+            [
+                f"{where} is inconsistent WITHIN the recorded probe {RESIDUAL_PROBE}.",
+                "",
+                "Both sides of this comparison come from the checked-in file. Nothing live took",
+                "part, so this is NOT drift and running the measurement will not explain it: the",
+                "probe records a per-kind minimum that sits under the floor the same file records.",
+                "",
+                "That means the file was hand-edited, or a re-record captured a run whose invariant",
+                "was already broken and pinned it. Do not re-record on top of it — find out which,",
+                f"then re-record deliberately with `{RESIDUAL_COMMAND}` and update every surface",
+                "listed by the other branch of this message.",
+            ]
+        )
+    return "\n".join(
+        [
+            f"{where} no longer matches the recorded measurement in {RESIDUAL_PROBE}.",
+            "",
+            "This site does NOT pin counts, so this is not the usual re-record. Read which of the",
+            "two claims broke:",
+            "",
+            "1. THE INVARIANT BROKE — the floor is no longer STRICTLY below every measured minimum.",
+            "   That is a FINDING, not drift: some artifact in the measured corpus carries no more",
+            "   bound evidence than the floor the gate enforces. Note the strictness — the command",
+            "   exits 1 when a minimum EQUALS the floor, which the gate itself still passes, so the",
+            "   offending file may not be refused anywhere else yet. Do NOT lower the floor and do",
+            f"   NOT re-record. Run `{RESIDUAL_COMMAND}` and read `min_residual_path` {which_kind} —",
+            "   it names the file. Either it is a stub that should carry real evidence, or it is not",
+            "   evidence at all and does not belong in the corpus.",
+            "   The same exit code also covers an EMPTY corpus (`corpus_established: false`), where",
+            "   nothing is below anything; check that field before reading the minimums.",
+            "",
+            "2. THE FLOOR MOVED — the recorded `floor` no longer equals the live one.",
+            f"   The constant is `{RESIDUAL_FLOOR_SYMBOL}` in {RESIDUAL_FLOOR_HOME}, NOT in",
+            f"   `{RESIDUAL_MEASURE_SCRIPT}`, which only imports it — so diffing the measure script",
+            "   finds nothing. A floor change is a RULE change: establish the new floor is correct",
+            "   before pinning it, then re-record.",
+            "",
+            "Per-kind COUNTS are deliberately not pinned. `kinds[*].files` grows as artifacts land",
+            "and that is expected — the floor claim is what must hold. If you find yourself",
+            "re-recording to make this green, the assertion you are silencing is the invariant.",
+            "",
+            "To re-record (case 2 only), update ALL of these. They carry the same figures, so a",
+            "partial update leaves one surface citing a number no other surface reports:",
+            *_render_surfaces(RESIDUAL_UPDATE_SURFACES),
+        ]
+    )
+
+
+def _render_surfaces(surfaces: tuple[tuple[str, str | None], ...]) -> list[str]:
+    lines: list[str] = []
+    for surface, command in surfaces:
+        lines.append(f"  - {surface}")
+        lines.append(f"      run: {command}" if command is not None else "      edit by hand")
+    return lines

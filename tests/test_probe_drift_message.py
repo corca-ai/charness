@@ -30,9 +30,19 @@ from tests.probe_drift_support import (
     MARKER_PROBE,
     MARKER_RECURSIVE_COMMAND,
     MIRROR_SYNC_COMMAND,
+    RESIDUAL_COMMAND,
+    RESIDUAL_CONTRACT_DOC,
+    RESIDUAL_FLOOR_HOME,
+    RESIDUAL_FLOOR_MIRROR,
+    RESIDUAL_FLOOR_SYMBOL,
+    RESIDUAL_MEASURE_SCRIPT,
+    RESIDUAL_PROBE,
+    RESIDUAL_TIMEBOX_TEST,
+    RESIDUAL_UPDATE_SURFACES,
     RULE_CAUSES,
     UPDATE_SURFACES,
     probe_drift_message,
+    residual_floor_message,
 )
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -401,3 +411,171 @@ def test_the_message_does_not_claim_D47_names_the_floor_probe() -> None:
     message = probe_drift_message("floor", probe=FLOOR_PROBE)
     assert "does NOT name the floor probe" in message
 
+
+
+# --- The third probe site's message (#561) ---------------------------------------------------
+#
+# Same lazy-evaluation problem as the two above: nothing green calls it. These pin the claims it
+# makes, and specifically the ones it must NOT inherit from `probe_drift_message`.
+
+
+def test_the_residual_message_is_not_the_inventory_message() -> None:
+    """The residual site's remedy is the OPPOSITE of the other two sites'.
+
+    Reusing `probe_drift_message` here would have told a reader to re-record the marker and floor
+    probes and edit D47 — none of which carry a residual figure. That is exactly the "version 2
+    was worse than the bare number it replaced" failure this module was written to record, so the
+    separation is asserted rather than left to a reviewer's memory.
+    """
+    message = residual_floor_message("min_residual", kind="markdown_artifacts")
+
+    assert MARKER_PROBE not in message
+    assert FLOOR_PROBE not in message
+    assert DECISION_RECORD not in message
+    assert RESIDUAL_PROBE in message
+    # The load-bearing inversion: a break here is usually a FINDING, not a re-record.
+    assert "not the usual re-record" in message
+    assert "THE INVARIANT BROKE" in message
+    assert "Do NOT lower the floor" in message
+
+
+def test_the_residual_message_names_where_the_floor_constant_actually_lives() -> None:
+    """The mistake the inventory message already made once, checked against the source.
+
+    Version 2 of the inventory message sent readers to diff the measure scripts when the
+    thresholds lived in the gate. The residual floor has the same shape: `measure_evidence_residual.py`
+    reads `MIN_BOUND_RESIDUAL_CHARS` from another module, so diffing the measure script finds
+    nothing.
+    """
+    home = ROOT / RESIDUAL_FLOOR_HOME
+    assert f"{RESIDUAL_FLOOR_SYMBOL} = " in home.read_text(encoding="utf-8"), (
+        "the residual floor constant moved; the message still sends readers to this file"
+    )
+    measure = (ROOT / RESIDUAL_MEASURE_SCRIPT).read_text(encoding="utf-8")
+    assert f"{RESIDUAL_FLOOR_SYMBOL} = " not in measure, (
+        "the measure script now defines the floor itself; the message says it does not"
+    )
+    message = residual_floor_message("floor")
+    assert RESIDUAL_FLOOR_HOME in message
+    assert RESIDUAL_COMMAND in message
+    # DIRECTIONAL, not presence. Both filenames appear in the same sentence, so swapping them
+    # leaves every substring check green while sending the reader to diff the wrong file — the
+    # version-2 harm, reachable through the pin written to prevent it. The sibling inventory
+    # suite learned this twice; asserting order is what closes it.
+    assert message.index(RESIDUAL_FLOOR_HOME) < message.index("NOT in"), (
+        "the message now names the measure script as the constant's home; the two files are "
+        "swapped and the reader is sent to diff the one that does not define it"
+    )
+    assert message.index("NOT in") < message.index(f"`{RESIDUAL_MEASURE_SCRIPT}`")
+
+
+def test_the_residual_probe_really_has_no_provenance_block() -> None:
+    """An exclusive claim about the file, made by opening it rather than by assuming.
+
+    The message tells the reader the command's stdout is the WHOLE file — safe only because this
+    probe, unlike its two siblings, carries no `_provenance`. If one is ever added, that
+    instruction destroys it.
+    """
+    payload = json.loads((ROOT / RESIDUAL_PROBE).read_text(encoding="utf-8"))
+
+    assert "_provenance" not in payload
+    # Asserted on the unwrapped fragment: the full sentence spans a line break in the render,
+    # which is how the sibling assertions above already handle wrapped claims.
+    assert "stdout IS the file" in residual_floor_message("floor")
+    assert "NO `_provenance`" in residual_floor_message("floor")
+    # Every per-kind key the message names must exist. The first draft said `kinds[*].count`,
+    # a key from the INVENTORY floor probe that this probe does not have — an assertion about a
+    # file's contents made without opening it, which is the version-2 class exactly.
+    kind_keys = set()
+    for kind_payload in payload["kinds"].values():
+        kind_keys.update(kind_payload)
+    message = residual_floor_message("min_residual", kind="markdown_artifacts")
+    for named in re.findall(r"`kinds\[\*\]\.(\w+)`", message):
+        assert named in kind_keys, (
+            f"the message names `kinds[*].{named}`, which the probe does not have; its keys are "
+            f"{sorted(kind_keys)}"
+        )
+    assert "`kinds[*].files`" in message
+
+
+def test_the_residual_site_actually_calls_the_message() -> None:
+    """A message helper nobody calls is the defect this module exists to catch.
+
+    `assert expr, msg` never evaluates `msg` while the suite is green, so an unwired helper looks
+    identical to a wired one from the outside.
+    """
+    site = (ROOT / "tests" / "quality_gates" / "test_measure_evidence_residual.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert "residual_floor_message" in site
+    assert site.count("residual_floor_message(") >= 5, (
+        "a residual assertion lost its drift message; the bare `, kind` form is what #561 filed"
+    )
+    # The exit-code assertion specifically. It is the one a stub artifact actually reaches, and
+    # leaving it bare made every message below it unreachable on the real failure path.
+    assert "assert code == 0, residual_floor_message(" in site, (
+        "the exit-code assertion lost its message; the script exits 1 exactly when the invariant "
+        "breaks, so this is the assertion #561's reported failure mode hits first"
+    )
+    # And the message must not point at a kind when none was named.
+    assert "for each kind" in residual_floor_message("exit_code")
+    assert "for the kind `markdown_artifacts`" in residual_floor_message(
+        "min_residual", kind="markdown_artifacts"
+    )
+
+
+def test_every_residual_surface_exists_and_carries_the_figures_it_is_named_for() -> None:
+    """The `UPDATE_SURFACES` lesson, applied to the residual list rather than re-learned.
+
+    The first draft listed ONE surface. The recorded figures are transcribed in the gate's own
+    floor rationale, in that file's generated mirror, in an operator-facing contract doc, and in
+    a sibling test's comment. Re-recording only the probe leaves the gate defending its floor
+    with a number no probe reports — the sentence the inventory message uses to justify its own
+    list — and the mirror half additionally blocks the commit on a drift gate.
+    """
+    probe = json.loads((ROOT / RESIDUAL_PROBE).read_text(encoding="utf-8"))
+    figures = {str(kind["min_residual"]) for kind in probe["kinds"].values()}
+
+    listed = {surface.split(" — ")[0] for surface, _ in RESIDUAL_UPDATE_SURFACES}
+    for path in (
+        RESIDUAL_PROBE,
+        RESIDUAL_FLOOR_HOME,
+        RESIDUAL_FLOOR_MIRROR,
+        RESIDUAL_CONTRACT_DOC,
+        RESIDUAL_TIMEBOX_TEST,
+    ):
+        assert path in listed, f"the residual re-record list dropped {path}"
+        assert (ROOT / path).is_file(), f"the residual message names a missing surface: {path}"
+
+    # Not just listed — each transcribing surface must actually still carry a recorded figure,
+    # or it has stopped being a surface and the list is stale in the other direction.
+    for path in (RESIDUAL_FLOOR_HOME, RESIDUAL_FLOOR_MIRROR, RESIDUAL_CONTRACT_DOC):
+        text = (ROOT / path).read_text(encoding="utf-8")
+        assert any(figure in text for figure in figures), (
+            f"{path} no longer quotes any recorded residual figure; the message still sends a "
+            "re-recording reader there"
+        )
+
+    # The generated mirror is the one surface with a REGENERATE command rather than a hand edit.
+    paired = dict(RESIDUAL_UPDATE_SURFACES)
+    mirror = next(s for s in paired if s.startswith(RESIDUAL_FLOOR_MIRROR))
+    assert paired[mirror] == MIRROR_SYNC_COMMAND
+
+
+def test_the_recorded_only_branch_does_not_send_the_reader_to_the_live_tree() -> None:
+    """One assertion compares the probe to ITSELF, and the drift text is false for it.
+
+    Both operands come from the checked-in file, so "no longer matches the recorded measurement"
+    misnames the failure and both numbered cases point at a live tree that is healthy. The
+    separate branch says what actually happened: the probe is internally inconsistent.
+    """
+    message = residual_floor_message("min_residual", kind="markdown_artifacts", recorded_only=True)
+
+    assert "inconsistent WITHIN the recorded probe" in message
+    assert "Nothing live took" in message
+    assert "no longer matches the recorded measurement" not in message
+    # And it must NOT tell the reader to go read a live path, which is case 1's remedy.
+    assert "min_residual_path" not in message
+    # The two branches must not render identically, or the reader cannot tell which fired.
+    assert message != residual_floor_message("min_residual", kind="markdown_artifacts")
