@@ -120,3 +120,38 @@ def test_a_placeholder_is_left_to_the_callers_missing_field_check() -> None:
     # `TBD` is non-empty, so a truthiness check would report it here AND at the
     # caller, naming one defect twice.
     assert counts.missing_sibling_ledger_fields("TBD", substantive=_substantive) == []
+
+
+def test_the_counting_finding_explains_itself_on_the_blocking_surface() -> None:
+    """The carrier that can stop a commit had nothing to say.
+
+    The library built a full diagnosis and its only consumer read `["ok"]` and
+    dropped it, so an author stopped at the pre-commit boundary got one
+    unexplained snake_case token. This returns the real reason for that finding
+    and the static description for every other.
+    """
+    reason = counts.rule_reason(
+        "Found four implementations, three consolidated.",
+        "siblings_separate_population_and_removal_counts",
+    )
+
+    assert reason
+    assert reason != "siblings_separate_population_and_removal_counts"
+    assert len(reason) > 40, "the blocking surface should carry the diagnosis, not a token"
+
+
+def test_a_satisfied_counting_ledger_has_no_finding_to_describe() -> None:
+    assert (
+        counts.rule_reason(
+            "Sibling search: population: 4, removed: 2. Decision: x. Proof: y.",
+            "siblings_separate_population_and_removal_counts",
+        )
+        is None
+    )
+
+
+def test_other_findings_fall_back_to_their_static_description() -> None:
+    described = counts.rule_reason("anything", "siblings_decision_and_proof")
+
+    assert described == counts.SIBLING_RULE_DESCRIPTIONS["siblings_decision_and_proof"]
+    assert counts.rule_reason("anything", "not_a_known_finding") is None
