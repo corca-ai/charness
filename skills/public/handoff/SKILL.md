@@ -23,18 +23,25 @@ the plan.
 Resolve `$SKILL_DIR` per `../../shared/references/bootstrap-resolution.md`, then run:
 
 ```bash
-python3 "$SKILL_DIR/scripts/plan_handoff_run.py" --repo-root . --intent auto --invocation-text "<current user request>"
+python3 "$SKILL_DIR/scripts/plan_handoff_run.py" --repo-root . --intent <chunked_routing|pickup|refresh>
 ```
 
 By default, `handoff` writes its durable artifact to
 `<repo-root>/docs/handoff.md`. Repos can override the directory with
 `<repo-root>/.agents/handoff-adapter.yaml`.
 
-The planner resolves the adapter, summarizes the artifact, detects chunked
-routing triggers, lists `required_reads`, and names cheap `gate_packets`.
-For a bare direct skill invocation, add `--invoked-directly`; for a task-shaped
-invocation, pass the user's task text so the deterministic chunker can bypass.
-Open the listed reads using each entry's `base` before broader exploration.
+You are the one reading the user's request, so you DECLARE the routing —
+`--intent chunked_routing` when `references/chunked-routing.md`'s rule holds,
+otherwise `--intent pickup` or `--intent refresh`. `--intent auto` only reads
+structural signals and will hand the decision back. For a bare direct skill
+invocation with no task, `--invoked-directly` declares that shape and routes to
+chunked routing. On a pickup whose one task is already settled, name it with
+`--pickup-target` so the planner does not force the sequencing reference.
+The planner resolves the adapter, summarizes the artifact, lists
+`required_reads`, and names cheap `gate_packets`.
+Open the listed reads using each entry's `base` before broader exploration; a
+read carrying a `command` is answered by running it, and the authoring-rules
+preflight is the one to run BEFORE writing, not after.
 Treat deterministic gates as evidence for shape and freshness, then use
 judgment for the actual baton pass. The repo-owned size budget counts CONTENT
 lines — blank lines, the required `##` headings, and the whole `## References`

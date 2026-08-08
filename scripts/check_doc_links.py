@@ -72,6 +72,21 @@ PORTABLE_PLACEHOLDER_PREFIXES = (
     "<skill-dir>/",
     "<authoring-repo>/",
 )
+# The remedies, single-sourced so the author-time forecast (the rules mode of
+# `check_doc_authoring_preflight.py`, i.e. running it with no `--path`) renders
+# the SAME sentence this gate raises instead of restating it and drifting.
+TREE_MARKER_REASONS = frozenset({"unmarked-tree", "portable-absolute"})
+TREE_MARKER_REMEDY = (
+    "name the tree it lives in: `<plugin-dir>/` when the file ships to consumers, "
+    "`<authoring-repo>/` when it exists only in charness, `<repo-root>/` when it is "
+    "the reader's own, `<skill-dir>/` for this skill's own package"
+)
+LINK_FORM_REMEDY = "use markdown links so renames do not rot"
+BARE_INTERNAL_REF_REMEDY = "use markdown links in prose"
+MISSING_COMMAND_TARGET_REMEDY = (
+    "a documented command must name a runnable script, or use a `<repo-root>/...` "
+    "placeholder when it only resolves in a consuming repo"
+)
 REPO_REFERENCE_PREFIXES = (
     ".agents/",
     "charness-artifacts/",
@@ -507,7 +522,7 @@ def main() -> int:
             if len(bare_refs) > 3:
                 refs += ", ..."
             raise ValidationError(
-                f"{doc}: bare internal markdown reference(s) {refs}; use markdown links in prose"
+                f"{doc}: bare internal markdown reference(s) {refs}; {BARE_INTERNAL_REF_REMEDY}"
             )
         backticked = iter_backticked_file_refs(
             root,
@@ -525,15 +540,10 @@ def main() -> int:
             # `unmarked-tree` finding sends them straight into `validate_link`, which
             # refuses a markdown link that leaves a portable skill package -- two gate
             # cycles to learn a rule the first message could have named.
-            tree_reasons = {"unmarked-tree", "portable-absolute"}
-            if all(reason in tree_reasons for _ln, _cand, reason in backticked):
-                remedy = (
-                    "name the tree it lives in: `<plugin-dir>/` when the file ships to consumers, "
-                    "`<authoring-repo>/` when it exists only in charness, `<repo-root>/` when it is "
-                    "the reader's own, `<skill-dir>/` for this skill's own package"
-                )
+            if all(reason in TREE_MARKER_REASONS for _ln, _cand, reason in backticked):
+                remedy = TREE_MARKER_REMEDY
             else:
-                remedy = "use markdown links so renames do not rot"
+                remedy = LINK_FORM_REMEDY
             raise ValidationError(f"{doc}: backticked file reference(s) {refs}; {remedy}")
         contradictions = iter_authoring_repo_contradictions(doc)
         if contradictions:
@@ -551,9 +561,7 @@ def main() -> int:
             if len(unresolved) > 3:
                 refs += ", ..."
             raise ValidationError(
-                f"{doc}: fenced command target(s) {refs} do not exist; a documented command must "
-                "name a runnable script, or use a `<repo-root>/...` placeholder when it only "
-                "resolves in a consuming repo"
+                f"{doc}: fenced command target(s) {refs} do not exist; {MISSING_COMMAND_TARGET_REMEDY}"
             )
         unportable = iter_unportable_command_targets(
             root, doc, portable_skill_package_root(root, doc), known_repo_paths

@@ -1,6 +1,6 @@
 # Achieve Goal: Make proof surfaces report only what they observed
 
-Status: draft
+Status: active
 Created: 2026-08-09
 Activation: `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`
 
@@ -9,14 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
+- Current slice: 2 — build the docs index hub and link the 7 orphans.
+- Current slice intent: slice 1 is DONE and committed. The reviewable-intent
+  unit now in progress is the docs graph reaching `orphans=0` honestly, so
+  awiki can be promoted green rather than promoted red and excused. Critique
+  and broad proof do not re-fire within one unchanged intent — update this when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md` after confirming the draft is
-  still intended.
+- Next action: re-measure `awiki lint -root docs -recursive`, then design the
+  index hub around what the 7 orphans actually are.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -143,7 +143,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | pending |
+| 1 | DONE. Handoff planner: delete the natural-language keyword layer in favour of explicit `--intent`, add a rules-without-a-target mode to the docs preflight, and move the constraint forecast into `required_reads` | FIRST because it changes how every later slice is authored — the rest of this goal writes into gated surfaces, and this is what lets an author know the rule before the gate says no | `--intent` is the only routing path; preflight prints rules for an empty draft; a handoff/doc draft passes its gates on the first try | done |
 | 2 | Build the docs index hub and link the 7 orphans into the graph | awiki cannot be promoted red, and the missing hub is the structural gap — not the seven pages | `awiki lint` exit 0, `orphans=0`; `check_doc_links.py` still green | pending |
 | 3 | Write the `check_doc_links.py` vs awiki overlap matrix | It is the stated PREMISE for promotion and an unmet `#518` clause; a prior handoff forbade replacement claims without it | A command-level matrix naming what each tool does and does not answer | pending |
 | 4 | Promote awiki: add the gate to `run-quality.sh`, tighten the advisory doctor/version policies together, and register `awiki` in charness's own `dependencies.json` | The graph is green and the premise is written, so the gate can now hold | Gate named and passing in the summary; negative test observed red; doctor still `ok`; two review rounds | pending |
@@ -227,6 +227,43 @@ applies.
 - Discuss before activation: resolved — four consequential decisions were put to the operator during shaping and answered. (1) awiki gate scope: CHARNESS-INTERNAL ONLY, because a consumer-facing gate is the hard-to-reverse direction. (2) Orphan disposition: a docs index hub, after measuring that three of seven orphans are scan-scope artifacts. (3) Goal scope: WIDENED from awiki-only to the four proof surfaces — I argued against this on single-subject grounds and withdrew the objection, because the widened set has a truer shared subject (a surface reporting only what it observed) and it describes a MAJOR bump far better than awiki plus unrelated edits would. (4) Release: MAJOR, `3.5.0` -> `4.0.0`, approved for the final bundle only and conditional on every gate being green by its own strength; release-note DRAFTING is explicitly not a gate on this goal. The remaining irreversible-boundary item — remote CI readback through a distinct observer and channel — is planned, not proven.
 
 ## Slice Log
+
+### Slice 1 — declared routing + rules-before-authoring (done)
+
+- **Deleted, not tuned.** `--invocation-text` and `chunked_routing_lib.should_fire_chunker`
+  (with both pattern lists and the trigger fixture test) are gone. Routing is
+  declared: `--intent {auto,chunked_routing,pickup,refresh}`, the structural
+  `--invoked-directly`, and a new `--pickup-target` declaration replacing the
+  "does the invocation text pin one task?" guess.
+- **The undeclared run now says so.** `--intent auto` with no structural signal
+  resolves to `judge_from_user_request` AND returns a `judge_the_user_request`
+  next action. Round-one review caught that it otherwise fell through to
+  `refresh_handoff` — a worse guess than the regex, because unconditional and on
+  the writing side.
+- **Rules without a target.** `check_doc_authoring_preflight.py` with no `--path`
+  prints the rules, owned by the new `scripts/doc_authoring_rules.py`. Every line
+  is rendered: a live constant, or the verdict the owning validator returns when
+  probed with a sample. Three remedy sentences were extracted into
+  `check_doc_links.py` constants so the gate and the forecast cannot say
+  different things.
+- **The forecast moved into `required_reads`**, gated on whether the resolved
+  next action WRITES the artifact — not on the intent, which left a pickup sent
+  to prune a bloated artifact briefed by nothing (round-two finding).
+- Two bounded review rounds ran, both unnamed `bounded-reviewer` spawns, boundary
+  fingerprint verified clean before each repair. Round one: 2 blockers (the
+  fall-through above; stale doc claims naming the deleted regex and fixture as
+  live mechanism) plus 6 lesser. Round two: no blockers, 2 fixed findings (an
+  uncorrected sibling claim in the claim-fidelity registry; a repair test that
+  would still pass if its repair were reverted). Round-two repairs are accepted
+  unreviewed per the two-round cap.
+- **Claim narrowed on review.** "No routing decision is inferred from prose" is
+  false as stated: `chunked_routing_parser` still keyword-filters entries out of
+  the ARTIFACT's prose. The true claim is that nothing is inferred from the
+  user's message. The artifact is an observable; a retyped message is not.
+- **Non-claim carried forward:** the `pickup` and `pickup-ambiguous` eval arms no
+  longer discriminate (the planner cannot observe a "pinned task" any more, and
+  the scenario cannot declare one at bootstrap). Annotated in both spec and
+  registry, discrimination moved to unit tests, re-scoping filed as follow-up.
 
 ## Context Sources
 

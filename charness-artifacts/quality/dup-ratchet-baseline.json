@@ -1137,22 +1137,6 @@
       ]
     },
     {
-      "fingerprint": "39fe3da80754d73c",
-      "member_hashes": [
-        "5a289e1ce384e44b",
-        "67e1f441b90af8d1",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "92411224af02073e",
-        "aed96d34a845fb52"
-      ]
-    },
-    {
       "fingerprint": "3a2a1a48f75e2333",
       "member_hashes": [
         "1e2fb7255033f2e0",
@@ -2206,6 +2190,13 @@
       ]
     },
     {
+      "fingerprint": "722e8b48f9ff97da",
+      "member_hashes": [
+        "8f9eb87ae3c32739",
+        "d5bf41675ad8ce48"
+      ]
+    },
+    {
       "fingerprint": "72986dd6007b5a86",
       "member_hashes": [
         "76c67ea49f31362b",
@@ -2734,6 +2725,19 @@
       "member_hashes": [
         "382943bb3eafddb4",
         "67ff72ce8ddacc7d"
+      ]
+    },
+    {
+      "fingerprint": "86a8b5bf95c346e2",
+      "member_hashes": [
+        "5a289e1ce384e44b",
+        "67e1f441b90af8d1",
+        "92411224af02073e",
+        "92411224af02073e",
+        "92411224af02073e",
+        "92411224af02073e",
+        "92411224af02073e",
+        "aed96d34a845fb52"
       ]
     },
     {
@@ -3423,16 +3427,6 @@
       "member_hashes": [
         "1d0f499e73ae73a9",
         "84bcbec8414161cf"
-      ]
-    },
-    {
-      "fingerprint": "a5f68e6dfaba4b0e",
-      "member_hashes": [
-        "2f4e2a2583a3b3a2",
-        "4e90c888ecfdbd14",
-        "8f9eb87ae3c32739",
-        "d5766730645ea1e4",
-        "d5bf41675ad8ce48"
       ]
     },
     {

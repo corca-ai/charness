@@ -14,14 +14,13 @@ split components) so the merge proposer can compute overlap honestly. See
 repo the full implementation contract is ``docs/handoff-chunked-routing.md``,
 which is not vendored with the skill).
 
-This module hosts the ranker packet builder, the ranker-response
-validator, and the chunker trigger; it also re-exports the dataclasses,
+This module hosts the ranker packet builder and the ranker-response
+validator; it also re-exports the dataclasses,
 parser, merger, and auto-draft helpers from sibling modules so the
 ``chunked_routing_lib.X`` accessor pattern keeps working for every
 caller and every test.
 """
 import importlib.util
-import re
 from pathlib import Path
 from typing import Any
 
@@ -196,85 +195,18 @@ def validate_ranker_response(
     return {"ok": not issues, "issues": issues}
 
 
-# Trigger detection --------------------------------------------------------
-
-# The chunker fires iff a user invocation references the handoff surface
-# *and* contains no explicit task directive. The rule is deterministic so
-# slice 6 SKILL.md prose, slice 7 verification, and the spec fixture all
-# consult the same source.
-
-_HANDOFF_MENTION_PATTERNS = (
-    r"\bdocs/handoff\.md\b",
-    r"\bhandoff\.md\b",
-    r"/handoff\b",
-    r"\bhandoff[ -]skill\b",
-    r"\bcharness:handoff\b",
-    r"\bhandoff[ ]?스킬\b",
-    r"\b(?:read|check|see)\s+(?:the\s+)?handoff\b",
-    r"\bwhat'?s\s+(?:in|next)\s+(?:in\s+)?(?:the\s+)?handoff\b",
-    r"\bnext\s+from\s+handoff\b",
-    r"\bpick\s+up\s+from\s+handoff\b",
-    r"\b핸드오프\b",
-)
-
-_TASK_DIRECTIVE_PATTERNS = (
-    # Imperative verb + non-handoff noun. Pattern matches a verb followed
-    # by at least one word that is not 'handoff' / 'the handoff'.
-    (
-        r"\b(?:do|fix|implement|close|push|run|start|work\s+on|resolve|"
-        r"merge|release|revert)\s+"
-        r"(?!the\s+handoff\b|handoff\b)\S+"
-    ),
-    # Explicit issue id.
-    r"#\d+",
-    # File path other than the handoff itself (anything matching path/file.ext
-    # where the path is NOT docs/handoff.md or handoff.md).
-    (
-        r"(?<![A-Za-z0-9_])(?!docs/handoff\.md\b|handoff\.md\b)"
-        r"(?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+\.[A-Za-z]{1,8}\b"
-    ),
-    # Slash command other than /handoff. The negative lookaheads keep BOTH the
-    # bare `/handoff` and the plugin-namespaced `/<plugin>:handoff` (e.g.
-    # `/charness:handoff`) from matching here: those ARE the handoff command and
-    # must fall through to the mention / direct-invocation path so a bare
-    # namespaced invocation still fires the chunker.
-    r"/(?!handoff\b)(?![A-Za-z][A-Za-z0-9_-]*:handoff\b)[A-Za-z][A-Za-z0-9_-]*",
-    # CLI flag.
-    r"\s--[A-Za-z][A-Za-z0-9-]*\b",
-)
-
-
-def _matches_any(patterns: tuple[str, ...], text: str) -> bool:
-    return any(re.search(pattern, text, re.IGNORECASE) for pattern in patterns)
-
-
-def should_fire_chunker(user_message: str, *, invoked_directly: bool = False) -> bool:
-    """Return True iff the chunker should fire for ``user_message``.
-
-    The rule is deterministic. The chunker fires iff there is no explicit task
-    directive AND one of:
-    (a) the message references the handoff surface — file, ``/handoff``, skill
-        id, or a canonical pickup phrase (including Korean); or
-    (b) ``invoked_directly`` is True — the handoff skill was launched directly
-        with no task (e.g. a bare ``/handoff`` / ``charness:handoff`` call), the
-        trigger-widening path.
-
-    An explicit task directive (imperative verb + non-handoff noun, issue id,
-    non-handoff file path, slash command other than /handoff, or CLI flag)
-    always bypasses — even on a direct invocation that carries one
-    (``/handoff fix <issue>`` does not fire).
-
-    See ``skills/public/handoff/references/chunked-routing.md`` for the
-    operator-facing rule and the trigger fixture in
-    ``tests/test_handoff_chunker_trigger.py``.
-    """
-    message = user_message or ""
-    if message.strip() and _matches_any(_TASK_DIRECTIVE_PATTERNS, message):
-        return False
-    if invoked_directly:
-        return True
-    if not message.strip():
-        return False
-    if not _matches_any(_HANDOFF_MENTION_PATTERNS, message):
-        return False
-    return True
+# Trigger detection ---------------------------------------------------------
+#
+# DELETED, deliberately. This module used to carry a regex classifier
+# (`should_fire_chunker`) over the user's invocation text. Python is not in the
+# conversation, so the text it classified was the MODEL's retyping of the user's
+# message: a deterministic-looking verdict on a paraphrase. Its two pattern
+# lists disagreed about the same word (`update` was a handoff mention but not a
+# task directive, so the same sentence routed two ways depending on its verb),
+# and its single Korean entry matched only the spaced form because Hangul is
+# `\w` and Korean attaches particles directly.
+#
+# The chunker now fires when the agent DECLARES it, through
+# `plan_handoff_run.py --intent chunked_routing` (or `--invoked-directly` for a
+# bare launch with no task, which is a structural fact rather than a reading of
+# prose). `references/chunked-routing.md` owns the rule the agent applies.

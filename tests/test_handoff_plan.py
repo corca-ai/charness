@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import importlib.util
 import re
+import shutil
 import subprocess
 from pathlib import Path
 
@@ -114,12 +115,16 @@ def test_handoff_plan_help_describes_all_options() -> None:
         result.stdout,
         {
             "--repo-root": "Repository root used to resolve handoff adapter and artifact state.",
-            "--intent": "Operator intent when known; auto derives only deterministic cases.",
-            "--invocation-text": "Original invocation text used to derive handoff intent and routing.",
-            "--invoked-directly": "Mark that the handoff skill was invoked directly for chunked routing.",
+            "--intent": "Declare the routing decision you judged from the user request",
+            "--invoked-directly": "Declare that the skill was launched bare with no task",
+            "--pickup-target": "Name the one task being picked up when it is already settled",
         },
     )
     assert "--json" not in result.stdout
+    # The text-classification interface is DELETED, not merely unused: while it
+    # existed, the model retyped the user's message into it and a regex classified
+    # the paraphrase.
+    assert "--invocation-text" not in result.stdout
 
 
 def test_handoff_plan_bootstrap_reports_missing_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -193,50 +198,85 @@ def test_handoff_plan_routes_direct_invocation_to_chunked_routing() -> None:
     } in plan["required_reads"]
 
 
-def test_handoff_plan_routes_documented_slash_invocation_to_chunked_routing() -> None:
-    plan = run_plan("--repo-root", ".", "--invocation-text", "/handoff")
+def test_handoff_plan_routes_declared_chunked_routing_intent() -> None:
+    # `chunked_routing` is a declarable intent, so an agent that judged the rule
+    # from the user's actual message can say so without a bare-launch flag.
+    plan = run_plan("--repo-root", ".", "--intent", "chunked_routing")
 
     assert plan["intent"]["resolved"] == "chunked_routing"
+    assert plan["intent"]["reason"] == "explicit --intent"
+    assert plan["intent"]["chunked_routing"]["should_run"] is True
     assert plan["next_action"]["kind"] == "run_chunked_routing"
 
 
-def test_handoff_plan_routes_namespaced_slash_invocation_to_chunked_routing() -> None:
-    # The plugin-namespaced `/charness:handoff` IS the handoff command, not "another
-    # slash command": a bare namespaced invocation (no --invoked-directly) must
-    # resolve to chunked_routing. The default claim-fidelity scenario relies on this
-    # production path, so guard it at the planner layer, not only in the chunker fixture.
-    plan = run_plan("--repo-root", ".", "--invocation-text", "/charness:handoff")
+def test_handoff_plan_refuses_to_guess_intent_without_a_declaration(tmp_path: Path) -> None:
+    # The routing floor's whole repair: with no declaration and no structural
+    # signal, the planner hands the decision BACK to the judge instead of
+    # inferring it from prose. It must not silently pick pickup or refresh.
+    repo = seed_repo(tmp_path, handoff_body())
+    plan = run_plan("--repo-root", str(repo))
 
-    assert plan["intent"]["resolved"] == "chunked_routing"
-    assert plan["next_action"]["kind"] == "run_chunked_routing"
-
-
-def test_handoff_plan_does_not_chunk_explicit_task_directive() -> None:
-    plan = run_plan(
-        "--repo-root",
-        ".",
-        "--invocation-text",
-        "/handoff fix #396",
-        "--invoked-directly",
-    )
-
-    assert plan["intent"]["chunked_routing"]["should_run"] is False
     assert plan["intent"]["resolved"] == "judge_from_user_request"
-    assert plan["next_action"]["kind"] != "run_chunked_routing"
+    assert plan["intent"]["chunked_routing"]["should_run"] is False
+    # And it must not be steered anywhere either: an undeclared run that fell
+    # through to `refresh_handoff` would be guessing again, unconditionally and
+    # on the writing side. The next action is to decide and re-run.
+    assert plan["next_action"]["kind"] == "judge_the_user_request"
+    assert "--intent" in plan["next_action"]["command"]
+    # Nor is it briefed on writing a surface it has not decided to write.
+    assert [r for r in plan["required_reads"] if r.get("kind") == "preflight"] == []
 
 
-def test_handoff_plan_derives_refresh_and_pickup_from_invocation_text(tmp_path: Path) -> None:
+def test_handoff_plan_takes_declared_intent_over_direct_invocation_shape(tmp_path: Path) -> None:
+    # A bare launch that nonetheless carries a task ("/handoff fix #396") is the
+    # case the deleted regex handled by re-reading the message. The agent read it
+    # already, so its declaration wins over the structural default.
+    repo = seed_repo(tmp_path, handoff_body())
+    plan = run_plan("--repo-root", str(repo), "--intent", "pickup", "--invoked-directly")
+
+    assert plan["intent"]["resolved"] == "pickup"
+    assert plan["intent"]["chunked_routing"]["should_run"] is False
+    assert plan["next_action"]["kind"] == "follow_workflow_trigger"
+
+
+def test_handoff_plan_honors_declared_refresh_and_pickup(tmp_path: Path) -> None:
     # Seeded ("ok"-status) repo, not the live repo root: intent/next_action here
     # must not depend on the live handoff's line count (#10 handoff test brittleness).
     repo = seed_repo(tmp_path, handoff_body())
-    refresh = run_plan("--repo-root", str(repo), "--invocation-text", "update the handoff")
-    pickup = run_plan("--repo-root", str(repo), "--invocation-text", "resume from handoff after reading trigger")
+    refresh = run_plan("--repo-root", str(repo), "--intent", "refresh")
+    pickup = run_plan("--repo-root", str(repo), "--intent", "pickup")
 
     assert refresh["intent"]["resolved"] == "refresh"
-    assert refresh["intent"]["reason"] == "refresh/update wording in invocation"
+    assert refresh["intent"]["reason"] == "explicit --intent"
     assert pickup["intent"]["resolved"] == "pickup"
-    assert pickup["intent"]["reason"] == "pickup/resume wording in invocation"
+    assert pickup["intent"]["reason"] == "explicit --intent"
     assert pickup["next_action"]["kind"] == "follow_workflow_trigger"
+
+
+def test_handoff_plan_carries_authoring_rules_as_a_read_before_writing(tmp_path: Path) -> None:
+    # The constraint forecast moved from `gate_packets` (evidence to run against
+    # something already written) into `required_reads` (open before acting), and
+    # carries the rules-mode command, which answers with NO target.
+    # The live repo root, which is where `scripts/` is actually vendored.
+    refresh = run_plan("--repo-root", ".", "--intent", "refresh")
+    pickup = run_plan("--repo-root", ".", "--intent", "pickup")
+
+    rules = [r for r in refresh["required_reads"] if r.get("kind") == "preflight"]
+    assert len(rules) == 1
+    assert rules[0]["path"] == "scripts/check_doc_authoring_preflight.py"
+    assert "--as-surface handoff" in rules[0]["command"]
+    assert "--path" not in rules[0]["command"]
+    # A pickup does not write the artifact, so it is not briefed on writing it.
+    assert [r for r in pickup["required_reads"] if r.get("kind") == "preflight"] == []
+
+
+def test_handoff_plan_omits_authoring_rules_when_the_script_is_not_vendored(tmp_path: Path) -> None:
+    # Portable install without `scripts/`: the read is dropped rather than
+    # pointing an author at a command that cannot run.
+    repo = seed_repo(tmp_path, handoff_body())
+    plan = run_plan("--repo-root", str(repo), "--intent", "refresh")
+
+    assert [r for r in plan["required_reads"] if r.get("kind") == "preflight"] == []
 
 
 def test_handoff_plan_constants_single_sourced_from_validator() -> None:
@@ -362,61 +402,42 @@ def _pickup_body(next_entries: int) -> str:
     return "\n".join(lines)
 
 
-def _pickup_reads(repo: Path, invocation_text: str) -> set[str]:
-    plan = run_plan(
-        "--repo-root",
-        str(repo),
-        "--intent",
-        "pickup",
-        "--invocation-text",
-        invocation_text,
-    )
+def _pickup_reads(repo: Path, *extra: str) -> set[str]:
+    plan = run_plan("--repo-root", str(repo), "--intent", "pickup", *extra)
     return {read["path"] for read in plan["required_reads"]}
 
 
 def test_handoff_plan_pickup_requires_continuation_when_ambiguous(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _pickup_body(3))
-    reads = _pickup_reads(repo, "resume from the current state")
-    # Several plausible pickups + no pinned task -> continuation-sequence.md orders them.
+    reads = _pickup_reads(repo)
+    # Several plausible pickups + no declared target -> continuation-sequence.md orders them.
     assert "references/continuation-sequence.md" in reads
     assert "references/workflow-trigger.md" not in reads  # retired from forced pickup reads (#410 Slice 9): gist inlined, artifact carries the trigger
 
 
 def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _pickup_body(1))
-    reads = _pickup_reads(repo, "resume from the current state")
+    reads = _pickup_reads(repo)
     # Only one plausible pickup -> no sequencing choice, so the planner does not force it.
     assert "references/continuation-sequence.md" not in reads
     assert "references/workflow-trigger.md" not in reads
 
 
-def test_handoff_plan_pickup_skips_continuation_when_task_pinned(tmp_path: Path) -> None:
+def test_handoff_plan_pickup_skips_continuation_when_target_declared(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _pickup_body(3))
-    # A clearly-pinned task overrides state ambiguity (mirrors the pickup spec prompt).
-    reads = _pickup_reads(repo, "resume the pinned task and start the named workflow")
+    # A DECLARED target settles the sequencing question that continuation-sequence.md
+    # answers. This used to be guessed from the invocation text, where "resume the
+    # pinned task" counted and "the next pickup is unpinned" had to be negated back
+    # out by hand -- the same keyword-guessing this planner no longer does.
+    reads = _pickup_reads(repo, "--pickup-target", "Task 2")
     assert "references/continuation-sequence.md" not in reads
 
 
-def test_handoff_plan_pickup_skips_continuation_when_issue_pinned(tmp_path: Path) -> None:
+def test_handoff_plan_pickup_keeps_continuation_for_an_empty_target(tmp_path: Path) -> None:
     repo = seed_repo(tmp_path, _pickup_body(3))
-    reads = _pickup_reads(repo, "resume and work on #412")
-    assert "references/continuation-sequence.md" not in reads
-
-
-def test_handoff_plan_pickup_keeps_continuation_when_unpinned(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _pickup_body(3))
-    # "unpinned" must NOT read as a pinned task: several plausible pickups remain.
-    reads = _pickup_reads(repo, "the next pickup is unpinned, resume from the current state")
+    # Whitespace is not a declaration: several plausible pickups remain.
+    reads = _pickup_reads(repo, "--pickup-target", "   ")
     assert "references/continuation-sequence.md" in reads
-
-
-def test_handoff_plan_pickup_skips_continuation_when_file_path_pinned(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _pickup_body(3))
-    # A concrete non-handoff file path names one target, so no sequencing remains
-    # among the plausible pickups -> continuation-sequence.md is not forced.
-    reads = _pickup_reads(repo, "resume work on skills/public/impl/SKILL.md")
-    assert "references/continuation-sequence.md" not in reads
-    assert "references/workflow-trigger.md" not in reads
 
 
 def test_artifact_summary_counts_zero_when_entry_parse_raises(
@@ -435,3 +456,16 @@ def test_artifact_summary_counts_zero_when_entry_parse_raises(
     summary = module._artifact_summary(tmp_path, {"artifact_path": "handoff.md"})
     assert summary["exists"] is True
     assert summary["next_session_entry_count"] == 0
+
+
+def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path: Path) -> None:
+    # Keying the authoring-rules read on the INTENT left one case briefed by
+    # nothing: a pickup against a bloated artifact is sent to prune it, which is
+    # authoring. The next action is what says whether the run writes.
+    repo = seed_repo(tmp_path, handoff_body(current_lines=60))
+    (repo / "scripts").mkdir()
+    shutil.copy(ROOT / "scripts" / "check_doc_authoring_preflight.py", repo / "scripts")
+    plan = run_plan("--repo-root", str(repo), "--intent", "pickup")
+
+    assert plan["next_action"]["kind"] == "repair_or_prune_handoff"
+    assert [r for r in plan["required_reads"] if r.get("kind") == "preflight"]

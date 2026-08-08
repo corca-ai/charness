@@ -15,9 +15,20 @@ repo the full implementation contract lives at
 `<authoring-repo>/docs/handoff-chunked-routing.md` (authoring-repo-internal; not vendored
 with the skill).
 
-## Deterministic Trigger Rule
+## Declared Trigger Rule
 
-The chunker fires iff there is **no explicit task directive** AND a
+The chunker fires when the agent **declares** it, by passing
+`--intent chunked_routing` (or `--invoked-directly`, for a bare launch with no
+task) to the planner. The rule below is what the agent judges; the declaration
+is what routes.
+
+It is a judgment, not a regex, because the only reader of the user's actual
+message is the agent. A classifier in Python can only see the agent's retyping
+of that message, so its verdict was a paraphrase's verdict wearing a
+deterministic label. Declaring the decision puts it in the conversation, where
+the user can see it and argue with it.
+
+Declare chunked routing iff there is **no explicit task directive** AND a
 **handoff signal** is present — for the current user invocation (the most
 recent user-authored message before the agent acts):
 
@@ -40,20 +51,21 @@ recent user-authored message before the agent acts):
      `read the handoff`, `check the handoff`, `read handoff`,
      `what's in the handoff`, `next from handoff`, `pick up from handoff`,
      `핸드오프 봐`
-   - **direct skill invocation** (`invoked_directly`): the handoff skill was
+   - **direct skill invocation** (`--invoked-directly`): the handoff skill was
      launched with no task — a bare `/handoff` / `charness:handoff` call.
      Invoking the skill is itself enough; no doc mention is required. This is
      the trigger-widening path, so a pickup reasons over the backlog even
      when the operator did not type a handoff filename.
 
-When both hold the chunker fires. When the task-directive check fails (the
-user named a specific next task), the chunker steps aside and the rest of the
-handoff workflow runs as usual.
+When both hold, declare `--intent chunked_routing`. When the task-directive
+check fails (the user named a specific next task), the chunker steps aside:
+declare `--intent pickup` or `--intent refresh` and the rest of the handoff
+workflow runs as usual.
 
-The trigger fixture (in the charness source repo at
-`<authoring-repo>/tests/test_handoff_chunker_trigger.py`; authoring-repo-internal, not
-vendored with the skill) is the source of truth; any divergence between this
-prose and that fixture is the prose's bug.
+This prose is the source of truth for the rule. The signals above are examples
+of the two questions — is a task named, and is the handoff the subject — not a
+closed list to match against; a request that satisfies them in words not listed
+here still routes the same way.
 
 ## Pipeline
 
@@ -188,8 +200,8 @@ is a curation/sequencing memo, not a synced task queue.
 
 ## Standalone Usefulness
 
-The chunker is one conditional phase, not a replacement. The trigger
-gate above guarantees that:
+The chunker is one conditional phase, not a replacement. The declared trigger
+above keeps it that way:
 
 - `handoff` without the chunker still works exactly as today. Any
   invocation with an explicit task directive bypasses the chunker;

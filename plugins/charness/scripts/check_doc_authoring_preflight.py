@@ -127,6 +127,20 @@ def _surface_module(surface: LengthSurface):
     return import_repo_module(__file__, surface.module)
 
 
+def _doc_link_indices(repo_root: Path) -> tuple[Path, set[str], dict[str, str], set[str], set[str]]:
+    """The path indices `check_doc_links`' own `main()` builds before it can
+    classify anything. Both the target check and the rules probe need them."""
+    root = repo_root.resolve()
+    known_repo = _doc_links.iter_known_repo_paths(root)
+    return (
+        root,
+        known_repo,
+        _doc_links.build_unique_basename_index(known_repo),
+        _doc_links.build_known_directories(known_repo),
+        _doc_links.load_canonical_markdown_surfaces(root),
+    )
+
+
 # --- per-class collectors (each reuses the owning validator, no fork) --------
 
 
@@ -201,12 +215,8 @@ def collect_doc_links(repo_root: Path, doc: Path) -> list[dict[str, Any]]:
     fail-fast, so the form constraints (relative-link form, bare internal md
     refs, backticked file refs) all surface in one pass.
     """
-    root = repo_root.resolve()
+    root, known_repo, unique_basename, known_dirs, canonical = _doc_link_indices(repo_root)
     known_md = _doc_links.iter_known_markdown_paths(root)
-    known_repo = _doc_links.iter_known_repo_paths(root)
-    unique_basename = _doc_links.build_unique_basename_index(known_repo)
-    known_dirs = _doc_links.build_known_directories(known_repo)
-    canonical = _doc_links.load_canonical_markdown_surfaces(root)
 
     findings: list[dict[str, Any]] = []
     text = doc.read_text(encoding="utf-8")
@@ -434,8 +444,7 @@ def format_human(report: Report) -> str:
             elif row["kind"] == "unresolved-command-target":
                 lines.append(
                     f"  - documented command names a missing script `{row['detail']}` "
-                    f"(line {row['line']}); create it, fix the path, or use a "
-                    "`<repo-root>/...` placeholder when it only resolves in a consuming repo"
+                    f"(line {row['line']}); {_doc_links.MISSING_COMMAND_TARGET_REMEDY}"
                 )
             else:
                 lines.append(f"  - {row['detail']}")
@@ -463,7 +472,10 @@ def format_human(report: Report) -> str:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
-    parser.add_argument("--path", required=True, help="Target docs/**/*.md (or handoff) path")
+    parser.add_argument(
+        "--path",
+        help="Target docs/**/*.md (or handoff) path; omit it to print the RULES with no target",
+    )
     parser.add_argument(
         "--as-surface",
         help="Forecast a specific capped surface's length floor on a draft/fixture path (e.g. handoff)",
@@ -472,6 +484,21 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     repo_root = args.repo_root.resolve()
+    if args.path is None:
+        # Rules with no target: the other half of the same question, owned by
+        # `doc_authoring_rules` and imported here so one command answers both.
+        rules_module = import_repo_module(__file__, "scripts.doc_authoring_rules")
+        try:
+            rules = rules_module.build_rules(repo_root, args.as_surface)
+        except rules_module.PreflightError as exc:
+            print(f"doc-authoring-preflight: {exc}", file=sys.stderr)
+            return 2
+        print(
+            json.dumps(rules, indent=2, sort_keys=True)
+            if args.json
+            else rules_module.format_rules_human(rules)
+        )
+        return 0
     try:
         report = build_report(repo_root, args.path, args.as_surface)
     except PreflightError as exc:

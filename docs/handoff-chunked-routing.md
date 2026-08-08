@@ -5,7 +5,7 @@ This document is the implementation contract for the
 It owns the algorithm, data shape, deterministic-vs-LLM split, trigger rule,
 auto-draft template, and skill-surface plan that slices 2–7 build to. The goal
 artifact's `Boundaries`, `User Acceptance`, and `Stop Conditions` remain
-authoritative; this spec narrows them to concrete files, regex, and JSON.
+authoritative; this spec narrows them to concrete files, commands, and JSON.
 
 The chunker is an additive workflow phase of the existing
 [`handoff`](../skills/public/handoff/SKILL.md) skill. It absorbs the recurring
@@ -74,7 +74,7 @@ verification) agree on what is script vs agent.
 
 | Step | Layer | Why |
 | --- | --- | --- |
-| Trigger detection | deterministic regex (Python) | Operationally exact; slice 6 SKILL.md prose, slice 7 verification, and the spec fixture all consult the same rule. |
+| Trigger declaration | agent (LLM), declared to the planner | Only the agent reads the user's message; a Python classifier could read only the agent's retyping of it. The agent applies the rule below and declares the verdict with `--intent`. |
 | Handoff entry parsing | deterministic (Python) | Markdown structure; testable in isolation against current handoff.md as fixture. |
 | Generative-sequence ranking | agent (LLM) with deterministic packet | Judgment-heavy; mirrors `issue` skill step 5 which is also agent-side. Script builds the packet (candidates + prompt + JSON schema); agent fills it; script validates round-trip. |
 | Merge proposal generation | deterministic (Python) | Pure set-overlap on parsed boundary tokens; pre-LLM. |
@@ -86,9 +86,17 @@ The script side is portable and fixture-testable. The agent side is bounded
 by the structured packet and the post-validator, so a prompt drift fails the
 fixture loudly per the goal artifact's High-Confidence Checks.
 
-## Trigger Detection Rule
+## Trigger Declaration Rule
 
-The chunker fires iff there is **no explicit task directive** AND a
+The chunker fires when the agent DECLARES it, by passing
+`--intent chunked_routing` (or `--invoked-directly`) to
+[`plan_handoff_run.py`](../skills/public/handoff/scripts/plan_handoff_run.py).
+The regex classifier that used to decide this in Python
+(`should_fire_chunker`) is deleted: it could only ever see the agent's retyping
+of the user's message, so it laundered a model judgment through a regex and
+reported it as machine-decided. The rule below is what the agent judges.
+
+Declare chunked routing iff there is **no explicit task directive** AND a
 **handoff signal** is present — for the current user invocation (the most
 recent user-authored message before the agent acts):
 
@@ -112,22 +120,21 @@ recent user-authored message before the agent acts):
      `read the handoff`, `check the handoff`, `read handoff`,
      `what's in the handoff`, `next from handoff`, `pick up from handoff`,
      `핸드오프 봐` (or any case variant)
-   - **direct skill invocation** (`should_fire_chunker(..., invoked_directly=True)`):
-     the handoff skill was launched with no task. Invoking the skill is itself
+   - **direct skill invocation** (`--invoked-directly`): the handoff skill was
+     launched with no task. Invoking the skill is itself
      a handoff signal — no doc mention required (#249 trigger widening).
 
 The directive negation is intentionally narrow: "read the handoff" is *not*
 a task directive against another noun, so it triggers; "read handoff and
 push slice 7" *is* a task directive against another noun, so it does not.
 
-### Trigger Fixture
+### Worked Examples
 
-The fixture below is the source of truth for slice 2 parser tests,
-slice 3 ranker integration, slice 6 SKILL.md prose, and slice 7 closeout
-verification. It MUST live verbatim in
-`<repo-root>/tests/test_handoff_chunker_trigger.py` (created by slice 7)
-as test parametrize data so a divergence between spec and tests fails
-loudly.
+These are worked examples of the judgment, not a fixture to match against. They
+were a Python test table while a regex decided the routing; with the decision
+declared by the agent, they teach the rule instead of pinning a matcher. A
+request that satisfies the two questions in words absent from this table routes
+the same way — that is the point of moving the decision to a judge.
 
 | # | Example user message | Expected decision | Why |
 | --- | --- | --- | --- |
@@ -141,13 +148,10 @@ loudly.
 | 8 | `/handoff` | `chunk` | Bare slash invocation of the handoff skill, no task (#249). |
 | 9 | `/handoff fix #233` | `no-chunk` | Skill invocation + explicit issue directive bypasses. |
 
-Rows 8-9 are the #249 trigger-widening cases. The `invoked_directly=True`
-path (the skill launched programmatically with no task arg) is pinned by
-`test_direct_invocation_fires_without_a_mention` in the same fixture file.
-
-If trigger detection over-fires against any case 3, 4, or 6 row, the goal
-artifact's "Trigger detection over-fires" Stop Condition activates: stop
-and re-anchor the rule.
+Rows 8-9 are the #249 trigger-widening cases. The `--invoked-directly` path
+(the skill launched with no task arg) is the one signal that stayed structural,
+and it is pinned by `test_handoff_plan_routes_direct_invocation_to_chunked_routing`
+in `<repo-root>/tests/test_handoff_plan.py`.
 
 ## Data Structures
 
@@ -452,7 +456,7 @@ gate enforces the second direction mechanically.
 | 4 | `<repo-root>/tests/test_handoff_chunker_merge_proposer.py` | three sub-fixtures: shared-file, shared-skill, shared-policy. Each asserts the merged candidate list contains exactly the expected member entries with the expected reason. |
 | 5 | `<repo-root>/tests/test_handoff_chunker_auto_draft.py` | selected `ChunkCandidate` → drafted goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py); portability section content matches the placeholder-or-seeded rule; Slice Plan data row count is 0. |
 | 6 | `<repo-root>/tests/test_handoff_skill_md_budget.py` | `wc -l skills/public/handoff/SKILL.md` ≤ 161. |
-| 7 (trigger) | `<repo-root>/tests/test_handoff_chunker_trigger.py` | the 7-row fixture above; parametrize over each row. |
+| 7 (trigger) | `<repo-root>/tests/test_handoff_plan.py` | the declared-routing path: an explicit `--intent`, and the structural `--invoked-directly` shape. The 9 rows above became worked examples when the regex classifier was deleted, so nothing parametrizes over them. |
 | 7 (e2e) | `<repo-root>/tests/test_handoff_chunker_end_to_end.py` | feed the 2026-05-28 handoff snapshot through parse → merge hints → agentic package packet → validated package response → ranker packet → draft; assert final goal artifact passes [`check_goal_artifact.py`](../skills/public/achieve/scripts/check_goal_artifact.py). |
 
 ## Stop Conditions
@@ -471,9 +475,11 @@ remain authoritative. This spec narrows them:
   `Agent Verification Plan`, and `Slice Plan` data rows. Any
   non-placeholder content in those sections at write time fails the
   fixture.
-- **Trigger detection over-fires.** The 7-row fixture is the gate. A
-  test failure on rows 3, 4, or 6 (the no-chunk cases) flips this Stop
-  Condition active; stop and re-anchor before continuing.
+- **Trigger declaration over-fires.** RETIRED as a Stop Condition. It
+  named the 7-row fixture as the gate, and the fixture went away with the
+  regex classifier it pinned. Over-firing is now a judgment miss the operator
+  sees in the conversation (the declared `--intent` is visible before the
+  chunker runs), not a test failure to wait for.
 - **#233 still open at slice 5.** Slice 5 of this spec does not depend
   on #233 directly (auto-drafted goals are at status `draft` and not
   yet at closeout). Slice 7 (closeout) is the consumer; the decision
@@ -529,13 +535,13 @@ folded revisions without re-running critique.
 
 ### Over-Worry (raised, not folded as blockers)
 
-- **Korean variant under-coverage.** Spec lists only `핸드오프 봐` as
-  the Korean trigger phrase. Reviewer raised the risk of missing
-  `핸드오프 읽어줘` / `핸드오프 확인` variants. Not folded: the goal
-  artifact's "Trigger detection over-fires" Stop Condition already
-  routes this to re-anchoring once observed in real use; pre-locking
-  more Korean phrases speculatively risks over-firing on polite
-  refusals like `핸드오프 보지 마`.
+- **Korean variant under-coverage.** RESOLVED by deletion, and it was a
+  real defect rather than over-worry: the single Korean pattern
+  `\b핸드오프\b` matched only the spaced form, because Hangul is `\w`
+  and Korean attaches particles directly (`핸드오프도`, `핸드오프를`
+  all failed). Listing more phrases would have deepened that. An agent
+  reading the message needs no phrase list, and reads a polite refusal
+  like `핸드오프 보지 마` as the refusal it is.
 
 ### Valid but Defer (real but does not block slice 2)
 
@@ -543,12 +549,11 @@ folded revisions without re-running critique.
   handoff?" are not enumerated in the trigger rule. Becomes relevant
   if the slice-7 e2e fixture adds such a row; safe to add as a new
   fixture row in slice 7 without re-anchoring the rule.
-- **Code-fence containment of handoff path mentions.** A message
-  quoting code containing the literal handoff path would fire. The
-  trigger regex implementation in slice 6/7 can mask fences using the
-  same `_mask_fences` trick already in
-  [`goal_artifact_lib.py`](../skills/public/achieve/scripts/goal_artifact_lib.py);
-  defer the masking decision to that slice.
+- **Code-fence containment of handoff path mentions.** RESOLVED by deletion.
+  A message quoting code containing the literal handoff path would have fired
+  the regex, and the planned repair was fence-masking inside that regex. With
+  the decision declared by the agent, a quoted path is read as a quoted path
+  and no masking layer is needed.
 
 ## References
 

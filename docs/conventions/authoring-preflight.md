@@ -173,11 +173,21 @@ time. `check_doc_links` also resolves the repo-owned script a documented command
 names — in a fenced block or an inline span — so a `python3 scripts/…` example
 cannot outlive the script it names. See
 [Documented commands](#documented-commands) for the escape. Forecast them all in
-one pass:
+one pass — and, before a single line exists, ask it for the rules instead:
 
 ```bash
-python3 scripts/check_doc_authoring_preflight.py --path docs/handoff.md
+python3 scripts/check_doc_authoring_preflight.py --as-surface handoff   # the rules, no target
+python3 scripts/check_doc_authoring_preflight.py --path docs/handoff.md # a real target against them
 ```
+
+The rules mode is what makes this surface match its two siblings
+([describe_goal_closeout_shape.py](../../skills/public/achieve/scripts/describe_goal_closeout_shape.py)
+with no `--goal-path`, and `check_skill_surface_preflight.py`, which describes by
+default). Every other check here is content-driven, so without it an author got
+the rules only *after* writing the thing that breaks them and one rework cycle
+was structurally guaranteed. The rules are rendered, never restated: each line is
+the owning validator's own constant, or the verdict that validator returns when
+the preflight probes it with a sample.
 
 [check_doc_authoring_preflight.py](../../scripts/check_doc_authoring_preflight.py)
 reuses the real validators — `check_markdown_inline_code`, `check_doc_links`,

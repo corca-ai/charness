@@ -27,6 +27,7 @@ _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
 _doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 _inline_code = import_repo_module(__file__, "scripts.check_markdown_inline_code")
 _advisories = import_repo_module(__file__, "scripts.slice_closeout_advisories")
+_rules = import_repo_module(__file__, "scripts.doc_authoring_rules")
 
 _BROKEN_FIXTURE = (
     "# Demo Handoff\n"
@@ -360,3 +361,144 @@ def test_a_path_outside_the_repo_is_refused_by_name(tmp_path: Path) -> None:
 
     assert "outside repo root" in str(excinfo.value)
     assert str(outside) in str(excinfo.value)
+
+
+# --- rules mode (no target) --------------------------------------------------
+#
+# The gap this closes: every check here is content-driven, so before the rules
+# mode existed an author could only learn a rule by first breaking it, and one
+# rework cycle was structurally guaranteed. These tests pin that the rules are
+# RENDERED from the owning validators rather than restated -- a rules mode that
+# types out its own copy of the rules is the drift it exists to prevent.
+
+
+def test_rules_mode_answers_with_no_target_at_all() -> None:
+    result = _run_script(ROOT, "--as-surface", "handoff")
+
+    assert result.returncode == 0, result.stderr
+    assert "RULES" in result.stdout
+    # The point of the mode: no `--path`, and still a rule for each class.
+    for expected in ("length:", "regenerable-facts:", "link form:", "backticked file references:"):
+        assert expected in result.stdout, f"missing rule class {expected}: {result.stdout}"
+
+
+def test_rules_mode_renders_the_length_cap_live(monkeypatch: pytest.MonkeyPatch) -> None:
+    # Drift proof: move the owning constant and the rendered rule must follow.
+    monkeypatch.setattr(_handoff, "MAX_CONTENT_LINES", 4321)
+    rules = _rules.build_rules(ROOT, "handoff")
+
+    assert rules["length"]["cap"] == 4321
+    assert "4321" in _rules.format_rules_human(rules)
+
+
+def test_rules_mode_renders_the_regenerable_classes_live(monkeypatch: pytest.MonkeyPatch) -> None:
+    import re as _re
+
+    monkeypatch.setattr(
+        _handoff,
+        "REGENERABLE_PATTERNS",
+        ((_re.compile(r"\bv\d+\.\d+\.\d+\b"), "a fabricated class", "run the fabricated command"),),
+    )
+    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+
+    assert "a fabricated class" in rendered
+    assert "run the fabricated command" in rendered
+
+
+def test_rules_mode_headline_is_the_validators_own_sentence() -> None:
+    # The rationale for the regenerable rule lives ONLY inside the validator's
+    # error message, so the headline is obtained by making the validator raise --
+    # not by typing a second copy of the sentence here.
+    rules = _rules.build_rules(ROOT, "handoff")
+
+    assert "goes stale in place" in rules["regenerable_facts"]["verdict"]
+    assert rules["regenerable_facts"]["verdict"] in _rules.format_rules_human(rules)
+
+
+def test_rules_mode_renders_the_tree_marker_class_it_could_not_reach() -> None:
+    # `unmarked-tree` / `portable-absolute` fire only INSIDE a portable skill
+    # package, so a probe that never supplies one silently omits the class whose
+    # mis-remediation costs two gate cycles.
+    rules = _rules.build_rules(ROOT, "handoff")
+    tree_rows = [row for row in rules["backticked_refs"] if row["inside_package"]]
+
+    assert tree_rows, "no probe classified a token inside a portable package"
+    assert any(row["reason"] in _doc_links.TREE_MARKER_REASONS for row in tree_rows)
+    assert any(row["remedy"] == _doc_links.TREE_MARKER_REMEDY for row in tree_rows)
+
+
+def test_rules_mode_covers_the_classes_that_need_no_backtick_or_link() -> None:
+    # A doc can be blocked by a bare internal markdown ref or a documented
+    # command naming a missing script without containing either of the forms the
+    # probes above classify.
+    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+
+    assert _doc_links.BARE_INTERNAL_REF_REMEDY in rendered
+    assert _doc_links.MISSING_COMMAND_TARGET_REMEDY in rendered
+
+
+def test_rules_mode_declines_to_probe_rather_than_invent_a_sample(monkeypatch: pytest.MonkeyPatch) -> None:
+    # With no tracked path-shaped file to classify, an invented sample would make
+    # every link verdict read `broken relative link` -- teaching an author that no
+    # link form is accepted. Say nothing instead.
+    monkeypatch.setattr(_rules, "_probe_sample", lambda _repo_root: None)
+    rules = _rules.build_rules(ROOT, "handoff")
+
+    assert rules["link_shapes"] == []
+    assert rules["backticked_refs"] == []
+    assert "not probed" in _rules.format_rules_human(rules)
+
+
+def test_rules_mode_renders_the_backtick_remedy_the_gate_raises(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The two remedy sentences are single-sourced in check_doc_links so the
+    # forecast cannot teach an author a remedy the gate does not offer.
+    monkeypatch.setattr(_doc_links, "LINK_FORM_REMEDY", "a fabricated remedy")
+    rendered = _rules.format_rules_human(_rules.build_rules(ROOT, "handoff"))
+
+    assert "a fabricated remedy" in rendered
+
+
+def test_rules_mode_link_verdicts_come_from_the_real_validator() -> None:
+    rules = _rules.build_rules(ROOT, "handoff")
+    by_shape: dict[str, list[str]] = {}
+    for row in rules["link_shapes"]:
+        by_shape.setdefault(row["shape"], []).append(row["verdict"])
+
+    # A relative link that resolves is the only accepted form; every other
+    # verdict is the gate's own refusal, not a sentence written here.
+    assert "ok" in by_shape["relative"]
+    assert any("broken relative link" in verdict for verdict in by_shape["relative"])
+    assert "use relative links" in by_shape["absolute"][0]
+    assert "`./`" in by_shape["bare"][0]
+
+
+def test_rules_mode_reports_both_inline_code_classes() -> None:
+    rules = _rules.build_rules(ROOT, "handoff")
+    reasons = {row["reason"] for row in rules["inline_code"]}
+
+    # Rendered by running the real checker over a sample that breaks both, so a
+    # class the checker stops reporting stops being taught here.
+    assert reasons == {_inline_code.WRAPPED_REASON, _inline_code.UNTERMINATED_REASON}
+
+
+def test_rules_mode_names_the_capped_surfaces_when_none_is_selected() -> None:
+    rules = _rules.build_rules(ROOT, None)
+
+    assert rules["length"]["surface"] is None
+    assert "handoff" in rules["length"]["known_surfaces"]
+    assert "--as-surface" in _rules.format_rules_human(rules)
+
+
+def test_rules_mode_refuses_an_unknown_surface_by_name() -> None:
+    result = _run_script(ROOT, "--as-surface", "not-a-surface")
+
+    assert result.returncode == 2
+    assert "unknown --as-surface" in result.stderr
+
+
+def test_probe_sample_declines_rather_than_inventing_one(tmp_path: Path) -> None:
+    # The repaired function itself, not only its callers: an empty repo offers no
+    # tracked path-shaped file, and the old fallback answered with an invented
+    # `docs/README.md` that does not exist there.
+    (tmp_path / "docs").mkdir()
+    assert _rules._probe_sample(tmp_path) is None
