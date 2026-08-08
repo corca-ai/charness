@@ -303,7 +303,7 @@ below. Fill during the run:
 
 Recorded during the run:
 
-- Successor goal: charness-artifacts/goals/2026-08-08-carry-the-unbuilt-slices-guards-and-the-six-filed-issues.md — carries slices 4-9, reshaped by what these three measured: every slice shipped a fix carrying the class it fixed, all three premise checks were refuted or corrected at design time (one named the WRONG OWNER outright), a rotated duplicate hash must not design a proof surface, and mutants are necessary but caught none of round 2's blockers. It also inherits the freeze decision and the un-migrated section walks.
+- Successor goal: charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md — carries slices 4-9, reshaped by what these three measured: every slice shipped a fix carrying the class it fixed, all three premise checks were refuted or corrected at design time (one named the WRONG OWNER outright), a rotated duplicate hash must not design a proof surface, and mutants are necessary but caught none of round 2's blockers. It also inherits the freeze decision and the un-migrated section walks.
 
 - Routing: achieve — the run is a goal lifecycle; `achieve` owns activation, the slice cadence, the slice log, and the closeout floors, and every slice boundary was routed through it.
 - Routing: impl — selected from installed metadata for the code slices; all three built validator/gate code plus tests, and `impl`'s stop gate (`prove`) is what bound each slice's fresh-eye critique before the ledger was written.

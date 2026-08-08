@@ -40,7 +40,7 @@ prose-only memory.
   `## Operator Decision Queue` with both unblock paths. NOT re-stamped: that
   would assert an inspection this run did not perform.
 - **successor** — slices 4-9 move to
-  `charness-artifacts/goals/2026-08-08-carry-the-unbuilt-slices-guards-and-the-six-filed-issues.md`.
+  `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`.
   This includes slice 4: the retro artifact carries the two lessons, but the
   GENERATED `recent-lessons.md` digest selected other entries for its slots, so
   the acceptance ("`recent-lessons.md` carries the two lessons") is NOT met.

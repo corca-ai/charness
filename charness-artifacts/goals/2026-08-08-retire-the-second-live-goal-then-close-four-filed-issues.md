@@ -1,8 +1,8 @@
-# Achieve Goal: Carry the unbuilt slices: guard-shaped surfaces and the six filed issues
+# Achieve Goal: Retire the second live goal, then close the four filed issues that reach a verdict
 
 Status: draft
 Created: 2026-08-08
-Activation: `/goal @charness-artifacts/goals/2026-08-08-carry-the-unbuilt-slices-guards-and-the-six-filed-issues.md`
+Activation: `/goal @charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`
 
 This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
@@ -15,7 +15,7 @@ runs the activation command.
   the reviewable-intent unit in progress and the commits it spans; critique
   and broad proof do not re-fire within one unchanged intent — update it when
   the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-carry-the-unbuilt-slices-guards-and-the-six-filed-issues.md`, then premise-check slice 1 (`#536`'s closeout) BEFORE building — including which OWNER its remedy names, since the predecessor's slice 2 was refuted on exactly that.
+- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`, then premise-check slice 1 (`#536`'s closeout) BEFORE building — including which OWNER its remedy names, since the predecessor's slice 2 was refuted on exactly that.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -155,8 +155,9 @@ Five slices, ordered by MEASURED cost and leverage rather than by size.
 | 5 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | planned |
 
 NOT claimed, and named so the next session does not re-derive the decision:
-`#562` (a proof-surface deletion wanting its own goal-sized budget — the
-measurement is filed, the build is not this run's), `#560`/`#561` (deliberate
+`#562` and `#563` (both filed by the closing run: a proof-surface deletion, and
+a drift gate whose population excludes the goals directory — measurements filed,
+builds not this run's), `#560`/`#561` (deliberate
 deferrals whose cost has not yet been re-measured), and the original slice 4 of
 the predecessor's plan (writing two lessons into `recent-lessons.md`, which is a
 GENERATED digest whose selection index gave its slots elsewhere — the durable
@@ -174,8 +175,11 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
   command, not an adjective.
 - Claims: `#536` (built by the predecessor, owes only its closeout), `#558`,
   `#557`, `#559`, `#556`. Five.
-- Not claimed: `#562` (filed by this family; a proof-surface deletion needing its
-  own budget). `#560`, `#561` (deliberate deferrals). The prompt-surface cluster
+- Not claimed: `#562` (a proof-surface deletion needing its own budget) and
+  `#563` (`check-title-slug-drift` reports clean over a scope excluding
+  `charness-artifacts/goals`, where 2 genuine drifts are live; widening it needs a
+  decision on 3 non-English titles first or it lands red on day one). Both were
+  filed by the closing run. `#560`, `#561` (deliberate deferrals). The prompt-surface cluster
   `#519`, `#520`, `#521`, `#523`, `#524`, `#525`, `#527`, `#531`, `#532` — a
   measurement question. `#514`/`#515` — consumer ownership. `#539`, `#545` —
   provider/publication safety. `#530`, `#535`, `#554` — operator decisions.
