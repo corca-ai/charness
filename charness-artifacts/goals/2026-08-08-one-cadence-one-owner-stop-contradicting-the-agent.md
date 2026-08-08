@@ -1,6 +1,6 @@
 # Achieve Goal: One cadence, one owner: stop the harness contradicting itself to the agent
 
-Status: active
+Status: complete
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent.md`
 
@@ -233,18 +233,6 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
-
 Recorded during the run:
 
 - Decision: how to clear the `#514/#515/#518` source-freeze receipt that slice 2's
@@ -295,24 +283,14 @@ below. Fill during the run:
   measured about this repo's real shape; a completion that does not spend it
   throws that away, and the next session re-derives it.
 
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
-
-- `Routing: <skill> — <why this phase needs it>`
-
 Recorded during the run:
 
-- Successor goal: n/a — this goal is STILL ACTIVE with slices 4-9 unbuilt, so the
-  successor is itself. `docs/handoff.md` `## Workflow Trigger` points a fresh
-  session back at this artifact rather than at a new one; designing a successor
-  from a goal that has not closed would spend lessons the run has not finished
-  measuring.
+- Successor goal: charness-artifacts/goals/2026-08-08-carry-the-unbuilt-slices-guards-and-the-six-filed-issues.md — carries slices 4-9, reshaped by what these three measured: every slice shipped a fix carrying the class it fixed, all three premise checks were refuted or corrected at design time (one named the WRONG OWNER outright), a rotated duplicate hash must not design a proof surface, and mutants are necessary but caught none of round 2's blockers. It also inherits the freeze decision and the un-migrated section walks.
 
-- Routing: achieve — this run is a goal lifecycle, and `achieve` owns activation, the slice cadence, the slice log, and the closeout floors; slice 1's work was instruction-surface plus validator repair inside `achieve`'s own package, so no separate implementation owner was warranted.
+- Routing: achieve — the run is a goal lifecycle; `achieve` owns activation, the slice cadence, the slice log, and the closeout floors, and every slice boundary was routed through it.
+- Routing: impl — selected from installed metadata for the code slices; all three built validator/gate code plus tests, and `impl`'s stop gate (`prove`) is what bound each slice's fresh-eye critique before the ledger was written.
+- Routing: quality — selected for the gate-cadence and duplicate-ratchet decisions; `quality` owns validation posture, and the wolf-crier trade (which gate to add, which to classify) was decided against its contract rather than ad hoc.
+- Routing: debug — n/a for this run; no slice began from a bug report or an unexplained failure, so no falsifiable-hypothesis workflow was owed. The three review-found blockers were each reproduced by direct execution before repair, which is the evidence `debug` would have required.
 - Gather: n/a — `## Context Sources` names only in-repo paths and one live `gh` recount; no external URL, Slack, Notion, Docs, or Drive source applies.
 - Release: n/a — slice 1 touches no version bump and no install manifest; the `plugins/` mirror resync is a generated-surface sync, not a release surface.
 
@@ -509,13 +487,61 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-08-one-cadence-one-owner-retro.md
+Host log probe: skipped: host-log-not-exposed: this host surfaced no per-turn token, wall-clock, or tool-call log to this session, so any efficiency figure would be fabricated rather than measured
+Disposition review: charness-artifacts/critique/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent-disposition-review.md
 
 ## User Verification Instructions
 
+CLOSED EARLY at slice 3 of 9, by operator direction ("stop here, hand off
+cleanly"). Slices 4-9 were NOT attempted and move to the successor goal named in
+`## Coordination Cues`. Closing rather than leaving the artifact active is what
+makes the successor the single live pickup instead of two half-run goals.
+
+To verify what shipped, without re-deriving it:
+
+1. `python3 -m pytest tests/quality_gates/test_goal_artifact_cadence_owner.py
+   tests/quality_gates/test_flat_section_walk_divergence.py
+   tests/quality_gates/test_current_pointer_writes.py
+   tests/quality_gates/test_issue_closeout_ledger_counts.py -q`
+   — 82 tests over the three slices' surfaces.
+2. `python3 skills/public/achieve/scripts/check_goal_artifact.py --repo-root .
+   --goal-path charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
+   — a repaired live artifact passes the new cadence floor.
+3. `python3 scripts/check_current_pointer_writes.py --repo-root .
+   --require-git-file-listing` — the gate can now refuse a non-git population.
+4. `python3 skills/public/issue/scripts/describe_closeout_draft_shape.py
+   --repo-root .` — both sibling ledger rules render from one owner.
+
+KNOWN RED, and the reason this goal claims no broad-suite green:
+`tests/test_issue_source_freeze.py`, `tests/quality_gates/test_closeout_bundle.py`,
+and `tests/quality_gates/test_closeout_headroom_and_mirror_gate.py` fail because
+three locators frozen for `#514/#515/#518` changed here. See
+`## Operator Decision Queue`. That is an unresolved operator decision, not a
+passing state.
+
+
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: eight repo changes below, plus one out-of-scope, one accepted-risk, and a bound cross-slice review; every improvement this run surfaced is dispositioned, none left as prose-only memory.
+
+- applied: `goal_artifact_cadence_owner` validator, wired into `check_goal` and `pursue_readiness`
+- applied: `goal_artifact_template.md` acceptance preamble states outcomes, not cadence
+- applied: `references/lifecycle-during.md` documents the one-owner rule and the floor's narrowness
+- applied: `section_bounds`/`logical_lines`/`masked_section_body`, with seven hand-rolled section walks migrated onto them
+- applied: `status_token`/`is_terminal_status`, so an annotated `Status: COMPLETE (date)` cannot disarm a terminal skip
+- applied: `check_current_pointer_writes` derives its population from `repo_file_listing`, gains `--require-git-file-listing`, and unions the in-repo support tree
+- applied: `issue_closeout_ledger_counts`, with `missing_field_reasons` threaded to both blocking carriers and the shape producer rendering from the owner
+- applied: `charness-artifacts/retro/2026-08-08-one-cadence-one-owner-retro.md` carries both gate-proof lessons in durable form
+- out-of-scope: slices 4-9 move to the successor goal named in `## Coordination Cues`
+- accepted-risk: the `#514/#515/#518` freeze stays stale until its owner re-inspects; re-stamping would assert an inspection this run did not perform
+- none — the full cross-slice reading, including the two off-goal records, is in the bound disposition review; no further improvement was surfaced and left undispositioned
+
+Structural follow-up: applied: the two gate-proof lessons (a substring pin cannot
+see an INVERSION; a test whose subject is live repo state must be proven by
+INJECTION) are written into
+`charness-artifacts/retro/2026-08-08-one-cadence-one-owner-retro.md`, which is
+the durable owner the selection index reads. NOT yet in the generated
+`recent-lessons.md` digest — that surface selects by recency and recurrence and
+gave its slots to other entries, so the original slice-4 acceptance is UNMET and
+moves to the successor goal.
