@@ -246,3 +246,20 @@ def test_a_status_next_to_a_docstring_still_fires(tmp_path: Path) -> None:
     )
     constants = _gate._string_constants(module)
     assert constants == ["skipped"]
+
+
+def test_a_term_with_no_token_parts_matches_nothing() -> None:
+    # Defensive: a term that tokenizes to nothing (punctuation only) must not
+    # match every value. Without the guard, the empty part-list would be found
+    # at every index and report every string as that state.
+    assert _gate._is_status_value("skipped", "---") is False
+    assert _gate._is_status_value("anything at all", "") is False
+
+
+def test_a_node_with_no_body_is_skipped_when_marking_docstrings(tmp_path: Path) -> None:
+    # `ast.Module` for an empty file has an empty body, and a class body cannot
+    # be empty without `pass` -- so the empty-body guard is reached by an empty
+    # module. It must not raise while collecting docstrings.
+    empty = tmp_path / "empty.py"
+    empty.write_text("", encoding="utf-8")
+    assert _gate._string_constants(empty) == []

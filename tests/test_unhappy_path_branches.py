@@ -12,6 +12,7 @@ CONTRACT (what it refuses and how it says so), not merely that the line runs.
 from __future__ import annotations
 
 import importlib.util
+import re
 from pathlib import Path
 
 import pytest
@@ -61,7 +62,7 @@ def _with_owner(owner: object) -> list[str]:
 
     with unittest.mock.patch.object(_capture, "_issue_backend_owner", lambda: owner):
         return _capture.build_page_argv(
-            {"commands": {"source_capture": "gh api {repo} {number}"}},
+            {"commands": {"source_capture": ["gh", "api", "{repo}", "{number}"]}},
             "owner/repo", 42, 50, None,
         )
 
@@ -210,3 +211,42 @@ def test_a_non_mapping_reviewer_tier_block_is_not_adoption_evidence() -> None:
     with a profile it never declared."""
     for malformed in (None, "codex", ["codex"], 3):
         assert _critique_inspection._declares_codex_reviewer_profile(malformed) is False
+
+
+def test_a_typed_refusal_from_the_source_capture_op_passes_through() -> None:
+    """The same re-raise as `backend_binary`, on the other call path.
+
+    `build_page_argv` resolves the op through the owner too, and that second
+    `except CaptureRefusal: raise` is what keeps an already-typed refusal from
+    being relabelled `invalid_capture_command` by the RuntimeError arm below it.
+    """
+
+    class _Owner:
+        PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
+
+        def backend_binary(self, _backend):
+            return "gh"
+
+        def resolve_op(self, *_args, **_kwargs):
+            raise _capture.CaptureRefusal("missing_backend_module", "partial install")
+
+    with pytest.raises(_capture.CaptureRefusal) as excinfo:
+        _with_owner(_Owner())
+
+    assert excinfo.value.code == "missing_backend_module"
+
+
+def test_a_runtime_error_from_the_source_capture_op_becomes_a_config_refusal() -> None:
+    class _Owner:
+        PLACEHOLDER_RE = re.compile(r"\{([a-z_]+)\}")
+
+        def backend_binary(self, _backend):
+            return "gh"
+
+        def resolve_op(self, *_args, **_kwargs):
+            raise RuntimeError("template is missing a required placeholder")
+
+    with pytest.raises(_capture.CaptureRefusal) as excinfo:
+        _with_owner(_Owner())
+
+    assert excinfo.value.code == "invalid_capture_command"
