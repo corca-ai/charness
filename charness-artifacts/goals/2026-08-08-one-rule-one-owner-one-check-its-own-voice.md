@@ -1,6 +1,6 @@
 # Achieve Goal: One rule, one owner; one check, its own voice
 
-Status: active
+Status: complete
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
 
@@ -9,34 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 5 — `#536` built and BOTH review rounds complete. `#552`, `#548`,
-  `#555`, `#537` are CLOSED and verified. Remaining for slice 5: post the `#536`
-  closeout and close it.
-- Current slice intent: `#536` — make a probe-drift failure name its cause,
-  distinguish a corpus change from a rule change, and list every surface a re-record
-  must touch. Spans `67beced4` and the round-2 repairs.
-- Next action: post the `#536` closeout and close it. Then slices 5a (`#549`) and 5b
-  (`#542`), which slice 5's premise check RE-HOMED because they share this issue's
-  face and not its remedy — do not rebuild them as one slice.
-- SLICE PLAN NOW HAS 11 ROWS, not 9. Rows 5a and 5b were added by slice 5's premise
-  check. The goal is still described as 9-slice in prose above; read the table.
-- Grouping premise CONFIRMED for the CLASS and REFUTED for one bundle: slices 1-4 each
-  shared a mechanism, and slice 5's three issues shared only a face. That is the
-  distinction to carry — a shared face predicts nothing about a shared remedy.
-- Cross-slice lesson that keeps paying: I fix the instance an issue reports and measure
-  against that instance. In slice 4 the class was two greps wider; in slice 5 the
-  MESSAGE I wrote was twice worse than the number it replaced, both times because I
-  asserted where something lived instead of checking. Version 1 would have deleted
-  `_provenance`; version 2 sent a rule change to the corpus remedy by naming the wrong
-  files. Check the location of every fact a message states.
-- Issues filed while working, none planned: `#556`, `#557`, `#558`, `#559`, `#560`,
-  `#561`. Every one came from a delegated review or a gate.
-- Carried forward: (a) a test whose subject IS live repo state cannot be
-  mutation-tested by editing the worktree — prove it by injection; (b) a substring pin
-  over a message cannot see an INVERSION (swapped lists, swapped command pairings), so
-  pin the pairing and the ordering, not the vocabulary; (c) the commit-msg gate reads
-  prose for close keywords — `a fix: #536` in a sentence blocked two commits, and it
-  was right to.
+- Current slice: CLOSED. This goal is COMPLETE, EARLY, at five of eleven rows.
+  All five claimed-and-built issues are CLOSED and verified through the adapter:
+  `#552`, `#548`, `#555`, `#537`, `#536`. `#536`'s closeout ran in the successor
+  goal at commit `7c09bc2a` and is verified `CLOSED`.
+- Current slice intent: none — terminal. Read `## Slice Log` slice 11 for the
+  closeout record and `## Coordination Cues` for the routing and issue-closeout
+  evidence.
+- Next action: none here. Continue in the successor,
+  `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`.
+- NOT re-homed, and this is deliberate: rows 5a, 5b, 6, 7 and 8 (`#549`, `#542`,
+  `#518`, `#528`, `#546`, `#547`, `#550`) return to the backlog UNCLAIMED. The
+  successor is a FIVE-slice goal on this run's own evidence; carrying six more
+  rows forward would reproduce the over-planning this run measured.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -178,13 +163,13 @@ re-homed here rather than run under a frame that did not name what they share.
 | 2 | One key name meaning opposite things in two scaffolds | #548 | Same shape, and one branch can overwrite the previous review | done |
 | 3 | One tracker backend, one owner | #555 | Unblocks `#554` part 2; the duplicate was found by the predecessor's premise check | done |
 | 4 | A correct refusal that reports itself | #537 | Hit LIVE in the predecessor and worked around; also unblocks honest gate reads for later slices | done |
-| 5 | A drift failure that names its cause and its full update set | #536 | Reproduced, and the only one of the three whose remedy is a message | done |
-| 5a | A survive-truncation mechanism built once, and a consumer contract with no reader | #549 | RE-HOMED from slice 5 by its premise check: shares the face, not the remedy | planned |
-| 5b | A refusal that cannot name a CLI/body disagreement | #542 | RE-HOMED from slice 5: needs a design decision about threading the carrier source, not a message | planned |
-| 6 | Declared-but-unreached surfaces and absent sub-keys | #518, #528 | The predecessor's unfinished subject; largest surface, so it goes after the mechanisms are guarded | planned |
-| 7 | Labels that read as protection | #546, #547 | Local, and slices 1-6 will have exercised them | planned |
-| 8 | Resolver duplication | #550 | Cheapest last | planned |
-| 9 | Bundle proof, goal closeout, successor | (none) | Composition can drop what each slice proved alone | planned |
+| 5 | A drift failure that names its cause and its full update set | #536 | Reproduced, and the only one of the three whose remedy is a message | done — CLOSED and verified, closeout run by the successor |
+| 5a | A survive-truncation mechanism built once, and a consumer contract with no reader | #549 | RE-HOMED from slice 5 by its premise check: shares the face, not the remedy | not reached — returned to the backlog UNCLAIMED, not re-homed |
+| 5b | A refusal that cannot name a CLI/body disagreement | #542 | RE-HOMED from slice 5: needs a design decision about threading the carrier source, not a message | not reached — returned to the backlog UNCLAIMED, not re-homed |
+| 6 | Declared-but-unreached surfaces and absent sub-keys | #518, #528 | The predecessor's unfinished subject; largest surface, so it goes after the mechanisms are guarded | not reached — returned to the backlog UNCLAIMED, not re-homed |
+| 7 | Labels that read as protection | #546, #547 | Local, and slices 1-6 will have exercised them | not reached — returned to the backlog UNCLAIMED, not re-homed |
+| 8 | Resolver duplication | #550 | Cheapest last | not reached — returned to the backlog UNCLAIMED, not re-homed |
+| 9 | Bundle proof, goal closeout, successor | (none) | Composition can drop what each slice proved alone | not reached — this goal closes EARLY at five of eleven rows |
 
 ## Backlog Recount
 
@@ -261,14 +246,14 @@ below. Fill during the run:
   measured about this repo's real shape; a completion that does not spend it
   throws that away, and the next session re-derives it.
 
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
+Recorded routes and closeout evidence for this run:
 
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: issue — selected from installed skill metadata; every one of this goal's five slices resolves a tracked GitHub issue end-to-end through the adapter-resolved backend, which is `issue`'s declared scope, and its classification routing is what required the delegated causal review and resolution critique on each. `impl` and `prove` were consumed inside each slice for the build and its closeout ledger; `critique` supplied the bounded-reviewer contract for both rounds; `quality` owned the slice-boundary gate cadence via `run-quality.sh --read-only` and `run_slice_closeout.py`; `retro` closed the run.
+- Routing: debug — its substrate was consumed rather than run standalone, and that is the honest record. Every slice here is `bug`-classified issue resolution, so `issue`'s causal review is the surface that required the five-whys chain, the detection-gap walk, and the four-axis sibling scan, each citing `debug`'s references rather than re-deriving them. No slice opened an independent investigation with an unknown cause: every defect was reproduced by construction before any fix was shaped, which is why no separate `charness-artifacts/debug/` record was written and why each closeout ledger carries `Debug Artifact: none` with the reproduction commands instead of a path.
+- Gather: n/a — no external source was consulted for this goal. Every input is in-repo: the five issue bodies read through the adapter, the predecessor goal artifact, and the working tree. `## Context Sources` names no URL, Slack, Notion, Docs, or Drive source.
+- Release: n/a — no release surface was touched. No version bump and no install-manifest edit occurred in any of this goal's commits; the `plugins/` mirror was resynced as a generated export before validators, which is a sync obligation rather than a release. The one release-adjacent finding, `publish_release_helpers.backend_command` as a fifth copy of the backend rule, was FILED as `#559` rather than repaired here precisely to avoid touching a release surface inside an issue-resolution slice.
+- Issue closeout: `#552`, `#548`, `#555`, `#537`, `#536` — five issues, all CLOSED and verified. Carrier `direct-commit` for each, with the ledger and close keywords in the commit body and the same body posted as the closing comment through `issue_tool.py close-with-comment` (the repo's commits are unpushed, so GitHub auto-close cannot fire from the keyword alone). Each passed `issue_tool.py validate-closeout-draft` with `status: draft_verified` before any GitHub mutation, and each was read back with `issue_tool.py verify-closeout --expect-state CLOSED`. `#536`'s readback: `confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)` against commit `7c09bc2a`.
+- Successor goal: charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md — designed from this run's measured lessons rather than from its leftovers: five slices instead of nine because this goal reached five of eleven and the five were good only because each got two delegated rounds; a premise check that also verifies the OWNER a remedy names, because that is what refuted a predecessor slice; and two review rounds budgeted per verdict-logic slice, because the repair-carries-its-own-class count is now 9 for 9.
 
 ## Discuss Before Activation
 
@@ -427,6 +412,20 @@ slices, and pull in the related open issues.
 - Lessons carried forward: 1) The same mistake twice, and it is worth naming precisely: I stated WHERE something lived — a payload's shape, a threshold's module, a document's citation — without opening the file. Every one of those was wrong, and each wrong one made an instruction that would have caused the harm it was written to prevent. For any message that tells a reader where to look, open each location first. 2) A substring pin over a message cannot see an INVERSION. Swapping two lists or two command pairings left ten assertions green while turning the message harmful; pinning the PAIRING and the ORDERING is what catches it. 3) The repo's own commit-msg gate blocked two commits because prose containing `a fix: #536` parses as a GitHub close keyword — it would have auto-closed the issue on push with no ledger. A gate reading prose for side effects is not over-reach; it caught a real one.
 - Metrics:
 
+### Slice 11: Slice 5 closeout (#536) — closed in the successor, and this goal closes EARLY at five of eleven rows
+
+- Objective: Discharge this goal's last outstanding obligation — `#536`'s closeout through the full floor — and bring the artifact to a terminal status rather than leaving a second goal live beside its successor.
+- Why this approach: The successor goal's slice 1 exists precisely because two live goal artifacts is the `one issue, two owners` shape this family has repaired three times in code. `#536` was BUILT and twice-reviewed here at `67beced4` and `1fa7fd75`; only its closeout remained, so the successor ran it and this record closes the loop.
+- Commits: `7c09bc2a` — the closeout carrier, committed under the successor goal, carrying the ledger, the resolution critique artifact, and the repairs its two rounds produced. Plus the retirement commit carrying this record and this goal's closeout evidence.
+- What changed: Under the successor: `tests/probe_drift_support.py` (surface list seven entries to nine, two entries corrected), `tests/test_probe_drift_message.py` (ten pins to fourteen, three tightened), and the new `charness-artifacts/critique/2026-08-08-issue-536-resolution-critique.md`. Under this goal's retirement: `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`, `charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice-disposition-review.md`, the regenerated `charness-artifacts/retro/recent-lessons.md` and `lesson-selection-index.json`, and this artifact's `## Final Verification`, `## Coordination Cues` and `## Auto-Retro`.
+- Alternatives rejected: Rejected: flipping this goal terminal on the strength of `#536` being built and twice-reviewed. The closeout floor is the authorization, and running it found seven blockers — so a flip before the floor would have retired a goal on work that was not finished. Rejected: re-homing rows 5a, 5b, 6, 7 and 8 into the successor. The successor is deliberately a FIVE-slice goal on this goal's own evidence that it reached five of eleven; carrying six more rows forward would reproduce the over-planning this run measured. `#549`, `#542`, `#518`, `#528`, `#546`, `#547` and `#550` return to the backlog unclaimed, which is visible, rather than into a plan nobody will reach.
+- Targeted verification: `#536` CLOSED and verified: `issue_tool.py verify-closeout --carrier direct-commit --commit-ref 7c09bc2a --expect-state CLOSED` returns `status: verified`, empty `state_mismatches`, and `confirmed: issue_verify_closeout@gh via backend-state-readback (state-and-carrier-checks-only)`. Behavioural verdict from a distinct channel: a constructed markdown write under `charness-artifacts/quality/` produces `3 failed, 57 passed` with the repaired message rendered at all three drift sites. `validate-closeout-draft` reported `draft_verified` before any GitHub mutation, run through the REPO'S OWN helper after the installed copy correctly refused the write on helper-provenance drift. `validate_retro_artifact.py` and `validate_critique_artifacts.py` both exit 0; `describe_goal_closeout_shape.py` reports `MISSING — none` for this artifact.
+- Test duplication pressure: No tests added under this record; the four pins added under the successor were sampled there with `check_dup_ratchet.py --summary` reporting clean, zero new families, no hard block.
+- Critique: Two delegated bounded rounds on the closeout, both fingerprinted `clean` and both verified BEFORE any repair — the discipline this goal missed on all three of its own slices. They found seven blockers and every one was in a repair rather than in the build this goal shipped, which is worth stating precisely: this goal's `#536` work survived its reviewers, and what failed was the closeout's own repairs. The rule `round 2 reads the REPAIRS` is now 9 for 9 across the family. The disposition review then narrowed one disposition during its own writing: the first draft claimed `recent-lessons.md` as the durable home of the two gate-proof lessons, which is false — it is GENERATED from the retro corpus by a selection index, so the retro artifact is the owner and the digest slot is the selector's to give.
+- Off-goal findings: No new issues filed at closeout. This goal filed six while working (`#556` through `#561`), all from delegated reviews or gates. Carried to the backlog UNCLAIMED rather than to the successor: `#549`, `#542`, `#518`, `#528`, `#546`, `#547`, `#550` — rows 5a through 8 of this plan, deliberately not re-homed.
+- Lessons carried forward: 1) A goal artifact is a verdict surface, and `built and reviewed` is a claim like any other. The successor's slice 1 premise check re-executed it rather than inheriting it, and the closeout that followed found seven blockers — none of which would have surfaced from reading this artifact's own frame. 2) Closing EARLY at five of eleven with the remaining rows returned to the backlog is more honest than carrying them into a successor that will not reach them; the predecessor made the same call at three of nine, and both times the reached slices were good because of the rounds the unreached ones would have cost. 3) The helper-provenance refusal earned its place: the installed plugin copy refused a WRITE to a drifted target repo and named the exact command to run instead. Reads were fine through either copy; the write was not.
+- Metrics:
+
 ## Context Sources
 
 1. `charness-artifacts/goals/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster.md`
@@ -500,13 +499,13 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md
+Host log probe: skipped: host-log-not-exposed: this goal's five slices ran across earlier sessions, and only the CURRENT session's JSONL is exposed to `probe_host_logs.py`; the artifact carries no `Host metric window:` line, so `goal_window_audit` reports `not_requested` and any probe written now would measure the successor's session while wearing this goal's name.
+Disposition review: charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice-disposition-review.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the successor goal artifact `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md` plans FIVE slices with an explicit `NOT claimed` paragraph, and names reviewer-boundary-verification-before-repair as a High-Confidence check; applied: `#536`'s closeout executed that boundary rule on both rounds, recorded in `charness-artifacts/critique/2026-08-08-issue-536-resolution-critique.md`; applied: `charness-artifacts/retro/recent-lessons.md` now carries the two gate-proof lessons via the persisted retro artifact the selection index reads; issue #561; issue #562. Reviewed for binding and honesty in `charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice-disposition-review.md`.
+Structural follow-up: issue #561 (recurs: measured across three probes and five hand re-stamps — two probes pin EQUALITY against a corpus ordinary work mutates, while a third pins the invariant `min_residual >= floor` and has never needed a refresh)

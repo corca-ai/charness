@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 458,
-  "candidate_count": 1881,
+  "source_artifact_count": 459,
+  "candidate_count": 1885,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -254,6 +254,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:38f91be76c0f",
+      "kind": "next_improvement",
+      "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit.",
+      "normalized_key": "applied the successor goal plans five slices rather than nine on this goal s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a146a5c7edd9",
+      "kind": "next_improvement",
+      "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient).",
+      "normalized_key": "applied this artifact plus the successor goal s active operating frame which carries the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient)."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b7312125cf7c",
       "kind": "next_improvement",
       "lesson": "carry the semantic reviewer question and the worked #499/#491 application in the critique packet and its source/plugin mirrors.",
@@ -306,15 +358,15 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:3986ba3c4b39",
+      "candidate_id": "next_improvement:73f5902d45a5",
       "kind": "next_improvement",
-      "lesson": "keep rolling telemetry separate from a per-run receipt until a named consumer, retention, and stale-state contract exists.",
-      "normalized_key": "keep rolling telemetry separate from a per run receipt until a named consumer retention",
+      "lesson": "issue #561 — Structural pattern: a pinned measurement that asserts EQUALITY against a corpus ordinary work mutates converts every routine write into a hand re-record, and the re-record is indistinguishable from laundering a rule regression. Triggering instance(s): the two inventory probes refreshed three times in seven days, versus the residual probe pinning `>= floor` and never refreshed. Destination: issue #561 (recurs: measured across three probes and five re-stamps).",
+      "normalized_key": "issue 561 structural pattern a pinned measurement that asserts equality against a corpus ordinary",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
       "latest_source_date": "2026-08-08",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -322,64 +374,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
           "date": "2026-08-08",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "keep rolling telemetry separate from a per-run receipt until a named consumer, retention, and stale-state contract exists."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:474290e0ffb0",
-      "kind": "next_improvement",
-      "lesson": "keep the claims review and retro as distinct observers and distinct files, then update the goal citation only after both paths resolve.",
-      "normalized_key": "keep the claims review and retro as distinct observers and distinct files then update",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep the claims review and retro as distinct observers and distinct files, then update the goal citation only after both paths resolve."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:c151ac3ede31",
-      "kind": "next_improvement",
-      "lesson": "keep the corpus-denominator packet capability separate until it has a named consumer and owner; it is out of scope for this goal.",
-      "normalized_key": "keep the corpus denominator packet capability separate until it has a named consumer and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "keep the corpus-denominator packet capability separate until it has a named consumer and owner; it is out of scope for this goal."
+          "lesson": "issue #561 — Structural pattern: a pinned measurement that asserts EQUALITY against a corpus ordinary work mutates converts every routine write into a hand re-record, and the re-record is indistinguishable from laundering a rule regression. Triggering instance(s): the two inventory probes refreshed three times in seven days, versus the residual probe pinning `>= floor` and never refreshed. Destination: issue #561 (recurs: measured across three probes and five re-stamps)."
         }
       ]
     }
@@ -624,6 +624,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:38f91be76c0f",
+      "kind": "next_improvement",
+      "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit.",
+      "normalized_key": "applied the successor goal plans five slices rather than nine on this goal s",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:a146a5c7edd9",
+      "kind": "next_improvement",
+      "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient).",
+      "normalized_key": "applied this artifact plus the successor goal s active operating frame which carries the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient)."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:b7312125cf7c",
       "kind": "next_improvement",
       "lesson": "carry the semantic reviewer question and the worked #499/#491 application in the critique packet and its source/plugin mirrors.",
@@ -672,6 +724,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "freeze quality artifacts and host probes before broad verification so the proof record and the implementation surface share one identity."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:73f5902d45a5",
+      "kind": "next_improvement",
+      "lesson": "issue #561 — Structural pattern: a pinned measurement that asserts EQUALITY against a corpus ordinary work mutates converts every routine write into a hand re-record, and the re-record is indistinguishable from laundering a rule regression. Triggering instance(s): the two inventory probes refreshed three times in seven days, versus the residual probe pinning `>= floor` and never refreshed. Destination: issue #561 (recurs: measured across three probes and five re-stamps).",
+      "normalized_key": "issue 561 structural pattern a pinned measurement that asserts equality against a corpus ordinary",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue #561 — Structural pattern: a pinned measurement that asserts EQUALITY against a corpus ordinary work mutates converts every routine write into a hand re-record, and the re-record is indistinguishable from laundering a rule regression. Triggering instance(s): the two inventory probes refreshed three times in seven days, versus the residual probe pinning `>= floor` and never refreshed. Destination: issue #561 (recurs: measured across three probes and five re-stamps)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:ada99897e55a",
+      "kind": "next_improvement",
+      "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances).",
+      "normalized_key": "issue 562 structural pattern an owner inspection locator pin cannot distinguish the file i",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish \"the file I reasoned about changed meaningfully\" from \"someone edited it elsewhere\", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances)."
         }
       ]
     },
