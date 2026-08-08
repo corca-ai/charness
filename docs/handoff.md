@@ -3,7 +3,7 @@
 ## Workflow Trigger
 
 - **Next pickup: slice 8 of the active goal — the `4.0.0` release and push.** Run `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`. Slices 1-7 are DONE and committed; the goal artifact's `## Slice Log` carries what each one measured.
-- **Slice 8 needs its own budget.** The publish helper owns bump + tag + push together (`publish_release_cli.py --part major`), requires a CLEAN worktree, and requires a release critique artifact via `--critique-artifact`. A previous attempt bumped the version by hand and was correctly refused by `validate-current-pointer-freshness`, because the release pointer still claimed the old version — the pointer is written by the publish helper, so the bump cannot be committed ahead of it. That attempt was reverted; the tree is clean at the pre-release version (`grep '"version"' packaging/charness.json`).
+- **Slice 8 needs its own budget.** The publish helper owns bump + tag + push together (`publish_release.py --part major`), requires a CLEAN worktree, and requires a release critique artifact via `--critique-artifact`. A previous attempt bumped the version by hand and was correctly refused by `validate-current-pointer-freshness`, because the release pointer still claimed the old version — the pointer is written by the publish helper, so the bump cannot be committed ahead of it. That attempt was reverted; the tree is clean at the pre-release version (`grep '"version"' packaging/charness.json`).
 - **The push is operator-APPROVED for this bundle** and still conditional on the gates being green by their own strength. Read the remote CI verdict back through a different observer AND channel than the push exit code.
 
 ## Continuation Capability

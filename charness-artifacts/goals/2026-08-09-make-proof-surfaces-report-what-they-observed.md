@@ -15,7 +15,7 @@ runs the activation command.
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: run `publish_release_cli.py --repo-root . --part major
+- Next action: run `publish_release.py --repo-root . --part major
   --critique-artifact <path>` (dry-run first). It owns bump + tag + push
   together and needs a clean worktree; a hand bump is refused by
   `validate-current-pointer-freshness` because the publish helper is what writes
@@ -253,7 +253,7 @@ applies.
   the publish helper, so the bump cannot land ahead of it. Reverted rather than
   left half-applied.
 - The remaining path is one command with its own prerequisites:
-  `publish_release_cli.py --part major --critique-artifact <path>`, dry-run
+  `publish_release.py --part major --critique-artifact <path>`, dry-run
   first, from a clean worktree. It owns bump, sync, tag, and push together.
 - The push is operator-approved for this bundle and still conditional on the
   gates being green by their own strength. The remote CI verdict is an explicit

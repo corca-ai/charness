@@ -132,7 +132,9 @@ class _Result:
         self.stderr = ""
 
 
-def _close_with(monkeypatch: pytest.MonkeyPatch, *, answered_repo: str, payload: dict) -> None:
+def _close_with(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, answered_repo: str, payload: dict
+) -> None:
     """Drive `close_with_comment` to its readback check.
 
     The comment and close commands succeed and the view command returns
@@ -145,14 +147,11 @@ def _close_with(monkeypatch: pytest.MonkeyPatch, *, answered_repo: str, payload:
     monkeypatch.setattr(
         _issue_close, "_run_backend", lambda argv: _Result(stdout=_json.dumps(payload))
     )
-    body = ROOT / "tests" / "fixtures" / "close-body.md"
+    body = tmp_path / "close-body.md"
     body.write_text("closes the issue" + chr(10), encoding="utf-8")
-    try:
-        _issue_close.close_with_comment(
-            "owner/repo", 42, body, repo_root=ROOT, classification="chore",
-        )
-    finally:
-        body.unlink(missing_ok=True)
+    _issue_close.close_with_comment(
+        "owner/repo", 42, body, repo_root=ROOT, classification="chore",
+    )
 
 
 def _verified(**overrides: object) -> dict[str, object]:
@@ -162,28 +161,28 @@ def _verified(**overrides: object) -> dict[str, object]:
 
 
 def test_close_verification_refuses_an_answer_about_another_repository(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """The readback must be about the issue that was asked about. A wrong-repo
     answer carries the right number and the expected state, so without this it
     reads as a successful close."""
     with pytest.raises(RuntimeError, match="different repository"):
-        _close_with(monkeypatch, answered_repo="someone-else/repo", payload=_verified())
+        _close_with(monkeypatch, tmp_path, answered_repo="someone-else/repo", payload=_verified())
 
 
 def test_close_verification_refuses_an_answer_about_another_issue(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     with pytest.raises(RuntimeError, match="different issue"):
-        _close_with(monkeypatch, answered_repo="owner/repo", payload=_verified(number=7))
+        _close_with(monkeypatch, tmp_path, answered_repo="owner/repo", payload=_verified(number=7))
 
 
 def test_close_verification_accepts_the_issue_it_asked_about(
-    monkeypatch: pytest.MonkeyPatch,
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     """Control: the two refusals above must not be satisfiable by a check that
     refuses everything."""
-    _close_with(monkeypatch, answered_repo="owner/repo", payload=_verified())
+    _close_with(monkeypatch, tmp_path, answered_repo="owner/repo", payload=_verified())
 
 
 # --- a goal artifact with no Slice Log cannot take a slice --------------------
