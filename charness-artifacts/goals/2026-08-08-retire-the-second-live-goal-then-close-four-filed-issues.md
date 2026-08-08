@@ -1,6 +1,6 @@
 # Achieve Goal: Retire the second live goal, then close the four filed issues that reach a verdict
 
-Status: active
+Status: complete
 Created: 2026-08-08
 Activation: `/goal @charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues.md`
 
