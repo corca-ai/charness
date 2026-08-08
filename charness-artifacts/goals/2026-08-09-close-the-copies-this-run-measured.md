@@ -64,7 +64,7 @@ Predecessor: `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-th
 
 **The remaining work**, and it is deliberately two proof surfaces plus a structural tail:
 
-- `#562`: the owner-inspection locator pin, with an observed 0/5 true-positive rate over five re-stamps. A proof-surface DELETION touching ~35 `sha256` references plus a schema bump. Named as not-claimed by two goals in a row on budget grounds; this goal claims it, with two rounds budgeted from the start.
+- `#562`: the owner-inspection locator pin, with an observed 0/5 true-positive rate. **The DIRECTION is already decided and is not this goal's to re-open: option 1 — drop the locator pin, keep the source snapshot.** `#562`'s body records that as the operator's stated preference at filing time, and the predecessor briefly re-queued it as an open question, which was a decision being asked twice. What was missing was never the direction; it was the budget. A proof-surface DELETION touching ~35 `sha256` references plus a schema bump gets two rounds planned from the start. The premise check still runs — on whether the deletion's blast radius is what the issue measured — not on whether to delete.
 - `#561`: two probes pin EQUALITY against a corpus ordinary work mutates, while a third pins the invariant and has never needed a refresh. The decision between the two styles belongs to D47's owner and should be taken deliberately.
 - `#560`: the ready-path payload is owned only by tests requiring a clean worktree, so while any blocker is live NOTHING exercises it.
 - The structural tail this run measured but did not spend: `issue_verify_closeout.py` at 351/360 with the next addition owing a split, and the renderer-versus-reference spelling split in `setup` (the renderer is gated against baking a model id into the contract while a reference instructs an agent to write exactly that).
@@ -103,11 +103,11 @@ Predecessor: `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-th
 
 ## User Acceptance
 
-- `#562` reaches a verdict: either the owner-inspection locator pin is REMOVED
-  with the freeze's source-snapshot half intact, or each re-stamp is required to
-  record a BASIS and the 0/5 measurement is recorded against that choice. Whichever
-  is chosen is proven by CONSTRUCTION — an input that would have produced the old
-  behaviour is shown refused or shown recorded.
+- `#562`: the owner-inspection locator pin is REMOVED and the freeze's
+  source-snapshot half still re-derives from raw backend responses. Proven by
+  CONSTRUCTION — an edit that used to produce `stale_inspection` no longer does,
+  and a tampered snapshot is still refused, so the half that defends an external
+  mutable dependency is demonstrably intact rather than assumed to be.
 - `#561` is put to its owner as a decision with both costs measured, or is closed
   with the measurement that makes the choice obvious. It is not silently adopted.
 - `#560`: something exercises the ready path that does not require a clean
@@ -164,7 +164,7 @@ Three slices, and the budget is deliberately front-loaded onto the largest one.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | `#562`: the owner-inspection locator pin, 0/5 measured true positives | Two goals refused it on budget grounds; it is claimed here BECAUSE the budget is planned rather than borrowed from a tail slice | A verdict either way, proven by construction; the freeze's source-snapshot half untouched; TWO delegated rounds recorded | planned |
+| 1 | `#562`: DROP the owner-inspection locator pin, keep the source snapshot | Direction already decided by the operator at filing; two goals refused it on BUDGET, and the budget is planned here rather than borrowed from a tail slice | The pin removed with the source-snapshot half intact and re-derivable; a construction showing the old refusal no longer fires and the snapshot's own refusal still does; TWO delegated rounds recorded | planned |
 | 2 | `#561`: equality-versus-invariant probe pins | The decision is D47's owner's, and it should be taken with both costs measured rather than by whoever next hits the red | The choice put to its owner with the measurement, or closed with the measurement that settles it | planned |
 | 3 | `#560` plus bundle proof and closeout | Cheapest, and composition can drop what each slice proved alone | The ready path exercised without requiring a clean worktree; verification lock recorded; broad proof ONCE | planned |
 
