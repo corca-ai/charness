@@ -1,6 +1,6 @@
 # Achieve Goal: Make proof surfaces report only what they observed
 
-Status: active
+Status: complete
 Created: 2026-08-09
 Activation: `/goal @charness-artifacts/goals/2026-08-09-make-proof-surfaces-report-what-they-observed.md`
 
@@ -9,18 +9,13 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 8 — release `4.0.0` and push the bundle.
+- Current slice: none — all eight slices are complete and `v4.0.0` is published.
 - Current slice intent: slices 1-2 are DONE. The reviewable-intent unit now in
   progress is writing the overlap matrix that is the stated PREMISE for
   promoting awiki, then promoting it on the connectivity metrics. Critique and
   broad proof do not re-fire within one unchanged intent — update this when the
   intent changes, not per commit (meaningful-slice-cadence).
-- Next action: run `publish_release.py --repo-root . --part major
-  --critique-artifact <path>` (dry-run first). It owns bump + tag + push
-  together and needs a clean worktree; a hand bump is refused by
-  `validate-current-pointer-freshness` because the publish helper is what writes
-  the pointer. Then read the remote CI verdict back through a different observer
-  AND channel than the push exit code.
+- Next action: none for this goal. The successor is named below.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -165,7 +160,7 @@ The release is a MAJOR bump, `3.5.0` -> `4.0.0`, decided by the operator.
 | 5 | DONE. `goal_artifact_phase_routing`: replace the content GUESS with a declaration the author makes; the gate checks the declaration's form, not what work happened | It is teeth on a keyword guess that is wrong in both directions, and it ships to all five consumer repos | Replay over 185 checked-in goals: 156 quality + 47 debug triggers dropped, ZERO gained, `impl`/`issue` unchanged — every change is the prose guess ceasing to fire. Both recorded false positives pinned as tests | done |
 | 6 | DONE. `describe_goal_closeout_shape`: render `MIN_OPTOUT_REASON` and the queue floor from the live constants instead of typing them | The module that documents the cure has the disease, and one constant edit stales six operator-facing strings | No typed floor number left in the file; four tests move a live constant and assert the rendered text follows; the queue floor's regex is built from its own constant | done |
 | 7 | DONE. `validate_attention_state_visibility`: separate a status VALUE from English prose so a docstring may use the word | Two recorded false positives (#302, and this session) is a rot pattern, not bad luck | Both recorded false positives pass; bare/prefixed/labelled/separator-variant statuses still fire; 31 prose-only declarations retired and 2 REAL states caught that the substring scan could not see | done |
-| 8 | Release `4.0.0` and push | The operator scoped the push to ride with this release | Release artifact, push, and a remote CI verdict from a distinct observer and channel | pending |
+| 8 | DONE. Release `4.0.0` and push | The operator scoped the push to ride with this release | `v4.0.0` published; push confirmed by `git ls-remote`; CI `success` on the pushed SHA read from GitHub's API via two surfaces | done |
 
 ## Operator Decision Queue
 
@@ -229,6 +224,10 @@ closeout floors are presence-only, so no stub is seeded for them — add their l
 per the bullets above when that boundary is crossed):
 
 Phases: quality — this run's recorded work crossed the quality-gate boundary (a new `docs-graph` lane, three rewritten floors); no debug phase was entered, because nothing here started from an unexplained failure.
+Successor goal: n/a — the strongest lesson here is already filed as tracked work rather than a goal: #568 (the pickup eval arms stopped discriminating once routing became declared) and corca-ai/awiki#15 (lint is all-or-nothing, so a repo cannot adopt connectivity without link-only style). The transferable finding — that a captured fixture beats an invented one, twice caught in this run — is folded into the retro rather than into a new goal, because it is a habit to apply, not a slice to schedule.
+Gather: n/a — no external source shaped this run; every input was repo-local or measured live from installed tooling.
+Release: charness-artifacts/release/latest.md — v4.0.0 published, pushed, and CI-verified through a distinct observer and channel.
+Issue closeout: n/a — #566 and #567 informed the work and are cited as context; neither was staged for close in this run, and #568 was FILED by it rather than closed.
 Routing: impl — selected from installed skill metadata; the slices are code, docs, and gate-config changes against a stated contract, which `impl` owns, and it loads `prove` at its own stop gate. `quality` owns the gate-design review in slices 4-7, `release` owns slice 8, and `issue` stages the `#566`/`#567` closeouts; each is routed at its own boundary rather than pre-declared here.
 
 ## Discuss Before Activation
@@ -244,20 +243,32 @@ applies.
 
 ## Slice Log
 
-### Slice 8 — release and push (NOT DONE)
+### Slice 8 — release and push (done)
 
-- Version surfaces are at the pre-release version; the tree is clean and green
-  at slice 7. A hand bump through `bump_version.py --part major` + sync was
-  correctly REFUSED at commit by `validate-current-pointer-freshness`: the
-  release pointer still claimed the old version, and the pointer is written by
-  the publish helper, so the bump cannot land ahead of it. Reverted rather than
-  left half-applied.
-- The remaining path is one command with its own prerequisites:
-  `publish_release.py --part major --critique-artifact <path>`, dry-run
-  first, from a clean worktree. It owns bump, sync, tag, and push together.
-- The push is operator-approved for this bundle and still conditional on the
-  gates being green by their own strength. The remote CI verdict is an explicit
-  NON-CLAIM until read back through a different observer and channel.
+- Published `v4.0.0` and pushed. Verified by a DIFFERENT channel than the push
+  exit code: `git ls-remote` shows `refs/heads/main` at the pushed SHA and
+  `refs/tags/v4.0.0` present, and `git log origin/main..HEAD` is empty.
+- **Remote CI green, read back through a different observer AND channel.**
+  GitHub's own API reports `conclusion: success` for the run on the pushed SHA,
+  confirmed twice over (`gh run view`, then the `check-runs` API): `Core
+  deterministic gates` and `Changed-line mutation coverage (push/PR mirror)` both
+  `success`. The release object is published and not a draft.
+- **The push gate refused first, and was satisfied rather than bypassed.** The
+  release critique predicted it: `.githooks/pre-push` forces the full battery for
+  any `plugins/` change, the changed-line lane computes its set from
+  `merge-base(origin/main, HEAD)` — the whole unpushed range — and at push time
+  it also gets `--refuse-unestablished`. The only bypass was `--no-verify`, which
+  revokes the grant. The blocking set was 11 refusal branches across 6 inherited
+  files plus one module with NO standing test at all; all are covered now, and
+  the simulated pre-push battery ran `87 passed, 0 failed` before the publish.
+- The release-only suite then stopped the publish a second time, also correctly:
+  registering awiki as a validation-role dependency genuinely changed what
+  `charness tool install` selects and what `charness update --all` counts. Three
+  exact-set pins were updated to the new truth, not loosened.
+- A hand bump attempted before all this was correctly refused by
+  `validate-current-pointer-freshness` — the publish helper writes the release
+  pointer, so the bump cannot land ahead of it. The helper owns bump, sync, tag,
+  and push together.
 
 ### Slice 7 — a status value is not an English word (done)
 
@@ -562,9 +573,9 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md
+Host log probe: charness-artifacts/probe/2026-08-09-make-proof-surfaces-report-what-they-observed-host-log.json
+Disposition review: skipped: host-blocked-subagent: the two bounded review rounds this goal owed per proof-surface slice all ran and delivered findings, and a separate disposition-review spawn was not obtainable within this session's remaining context after the release critique consumed the last delegation budget
 
 ## User Verification Instructions
 
@@ -594,5 +605,5 @@ Run these yourself; none requires trusting this run's report.
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: run the pre-push simulation at the START of a release slice, not after the publish helper refuses — folded into the slice-8 pickup note in docs/handoff.md, which now records that the publish helper owns bump+tag+push and needs a clean worktree; issue: #569 for the invented-instead-of-captured external-tool fixture class, filed rather than built here because this goal's own boundary forbids repairing a proof surface by adding a gate on top of it; applied: the premise-check rule moves to slice-SHAPING time, recorded in the retro's Waste section because both failures this run were in plan text an earlier session wrote.
+Structural follow-up: issue #569 (novel: invented-instead-of-captured external-tool fixtures, caught twice in one run by bounded review rather than by any gate, one of them concealing a live fail-open; no prior occurrence is recorded, so this is a first sighting rather than a recurrence)
