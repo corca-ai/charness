@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
+- issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
+- applied — the successor goal budgets TWO delegated rounds per verdict-logic slice as a plan-level cost rather than a rule to remember, on this run's measurement that eighteen of eighteen blockers were in repairs. (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`)
 - applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes "verify the reviewer boundary before repairing" a slice-level obligation rather than a habit. (source: `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`)
-- applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient). (source: `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`)
-- carry the semantic reviewer question and the worked #499/#491 application in the critique packet and its source/plugin mirrors. (source: `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`)
 
 ## Selection Policy
 
@@ -38,3 +38,4 @@
 - `charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md`
 - `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`
 - `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
+- `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`

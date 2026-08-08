@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -275,12 +276,33 @@ def test_check_goal_call_site_fails_and_names_the_floor() -> None:
     assert any(issue.startswith("gate-cadence owner floor — ") for issue in result["issues"])
 
 
+def _shaped_non_terminal(path: Path) -> str:
+    """A live, fully-shaped artifact, normalised to a NON-TERMINAL status.
+
+    These two tests use a real goal artifact rather than a hand-built fixture on purpose: with
+    a synthetic one, both readiness keys are already False for unrelated reasons and the
+    assertion below is vacuous. But a live artifact carries a LIFECYCLE, and the cadence-owner
+    refusal is deliberately skipped for a `complete` record — "a terminal record is one nobody
+    may repair". So when that goal legitimately reached `complete`, these tests started
+    asserting about a code path that no longer runs, and both went green-then-red for a reason
+    that had nothing to do with the refusal they exist to prove.
+
+    Normalising the status keeps the realism (every other section is the real thing) and drops
+    the coupling to one artifact's lifecycle. Pursue-readiness is an ACTIVATION question, and
+    activation only applies to a goal that has not terminated.
+    """
+    text = path.read_text(encoding="utf-8")
+    normalized = re.sub(r"^Status: .+$", "Status: active", text, count=1, flags=re.MULTILINE)
+    assert "Status: active" in normalized, "the artifact no longer carries a Status line"
+    return normalized
+
+
 def test_pursue_readiness_call_site_refuses_activation(tmp_path: Path) -> None:
     """Activation is where the cost is paid: one broad suite per slice, after."""
     goal = tmp_path / "goal.md"
     goal.write_text(
-        (_ROOT / "charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md").read_text(
-            encoding="utf-8"
+        _shaped_non_terminal(
+            _ROOT / "charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md"
         ),
         encoding="utf-8",
     )
@@ -331,8 +353,8 @@ def test_refusal_updates_both_readiness_keys() -> None:
     """
     # A FULLY shaped artifact whose ONLY defect is the contradiction — otherwise
     # both keys are already False for unrelated reasons and the assertion is vacuous.
-    live = (_ROOT / "charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md").read_text(
-        encoding="utf-8"
+    live = _shaped_non_terminal(
+        _ROOT / "charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md"
     )
     assert gal.pursue_readiness(live)["activation_ready"] is True
     poisoned = live.replace(

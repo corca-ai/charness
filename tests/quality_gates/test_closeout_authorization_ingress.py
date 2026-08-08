@@ -41,7 +41,22 @@ class BackendSpy:
 
     def __call__(self, argv):
         self.calls.append(list(argv))
-        return subprocess.CompletedProcess(argv, 0, json.dumps({"number": 1, "state": "CLOSED", "url": "u"}), "")
+        # ECHO the issue and repository actually asked about. A canned `number: 1` with a
+        # placeholder url modelled a backend that answers about a different issue than it was
+        # asked for — which the close path's post-close readback now refuses, correctly, as an
+        # identity mismatch. A spy that cannot be told apart from that failure cannot be used
+        # to prove anything about the paths around it.
+        asked = next((part for part in argv if part.isdigit()), "1")
+        repo = next(
+            (argv[i + 1] for i, part in enumerate(argv[:-1]) if part in {"--repo", "-R"}),
+            "corca-ai/charness",
+        )
+        payload = {
+            "number": int(asked),
+            "state": "CLOSED",
+            "url": f"https://github.com/{repo}/issues/{asked}",
+        }
+        return subprocess.CompletedProcess(argv, 0, json.dumps(payload), "")
 
 
 def _body(tmp_path: Path, number: int) -> Path:

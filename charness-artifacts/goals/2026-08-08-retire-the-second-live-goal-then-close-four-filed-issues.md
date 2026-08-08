@@ -9,15 +9,16 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 — `#556`. Slices 1-3 are DONE: `#536`, `#558`, `#557` and
-  `#559` are all `CLOSED` and verified through the adapter, and the second goal
-  artifact is `complete`.
-- Current slice intent: `#556` — a check reachable only for a directory literally
-  named `charness` must fire for a consumer-shaped repo, proven by CONSTRUCTION.
-- Next action: premise-check `#556` BEFORE building. Slice 3's lesson applies
-  directly: when an issue names a reason its surface cannot simply be fixed,
-  check whether that reason covers the WHOLE surface or one branch of it. Both of
-  slice 3's issues were narrower than they claimed.
+- Current slice: COMPLETE. Five slices planned, five reached — the first goal in
+  this family to finish its plan. All five claimed issues are `CLOSED` and
+  verified through the adapter (`#536`, `#558`, `#557`, `#559`, `#556`), and the
+  second goal artifact is terminal, so the repo has ONE live goal.
+- Current slice intent: none — terminal. Read `## Slice Log` slice 8 for the
+  bundle proof (which was RED first, with four failures read rather than routed
+  around) and `## Coordination Cues` for the routing and closeout evidence.
+- Next action: none here. The successor is
+  `charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md`,
+  and it is `--pursue-ready`.
 - 13-FOR-13 across the family, and this goal's three built slices are the sharpest
   evidence yet: fourteen of the blockers its six rounds found were in REPAIRS, not
   in the original analysis. Round 2 is not optional on a verdict surface.
@@ -178,8 +179,8 @@ Five slices, ordered by MEASURED cost and leverage rather than by size.
 | 1 | Close `#536` and retire the still-active `one-rule-one-owner` goal | It is BUILT and reviewed; one closeout retires a whole goal artifact, and two live goals is the "one issue, two owners" defect this family keeps repairing | `validate-closeout-draft` reports `draft_verified`, a DELEGATED resolution critique runs BEFORE the close, `verify-closeout --expect-state CLOSED` reads back through the adapter, and that goal reaches a terminal status | done — `#536` CLOSED and verified at `7c09bc2a`; the goal artifact is `complete` at `30517c46`; two delegated rounds found seven blockers, all in repairs |
 | 2 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo `CLOSED` verdict is a FALSE GREEN at an irreversible boundary — the highest-severity item in the filed set | The wrong-repo answer is refused or detected, proven by a constructed input rather than by a passing suite | done — CLOSED and verified at `01d1c5a8`; refusal proven by CONSTRUCTION at three surfaces; two rounds, five blockers, all in repairs |
 | 3 | `#557` and `#559`: the fourth and fifth copies of the backend rule | `#559` had ALREADY drifted from the owner when it was filed, which is the copy-rot this family exists to stop | Each consolidated or classified with a measured reason; the exemption list shrinks | done — both CLOSED and verified at `00937ae1`; the fourth copy REMOVED and the exemption list shrinks to one; the fifth kept with an EXECUTABLE reason |
-| 4 | `#556`: a check reachable only for a directory named `charness` | Cheapest of the filed set, same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | planned |
-| 5 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | planned |
+| 4 | `#556`: a check reachable only for a directory named `charness` | Cheapest of the filed set, same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | done — CLOSED and verified at `34919616`; fires for a consumer-shaped repo, proven by CONSTRUCTION at both ends |
+| 5 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | done — broad proof RED first (4 failed, one a real regression), repaired, then `7968 passed, 0 failed`; verification lock recorded |
 
 NOT claimed, and named so the next session does not re-derive the decision:
 `#562` and `#563` (both filed by the closing run: a proof-surface deletion, and
@@ -216,57 +217,41 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+- Decision: does `#562` (the owner-inspection locator pin, 0/5 measured true
+  positives) get built as a proof-surface DELETION, or is the freeze's
+  owner-inspection half kept and its remediation given a required basis instead?
+  Owner: operator. Why deferred: it is claimed by the successor goal, and the
+  choice between deleting the pin and requiring a recorded basis for each
+  re-stamp is a policy call about how much the freeze should cost, not a
+  refactor. The measurement supporting either choice is complete and filed.
+  Unblock action: pick a direction, or authorise the successor to pick one from
+  the measurement. Revisit trigger: the successor's slice 1 premise check.
+- Decision: the renderer-versus-reference spelling split in `setup`. The setup
+  renderer is gated against baking a model id into the AGENTS.md contract, while
+  `skills/public/setup/references/default-surfaces.md` instructs an agent to
+  write exactly that profile — so an agent following the reference produces an
+  AGENTS.md the same inspector can flag. Owner: operator, as the owner of the
+  setup contract. Why deferred: surfaced by slice 4's round 2 refuting a comment
+  rather than by a failing gate, and choosing which surface is right is a
+  contract decision. Unblock action: decide whether the reference or the gate
+  states the intended policy. Revisit trigger: the next `setup` contract change.
+- Decision: `git push`. 27 local commits are unpushed, five of which carry issue
+  closeouts. Owner: operator. Why deferred: `git push` is explicitly NOT a
+  standing approval in this repo and must be requested each time; nothing here
+  requires publication to be correct locally. Unblock action: grant or decline
+  the push. Revisit trigger: any request that depends on remote CI.
 
 ## Coordination Cues
 
-Phase-appropriate routing for this run, chosen from installed skill metadata and
-model judgment — never a hard-coded phase-to-skill list here. Use the catalog
-only for hidden availability facts. `achieve` owns this slot and the floors
-below. Fill during the run:
+Recorded routes and closeout evidence for this run:
 
-- **Routing** — choose the skill for the current phase or boundary from installed
-  metadata/model judgment, and record the route. At completion, recorded
-  implementation / debug / quality / issue work needs this `Routing:` evidence
-  or a `Routing: n/a — <reason>` opt-out.
-- **Gather step** — when `## Context Sources` names an external source
-  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
-  gathered asset, or write `Gather: n/a — <reason>` when no external context
-  applies.
-- **Release step** — when this run touches a release surface (a version bump or
-  install-manifest edit), add a `Release:` line here pointing at the release
-  proof, or write `Release: n/a — <reason>`.
-- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
-  an `Issue closeout:` line naming the close-intended issue numbers, carrier
-  (`direct-commit`, PR body, release commit, or manual fallback), and
-  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
-  tracked issue appears in `## Context Sources` as context only, use
-  `Issue closeout: n/a — <reason>`.
-- **Successor goal step** — required at EVERY completion, not conditionally. Add
-  a `Successor goal:` line naming the next goal artifact this run's lessons
-  designed, or write `Successor goal: n/a — <reason>` to say out loud that none
-  is wanted. The closing goal is the only place that still holds what the session
-  measured about this repo's real shape; a completion that does not spend it
-  throws that away, and the next session re-derives it.
-
-Routing step line — record it on ONE physical line so the floor reads the whole
-value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
-form below and replace `<skill>` with the selected installed skill; the
-placeholder is intentionally non-satisfying (the Gather / Release / Issue
-closeout floors are presence-only, so no stub is seeded for them — add their line
-per the bullets above when that boundary is crossed):
-
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: issue — selected from installed skill metadata; every one of this goal's four build slices resolves tracked GitHub issues end-to-end through the adapter-resolved backend, which is `issue`'s declared scope, and its `bug` classification routing is what required the delegated resolution critique before each close. `achieve` owned the goal lifecycle and slice ledger; `impl`/`prove` were consumed inside each slice for the build and its closeout; `critique` supplied the bounded-reviewer contract for all ten rounds; `quality` owned the slice-boundary gate cadence via `run_slice_closeout.py` and the dup/length ratchets; `retro` closed the run.
+- Routing: debug — substrate consumed rather than run standalone, which is the honest record for four `bug`-classified resolutions whose causes were all reproduced by CONSTRUCTION before any fix was shaped. No slice opened an investigation with an unknown cause, so no separate `charness-artifacts/debug/` record was written and each closeout ledger carries `Debug Artifact: none` with the reproduction commands instead of a path.
+- Routing: quality — owned the verification cadence rather than a standalone review: `run_slice_closeout.py --skip-broad-pytest` at every slice boundary, `check_dup_ratchet.py --summary` and `check_python_lengths.py --headroom` inside slices, and the broad `pytest tests/` reserved for this bundle boundary. The dup ratchet hard-blocked twice and was right both times, each block naming a real second owner.
+- Gather: n/a — no external source was consulted. Every input is in-repo or read through the tracker adapter: five issue bodies, the predecessor goal artifacts, and the working tree. `## Context Sources` names no URL, Slack, Notion, Docs, or Drive source.
+- Release: n/a — no release surface was cut or bumped. `skills/public/release/scripts/publish_release_helpers.py` was EDITED (a drift repair plus a typed refusal) and its reference doc updated, but no version bump, no install-manifest edit, and no tag; the `plugins/` mirror resync is a generated-export sync obligation rather than a release. A delegation of that helper was attempted and REVERTED precisely because it would have changed what command a release runs.
+- Issue closeout: `#536`, `#558`, `#557`, `#559`, `#556` — five issues, all CLOSED and verified. Carrier `direct-commit` for each, with close keywords and the classification ledger in the commit body and the same body posted as the closing comment through `issue_tool.py close-with-comment` (the repo's commits are unpushed, so GitHub auto-close cannot fire from the keyword alone). Each passed `issue_tool.py validate-closeout-draft` with `status: draft_verified` BEFORE any GitHub mutation, and each was read back with `issue_tool.py verify-closeout --expect-state CLOSED` against its own carrier commit — `7c09bc2a`, `01d1c5a8`, `00937ae1` (bundled `#557`/`#559`), and `34919616` — every one returning `status: verified` with empty `state_mismatches` and `confirmed: issue_verify_closeout@gh via backend-state-readback`.
+- Successor goal: charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md — designed from what this run MEASURED rather than from what it left over. It claims the two proof surfaces this goal deliberately refused on budget grounds (`#562`, `#561`) plus `#560`, and it budgets two delegated rounds per verdict-logic slice as a plan-level cost because eighteen of eighteen blockers here were in repairs. Its frame carries the four traps no gate holds.
 
 ## Discuss Before Activation
 
@@ -387,6 +372,20 @@ A Before-phase summary of any consequential activation decision.
 - Lessons carried forward: 1) The same line moved in OPPOSITE directions across two rounds, and both moves were defects: too wide (measuring absent tiers) then too narrow (measuring only a literal pair). The invariant neither version held is the one to state — the set a check MEASURES must match the set its applicability predicate ITERATES. When those two are written in different places, they drift, and the drift is invisible from either site. 2) Widening a check's reach and preserving its coverage are separate obligations. Round 1 caught a coverage deletion hiding inside a reach improvement; a permanent green becoming a narrower green is not progress, and only asking `what could fire before that cannot now` finds it. 3) A comment written specifically to be HONEST about a limitation was itself false, because I described the writer landscape from memory instead of opening the reference. Being about honesty is not the same as being checked.4) Length caps keep producing better structure than the code had: the split this forced is a real concept boundary, and it is the second time this session that the cap named a module that wanted splitting.
 - Metrics:
 
+### Slice 8: Slice 5 — bundle proof, which was RED, and the goal closeout
+
+- Objective: Prove the bundled state with the broad suite once at this boundary, record the verification lock, and close the goal through its own floor with a successor designed from what this run measured.
+- Why this approach: Composition can drop what each slice proved alone, and no earlier slice was permitted to claim a broad green. This is the only place that claim is allowed to be made.
+- Commits: the bundle-proof commit carrying this record, the four repairs the broad run exposed, the retro, the disposition review, and the successor goal; then a bookkeeping commit for the terminal flip.
+- What changed: `tests/quality_gates/test_closeout_authorization_ingress.py` (`BackendSpy` now echoes the issue and repository it was asked about). `tests/quality_gates/test_goal_artifact_cadence_owner.py` (new `_shaped_non_terminal` helper; two tests decoupled from one artifact's lifecycle). `charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json` and its freeze receipt (re-stamped WITH a recorded basis). New: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`, the disposition review beside this goal, and `charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md`. Regenerated: `recent-lessons.md`, `lesson-selection-index.json`, `plugins/` mirror.
+- Alternatives rejected: Rejected: treating the broad run's four failures as environmental and proceeding. One was a real regression this goal introduced. Rejected: reverting the post-close number check that caused it — the check is correct, is the same class as the repository check beside it, and the closeout verifier already had its equivalent; what was wrong was a test double that modelled a backend answering about a different issue than it was asked for. Rejected: deleting the two cadence-owner tests that broke when their live fixture reached `complete` — their intent is sound and the coupling, not the assertion, was the defect. Rejected: re-stamping the freeze silently, as the five prior re-stamps did.
+- Targeted verification: BUNDLE PROOF, and the first run was RED: `pytest tests/` returned `4 failed, 7964 passed` over the bundled state. All four were read rather than routed around. (1) A REGRESSION this goal introduced: slice 2's post-close identity check refused a shared `BackendSpy` that answered `number: 1` for every issue, including one asked about `#9001`. The check is right; the spy modelled a backend that cannot exist, and now echoes what it was asked. (2 and 3) Two `cadence_owner` tests read the `one-rule-one-owner` artifact as a realistic fixture and poison one line — and slice 1 flipping that goal to `complete`, which was this goal's own acceptance, made the refusal they assert deliberately skip (`a terminal record is one nobody may repair`). Decoupled by normalising the fixture's status rather than by weakening either assertion. (4) The source-freeze receipt went stale because slice 2 edited a frozen locator; re-stamped under the standing operator ruling, and — for the first time in six re-stamps — WITH a recorded basis naming the change, why it does not touch what `#514/#515/#518` reason about, and what is explicitly not claimed. That basis is the residue `#562` names. Re-run over the repaired bundle: `pytest tests/` returns **7968 passed, 0 failed** in 758s. `run_slice_closeout.py --verification-lock` records the lock over that state.
+- Test duplication pressure: No new duplicate families; the dup ratchet is clean. The three tests changed here were all REPAIRED rather than weakened, and each carries the reason in its docstring: a spy made realistic, a fixture decoupled from one artifact's lifecycle, and a freeze note that records its basis.
+- Critique: No new delegated round: this slice adds no verdict logic. Its own findings came from the broad gate, which is the fresh eye this boundary is for, and it found something no slice-level gate could — a regression whose blast radius crossed from `issue` into a shared test double, and two tests whose subject was an artifact this goal deliberately changed. Worth recording as the strongest argument for the bundle boundary existing at all: every slice was green at its own boundary, three of these four failures were invisible from inside any single slice, and the fourth was a regression a slice's own suites had no reason to run.
+- Off-goal findings: No new issues filed. The freeze re-stamp is now the sixth, and the first with a basis — evidence for `#562` rather than a new finding. Two operator decisions are queued: the direction for `#562`, and the renderer-versus-reference spelling split in `setup`. A third queue item records that `git push` remains ungranted for the 29 local commits.
+- Lessons carried forward: 1) The bundle boundary earned its cost in one run. Every slice was green at its own gate; three of the four broad failures were invisible from inside any single slice, and one was a real regression. A goal that skips this boundary ships a green that was never composed. 2) A test whose fixture is a LIVE artifact inherits that artifact's lifecycle. Both cadence tests were correct, well-reasoned, and used a real goal deliberately — and both broke because this goal did the thing it was created to do. Normalise the axis the test is not about. 3) My repair's blast radius crossed a package boundary into a shared test double, which no slice-level suite would have run. When a check is added at an irreversible boundary, grep for the doubles that stand in for that boundary, not just its callers. 4) The freeze re-stamp is the sixth and the first to record a basis; doing that took two sentences and turned a mechanical reflex into a reviewable decision, which is the entire content of `#562`'s proposal.
+- Metrics:
+
 ## Context Sources
 
 Durable references this goal was shaped from, in reading order.
@@ -473,13 +472,13 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md
+Host log probe: skipped: host-log-not-exposed: this artifact carries no `Host metric window:` line, so `probe_host_logs.py` reports `goal_window_audit: not_requested` and can bound nothing to this goal; the session's own JSONL exists but attributing a whole-session token and tool-call total to one goal would be a fabricated per-goal metric rather than a measured one.
+Disposition review: charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues-disposition-review.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: applied: the successor `charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md` budgets TWO delegated rounds per verdict-logic slice as a plan-level COST, on this run's measurement that eighteen blockers across ten rounds were all in repairs; applied: that successor's Low-Cost Checks run the dup ratchet and length headroom EARLY in each slice, after three commit-boundary blocks here each forced an aggregate re-run; applied: the four traps no gate holds are carried in the successor's `## Active Operating Frame` and in the regenerated `charness-artifacts/retro/recent-lessons.md`; issue #561; issue #562. Reviewed for binding and honesty in `charness-artifacts/goals/2026-08-08-retire-the-second-live-goal-then-close-four-filed-issues-disposition-review.md`.
+Structural follow-up: issue #561 (recurs: measured across three probes and five hand re-stamps — two probes pin EQUALITY against a corpus ordinary work mutates, while a third pins the invariant `min_residual >= floor` and has never needed a refresh)

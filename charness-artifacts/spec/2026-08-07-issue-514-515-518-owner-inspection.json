@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "13a95930ed2aef4a5ca43fd12348984056cbd1cc8d86ff25ac21ef43e1165335",
+  "inspection_identity": "424fcf9e9cdad53f401d7881bc23dfc7ff5ee51d596109d7ba5258ce437ad4ec",
   "issues": [
     514,
     515,
@@ -71,10 +71,10 @@
     },
     {
       "issue": 514,
-      "note": "Owns iter_close_keyword_refs / strip_code_fences / verify_closeout and the ledger floors. Close-keyword parsing is the shared source of truth every ingress must reuse rather than re-regex. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived.",
+      "note": "Owns iter_close_keyword_refs / strip_code_fences / verify_closeout and the ledger floors. Close-keyword parsing is the shared source of truth every ingress must reuse rather than re-regex. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by the same standing operator ruling that covered the earlier re-stamps: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone edited it elsewhere'. BASIS RECORDED, which #562 observes none of the five prior re-stamps did: the change is the retire-the-second-live-goal goal's slice 2, which added a repository-identity check to the post-close state readback and extracted three near-identical mismatch records into one builder. It touches the closeout VERIFIER's state comparison; #514/#515/#518 reason about this file as the closeout-evidence assembly surface, and neither the evidence assembly nor the declaration-to-verdict boundary they examine was altered. NOT CLAIMED: that the file was re-read against #514/#515/#518's questions.",
       "path": "skills/public/issue/scripts/issue_verify_closeout.py",
       "role": "closeout-ingress-verify",
-      "sha256": "8eda0cce118e16ce63ab0fc9e38879a3d94710211539ff688c5ee2cd0c5dc157"
+      "sha256": "3fe9a9ac160dce22d73ec2ff163f92109bf174e1cae5b25d6c9d9c2de8c9e5d9"
     },
     {
       "issue": 514,
@@ -88,7 +88,7 @@
       "note": "close_with_comment() performs the comment and close backend mutations. Authorization must precede BOTH, since a comment on the wrong issue is already an external side effect.",
       "path": "skills/public/issue/scripts/issue_close.py",
       "role": "closeout-ingress-direct-close",
-      "sha256": "ba6e75b71e529c3f1c84f91787d21846286c6dea7824d20d6681dee374d8220d"
+      "sha256": "fb36c8c1302f7c2b95e767bf5d32f5bd50a35270e8df4e833a2e4993a0f61063"
     },
     {
       "issue": 514,
@@ -102,7 +102,7 @@
       "note": "Adapter resolution and, as of this slice, the issue_source_capture capability contract. The capture adapter loads this module rather than reimplementing resolution so the receipt records the same adapter identity the issue lane resolves.",
       "path": "skills/public/issue/scripts/resolve_adapter.py",
       "role": "issue-adapter-resolver",
-      "sha256": "e4e76a80bd70049f152997c953f82d8c34fbc52fb93e220b2aded67dc2c12aaf"
+      "sha256": "c7ea2feb1fd12fd39ad33796babba6006ac4b3b2a6e0235ce8167696b4dafbf0"
     },
     {
       "issue": 514,
