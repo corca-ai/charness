@@ -49,8 +49,9 @@ inspection_identity}` and reports nothing about what MOVED, while
 change pulled the locator set AND the artifact's prose inside the identity,
 `refreeze` now silently re-stamps strictly MORE than it did when `#547` was filed,
 including the very `purpose` field that was round 1's blocker. The generalized
-defect is not discharged; it was widened. Recorded as such in the ledger and in
-the operator decision queue rather than claimed as resolved.
+defect is not discharged; it was widened. Recorded as such in the ledger and — after
+this critique's own disposition review caught the queue item still describing only the
+deletion half — in the operator decision queue too, rather than claimed as resolved.
 
 The same field UNDERSTATED the sibling population by one, and the missing entry
 was measured in this same goal. `#561`'s two probe pins are the identical class —

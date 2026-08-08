@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-08",
-  "source_artifact_count": 460,
-  "candidate_count": 1889,
+  "source_artifact_count": 461,
+  "candidate_count": 1896,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -236,6 +236,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ed1ea8bbb24d",
+      "kind": "current_focus",
+      "lesson": "The `close-the-copies-this-run-measured` goal: three slices against three filed issues.",
+      "normalized_key": "the close the copies this run measured goal three slices against three filed issues",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The `close-the-copies-this-run-measured` goal: three slices against three filed issues."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1c8ce8a5e8dc",
       "kind": "current_focus",
       "lesson": "This retro covers the shaped goal's five slices: selecting the evidence-carrying control for #499/#491, building the semantic reviewer question, assigning the #502 receipt owner, repairing the #500/#501/#497 producer/export boundaries, and staging the final closeout carrier.",
@@ -288,6 +314,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:78e6b7cbdd8e",
+      "kind": "next_improvement",
+      "lesson": "a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count. This is the Engelbart T-half; three hand-rolled harnesses in one run is the trigger.",
+      "normalized_key": "a repo owned mutate and restore helper that refuses to report a kill unless",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count. This is the Engelbart T-half; three hand-rolled harnesses in one run is the trigger."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:af2fc9856f08",
+      "kind": "next_improvement",
+      "lesson": "add one line to the goal template's `## Agent Verification Plan` — **a mutation sweep states its baseline test COUNT before its first mutant**, and **at least one mutant per repair deletes the CALL SITE rather than the body**. Both are this run's measured misses and neither is currently written anywhere.",
+      "normalized_key": "add one line to the goal template s agent verification plan a mutation sweep",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add one line to the goal template's `## Agent Verification Plan` — **a mutation sweep states its baseline test COUNT before its first mutant**, and **at least one mutant per repair deletes the CALL SITE rather than the body**. Both are this run's measured misses and neither is currently written anywhere."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:e3a3de50fd22",
       "kind": "next_improvement",
       "lesson": "applied — the successor goal budgets TWO delegated rounds per verdict-logic slice as a plan-level cost rather than a rule to remember, on this run's measurement that eighteen of eighteen blockers were in repairs.",
@@ -310,84 +388,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "applied — the successor goal budgets TWO delegated rounds per verdict-logic slice as a plan-level cost rather than a rule to remember, on this run's measurement that eighteen of eighteen blockers were in repairs."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:38f91be76c0f",
-      "kind": "next_improvement",
-      "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit.",
-      "normalized_key": "applied the successor goal plans five slices rather than nine on this goal s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes \"verify the reviewer boundary before repairing\" a slice-level obligation rather than a habit."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a5050ce6bbef",
-      "kind": "next_improvement",
-      "lesson": "applied — the successor's verification plan runs the dup ratchet and length headroom EARLY in each slice, after this run hit three commit-boundary blocks that each named a real second owner or module boundary.",
-      "normalized_key": "applied the successor s verification plan runs the dup ratchet and length headroom early",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied — the successor's verification plan runs the dup ratchet and length headroom EARLY in each slice, after this run hit three commit-boundary blocks that each named a real second owner or module boundary."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:a146a5c7edd9",
-      "kind": "next_improvement",
-      "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient).",
-      "normalized_key": "applied this artifact plus the successor goal s active operating frame which carries the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
-      "latest_source_date": "2026-08-08",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md",
-          "date": "2026-08-08",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied — this artifact, plus the successor goal's `## Active Operating Frame`, which carries the two lessons a gate cannot hold (a substring pin cannot see an INVERSION; a live-repo-state test needs INJECTION) and the sharpened form discovered at `#536`'s closeout (opening the file is necessary and not sufficient)."
         }
       ]
     }
@@ -614,6 +614,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:ed1ea8bbb24d",
+      "kind": "current_focus",
+      "lesson": "The `close-the-copies-this-run-measured` goal: three slices against three filed issues.",
+      "normalized_key": "the close the copies this run measured goal three slices against three filed issues",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The `close-the-copies-this-run-measured` goal: three slices against three filed issues."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:1c8ce8a5e8dc",
       "kind": "current_focus",
       "lesson": "This retro covers the shaped goal's five slices: selecting the evidence-carrying control for #499/#491, building the semantic reviewer question, assigning the #502 receipt owner, repairing the #500/#501/#497 producer/export boundaries, and staging the final closeout carrier.",
@@ -662,6 +688,58 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retro reviews the `arm-the-verdict-and-close-the-false-green-cluster` goal, closed EARLY at 2 of 7 slices by operator decision so its remaining claims could be re-homed under a larger structural frame."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:78e6b7cbdd8e",
+      "kind": "next_improvement",
+      "lesson": "a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count. This is the Engelbart T-half; three hand-rolled harnesses in one run is the trigger.",
+      "normalized_key": "a repo owned mutate and restore helper that refuses to report a kill unless",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count. This is the Engelbart T-half; three hand-rolled harnesses in one run is the trigger."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:af2fc9856f08",
+      "kind": "next_improvement",
+      "lesson": "add one line to the goal template's `## Agent Verification Plan` — **a mutation sweep states its baseline test COUNT before its first mutant**, and **at least one mutant per repair deletes the CALL SITE rather than the body**. Both are this run's measured misses and neither is currently written anywhere.",
+      "normalized_key": "add one line to the goal template s agent verification plan a mutation sweep",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "add one line to the goal template's `## Agent Verification Plan` — **a mutation sweep states its baseline test COUNT before its first mutant**, and **at least one mutant per repair deletes the CALL SITE rather than the body**. Both are this run's measured misses and neither is currently written anywhere."
         }
       ]
     },
@@ -1160,6 +1238,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:929483fed5f9",
+      "kind": "next_improvement",
+      "lesson": "the two-round rule for verdict-logic slices is now measured twice on independent goals (18/10 then 32/4, blockers always in repairs). It belongs in `recent-lessons.md` as settled rather than re-derived per goal.",
+      "normalized_key": "the two round rule for verdict logic slices is now measured twice on independent",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the two-round rule for verdict-logic slices is now measured twice on independent goals (18/10 then 32/4, blockers always in repairs). It belongs in `recent-lessons.md` as settled rather than re-derived per goal."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:afa095575403",
       "kind": "repeat_trap",
       "lesson": "**A finding repaired at one call site out of two.** Round 1 named a wrong predicate; I fixed the floor it pointed at and left the sibling gate, which converted a shared bypass into a live single-gate bypass.",
@@ -1260,6 +1364,84 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Ordering slips with no bad outcome but real risk:** a reviewer-boundary window verified after repairs instead of before, and a commit allowed past a blocked closeout because it was not chained to the gate's exit status."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0a22139a9a43",
+      "kind": "repeat_trap",
+      "lesson": "slice 1: `stamp_inspection`'s existence check (mutant F survived).",
+      "normalized_key": "slice 1 stamp inspection s existence check mutant f survived",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "slice 1: `stamp_inspection`'s existence check (mutant F survived)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:57448aef3e78",
+      "kind": "repeat_trap",
+      "lesson": "slice 2: the exit-code assertion — the only one a stub artifact actually reaches, because the script exits 1 before the messaged assertions (mutant L survived, and the first repair had messaged the four assertions that never fire).",
+      "normalized_key": "slice 2 the exit code assertion the only one a stub artifact actually reaches",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "slice 2: the exit-code assertion — the only one a stub artifact actually reaches, because the script exits 1 before the messaged assertions (mutant L survived, and the first repair had messaged the four assertions that never fire)."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a8616df7d1d8",
+      "kind": "repeat_trap",
+      "lesson": "slice 3: deleting the re-stamp call from the builder survived the entire suite, because the fixture copies bytes identically so the effect is invisible. **Third: writing by analogy imported the analogy's facts.** The residual drift message was modelled on the inventory one and inherited an inventory KEY NAME (`kinds[*].count`, which the residual probe does not have) and an inventory-sized surface list (one entry where five surfaces carry the figures). Not waste: the four delegated rounds. 32 findings including three blockers that each invalidated a claim already written down as proven. Nor the bundle boundary — one failure (`test_issue_critique_observer`) was invisible from every slice gate.",
+      "normalized_key": "slice 3 deleting the re stamp call from the builder survived the entire suite",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+      "latest_source_date": "2026-08-08",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md",
+          "date": "2026-08-08",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "slice 3: deleting the re-stamp call from the builder survived the entire suite, because the fixture copies bytes identically so the effect is invisible. **Third: writing by analogy imported the analogy's facts.** The residual drift message was modelled on the inventory one and inherited an inventory KEY NAME (`kinds[*].count`, which the residual probe does not have) and an inventory-sized surface list (one entry where five surfaces carry the figures). Not waste: the four delegated rounds. 32 findings including three blockers that each invalidated a claim already written down as proven. Nor the bundle boundary — one failure (`test_issue_critique_observer`) was invisible from every slice gate."
         }
       ]
     },

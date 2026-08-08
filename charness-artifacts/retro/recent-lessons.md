@@ -3,7 +3,7 @@
 ## Current Focus
 
 - One session under the standing operator direction (bug fixes, friction/rework, test/code speed) that closed the handoff's blocker 1 — two holes in the runtime-profile affinity switch — and published `v2.11.0`. (source: `charness-artifacts/retro/2026-07-26-xdist-scheduling-session-retro.md`; sources: 2)
-- This retro covers the shaped goal's five slices: selecting the evidence-carrying control for #499/#491, building the semantic reviewer question, assigning the #502 receipt owner, repairing the #500/#501/#497 producer/export boundaries, and staging the final closeout carrier. (source: `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`)
+- The `close-the-copies-this-run-measured` goal: three slices against three filed issues. (source: `charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md`)
 
 ## Repeat Traps
 
@@ -16,8 +16,8 @@
 
 - issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
-- applied — the successor goal budgets TWO delegated rounds per verdict-logic slice as a plan-level cost rather than a rule to remember, on this run's measurement that eighteen of eighteen blockers were in repairs. (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`)
-- applied — the successor goal plans FIVE slices rather than nine, on this goal's own evidence that it reached five of eleven and that the five were good because each got two delegated rounds. It also makes "verify the reviewer boundary before repairing" a slice-level obligation rather than a habit. (source: `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`)
+- a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count. This is the Engelbart T-half; three hand-rolled harnesses in one run is the trigger. (source: `charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md`)
+- add one line to the goal template's `## Agent Verification Plan` — **a mutation sweep states its baseline test COUNT before its first mutant**, and **at least one mutant per repair deletes the CALL SITE rather than the body**. Both are this run's measured misses and neither is currently written anywhere. (source: `charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md`)
 
 ## Selection Policy
 
@@ -36,6 +36,6 @@
 - `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-08-arm-the-verdict-and-close-the-false-green-cluster-retro.md`
-- `charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md`
+- `charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md`
 - `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`

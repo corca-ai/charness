@@ -1,6 +1,6 @@
 # Achieve Goal: Close the copies this run measured, and the two proof surfaces it deliberately did not
 
-Status: active
+Status: complete
 Created: 2026-08-09
 Activation: `/goal @charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured.md`
 
@@ -9,7 +9,7 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 1 — `#562`, drop the owner-inspection locator content pin.
+- Current slice: CLOSEOUT. All three slices reached; `#562` closed and verified.
 - Current slice intent: remove the whole-file `sha256` content pin from the
   owner-inspection half of the issue source freeze (0/5 measured true positives),
   keeping locators as provenance, and leave the source-snapshot half's
@@ -39,12 +39,13 @@ runs the activation command.
     deletes the sole existence check, so "I inspected `foo.py`" would become
     unfalsifiable prose again for a path that never existed. The pin is therefore
     REPLACED by a path-existence check, not merely removed.
-- Slice 1 status: BUILT and PROVEN. Two delegated rounds run (12 findings; every
-  one repaired except the deliberately deferred receipt-schema field), 16
+- Slice 1 status: BUILT and PROVEN. Two delegated rounds run (12 findings; all
+  repaired except TWO — the deliberately deferred receipt-schema field, and the
+  `docs/handoff.md` staleness, recorded as off-goal and discharged at this closeout
+  rather than in the slice), 16
   source-level mutants all killed, three construction proofs green,
   `run_slice_closeout.py --skip-broad-pytest` -> `Closeout verdict: completed`.
-  `#562` is not yet CLOSED — that rides the bundle boundary with the delegated
-  resolution critique and the adapter readback.
+  `#562` is now CLOSED and read back through the adapter (see `Issue closeout:`).
 - Slice 2 status: DONE. `#561`'s decision is measured and queued for D47's owner
   (the tax is paid entirely for a corpus COUNTER; every toll figure the deferral
   turns on is stable), and the third site's drift message is built and proven by
@@ -55,9 +56,16 @@ runs the activation command.
   was `2 failed, 37 passed` with zero ready-path coverage), and the monkeypatch
   test no longer reads the live manifest. One delegated round; both of its blocking
   findings invalidated claims already written down as proven.
-- Next action: bundle proof (broad pytest ONCE with the verification lock), then
-  `#562` issue closeout with a DELEGATED resolution critique and an adapter
-  readback, then goal closeout, retro, and the successor goal.
+- Bundle boundary: DONE, and it earned its cost. Broad proof over `475c532f..HEAD`
+  first returned `1 failed, 7913 passed` — one failure invisible from every slice
+  gate: `test_issue_critique_observer` refused this run's OWN new resolution-critique
+  artifact as `absent`, because it carried no `## Fresh-Eye Satisfaction` record.
+  Repaired in `ac7b9ab2` by adding that section plus `## Reviewer Tier Evidence` and
+  `## Boundary Ownership`. Final run under `--verification-lock`:
+  `Closeout verdict: completed`, broad pytest PASS in 60.7s, with that run's plan
+  recording `mode: verification-lock`.
+- Next action: none — this goal is at its terminal flip. Successor:
+  `charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md`.
 - Routing: `charness:achieve` owns the goal lifecycle; `charness:issue` owns the
   `#562`/`#561`/`#560` resolution and closeout shape at the bundle boundary;
   bounded `charness:bounded-reviewer` subagents own every fresh-eye round.
@@ -191,9 +199,9 @@ Three slices, and the budget is deliberately front-loaded onto the largest one.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | `#562`: DROP the owner-inspection locator pin, keep the source snapshot | Direction already decided by the operator at filing; two goals refused it on BUDGET, and the budget is planned here rather than borrowed from a tail slice | The pin removed with the source-snapshot half intact and re-derivable; a construction showing the old refusal no longer fires and the snapshot's own refusal still does; TWO delegated rounds recorded | planned |
-| 2 | `#561`: equality-versus-invariant probe pins | The decision is D47's owner's, and it should be taken with both costs measured rather than by whoever next hits the red | The choice put to its owner with the measurement, or closed with the measurement that settles it | planned |
-| 3 | `#560` plus bundle proof and closeout | Cheapest, and composition can drop what each slice proved alone | The ready path exercised without requiring a clean worktree; verification lock recorded; broad proof ONCE | planned |
+| 1 | `#562`: DROP the owner-inspection locator pin, keep the source snapshot | Direction already decided by the operator at filing; two goals refused it on BUDGET, and the budget is planned here rather than borrowed from a tail slice | The pin removed with the source-snapshot half intact and re-derivable; a construction showing the old refusal no longer fires and the snapshot's own refusal still does; TWO delegated rounds recorded | done — `e6a4d67c`; pin retired, source half proven intact, TWO rounds recorded (12 findings) |
+| 2 | `#561`: equality-versus-invariant probe pins | The decision is D47's owner's, and it should be taken with both costs measured rather than by whoever next hits the red | The choice put to its owner with the measurement, or closed with the measurement that settles it | done — `841d1ceb`; put to D47's owner with both costs measured, and the third site's drift message built |
+| 3 | `#560` plus bundle proof and closeout | Cheapest, and composition can drop what each slice proved alone | The ready path exercised without requiring a clean worktree; verification lock recorded; broad proof ONCE | done — `2a545fe9` (build) and `ac7b9ab2` (closeout + bundle repair); ready path owned by construction, verification lock recorded, broad proof run ONCE |
 
 NOT claimed, and named so the next session does not re-derive the decision:
 `#563` (needs a decision on 3 non-English titles first), the prompt-surface
@@ -229,17 +237,7 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
-
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
+Two items, both genuinely operator-only, neither blocking local progress.
 
 ### `#561`: equality-versus-invariant probe pins — D47's owner's call, both costs measured
 
@@ -283,21 +281,52 @@ Queue item form:
 - Already done, needing no decision (`#561` says so itself):
   `test_measure_evidence_residual.py` now has a drift message.
 
+### `#560` is closable and its closeout floor was not run
+
+- Decision: run `#560`'s closeout floor and close it, or state what remains open.
+- Owner: operator.
+- Why deferred: `#560`'s acceptance is MET and proven — the ready path is owned by a
+  fixture that is ready by construction, demonstrated with the live repo blocked
+  (`2 failed, 40 passed` where it was `2 failed, 37 passed` with zero ready-path
+  coverage), three ready-path mutants killed by fixture tests in that window, and the
+  monkeypatch test's live-manifest dependency removed. What was NOT done is the
+  closeout FLOOR: a delegated resolution critique for `#560` specifically, a carrier
+  with its classification ledger, and an adapter readback. This run spent its
+  closeout budget on `#562` and cannot claim a floor it did not execute. The
+  disposition review correctly refused the earlier wording ("not claimed for closure
+  by this goal's plan") as a fact about the plan rather than a reason.
+- Unblock action: run the `issue` closeout floor for `#560` (delegated resolution
+  critique -> validate-closeout-draft -> close-with-comment -> verify-closeout), or
+  record what is still open in it.
+- Revisit trigger: the successor goal's activation, which inherits this queue.
+
 ### `#547`'s subject was deleted by slice 1, and this goal is not allowed to close it
 
 - Decision: close `#547` as resolved-by-deletion, or re-scope it.
 - Owner: operator.
 - Why deferred: `#547` is "refreeze re-stamps every locator digest silently, so a
-  one-file re-bind can launder unreviewed drift in the other 18". Slice 1 deleted
-  the locator digests, so there is nothing left to re-stamp silently and the
-  issue's subject no longer exists. But `#547` is one of the SIX issues the
+  one-file re-bind can launder unreviewed drift in the other 18". Slice 1 deleted the
+  locator digests, so the issue's LITERAL subject no longer parses — but the delegated
+  resolution critique found that its GENERALIZED form survived and this change WIDENED
+  it, and the disposition review then caught this queue item describing only the
+  deletion half. Both halves, stated: `stamp_inspection` still returns
+  `{ok, stamped, inspection_identity}` and reports nothing about what MOVED, while
+  `rebind_crosswalk` beside it does return `changed_fields`; and because
+  `inspection_identity` now covers the locator SET and the artifact's PROSE, `refreeze`
+  silently re-stamps strictly MORE than it did when `#547` was filed — including the
+  `purpose` field that was slice 1's round-1 blocker. A deleted locator plus a
+  rewritten `purpose` followed by `refreeze` prints `ok: true` and a new identity, the
+  crosswalk rebinds, and `validate` is green. But `#547` is one of the SIX issues the
   predecessor returned to the backlog unclaimed, and re-homing those without a
   premise check is a stated Non-Goal of this goal. Closing it would be adopting
   work this plan declined to claim, so the fact is recorded instead of acted on.
   Round 2 surfaced it; I confirmed the OPEN state through the adapter
   (`gh issue view 547` -> `OPEN`).
-- Unblock action: confirm that `#562`'s deletion discharges `#547`, and either
-  close it citing `#562` or say what remains in scope.
+- Unblock action: RE-SCOPE `#547` rather than close it. Its literal subject is
+  discharged and its generalized form is live and WIDER than when filed, so the likely
+  correct outcome is a re-scope to "`refreeze` reports no diff of what it re-stamped"
+  — NOT a close citing `#562`. An earlier draft of this item invited that close; it was
+  wrong, and the record now says which reading is which.
 - Revisit trigger: the next goal that claims any of the six unclaimed issues, or
   any operator pass over the backlog recount.
 
@@ -339,7 +368,16 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Routing: <skill> — <why this phase needs it>`
+- Routing: impl — owns every slice's build: the freeze-lib deletion and its replacement rules, the residual drift message, and the bundle-ready fixture; selected from installed skill metadata because all three slices moved code, tests, and checked-in artifacts rather than only prose.
+- Routing: quality — owns the verification posture: the early `check_dup_ratchet`/`check_python_lengths` reads that drove slice 1's module split, the changed-surface verify sets, and the broad-versus-slice gate cadence including the verification lock at the bundle boundary.
+- Routing: charness:achieve — owns the goal lifecycle, the slice cadence, and the closeout floors for a three-slice run against three filed issues; selected from installed skill metadata at activation and recorded in the frame at slice 1.
+- Routing: charness:issue — owns #562's resolution shape and closeout carrier: validate-closeout-draft, the delegated resolution critique before the close call, close-with-comment, and verify-closeout through the adapter.
+- Routing: charness:retro — owns the after-action review, the sibling scan, and the recent-lessons refresh at closeout.
+- Routing: charness:bounded-reviewer (typed agent) — owns every fresh-eye round: two on slice 1's verdict logic, one on slice 2, one on slice 3, and the resolution critique.
+- Gather: n/a — no external URL, Slack, Notion, Docs, or Drive source became working context; every input was a checked-in artifact or a GitHub issue read through the repo's own adapter, which is not a gather source.
+- Release: n/a — this run touched no version, no install manifest, and no release surface; the plugins/ mirror sync is a generated-export step the packaging validator owns, not a release.
+- Issue closeout: #562 closed. Carrier: direct-commit (ac7b9ab2). DELEGATED resolution critique BEFORE the close call: charness-artifacts/critique/2026-08-09-issue-562-resolution-critique.md — nine findings, forcing four ledger rewordings (Siblings in both directions, Prevention narrowed, Behavior naming both directions, Debug Artifact to cite-only) plus three repairs riding the close commit. It is the FIFTH delegated round of this run and the ONLY one with no boundary fingerprint of its own — a gap stated rather than papered over. Proof: validate-closeout-draft -> draft_verified (re-run with the repo's OWN copy after the installed copy refused on helper-provenance drift), close-with-comment -> CLOSED, verify-closeout --classification bug --carrier direct-commit --commit-ref ac7b9ab2 --expect-state CLOSED -> verified. #561 and #560 are NOT close-intended, for two DIFFERENT reasons, because \"not claimed for closure by the plan\" is a fact about wording rather than a reason. #561: a DECISION for D47's owner, forbidden to this goal by a stated Non-Goal, correctly left open with both costs measured. #560: its acceptance is met and its build is proven, so it is CLOSABLE — what was NOT done is its closeout floor (a delegated resolution critique for #560, a carrier, an adapter readback), which this run did not run and therefore cannot claim. That floor IS the residual scope and it is recorded in the Operator Decision Queue. #564 and #565 were FILED by this run under the standing approval.
+- Successor goal: charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md
 
 ## Discuss Before Activation
 
@@ -373,7 +411,7 @@ applies.
 
 - Objective: Delete the whole-file `sha256` content pin from the owner-inspection half of the issue source freeze, keeping locators as provenance and leaving the source-snapshot half's re-derivation and tamper refusal untouched. Direction was already the operator's stated preference at filing; what two prior goals refused was the budget, so two delegated review rounds were planned as a COST rather than earned.
 - Why this approach: The pin used a whole-file content hash to stand for "the thing I relied on" — maximally sensitive, minimally specific. Measured over the `#514`/`#515`/`#518` freeze: 6 of 20 locators changed in roughly one day, 5 re-stamps, 0 of 5 refusals a true positive. Every refusal was incidental (a flag, a message string, a diagnostic thread). Worse, the remedy is one mechanical command, so the gate trained the see-`stale_inspection`-run-`refreeze` reflex that would fire on the day a locator's semantics genuinely changed — the wolf-crier shape the north star names. Narrowing the pin was rejected in favour of removal because the direction was already decided.
-- Commits:
+- Commits: `e6a4d67c` — Retire the owner-inspection locator pin, and the halves its deletion nearly kept
 - What changed: `scripts/issue_source_freeze_lib.py`: `INSPECTION_SCHEMA` v1 -> v2; `file_sha256` replaced by `require_file`; new `verify_locators` as the single owner of every per-locator rule (`retired_locator_pin`, `malformed_locator`, `locator_escape` via `_require_locator_contained`, `missing_file`); new `load_inspection` naming the migration remedy for a v1 artifact; `inspection_identity` drops `sha256` and ADDS `purpose`, `non_claims`, and each locator `note`; module docstring rewritten. `scripts/validate_issue_source_freeze.py`: new `preflight` (read-only, runs before any write, owns the issue-set check, `require_inspection_identity=False` for the refreeze lane); `stamp_inspection` no longer stamps digests and calls the shared rules BEFORE writing; `run_freeze` and `run_refreeze` route through `preflight`; `refreeze` docstring corrected. Artifact `...-owner-inspection.json` migrated to v2 with all 20 locator digests dropped, `purpose` and two `non_claims` rewritten, 4 locator notes marked `HISTORICAL (pre-#562, no longer enforced)`, and the re-stamp figures reconciled. Freeze receipt and crosswalk re-stamped. NEW `tests/test_issue_source_owner_inspection.py` (13 tests) registered in `.agents/surfaces.json`. `docs/handoff.md` drops `#562` from the queued-decision list.
 - Alternatives rejected: Narrowing the pin to a symbol or contract line (`#562` option 2) and downgrading to an advisory (option 3) were both rejected: the operator's direction was option 1, and re-opening it would have been the decision asked a third time. Ignoring a leftover `sha256` rather than refusing it was rejected — a dead field reads exactly like an enforced pin to a human skimming the artifact. Leaving the artifact prose unbound was rejected after round 2: prose is edited deliberately and rarely, so binding it costs nothing the file pin cost.
 - Targeted verification: Premise check recorded BEFORE the build and smoke-tested against the real caller. CONSTRUCTION, all three re-proven against the final code: an incidental comment appended to an inspected file is now ACCEPTED (previously `REFUSED (stale_inspection) scripts/run-quality.sh is now a34e2ecc2224, inspected at 61920016ac36`); a tampered snapshot body is still `REFUSED (snapshot_not_rederivable)`; a deleted locator is still `REFUSED (missing_file)`. `source_snapshot_sha256` stayed `9eb2d417e03a` across every re-stamp, so the source half demonstrably did not move. The refreeze partial-write defect was proven by construction before repair — a refusing `refreeze --require-issues 514 515` mutated all three checked-in artifacts including the closeout-authorization crosswalk. 16 mutants run against SOURCE files (never the `plugins/` mirror); all 16 killed after repair. `run_slice_closeout.py --skip-broad-pytest` -> `Closeout verdict: completed`. 61 tests green in the two freeze modules.
@@ -387,7 +425,7 @@ applies.
 
 - Objective: Two separable halves. Put the equality-versus-invariant probe-pin choice to D47's owner with BOTH costs measured rather than taking it (a stated Non-Goal), and close the part `#561` itself says needs no decision: `test_measure_evidence_residual.py` reported a bare kind name on failure while its two siblings got `#536`'s rich drift message.
 - Why this approach: `#536` made the recurring re-record cheaper and harder to get wrong; it never asked whether the equality pin is the right CLAIM. That question turns on numbers nobody had measured, and the goal's acceptance is explicit that this run measures and does not adopt. The message half is independent, cheaper, and was the concrete defect a reader actually hits.
-- Commits:
+- Commits: `841d1ceb` — Measure the probe-pin choice for its owner, and close the third site's silence
 - What changed: `tests/probe_drift_support.py`: new `residual_floor_message` with its own `RESIDUAL_*` constants and a 5-entry `RESIDUAL_UPDATE_SURFACES`; `probe_drift_message` untouched. `tests/quality_gates/test_measure_evidence_residual.py`: 5 assertions now carry the message, including the exit-code one. `tests/test_probe_drift_message.py`: 6 new pins. The goal artifact's `## Operator Decision Queue` carries the `#561` decision packet.
 - Alternatives rejected: Reusing `probe_drift_message` was rejected and the review confirmed it: its `UPDATE_SURFACES` names the marker probe, the floor probe, D47 and the inventory gate, none of which carry a residual figure, and its remedy (re-record) is the OPPOSITE of this site's. Deciding the pin question from the measurement was rejected as a stated Non-Goal — the measurement is put to the owner instead. Posting the measurement as a GitHub comment on `#561` was deferred: commenting is not in the repo's standing-approval list, and the operator reads the goal artifact.
 - Targeted verification: MEASURED, not argued. Adding one ordinary markdown artifact to `charness-artifacts/quality/` reds 3 assertions across the 2 equality sites while the invariant site stays GREEN. Diffing both payloads across that write isolates what actually moves: ONLY the corpus counter (`artifacts_scanned`/`artifacts`/`rows`/`exemption_counts.not-claimed`, 131 -> 132). Every toll figure D47 rests on — the refused citations, the refused artifacts, the marker split, the floor, the residuals — stayed stable. CONSTRUCTION for the message half: a one-byte stub artifact placed in the corpus renders the full message, read back three times as it was corrected. 6 mutants on the repairs, all killed. Gate: `Closeout verdict: completed`; 25 tests green in the two message suites, 83 across all four probe suites.
@@ -401,15 +439,15 @@ applies.
 
 - Objective: Build the fixture the preflight contract had DECLARED as an acceptance check with nothing implementing it, so the bundle ready payload and render shape stop being unowned whenever a blocker is live. Keep the two live readiness tests, and point `#560`'s third gap — a monkeypatch test still reading the live manifest — at the fixture.
 - Why this approach: After `#537` the ready payload was owned only by tests requiring a clean live worktree, so while any blocker was live NOTHING exercised the ready path — the state where a ready-path regression is most likely to be introduced and least likely to be noticed. Reproduced first, exactly as the issue describes: one probe file under `charness-artifacts/spec/` gives `2 failed, 37 passed`, and both failures ARE the readiness tests.
-- Commits:
+- Commits: `2a545fe9` — Own the bundle ready path in a repo that is ready by construction. The bundle-boundary repair to `tests/quality_gates/test_issue_critique_observer.py`'s subject (this run's own critique artifact gaining `## Fresh-Eye Satisfaction`) rode `ac7b9ab2`, the closeout carrier, not this commit.
 - What changed: NEW `tests/quality_gates/bundle_ready_world.py` — the session fixture `bundle_ready_repo`, `build_bundle_ready_repo`, `_rewrite_shas`, and `_restamp_reviewed_binding`. `tests/conftest.py` registers it. `tests/quality_gates/test_final_bundle_preflight.py` gains 4 tests and retargets `test_final_bundle_private_error_and_render_branches` off the live manifest. `tests/quality_gates/test_closeout_bundle.py` gains the ready plan's `verification_lock` owner.
 - Alternatives rejected: Forging a critique binding by hand was rejected — a durable artifact binds a packet by path, SHA-256, and reviewed-input identity, with the packet Markdown a deterministic rendering of its JSON, so hand-writing it would be a second implementation of the binding rule. The fixture copies the real triple and RE-STAMPS it with the real producers. Removing the live readiness tests was rejected: `is THIS repo ready right now` is a real question worth one failing test per surface.
 - Targeted verification: CONSTRUCTION, the same probe the issue names: with the live repo blocked the run goes from `2 failed, 37 passed` to `2 failed, 40 passed` — the two live readiness tests still fail correctly and the fixture-owned ready-path tests pass. 3 ready-path mutants (dropping the closeout planned command, forcing never-ready, removing `reason_surface_ids`) were run WITH THE LIVE REPO BLOCKED and each was killed BY A FIXTURE TEST, which is coverage that was previously zero in that window. A separate four-way construction proved the re-stamp's value: spec diverged + not re-stamped -> `unbound_critique`; spec diverged + re-stamped -> `current`. 7 mutants total on this slice, all killed after repair. 44 tests green in the two suites; gate `Closeout verdict: completed`.
 - Test duplication pressure: `bundle_ready_world.py` lands at 126/800 and the two suites at 384/800 and 393/800, all checked before writing. Dup ratchet clean at the gate. The fixture is session-scoped and read-only by contract; the review confirmed no test mutates it and the mirror render goes to a temp dir rather than the repo.
-- Critique: ONE delegated bounded round, boundary verified clean before repairing (`w-20260808T090259Z-192061`). It returned 11 findings and TWO were blocking, both of which invalidated claims I had already written down as proven. First: `test_the_fixture_stays_ready_while_this_repo_is_blocked` was VACUOUS. It probed the live repo with `--paths`, and `diagnostic = explicit_paths is not None` short-circuits the status line, so `!= ready` held for any repo in any state including a pristine one — the test could not fail, and its docstring asserted independence it never checked. Second, and worse because it was silent: the fixture's readiness DID depend on live bytes. `critique_inventory` verifies with `check_current=True`, which resolves the repo root by walking to the nearest `.git` and RECOMPUTES the reviewed-input identity there; under `sha256-v2` working-tree mode that digest reduces to the bytes of one file — the preflight contract spec, copied out of the live tree. The next amendment to that spec would have staled the fixture and reddened all three fixture tests beside the two live ones: a five-test fan-out for one cause, and zero ready-path coverage in exactly the window the fixture exists to cover. Both repaired — the vacuous test replaced by one asserting the plan carries the fixture's own base SHA (proven absent from the live repo), and the binding re-stamped with `build_reviewed_input_identity` and `render_markdown`. Also repaired: the module docstring implied the recomputed manifest identities exercise freshness when `verify_current=False` makes them inert, and implied a general independence the fixture does not have (mirror, surfaces, and source tree are copied, so drift there still travels); `_rewrite_shas` skipped 40-hex strings that are list ELEMENTS; `_declared` was a weaker second copy of the subject's markup stripper; and the seed inputs had no named guard. Accepted with reasons: the SHA collapse makes `validate_manifest`'s cross-field equalities vacuous inside the fixture (owned by `test_slice_manifest.py`, now named in the docstring so nobody credits the fixture with it), and `tmp_path_factory` rather than the content-addressed seed cache (one extra session clone against dozens already performed per test elsewhere). The round also cleared the retargeted monkeypatch test line by line — all four blocker codes still produced for their intended reasons — and confirmed no cross-test contamination and no assertion that would pass with its subject deleted.
+- Critique: ONE delegated bounded round, boundary verified clean before repairing (`w-20260808T090259Z-192061`). ONE and not two, and the reason is recorded rather than left silent: this slice adds TEST COVERAGE and a fixture and changes no verdict logic in any gate, validator, or renderer — the preflight and closeout-bundle libs are untouched — so the two-round trigger does not fire. The disposition review pushed back that the single round returned two BLOCKERS including a vacuous test, which is a proof surface that could not fail; that is accepted, and the round-1 repairs are recorded as ACCEPTED-UNREVIEWED under the same cap slice 1 used, rather than claimed as reviewed. It returned 11 findings and TWO were blocking, both of which invalidated claims I had already written down as proven. First: `test_the_fixture_stays_ready_while_this_repo_is_blocked` was VACUOUS. It probed the live repo with `--paths`, and `diagnostic = explicit_paths is not None` short-circuits the status line, so `!= ready` held for any repo in any state including a pristine one — the test could not fail, and its docstring asserted independence it never checked. Second, and worse because it was silent: the fixture's readiness DID depend on live bytes. `critique_inventory` verifies with `check_current=True`, which resolves the repo root by walking to the nearest `.git` and RECOMPUTES the reviewed-input identity there; under `sha256-v2` working-tree mode that digest reduces to the bytes of one file — the preflight contract spec, copied out of the live tree. The next amendment to that spec would have staled the fixture and reddened all three fixture tests beside the two live ones: a five-test fan-out for one cause, and zero ready-path coverage in exactly the window the fixture exists to cover. Both repaired — the vacuous test replaced by one asserting the plan carries the fixture's own base SHA (proven absent from the live repo), and the binding re-stamped with `build_reviewed_input_identity` and `render_markdown`. Also repaired: the module docstring implied the recomputed manifest identities exercise freshness when `verify_current=False` makes them inert, and implied a general independence the fixture does not have (mirror, surfaces, and source tree are copied, so drift there still travels); `_rewrite_shas` skipped 40-hex strings that are list ELEMENTS; `_declared` was a weaker second copy of the subject's markup stripper; and the seed inputs had no named guard. Accepted with reasons: the SHA collapse makes `validate_manifest`'s cross-field equalities vacuous inside the fixture (owned by `test_slice_manifest.py`, now named in the docstring so nobody credits the fixture with it), and `tmp_path_factory` rather than the content-addressed seed cache (one extra session clone against dozens already performed per test elsewhere). The round also cleared the retargeted monkeypatch test line by line — all four blocker codes still produced for their intended reasons — and confirmed no cross-test contamination and no assertion that would pass with its subject deleted.
 - Off-goal findings: None new. The review's cost note — this fixture uses `tmp_path_factory` while `seeded_charness_git_repo` uses the content-addressed `seed_cache.get_or_build`, and the new `bundle-ready-*` prefix counts against `check_seed_fixture_budget.py`'s per-seed cap — is recorded here rather than filed, because the measurement that would justify a change (tree size, worker distribution) was not taken.
 - Lessons carried forward: THIRD slice in a row where the repair was pinned and its WIRING was not. Slice 1: the stamp path's existence check. Slice 2: the exit-code assertion the failure actually reaches. Here: deleting `_restamp_reviewed_binding(repo)` from the builder survived the entire suite, because the fixture copies the spec byte for byte and the re-stamped digest equals the live one — the effect is invisible while everything agrees. Three instances is a pattern, not a coincidence: when a repair's effect is only visible in a state the suite cannot manufacture, the wiring needs its own pin. Second: a test that cannot fail is worse than no test, and the way this one hid was that its subject was a FLAG rather than a state — `--paths` forces `diagnostic` before any blocker is consulted. Third: 'independent of live state' was too coarse a claim. The fixture is independent of the artifact-path class and coupled to the mirror, surfaces, source tree, and one reviewed spec; saying which is what makes the docstring true.
-- Metrics: No host telemetry exposed; not fabricated. Countable: 1 delegated round, 11 findings (2 BLOCKING, 3 repaired-medium, 6 notes), 7 mutants all killed after repair, 2 multi-case constructions, 5 tests added, 44 green in the two suites.
+- Metrics: No host telemetry exposed; not fabricated. Countable: 1 delegated round, 11 findings (2 BLOCKING, 4 further repaired, 5 accepted-with-reason or notes), 7 mutants all killed after repair, 2 multi-case constructions, 5 tests added, 44 green in the two suites.
 
 ## Context Sources
 
@@ -457,13 +495,17 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-08-close-the-copies-this-run-measured-retro.md
+Host log probe: skipped: host-log-not-exposed: this session exposes no per-turn token, timing, or tool-call log to the agent, so `probe_host_logs.py` has no stream to read; every count in the retro and the slice log is a countable artifact (findings, mutants, tests, commits) rather than a host metric, and no token or duration figure is claimed anywhere in this goal.
+Disposition review: charness-artifacts/goals/2026-08-09-close-the-copies-this-run-measured-disposition-review.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+The retro surfaced three improvements. Each is dispositioned, none is prose-only:
+
+Retro dispositions: issue #564 (recurs: three instances in THIS goal, one per slice, and the predecessor goal measured the adjacent half-repair form; the class is a repair whose only proof calls the repaired function directly) — the workflow improvement ("at least one mutant per repair deletes the CALL SITE rather than the body") is filed rather than applied, because it belongs in the goal TEMPLATE's verification plan and editing that template is a prompt-surface change this goal did not claim.
+Retro dispositions: issue #565 (novel: no prior issue or retro names the harness-baseline shape; the adjacent known classes are about gate output, not about a verification harness that cannot fail) — the capability improvement (a repo-owned mutate-and-restore helper that refuses to report a kill unless the unmutated baseline first reported a passing test count) is filed rather than built, for the same scope reason plus the measured cost: three hand-authored harnesses in one run, one of which reported nine false kills.
+Retro dispositions: applied: the memory improvement is IN this commit — `charness-artifacts/retro/recent-lessons.md` was refreshed from the durable retro by `persist_retro_artifact.py`, carrying the twice-measured finding that blockers live in repairs rather than in first diagnoses.
+Structural follow-up: issue #564 (recurs: three instances in this goal, one per slice, and the predecessor goal measured the adjacent half-repair form; the transferable pattern is a repair whose only proof calls the repaired function directly)
