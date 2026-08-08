@@ -208,8 +208,13 @@ def _authoring_rules_read(repo_root: Path, artifact_path: str) -> dict[str, str]
     gate packet: different question, same surface.
     """
     rel = "scripts/check_doc_authoring_preflight.py"
-    if not (repo_root / rel).is_file():
-        return None
+    # Probe BOTH files the emitted command needs. The rules mode (no `--path`)
+    # imports `scripts/doc_authoring_rules.py` at runtime, so probing only the
+    # entrypoint emits a command that dies on import in a partially vendored
+    # repo -- and the read would still be reported as available.
+    for required in (rel, "scripts/doc_authoring_rules.py"):
+        if not (repo_root / required).is_file():
+            return None
     surface = "handoff" if artifact_path.endswith("handoff.md") else None
     command = f"python3 {rel} --repo-root ." + (f" --as-surface {surface}" if surface else "")
     return {

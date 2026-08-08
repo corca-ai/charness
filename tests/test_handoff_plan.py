@@ -464,8 +464,19 @@ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path:
     # authoring. The next action is what says whether the run writes.
     repo = seed_repo(tmp_path, handoff_body(current_lines=60))
     (repo / "scripts").mkdir()
-    shutil.copy(ROOT / "scripts" / "check_doc_authoring_preflight.py", repo / "scripts")
+    # Seed BOTH files the emitted command needs. The rules mode imports
+    # `doc_authoring_rules` at runtime, so a repo carrying only the entrypoint
+    # gets a command that dies on import.
+    for name in ("check_doc_authoring_preflight.py", "doc_authoring_rules.py"):
+        shutil.copy(ROOT / "scripts" / name, repo / "scripts")
     plan = run_plan("--repo-root", str(repo), "--intent", "pickup")
 
     assert plan["next_action"]["kind"] == "repair_or_prune_handoff"
     assert [r for r in plan["required_reads"] if r.get("kind") == "preflight"]
+
+    # The probe must cover every file the emitted command needs, not just the
+    # entrypoint. Deleting the runtime-imported half must SUPPRESS the read;
+    # while the probe checked one file, this repo state still advertised it.
+    (repo / "scripts" / "doc_authoring_rules.py").unlink()
+    degraded = run_plan("--repo-root", str(repo), "--intent", "pickup")
+    assert [r for r in degraded["required_reads"] if r.get("kind") == "preflight"] == []

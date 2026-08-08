@@ -4,7 +4,8 @@
 
 - **Next pickup: activate the new goal.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `draft`, `pursue_ready: true`, five slices, shaped this session with the operator on four consequential decisions recorded in its `## Discuss Before Activation`.
 - **The predecessor goal is DONE and its release is published.** `make-proof-surfaces-report-what-they-observed` is `Status: complete`; its major release shipped and was CI-verified (`ec67291e`, `b7aa6e6c`). Read the version with `git describe --tags --abbrev=0` rather than trusting a transcription. `origin/main..HEAD` is 0. Do not re-run its slice 8 — an earlier version of this file named that as the pickup after it had already happened.
-- **Tier 0 pre-work, outside the goal, either order:** close `#560` (built and PROVEN; only its closeout floor was never run — the cheapest close in the tracker), and re-scope `#567` (its problem 1 was fixed by the predecessor's slice 1; `plan_handoff_run.py` has no keyword branching left. Its problem 2 is UNVERIFIED and contradicted by `plan_handoff_run.py:206-216`).
+- **Tier 0 is DONE except for one push.** `#560` and `#567` both have verified closeout carriers committed locally; neither issue is CLOSED on GitHub, because `Closes #N` only fires once the range is pushed and no push is approved. `issue_tool.py verify-closeout` reads both as OPEN today — that is the honest state, not a pending claim.
+- `#567` turned out CLOSEABLE, not merely re-scopable: both its problems were repaired by `ca83a119`, whose message says so. Its resolution critique found two new defects; one is repaired here, the other is filed as `#570`.
 - **No push is approved.** The predecessor release's grant was scoped to that bundle and is spent.
 
 ## Continuation Capability
@@ -34,7 +35,7 @@
 ## Next Session
 
 1. **Activate the new goal and run its slices in order.** Slice 1 builds the mutate-and-restore helper (`#565`) because every later slice's proof depends on it; do not start at slice 3.
-2. **Tier 0 first if you want a cheap win:** `#560`'s closeout floor, and `#567`'s re-scope. Both are outside the goal.
+2. **Push the Tier 0 range first if approved** — that is what turns two verified carriers into two closed issues. Re-run `issue_tool.py verify-closeout --expect-state CLOSED` for `#560` and `#567` afterwards; a green push is not a closed issue.
 3. **Slice 3 is a DELETION, not a repair**, and its bar is completeness rather than a green suite. Recount the blast radius before starting: `grep -rn 'check_title_slug_drift\|check-title-slug-drift' skills/ scripts/ tests/ .githooks/ docs/ | grep -v __pycache__`. Three of those hits are public skill prose that ships to consumer repos telling an agent to run the script. Deleting the script alone reproduces the defect `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run` fixed.
 4. Recount the backlog before re-shaping anything: `gh issue list --repo corca-ai/charness --state open` (33 on 2026-08-09).
 
