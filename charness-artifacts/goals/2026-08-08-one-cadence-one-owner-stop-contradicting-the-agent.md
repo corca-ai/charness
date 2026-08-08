@@ -1,0 +1,353 @@
+# Achieve Goal: One cadence, one owner: stop the harness contradicting itself to the agent
+
+Status: draft
+Created: 2026-08-08
+Activation: `/goal @charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent.md`
+
+This file is the living goal scratchpad. It becomes active only when the user
+runs the activation command.
+
+## Active Operating Frame
+
+- Current slice: real draft/backlog awaiting activation.
+- Current slice intent: real draft/backlog awaiting activation; reshape before
+  activating if the acceptance boundary has changed. Once active, this names
+  the reviewable-intent unit in progress and the commits it spans; critique
+  and broad proof do not re-fire within one unchanged intent — update it when
+  the intent changes, not per commit (meaningful-slice-cadence).
+- Next action: activate with `/goal @charness-artifacts/goals/2026-08-08-one-cadence-one-owner-stop-contradicting-the-agent.md` after confirming the draft is
+  still intended.
+- Verification cadence: cheap deterministic checks at commit boundaries;
+  higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
+  closeout.
+- Gate cadence: pre-lock slices use `run_slice_closeout.py --skip-broad-pytest`;
+  final/bundle proof records the verification lock and uses `--verification-lock`.
+- Slice review packet: before fresh-eye slice critique, provide intent, changed
+  files and owning/generated surfaces, expected invariants, tests/proof,
+  non-claims, out-of-scope lines, and reviewer questions.
+- History boundary: keep this frame current; move completed detail to
+  `## Slice Log`, `## Operator Decision Queue`, `## Final Verification`,
+  and `## Auto-Retro`.
+
+## Goal
+
+The predecessor closed four issues in five slices and cost roughly two and a half hours of pure wall-clock waiting, and the waste was NOT agent sloppiness. It was a surface contradicting its own owner, which is the same defect class the predecessor spent five slices repairing in code — one layer up, in the instructions the agent reads.
+
+**The measured instance.** `skills/public/achieve/scripts/goal_artifact_scaffold.py` seeds the correct rule: `Gate cadence: pre-lock slices use run_slice_closeout.py --skip-broad-pytest; final/bundle proof records the verification lock and uses --verification-lock`. The same artifact's hand-written `## User Acceptance` then demands `./scripts/run-quality.sh --read-only exits 0 at EVERY slice boundary, and pytest tests/ -q reports zero failures`. Those two contradict: one says skip broad pytest until the lock, the other requires the full suite every slice.
+
+An agent that reads its own acceptance criteria follows the acceptance criteria. The 12-minute suite ran about thirteen times. `./scripts/run-quality.sh --read-only` already runs a pytest phase in ~110s over 146 standing targets, so most of those runs re-proved what was already green.
+
+**It is an idiom, not a slip.** That acceptance sentence appears verbatim in FIVE checked-in goal artifacts. And `check_goal_artifact.py` never compares the two sections — a repo-wide grep for `User Acceptance` or `Gate cadence` in that validator returns zero. So the cadence has one owner and the acceptance line is a second, contradicting owner that no reader reconciles. That is `#552`'s shape exactly: a rule stated twice, and the copy nobody validates is the one the agent obeys.
+
+**The goal.** Repair the instruction surfaces that made a careful agent do the expensive wrong thing, and the guard-shaped surfaces the predecessor proved unreliable — then carry the predecessor's own filed structural findings. Per the north star this means fixing the surface that misled the judge, not adding gates that cry wolf: the predecessor measured that trade repeatedly, and every gate that fired in it was right.
+
+The predecessor's other structural findings, each measured rather than supposed:
+
+1. **A guard's POPULATION is a verdict surface.** Three successive versions of one sweep were wrong about which files they covered, each caught by a different reviewer. The repo already holds the better precedent — `scripts/check_current_pointer_writes.py` derives its population from `git ls-files`, is AST-based, covers four roots, and records that omitting one root once produced a clean report over a scope that excluded a real violation. That lesson was not carried across.
+
+2. **Closeout ledger arithmetic failed the same way in three of four closeouts** — counting the owner among the things consolidated, so `four implementations, three consolidated` where two private copies were removed. Blocked three closeouts at the resolution-critique stage.
+
+3. **A substring pin over a message cannot see an INVERSION.** Swapping two cause lists, or two command pairings, left ten assertions green while making the message actively harmful.
+
+4. **A test whose subject IS live repo state cannot be mutation-tested by editing the worktree.** The edit is itself a state change; the test then fails at an earlier assertion and the mutant looks killed.
+
+## Non-Goals
+
+- Do not add a gate that re-runs the broad suite, or any gate whose failure an
+  operator would learn to ignore. The predecessor measured this trade repeatedly and
+  every gate that fired in it was right; the fix here is to stop a surface lying to
+  the agent, not to add a louder one.
+- Do not build a generic "two surfaces disagree" detector. Repair the measured
+  instances first; generalisation is the last slice's question if the evidence
+  supports it. The predecessor's Non-Goals said the same thing and were right.
+- Do not rewrite the achieve gate cadence itself. It is CORRECT — cheap deterministic
+  proof at commit boundaries, expensive proof at slice and bundle boundaries. The
+  acceptance line that contradicts it is what moves.
+- Do not take the prompt-surface cluster (`#519`, `#520`, `#521`, `#523`, `#524`,
+  `#525`, `#527`, `#531`, `#532`). Still a different question: measuring prompt
+  efficacy.
+- No release, tag, version bump, push, or Cautilus run unless separately granted.
+
+## Boundaries
+
+- External side-effect scope: name which phase or bundle any approved
+  publish / push / remote-CI / apply applies to. That approval is phase-scoped
+  and does not carry forward — after an approved publish/CI/apply lane
+  completes, done-early test-only quality continuation is local by default
+  (batch remote proof, run CI once over the final bundled state). Per-slice
+  remote publication is assumed only when the operator explicitly asks or a
+  runtime-affecting slice requires earlier publication.
+
+## User Acceptance
+
+- The cadence is stated ONCE. `## User Acceptance` in a goal artifact no longer
+  restates when broad proof runs; it points at `## Active Operating Frame`'s gate
+  cadence, which the achieve scaffold owns. Proven by a validator that REFUSES an
+  artifact whose acceptance demands per-slice broad proof while its cadence defers it.
+- The five checked-in goal artifacts carrying the contradicting sentence are repaired,
+  and the scaffold no longer seeds a shape that invites it.
+- A new sweep-shaped guard inherits its POPULATION from one owner rather than
+  hand-rolling it, and the owner is the `git ls-files`-derived precedent this repo
+  already has — proven by pointing at least one existing hand-rolled sweep at it and
+  showing the population is unchanged.
+- The closeout ledger states population and removals as SEPARATE numbers, so
+  "N implementations, M copies removed" cannot silently count the owner among the
+  removals. Proven by the arithmetic that blocked three closeouts now failing a check
+  instead of a reviewer.
+- `charness-artifacts/retro/recent-lessons.md` carries the two lessons a gate cannot
+  hold: a substring pin cannot see an inversion, and a test whose subject is live repo
+  state cannot be mutation-tested by editing the worktree.
+- Verification cadence follows `## Active Operating Frame`. This section deliberately
+  names no command and no boundary frequency — that duplication is the goal's subject.
+- The Slice Log records the premise-check verdict BEFORE each build.
+
+## Agent Verification Plan
+
+### Low-Cost Checks
+
+- `scripts/check_changed_surfaces.py` and the validators it names; root/plugin sync
+  BEFORE validators; `check_python_lengths.py --headroom` before adding to a gated
+  file; `check_dup_ratchet.py --summary` EARLY rather than at the commit-message
+  boundary — it hard-blocked three times in the predecessor and was right each time.
+- After ANY commit-gate rejection, run the aggregate (`run_slice_closeout.py`) rather
+  than fixing one rejection at a time.
+- Do not pipe a gate through `tail`; redirect and grep.
+
+### High-Confidence Checks
+
+- Mutation-check every new verdict path, including one mutant at the CALL SITE. For a
+  guard over a MESSAGE, mutate an INVERSION (swap two lists, swap two pairings) and not
+  only a deletion — a substring pin survives every deletion-shaped mutant it should.
+- For a test whose subject is live repo state, prove discriminating power by INJECTION.
+  Editing the worktree changes the subject, and the mutant then looks killed.
+- Before writing any instruction that tells a reader where to look, OPEN every location
+  it names. Two message versions in the predecessor were worse than the number they
+  replaced, both because a location was asserted rather than checked.
+
+### External Or Live Proof
+
+- Remote CI is a non-claim unless separately observed, by a different observer AND
+  channel than the push exit code.
+- Consumer-repo product behavior remains a standing non-claim.
+
+## Slice Plan
+
+| Slice | Objective | Why Now | Expected Evidence | Status |
+| --- | --- | --- | --- | --- |
+| 1 | The cadence contradiction: acceptance stops restating it, and a validator refuses the restatement | Measured cost is ~2.5h of wall clock in one session, the sentence is in five artifacts, and no reader reconciles the two sections | The validator refuses a reconstructed contradicting artifact and passes the repaired ones; all five artifacts repaired; the scaffold no longer seeds the shape | planned |
+| 2 | One owner for a sweep's population, pointed at the `git ls-files` precedent | Three successive guards were wrong about their own population, each caught by a different reviewer | An existing hand-rolled sweep delegates and its population is unchanged, measured before and after | planned |
+| 3 | Closeout ledger states population and removals separately | The same arithmetic error blocked three of four closeouts at the resolution-critique stage | The blocked phrasing now fails a check rather than a reviewer, and the repaired phrasing passes | planned |
+| 4 | The two lessons a gate cannot hold, written where the next session reads them | Both cost real rework and neither is gate-shaped | `recent-lessons.md` carries them; no new gate is added | planned |
+| 5 | `#557` and `#559`: the fourth and fifth copies of the backend rule | Both filed by the predecessor with their reasons; `#559` has ALREADY drifted from the owner | Each consolidated or classified with a measured reason; the exemption list shrinks | planned |
+| 6 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo CLOSED verdict is still reachable by reading | The wrong-repo answer is refused or detected, proven by construction | planned |
+| 7 | `#560` and `#561`: ready-path coverage and equality-versus-invariant pins | Both are decisions the predecessor deliberately deferred with reasons | A fixture-ready case exists, or the deferral is re-recorded with its cost | planned |
+| 8 | `#556`: a check reachable only for a directory named `charness` | Cheapest, and the same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | planned |
+| 9 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | planned |
+
+## Backlog Recount
+
+Recount the tracker before scope; see `references/lifecycle-before.md`.
+
+- Counted: 31 open issues on 2026-08-08 via `gh issue list --repo corca-ai/charness
+  --state open --limit 100 --json number`. The predecessor closed four (`#552`, `#548`,
+  `#555`, `#537`) and filed six (`#556`, `#557`, `#558`, `#559`, `#560`, `#561`), which
+  is why the count rose from 29. Rerun the command before reshaping scope; the
+  reconciliation is a command, not an adjective.
+- Claims: `#557`, `#559`, `#558`, `#560`, `#561`, `#556` — the six the predecessor
+  filed, all found by a delegated review or a gate rather than by reading the backlog.
+  Plus the four structural repairs above, which have no issue numbers because they are
+  defects in this repo's own instruction surfaces.
+- Not claimed: the prompt-surface cluster (`#519`, `#520`, `#521`, `#523`, `#524`,
+  `#525`, `#527`, `#531`, `#532`) — a measurement question. `#514`/`#515` — consumer
+  ownership. `#539`, `#545` — provider/publication safety. `#530`, `#535`, `#554` —
+  operator decisions carried in the predecessor's queue. `#534` — BUILT green, then
+  REFUTED and REVERTED by an earlier goal; re-scope from the refutation, never from the
+  title. `#536`, `#542`, `#546`, `#547`, `#549`, `#550`, `#518`, `#528` — the
+  predecessor's unfinished slices, which stay with it until it closes; `#536` is built
+  and awaiting only its closeout.
+
+## Operator Decision Queue
+
+Record decisions, confirmations, credential actions, manual proof steps, and
+external-boundary approvals discovered during the run when they do not block
+safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+
+Queue item form:
+
+- Decision: operator-only decision or confirmation needed
+- Owner: operator or named human owner
+- Why deferred: why the run did not stop immediately
+- Unblock action: exact action or answer needed
+- Revisit trigger: event, date, or proof boundary that reopens this
+
+## Coordination Cues
+
+Phase-appropriate routing for this run, chosen from installed skill metadata and
+model judgment — never a hard-coded phase-to-skill list here. Use the catalog
+only for hidden availability facts. `achieve` owns this slot and the floors
+below. Fill during the run:
+
+- **Routing** — choose the skill for the current phase or boundary from installed
+  metadata/model judgment, and record the route. At completion, recorded
+  implementation / debug / quality / issue work needs this `Routing:` evidence
+  or a `Routing: n/a — <reason>` opt-out.
+- **Gather step** — when `## Context Sources` names an external source
+  (URL / Slack / Notion / Docs / Drive), add a `Gather:` line here pointing at the
+  gathered asset, or write `Gather: n/a — <reason>` when no external context
+  applies.
+- **Release step** — when this run touches a release surface (a version bump or
+  install-manifest edit), add a `Release:` line here pointing at the release
+  proof, or write `Release: n/a — <reason>`.
+- **Issue closeout step** — when this goal resolves tracked GitHub issues, add
+  an `Issue closeout:` line naming the close-intended issue numbers, carrier
+  (`direct-commit`, PR body, release commit, or manual fallback), and
+  `issue_tool.py validate-closeout-draft` / `verify-closeout` proof. If a
+  tracked issue appears in `## Context Sources` as context only, use
+  `Issue closeout: n/a — <reason>`.
+- **Successor goal step** — required at EVERY completion, not conditionally. Add
+  a `Successor goal:` line naming the next goal artifact this run's lessons
+  designed, or write `Successor goal: n/a — <reason>` to say out loud that none
+  is wanted. The closing goal is the only place that still holds what the session
+  measured about this repo's real shape; a completion that does not spend it
+  throws that away, and the next session re-derives it.
+
+Routing step line — record it on ONE physical line so the floor reads the whole
+value (a soft-wrapped value is tolerated now, but one line is clearest). Copy the
+form below and replace `<skill>` with the selected installed skill; the
+placeholder is intentionally non-satisfying (the Gather / Release / Issue
+closeout floors are presence-only, so no stub is seeded for them — add their line
+per the bullets above when that boundary is crossed):
+
+- `Routing: <skill> — <why this phase needs it>`
+
+## Discuss Before Activation
+
+A Before-phase summary of any consequential activation decision — surfaced from
+the Non-Goals / Boundaries / Verification / Interview / Critique sections — that
+must be resolved before `/goal`. Required only when a trigger fires (live/prod
+proof, issue close/split, broad scope, irreversible side effect, or a
+proof-level non-claim); replace the `fill` line below, or delete it when none
+applies.
+
+- Discuss before activation: RESOLVED by the predecessor's recorded precedent, except
+  one item held for the operator (below). Settled: closing the six claimed issues rides
+  the repo's standing close-on-floor approval, and the predecessor closed four that way
+  with a delegated resolution critique and an adapter readback each time; the broad
+  scope is nine slices grouped by defect class, the same shape that held for four
+  measured slices; every proof-level non-claim is named in `## Agent Verification Plan`
+  and repeated at each closeout; no push, release, tag, or Cautilus run is implied by
+  activation, and each stays per-request.
+- Discuss before activation: HELD FOR THE OPERATOR, and slice 1 must not start without
+  it. Slice 1 repairs the contradicting acceptance sentence in FIVE checked-in goal
+  artifacts, and three of them belong to CLOSED goals. Editing a closed goal's
+  acceptance criteria rewrites a terminal record, which this repo treats as different in
+  kind from editing a live one. Options: repair only the live and draft artifacts and
+  leave the closed ones with a note; repair all five because the sentence is an idiom the
+  scaffold will keep reproducing; or repair the scaffold only and leave every artifact
+  as-is. The operator owns this, and the answer changes slice 1's scope.
+
+## Slice Log
+
+## Context Sources
+
+1. `charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
+   — the predecessor. Its `## Slice Log` holds the measured instance of every structural
+   finding this goal claims, including the three guard-population failures and the
+   ledger arithmetic that blocked three closeouts.
+2. `skills/public/achieve/scripts/goal_artifact_scaffold.py` and
+   `skills/public/achieve/references/lifecycle-during.md` — the OWNER of the gate
+   cadence, read to confirm the seeded rule is correct and that the acceptance line is
+   the copy that contradicts it.
+3. `scripts/run-quality.sh` and `scripts/run_standing_pytest.py` — read and executed to
+   establish that the read-only gate runs a pytest phase over 146 standing targets in
+   ~110s, so the broad suite adds coverage but is not the slice-boundary proof.
+4. `scripts/check_current_pointer_writes.py` — the `git ls-files`-derived, AST-based
+   sweep precedent this repo already has, and which three later guards did not reuse.
+5. Live tracker recount 2026-08-08: 31 open issues, reconciled against this goal's claim
+   split.
+
+Durable references this goal was shaped from. A fresh session can reconstruct
+the originating context by following them in order.
+
+1. TODO the repo's governing design standard, and what it says about THIS goal —
+   which facets bear on its boundaries, where its teeth belong, and which
+   irreversible boundaries it crosses. Read it while SHAPING, not at closeout:
+   the standard is what tells you where a wrong answer escapes, and that is a
+   Before-phase question. (The retro's `## North Star Alignment` asks the
+   backward-looking half; this is the forward-looking one.)
+
+## Interview Decisions
+
+- Ordered by MEASURED COST, not by size. Slice 1 is first because its instance cost
+  about two and a half hours of wall clock in one session and the sentence is in five
+  artifacts, so it is still costing.
+- The instruction-surface repairs come before the filed issues, because they change how
+  the remaining slices are executed. Fixing the cadence contradiction after eight slices
+  would mean eight slices paid the tax first.
+- Grouped as "a surface contradicting its own owner" rather than by area. That is the
+  predecessor's class one layer up, and the predecessor's evidence is that a class
+  grouping lets slices share evidence — confirmed four times there.
+- `#536` is NOT claimed even though it is built. It belongs to the predecessor, which
+  owes only its closeout; claiming it here would give one issue two owners, which is
+  this goal's own subject.
+
+For each Before-phase question: family of options considered, chosen value, and
+rejected-alternatives reason. Applies the anti-anchoring lesson to the artifact
+itself so a fresh session sees the design space, not only the closed point.
+
+## Plan Critique Findings
+
+- Corrected while drafting: the first shape put the six filed issues first because they
+  have numbers and the structural repairs do not. That buries the change that makes the
+  remaining slices cheaper behind the slices that would pay for its absence.
+- This goal's own `## User Acceptance` deliberately names NO command and NO boundary
+  frequency, because restating the cadence there is the defect it repairs. If a later
+  edit adds one, the goal has reproduced its own subject — and slice 1's validator
+  should catch it, which is the cheapest possible dogfood.
+- Open risk, not resolved: slice 1's scope depends on the operator decision above about
+  editing closed goals' terminal records. Do not start slice 1 before it is answered.
+- Open risk, not resolved: slices 2 and 3 add checks, and this goal's Non-Goals forbid
+  wolf-criers. The justification is frequency — three guard-population failures and
+  three ledger failures out of four closeouts — but if either check fires on correct
+  work during its own slice, that is the wolf-crier signal and it should be withdrawn
+  rather than tuned.
+- Open risk, not resolved: nine slices is large, and the predecessor reached five. If
+  slices 1-4 do not make the later ones visibly cheaper, the grouping premise is refuted
+  and the goal should be re-cut rather than pushed through.
+
+Blockers folded into Boundaries/Verification/Slice Plan, over-worry raised but
+not folded, and reviewer provenance. Preserves reasoning so a fresh session
+re-verifies the folded revisions without re-running critique.
+
+## Closeout Binding Plan
+
+Shape these minimum fields before activation and keep them current. The field
+check proves shape only; closeout workflows prove the values and identities:
+
+- Reviewed inputs: name semantic goal/issue/quality inputs; retro, packet, reviewer, and lock records are terminal evidence.
+- Frozen target: commit the semantic baseline, then bind the packet to that exact commit SHA.
+- Fresh-eye: name a distinct reviewer and a different observer/evidence channel.
+- Verification lock: name the lock command and evidence location; semantic input edits require rebinding.
+- Complete flip: record packet/reviewer/lock evidence, then write terminal status/evidence bookkeeping outside the reviewed identity.
+
+## Off-Goal Findings
+
+Issues or deferred findings discovered during the run.
+
+## Final Verification
+
+Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in
+retro / host-log probe / disposition-review artifact) or an explicit
+`skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
+`TODO` / `<path>` / `TBD` until you do.
+
+Retro: TODO — create or explicitly skip with an allowed reason before complete
+Host log probe: TODO — create or explicitly skip with an allowed reason before complete
+Disposition review: TODO — create or explicitly skip only when policy allows before complete
+
+## User Verification Instructions
+
+## Auto-Retro
+
+Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
+Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
