@@ -411,7 +411,13 @@ def verify_inspection(repo_root: Path, inspection: dict[str, Any]) -> str:
     verify_locators(repo_root, inspection)
     identity = inspection_identity(inspection)
     if inspection.get("inspection_identity") != identity:
-        raise FreezeError("inspection_identity_mismatch", "the declared inspection identity is not its content's")
+        raise FreezeError(
+            "inspection_identity_mismatch",
+            "the declared inspection identity is not its content's. The identity covers the "
+            "locator SET (path, role, note) AND the artifact's prose (`purpose`, `non_claims`), "
+            "so a deliberate edit to any of those stales it. Remedy: re-read the change, then "
+            "`validate_issue_source_freeze.py refreeze`",
+        )
     return identity
 
 
@@ -429,9 +435,17 @@ def inspection_identity(inspection: dict[str, Any]) -> str:
     generation — "bound to the digest each file carried at inspection time" — with every
     gate green, and correcting the prose moved no identity at all. Unbound prose on an
     authorization artifact is the declaration-without-corroboration shape this repo exists
-    to refuse. Binding it is cheap in a way the file pin never was: ordinary work edits
-    inspected FILES constantly and this artifact's prose almost never, so the churn the pin
-    was removed for does not come back.
+    to refuse.
+
+    Binding it does NOT recreate what the file pin did, and the reason is INCIDENCE rather
+    than frequency. A first draft of this note said the prose "almost never" changes; the
+    commit that wrote the sentence edited it seven times, so that premise is simply false.
+    What actually made the file pin a wolf-crier is that a third party editing
+    `run-quality.sh` for unrelated reasons reddened a gate about an artifact they had never
+    opened — the refusal was always someone else's problem, so `refreeze` was always the
+    answer. Prose can only move if someone edits THIS artifact, and anyone editing this
+    artifact is already in the refreeze lane. The refusal can never be incidental to the
+    editor's own work, however often it fires.
 
     Locators stay SORTED by path so a pure reordering is not a refusal.
     """

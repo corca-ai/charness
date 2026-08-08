@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "5caaae102df40aeac2926a12d1eb7cd7212fa490a9a093522240f619a5dc73c7",
+  "inspection_identity": "35d0dfb95881996a552f5ca17d28bf7f09e8eba15b1b0957042d66cfe3f679a4",
   "issues": [
     514,
     515,
@@ -133,6 +133,6 @@
     "Listing a locator under an issue does not assert that issue's fix lives there; it asserts the surface was inspected while scoping that issue.",
     "HISTORICAL, and no longer enforced. The figures, stated once so they stop reading as a contradiction: 6 of 20 locators had their content change over roughly one day, and the inspection was re-stamped 5 times across 4 distinct locators (one of them twice). The 2026-08-08 re-stamps were an operator POLICY ruling, not a re-inspection, and the scope conclusions built on those locators were not re-derived. #562 then retired the digest pin entirely, so nothing here asserts any locator's content is current. A locator whose semantics actually change still needs a real re-read, and no gate will now tell you when that happened."
   ],
-  "purpose": "Record which producer/consumer surfaces were actually read before the #514/#515/#518 acceptance matrix was built. Each locator's path must still resolve to a real file, and the inspection identity binds the locator SET, so a surface cannot be added, dropped, or re-roled without the freeze failing. It does NOT bind file CONTENT: #562 retired the per-locator digest pin after measuring 0 true positives in 5 refusals, so an edit to an inspected file is no longer a refusal and this record does not assert that any inspected surface is unchanged since it was read.",
+  "purpose": "Record which producer/consumer surfaces were actually read before the #514/#515/#518 acceptance matrix was built. Each locator's path must still resolve to a real file, and the inspection identity binds the locator SET (path, role, note) AND this record's own prose (`purpose`, `non_claims`), so neither a surface nor a claim about one can be added, dropped, re-roled, or rewritten without the freeze failing. Editing any of them is a deliberate act and needs a `refreeze`. It does NOT bind file CONTENT: #562 retired the per-locator digest pin after measuring 0 true positives in 5 refusals, so an edit to an inspected file is no longer a refusal and this record does not assert that any inspected surface is unchanged since it was read.",
   "schema": "issue-source-owner-inspection/v2"
 }
