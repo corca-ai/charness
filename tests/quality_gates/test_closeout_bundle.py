@@ -10,7 +10,7 @@ import pytest
 from scripts import closeout_bundle as cli
 from scripts import closeout_bundle_lib as lib
 
-from .support import ROOT, bundle_blocker_report, run_script
+from .support import ROOT, bundle_blocker_report, bundle_payload_or_report, run_script
 
 MANIFEST = ROOT / "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
 CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md"
@@ -77,12 +77,14 @@ def test_cli_help_and_dry_run_do_not_write_receipt() -> None:
     # emits an ERROR payload with `status: "blocked"` for any BundleError/OSError/ValueError, so
     # a bounded round showed that accepting the status alone let a CRASHED CLI pass this test —
     # deleting the only coverage of the dry-run path. Assert it is a PLAN.
-    payload = json.loads(result.stdout)
+    payload = bundle_payload_or_report(result, "closeout_bundle")
+    # These two are the PRECONDITION for this test's own claim: "no receipt was written" means
+    # nothing if the dry run never ran. A round pointed out that the phase-order and
+    # preflight-status assertions a first repair added here were a subset of
+    # `test_dry_run_plan_has_ordered_phases` and a presence check dressed as a value check —
+    # bundling a second subject into a test named for the receipt, which is #537's own shape.
     assert "error" not in payload, payload["error"]
-    assert payload["status"] in {"ready", "blocked"}, payload.get("status")
     assert payload["mode"] == "dry-run"
-    assert [phase["name"] for phase in payload["phases"]][0] == "surface_inventory"
-    assert payload["preflight"]["status"] in {"ready", "blocked"}
     assert not (ROOT / "charness-artifacts/goals/closeout-bundle-cli-test.json").exists()
 
 
@@ -432,7 +434,12 @@ def test_this_repo_is_currently_closeout_bundle_ready() -> None:
     """
     payload = lib.build_plan(ROOT, **_args())
     assert payload["status"] == "ready", bundle_blocker_report(payload, "closeout_bundle")
-    # Structural, so a status mapping that always says `ready` cannot survive on a clean
-    # worktree — the gap its twin did not have.
-    assert payload["preflight"]["status"] == "ready"
-    assert [phase["name"] for phase in payload["phases"]][-1] == "verification_lock"
+    # CONTENT, not status. A round caught the first version asserting
+    # `preflight["status"] == "ready"`, which `closeout_bundle_lib` derives from the same value
+    # as `payload["status"]` — so it could not fail while the line above passed. The
+    # verification_lock command is pulled from the preflight's `planned_commands`, which are
+    # EMPTY when blocked, so a status mapping that always claims ready cannot fake this.
+    lock_phase = payload["phases"][-1]
+    assert lock_phase["name"] == "verification_lock"
+    assert lock_phase["command"], "a ready plan must carry the closeout command it locks on"
+    assert "run_slice_closeout" in lock_phase["command"]

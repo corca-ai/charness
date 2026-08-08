@@ -18,32 +18,10 @@ from scripts.final_bundle_preflight_lib import (
     packaging_mirror_inventory,
 )
 
-from .support import ROOT, bundle_blocker_report, run_script
+from .support import ROOT, bundle_blocker_report, bundle_payload_or_report, run_script
 
 MANIFEST = "charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json"
 CRITIQUE = "charness-artifacts/critique/2026-08-06-slice-3-final-bundle-contract.md"
-
-
-def _payload_or_report(result) -> dict:
-    """Parse the plan payload, and surface stderr when there is no payload to parse.
-
-    A bounded round caught this: parsing before asserting the exit code meant a CRASHING
-    preflight — stdout empty, traceback on stderr — failed with a bare `JSONDecodeError` and
-    discarded the traceback. The acceptance for #537 is that a refusal reports itself, so a
-    broken preflight must not report LESS than before.
-    """
-    if not result.stdout.strip():
-        raise AssertionError(
-            f"preflight produced no payload on stdout; returncode={result.returncode}, "
-            f"stderr={result.stderr.strip()!r}"
-        )
-    try:
-        return json.loads(result.stdout)
-    except json.JSONDecodeError as exc:
-        raise AssertionError(
-            f"preflight stdout was not JSON ({exc}); returncode={result.returncode}, "
-            f"stdout={result.stdout[:400]!r}, stderr={result.stderr.strip()!r}"
-        ) from exc
 
 
 def test_full_plan_has_provenance_and_inventories() -> None:
@@ -71,11 +49,20 @@ def test_full_plan_has_provenance_and_inventories() -> None:
     # intact. Only the `ready` line tied it to the repo being currently clean, and that one line
     # made a correct preflight refusal surface as five failing tests instead of one finding.
     # `test_this_repo_is_currently_bundle_ready` below is the single test that owns that question.
-    payload = _payload_or_report(result)
+    payload = bundle_payload_or_report(result, "final_bundle_preflight")
     assert payload["status"] in {"ready", "blocked"}, payload.get("status")
-    assert payload["mirror_inventory"]["status"] == "matched"
-    assert payload["critique_inventory"][0]["status"] == "current"
-    assert payload["artifact_inventory"]
+    # SHAPE only, and that means shape of the live-state fields too — not their verdicts. A
+    # round-2 measurement showed the first repair fixed only the `unmatched_surface_path`
+    # class: a drifted plugin mirror still fanned out to five failures, three of them named
+    # for subjects that were not the cause, because `mirror_inventory["status"] == "matched"`
+    # and `critique_inventory[0]["status"] == "current"` are the same live-repo coupling as
+    # `status == "ready"` was. Those verdicts have their own owners —
+    # `test_packaging_owner_mirror_is_current` and the critique-inventory tests below — so this
+    # test asserts the keys are populated and leaves the verdicts to them.
+    assert payload["mirror_inventory"]["owner"]
+    assert payload["mirror_inventory"]["status"]
+    assert payload["critique_inventory"][0]["path"]
+    assert isinstance(payload["artifact_inventory"], list)
     assert payload["candidate_snapshot"]["head_sha"]
 
 
@@ -94,8 +81,8 @@ def test_explicit_paths_are_diagnostic_only() -> None:
         "scripts/slice_manifest_lib.py",
         "--json",
     )
-    assert result.returncode == 1
-    payload = json.loads(result.stdout)
+    assert result.returncode == 1, result.stdout[:400] or result.stderr[:400]
+    payload = bundle_payload_or_report(result, "final_bundle_preflight")
     assert payload["status"] == "diagnostic"
     assert {item["code"] for item in payload["blockers"]} >= {"diagnostic_scope"}
     assert not any(item["phase"] == "closeout" for item in payload["planned_commands"])
@@ -223,14 +210,20 @@ def test_final_bundle_cli_human_renderer_is_available() -> None:
     # bounded round showed was vacuous: the ready branch prints "Blockers: none", which CONTAINS
     # that substring, so the assertion could not distinguish the branches. Now the blocker line
     # asserted is the one the status implies.
-    assert result.stdout.startswith("Final-bundle preflight: "), result.stdout[:120]
-    if "Final-bundle preflight: ready" in result.stdout:
+    # The message names returncode and stderr too: `stdout[:120]` is EMPTY precisely when the
+    # renderer crashed, which is the one case this assertion trips.
+    assert result.stdout.startswith("Final-bundle preflight: "), (
+        f"returncode={result.returncode}, stdout={result.stdout[:200]!r}, "
+        f"stderr={result.stderr.strip()!r}"
+    )
+    verdict_line = result.stdout.splitlines()[0]
+    if verdict_line == "Final-bundle preflight: ready":
         assert "Blockers: none" in result.stdout
     else:
-        assert "Final-bundle preflight: blocked" in result.stdout, result.stdout[:200]
+        assert verdict_line == "Final-bundle preflight: blocked", verdict_line
         # A blocked render must carry the blocker DETAIL, not just the heading — that detail is
-        # the whole point of #537, and nothing pinned it before.
-        assert "Blockers:" in result.stdout
+        # the whole point of #537, and nothing pinned it before. `Remediation:` only appears on
+        # the per-blocker line, so it is the one that proves the detail rendered.
         assert "Remediation:" in result.stdout, result.stdout[:600]
 
 
@@ -363,7 +356,9 @@ def test_final_bundle_private_error_and_render_branches(monkeypatch: pytest.Monk
         behavior_channels=["behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py"],
     )
     assert restored["status"] in {"ready", "blocked"}
-    assert restored["mirror_inventory"]["status"] == "matched"
+    # Same reason as above: this test is about monkeypatched error branches, so it must not
+    # redden because the live mirror drifted.
+    assert restored["mirror_inventory"]["status"]
     assert restored["candidate_snapshot"]["head_sha"]
 
     rich = {
@@ -395,7 +390,7 @@ def test_this_repo_is_currently_bundle_ready() -> None:
         "--behavior-channel", "behavior=python3 -m pytest -q tests/quality_gates/test_final_bundle_preflight.py",
         "--json",
     )
-    payload = _payload_or_report(result)
+    payload = bundle_payload_or_report(result, "final_bundle_preflight")
     assert payload["status"] == "ready", bundle_blocker_report(payload, "final_bundle_preflight")
     # `result.stdout`, not `result.stderr`: these scripts report on stdout, so passing stderr
     # here is the empty-message idiom this slice exists to stop repeating.

@@ -67,6 +67,31 @@ def inspect_setup_repo(repo: Path, *, env: dict[str, str] | None = None) -> dict
     return json.loads(result.stdout)
 
 
+def bundle_payload_or_report(result, label: str) -> dict:
+    """Parse a bundle CLI's plan payload, and surface stderr when there is none to parse.
+
+    A round found the first version of this in one test file only, so the OTHER surface still
+    failed a crash or an argparse error with a bare `JSONDecodeError` and dropped stderr. Both
+    use this now. Parsing before asserting the exit code is what made the loss possible: for a
+    crashed run stdout is empty and everything the reader needs is on stderr.
+    """
+    if not result.stdout.strip():
+        raise AssertionError(
+            f"{label} produced no payload on stdout; returncode={result.returncode}, "
+            f"stderr={result.stderr.strip()!r}"
+        )
+    try:
+        parsed = json.loads(result.stdout)
+    except json.JSONDecodeError as exc:
+        raise AssertionError(
+            f"{label} stdout was not JSON ({exc}); returncode={result.returncode}, "
+            f"stdout={result.stdout[:400]!r}, stderr={result.stderr.strip()!r}"
+        ) from exc
+    if not isinstance(parsed, dict):
+        raise AssertionError(f"{label} payload was {type(parsed).__name__}, not an object: {parsed!r}")
+    return parsed
+
+
 def bundle_blocker_report(payload: dict, label: str) -> str:
     """Render a bundle payload's blockers as the message they already carry.
 
@@ -86,10 +111,16 @@ def bundle_blocker_report(payload: dict, label: str) -> str:
         # This helper builds an ASSERTION MESSAGE. Raising here would mask the real failure
         # with an AttributeError from inside the reporter.
         return f"{label} reported a non-list `blockers` value: {blockers!r}"
-    if isinstance(payload.get("error"), str):
-        lines_error = f"{label} did not produce a plan at all; it raised: {payload['error']}"
-        return lines_error
-    lines = [f"{label} is not bundle-ready; status={payload.get('status')!r}."]
+    raised = payload.get("error")
+    lines: list[str] = []
+    if isinstance(raised, str):
+        # Reported ALONGSIDE any blockers rather than instead of them: an execute-mode failure
+        # payload carries both an `error` and a preflight full of real blockers, and a round
+        # caught the first version discarding the blockers it had just gathered.
+        lines.append(f"{label} reported an error: {raised}")
+        if not blockers:
+            return lines[0] + " (no blockers accompanied it, so this is all the payload says)"
+    lines.append(f"{label} is not bundle-ready; status={payload.get('status')!r}.")
     if not blockers:
         lines.append(
             "  No blockers were reported, which is itself the finding: the status is not"
