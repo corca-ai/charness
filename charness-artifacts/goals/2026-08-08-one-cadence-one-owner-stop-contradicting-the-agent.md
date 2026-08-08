@@ -9,13 +9,18 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — one owner for a sweep's population.
-- Current slice intent: slice 1 is BUILT and verified (the cadence contradiction:
-  source, validator, three live artifacts). Next intent unit is slice 2: point an
-  existing hand-rolled sweep at the `git ls-files`-derived population owner and
-  show the population is unchanged. Critique and broad proof do not re-fire within
-  one unchanged intent — update this when the intent changes, not per commit
-  (meaningful-slice-cadence).
+- Current slice: 3 — the closeout ledger states population and removals separately.
+- Current slice intent: slices 1 and 2 are BUILT, reviewed in two rounds each,
+  and committed. Next intent unit is slice 3: make the closeout ledger state
+  population and removals as SEPARATE numbers, so `N implementations, M
+  consolidated` cannot silently count the owner among the removals. Critique and
+  broad proof do not re-fire within one unchanged intent — update this when the
+  intent changes, not per commit (meaningful-slice-cadence).
+- **Standing correction, twice missed:** verify the reviewer boundary IMMEDIATELY
+  when a reviewer returns, BEFORE repairing. Both slices went straight into
+  repairs and both had to be reconciled afterwards by declaring parent paths.
+  That reconciliation is honest but weaker: it cannot distinguish reviewer writes
+  from mine, and only the reviewers' lack of write tools makes it sound.
 - Slice 1 premise check (verdict BEFORE the build): **HOLDS, but the goal
   OVERCOUNTS.** Measured over all 190 checked-in artifacts: THREE carry the
   contradiction, not five. The two `complete` ones the goal named carry an
@@ -29,10 +34,19 @@ runs the activation command.
   carried its own class — one fact left with two owners, and a consolidation that
   routed two `complete`-state floors onto a level-aware section walk, a latent
   false green. All repaired; round-2 repairs accepted-unreviewed per the cap.
-- Next action: premise-check slice 2 before building it. Its own subject (one
-  owner for a population) now has two concrete un-migrated instances from slice 1
-  in `## Off-Goal Findings`; check them against the `git ls-files` precedent
-  before shaping the slice around either.
+- Slice 2 premise check (verdict BEFORE the build): **REFUTED as written.** The
+  goal names `check_current_pointer_writes.py` as the population owner; measured,
+  that script hand-rolled its own `git ls-files` and the real owner is
+  `scripts/repo_file_listing.py` (~21 consumers). Building to the letter would
+  have shipped an eighth copy. The slice pointed the goal's own named precedent
+  at the real owner instead.
+- Slice 2 review: round 1 found a BLOCKER (the delegation crashed a standing gate
+  under `CHARNESS_SUPPORT_DIR`) and that `require_git` had been added and never
+  used; round 2 found the blocker fix had CARRIED ITS OWN CLASS, silently
+  dropping this repo's 25 in-repo `skills/support/` files under the same
+  override — D9 again, in the file that carries the D9 scar. Repaired to a union.
+- Next action: premise-check slice 3 before building it. Read the predecessor's
+  three blocked closeouts for the actual phrasing that failed, not the summary.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -153,7 +167,7 @@ The predecessor's other structural findings, each measured rather than supposed:
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | The cadence contradiction: fix the SOURCE, add the validator, repair only the artifacts still being read | Measured cost is ~2.5h in one session, and the source keeps reproducing the sentence | The validator refuses a reconstructed contradicting artifact, passes the repaired ones, and SKIPS `complete` artifacts; the scaffold no longer seeds the shape; THREE live artifacts repaired (not two — see the premise check) | done |
-| 2 | One owner for a sweep's population, pointed at the `git ls-files` precedent | Three successive guards were wrong about their own population, each caught by a different reviewer | An existing hand-rolled sweep delegates and its population is unchanged, measured before and after | planned |
+| 2 | One owner for a sweep's population, pointed at the `git ls-files` precedent | Three successive guards were wrong about their own population, each caught by a different reviewer | `check_current_pointer_writes` delegates to `repo_file_listing`; population 683 before / 683 after, identical set. The goal's NAMED owner was refuted and corrected | done |
 | 3 | Closeout ledger states population and removals separately | The same arithmetic error blocked three of four closeouts at the resolution-critique stage | The blocked phrasing now fails a check rather than a reviewer, and the repaired phrasing passes | planned |
 | 4 | The two lessons a gate cannot hold, written where the next session reads them | Both cost real rework and neither is gate-shaped | `recent-lessons.md` carries them; no new gate is added | planned |
 | 5 | `#557` and `#559`: the fourth and fifth copies of the backend rule | Both filed by the predecessor with their reasons; `#559` has ALREADY drifted from the owner | Each consolidated or classified with a measured reason; the exemption list shrinks | planned |
@@ -289,6 +303,20 @@ applies.
 - Lessons carried forward: (1) PREMISE-CHECK THE POPULATION, NOT JUST THE PREMISE. The goal's count was wrong in both directions — two named artifacts were not contradictions, one unnamed live artifact was. A grep for the sentence would have inherited the overcount; running the floor over the whole corpus is what produced the real number. (2) THE RATCHET WAS RIGHT AND THEN THE RATCHET WAS THE PROBLEM. Its first block caught a real defect. But chasing a later rotated hash is what routed two `complete`-state floors onto the wrong section walk — a latent false green. A duplicate-hash chase must not drive the design of a proof surface; classify with a reason instead. (3) A REPAIR VERIFIED ONLY AGAINST THE FINDING THAT PROMPTED IT IS UNVERIFIED. Three of four round-2 repairs survived their mutants on the first pass. Mutate every repair, not only the original code. (4) VERIFY THE REVIEWER BOUNDARY BEFORE REPAIRING, not after — round 2's window had to be reconciled by declaring 17 parent paths because I went straight into repairs.
 - Metrics: Host metrics not exposed to this session; no token/time figures claimed.
 
+### Slice 2: One owner for a sweep's population — and the goal named the wrong owner
+
+- Objective: A guard's POPULATION is a verdict surface: a sweep wrong about which files it covers reports clean over a scope that excluded the violation. Give the population one owner, and prove the population is unchanged.
+- Why this approach: The predecessor measured three successive guards each wrong about their own population, each caught by a different reviewer. Slice 1's own dup-ratchet block was a fourth instance of the same class one layer down.
+- Commits: one commit on `main` (local); nothing pushed
+- What changed: `scripts/check_current_pointer_writes.py` — `_git_visible_python_files` delegates to `repo_file_listing.iter_matching_repo_files`; the hand-rolled `git ls-files` subprocess is gone and the module imports no process-spawning machinery. NEW `_display_path` (one owner for the reported name). NEW `--require-git-file-listing`, threaded `main` -> `scan_repo` -> the owner. `scripts/run-quality.sh:882` passes it. `tests/quality_gates/test_current_pointer_writes.py` — 27 pre-existing, 2 repointed, 6 new (35 total).
+- Alternatives rejected: REJECTED imitating the goal's named precedent — see the premise check; it was itself a copy. REJECTED migrating the repo's other sweeps in the same slice: one delegation, measured before and after, is the acceptance criterion, and slice 1's lesson was that a consolidation's blast radius is where the real defects hide.
+- Targeted verification: PREMISE CHECK (verdict BEFORE the build): **REFUTED as written — the goal names the WRONG owner.** The goal calls `scripts/check_current_pointer_writes.py` the `git ls-files`-derived precedent this repo already has. Measured: that script does NOT use the repo's shared population owner. It hand-rolled its own subprocess. The real owner is `scripts/repo_file_listing.py`, consumed by ~21 source-tree validators (round-1 review counted them; my own estimate of 10+ was understated), with its own error type, contract tests, and a checked-in debug artifact naming it as the convergence target. So the goal's precedent was a copy, and imitating it would have propagated one. The slice therefore points the goal's own named precedent AT the real owner. — PROOF: population 683 before, 683 after, identical sets, re-measured after every repair. 35 tests. `run_slice_closeout.py --skip-broad-pytest --ack-cautilus-skill-review`: `Closeout verdict: completed`. `tests/control_plane/test_monorepo_layout.py` (the blast-radius path round 1 named): 6 passed. Reviewer boundary fingerprinted around both rounds; each reconciled `parent-attributed` with every drifted path declared and none undeclared. Three review claims independently verified by execution before acting: the split-layout crash (reproduced), git's C-quoting of a newline path (one quoted entry — NOT two fragments), and pathlib `**` matching zero directories (366 files, direct children included). MUTATION: 11 mutants, 11 killed. Round-1 set (3): reverting to the hand-rolled listing, dropping `skills/shared` from `SCAN_ROOTS` (the original measured defect), ignoring `require_git`. Round-1-repair set (4). Round-2-repair set (4): union-back-to-swap, a colliding external prefix, dropped `resolve()` symmetry, and an untracked-file union.
+- Test duplication pressure: No new duplicate families; `check_dup_ratchet.py --summary` clean throughout this slice. The tests added are behavioural, not textual — round-1 review specifically rejected an earlier textual assertion as not testing what its name claimed.
+- Critique: TWO bounded fresh-eye rounds, both delegated. ROUND 1 confirmed the premise verdict and found a BLOCKER I had shipped: my own docstring claimed an external `CHARNESS_SUPPORT_DIR` tree is now scanned rather than silently empty, and in fact three call sites did a bare `path.relative_to(repo_root)`, so a split-layout host got an uncaught `ValueError` from a standing gate. I reproduced the crash before repairing. It also found that `require_git` had been ADDED AND NEVER USED — ~18 sibling gates pass `--require-git-file-listing` and this one did not, so the slice added the ability to refuse and did not exercise it; two tests that passed for reasons other than the ones they named; and that my stated MECHANISM for the newline defect was wrong. ROUND 2 read the REPAIRS and earned its keep exactly as the contract predicts. The blocker fix CARRIED THE CLASS IT FIXED: `iter_matching_repo_files` SWAPS a `skills/support/` pattern for the external tree rather than adding it, so delegating naively DROPPED this repo's own 25 tracked files under `skills/support/` — silently, on precisely the hosts that set the override. That is D9 again, in the file that carries the D9 scar, and it traded a silently-empty external tree for a silently-dropped in-repo one. Measured: 683 files with no override, 660 under one. Repaired to a UNION (683 / 685). Round 2 also found that naming an external file `skills/support/<rel>` COLLIDES with a real, different, in-repo path, so a reader following the clickable `path:line` lands on unrelated code; that the corrected false mechanism had been fixed in one docstring and left intact in its twin; that the external-tree test stubbed the population owner and so could not support its own closing claim; and an asymmetric `resolve()` that would have gone green on Linux and red on macOS. ALL REPAIRED; round-2 repairs are accepted-unreviewed per the two-round cap. Round 2 also cleared the `--require-git-file-listing` safety question with a fact I did not have: `run-quality.sh:876` already passes that flag unconditionally six lines earlier, so no environment's git requirement changed.
+- Off-goal findings: `docs/deferred-decisions.md:205` states that the static scanner continues to catch string-literal `latest.md` / `latest.json` writes only. That has been false since the computed-name detector landed. Pre-existing, adjacent, and not this slice's to fix — but it is a stale claim on a durable record, which is this goal's own subject.
+- Lessons carried forward: (1) PREMISE-CHECK THE REMEDY'S NAMED OWNER, not just its diagnosis. The goal's diagnosis was right and its prescribed owner was a copy; building to the letter would have shipped an eighth hand-roll. (2) A DELEGATION IS A BEHAVIOUR CHANGE, and the shared helper's semantics are not the caller's. `iter_matching_repo_files` SWAPS the support root rather than adding it — a reasonable contract for its other consumers and exactly wrong for a repo-wide sweep. Measure the population under every layout the helper branches on, not just the default one. (3) VERIFY A REVIEW'S CLAIM BEFORE ACTING ON IT. Three were checked by execution here; one (the C-quoting mechanism) corrected my docstring, and had I taken the review's wording on faith I would have written a different wrong sentence. (4) The boundary-verify-before-repairing lesson from slice 1 was NOT applied here either — both rounds again needed reconciliation by declaring parent paths. It is now a frame line rather than a slice-log line.
+- Metrics: Host metrics not exposed to this session; no token/time figures claimed.
+
 ## Context Sources
 
 1. `charness-artifacts/goals/2026-08-08-one-rule-one-owner-one-check-its-own-voice.md`
@@ -395,7 +423,12 @@ Issues or deferred findings discovered during the run.
   own compatibility surface.
 - Both are slice-2 shaped — its objective is one owner for a population — and
   should be premise-checked against the `git ls-files` precedent rather than filed
-  blind. Not filed as GitHub issues yet for that reason.
+  blind. Not filed as GitHub issues yet for that reason. NOTE: slice 2 did not
+  absorb them; it delegated ONE sweep and measured it. They remain open.
+- **`docs/deferred-decisions.md:205` carries a stale claim** (slice 2): it says
+  the static current-pointer scanner catches string-literal filenames only, which
+  has been false since the computed-name detector landed. Pre-existing and
+  adjacent, but a stale claim on a durable record is this goal's own subject.
 
 ## Final Verification
 

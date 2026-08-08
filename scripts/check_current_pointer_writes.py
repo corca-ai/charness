@@ -4,9 +4,22 @@ from __future__ import annotations
 import argparse
 import ast
 import json
-import subprocess
 from dataclasses import asdict, dataclass
 from pathlib import Path
+
+try:
+    from scripts.repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from scripts.repo_layout import support_dir
+except ModuleNotFoundError:  # invoked as a script rather than a package module
+    from repo_file_listing import iter_matching_repo_files, iter_repo_files
+    from repo_layout import support_dir
+
+_SUPPORT_PATTERN_PREFIX = "skills/support"
+#: Namespace discriminator for a finding in an EXTERNAL support tree. Deliberately
+#: not a spellable repo path: naming such a file `skills/support/<rel>` collides
+#: with a real, different, in-repo file, so `--json` consumers and the clickable
+#: `path:line` output would point a reader at unrelated code. Round-2 review.
+_EXTERNAL_SUPPORT_PREFIX = "<external-support>"
 
 CURRENT_POINTER_NAMES = {"latest.md", "latest.json"}
 WRITE_CALL_TOKENS = ("write_text", "write_bytes", "open")
@@ -33,27 +46,67 @@ class Finding:
     reason: str
 
 
-def _git_visible_python_files(repo_root: Path) -> list[Path]:
-    result = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--exclude-standard", "*.py"],
-        cwd=repo_root,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-    if result.returncode == 0:
-        files = []
-        for raw in result.stdout.splitlines():
-            path = repo_root / raw
-            if path.is_file() and any(Path(raw).is_relative_to(root) for root in SCAN_ROOTS):
-                files.append(path)
-        return sorted(files)
-    fallback: list[Path] = []
-    for root in SCAN_ROOTS:
-        scan_root = repo_root / root
-        if scan_root.is_dir():
-            fallback.extend(path for path in scan_root.rglob("*.py") if path.is_file())
-    return sorted(fallback)
+def _git_visible_python_files(repo_root: Path, *, require_git: bool = False) -> list[Path]:
+    """The scanned population, derived by the repo's ONE population owner.
+
+    A guard's population IS a verdict surface: a sweep that is wrong about which
+    files it covers reports clean over a scope that excluded the violation. This
+    file already carries that scar -- `skills/shared` was omitted from
+    ``SCAN_ROOTS`` and an identical violation was invisible there while being
+    caught under two other roots.
+
+    So the roots stay here (they are this check's scope, and this check owns
+    them) and the LISTING is delegated to ``repo_file_listing``, which 10+ other
+    validators already share. Delegating fixes three things the hand-rolled copy
+    got wrong, none of which its tests could see:
+
+    - it split ``git ls-files`` output on newlines. Without ``-z`` git C-QUOTES
+      such a path (measured: the entry arrives as ``"scripts/we\\nird.py"``,
+      quotes and escape included), so the old code got one quoted non-path that
+      failed ``is_file()`` and the real file silently left the population. The
+      owner uses ``-z``. (Round-1 review corrected the MECHANISM here: the first
+      draft of this sentence said "two bogus fragments", which is what a raw
+      newline would produce and is not what git emits.)
+    - on git failure it fell back to ``rglob`` SILENTLY, swapping a
+      gitignore-aware population for one that is not, with no signal. The owner
+      exposes ``require_git``, and ``main`` now passes it through
+      ``--require-git-file-listing`` so this gate can REFUSE rather than report
+      clean over a population it did not establish.
+    - it matched roots with ``is_relative_to``, so a support tree relocated by
+      ``CHARNESS_SUPPORT_DIR`` was silently empty. The owner resolves that split
+      and returns paths in the external tree.
+
+    Scope of that last one, stated precisely because the first draft of this
+    docstring claimed more than the code did and round-1 review caught it: the
+    external support tree is now REACHED, and ``_display_path`` gives its files a
+    reportable name instead of crashing on ``relative_to``. It is NOT
+    gitignore-filtered -- ``iter_matching_repo_files`` globs an external support
+    root directly, with no ``git ls-files`` intersection. And the sibling split
+    is unhandled: ``skills/public`` has a packaged-layout fallback in
+    ``repo_layout`` that the pattern-based population does not consult, exactly
+    as before this change.
+
+    Population measured before and after the delegation, at ``90ebf423``: 683
+    files both times, identical set. The COUNT goes stale the next time a ``.py``
+    file lands under one of the roots; the identity is the claim that matters.
+    """
+    patterns = tuple(f"{root.as_posix()}/**/*.py" for root in SCAN_ROOTS)
+    files = set(iter_matching_repo_files(repo_root, patterns, require_git=require_git))
+    # UNION, not swap. The owner REPLACES a `skills/support/` pattern with the
+    # external tree when `CHARNESS_SUPPORT_DIR` is set -- so delegating naively
+    # dropped this repo's own 25 tracked files under `skills/support/` from the
+    # population, silently, on exactly the hosts that set it. That is D9 again in
+    # the file that carries the D9 scar, and round-2 review caught it: the first
+    # repair traded a silently-empty EXTERNAL tree for a silently-dropped IN-REPO
+    # one. Both are scanned now. Measured: 683 with no override, 660 under an
+    # override before this union, 683 + external after it.
+    in_repo_support = repo_root / _SUPPORT_PATTERN_PREFIX
+    if support_dir(repo_root) != in_repo_support.resolve() and in_repo_support.is_dir():
+        # Still no second git call: the listing comes from the same owner, and the
+        # glob only narrows it.
+        tracked = set(iter_repo_files(repo_root, require_git=require_git))
+        files.update(path for path in in_repo_support.glob("**/*.py") if path in tracked)
+    return sorted(files)
 
 
 _POINTER_STEMS = tuple(sorted({name.split(".", 1)[0] for name in CURRENT_POINTER_NAMES}))
@@ -245,8 +298,50 @@ def _computed_write_target(call: ast.Call, computed_assigned: dict[str, str]) ->
     return _computed_pointer_name_in(node)
 
 
+def _display_path(repo_root: Path, path: Path) -> Path:
+    """The path this gate REPORTS and matches ``HELPER_FILES`` against.
+
+    A bare ``path.relative_to(repo_root)`` raises for any file outside the repo,
+    and one is reachable: with ``CHARNESS_SUPPORT_DIR`` pointing at an external
+    support tree, the population owner correctly returns absolute paths there.
+    Three call sites did the bare conversion, so a split-layout host got an
+    uncaught ``ValueError`` from a standing quality gate.
+
+    A gate that CRASHES is not the failure this file exists to prevent, but it is
+    still a gate that renders no verdict. Round-1 review found the crash, and
+    found that the docstring shipped alongside it claimed the opposite.
+
+    THREE outcomes, not two -- round-2 review noted the first draft described two
+    and shipped a third:
+
+    - under ``repo_root`` -> the repo-relative path;
+    - under the external support root -> ``<external-support>/<rel>``. The prefix
+      is not a spellable repo path ON PURPOSE: naming it ``skills/support/<rel>``
+      collides with a real, different, in-repo file, so a reader following the
+      clickable ``path:line`` would land on unrelated code;
+    - under neither -> the absolute path. Unreachable from ``scan_repo`` (the
+      owner returns only those two roots) but reachable via the public
+      ``scan_path``, so it is a real branch rather than a dead one.
+
+    Both sides are ``resolve()``d before comparison. ``support_dir`` resolves its
+    override and this did not, so a repo or tmpdir reached through a symlink (the
+    macOS ``/tmp -> /private/tmp`` case) fell to the absolute branch on one
+    platform and not another.
+    """
+    resolved = path.resolve()
+    root = repo_root.resolve()
+    try:
+        return resolved.relative_to(root)
+    except ValueError:
+        pass
+    try:
+        return Path(_EXTERNAL_SUPPORT_PREFIX) / resolved.relative_to(support_dir(repo_root))
+    except ValueError:
+        return resolved
+
+
 def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
-    relative = path.relative_to(repo_root)
+    relative = _display_path(repo_root, path)
     if relative in HELPER_FILES:
         return []
     try:
@@ -284,17 +379,16 @@ def _scan_text(repo_root: Path, path: Path, text: str) -> list[Finding]:
 
 
 def scan_path(repo_root: Path, path: Path) -> list[Finding]:
-    relative = path.relative_to(repo_root)
-    if relative in HELPER_FILES:
-        return []
-    text = path.read_text(encoding="utf-8")
-    return _scan_text(repo_root, path, text)
+    # No HELPER_FILES check here: `_scan_text` does the identical one. `scan_repo`
+    # keeps its copy because there it avoids a file read; this one only avoided
+    # re-deriving the display path, which is now one cheap owner. Round-2 review.
+    return _scan_text(repo_root, path, path.read_text(encoding="utf-8"))
 
 
-def scan_repo(repo_root: Path) -> list[Finding]:
+def scan_repo(repo_root: Path, *, require_git: bool = False) -> list[Finding]:
     findings: list[Finding] = []
-    for path in _git_visible_python_files(repo_root):
-        relative = path.relative_to(repo_root)
+    for path in _git_visible_python_files(repo_root, require_git=require_git):
+        relative = _display_path(repo_root, path)
         if relative in HELPER_FILES:
             continue
         text = path.read_text(encoding="utf-8")
@@ -309,10 +403,16 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--require-empty", action="store_true")
+    # The cohort convention (~18 standing gates pass this). Without it, a run in a
+    # tree where `git ls-files` fails silently swaps a gitignore-aware population
+    # for a plain glob and still prints "No direct current-pointer writes found."
+    # -- the exact false green this gate exists to close. Round-1 review: the
+    # slice ADDED the ability to refuse and did not exercise it.
+    parser.add_argument("--require-git-file-listing", action="store_true")
     args = parser.parse_args()
 
     repo_root = args.repo_root.resolve()
-    findings = scan_repo(repo_root)
+    findings = scan_repo(repo_root, require_git=args.require_git_file_listing)
     payload = {
         "status": "clean" if not findings else "findings",
         "finding_count": len(findings),

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import hashlib
 import importlib.util
 import json
@@ -279,13 +280,245 @@ def test_current_pointer_write_scanner_fallback_file_listing(
     target = script_dir / "fallback_writer.py"
     target.write_text("from pathlib import Path\n", encoding="utf-8")
 
-    monkeypatch.setattr(
-        SCANNER.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 1, b"", b""),
-    )
+    # Patch the OWNER's git call, not this module's. The population is derived by
+    # `repo_file_listing` now, so that is where the git-unavailable seam lives —
+    # and patching a `subprocess` this module no longer imports would have made
+    # the test pass against a seam that does not exist.
+    # The owner's OWN function, not the stdlib `subprocess` object it happens to
+    # hold: patching `listing.subprocess.run` replaces it process-wide, which is
+    # harmless today and bites the first time this test grows a step that shells
+    # out. Round-1 review.
+    listing = sys.modules[SCANNER.iter_matching_repo_files.__module__]
+    def _git_unavailable(_repo_root, *, include_untracked=True, require_git=False):
+        # Stands in for a real git failure, INCLUDING its `require_git` contract:
+        # a stub that always returns None makes the strict path unreachable and
+        # the `raises` assertion below vacuous.
+        if require_git:
+            raise listing.RepoFileListingError("git listing unavailable (test stub)")
+        return None
+
+    monkeypatch.setattr(listing, "git_list_repo_files", _git_unavailable)
 
     assert SCANNER._git_visible_python_files(repo) == [target]
+    # ...and the caller can now REFUSE that fallback instead of silently taking a
+    # population that is no longer gitignore-aware. The old hand-rolled listing
+    # had no way to say so.
+    with pytest.raises(listing.RepoFileListingError):
+        SCANNER._git_visible_python_files(repo, require_git=True)
+
+
+def test_population_is_derived_by_the_shared_owner_not_hand_rolled() -> None:
+    """A guard's POPULATION is a verdict surface, so it has one owner.
+
+    This file carries the scar: `skills/shared` was once missing from
+    `SCAN_ROOTS` and the gate reported clean over a scope that excluded a real
+    violation. The roots stay here (they are this check's scope); the LISTING is
+    `repo_file_listing`, which 10+ validators already share.
+    """
+    source = (Path(__file__).resolve().parents[2] / "scripts/check_current_pointer_writes.py").read_text(
+        encoding="utf-8"
+    )
+    assert "iter_matching_repo_files" in source
+    # Not merely imported — the hand-rolled listing is GONE, so no second
+    # population is left to drift from the owner. Pinned as "this module imports
+    # no process-spawning machinery of its own", which is the real invariant and,
+    # unlike a substring scan, is not satisfied or broken by the docstring that
+    # explains why the call was removed.
+    imported = {
+        alias.name.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.Import)
+        for alias in node.names
+    } | {
+        node.module.split(".")[0]
+        for node in ast.walk(ast.parse(source))
+        if isinstance(node, ast.ImportFrom) and node.module
+    }
+    assert "subprocess" not in imported
+    assert not hasattr(SCANNER, "subprocess")
+
+
+def test_the_scan_consumes_only_what_the_owner_returned(tmp_path: Path, monkeypatch) -> None:
+    """BEHAVIOURAL, not textual.
+
+    The sibling test above pins "imports the owner, spawns nothing itself" — which
+    a module that imports the owner, never calls it, and re-hand-rolls via
+    `os.popen` or `rglob` would also satisfy. Round-1 review said so. This one
+    replaces the owner's return value and asserts the scan saw exactly that.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    seen = repo / "scripts" / "seen.py"
+    seen.write_text(
+        "from pathlib import Path\n"
+        "(Path('a') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    unseen = repo / "scripts" / "unseen.py"
+    unseen.write_text(
+        "from pathlib import Path\n"
+        "(Path('b') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(SCANNER, "iter_matching_repo_files", lambda *_a, **_k: [seen])
+    findings = SCANNER.scan_repo(repo)
+    assert [item.path for item in findings] == ["scripts/seen.py"]
+
+
+def test_the_union_stays_git_derived(tmp_path: Path, monkeypatch) -> None:
+    """The in-repo support union must not smuggle in an UNTRACKED population.
+
+    The union exists so a split-layout host does not lose this repo's own
+    `skills/support/` files. If it globs the directory without intersecting the
+    owner's listing, the gate stops being gitignore-aware for that root — quietly
+    swapping the property the whole slice is about.
+    """
+    repo = tmp_path / "repo"
+    (repo / "skills" / "support" / "scripts").mkdir(parents=True)
+    (repo / ".gitignore").write_text("ignored_writer.py\n", encoding="utf-8")
+    body = (
+        "from pathlib import Path\n"
+        "(Path('e') / 'latest.md').write_text('bad', encoding='utf-8')\n"
+    )
+    (repo / "skills" / "support" / "scripts" / "tracked_writer.py").write_text(body, encoding="utf-8")
+    (repo / "skills" / "support" / "scripts" / "ignored_writer.py").write_text(body, encoding="utf-8")
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(tmp_path / "external-support"))
+
+    paths = sorted(item.path for item in SCANNER.scan_repo(repo))
+    assert paths == ["skills/support/scripts/tracked_writer.py"], (
+        "a gitignored file must not enter the population through the union"
+    )
+
+
+def test_display_path_resolves_both_sides(tmp_path: Path, monkeypatch) -> None:
+    """`support_dir` resolves its override; this side must resolve too.
+
+    Asymmetric resolution means a repo or tmpdir reached through a symlink (the
+    macOS `/tmp -> /private/tmp` case) falls to the absolute branch on one
+    platform and the support branch on another — green here, red there, for a
+    reason unrelated to the behaviour under test. Round-2 review.
+    """
+    real = tmp_path / "real-support"
+    (real / "scripts").mkdir(parents=True)
+    offender = real / "scripts" / "writer.py"
+    offender.write_text("from pathlib import Path\n", encoding="utf-8")
+    link = tmp_path / "linked-support"
+    link.symlink_to(real)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(link))
+
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    # Reached through the SYMLINK, while `support_dir` reports the resolved path.
+    via_link = link / "scripts" / "writer.py"
+    assert SCANNER._display_path(repo, via_link) == Path("<external-support>/scripts/writer.py")
+
+
+def test_require_git_reaches_the_population_from_the_cli(tmp_path: Path, monkeypatch) -> None:
+    """The flag has to REACH the listing, not merely exist on the parser.
+
+    The whole point is that a run in a tree where `git ls-files` fails must be
+    able to REFUSE rather than silently swap a gitignore-aware population for a
+    plain glob and still print "No direct current-pointer writes found." Round-1
+    review's phrasing: the slice added the ability to refuse and did not exercise
+    it. Both plumbing hops are pinned — `main` -> `scan_repo` -> the owner.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    listing = sys.modules[SCANNER.iter_matching_repo_files.__module__]
+
+    def _git_unavailable(_repo_root, *, include_untracked=True, require_git=False):
+        if require_git:
+            raise listing.RepoFileListingError("git listing unavailable (test stub)")
+        return None
+
+    monkeypatch.setattr(listing, "git_list_repo_files", _git_unavailable)
+
+    # hop 2: scan_repo -> the owner
+    with pytest.raises(listing.RepoFileListingError):
+        SCANNER.scan_repo(repo, require_git=True)
+    assert SCANNER.scan_repo(repo, require_git=False) == []
+
+    # hop 1: the CLI flag -> scan_repo
+    monkeypatch.setattr(
+        sys, "argv", ["check_current_pointer_writes.py", "--repo-root", str(repo), "--require-git-file-listing"]
+    )
+    with pytest.raises(listing.RepoFileListingError):
+        SCANNER.main()
+    monkeypatch.setattr(sys, "argv", ["check_current_pointer_writes.py", "--repo-root", str(repo)])
+    assert SCANNER.main() == 0
+
+
+def test_an_external_support_tree_is_reported_not_crashed_on(tmp_path: Path, monkeypatch) -> None:
+    """`CHARNESS_SUPPORT_DIR` puts real files OUTSIDE `repo_root`.
+
+    A bare `path.relative_to(repo_root)` raises there, and three call sites did
+    it — so a standing quality gate died with an uncaught `ValueError` on a
+    split-layout host. Round-1 review found it, and found the docstring shipped
+    beside it claiming the tree was scanned. Now it genuinely is.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    external = tmp_path / "support-pkg"
+    (external / "scripts").mkdir(parents=True)
+    offender = external / "scripts" / "writer.py"
+    offender.write_text(
+        "from pathlib import Path\n"
+        "(Path('c') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    # The IN-REPO support tree too, so the union is proven rather than assumed.
+    (repo / "skills" / "support" / "scripts").mkdir(parents=True)
+    in_repo = repo / "skills" / "support" / "scripts" / "inrepo_writer.py"
+    in_repo.write_text(
+        "from pathlib import Path\n"
+        "(Path('d') / 'latest.md').write_text('bad', encoding='utf-8')\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    monkeypatch.setenv("CHARNESS_SUPPORT_DIR", str(external))
+
+    # NO stub on the population owner. The first cut of this test replaced it with
+    # a lambda, so it exercised `_display_path` alone and its own docstring's
+    # closing claim — that the external tree is genuinely reached — was the one
+    # clause it could not support. Round-2 review.
+    findings = SCANNER.scan_repo(repo)
+    paths = sorted(item.path for item in findings)
+    assert paths == [
+        "<external-support>/scripts/writer.py",
+        "skills/support/scripts/inrepo_writer.py",
+    ], (
+        "the external tree must be REACHED, the in-repo tree must not be DROPPED, "
+        "and the two namespaces must be distinguishable"
+    )
+
+
+def test_population_survives_a_path_containing_a_newline(tmp_path: Path) -> None:
+    """The hand-rolled listing split `git ls-files` output on newlines.
+
+    Without `-z` git C-QUOTES such a path — measured: the entry arrives as
+    `"scripts/we\\nird.py"`, quotes and escape included — so the old code got ONE
+    quoted non-path that failed `is_file()`, and the real file silently left the
+    population. (Not "two bogus fragments": that is what a raw newline would
+    produce and is not what git emits. The owning docstring was corrected for this
+    and its twin here was left behind — round-2 review.) The files are untracked
+    and reach the population via `--others --exclude-standard`. Constructed rather
+    than asserted: no fixture would have had this shape.
+    """
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    weird = repo / "scripts" / "we\nird.py"
+    weird.write_text("from pathlib import Path\n", encoding="utf-8")
+    plain = repo / "scripts" / "plain.py"
+    plain.write_text("from pathlib import Path\n", encoding="utf-8")
+
+    # `require_git=True`: without it, a git failure falls through to a plain glob
+    # that finds BOTH files and the test passes green having never exercised `-z`
+    # at all — passing for a reason other than the one it names. Round-1 review.
+    found = SCANNER._git_visible_python_files(repo, require_git=True)
+    assert plain in found
+    assert weird in found, "a newline in a path must not drop the file from the population"
 
 
 def test_current_pointer_write_scanner_skips_generated_plugin_mirrors(tmp_path: Path, monkeypatch, capsys) -> None:
