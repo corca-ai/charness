@@ -9,32 +9,36 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 4 of 9 — `#537` built and BOTH review rounds complete; the
-  resolution critique has run and its repairs are committed. `#552`, `#548`, `#555`
-  are CLOSED and verified. Remaining for slice 4: post the `#537` closeout and
-  close it.
-- Current slice intent: `#537` — make a correct bundle-preflight refusal report
-  itself rather than appear as five unrelated broken tests. Spans `15b15c78`,
-  `a4feee83`, and the resolution-critique repairs.
-- Next action: post the `#537` closeout and close it, then premise-check `#536`
-  before any slice-5 build.
-- Grouping premise CONFIRMED, four for four. Every slice has been one-rule- or
-  one-question-many-owners; every slice shipped a repair carrying the class it
-  fixed; and in every slice the last thing needing repair was a GUARD or a
-  MEASUREMENT rather than the code under repair.
-- The sharpest cross-slice lesson, and it cost real rework twice in slice 4: I fixed
-  the instance the issue reported and measured the fix against THAT instance. The
-  class was one grep wider than the report, twice over. Before claiming a class is
-  closed, enumerate the other inputs that produce the same symptom and measure each.
+- Current slice: 4 of 9 COMPLETE. `#552`, `#548`, `#555`, and `#537` are all CLOSED
+  and verified through the adapter. Slice 5 (`#536`, `#549`, `#542` — failures that
+  name what they did not establish) is next and has NOT been premise-checked.
+- Current slice intent: none in progress. The last completed intent was `#537` — make
+  a correct bundle-preflight refusal report itself — spanning `15b15c78`, `a4feee83`,
+  `dfbfa54e`.
+- Next action: premise-check `#536`, `#549`, and `#542` together and record the
+  verdicts in the Slice Log BEFORE any build. Slice 5 bundles three issues, so the
+  premise check should also test whether they really share a mechanism; if they do
+  not, split the slice rather than building one fix for three symptoms.
+- Grouping premise CONFIRMED, four for four, and now with a measured cost: every
+  slice was one-rule- or one-question-many-owners, every slice shipped a repair
+  carrying the class it fixed, and in every slice the last thing needing repair was a
+  GUARD or a MEASUREMENT rather than the code under repair.
+- The sharpest cross-slice lesson: I fixed the instance the issue reported and
+  measured the fix against THAT instance. In slice 4 the class turned out to be two
+  greps wider — the mirror class, then the manifest class — and the worst instance
+  (a bare `KeyError` naming nothing) was found third, by the closeout critique. Before
+  claiming a class is closed, enumerate the OTHER inputs that produce the same symptom
+  and measure each one.
 - Issues filed while working, none planned: `#556`, `#557`, `#558`, `#559`, `#560`.
   Every one came from a delegated review or a gate rather than from the backlog.
 - Carried into slice 5: (a) a test whose subject IS live repo state cannot be
   mutation-tested by editing the worktree — the edit is itself a state change, so
-  prove discriminating power by INJECTION; (b) when a review says an assertion is
-  dead, check whether it is merely a redundant cross-layer agreement check, which is
-  a different and often defensible thing; (c) read WHICH assertion failed before
-  concluding anything about a mutant, the failure I made while fixing the issue about
-  exactly that.
+  prove discriminating power by INJECTION; (b) when a review calls an assertion dead,
+  check whether it is a redundant cross-layer AGREEMENT check, which is different and
+  often defensible; (c) read WHICH assertion failed before concluding anything about a
+  mutant — I got this wrong while fixing the issue about exactly that; (d) state a
+  count with its scope, because two closeouts were blocked on arithmetic and a third
+  on a count that matched neither total.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
