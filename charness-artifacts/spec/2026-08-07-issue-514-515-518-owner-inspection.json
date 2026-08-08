@@ -1,5 +1,5 @@
 {
-  "inspection_identity": "7c15ae902769cfcd38a988d77ef4af3fc48e60aa9ac0713f17b64540a5fad73d",
+  "inspection_identity": "13a95930ed2aef4a5ca43fd12348984056cbd1cc8d86ff25ac21ef43e1165335",
   "issues": [
     514,
     515,
@@ -15,10 +15,10 @@
     },
     {
       "issue": 518,
-      "note": "The executable route that runs quality phases. #518's question is whether every surface the adapter declares reaches a phase here, and whether a declared-but-unreached surface is visible as a gap rather than absent from the final artifact.",
+      "note": "The executable route that runs quality phases. #518's question is whether every surface the adapter declares reaches a phase here, and whether a declared-but-unreached surface is visible as a gap rather than absent from the final artifact. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived.",
       "path": "scripts/run-quality.sh",
       "role": "quality-route-and-fold",
-      "sha256": "4964680b9dfb3ad65483c79d73110924a57f1da27fcfa22302d146922cf16aa1"
+      "sha256": "61920016ac36dd4c293ef183c4d2d6519c79f42b3cf5a784e252d257568191e2"
     },
     {
       "issue": 515,
@@ -64,17 +64,17 @@
     },
     {
       "issue": 514,
-      "note": "The only carrier that can block `git commit`. Creates a sanitized temp carrier file (`.charness-closeout-body`) BEFORE any per-issue verification runs, so protected-target authorization must be inserted ahead of that write, not after it.",
+      "note": "The only carrier that can block `git commit`. Creates a sanitized temp carrier file (`.charness-closeout-body`) BEFORE any per-issue verification runs, so protected-target authorization must be inserted ahead of that write, not after it. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived.",
       "path": "scripts/check_issue_closeout_commit_msg.py",
       "role": "closeout-ingress-commit-msg",
-      "sha256": "95dfe2adb38f750486103240a1fbc4eb1794d45a8be895908fa30928afc738ee"
+      "sha256": "bb7a16ce13f77699b0d50919bf54439619cfcd248b4435e41203ce13e893b893"
     },
     {
       "issue": 514,
-      "note": "Owns iter_close_keyword_refs / strip_code_fences / verify_closeout and the ledger floors. Close-keyword parsing is the shared source of truth every ingress must reuse rather than re-regex.",
+      "note": "Owns iter_close_keyword_refs / strip_code_fences / verify_closeout and the ledger floors. Close-keyword parsing is the shared source of truth every ingress must reuse rather than re-regex. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived.",
       "path": "skills/public/issue/scripts/issue_verify_closeout.py",
       "role": "closeout-ingress-verify",
-      "sha256": "90accf93369b4a0660c3ae73e1633df76d069f9d1bcd8178734ade39caed6fd0"
+      "sha256": "8eda0cce118e16ce63ab0fc9e38879a3d94710211539ff688c5ee2cd0c5dc157"
     },
     {
       "issue": 514,
@@ -113,10 +113,10 @@
     },
     {
       "issue": 514,
-      "note": "Builds the closeout temp message; refusal must precede temp-file creation, matching the commit-msg carrier's ordering.",
+      "note": "Builds the closeout temp message; refusal must precede temp-file creation, matching the commit-msg carrier's ordering. | RE-STAMPED 2026-08-08 WITHOUT RE-INSPECTION, by explicit operator ruling: a locator changed by an UNRELATED slice may be re-stamped, because this receipt cannot distinguish 'the file I reasoned about changed meaningfully' from 'someone added a flag elsewhere in it'. The changes were the one-cadence-one-owner goal's slices 2-3 (a --require-git-file-listing flag, and threading a ledger-shape reason through two closeout carriers); none touched the closeout-assembly or quality-declaration semantics these issues were scoped against. NOT a claim that the 514/515/518 scope conclusions were re-derived.",
       "path": "skills/public/release/scripts/release_issue_closeout_message.py",
       "role": "release-closeout-message",
-      "sha256": "006b80f2a4534c073c60adb8bf73b8b9c991a8b4d6a4dcd766281b5c33516b98"
+      "sha256": "32121cca98fa346b494fd9811ca8cd228dffb9aaf46d485d6e007efeb725e407"
     },
     {
       "issue": 514,
@@ -150,7 +150,8 @@
   "non_claims": [
     "This inspection records WHICH owners were read and at what content, not that any of them is correct, complete, or repaired.",
     "No product behavior of cmanki or craken-agents is claimed; those repos are read-only comparison evidence.",
-    "Listing a locator under an issue does not assert that issue's fix lives there; it asserts the surface was inspected while scoping that issue."
+    "Listing a locator under an issue does not assert that issue's fix lives there; it asserts the surface was inspected while scoping that issue.",
+    "The 2026-08-08 re-stamp of 4 of 20 locators was an operator POLICY ruling, not a re-inspection: the digests are current, and the scope conclusions built on them were not re-derived. A locator whose semantics actually change still needs a real re-read."
   ],
   "purpose": "Record which producer/consumer surfaces were actually read before the #514/#515/#518 acceptance matrix was built, bound to the digest each file carried at inspection time. A locator whose digest has moved invalidates the freeze: the conclusions drawn from reading it are no longer safe to build on.",
   "schema": "issue-source-owner-inspection/v1"

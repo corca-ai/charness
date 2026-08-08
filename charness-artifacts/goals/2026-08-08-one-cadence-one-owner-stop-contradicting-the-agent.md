@@ -235,7 +235,16 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 Recorded during the run:
 
-- Decision: how to clear the `#514/#515/#518` source-freeze receipt that this
+- Decision: RESOLVED 2026-08-08 by explicit operator ruling — option 2: a
+  locator changed by an UNRELATED slice may be re-stamped WITHOUT re-inspection.
+  Applied via `validate_issue_source_freeze.py refreeze`; `validate` now passes
+  and all 77 tests in the three affected files are green. The basis travels WITH
+  the evidence rather than only in this artifact: each of the four re-stamped
+  locators carries a `note` recording that it was re-stamped without
+  re-inspection, why, and what is NOT claimed, and the inspection's `non_claims`
+  records that the scope conclusions were never re-derived. Original decision
+  text follows.
+- Decision (original): how to clear the `#514/#515/#518` source-freeze receipt that this
   goal's slices invalidated. CORRECTED after the terminal flip, by re-measuring
   rather than re-reading: FOUR of twenty locators are stale, not three, and ONE
   test is red, not three. `scripts/run-quality.sh` (slice 2),
@@ -522,11 +531,12 @@ To verify what shipped, without re-deriving it:
 4. `python3 skills/public/issue/scripts/describe_closeout_draft_shape.py
    --repo-root .` — both sibling ledger rules render from one owner.
 
-KNOWN RED, and the reason this goal claims no broad-suite green:
-`tests/test_issue_source_freeze.py` fails because FOUR locators frozen for
-`#514/#515/#518` changed here. (Corrected: an earlier draft also named
-`test_closeout_bundle.py` and `test_closeout_headroom_and_mirror_gate.py`; both
-were red from a dirty worktree mid-slice and pass on the committed tree.) See
+RESOLVED after the terminal flip: the freeze was re-stamped under an explicit
+operator policy ruling (option 2 — an unrelated slice's locator change may be
+re-stamped without re-inspection). `validate_issue_source_freeze.py validate`
+passes and the three affected test files are green (77 passed). What is still
+NOT claimed: the `#514/#515/#518` scope conclusions were never re-derived, and
+that non-claim is recorded in the inspection artifact itself. See
 `## Operator Decision Queue`. That is an unresolved operator decision, not a
 passing state.
 
