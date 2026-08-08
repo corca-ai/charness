@@ -9,19 +9,27 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — `#557` and `#559`. Slices 1 and 2 are DONE: `#536` and `#558`
-  are both `CLOSED` and verified through the adapter, and the second goal
-  artifact is `complete`. `#558`'s own readback ran through the close path this
-  slice hardened.
-- Current slice intent: `#557` and `#559`, the fourth and fifth copies of the
-  tracker-backend rule — PREMISE-CHECK THEM SEPARATELY before bundling. This
-  goal's `## Plan Critique Findings` names the risk explicitly, and the
-  predecessor measured twice that issues sharing a FACE do not share a REMEDY.
-- Next action: read `#557` and `#559` through the adapter, then establish by
-  execution whether each copy's premise holds and whether they are ONE repair or
-  two. Slice 2's dup ratchet already produced evidence for `#559`: adding one
-  field to `_parse_backend` made it converge with `release_backend.py`, and the
-  release copy has ALREADY drifted on rendering.
+- Current slice: 4 — `#556`. Slices 1-3 are DONE: `#536`, `#558`, `#557` and
+  `#559` are all `CLOSED` and verified through the adapter, and the second goal
+  artifact is `complete`.
+- Current slice intent: `#556` — a check reachable only for a directory literally
+  named `charness` must fire for a consumer-shaped repo, proven by CONSTRUCTION.
+- Next action: premise-check `#556` BEFORE building. Slice 3's lesson applies
+  directly: when an issue names a reason its surface cannot simply be fixed,
+  check whether that reason covers the WHOLE surface or one branch of it. Both of
+  slice 3's issues were narrower than they claimed.
+- 13-FOR-13 across the family, and this goal's three built slices are the sharpest
+  evidence yet: fourteen of the blockers its six rounds found were in REPAIRS, not
+  in the original analysis. Round 2 is not optional on a verdict surface.
+- REPAIRS INHERIT HALVES. Round 2 of slice 3 found three findings with one theme:
+  a repair inheriting half a layout (source tree but not installed), half an
+  exception contract (a typed refusal swallowed by the caller's broad `except`),
+  and half an owner (delegating to `resolve_op` while passing `required` empty,
+  one slice after building that floor). Ask what the repair did NOT inherit.
+- A TEST THAT RE-IMPLEMENTS ITS SUBJECT IS A COPY OF THE RULE. Shipped one inside
+  the slice about copies of rules; it would have passed with the loader deleted.
+  Call the function. And pin the SOURCE, not the generated mirror — a mirror-only
+  assertion survived a mutant because the mirror lags until the next sync.
 - 9-FOR-9, and slice 1 is the first where BOTH rounds landed on the REPAIRS rather
   than the build. Round 1 found four blockers in the shipped closeout draft; round
   2 found three more inside round 1's repairs, including a claim I had already
@@ -169,7 +177,7 @@ Five slices, ordered by MEASURED cost and leverage rather than by size.
 | --- | --- | --- | --- | --- |
 | 1 | Close `#536` and retire the still-active `one-rule-one-owner` goal | It is BUILT and reviewed; one closeout retires a whole goal artifact, and two live goals is the "one issue, two owners" defect this family keeps repairing | `validate-closeout-draft` reports `draft_verified`, a DELEGATED resolution critique runs BEFORE the close, `verify-closeout --expect-state CLOSED` reads back through the adapter, and that goal reaches a terminal status | done — `#536` CLOSED and verified at `7c09bc2a`; the goal artifact is `complete` at `30517c46`; two delegated rounds found seven blockers, all in repairs |
 | 2 | `#558`: `{repo}` is the unclosed half of an issue's identity | A wrong-repo `CLOSED` verdict is a FALSE GREEN at an irreversible boundary — the highest-severity item in the filed set | The wrong-repo answer is refused or detected, proven by a constructed input rather than by a passing suite | done — CLOSED and verified at `01d1c5a8`; refusal proven by CONSTRUCTION at three surfaces; two rounds, five blockers, all in repairs |
-| 3 | `#557` and `#559`: the fourth and fifth copies of the backend rule | `#559` had ALREADY drifted from the owner when it was filed, which is the copy-rot this family exists to stop | Each consolidated or classified with a measured reason; the exemption list shrinks | planned |
+| 3 | `#557` and `#559`: the fourth and fifth copies of the backend rule | `#559` had ALREADY drifted from the owner when it was filed, which is the copy-rot this family exists to stop | Each consolidated or classified with a measured reason; the exemption list shrinks | done — both CLOSED and verified at `00937ae1`; the fourth copy REMOVED and the exemption list shrinks to one; the fifth kept with an EXECUTABLE reason |
 | 4 | `#556`: a check reachable only for a directory named `charness` | Cheapest of the filed set, same permanent-green class | The check fires for a consumer-shaped repo, proven by construction | planned |
 | 5 | Bundle proof, goal closeout, successor | Composition can drop what each slice proved alone | Verification lock recorded; broad proof ONCE, at this boundary | planned |
 
