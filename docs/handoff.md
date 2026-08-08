@@ -2,11 +2,9 @@
 
 ## Workflow Trigger
 
-- **Next pickup: activate the new goal.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `draft`, `pursue_ready: true`, five slices, shaped this session with the operator on four consequential decisions recorded in its `## Discuss Before Activation`.
-- **The predecessor goal is DONE and its release is published.** `make-proof-surfaces-report-what-they-observed` is `Status: complete`; its major release shipped and was CI-verified (`ec67291e`, `b7aa6e6c`). Read the version with `git describe --tags --abbrev=0` rather than trusting a transcription. `origin/main..HEAD` is 0. Do not re-run its slice 8 — an earlier version of this file named that as the pickup after it had already happened.
-- **Tier 0 is DONE except for one push.** `#560` and `#567` both have verified closeout carriers committed locally; neither issue is CLOSED on GitHub, because `Closes #N` only fires once the range is pushed and no push is approved. `issue_tool.py verify-closeout` reads both as OPEN today — that is the honest state, not a pending claim.
-- `#567` turned out CLOSEABLE, not merely re-scopable: both its problems were repaired by `ca83a119`, whose message says so. Its resolution critique found two new defects; one is repaired here, the other is filed as `#570`.
-- **No push is approved.** The predecessor release's grant was scoped to that bundle and is spent.
+- **Next pickup: slice 2 of the active goal.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `Status: active`; slice 1 is DONE and its `## Slice Log` carries what it measured.
+- **Push first if it is approved.** Four commits are unpushed and three of them are closeout carriers, so `#560`, `#565`, and `#567` all still read OPEN on GitHub. `issue_tool.py verify-closeout --expect-state CLOSED` confirms that today. One push converts all three; nothing else will.
+- **Slice 2 is `#564`, re-scoped.** Its filed remedy (a rule in the goal template) stays DECLINED. Slice 1's runner already killed a call-site mutant in its own dogfood, so the capability exists — slice 2 is about making the tool ASK for a call-site mutant rather than leaving it to the author's memory.
 
 ## Continuation Capability
 
@@ -20,11 +18,10 @@
 
 ## Current State
 
-- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `draft`, `pursue_ready: true`: five slices. Slices 1-4 close one class (a surface rendering a verdict over a scope or baseline it never established: `#565` the tool, `#564` re-scoped onto it, `#563` by deletion, `#521`/`#546` by census). Slice 5 is `#523`, the consumer-facing pick. The goal names that seam out loud rather than claiming a false unity.
-- [close-the-gap-between-a-repair-and-its-caller](../charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md) is SUPERSEDED by the above and must not be activated; its narrowing is adopted intact.
-- The predecessor goal is `complete` and its release is published and CI-verified. `origin/main..HEAD` was 0 at shaping time — recount with `git log --oneline origin/main..HEAD | wc -l`.
-- `#566` step 1 is DONE (`c772f147`): [integrations/tools/awiki.json](../integrations/tools/awiki.json) validates and `charness tool doctor awiki` is `ok`. The lock is generated and gitignored. `#518`'s quality-dependency clause is still unmet and is called out on `#566` rather than left looking satisfied.
-- Backlog: 33 open on 2026-08-09. The goal claims six; `## Backlog Recount` in the goal artifact records why each of the rest was left, including four that are operator decisions rather than work.
+- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`, five slices, **slice 1 DONE**. It shipped [scripts/mutate_and_restore.py](../scripts/mutate_and_restore.py) plus its test module: a sweep runner that refuses a kill it cannot evidence. Two delegated review rounds, both DEFECTIVE, seven blockers — four in the first draft, three inside the repairs for those four.
+- [close-the-gap-between-a-repair-and-its-caller](../charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md) is SUPERSEDED and must not be activated.
+- Open and filed this session: `#570` (chunked-routing runs briefed on a surface they must not write) and `#571` (achieve recounts the tracker but never re-checks a durable record's proposed remedy — six measured instances across three sessions).
+- Backlog: recount it. It was 33 open before `#570`/`#571` were filed.
 - The publish-state claim below is a captured, offline-reconciled snapshot for `published_sha` `e7c3e1b3…`, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json): rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
@@ -34,10 +31,10 @@
 
 ## Next Session
 
-1. **Activate the new goal and run its slices in order.** Slice 1 builds the mutate-and-restore helper (`#565`) because every later slice's proof depends on it; do not start at slice 3.
-2. **Push the Tier 0 range first if approved** — that is what turns two verified carriers into two closed issues. Re-run `issue_tool.py verify-closeout --expect-state CLOSED` for `#560` and `#567` afterwards; a green push is not a closed issue.
-3. **Slice 3 is a DELETION, not a repair**, and its bar is completeness rather than a green suite. Recount the blast radius before starting: `grep -rn 'check_title_slug_drift\|check-title-slug-drift' skills/ scripts/ tests/ .githooks/ docs/ | grep -v __pycache__`. Three of those hits are public skill prose that ships to consumer repos telling an agent to run the script. Deleting the script alone reproduces the defect `2026-08-03-repair-the-commands-the-skills-tell-agents-to-run` fixed.
-4. Recount the backlog before re-shaping anything: `gh issue list --repo corca-ai/charness --state open` (33 on 2026-08-09).
+1. **Slice 2 (`#564`)**, then slice 3 (`#563`, a DELETION), 4 (`#521`/`#546`), 5 (`#523`). Order is in the goal's `## Slice Plan` and is tool-first by design.
+2. **Use [the sweep runner](../scripts/mutate_and_restore.py) for every repair proof from here on.** It is the reason slice 1 went first. Hand-rolling a sweep now is a regression, not a shortcut — the retro measured five hand-rolls in one session before the tool existed.
+3. **Two operator decisions are queued and block nothing:** which NO-OBSERVED-EFFECT census survivors to delete (`check-public-doc-coupling` is the clean one, 9 internal references), and `#561`/`#547`. They are in the goal's `## Operator Decision Queue`.
+4. Recount before re-shaping: `gh issue list --repo corca-ai/charness --state open`.
 
 ## Discuss
 
