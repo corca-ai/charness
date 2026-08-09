@@ -181,6 +181,8 @@ prohibit spawning. Do not defer the request for a future consent event, such as
 `once the user authorizes subagents`; report a concrete runtime block when one
 actually occurs instead.
 
+### Dynamic Workflow Standing Request
+
 When the repo uses Charness dynamic workflows / multi-agent orchestration, add a
 sibling standing-request section. It is judgment-gated, not a named-scope
 allowlist — appropriateness is the agent's call, subject to higher-priority

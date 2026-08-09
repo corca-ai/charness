@@ -52,7 +52,7 @@ Keep this block short. Detailed routing belongs in installed skill metadata and 
   its cost. Do not wait for a second user message solely to repeat the standing
   request. Scale to the task, report a concrete host block, and never claim an
   unavailable workflow ran. The canonical root-doc shape lives in
-  [agent-docs-policy.md](./skills/public/setup/references/agent-docs-policy.md#dynamic-workflows).
+  [agent-docs-policy.md](./skills/public/setup/references/agent-docs-policy.md#dynamic-workflow-standing-request).
 
 ## External Boundaries
 
