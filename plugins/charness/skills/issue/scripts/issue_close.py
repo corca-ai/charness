@@ -14,6 +14,8 @@ BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
 _AUTHZ = _load_local("issue_closeout_authorization")
 _consolidated = _load_local("issue_consolidated_closeout")
+_consolidation_readback = _load_local("issue_consolidation_readback")
+_state_readback = _load_local("issue_state_readback")
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -146,8 +148,29 @@ def close_with_comment(
         repo=repo, number=number, repo_root=repo_root, body=body,
         manual_target_declaration=manual_target_declaration,
     )
+    # The four TRACKER readbacks, performed BEFORE the floor and therefore before the
+    # comment and the close. A consolidated close is required to use this carrier, so
+    # this is the last point at which "the destination exists, is open, and names this
+    # issue" can still be checked while it is a question rather than a regret.
+    readback = _consolidation_readback.readbacks_for_closeout(
+        numbers=[number],
+        destinations=_consolidated.destinations(
+            "\n".join(_CLOSE_COMMENT_FLOOR._BODY._strip_code_fences(body))
+        ),
+        fetch=lambda dest: _state_readback.view_issue_state(
+            repo_root, repo=repo, number=dest, backend=backend,
+            json_fields="number,state,url,body",
+        ),
+        applies=classification == _consolidated.CLASSIFICATION,
+        expected_repo=repo,
+        answer_repo=_BACKEND.answer_repo,
+    )
     floor_report = _CLOSE_COMMENT_FLOOR.evaluate_close_comment_floor(
-        repo_root=repo_root, body=body, classification=classification, number=number
+        repo_root=repo_root,
+        body=body,
+        classification=classification,
+        number=number,
+        consolidation_readback=readback,
     )
     if not floor_report["ok"]:
         # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only

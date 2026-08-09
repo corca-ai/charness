@@ -40,6 +40,7 @@ from typing import Any
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BODY = _load_local("issue_verify_closeout_body")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_close_comment_floor_critique")
+_CONSOLIDATED_CLASSIFICATION = "consolidated"
 
 # The floor-exemption advisory now has a single carrier-neutral owner in
 # ``issue_verify_closeout_body`` (D36). Re-export it so this module's existing
@@ -50,7 +51,12 @@ review_advisory_for_classification = _BODY.review_advisory_for_classification
 
 
 def evaluate_close_comment_floor(
-    *, repo_root: Path, body: str, classification: str, number: int
+    *,
+    repo_root: Path,
+    body: str,
+    classification: str,
+    number: int,
+    consolidation_readback: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     """Presence/form-only floor: refuse a manual close-with-comment whose body is
     silent on the behavioral verdict, the resolution-critique binding, or (when
@@ -72,6 +78,30 @@ def evaluate_close_comment_floor(
     # irreversible external write legible as agent-authored to the rung-2 observer,
     # so the carrier with the strongest need for it was the one carrier without it.
     ai_provenance = _BODY.evaluate_ai_provenance(body, classification)
+    # THE THIRD INSTANCE OF THE ASYMMETRY THIS FILE ALREADY NAMES TWICE. The
+    # `consolidated` disposition and its four tracker readbacks both landed on
+    # `verify_closeout`, and a consolidated close is REQUIRED to use this carrier
+    # (it is the only one that passes `--reason "not planned"`) -- so the one
+    # carrier a consolidation must use was the one carrier that checked neither its
+    # destination grammar nor whether that destination exists, is open, or names the
+    # issue moving into it. `carrier` is `manual-fallback` here because that is what
+    # this path is; it also means the auto-close refusal cannot fire against it.
+    # SCOPED TO `consolidated`, deliberately. Applying the full resolution ledger to
+    # every classification on this carrier is a much larger floor change than the gap
+    # this repairs -- it would newly demand `Root cause:`/`Prevention:` from every
+    # manual close that has always been allowed without them. That broader asymmetry
+    # (this carrier checks fewer ledger fields than `verify-closeout` does) is real and
+    # is left where it was, not silently widened under cover of this fix.
+    consolidated_ledger = (
+        _BODY._missing_ledger_fields(body, classification, carrier="manual-fallback")
+        if classification == _CONSOLIDATED_CLASSIFICATION
+        else []
+    )
+    readback = list(consolidation_readback or [])
+    for entry in readback:
+        consolidated_ledger.extend(
+            f"consolidation:{problem}" for problem in entry.get("problems_to_surface", [])
+        )
     resolution_critique = _CRITIQUE.check_resolution_critique(
         repo_root=repo_root, body=body, classification=classification, numbers=numbers
     )
@@ -81,6 +111,7 @@ def evaluate_close_comment_floor(
         and hotl_dispositions["ok"]
         and ai_provenance["ok"]
         and resolution_critique.get("ok", True)
+        and not consolidated_ledger
     )
     return {
         "ok": ok,
@@ -91,6 +122,8 @@ def evaluate_close_comment_floor(
         "hotl_dispositions": hotl_dispositions,
         "ai_provenance": ai_provenance,
         "resolution_critique": resolution_critique,
+        "missing_ledger_fields": consolidated_ledger,
+        "consolidation_readback": readback,
     }
 
 

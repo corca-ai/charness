@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import runpy
 import subprocess
 from pathlib import Path
@@ -102,6 +101,12 @@ _first_field = _BODY._first_field
 _has_substantive_value = _BODY._has_substantive_value
 _missing_ledger_fields = _BODY._missing_ledger_fields
 _ledger_counts = _load_local("issue_closeout_ledger_counts")
+_consolidated = _load_local("issue_consolidated_closeout")
+_consolidation_readback = _load_local("issue_consolidation_readback")
+# The backend state read moved to its own module: two consumers need it and this
+# file was at its length ceiling, which a proof surface should not spend on a
+# subprocess wrapper.
+_view_issue_state = _load_local("issue_state_readback").view_issue_state
 _missing_close_keywords = _BODY._missing_close_keywords
 iter_close_keyword_refs = _BODY.iter_close_keyword_refs
 evaluate_source_preservation = _BODY.evaluate_source_preservation
@@ -143,60 +148,6 @@ def _read_carrier_body(repo_root: Path, *, carrier: str, commit_ref: str | None,
     if not body_file.is_file():
         raise RuntimeError(f"carrier body file not found: {body_file}")
     return body_file.read_text(encoding="utf-8")
-
-
-def _view_issue_state(
-    repo_root: Path,
-    *,
-    repo: str,
-    number: int,
-    backend: dict[str, Any],
-    json_fields: str = "number,state,url",
-) -> dict[str, Any]:
-    commands = backend.get("commands") or {}
-    if backend.get("id", "gh") != "gh" and commands.get("view") is None:
-        raise RuntimeError(
-            "closeout state verification requires backend commands.view; "
-            "carrier text alone is not issue closeout"
-        )
-    argv = ISSUE_CLOSE._resolve_op(
-        backend,
-        "view",
-        ISSUE_CLOSE.GH_VIEW_DEFAULT,
-        ISSUE_CLOSE.VIEW_PLACEHOLDERS,
-        required=frozenset({"repo", "number"}),
-        repo=repo,
-        number=str(number),
-        json_fields=json_fields,
-    )
-    try:
-        result = subprocess.run(
-            argv,
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=ISSUE_CLOSE.BACKEND_TIMEOUT_SECONDS,
-        )
-    except OSError as exc:
-        raise RuntimeError(f"issue state verification command failed to start: {exc}") from exc
-    except subprocess.TimeoutExpired as exc:
-        result = subprocess.CompletedProcess(
-            argv,
-            124,
-            str(exc.stdout or ""),
-            f"timed out after {ISSUE_CLOSE.BACKEND_TIMEOUT_SECONDS}s",
-        )
-    if result.returncode != 0:
-        raise RuntimeError(
-            f"issue state verification failed for {repo}#{number}: "
-            f"exit={result.returncode} stderr={result.stderr.strip()!r}"
-        )
-    try:
-        payload = json.loads(result.stdout)
-    except Exception as exc:
-        raise RuntimeError(f"issue state verification returned invalid JSON: {exc}") from exc
-    return payload
 
 
 def _manual_comment_found(body: str, state_payload: dict[str, Any]) -> bool:
@@ -306,6 +257,27 @@ def verify_closeout(
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))
         if not _has_substantive_value(reason_value):
             missing_fields.append("manual_fallback_reason")
+
+    # The four TRACKER facts a consolidated close depends on, run unconditionally for
+    # that classification: a previous revision listed them in the disposition's
+    # `not_checked_here` and implemented them nowhere, which reads like handled work.
+    consolidation_readback = _consolidation_readback.readbacks_for_closeout(
+        numbers=numbers,
+        destinations=_consolidated.destinations("\n".join(strip_code_fences(body))),
+        fetch=lambda dest: _view_issue_state(
+            repo_root, repo=repo, number=dest, backend=backend,
+            json_fields="number,state,url,body",
+        ),
+        applies=classification == _consolidated.CLASSIFICATION,
+        expected_repo=repo,
+        answer_repo=_ANSWER_REPO,
+    )
+    for readback in consolidation_readback:
+        # `problems_to_surface` dedupes the destination-scoped facts; the full per-source
+        # report stays in `consolidation_readback` for anyone reading the payload.
+        missing_fields.extend(
+            f"consolidation:{problem}" for problem in readback["problems_to_surface"]
+        )
 
     verified_state: list[dict[str, Any]] = []
     state_mismatches: list[dict[str, Any]] = []
@@ -429,6 +401,10 @@ def verify_closeout(
         "hotl_dispositions": hotl_dispositions,
         "ai_provenance": ai_provenance,
         "verified_state": verified_state,
+        # Empty for every other classification. Present and per (source, destination)
+        # for `consolidated`, so an operator can see WHICH of the four tracker facts
+        # was checked and what it found, rather than a bare pass.
+        "consolidation_readback": consolidation_readback,
     }
     _fold_proof_mismatch(result, repo_root, body)
     result["closeout_authorization"] = _authorization_record(repo_root, repo, numbers, carrier)

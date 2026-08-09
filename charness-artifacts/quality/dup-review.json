@@ -1094,6 +1094,13 @@
     },
     {
       "class": "intentional",
+      "id": "5b7c4b5c251c7497",
+      "note": "the issue-anchor regex builder, in two skills that must not import each other in the direction that would remove it. `achieve`'s residue scanner and `issue`'s consolidation readback each need to ask 'does this text name issue N', and `issue` is deliberately a LEAF -- it imports neither `achieve` nor `handoff`, which is what keeps the skill graph acyclic and lets `achieve` consume it as the tracker owner. Extracting to `skills/shared/` would be the only non-cycle route and would put a three-line regex behind a loader in two more places. The two are also not identical: the residue scanner additionally accepts a `GH-N` form that durable records use, while the readback reads GitHub issue bodies where that form does not appear.",
+      "reviewed_at": "2026-08-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5b81e034f4f4419b",
       "note": "short value-normalization helper shape shared with a separate inventory library; the quality adapter's semantic conflict vocabulary is intentionally local to its lifecycle boundary.",
       "reviewed_at": "2026-08-05",
@@ -1496,6 +1503,13 @@
       "id": "7e5aeb01ebedf33e",
       "note": "The ledger, final-bundle evidence, slice-manifest, and sync producers independently hash byte files at their own evidence boundaries. This standard-library two-line idiom is shared plumbing across separate proof owners, not a common verdict helper worth coupling.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "7ea2b0781391af63",
+      "note": "the standalone-script import preamble (`from __future__`, stdlib imports, then the `issue_local_import.sibling_loader` bootstrap line) shared by two modules in the same skill. It exists precisely BECAUSE these files are executed directly as often as imported and the plugin export flattens the layout, so a dotted import works in one tree and not the other -- a shared preamble would itself need loading by this same preamble. Already classified in this file for the sibling loader-body family; this is the same idiom with the import lines included, rotated because a new module joined it. (id rotated once during the same slice when a comment above the preamble changed: the family is content-addressed, so editing a neighbouring line re-keys it -- the known rotation behaviour, not a new family.)",
+      "reviewed_at": "2026-08-10",
       "surface": "code"
     },
     {

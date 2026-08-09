@@ -9,22 +9,24 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3b — the consolidation itself: umbrella issues, the four backend
-  readbacks, then the member closes.
+- Current slice: 3b (part 2) — file the umbrella issues, then move members.
 - Current slice intent: implement the four BACKEND readbacks the disposition
   names but does not perform (destination exists, is OPEN at close time, its body
   contains this issue's number, and it is not itself a consolidated close), file
   the umbrella issues, then move members. This names the reviewable-intent unit in
   progress and the commits it spans; critique and broad proof do not re-fire
   within one unchanged intent (meaningful-slice-cadence).
-- **No close may run until those four readbacks exist.** They are currently listed
-  in the disposition's `not_checked_here` and implemented nowhere, so today a
-  destination could be closed, nonexistent, or silently not mention the issue that
-  moved into it. A close on that evidence is the false verdict this goal exists to
-  remove.
-- Next action: implement the four backend readbacks, then file umbrella issues.
-  The operator-granted push/release for the slice 1+2 bundle stays BLOCKED on
-  `#580` and is the operator's call, not something to force.
+- The four readbacks now EXIST and run on both carriers, including the one a
+  consolidated close is required to use. The remaining precondition is authoring:
+  check 3 requires each umbrella's body to name every member BEFORE the closes run,
+  and only an edit to the destination can satisfy it.
+- **Still no close may run**, for a different reason than before: filing umbrella
+  issues and closing members are external side effects, and the only external grant
+  this run holds is the push/release one for the slice 1+2 bundle, which is
+  phase-scoped and does not carry.
+- Next action: ask for the issue-filing/close grant, then file umbrellas naming
+  their members. The push/release grant stays BLOCKED on `#580`, which is an
+  operator floor decision, not something to force.
 - Slice 1 status: done before activation in `ac019102`, re-verified against the
   tracker on 2026-08-10 (`#521` `#519` `#520` all CLOSED; 22 open, not 25).
 - Slice 2 status: done. The seam ships with NO prose matching and NO fitted
@@ -370,6 +372,20 @@ per the bullets above when that boundary is crossed):
 - Critique: TWO bounded rounds, both boundary-verified clean, and round 2 again found what round 1 could not. ROUND 1 found the classification UNREACHABLE: it was in `KNOWN_CLASSIFICATIONS` and the ledger table while every live carrier still refused it, and the commit hook's `_infer_classification` fell through to `bug` — so the only path that worked demanded exactly the repair claims the disposition exists to forbid. It also found `REQUIRED_CLOSE_REASON` read by nobody, and the self-reference check never firing on the wired path. ROUND 2 read those repairs and found the seams they left. (a) The close-reason floor was only half real: `issue_close` enforces it, but the PRIMARY carrier is GitHub auto-closing from a keyword, where no reason argv exists — and the module's own recommended neutral `Closes` produces the same public `completed` event. Repaired by refusing the auto-closing carriers outright. (b) Splitting presence and arity between two owners left a seam: `Consolidated into: the umbrella issue` satisfied the presence owner (a substantive string) while the arity owner had been told to stay silent about absence, so the one fact this disposition exists to require went unrequired. (c) The self-reference check compared only the first close-keyword number, so in the intended shape — one carrier closing twenty issues into an umbrella — the destination could be one of the other nineteen. (d) Fence stripping, correct for field reads, re-opened the documented fenced-`Fixes` evasion, which GitHub still honours. (e) The derived claim set over-refused: `Root cause:`, `Siblings:` and `Boundary:` are diagnostic or scoping, an unfixed issue can carry all three, and consolidating a cluster IS a sibling search — so the most natural honest sentence was being refused. The claim predicate is now what it always meant, an assertion that something was BUILT.
 - Off-goal findings: `#580` filed: `check-seed-fixture-budget`'s 1000ms budget measures runner contention rather than the 0.06s check, and it refuses every push. Two hypotheses were tested and refuted (machine load; accumulated pytest scratch). The operator-granted push and release for the slice 1+2 bundle are blocked on it, and this run did NOT weaken the floor or use `--no-verify`, because either revokes the grant.
 - Lessons carried forward: The pattern held a third and fourth time: the round that reads the REPAIRS finds a different class than the round that reads the original, and every one of round 2's findings lived in a seam the repair itself created. Two of them share one shape worth naming — a check that passes its own direct-call test while never firing on the wired path — which is this goal's originating defect in miniature: a record (the green test) treated as a fact about a path it never exercised. The remedy applied here is that every refusal is now tested through `_missing_ledger_fields`, the way the carrier calls it. NOT DONE, and deliberately: the ~20 member closes, the umbrella issues, and the four backend readbacks (destination exists, is OPEN, contains this issue's number, no chains) are unimplemented. Slice 3b owes them, and it must not run a single close until they exist.
+- Metrics:
+
+### Slice 4: Slice 3b (part 1) — the four tracker readbacks the disposition named and nobody implemented
+
+- Objective: Make the four facts a consolidated close depends on actually checkable against the tracker: the destination exists, is OPEN at close time, its body names the issue moving into it, and it is not itself a consolidation.
+- Why this approach: Slice 3a's disposition listed them under `not_checked_here` and implemented them nowhere, which a bounded reviewer named for what it also was — four checks whose only effect was to appear in a JSON payload no consumer read. To a downstream operator that reads like handled work. Until they exist, a destination could be closed, nonexistent, or silently not mention the issue that moved into it, and no close may run.
+- Commits: pending — lands with this log entry
+- What changed: NEW `skills/public/issue/scripts/issue_consolidation_readback.py` (the four checks, pure over a fetched payload, plus the per-closeout loop) and `issue_state_readback.py` (the backend state read, extracted from the verifier because two consumers now need it and the verifier was at its length cap). Wired into BOTH `issue_verify_closeout.py` and `issue_close_comment_floor.py`/`issue_close.py`. 21 tests in `tests/quality_gates/test_issue_consolidation_readback.py`.
+- Alternatives rejected: REJECTED — leaving the four as documented non-goals: a list of unimplemented checks in a payload reads as coverage, which is the defect class this goal exists to remove. REJECTED — checking them only in `verify_closeout`: that is the carrier an operator runs AFTER the close, so 'the destination is OPEN at close time' would first be evaluated once the irreversible act had already happened.
+- Targeted verification: 21 focused tests plus 1104 across the issue lane; broad suite at the slice boundary. The `not_checked_here` list is now backed by executing code, and the reviewer's one unfetchable item was answered directly: `git show HEAD:...` diffed against the extracted module proves `view_issue_state` is byte-identical to the `_view_issue_state` it replaced apart from the rename.
+- Test duplication pressure: One new fixable family — the standalone-script import preamble, shared with `issue_runtime.py` — classified `intentional`: it exists precisely because these files are executed directly as often as imported and the export flattens the layout, so a shared preamble would itself need loading by the same preamble. Its id rotated once mid-slice when a neighbouring comment changed, which is the known content-addressed rotation rather than a new family, and the note records that.
+- Critique: One bounded round on this surface, boundary-verified clean, and it found the same shape a third time. THE HEADLINE: the readback ran in `verify_closeout` but NOT in `close-with-comment` — which is the one carrier a consolidated close is REQUIRED to use, because it is the only path that passes `--reason 'not planned'`. So the carrier a consolidation must use was the one carrier checking neither its destination grammar nor whether that destination exists. The close floor's own comments already name this asymmetry twice for HOTL and AI-provenance; this was the third instance. ALSO FOUND: (a) the readback never checked that the payload described the destination it ASKED about — the sibling expected-state loop already does this and records why ('being told is not obeying, and a wrong-repo answer carries the RIGHT number'), and without it a cross-repo anchor would be fetched against the source repo where an unrelated same-numbered issue could pass all four checks; (b) a truthy non-dict payload escaped as an AttributeError traceback, contradicting the module's own rule that any backend failure is 'did not run'; (c) failure amplification — twenty closes into one bad umbrella produced ~40 byte-identical lines that buried every other finding, because three of the four facts are destination-scoped and were re-emitted per source. All repaired with regression tests. NOT REPAIRED, recorded instead: the chain check is near-inert against real chains (a consolidated destination is CLOSED, so check 2 catches what check 4 claims to) and can false-positive on an umbrella that documents the convention in a fence.
+- Off-goal findings: None new. `#580` still blocks the operator-granted push and release.
+- Lessons carried forward: Three surfaces in this goal have now shipped a check that existed and never ran: the premise-state channels, the `consolidated` classification itself, and now these readbacks. The tell is identical each time — a green test exercising a DIRECT call while the wired path never reaches the code — so the durable remedy applied here is that every check is tested through the surface an operator actually invokes, including one test that asserts a backend call was made at all. That is the same defect this goal was designed from, arriving three more times inside the work meant to remove it.
 - Metrics:
 
 ## Context Sources
