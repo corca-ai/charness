@@ -92,6 +92,21 @@ def test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak(
     assert payload.get("product_surfaces", []) == []
 
 
+def test_cli_skill_surface_treats_a_non_mapping_adapter_as_no_adapter(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """A YAML file that parses to a list carries no `version` to reconcile, so it is
+    absent-shaped, not version-refused. Routing it through the version blocker would
+    report `version must be 1` about a file that declares nothing."""
+    repo = seed_repo(tmp_path, adapter_body="- installable_cli\n- bundled_skill\n")
+
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+
+    payload = json.loads(result.stdout)
+    assert "version must be 1" not in json.dumps(payload)
+    assert payload["product_surface_source"] == "inferred"
+
+
 def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
 

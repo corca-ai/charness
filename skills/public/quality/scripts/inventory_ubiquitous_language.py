@@ -63,9 +63,9 @@ def _load_contract(repo_root: Path, adapter_path: Path) -> dict[str, Any] | None
     path = adapter_path if adapter_path.is_absolute() else repo_root / adapter_path
     if not path.is_file():
         return None
+    # The shared loader always returns a mapping; a list- or scalar-shaped file reads as
+    # empty, which falls through the version check and the contract check below.
     raw = load_yaml_file(path)
-    if not isinstance(raw, dict):
-        return None
     # The contract selects the scan scope and its exemptions, so honoring it from a schema
     # version this reader never reconciled is the fail-open shape every adapter reader
     # here owes a verdict on. Refuse loudly rather than silently inventorying an

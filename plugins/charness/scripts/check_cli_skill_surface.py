@@ -55,11 +55,13 @@ def _load_adapter(repo_root: Path, adapter_path: Path) -> tuple[dict[str, Any], 
     switched off entirely by `product_surfaces`, so honoring an unreconciled schema version
     here is a strictly harder trust boundary than a resolver that only echoes fields. An
     unspeakable version yields no data at all, not partially honored data.
+
+    The shared loader always returns a mapping (a list- or scalar-shaped file reads as
+    empty), so there is no non-mapping branch to guard here -- one was written and the
+    changed-line gate correctly refused it as unreachable.
     """
     path = adapter_path if adapter_path.is_absolute() else repo_root / adapter_path
     raw = load_yaml_file(path) if path.is_file() else {}
-    if not isinstance(raw, dict):
-        return {}, []
     errors: list[str] = []
     validate_adapter_version(raw, {}, errors)
     return ({}, errors) if errors else (raw, [])

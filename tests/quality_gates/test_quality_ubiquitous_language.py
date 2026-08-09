@@ -40,6 +40,27 @@ def test_inventory_ubiquitous_language_is_unconfigured_without_contract(tmp_path
     assert payload["status"] == "unconfigured"
 
 
+def test_inventory_ubiquitous_language_treats_a_non_mapping_adapter_as_unconfigured(
+    tmp_path: Path,
+) -> None:
+    """A YAML file that parses to a list declares no `version` and no contract, so it is
+    absent-shaped. Sending it through the version refusal would fail a repo for a file
+    that asserts nothing."""
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / ".agents" / "quality-adapter.yaml").write_text("- not\n- a mapping\n", encoding="utf-8")
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert json.loads(result.stdout)["status"] == "unconfigured"
+
+
 def test_inventory_ubiquitous_language_refuses_an_adapter_version_it_does_not_speak(
     tmp_path: Path,
 ) -> None:
