@@ -9,22 +9,19 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — unblock the push. Slices 1 and 1b are DONE.
-- Current slice intent: the repo has twelve unpushed commits and three closeout
-  carriers that cannot close, because `check-cli-skill-surface`'s `doctor.py`
-  probe needs ~21s against a 20s budget. Measured identically on the pre-session
-  tree, so it is cost rather than a regression. The unit is to make that probe
-  fit its budget with its coverage intact — NOT to widen the budget, which is the
-  one move that revokes the push grant. Critique and broad proof do not re-fire
-  within one unchanged intent — update this when the intent changes, not per
-  commit (meaningful-slice-cadence).
-- Next action: profile `scripts/doctor.py` under
-  `--skip-release-probe` and find what costs the 21 seconds. If the honest answer
-  is that the work is irreducible, that becomes an operator decision recorded in
-  `## Operator Decision Queue`, not a quietly widened timeout.
-- Blocking reality: every later slice's output is undeliverable until this closes.
-  A goal that keeps building while nothing can leave the machine is optimising
-  the wrong end.
+- Current slice: 3 — `setup` wiring for the stance. Slices 1, 1b and 2 are DONE.
+- Slice 2's premise was REFUTED by measurement, and the slice became the repair
+  that refutation exposed. The probe does not cost 21s: 1.6s standalone, 5.5–6.0s
+  in-gate, whole suite green in ~75s. The 21,650ms sample WAS the 20s deadline —
+  `check-cli-skill-surface` recorded its own timeout as the probe's cost and
+  reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
+  a CLI it never observed. That is this goal's class, and it is what shipped.
+- Next action: slice 3 — seed `regenerable_facts` in `skills/public/setup/` so a
+  fresh consumer repo ends ARMED rather than `NOT CONFIGURED`.
+- Delivery is no longer blocked: the pre-push gate runs green (exit 0). The push
+  itself is NOT taken and is NOT standing-approved; ask per push.
+- Critique and broad proof do not re-fire within one unchanged intent — update
+  this when the intent changes, not per commit (meaningful-slice-cadence).
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -228,7 +225,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | --- | --- | --- | --- | --- |
 | 1 | `#565` — repo-owned mutate-and-restore helper that refuses a kill without a passing baseline test count, and restores on raise | It is the TOOL every later slice's proof depends on | Helper + tests; a broken-baseline run that REFUSES; a real run naming its baseline count; a restore-on-raise test | **DONE** |
 | 1b | **Unplanned, operator-driven, DONE:** the regenerable-fact stance — forward-looking prose carries the COMMAND, not one run's output; expensive commands carry the command AND a linked artifact. Contract clause, a portable gate shipping through `quality`, adapter key, and consumer docs | It arrived mid-goal as a standing operator stance and was built rather than deferred. Recorded here because the plan below is meaningless if the artifact pretends it did not happen | Contract section; gate + tests, mutation-proven; adapter key registered (which exposed `#530` live); `adapter.example.yaml` and the adapter-contract reference | **DONE** |
-| 2 | **Unblock the push.** `check-cli-skill-surface`'s `doctor.py` probe needs ~21s against a 20s budget — measured identically on the pre-session tree, so it is cost, not a regression. Make the probe cheaper or split it; widening the budget to buy a green push is the one move that revokes the grant | NOTHING else lands until this resolves: twelve commits are unpushed and three closeout carriers cannot close. Highest leverage in the goal, and it is the only slice whose absence blocks every other slice's delivery | The probe under budget with its coverage intact, or an operator-recorded decision to widen it deliberately; then the push, then remote CI read back through a different observer and channel than the push exit code | pending |
+| 2 | **Premise REFUTED, and repaired as the class it exposed.** The probe never cost 21s (1.6s alone, 5.5–6.0s in-gate); the 21,650ms sample WAS the 20s deadline. `check-cli-skill-surface` reported a starved probe as `probe failed ... exited 124` — a verdict over a CLI it never observed. Repaired: retry once, report a timeout as `unobserved` (never a `blocker`), preserve partial output, bound the drain, kill the probe's own group only | Delivery looked blocked and was not. The measurement cost one command; believing the recorded number cost a prior session a push cycle | Gate green, exit 0, `check-cli-skill-surface` PASS at 6.0s; 16 tests; two bounded rounds, both DEFECTIVE; every safety property mutation-killed; budget NOT widened | **DONE** |
 | 3 | **`setup` wiring for the stance.** A new consumer repo gets `regenerable_facts` seeded with sensible surfaces, and `setup` states the stance where a human choosing skills will read it | Without it the stance reaches only repos that hand-edit their quality adapter. `skills/public/setup/` has ZERO references today, so the portable half is unbuilt and the gate's `NOT CONFIGURED` path is the only thing a consumer would ever see | `setup` seeds the key; a fresh-repo run ends with the gate ARMED rather than `NOT CONFIGURED`; the stance readable from a consumer-facing surface | pending |
 | 3b | **Folded in from the retired declaration-to-verdict goal: `#530`.** Sixteen of seventeen adapter resolvers accept ANY `version` and write it back as authoritative; exactly one compares against a supported value. Replace the hand-copied blocks with one shared contract check, and refuse an unknown key instead of dropping it | Measured LIVE on 2026-08-09 on a resolver that goal had not reached: a new `regenerable_facts` key was dropped with `valid: true`, `errors: []`, no warning, and the gate silently ran on defaults. Found by a consumer of the contract, never by a gate. Slice 1b had to hand-write the seventeenth block, so the goal is now paying the tax it exists to remove | One shared check in `scripts/adapter_lib.py`; an unsupported `version` refused at every site; an unknown key refused rather than dropped; the `regenerable_facts` validator folded into the shared seam | pending |
 | 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | pending |
@@ -411,6 +408,11 @@ per the bullets above when that boundary is crossed):
 
 Shaped at Before-phase; update as the run crosses each boundary:
 
+- `Phases: debug, impl, quality, issue`
+- `Routing: charness:debug — slice 2 began as a cost investigation and became a root-cause one; the recorded 21s was the gate's own timeout, so the falsifiable hypothesis had to be tested before any repair was shaped.`
+- `Routing: charness:impl + charness:quality — the repair is verdict logic on a proof surface, so it owed mutation proof per repaired property and two bounded review rounds, the second reading the repairs.`
+- `Routing: charness:issue — #573 filed under the standing approval for a defect measured three times during this slice.`
+- `Issue closeout: n/a — slice 2 closes no tracked issue; #573 was FILED, not resolved. #565/#563/#546/#564/#521/#523 remain open to later slices.`
 - `Gather: n/a — every source is in-repo (issues via the gh adapter, artifacts, git history); no external URL or credentialed source was read.`
 - `Release: n/a — this goal takes no version bump, tag, or publish; the 4.0.0 release belongs to the predecessor goal.`
 
@@ -440,6 +442,76 @@ applies.
 - Off-goal findings: Filed #570 during this session's #567 closeout (chunked-routing runs briefed on a surface they must not write). Nothing new filed by this slice.
 - Lessons carried forward: A same-length mutant is invisible to CPython's bytecode cache: `a + b` -> `a * b` keeps the source SIZE identical, and a .pyc is validated by size plus mtime truncated to whole SECONDS, so stale bytecode ran and a real mutant reported SURVIVED. Found by the suite before either reviewer. The first regression test for it was itself a false green -- it passed with the guard deleted, for timing reasons -- and had to be replaced with a call-site assertion. Fixture arithmetic matters too: `add(2, 2) == 4` lets the `+` -> `*` mutant survive because 2+2 == 2*2.
 - Metrics:
+
+
+### Slice 2: the push was never blocked by cost, and the check said otherwise
+
+- Objective: unblock delivery. The handoff said `check-cli-skill-surface`'s
+  `doctor.py` probe needed ~21s against a 20s budget, "measured identically on
+  the pre-session tree, so it is cost rather than a regression".
+- What measurement found: the premise is false. The probe runs in **1.6s**
+  standalone and **5.5-6.0s** inside the full gate; the whole suite is green in
+  ~75s and the pre-push gate exits 0. Per-capability timing totals ~1.2s across
+  14 capabilities, none network-bound under `--skip-release-probe`. The recorded
+  21,650ms sample was the 20s deadline plus overhead - the check had recorded ITS
+  OWN TIMEOUT as the probe's cost. 4x CPU oversubscription reproduces only 3.9s,
+  so even contention does not reach 21s; it was a tail starve under
+  `run-quality.sh`'s ~85-way unbounded fan-out (`queue_timed` backgrounds every
+  queued check with `&`).
+- Why the slice still shipped code: the episode IS this goal's class. A probe
+  that never returned was reported as `CLI plus skill probe failed: ... exited
+  124` and folded into `blockers` - a verdict about a CLI the check never
+  observed. That message is why a session concluded the probe was expensive and
+  left twelve commits unpushed.
+- What changed: `scripts/check_cli_skill_surface.py` - a timeout is retried once
+  (`PROBE_ATTEMPTS = 2`), then reported in a separate `unobserved` list, never as
+  a `blocker`; partial output captured before the deadline is preserved as
+  evidence; the probe runs in its own session and is reaped by process group
+  under a bounded drain. `tests/quality_gates/test_cli_skill_surface.py` - 11 to
+  16 tests. Generated mirror `plugins/charness/scripts/check_cli_skill_surface.py`
+  re-synced and verified byte-identical with `cmp`.
+- **The floor was NOT loosened.** `main()` still returns 1 for `unobserved`, so a
+  starved probe still refuses the push. The probe timeout env var and the runtime
+  budgets are untouched - widening was the one forbidden move and was not taken.
+- Targeted verification: 16 tests pass. Mutation sweeps via
+  `scripts/mutate_and_restore.py`, each stating its baseline passing count,
+  killed the `timed_out` routing, the `_kill_group_and_drain` CALL SITE, the
+  retry bound, the `unobserved` status selection, `main()`'s refusing set, the
+  partial-output preservation, the bytes decode, the drain deadline,
+  `start_new_session=True`, and `killpg(process.pid)` vs `killpg(getpgid(...))`.
+- Critique: TWO delegated bounded rounds, both DEFECTIVE. Round 1: a
+  `TimeoutExpired` does not mean "no verdict" (a child can exit while a
+  grandchild holds the pipe) and the old code discarded the partial output; the
+  drain was unbounded, so the gate would HANG rather than refuse, with no wall
+  clock anywhere above it; `unestablished` collided with `run-quality.sh`'s own
+  opposite meaning (exit 3, does not fail the run) and was renamed `unobserved`;
+  the 124 boundary was untested; the retry test's 300ms budget was itself
+  starve-sensitive. Round 2, reading the repairs, found the repair had
+  **reintroduced its own class one call deeper**: the drain's own timeout path
+  discarded `TimeoutExpired.output`, and neither existing fixture crossed the two
+  halves needed to reach it. Both fingerprint windows verified clean,
+  parent-attributed.
+- Non-claims: the retry is proven only against a synthetic first-call-hangs
+  fixture, never a real in-gate starve. `run-quality.sh`'s ~85-way fan-out is
+  untouched. 2 attempts and a 5s drain are not proven to be the right numbers.
+  The `unobserved` path has never fired in a real gate run. The containment
+  `process.kill()` in the `finally` survived mutation - no fixture builds a probe
+  that re-parents its own group - and is labelled UNPROVEN in the source rather
+  than claimed as covered. A retried starve costs ~26s against an 11,000ms budget
+  for this label; `check_runtime_budget` compares a recent MEDIAN, so one spike is
+  normally absorbed, but this was not measured.
+- Off-goal findings: filed **#573** - `scripts/mutate_and_restore.py` restores on
+  a raising test command but NOT when the sweep process itself is killed. Hit
+  three times in this slice; twice the residue was a CALL-SITE deletion, and once
+  it survived a `git status` check and three targeted greps because the file was
+  already legitimately modified. Found only when a behavioural measurement
+  disagreed with the code as read.
+- Lessons carried forward: a gate that records its own timeout as an elapsed time
+  teaches the next reader a false cost, and prose repeating that number launders
+  it into a fact - exactly what slice 1b's regenerable-fact stance exists to stop.
+  And `os.killpg(os.getpgid(child), SIGKILL)` is a loaded gun in any gate: when
+  `start_new_session` does not apply it names the SHARED group, and it SIGKILLed
+  the sweep, pytest, and the parent shell three times here.
 
 ## Context Sources
 

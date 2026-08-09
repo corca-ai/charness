@@ -7,6 +7,7 @@ import fnmatch
 import json
 import os
 import shlex
+import signal
 import subprocess
 import sys
 from pathlib import Path
@@ -30,6 +31,8 @@ DEFAULT_CHANGE_GLOBS = (
 )
 DEFAULT_PROBE_TIMEOUT_SECONDS = 20.0
 TIMEOUT_EXIT_CODE = 124
+PROBE_ATTEMPTS = 2
+DRAIN_TIMEOUT_SECONDS = 5.0
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
@@ -128,30 +131,111 @@ def _probe_timeout_seconds() -> float:
     return value if value > 0 else DEFAULT_PROBE_TIMEOUT_SECONDS
 
 
-def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
-    timeout_seconds = _probe_timeout_seconds()
+def _decoded(value: object) -> str:
+    if isinstance(value, bytes):
+        return value.decode("utf-8", "replace")
+    return value if isinstance(value, str) else ""
+
+
+def _kill_group_and_drain(process: subprocess.Popen[str]) -> tuple[str, str]:
+    """Kill the probe's whole process group, then drain under its own deadline.
+
+    A bare `subprocess.run(..., timeout=)` kills only the DIRECT child and then
+    drains with no deadline at all, so a surviving grandchild holding the
+    inherited pipes hangs the drain forever -- and `run-quality.sh` puts no wall
+    clock around a queued label, so nothing above would recover. `doctor.py`
+    shells out per capability, so grandchildren are the normal case here, not an
+    exotic one.
+    """
+    # Signal the group by the child's OWN pid, never by `os.getpgid(child)`.
+    # `start_new_session=True` makes the child its own group leader, so the two
+    # are equal in the normal case -- but `getpgid` returns the SHARED group the
+    # moment that flag stops applying, and killpg on it SIGKILLs the whole
+    # quality run: every sibling check, the runner, and the shell. Measured, not
+    # theorised: a mutant flipping that flag did exactly that three times during
+    # this slice, each time killing the sweep mid-run and leaving the tree
+    # mutated. This narrows the blast radius; it does not prove one, and it
+    # rests on `start_new_session` holding. If that flag ever stops applying,
+    # a recycled pid could still name a stranger group, and no test here can
+    # construct that state -- untestable, not observed-absent.
     try:
-        result = subprocess.run(
-            shlex.split(command),
-            cwd=repo_root,
-            check=False,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-        )
+        os.killpg(process.pid, signal.SIGKILL)
+    except (ProcessLookupError, PermissionError, OSError):
+        process.kill()
+    try:
+        return process.communicate(timeout=DRAIN_TIMEOUT_SECONDS)
     except subprocess.TimeoutExpired as exc:
+        # Keep what the pipe already yielded. `TimeoutExpired` carries every byte
+        # read so far -- INCLUDING the bytes the probe-deadline `communicate`
+        # consumed, because the resumed call reuses the same buffers -- so
+        # returning empty strings here would discard the partial verdict this
+        # whole repair exists to preserve, one call deeper than the defect it
+        # replaced. Bytes even in text mode: CPython joins raw chunks and only
+        # decodes on the success path.
+        return _decoded(exc.output), _decoded(exc.stderr)
+    finally:
+        # killpg can succeed WITHOUT reaching the direct child (a probe that
+        # re-parents its own group), and then `Popen.__exit__` would call an
+        # unbounded `wait()` on a live child -- B2's hang, narrowed but not
+        # closed. Killing the child outright is the containment. UNPROVEN by
+        # test: a mutation sweep confirmed this line can be deleted with the
+        # suite green, because no fixture constructs a probe that re-parents
+        # its own group. Kept as cheap defence, not claimed as covered.
+        process.kill()
+
+
+def _attempt_probe(repo_root: Path, command: str, timeout_seconds: float) -> dict[str, object]:
+    """Run `command` once in its own process group."""
+    with subprocess.Popen(
+        shlex.split(command),
+        cwd=repo_root,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        start_new_session=True,
+    ) as process:
+        try:
+            stdout, stderr = process.communicate(timeout=timeout_seconds)
+        except subprocess.TimeoutExpired:
+            # The deadline can expire with a verdict ALREADY PRODUCED and merely
+            # unread -- a child that exited while a grandchild still held the
+            # pipe. So keep whatever was captured instead of discarding it: the
+            # honest claim is that this run did not OBSERVE a verdict, which is
+            # weaker than saying the command never rendered one.
+            stdout, stderr = _kill_group_and_drain(process)
+            return {
+                "command": command,
+                "returncode": TIMEOUT_EXIT_CODE,
+                "stdout_preview": (stdout or "")[:400],
+                "stderr_preview": (stderr or "")[:400],
+                "timed_out": True,
+            }
         return {
             "command": command,
-            "returncode": TIMEOUT_EXIT_CODE,
-            "stdout_preview": str(exc.stdout or "")[:400],
-            "stderr_preview": f"timed out after {timeout_seconds:g}s",
+            "returncode": process.returncode,
+            "stdout_preview": stdout[:400],
+            "stderr_preview": stderr[:400],
+            "timed_out": False,
         }
-    return {
-        "command": command,
-        "returncode": result.returncode,
-        "stdout_preview": result.stdout[:400],
-        "stderr_preview": result.stderr[:400],
-    }
+
+
+def _run_probe(repo_root: Path, command: str) -> dict[str, object]:
+    # This gate queues ~85 checks concurrently, so a probe's wall-clock deadline
+    # is spent competing with its own siblings. A single starved run cost a real
+    # session a push cycle: the probe needed 1.6s alone and 5.5s in-gate, but one
+    # tail run hit the 20s deadline and was read as "the probe costs 21s". Retry
+    # once, so a transient starve does not become a standing belief about cost.
+    # Two attempts is a cheap hedge against contention, NOT a proof that a
+    # command failing both is unhealthy -- the payload says unobserved either way.
+    timeout_seconds = _probe_timeout_seconds()
+    result: dict[str, object] = {}
+    for attempt in range(1, PROBE_ATTEMPTS + 1):
+        result = _attempt_probe(repo_root, command, timeout_seconds)
+        result["attempts"] = attempt
+        if not result["timed_out"]:
+            return result
+    result["deadline_seconds"] = timeout_seconds
+    return result
 
 
 def _unsafe_agent_browser_probe(command: str) -> str | None:
@@ -216,9 +300,22 @@ def build_payload(
         if unsafe_reason:
             blockers.append(f"Unsafe CLI plus skill probe `{command}`: {unsafe_reason}.")
 
+    # A probe that never returned did not FAIL -- nothing about the CLI was
+    # observed. Both still refuse (the floor is unchanged), but they are kept in
+    # separate lists so a reader cannot mistake "we never heard the CLI answer"
+    # for "the CLI answered wrongly". Conflating them is how one starved run
+    # became a session-long belief that the probe costs 21 seconds.
     probe_results = [_run_probe(repo_root, command) for command in probes] if run_probes else []
+    unobserved: list[str] = []
     for result in probe_results:
-        if result["returncode"] != 0:
+        if result.get("timed_out"):
+            deadline = result.get("deadline_seconds")
+            unobserved.append(
+                f"CLI plus skill probe verdict NOT OBSERVED: `{result['command']}` did not close its "
+                f"output within {deadline:g}s on each of {result['attempts']} attempts; "
+                f"readiness is unobserved, not failing"
+            )
+        elif result["returncode"] != 0:
             blockers.append(f"CLI plus skill probe failed: `{result['command']}` exited {result['returncode']}")
 
     findings = [
@@ -228,8 +325,14 @@ def build_payload(
             "skill_count": len(skills),
         }
     ]
+    if blockers:
+        status = "blocked"
+    elif unobserved:
+        status = "unobserved"
+    else:
+        status = "ok"
     return {
-        "status": "blocked" if blockers else "ok",
+        "status": status,
         "adapter_path": str(adapter_path),
         "product_surface_source": source,
         "product_surfaces": _string_list(data, "product_surfaces"),
@@ -241,6 +344,7 @@ def build_payload(
         "probe_results": probe_results,
         "findings": findings,
         "blockers": blockers,
+        "unobserved": unobserved,
     }
 
 
@@ -264,7 +368,9 @@ def main() -> int:
         print(f"CLI plus bundled-skill surface check: {payload['status']}")
         for blocker in payload.get("blockers", []):
             print(f"- {blocker}", file=sys.stderr)
-    return 1 if payload["status"] == "blocked" else 0
+        for item in payload.get("unobserved", []):
+            print(f"- UNOBSERVED: {item}", file=sys.stderr)
+    return 1 if payload["status"] in {"blocked", "unobserved"} else 0
 
 
 if __name__ == "__main__":
