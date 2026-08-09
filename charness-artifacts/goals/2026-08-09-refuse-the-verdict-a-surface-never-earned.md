@@ -9,16 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 2 — `#564` re-scoped onto slice 1's helper. Slice 1 is DONE.
-- Current slice intent: slice 1 shipped `scripts/mutate_and_restore.py` and is
-  closed. The next reviewable-intent unit makes the CALL-SITE question the
-  tool's behaviour rather than a rule in the goal template, then closes or
-  re-scopes `#564` with the declined-remedy reasoning recorded. Critique and
-  broad proof do not re-fire within one unchanged intent — update this when the
-  intent changes, not per commit (meaningful-slice-cadence).
-- Next action: slice 2. Note slice 1's helper already KILLED a call-site mutant
-  in its own dogfood run, so the capability exists; slice 2 is about making the
-  tool ASK for one rather than leaving it to the author's memory.
+- Current slice: 2 — unblock the push. Slices 1 and 1b are DONE.
+- Current slice intent: the repo has twelve unpushed commits and three closeout
+  carriers that cannot close, because `check-cli-skill-surface`'s `doctor.py`
+  probe needs ~21s against a 20s budget. Measured identically on the pre-session
+  tree, so it is cost rather than a regression. The unit is to make that probe
+  fit its budget with its coverage intact — NOT to widen the budget, which is the
+  one move that revokes the push grant. Critique and broad proof do not re-fire
+  within one unchanged intent — update this when the intent changes, not per
+  commit (meaningful-slice-cadence).
+- Next action: profile `scripts/doctor.py` under
+  `--skip-release-probe` and find what costs the 21 seconds. If the honest answer
+  is that the work is irreducible, that becomes an operator decision recorded in
+  `## Operator Decision Queue`, not a quietly widened timeout.
+- Blocking reality: every later slice's output is undeliverable until this closes.
+  A goal that keeps building while nothing can leave the machine is optimising
+  the wrong end.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -53,6 +59,24 @@ So **widening the scan roots buys nothing on its own** — it adds five advisory
 **`#564` is RE-SCOPED, not implemented as filed.** The issue is real: a repair's proof calls the repaired function directly instead of through the caller that should invoke it, so deleting the CALL SITE leaves the suite green while the repair is dead in production — three measured instances in one goal, one per slice, none visible to careful reading of the diff. But its proposed remedy, a new step in the goal template's `## Agent Verification Plan`, was reconsidered on P3 grounds by BOTH `charness-artifacts/audit/2026-08-08-open-issue-opinion.md` and the superseded draft `charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md`: it is rulebook growth, and the preference recorded in both is to let `#565`'s tool ask the question. This goal honors that. `recent-lessons.md` carries two never-written lines wanting to land in the goal template — a sweep states its baseline test COUNT before its first mutant, and at least one mutant per repair deletes the CALL SITE. Both become BEHAVIOR of the `#565` helper rather than prose in a template a reader may skip. `#564` closes on the tool, or is re-scoped on the issue with that reasoning recorded.
 
 **`#523` is here for a different reason, deliberately named.** The four above are internal proof surfaces. The 2026-08-08 audit's headline thesis — that this repo had been improving itself rather than its users — was mostly REFUTED and must not be inherited. What SURVIVED refutation is one prioritization instruction: work drifted after `#516` from consumer defects to internal proof surfaces, and the next pick should be consumer-facing. `#523` is that pick and the opinion file's top rank: the root always-loaded surface carries contract prose rather than routing. Measured this session at 15,806 bytes (the issue says 16.9KB — it has already moved, so re-measure rather than trusting either figure), `CLAUDE.md` a symlink to it, nine top-level sections. `## Subagent Delegation` is LOAD-BEARING and must survive any cut intact — that constraint is inherited from the handoff and is not this goal's to relax. Including it means this goal is explicitly NOT single-class; the honest framing is four slices closing one class plus one slice paying the consumer-facing debt, not five slices of one thing.
+
+**Amended mid-run: the stance slice, and why it belongs here.** Partway through,
+the operator set a standing stance — a number in forward-looking prose is banned
+by default; carry the COMMAND that produces it, and when that command is
+EXPENSIVE carry the command AND a link to the checked-in artifact holding its
+output, because telling every future reader to re-run a multi-minute gate moves
+the cost onto all of them. It is the same class as the rest of this goal: prose
+asserting a value nobody re-established. It was built rather than deferred, and
+recorded as slice 1b, because a goal artifact that omits the largest thing that
+happened under it is itself a surface claiming more than it observed.
+
+Registering its adapter key exposed `#530` LIVE — the quality resolver dropped an
+unknown key with `valid: true`, `errors: []`, and no warning — which is the root
+defect of
+[the declaration-to-verdict goal](./2026-08-07-repair-declaration-to-verdict-at-root.md),
+recorded there. That goal and this one are the SAME FAMILY, and six artifacts
+currently claim `Status: active`. Deciding whether to fold, sequence, or retire
+them is queued for the operator rather than taken here.
 
 **What this goal does NOT re-derive.** The two-round rule for verdict-logic slices is measured on two independent goals — eighteen blockers across ten rounds, then thirty-two across four — with the same property both times: every blocker was in a REPAIR, never in a first diagnosis. It is settled and lives in `recent-lessons.md`. Slices 1-4 all change verdict logic on proof surfaces, so plan the second round as a known cost; do not re-measure whether it is worth it.
 
@@ -202,17 +226,28 @@ enforces them so this paragraph stops being the thing that has to remember.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | `#565` — repo-owned mutate-and-restore helper that refuses a kill without a passing baseline test count, and restores on raise | It is the TOOL every later slice's proof depends on; building it later means proving the rest with the harness this goal replaces | Helper + tests; a broken-baseline run that REFUSES; a real run naming its baseline count; a restore-on-raise test | pending |
-| 2 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behavior, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the issue's defect is still real and unaddressed | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | pending |
-| 3 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic with 0 findings, 2 lifetime commits, and no recorded catch is not worth repairing | The script and its shim gone; `run-quality.sh`/`pre-push`/`staged_commit_gate_plan.py` clean; the six test modules updated; the three skill reference docs no longer instructing agents to run a script that does not exist; `bash scripts/run-quality.sh` green with 95 checks | pending |
-| 4 | `#521` + `#546` — the census ALREADY RAN at shaping time ([artifact](../audit/2026-08-09-no-observed-effect-census.md), 2 survivors of 90). This slice re-verifies its two survivors with a fresh-eye reviewer independent of the workflow agents, measures `#546`'s `missing_samples` subset the census explicitly did not cover, and posts both to `#521` | The census answers `#521`'s question with evidence it never had; but a census is itself a verdict surface and this goal does not let its own instrument off the hook | Bounded-reviewer confirmation or refutation of `check-public-doc-coupling`'s survivor status; the `#546` count; the census posted to `#521`; NO deletions taken in this slice | pending |
-| 5 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
+| 1 | `#565` — repo-owned mutate-and-restore helper that refuses a kill without a passing baseline test count, and restores on raise | It is the TOOL every later slice's proof depends on | Helper + tests; a broken-baseline run that REFUSES; a real run naming its baseline count; a restore-on-raise test | **DONE** |
+| 1b | **Unplanned, operator-driven, DONE:** the regenerable-fact stance — forward-looking prose carries the COMMAND, not one run's output; expensive commands carry the command AND a linked artifact. Contract clause, a portable gate shipping through `quality`, adapter key, and consumer docs | It arrived mid-goal as a standing operator stance and was built rather than deferred. Recorded here because the plan below is meaningless if the artifact pretends it did not happen | Contract section; gate + tests, mutation-proven; adapter key registered (which exposed `#530` live); `adapter.example.yaml` and the adapter-contract reference | **DONE** |
+| 2 | **Unblock the push.** `check-cli-skill-surface`'s `doctor.py` probe needs ~21s against a 20s budget — measured identically on the pre-session tree, so it is cost, not a regression. Make the probe cheaper or split it; widening the budget to buy a green push is the one move that revokes the grant | NOTHING else lands until this resolves: twelve commits are unpushed and three closeout carriers cannot close. Highest leverage in the goal, and it is the only slice whose absence blocks every other slice's delivery | The probe under budget with its coverage intact, or an operator-recorded decision to widen it deliberately; then the push, then remote CI read back through a different observer and channel than the push exit code | pending |
+| 3 | **`setup` wiring for the stance.** A new consumer repo gets `regenerable_facts` seeded with sensible surfaces, and `setup` states the stance where a human choosing skills will read it | Without it the stance reaches only repos that hand-edit their quality adapter. `skills/public/setup/` has ZERO references today, so the portable half is unbuilt and the gate's `NOT CONFIGURED` path is the only thing a consumer would ever see | `setup` seeds the key; a fresh-repo run ends with the gate ARMED rather than `NOT CONFIGURED`; the stance readable from a consumer-facing surface | pending |
+| 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | pending |
+| 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
+| 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
+| 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
 
-Slices 1-2 close the false-baseline half of the class; slice 3 removes a surface
-rather than repairing it; slice 4 asks whether slice 3 was one instance or a
-population; slice 5 pays the consumer-facing debt. Slice 5 is last because it is
-the only one whose blast radius is every future session, and it should land on a
-tree the rest has already proven.
+**Re-shaped 2026-08-09, after slice 1 and an unplanned stance slice landed.** The
+original plan was written before the regenerable-fact stance existed and did not
+survive contact: two slices are done, and the two most valuable remaining units
+were not in it at all. Slice 2 is first because it is the only one that blocks
+delivery of every other slice — a goal that keeps building while twelve commits
+cannot leave the machine is optimising the wrong end. Slice 3 is second because
+the stance's whole purpose was to reach consuming repos and that half is unbuilt.
+
+Slices 1/1b are done. Slice 2 unblocks delivery; slice 3 makes the stance
+portable; slices 4-5 close the false-baseline half of the class; slice 6 asks
+whether slice 5 was one instance or a population; slice 7 pays the
+consumer-facing debt last, because its blast radius is every future session and
+it should land on a tree the rest has already proven.
 
 **Slice 4 measures and ranks; it does not delete.** One granted deletion is not a
 deletion mandate. The census output is a table plus a recommendation the operator
@@ -290,13 +325,25 @@ skill prose that ships to consumers telling an agent to run it.
     deletion is an irreversible-boundary act under the north star.
   - Unblock action: read slice 4's ranked table and name which tier ships.
   - Revisit trigger: slice 4 closeout.
-- Decision: `#561`'s equality-versus-invariant probe pin, and `#547`'s re-scope.
-  - Owner: D47's owner / operator
-  - Why deferred: inherited unresolved from two predecessor goals; both costs
-    are already measured and recorded there. This goal carries them forward
-    rather than adopting them.
-  - Unblock action: answer on the respective issues.
-  - Revisit trigger: any goal that claims either issue.
+- Decision: six goal artifacts claim `Status: active`; which survive?
+  - Owner: operator
+  - Why deferred: three are from June and almost certainly stale, but "stale" is
+    a judgement about intent that the artifacts cannot settle. The two live ones
+    — this goal and
+    [repair-declaration-to-verdict-at-root](./2026-08-07-repair-declaration-to-verdict-at-root.md)
+    — are the same family, and folding them is a scope decision, not bookkeeping.
+  - Unblock action: name which stay active; the rest flip to `complete` or
+    `blocked` with a reason.
+  - Revisit trigger: before any further `/goal` activation.
+- Decision: `#561` is RESOLVED — retire the equality pin and convert D47's quoted
+  figures to the command that regenerates them. Recorded 2026-08-09 under the
+  regenerable-fact stance, which makes the pin scaffolding for a practice the
+  stance forbids. Execution is unscheduled; it is a natural companion to slice 3.
+- Decision: `#547` is RESOLVED — close as superseded. Its premise died with
+  `#562`: `stamp_inspection` no longer stamps a per-locator digest, and the live
+  inspection's locators carry no `sha256` at all, so there are no digests for a
+  re-stamp to launder. Execution (the close, through the floor) is unscheduled.
+
 
 - Decision: `#561`'s equality-versus-invariant probe pin, and `#547`'s re-scope.
   - Owner: D47's owner / operator

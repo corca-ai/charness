@@ -2,9 +2,10 @@
 
 ## Workflow Trigger
 
-- **Next pickup: slice 2 of the active goal.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `Status: active`; slice 1 is DONE and its `## Slice Log` carries what it measured.
+- **Next pickup: slice 2 — unblock the push.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `Status: active`; slice 1 is DONE and its `## Slice Log` carries what it measured.
 - **Push first if it is approved.** Four commits are unpushed and three of them are closeout carriers, so `#560`, `#565`, and `#567` all still read OPEN on GitHub. `issue_tool.py verify-closeout --expect-state CLOSED` confirms that today. One push converts all three; nothing else will.
-- **Slice 2 is `#564`, re-scoped.** Its filed remedy (a rule in the goal template) stays DECLINED. Slice 1's runner already killed a call-site mutant in its own dogfood, so the capability exists — slice 2 is about making the tool ASK for a call-site mutant rather than leaving it to the author's memory.
+- **The slice plan was RE-SHAPED on 2026-08-09** after slice 1 and an unplanned stance slice landed. Two units that were not in the original plan are now first: unblock the push, then wire the regenerable-fact stance into `setup` so it reaches consuming repos at all. `#564`, `#563`, `#521`/`#546`, and `#523` follow, in that order.
+- **`#561` and `#547` are DECIDED** and recorded in the goal's `## Operator Decision Queue`: retire the equality pin and convert D47 to a command; close `#547` as superseded by `#562`, whose retirement left no locator digests for a re-stamp to launder. Neither is scheduled yet.
 
 ## Continuation Capability
 
