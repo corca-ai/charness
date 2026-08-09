@@ -16,8 +16,11 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: slice 3 — seed `regenerable_facts` in `skills/public/setup/` so a
-  fresh consumer repo ends ARMED rather than `NOT CONFIGURED`.
+- Next action: slice 3b (`#530`, the shared adapter-contract check) or slice 4.
+- Two consecutive slices have now had their premise refuted by one measurement
+  each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
+  NOT CONFIGURED"). Both premises came from durable records this goal wrote.
+  Measure the premise before shaping the next slice; it has paid twice.
 - Delivery is no longer blocked: the pre-push gate runs green (exit 0). The push
   itself is NOT taken and is NOT standing-approved; ask per push.
 - Critique and broad proof do not re-fire within one unchanged intent — update
@@ -226,7 +229,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 1 | `#565` — repo-owned mutate-and-restore helper that refuses a kill without a passing baseline test count, and restores on raise | It is the TOOL every later slice's proof depends on | Helper + tests; a broken-baseline run that REFUSES; a real run naming its baseline count; a restore-on-raise test | **DONE** |
 | 1b | **Unplanned, operator-driven, DONE:** the regenerable-fact stance — forward-looking prose carries the COMMAND, not one run's output; expensive commands carry the command AND a linked artifact. Contract clause, a portable gate shipping through `quality`, adapter key, and consumer docs | It arrived mid-goal as a standing operator stance and was built rather than deferred. Recorded here because the plan below is meaningless if the artifact pretends it did not happen | Contract section; gate + tests, mutation-proven; adapter key registered (which exposed `#530` live); `adapter.example.yaml` and the adapter-contract reference | **DONE** |
 | 2 | **Premise REFUTED, and repaired as the class it exposed.** The probe never cost 21s (1.6s alone, 5.5–6.0s in-gate); the 21,650ms sample WAS the 20s deadline. `check-cli-skill-surface` reported a starved probe as `probe failed ... exited 124` — a verdict over a CLI it never observed. Repaired: retry once, report a timeout as `unobserved` (never a `blocker`), preserve partial output, bound the drain, kill the probe's own group only | Delivery looked blocked and was not. The measurement cost one command; believing the recorded number cost a prior session a push cycle | Gate green, exit 0, `check-cli-skill-surface` PASS at 6.0s; 16 tests; two bounded rounds, both DEFECTIVE; every safety property mutation-killed; budget NOT widened | **DONE** |
-| 3 | **`setup` wiring for the stance.** A new consumer repo gets `regenerable_facts` seeded with sensible surfaces, and `setup` states the stance where a human choosing skills will read it | Without it the stance reaches only repos that hand-edit their quality adapter. `skills/public/setup/` has ZERO references today, so the portable half is unbuilt and the gate's `NOT CONFIGURED` path is the only thing a consumer would ever see | `setup` seeds the key; a fresh-repo run ends with the gate ARMED rather than `NOT CONFIGURED`; the stance readable from a consumer-facing surface | pending |
+| 3 | **RE-SCOPED — half its premise is refuted.** Measured on a fresh `git init` repo with README/AGENTS/docs and NO adapter: the gate is already ARMED on defaults and exits 1 on a real finding. `NOT CONFIGURED` fires ONLY when nothing matches the defaults at all (no README, no `docs/`, no `AGENTS.md`), which is not the consumer default. So SEEDING the key is not the unit — defaults already arm, and seeding would duplicate them as config that can drift. What survives: `skills/public/setup/` still has ZERO references, so the stance is not stated where a human choosing skills reads it | The discoverability half is real; the seeding half would have been unproven work, and building it would have made a fresh repo's config worse | The stance readable from a consumer-facing `setup` surface; NO redundant key seeded; the refutation recorded so the next session does not re-shape the seeding slice | pending (re-scoped) |
 | 3b | **Folded in from the retired declaration-to-verdict goal: `#530`.** Sixteen of seventeen adapter resolvers accept ANY `version` and write it back as authoritative; exactly one compares against a supported value. Replace the hand-copied blocks with one shared contract check, and refuse an unknown key instead of dropping it | Measured LIVE on 2026-08-09 on a resolver that goal had not reached: a new `regenerable_facts` key was dropped with `valid: true`, `errors: []`, no warning, and the gate silently ran on defaults. Found by a consumer of the contract, never by a gate. Slice 1b had to hand-write the seventeenth block, so the goal is now paying the tax it exists to remove | One shared check in `scripts/adapter_lib.py`; an unsupported `version` refused at every site; an unknown key refused rather than dropped; the `regenerable_facts` validator folded into the shared seam | pending |
 | 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | pending |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
@@ -512,6 +515,56 @@ applies.
   And `os.killpg(os.getpgid(child), SIGKILL)` is a loaded gun in any gate: when
   `start_new_session` does not apply it names the SHARED group, and it SIGKILLed
   the sweep, pytest, and the parent shell three times here.
+
+
+### Slice 3: the stance had no consumer surface, and the doc that described it was wrong
+
+- Re-scoped after measurement. The plan said `setup` must SEED `regenerable_facts`
+  because a consumer "would only ever see `NOT CONFIGURED`". Measured on a fresh
+  `git init` repo with README/AGENTS/docs and no adapter: the gate is already
+  ARMED on defaults and exits 1 on a real finding. `NOT CONFIGURED` needs a repo
+  with nothing at the defaults at all. Seeding was dropped as unproven work that
+  would duplicate the defaults as drift-prone config.
+- What the reviewer found instead, and it was the real gap: the gate was ABSENT
+  from `skills/public/quality/references/catalog.yaml`, whose shipped `gates:`
+  list held only three entries. No consumer surface named it, and the only
+  invocation in the repo was charness's own `run-quality.sh` using a
+  charness-local path. The prose written first claimed a consumer was "covered
+  from its first run" -- false, and this goal's own class shipped to consumers.
+- What changed: the gate is now a catalog entry with the portable
+  `$SKILL_DIR` command form, VERIFIED by running it from the plugin path against
+  a foreign repo with no adapter (armed on defaults, exit 1 on a real finding);
+  the stance is stated in `setup/references/default-surfaces.md`; and one
+  ownership-allowlist entry records why `setup` names a `quality`-owned adapter.
+- Three FALSE claims repaired in surfaces the new prose points at:
+  `adapter-contract.md` and `adapter.example.yaml` both said the gate exits 1
+  when it scanned zero files -- true only for a DECLARED scope; an unconfigured
+  repo reports and exits 0. And neither document said that declaring `surfaces`
+  REPLACES the defaults rather than adding to them, which silently drops README,
+  the agent prompt files, the docs tree, and skill prose out of scope and then
+  goes green over the remainder.
+- A live false-message bug in the gate itself: with one README at the defaults,
+  exempted with a reason and no `surfaces` declared, it reported "no file matched
+  the default surfaces" about a file it had matched and read. The undeclared
+  branch was tested before the all-exempted branch. Reproduced, reordered, and
+  covered by a regression test; both the reorder and the message's COUNT are
+  mutation-killed over a stated baseline of 26.
+- Critique: TWO delegated bounded rounds, both DEFECTIVE. Round 1 caught the
+  missing catalog entry, the unnamed adapter (a consumer would have written the
+  key into `setup-adapter.yaml` where it is inert), and that the dated-records
+  exception works by LOCATION not by nature -- a consumer keeping retros under
+  `docs/` gets failed for writing the numbers the prose says they should. Round 2,
+  reading the repairs, found the repair's own outbound pointer landed on the false
+  exit-1 claim. Both fingerprint windows verified clean.
+- Non-claims: the gate is in the catalog but is NOT wired into any consumer's
+  standing quality command by this change -- a consumer still has to run it,
+  which is what the prose now says. `run_when`, `cost_tier`, and `parallel_group`
+  were authored by analogy to neighbouring entries, not measured; a reviewer
+  confirmed no consumer currently parses `run_when` or `parallel_group` at all.
+  The all-exempted case still exits 0; only its MESSAGE was repaired, because
+  every exemption already carries a required reason. The default-glob shape
+  (`skills/*/*/SKILL.md`, exactly two levels) does not match a single-level
+  consumer skill layout -- known, pre-existing, not repaired here.
 
 ## Context Sources
 

@@ -316,3 +316,34 @@ def test_an_absent_block_leaves_the_key_unset() -> None:
 
     assert errors == []
     assert "regenerable_facts" not in validated
+
+
+def test_an_all_exempted_repo_is_not_reported_as_matching_nothing(tmp_path: Path) -> None:
+    """Exempted is not unmatched, and the gate must not confuse the two.
+
+    Found by a bounded reviewer and reproduced live: one README at the DEFAULT
+    surfaces, exempted with a reason, no `surfaces` declared. The undeclared
+    branch was tested first, so the gate reported "no file matched the default
+    surfaces" about a file it had matched and read. That is a statement about a
+    scope it did look at -- the class this gate exists to refuse, inside the
+    gate itself.
+    """
+    repo = tmp_path / "all-exempted"
+    repo.mkdir()
+    (repo / "README.md").write_text("# Demo\n\nThe suite has 42 tests.\n", encoding="utf-8")
+    (repo / ".agents").mkdir()
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nregenerable_facts:\n  exemptions:\n"
+        '    README.md: "anti-example prose, deliberately shows the banned shape"\n',
+        encoding="utf-8",
+    )
+
+    code, out = _run(repo)
+
+    assert "every matched file is exempted" in out
+    assert "1 of them" in out
+    assert "no file matched the default surfaces" not in out, "matched-then-exempted is not unmatched"
+    assert "NOT CONFIGURED" not in out
+    # Exit code deliberately unchanged: every exemption already carries a
+    # required reason, so this is a documented opt-out, not a silent green.
+    assert code == 0, out

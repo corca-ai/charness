@@ -556,14 +556,23 @@ produces it, not the output of one run.
   refused with an error. An unexplained exemption is exactly the unfalsifiable
   claim the rule removes, one level up.
 
+**Declaring `surfaces` REPLACES the defaults; it does not add to them.** One
+extra glob for a prose directory silently drops `AGENTS.md`, `CLAUDE.md`,
+`README.md`, the docs tree, and skill prose from scope, and the gate goes green
+over the smaller scope. Re-list the defaults you still want. Declaring
+`surfaces` also flips the zero-match case from a benign report into a hard
+refusal, per (1) below.
+
 **The gate REFUSES rather than passing in three cases, so a silent green is not
-reachable.** (1) It scanned zero files — an unconfigured repo whose prose is not
-at the defaults gets exit 1 telling it to name its surfaces, because a gate that
-matched nothing has verified nothing. (2) The quality adapter is present but
-INVALID — falling back to defaults would discard the surfaces and exemptions you
-declared and report clean over a scope you did not choose, so it refuses instead.
-(3) An exemption carries no reason. An absent adapter is different and is fine:
-the defaults apply.
+reachable.** (1) A DECLARED scope matched zero files — the repo chose those
+globs and they match nothing, so it exits 1. An UNCONFIGURED repo whose prose is
+not at the defaults is different: it reports `NOT CONFIGURED` and exits 0,
+because failing there would redden every consumer's first quality run before
+they configured anything. (2) The quality adapter is present but INVALID —
+falling back to defaults would discard the surfaces and exemptions you declared
+and report clean over a scope you did not choose, so it refuses instead. (3) An
+exemption carries no reason. An absent adapter is different and is fine: the
+defaults apply.
 
 The remedy the gate names depends on what the command COSTS. A cheap command
 (`git describe`, a grep, an issue list) goes in the prose by itself. An expensive

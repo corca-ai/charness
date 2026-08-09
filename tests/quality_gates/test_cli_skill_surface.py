@@ -558,3 +558,27 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
     assert "partial verdict that must survive the drain" in payload["probe_results"][0]["stdout_preview"]
+
+
+def test_cli_skill_surface_names_the_unobserved_probe_in_plain_output(tmp_path: Path) -> None:
+    """The human-visible line must say UNOBSERVED, not look like a failure.
+
+    `run-quality.sh` invokes this check WITHOUT `--json`, so the plain path is
+    the only thing an operator ever reads -- and it was the one path no test
+    covered. That is how the original defect did its damage: the message, not
+    the payload, is what a session acts on.
+    """
+    repo = _probe_repo(tmp_path, "python3 scripts/hang.py doctor --json")
+    write_executable(repo / "scripts" / "hang.py", "#!/usr/bin/env python3\nimport time\ntime.sleep(30)\n")
+    env = os.environ.copy()
+    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.2"
+
+    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", env=env)
+
+    assert result.returncode == 1
+    assert "CLI plus bundled-skill surface check: unobserved" in result.stdout
+    assert "UNOBSERVED:" in result.stderr
+    assert "verdict NOT OBSERVED" in result.stderr
+    # The word that misled a whole session must not appear for a probe that
+    # merely never answered.
+    assert "probe failed" not in result.stderr

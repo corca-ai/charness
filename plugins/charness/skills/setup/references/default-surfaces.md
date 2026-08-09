@@ -224,3 +224,48 @@ When the repo scaffolds GitHub-hosted workflows, pin maintained GitHub Actions
 to current Node 24-ready majors by default. Keep the maintained baseline in
 [`github-actions-defaults.md`](./github-actions-defaults.md) and prefer direct
 major upgrades over compatibility env vars.
+
+## Regenerable Facts In Forward-Looking Prose
+
+The surfaces above (README, AGENTS, roadmap, operator-acceptance) are read as
+CURRENT. So a number written into them is read as today's answer, and it starts
+going stale the moment it is written.
+
+Write the COMMAND that regenerates the fact, not one run's output:
+
+- instead of `the suite has 42 tests`, write the command that counts them
+- instead of `12 open issues`, write the issue-list command
+- instead of a pinned version, write what reports it
+
+When the command is EXPENSIVE — a multi-minute suite, a fan-out census, a
+full-corpus sweep — carry the command AND a link to the checked-in artifact
+holding its output. Telling every future reader to re-run a long gate moves the
+cost onto all of them forever.
+
+Dated, append-only records are the deliberate exception: retros, critiques,
+audits, and slice logs SHOULD carry the number, because each describes one
+moment and that is the whole reason it exists.
+
+`quality` ships a gate for this (`regenerable-facts` in its catalog) that needs
+no adapter configuration to start — it arms on default surfaces. Like every
+other gate, your repo still has to RUN it: `setup` names the stance, `quality`
+owns wiring it into your standing quality command.
+
+Two things to check when you wire it:
+
+- It reads the **quality** adapter (`<repo-root>/.agents/quality-adapter.yaml`),
+  not the setup adapter. Declare `regenerable_facts.surfaces` there when your
+  forward-looking prose lives outside the defaults, and
+  `regenerable_facts.exemptions` (`path -> reason`, and the reason is required)
+  when a specific file must opt out.
+- `surfaces` REPLACES the defaults rather than adding to them. Declaring one
+  glob for an extra prose directory drops README, the agent prompt files, the
+  docs tree, and skill prose out of scope, and the gate then goes green over
+  what is left. Re-list what you still want covered.
+- The dated-records exception above is by LOCATION, not by nature: those records
+  are exempt because they sit outside the default surfaces. If you keep retros or
+  audits under `docs/`, the defaults will match them and fail you for writing the
+  very numbers they should carry — narrow `surfaces` or exempt them with a reason.
+
+`quality` owns the field contract and the current default globs; read it there
+rather than trusting a list copied into this file.

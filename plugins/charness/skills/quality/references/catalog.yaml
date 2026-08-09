@@ -141,6 +141,13 @@ gates:
     cost_tier: cheap
     parallel_group: inventories
     run_when: runtime, slow gate, budget, or cost is in scope
+  - id: regenerable-facts
+    command: python3 "$SKILL_DIR/scripts/check_regenerable_facts.py" --repo-root .
+    purpose: refuse a transcribed number in forward-looking prose; carry the command that regenerates it
+    trust_model: hard gate; refuses rather than passing when it scanned zero files or the adapter is invalid
+    cost_tier: cheap
+    parallel_group: serial-critical
+    run_when: the repo carries forward-looking prose a reader treats as current
   - id: skill-ergonomics
     command: python3 "$SKILL_DIR/scripts/inventory_skill_ergonomics.py" --repo-root . --summary
     purpose: advisory skill-surface pressure packet when skills are in scope

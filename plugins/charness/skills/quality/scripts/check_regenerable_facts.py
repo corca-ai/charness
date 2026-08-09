@@ -30,6 +30,19 @@ lib = SKILL_RUNTIME.load_local_skill_module(__file__, "regenerable_facts_lib")
 def render(report: dict) -> list[str]:
     if report.get("adapter_refusal"):
         return [f"regenerable-facts: {report['adapter_refusal']}"]
+    if report["checked"] == 0 and report["exempted"]:
+        # Checked FIRST, ahead of the undeclared branch. Files that matched and
+        # were then exempted are not files that failed to match, and saying "no
+        # file matched" over them is a statement about a scope this gate did
+        # look at -- the exact class of claim this gate exists to refuse. It
+        # reached a real repo: one README at the defaults, exempted with a
+        # reason, no `surfaces` declared, and the gate reported that nothing
+        # matched.
+        return [
+            f"regenerable-facts: every matched file is exempted ({len(report['exempted'])} of them), "
+            "so nothing was verified. Narrow the exemptions or widen "
+            "`regenerable_facts.surfaces`."
+        ]
     if report["checked"] == 0 and not report.get("declared"):
         # No adapter config and nothing at the defaults: this repo has no
         # forward-looking prose where the gate looks. Report "no gate", do not
@@ -41,15 +54,6 @@ def render(report: dict) -> list[str]:
             "in `regenerable_facts.surfaces` to arm it."
         ]
     if report["checked"] == 0:
-        # Distinguish the two causes: a declared scope that matches nothing and a
-        # scope whose every file is exempted need different remedies, and one
-        # message for both points half the readers at the wrong knob.
-        if report["exempted"]:
-            return [
-                f"regenerable-facts: every matched file is exempted ({len(report['exempted'])} of them), "
-                "so nothing was verified. Narrow the exemptions or widen "
-                "`regenerable_facts.surfaces`."
-            ]
         return [
             "regenerable-facts: the declared `regenerable_facts.surfaces` matched 0 files, "
             "so nothing was verified. Fix the globs — a declared scope that matches "
