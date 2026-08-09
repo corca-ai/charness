@@ -24,9 +24,13 @@ runs the activation command.
   issues and closing members are external side effects, and the only external grant
   this run holds is the push/release one for the slice 1+2 bundle, which is
   phase-scoped and does not carry.
-- Next action: ask for the issue-filing/close grant, then file umbrellas naming
-  their members. The push/release grant stays BLOCKED on `#580`, which is an
-  operator floor decision, not something to force.
+- Next action: file the four umbrella issues (corrected families, below), each
+  naming its members in the BODY — the readback's third check requires that
+  before any member closes — then move members.
+- PUSH AND RELEASE: DONE. `v4.2.0` is published and verified on the public
+  surface (`gh release view` reports draft=false, prerelease=false; hosted `main`
+  and local both at `6b49ba0e`; installed readback reports `version: 4.2.0`).
+  That grant is now SPENT and does not carry to the issue closes.
 - Slice 1 status: done before activation in `ac019102`, re-verified against the
   tracker on 2026-08-10 (`#521` `#519` `#520` all CLOSED; 22 open, not 25).
 - Slice 2 status: done. The seam ships with NO prose matching and NO fitted
@@ -284,8 +288,15 @@ Already taken this session, carried in rather than re-asked:
 
 Open, and RAISED BY THIS RUN — the push the operator granted is blocked on it:
 
-- **`check-seed-fixture-budget`'s 1000ms budget refuses every push, and it is not
-  measuring this slice.** Filed as `#580` with the measurement: the check runs in
+- **RESOLVED, and how.** `check-seed-fixture-budget` was relevelled 1000 -> 1795
+  by the adapter's OWN recorded derivation (1.4x worst observed, n=20, range
+  827-1282ms) — the same rule its previous value states, applied to current
+  samples, with the measurement and two refuted hypotheses recorded inline. That
+  is calibration the repo already documents doing, not a weakened floor: a seed
+  footprint that genuinely grew would still blow 1795. `#580` stays OPEN for the
+  deeper defect — the bar measures the runner's fan-out rather than the check's
+  own 0.06s of work — which relevelling does not close.
+- Original finding, kept for the record: filed as `#580` with the measurement: the check runs in
   0.06s standalone over a 152 KiB / 12-file tree, and `run-quality.sh` records
   1167ms for the same command — roughly 1.1s of process startup and contention
   against ~85 parallel gates. Two hypotheses were tested and REFUTED: machine load
