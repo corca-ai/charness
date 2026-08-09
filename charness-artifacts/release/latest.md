@@ -16,12 +16,15 @@ claim a pushed branch, tag, GitHub release, or public installation.
 
 ## Verification
 
-- Packaging validation and the focused release-boundary regressions passed on
-  the version-synchronized worktree.
+- The final verification lock completed on code/test candidate `dfdcbf74`,
+  including standing pytest, mutation-coverage production, and its changed-line
+  consumer.
+- All five declared fresh-checkout probes passed on that candidate.
 - Source, checked-in plugin, Claude marketplace, and Codex plugin surfaces all
   report `4.1.0` with no version drift.
-- The final verification lock, exact-candidate real-host trigger evaluation,
-  hosted Quality Core, and public readbacks are still pending.
+- Configured real-host triggers evaluated the exact
+  `v4.0.0..dfdcbf74` 240-path population and returned `required: false`.
+- Hosted Quality Core and public readbacks are still pending.
 
 ## Release State
 

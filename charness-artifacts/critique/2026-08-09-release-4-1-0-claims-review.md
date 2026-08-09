@@ -56,6 +56,8 @@ and rollback guidance.
 - Packaging and source/plugin mirror checks passed in the reviewer context.
 - Focused title/declaration tests: 22 passed.
 
-Fresh-Eye Satisfaction: parent-delegated. Round-one repairs are accepted; the
-candidate-bound proof paragraph must still be updated from final RC evidence
-before publication.
+Fresh-Eye Satisfaction: parent-delegated. Round-one repairs are accepted. The
+candidate-bound proof paragraph was updated before publication from the final
+lock, five fresh-checkout probes, and exact 240-path real-host trigger receipt
+bound to code/test candidate `dfdcbf74`; hosted and public facts remain
+non-claims.
