@@ -602,3 +602,12 @@ def test_a_failure_inside_apply_restores_and_re_raises(tmp_path: Path, monkeypat
         )
 
     assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
+
+
+def test_a_nonzero_run_with_a_clean_summary_is_refused() -> None:
+    # A runner that exits non-zero (usage error, plugin abort) while its summary
+    # reports no failure and no error. The exit byte alone would call it a kill.
+    verdict, detail = _classify(4, "5 passed in 0.10s", baseline_passed=1)
+
+    assert verdict == mar.REFUSED
+    assert "without reporting any test failure" in detail

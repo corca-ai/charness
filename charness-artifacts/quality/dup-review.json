@@ -632,6 +632,13 @@
     },
     {
       "class": "intentional",
+      "id": "3df442f7d57a1a6e",
+      "reviewed_at": "2026-08-09",
+      "surface": "code",
+      "note": "The sibling-import idiom `sys.path.insert(0, str(Path(__file__).resolve().parent))` followed by a bare `from <sibling> import ...`, shared by eleven scripts across setup, quality, and scripts/. It is the repo's portable way for a shipped skill script to import a package-local module without assuming an installed layout; factoring it into a helper is impossible for the same reason as the bootstrap shim -- the helper would itself need importing first."
+    },
+    {
+      "class": "intentional",
       "id": "3e53f4696faac404",
       "note": "top-level runtime_bootstrap import/alias preamble shared by independent repo commands: build_retro_lesson_selection_index and validate_adapters bind different helpers for different owner contracts, and each must remain directly executable from both source and exported layouts. The bootstrap is the mechanism that makes shared-module imports possible, so extracting it would add indirection without removing the portability requirement. Surfaced as new because validate_adapters gained the source/flattened resolver loader; the matching prologue in build_retro_lesson_selection_index was untouched.",
       "reviewed_at": "2026-08-04",
