@@ -190,7 +190,9 @@ def _parse_step(section_body: str | None, ref_re: "re.Pattern[str]") -> tuple[st
     return first
 
 
-def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
+def apply_coordination_floors(
+    report: dict[str, Any], text: str, repo_root: Path | None = None
+) -> None:
     """Attach the gather/release/issue floor verdicts to ``report``.
 
     For an in-scope goal (grandfather-by-``Created``): if a floor is *triggered*
@@ -233,7 +235,14 @@ def apply_coordination_floors(report: dict[str, Any], text: str) -> None:
         report["gather_floor"]["reason"] = reason
         missing.append({"floor": "gather", "reason": reason})
 
-    r_trig = release_triggered(text)
+    # `repo_root` reaches `release_triggered` so the adapter's declared
+    # `release_surface_tokens` are actually consulted. Without it the knob was
+    # ADVERTISED AND DEAD: the module comment told consumers to declare bespoke
+    # release surfaces there, the resolver read them, the tests exercised the
+    # library function directly -- and the wired path called `release_triggered`
+    # with no root, so nothing a consumer declared was ever consulted. That is the
+    # same silent inertness this floor's own token list was just repaired for.
+    r_trig = release_triggered(text, repo_root)
     r_kind, _ = _parse_step(section, _RELEASE_REF)
     r_ok = (not r_trig) or r_kind in _SATISFYING
     report["release_floor"] = {"triggered": r_trig, "satisfied": r_ok, "evidence": r_kind}

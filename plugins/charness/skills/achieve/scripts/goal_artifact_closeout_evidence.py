@@ -353,7 +353,7 @@ def check_complete_evidence(repo_root: Path, text: str) -> dict[str, Any]:
     # the disposition floor — grandfathered by Created, block-the-blank at the
     # flip, explicit opt-out valve. Independent of the disposition scope (its own
     # rule date), so it runs unconditionally; the module no-ops when inert.
-    apply_coordination_floors(report, text)
+    apply_coordination_floors(report, text, repo_root)
     apply_phase_routing_floor(report, text)
     # Cross-floor opt-out census. Runs AFTER both floors because it reads the
     # verdicts they write. Non-blocking: every counted opt-out already satisfied

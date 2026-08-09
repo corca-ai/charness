@@ -129,3 +129,30 @@ def test_an_unimportable_adapter_module_leaves_the_floor_ARMED(monkeypatch, tmp_
 
     assert cf.release_triggered("## Slice Log\n\n- edited pyproject.toml\n", tmp_path) is True
     assert cf.release_triggered("## Slice Log\n\n- edited a docstring\n", tmp_path) is False
+
+
+def test_the_adapter_knob_reaches_the_WIRED_floor_not_just_the_library(tmp_path) -> None:
+    """It was ADVERTISED AND DEAD: the module comment told consumers to declare
+    bespoke release surfaces in the adapter, the resolver read them, and the tests
+    exercised `release_triggered` directly — while `apply_coordination_floors`, the
+    only production caller, passed no repo root. So nothing a consumer declared was
+    ever consulted. Same silent inertness the token list itself was repaired for.
+    """
+    (tmp_path / ".agents").mkdir(parents=True, exist_ok=True)
+    (tmp_path / ".agents" / "achieve-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nrelease_surface_tokens:\n  - ./ops/ship-it.sh\n",
+        encoding="utf-8",
+    )
+    text = (
+        "Created: 2026-08-10\n\n## Slice Log\n\n- ran ./ops/ship-it.sh against staging\n\n"
+        "## Coordination Cues\n\n- Routing: impl — x\n"
+    )
+
+    without: dict = {}
+    cf.apply_coordination_floors(without, text, None)
+    assert without["release_floor"]["triggered"] is False
+
+    with_root: dict = {}
+    cf.apply_coordination_floors(with_root, text, tmp_path)
+    assert with_root["release_floor"]["triggered"] is True
+    assert with_root["release_floor"]["satisfied"] is False

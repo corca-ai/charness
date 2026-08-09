@@ -666,3 +666,32 @@ def test_a_paragraph_break_is_a_clause_boundary() -> None:
     assert observer.observer_disposition(text, strip_code_fences=_strip_code_fences)[
         "disposition"
     ] == "delegated"
+
+
+def test_a_negation_governing_an_OBJECT_is_not_a_denial() -> None:
+    """`found no blockers` is how a reviewer writes a CLEAN result.
+
+    Clause-scoping alone demoted it to `undelegated` and refused the close with a
+    message quoting a value that contains `parent-delegated` — an arbitrary refusal
+    at an irreversible boundary, which is how a gate earns a route-around. `no` and
+    `none` therefore deny only when they sit BEFORE the token, where they negate the
+    review rather than its findings.
+    """
+    observer = _load_observer()
+
+    for clean in (
+        "parent-delegated bounded review found no blockers",
+        "parent-delegated bounded review returned no findings",
+        "parent-delegated review surfaced no issues",
+    ):
+        assert observer.observer_disposition(
+            f"Fresh-eye satisfaction: {clean}\n", strip_code_fences=_strip_code_fences
+        )["disposition"] == "delegated", clean
+
+    for denial in (
+        "no parent-delegated review ran",
+        "none of the parent-delegated reviewers could be spawned",
+    ):
+        assert observer.observer_disposition(
+            f"Fresh-eye satisfaction: {denial}\n", strip_code_fences=_strip_code_fences
+        )["disposition"] == "undelegated", denial

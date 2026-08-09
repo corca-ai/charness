@@ -114,9 +114,16 @@ _CLAUSE_SPLIT_RE = re.compile(r"[.;:!?\n]|—|--|,\s")
 #: STILL ENGLISH-ONLY, and that is a known, unfixed limitation stated rather than
 #: hidden — a negation written in another language is not detected here, so this
 #: floor's refusal is a floor on English records only.
-_NEGATION_RE = re.compile(
-    r"(?:^|\W)(?:not|no|never|without|nothing|none|failed to|unable to)(?:\W|$)"
-)
+# DENIAL words, which negate the delegation itself wherever they sit in the clause.
+_DENIAL_RE = re.compile(r"(?:^|\W)(?:not|never|without|nothing|failed to|unable to)(?:\W|$)")
+# `no` / `none` are different: they usually govern an OBJECT, not the delegation.
+# `parent-delegated bounded review found no blockers` is the commonest way a reviewer
+# writes a clean result, and treating it as a denial refused an honest close with a
+# message quoting a value that contains `parent-delegated` — an arbitrary refusal at an
+# irreversible boundary, which is how a gate earns a route-around. So these count only
+# when they sit BEFORE the token, where they negate the review rather than its findings:
+# `no parent-delegated review ran` denies; `found no blockers` does not.
+_OBJECT_NEGATION_RE = re.compile(r"(?:^|\W)(?:no|none)(?:\W|$)")
 #: An unedited `todo` anywhere in the value is not a delegation, wherever it
 #: sits: a scaffold claiming delegation is the same-observer rubber stamp wearing
 #: a typed value, which the authoring-side floor also refuses.
@@ -163,10 +170,15 @@ def _denies_delegation(normalized: str) -> bool:
     if _TODO_MARKER in normalized:
         return True
     for clause in _CLAUSE_SPLIT_RE.split(normalized):
-        if not any(claim in clause for claim in DELEGATED_VALUES):
+        positions = [clause.find(claim) for claim in DELEGATED_VALUES if claim in clause]
+        if not positions:
             continue
-        if not _NEGATION_RE.search(clause):
-            return False
+        if _DENIAL_RE.search(clause):
+            continue
+        before = clause[: min(positions)]
+        if _OBJECT_NEGATION_RE.search(before):
+            continue
+        return False
     return True
 
 

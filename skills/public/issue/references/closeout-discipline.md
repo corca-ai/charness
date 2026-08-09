@@ -260,6 +260,50 @@ This release helper path is already its own verifier surface; ordinary
 `issue resolve` work uses `issue_tool.py verify-closeout` instead of reworking
 the release helper.
 
+## Consolidated Closes (a close that claims nothing about the defect)
+
+`consolidated` is the sixth classification. It says the issue MOVED to an
+umbrella; it says nothing about whether the defect was fixed. It is **not**
+floor-exempt — it swaps the resolution floor for its own, and every check is
+machine-verifiable rather than prose a reviewer grades.
+
+Why a sixth classification rather than reusing one. The resolution
+classifications demand `Implementation:` and `Prevention:`, so meeting that floor
+with a consolidation means writing sentences that are not true — and a floor met
+by writing false sentences is worse than no floor, because the false sentences
+become checked-in evidence. The exempt classifications (`question`,
+`decision-needed`) fit no better: they would misclassify the issue and open a
+path where any inconvenient bug reaches the light floor by relabelling.
+
+What a consolidated close owes:
+
+- `Consolidated into: #N` — present, naming exactly ONE destination, not a
+  self-reference, and not an issue the same carrier is closing.
+- **No repair claim.** `Implementation:`, `Prevention:`, `Resolution brief:`,
+  `Behavior #N:`, `HOTL #N:`, `Critique #N:`, or a `Fixes`/`Resolves` close
+  keyword is REFUSED. Diagnostic and scoping fields (`Root cause:`, `Siblings:`,
+  `Boundary:`) are fine — an unfixed issue can carry all three, and consolidating
+  a cluster IS a sibling search.
+- **A non-auto-closing carrier.** GitHub renders a keyword close as `completed`
+  with no reason argv to intercept, which asserts the repair this disposition
+  refuses. So it must close via
+  `issue_tool.py close-with-comment --reason "not planned"`, and `issue_close`
+  enforces that reason. `direct-commit` and `pr-body` are refused.
+
+Four facts are then read back from the TRACKER before the close lands: the
+destination exists, is OPEN at close time, its body names the issue moving into
+it, and it is not itself a consolidation. The third is load-bearing — only an
+edit to the DESTINATION can satisfy it, so the umbrella must name its members
+BEFORE its members close.
+
+An umbrella's OWN close carries the normal resolution floor and must state an
+outcome for every member it absorbed. Without that rule, consolidation is a
+laundering path: fifteen issues close quietly when one umbrella closes.
+
+NOT YET EXERCISED END TO END. As shipped, no umbrella has been filed and no
+member closed through this path against a live tracker. The refusals are tested;
+the happy path against real GitHub is not.
+
 ## External-Source Identity And Preservation
 
 `axis: external-source-provider`. Slack is one adapter instance, **not** the

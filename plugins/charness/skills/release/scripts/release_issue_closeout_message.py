@@ -8,7 +8,9 @@ from typing import Any
 
 _CLASSIFICATION_LINE_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?classification\s*:\s*"
-    r"(?P<classification>bug|feature|deferred-work|question|decision-needed)\s*$"
+    # Kept in step with the verifier's vocabulary; a classification missing here
+    # does not fail loudly, it simply does not match and the reader falls through.
+    r"(?P<classification>bug|feature|deferred-work|question|decision-needed|consolidated)\s*$"
 )
 
 

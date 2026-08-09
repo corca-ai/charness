@@ -33,6 +33,8 @@ artifact_dir: charness-artifacts/goals
 discussion_deploy_vocab:
   - rollout
   - hotfix
+release_surface_tokens:
+  - ./ops/ship-it.sh
 closeout_publication:
   default_mode: handoff-only
   issue_closeout_carrier: direct-commit
@@ -108,6 +110,21 @@ behavior. The charness-neutral concepts (`production`, `live proof`,
 `irreversible`, `external side effect`, ...) always apply regardless. This keeps
 charness from hardcoding one consumer's boundary vocabulary while never silently
 dropping the guard for an unconfigured consumer.
+
+`release_surface_tokens` optionally ADDS release surfaces the built-in list does
+not name. The release coordination floor already recognises ecosystem-standard
+version manifests and publish commands (`pyproject.toml`, `package.json`,
+`Cargo.toml`, `npm publish`, `git tag`, ...), and a repo whose release runs
+through something bespoke — an internal deploy script, a house manifest —
+declares it here so the floor is armed for that repo too. Unlike
+`discussion_deploy_vocab` this field EXTENDS rather than replaces, so declaring it
+can only make the floor fire more often, never less. Omitting it keeps the
+built-in list alone.
+
+Why it exists at all: a floor that recognises only its authoring repo's surface
+names is silently inert everywhere else, which is worse than no floor because it
+reads as coverage. This field is the seam that lets a consumer re-arm it without
+waiting for charness to learn their layout.
 
 ## Closeout Report
 

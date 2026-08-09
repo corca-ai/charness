@@ -146,7 +146,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--close-issue-repo", help="Repository (owner/repo) hosting --close-issue numbers; defaults to current repo")
     parser.add_argument(
         "--close-issue-classification",
-        choices=("bug", "feature", "deferred-work", "question", "decision-needed"),
+        # Keep in step with `issue_verify_closeout.CLASSIFICATIONS`: a value missing
+        # here is refused by argparse before any code runs, i.e. unreachable.
+        choices=("bug", "feature", "deferred-work", "question", "decision-needed", "consolidated"),
         help="Classification applied to every --close-issue number for the issue-owned draft validator",
     )
     parser.add_argument(
