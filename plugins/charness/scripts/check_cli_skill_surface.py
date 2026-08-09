@@ -37,6 +37,7 @@ PROBE_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"
 DRAIN_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
+validate_adapter_version = _adapter_lib.validate_adapter_version
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
 unsafe_agent_browser_probe_reason = _agent_browser_probe_policy.unsafe_agent_browser_probe_reason
 
@@ -46,10 +47,22 @@ def _string_list(data: dict[str, Any], field: str) -> list[str]:
     return list(value) if isinstance(value, list) and all(isinstance(item, str) for item in value) else []
 
 
-def _load_adapter(repo_root: Path, adapter_path: Path) -> dict[str, Any]:
+def _load_adapter(repo_root: Path, adapter_path: Path) -> tuple[dict[str, Any], list[str]]:
+    """Return adapter data and any version errors, refusing the data on a version this
+    reader does not speak.
+
+    This gate SELECTS SUBPROCESSES to run (`cli_skill_surface_probe_commands`) and can be
+    switched off entirely by `product_surfaces`, so honoring an unreconciled schema version
+    here is a strictly harder trust boundary than a resolver that only echoes fields. An
+    unspeakable version yields no data at all, not partially honored data.
+    """
     path = adapter_path if adapter_path.is_absolute() else repo_root / adapter_path
     raw = load_yaml_file(path) if path.is_file() else {}
-    return raw if isinstance(raw, dict) else {}
+    if not isinstance(raw, dict):
+        return {}, []
+    errors: list[str] = []
+    validate_adapter_version(raw, {}, errors)
+    return ({}, errors) if errors else (raw, [])
 
 
 def _required(data: dict[str, Any]) -> bool:
@@ -281,7 +294,22 @@ def build_payload(
     changed_paths: list[str],
     run_probes: bool,
 ) -> dict[str, object]:
-    data = _load_adapter(repo_root, adapter_path)
+    data, adapter_version_errors = _load_adapter(repo_root, adapter_path)
+    if adapter_version_errors:
+        # Not `not_applicable`: reporting "nothing to check" would let an adapter this
+        # reader cannot speak turn the gate off, which is the wrong failure direction.
+        return {
+            "status": "blocked",
+            "adapter_path": str(adapter_path),
+            "reason": "adapter declares a version this reader does not speak",
+            "adapter_weaknesses": [],
+            "blockers": [
+                f"CLI plus skill adapter {adapter_path} is unusable: "
+                + "; ".join(adapter_version_errors)
+                + ". Probe commands and product surfaces were not read from it."
+            ],
+            "unobserved": [],
+        }
     skills = [path for path in _skill_paths(repo_root, data) if path.is_file()]
     source = _product_surface_source(repo_root, data, skills)
     if source is None:

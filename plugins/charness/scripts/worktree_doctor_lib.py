@@ -10,6 +10,7 @@ from runtime_bootstrap import import_repo_module
 
 _adapter_lib_module = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib_module.load_yaml_file
+validate_adapter_version = _adapter_lib_module.validate_adapter_version
 
 _state = import_repo_module(__file__, "scripts.worktree_doctor_state")
 CANONICAL_CHECK_IDS = _state.CANONICAL_CHECK_IDS
@@ -59,8 +60,12 @@ def validate_manifest(data: Any) -> list[str]:
     errors: list[str] = []
     if not isinstance(data, dict):
         return ["manifest root must be a mapping"]
-    if data.get("version") != 1:
-        errors.append("manifest.version must be 1")
+    # Hand-rolled `!= 1` accepted `version: true`, because `True == 1` in Python -- and
+    # this manifest selects the argv this tool runs. The shared reconciler owns the
+    # boolean case; the prefix keeps the wording every fixture here already expects.
+    version_errors: list[str] = []
+    validate_adapter_version(data, {}, version_errors, required=True)
+    errors.extend(f"manifest.{error}" for error in version_errors)
     _validate_prepare_section(data.get("prepare"), errors)
     _validate_doctor_section(data.get("doctor"), errors)
     return errors

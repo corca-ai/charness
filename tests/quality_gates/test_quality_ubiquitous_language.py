@@ -40,6 +40,46 @@ def test_inventory_ubiquitous_language_is_unconfigured_without_contract(tmp_path
     assert payload["status"] == "unconfigured"
 
 
+def test_inventory_ubiquitous_language_refuses_an_adapter_version_it_does_not_speak(
+    tmp_path: Path,
+) -> None:
+    """The contract selects this inventory's scan scope AND its exemptions, so reading it
+    from an unreconciled schema version lets a declaration this reader never validated
+    decide what gets looked at. `unconfigured` would be the wrong refusal: it renders the
+    same as a repo that simply declared nothing.
+    """
+    repo = tmp_path / "repo"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "docs").mkdir()
+    (repo / "docs" / "tools.md").write_text("Use charness install <tool> for setup.\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "\n".join(
+            [
+                "version: 7",
+                "domain_language_contract:",
+                "  surface_globs:",
+                "    - attacker/**/*.md",
+                "  terms: []",
+                "",
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
+        "--repo-root",
+        str(repo),
+        "--json",
+    )
+
+    assert result.returncode != 0
+    combined = result.stdout + result.stderr
+    assert "version must be 1" in combined
+    assert "domain_language_contract was not read" in combined
+    assert "attacker" not in combined
+
+
 def test_inventory_ubiquitous_language_flags_deprecated_alias(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = tmp_path / "repo"
     (repo / ".agents").mkdir(parents=True)

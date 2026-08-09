@@ -146,6 +146,51 @@ def test_manifest_invalid_version_returns_fail(tmp_path: Path) -> None:
     assert any("version" in err for err in payload["manifest"]["errors"])
 
 
+@pytest.mark.parametrize(
+    ("scalar", "expected"),
+    [
+        ("true", "manifest.version must be an integer"),
+        ('"1"', "manifest.version must be an integer"),
+        ("2", "manifest.version must be 1"),
+    ],
+)
+def test_manifest_version_is_reconciled_by_the_shared_check(
+    tmp_path: Path, scalar: str, expected: str
+) -> None:
+    """`version: true` is the row a hand-rolled `!= 1` cannot refuse, because
+    `True == 1` in Python. This manifest selects the argv `worktree prepare` executes,
+    so accepting a schema version this reader never spoke is a subprocess trust boundary,
+    not a cosmetic one. The unsupported-integer row is the polarity control: it proves
+    the shared check did not simply start accepting everything.
+    """
+    repo = _make_git_worktree(tmp_path)
+    _write_manifest(
+        repo,
+        f"version: {scalar}\nprepare:\n  commands:\n    - id: hi\n      argv:\n        - echo\n        - hi\n",
+    )
+
+    payload = lib.run_doctor(repo)
+
+    assert payload["status"] == "fail"
+    assert payload["manifest"]["valid"] is False
+    assert expected in payload["manifest"]["errors"]
+    # A refused manifest must not hand its argv back out as authoritative. The public
+    # payload does not carry `data`, so read the manifest state that produced it.
+    assert lib.load_manifest(repo).data == {}
+
+
+def test_manifest_without_a_version_is_still_refused(tmp_path: Path) -> None:
+    """Absent is legal for a resolver and NOT legal here: this manifest has always
+    required a declared version, and the shared check keeps that by passing required."""
+    repo = _make_git_worktree(tmp_path)
+    _write_manifest(repo, "prepare:\n  commands:\n    - id: hi\n      argv:\n        - echo\n        - hi\n")
+
+    payload = lib.run_doctor(repo)
+
+    assert payload["manifest"]["valid"] is False
+    assert "manifest.version is required" in payload["manifest"]["errors"]
+
+
 def test_manifest_doctor_check_runs_extra_command(tmp_path: Path) -> None:
     repo = _make_git_worktree(tmp_path)
     _write_manifest(

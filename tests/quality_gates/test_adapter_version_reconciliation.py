@@ -30,7 +30,9 @@ from .support import ADAPTER_LIB, ROOT
 sys.path.insert(0, str(ROOT))
 
 # (label, module path, entrypoint name). The label is the resolver family; the number of
-# rows here is the "how many sites are covered" count. 18 sites, 0 exempt.
+# rows here is the "how many sites are covered" count. 19 sites driven here, 5 exempt --
+# 24 reconciling sites in total. The exemptions are listed in EXEMPT_SITES with the test
+# that drives each instead; none of them is absent.
 SITES: tuple[tuple[str, str, str], ...] = (
     ("announcement", "scripts/announcement_adapter_lib.py", "validate_announcement_adapter_data"),
     ("cautilus", "scripts/cautilus_adapter_lib.py", "validate_cautilus_adapter_data"),
@@ -46,16 +48,92 @@ SITES: tuple[tuple[str, str, str], ...] = (
     ("hotl", "skills/public/hotl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("impl", "skills/public/impl/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("issue", "skills/public/issue/scripts/resolve_adapter.py", "load_adapter"),
+    ("capability_catalog", "scripts/capability_catalog_sources.py", "load_adapter"),
     ("quality", "scripts/quality_adapter_lib.py", "validate_quality_adapter_data"),
     ("release", "skills/public/release/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("retro", "skills/public/retro/scripts/resolve_adapter.py", "validate_adapter_data"),
     ("validate_adapters_gate", "scripts/validate_adapters.py", "validate_adapter_yaml"),
 )
 
-# No site is exempt. If a future site legitimately cannot reconcile a version, it belongs
-# here with its reason rather than silently missing from SITES -- an absent row and an
-# exempt row are different facts and must not render the same.
-EXEMPT_SITES: tuple[tuple[str, str], ...] = ()
+# Sites that DO reconcile a version but cannot be driven by `_resolve`'s call shapes: each
+# either returns a non-canonical payload or raises instead of returning one. They belong
+# here with the test that drives them rather than silently missing from SITES -- an absent
+# row and an exempt row are different facts and must not render the same. #574 was filed
+# because these readers were absent from every census; being absent from this one too is
+# the same defect wearing the repair's clothes.
+EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
+    (
+        "setup_inspect",
+        ("skills/public/setup/scripts/setup_adapter.py",),
+        ("tests/quality_gates/test_setup_inspect_adapters.py::"
+         "test_setup_inspect_refuses_unsupported_adapter_before_surface_overrides",),
+        "returns (data, path, warnings) with dict-shaped warnings, not the canonical "
+        "(resolved, errors) pair; the driving test asserts the inspect surface and "
+        "resolve_adapter agree on one file.",
+    ),
+    (
+        "quality_bootstrap",
+        ("scripts/quality_bootstrap_lib.py",),
+        ("tests/quality_gates/test_quality_bootstrap.py::"
+         "test_quality_bootstrap_refuses_unsupported_adapter_without_rewriting_it",),
+        "raises BootstrapValidationError instead of returning a payload.",
+    ),
+    (
+        "cli_skill_surface_gate",
+        ("scripts/check_cli_skill_surface.py",),
+        ("tests/quality_gates/test_cli_skill_surface.py::"
+         "test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak",),
+        "is a gate, not a resolver: it returns a blocked verdict payload rather than "
+        "(resolved, errors). It reads the quality adapter raw because it needs "
+        "`cli_skill_surface_probe_commands` and `product_surfaces`, both trust-boundary "
+        "fields -- the first selects subprocesses, the second can switch the gate off.",
+    ),
+    (
+        "ubiquitous_language_inventory",
+        ("skills/public/quality/scripts/inventory_ubiquitous_language.py",),
+        ("tests/quality_gates/test_quality_ubiquitous_language.py::"
+         "test_inventory_ubiquitous_language_refuses_an_adapter_version_it_does_not_speak",),
+        "reads the quality adapter raw for `domain_language_contract`, which selects its "
+        "scan scope and exemptions, and raises InventoryError instead of returning a payload.",
+    ),
+    (
+        "worktree_doctor",
+        ("scripts/worktree_doctor_lib.py",),
+        ("tests/charness_cli/test_worktree_doctor.py::"
+         "test_manifest_version_is_reconciled_by_the_shared_check",),
+        "validates `.agents/worktree-adapter.yaml`, whose `prepare.commands[].argv` this "
+        "tool executes, and prefixes every error with `manifest.` so its own fixtures keep "
+        "their wording; the prefix is why `_version_errors` cannot match it.",
+    ),
+)
+
+# Readers that HONOR a version verdict someone else rendered rather than rendering one.
+# They are not reconciling sites and are deliberately not counted above -- but they are
+# the surface where a correct refusal gets thrown away, so they are named rather than
+# left invisible.
+VERDICT_CONSUMERS: tuple[tuple[str, tuple[str, ...], tuple[str, ...]], ...] = (
+    (
+        "handoff_chunked_routing",
+        ("skills/public/handoff/scripts/chunked_routing_issue_config.py",
+         "skills/public/handoff/scripts/chunked_routing_agentic_policy.py",
+         "skills/public/handoff/scripts/chunked_routing_staleness.py"),
+        ("tests/test_handoff_chunker_issue_source.py",
+         "tests/test_handoff_chunker_agentic_packages.py",
+         "tests/test_handoff_chunker_adapter_report.py",
+         "tests/test_handoff_chunker_staleness.py"),
+    ),
+    (
+        "regenerable_facts_gate",
+        ("skills/public/quality/scripts/check_regenerable_facts.py",),
+        ("tests/quality_gates/test_regenerable_facts.py",),
+    ),
+)
+
+# Adapter filename per file-reading site, for the `load_adapter` call shape below.
+_ADAPTER_FILENAMES: dict[str, str] = {
+    "issue": "issue-adapter.yaml",
+    "capability_catalog": "capability-catalog-adapter.yaml",
+}
 
 _LOADED: dict[str, Any] = {}
 
@@ -90,7 +168,10 @@ def _resolve(label: str, path: str, entry: str, version: Any, tmp_path: Path) ->
             scalar = str(version)
         agents_dir = tmp_path / ".agents"
         agents_dir.mkdir(parents=True, exist_ok=True)
-        (agents_dir / "issue-adapter.yaml").write_text(f"version: {scalar}\n", encoding="utf-8")
+        # The filename is per-site, not per-entrypoint: two resolver families share the
+        # `load_adapter` name and read different adapter files, so writing one hardcoded
+        # name would leave the other reading an absent file and passing vacuously.
+        (agents_dir / _ADAPTER_FILENAMES[label]).write_text(f"version: {scalar}\n", encoding="utf-8")
         report = function(tmp_path)
         return report["data"], report["errors"]
     if entry == "validate_adapter_yaml":
@@ -229,7 +310,7 @@ def test_the_commit_gate_requires_a_declared_version_for_every_adapter_name(adap
 def test_the_shared_check_writes_the_accepted_version_itself() -> None:
     """Proves the ACCEPT branch, which the per-site polarity test cannot.
 
-    Every resolver's `infer_defaults` already seeds `version: 1`, so at 16 of the 18
+    Every resolver's `infer_defaults` already seeds `version: 1`, so at 18 of the 19
     sites `resolved["version"] == 1` holds whether or not the shared check writes
     anything -- deleting its `else: validated[field] = value` branch entirely would
     leave those assertions green. Passing an EMPTY dict is the only way to observe the
@@ -291,5 +372,74 @@ def test_every_repo_local_adapter_declares_the_supported_version() -> None:
 
 def test_exempt_sites_carry_a_reason() -> None:
     """Presence-only rows are how an exemption list rots into a hiding place."""
-    for label, reason in EXEMPT_SITES:
+    for label, _paths, _tests, reason in EXEMPT_SITES:
         assert reason.strip(), f"exempt site {label} carries no reason"
+
+
+def _resolve_test_ref(ref: str) -> str | None:
+    """Return why ``path::function`` does not resolve, or None when it does."""
+    path, _, function = ref.partition("::")
+    target = ROOT / path
+    if not target.is_file():
+        return f"{path} does not exist"
+    if function and f"def {function}(" not in target.read_text(encoding="utf-8"):
+        return f"{path} has no `def {function}(`"
+    return None
+
+
+def test_every_exempt_site_names_a_test_that_actually_exists() -> None:
+    """An exemption's reason is prose; the test it names is the only part that can be
+    checked. Without this, a rename turns an exemption into a silent lie on the exact
+    surface whose job is to refuse unverified claims -- and the row would still pass the
+    non-empty-reason check above."""
+    unresolved = [
+        (label, ref, problem)
+        for label, _paths, refs, _reason in EXEMPT_SITES
+        for ref in refs
+        if (problem := _resolve_test_ref(ref)) is not None
+    ]
+    assert not unresolved, f"exempt sites name tests that do not resolve: {unresolved}"
+    for label, _paths, refs, _reason in EXEMPT_SITES:
+        assert refs, f"exempt site {label} names no driving test"
+
+
+def test_the_census_names_every_caller_of_the_shared_check() -> None:
+    """The census's own claim is a COUNT, and a count is only as honest as its
+    denominator. Enumerating the callers from the tree is what makes an absent site
+    impossible: a new reader that calls the shared check and appears in neither list fails
+    here, instead of being discovered by whoever reads the stale number and believes it.
+
+    `plugins/**` is excluded because it is a generated mirror of these same files.
+    """
+    named: set[str] = {path for _label, path, _entry in SITES}
+    named.update(path for _label, paths, _tests, _reason in EXEMPT_SITES for path in paths)
+    # One SITES row's driven entrypoint and its shared-check call live in different files:
+    # the quality resolver delegates field validation to the quality skill's validators.
+    named.add("skills/public/quality/scripts/adapter_validators.py")
+    # The definition itself is not a caller.
+    named.add("scripts/adapter_lib.py")
+
+    callers = {
+        str(path.relative_to(ROOT))
+        for root in ("scripts", "skills")
+        for path in (ROOT / root).rglob("*.py")
+        if "validate_adapter_version" in path.read_text(encoding="utf-8")
+    }
+
+    absent = sorted(callers - named)
+    assert not absent, (
+        "these files reconcile an adapter version but appear in neither SITES nor "
+        f"EXEMPT_SITES: {absent}. An absent row and an exempt row are different facts."
+    )
+
+
+def test_verdict_consumers_resolve() -> None:
+    """The consumer list is not a coverage claim, but a stale path in it would misdescribe
+    where a correct refusal can still be discarded."""
+    missing = [
+        path
+        for _label, paths, _tests in VERDICT_CONSUMERS
+        for path in paths
+        if not (ROOT / path).is_file()
+    ]
+    assert not missing, f"verdict-consumer paths do not exist: {missing}"

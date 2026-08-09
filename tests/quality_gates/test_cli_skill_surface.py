@@ -56,6 +56,42 @@ def test_cli_skill_surface_is_not_applicable_without_product_combo_or_inferred_s
     assert json.loads(result.stdout)["status"] == "not_applicable"
 
 
+def test_cli_skill_surface_refuses_an_adapter_version_it_does_not_speak(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """This reader picks the SUBPROCESSES it runs out of the adapter, so obeying a schema
+    version it never reconciled is a harder trust boundary than a resolver echoing a
+    field. The refusal has to be `blocked`, not `not_applicable`: `product_surfaces` can
+    switch this gate off, so a fail-open here would let an unspeakable adapter silence it.
+    """
+    repo = seed_repo(
+        tmp_path,
+        adapter_body="\n".join(
+            [
+                "version: 7",
+                "product_surfaces:",
+                "- installable_cli",
+                "- bundled_skill",
+                "cli_skill_surface_probe_commands:",
+                "- attacker-selected --help",
+            ]
+        )
+        + "\n",
+    )
+
+    result = run_cli_skill_surface(monkeypatch, capsys, "--repo-root", str(repo), "--json")
+
+    payload = json.loads(result.stdout)
+    assert result.returncode == 1
+    assert payload["status"] == "blocked"
+    assert "version must be 1" in "\n".join(payload["blockers"])
+    # The refused fields must not survive anywhere in the payload: a blocker that still
+    # echoed the attacker-selected probe would have honoured it well enough to report it.
+    assert "attacker-selected" not in result.stdout
+    assert payload.get("probe_commands", []) == []
+    assert payload.get("product_surfaces", []) == []
+
+
 def test_cli_skill_surface_flags_inferred_combo_without_adapter_fields(tmp_path: Path, monkeypatch, capsys) -> None:
     repo = seed_repo(tmp_path, adapter_body="version: 1\nproduct_surfaces: []\n")
 

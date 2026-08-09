@@ -251,7 +251,7 @@ no adapter configuration to start — it arms on default surfaces. Like every
 other gate, your repo still has to RUN it: `setup` names the stance, `quality`
 owns wiring it into your standing quality command.
 
-Two things to check when you wire it:
+What to check when you wire it:
 
 - It reads the **quality** adapter (`<repo-root>/.agents/quality-adapter.yaml`),
   not the setup adapter. Declare `regenerable_facts.surfaces` there when your
@@ -259,13 +259,20 @@ Two things to check when you wire it:
   `regenerable_facts.exemptions` (`path -> reason`, and the reason is required)
   when a specific file must opt out.
 - `surfaces` REPLACES the defaults rather than adding to them. Declaring one
-  glob for an extra prose directory drops README, the agent prompt files, the
-  docs tree, and skill prose out of scope, and the gate then goes green over
-  what is left. Re-list what you still want covered.
-- The dated-records exception above is by LOCATION, not by nature: those records
-  are exempt because they sit outside the default surfaces. If you keep retros or
-  audits under `docs/`, the defaults will match them and fail you for writing the
-  very numbers they should carry — narrow `surfaces` or exempt them with a reason.
+  glob for an extra prose directory drops README, the agent prompt files, and
+  skill prose out of scope, and the gate then goes green over what is left.
+  Re-list what you still want covered. This is why "narrow `surfaces` until the
+  noise stops" is the wrong reflex: it de-arms the part of the gate that still
+  renders a verdict for you.
+- **Your `docs/` tree is not a default surface, and the gate says so out loud.**
+  It cannot know whether your `docs/` holds forward-looking manuals or dated
+  records, so it refuses the verdict instead of guessing: an unconfigured docs
+  tree is reported `NOT CONFIGURED FOR DOCS` at exit 0, which is a typed
+  no-verdict, never a clean claim. Keeping retros or audits under `docs/` does
+  not fail your build.
+- To bring docs under the verdict, declare your current forward-looking docs in
+  `regenerable_facts.surfaces` and give each dated record a reasoned
+  `exemptions` entry. Until you do, that tree is unjudged rather than clean.
 
 `quality` owns the field contract and the current default globs; read it there
 rather than trusting a list copied into this file.

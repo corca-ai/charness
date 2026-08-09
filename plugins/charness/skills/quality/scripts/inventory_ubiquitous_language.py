@@ -40,7 +40,9 @@ def _default_repo_root() -> Path:
 
 
 REPO_ROOT = _default_repo_root()
-load_yaml_file = _load_adapter_lib().load_yaml_file
+_ADAPTER_LIB = _load_adapter_lib()
+load_yaml_file = _ADAPTER_LIB.load_yaml_file
+validate_adapter_version = _ADAPTER_LIB.validate_adapter_version
 
 DEFAULT_CONTRACT_PATH = Path(".agents/quality-adapter.yaml")
 SKIP_DIRS = {".git", ".charness", ".pytest_cache", "node_modules"}
@@ -62,7 +64,19 @@ def _load_contract(repo_root: Path, adapter_path: Path) -> dict[str, Any] | None
     if not path.is_file():
         return None
     raw = load_yaml_file(path)
-    if not isinstance(raw, dict) or raw.get("domain_language_contract") is None:
+    if not isinstance(raw, dict):
+        return None
+    # The contract selects the scan scope and its exemptions, so honoring it from a schema
+    # version this reader never reconciled is the fail-open shape every adapter reader
+    # here owes a verdict on. Refuse loudly rather than silently inventorying an
+    # attacker- or typo-selected scope.
+    version_errors: list[str] = []
+    validate_adapter_version(raw, {}, version_errors)
+    if version_errors:
+        raise InventoryError(
+            f"{adapter_path}: " + "; ".join(version_errors) + "; domain_language_contract was not read"
+        )
+    if raw.get("domain_language_contract") is None:
         return None
     contract = raw.get("domain_language_contract")
     if not isinstance(contract, dict):
