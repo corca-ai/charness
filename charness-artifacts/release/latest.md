@@ -185,6 +185,8 @@ DONE: update complete`
 - `post_publish_install_refresh`: 8.201s
 - `post_publish_installed_readback`: 1.314s
 - `release_observer`: 0.001s
+- `issue_closeout_carrier`: 14.212s
+- `issue_closeout`: 1.803s
 
 ## Baton Reconcile
 
@@ -210,7 +212,14 @@ DONE: update complete`
 
 ## Issue Closeout
 
-- Issue closeout verification: `carrier-pending-state-verification`.
+- Issue closeout verification: `state-verified`.
+- GitHub repo: `corca-ai/charness`
+- Issue #574: `CLOSED` (https://github.com/corca-ai/charness/issues/574)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `True`
+- Issue #575: `CLOSED` (https://github.com/corca-ai/charness/issues/575)
+  - carrier: `direct_post_publish_commit_body`
+  - manual fallback used: `False`
 
 ## User Update Steps
 
