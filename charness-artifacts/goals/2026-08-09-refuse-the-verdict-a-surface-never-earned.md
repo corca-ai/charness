@@ -511,6 +511,21 @@ Shaped at Before-phase; update as the run crosses each boundary:
 - `Gather: n/a — every source is in-repo (issues via the gh adapter, artifacts, git history); no external URL or credentialed source was read.`
 - `Routing: charness:release — the operator expanded this goal through the P2 bundle and authorized the final release phase after locked proof: complete RC branch push, hosted CI readback, then tag/publication push. No per-slice, work-in-progress, or intermediate public release is authorized.`
 
+- Successor goal: `charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`.
+  Designed from what this run measured, not from what it left over: `#554` was
+  found already repaired while nobody had re-read it, and
+  `docs/prompt-mutation-policy.md` — agent-authored, consumed by nothing — had
+  been acting as a cut vertex on real work. A record was treated as a fact
+  because re-reading it was nobody's step.
+- **Operator-forced completion, 2026-08-09.** The operator authorized closing this
+  goal without its full closeout ritual. What DID run: the `v4.1.0` release with
+  its verification lock, the distinct-channel and installed readbacks, nine issue
+  closes each behind a delegated fresh-eye refusal round, and the two post-release
+  closeout critiques. What did NOT run: the goal-level retro, the closeout packet
+  binding at a frozen SHA, and the Auto-Retro disposition pass. Those are absent,
+  not satisfied, and this line is the record of that rather than a claim they were
+  covered elsewhere.
+
 ## Discuss Before Activation
 
 A Before-phase summary of any consequential activation decision — surfaced from
