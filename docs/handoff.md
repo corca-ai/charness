@@ -2,49 +2,21 @@
 
 ## Workflow Trigger
 
-- **`v4.1.0` is published and read back; the release goal is done.** Tag `cd7ab479`,
-  release confirmed through the authenticated API and the public tag page,
-  installed `charness version` reports `4.1.0`, doctor clean. Do not re-run any
-  release phase; start from the backlog. Nine issues closed, 25 open.
-- **`#572` is the one open red.** The last two scheduled `Mutation Tests` runs on
-  `main` failed on an older SHA and none has landed on the release tree.
-
-## Continuation Capability
-
-- **The pattern this repo keeps shipping:** a proof surface renders a verdict over a scope or population it never established.
-- **The pattern OF that pattern, and the most transferable thing measured this session:** the measurement that would have refuted the surface was only ever taken where the answer was already favorable. The adapter warn tier refused to arm one state at a 13% false-positive rate, then shipped another at ~100% in consumer repos — same code, unmeasured population. Four more instances of the same shape: a probe's cost read from the gate's own timeout record; a verdict drawn from a grep population that was not the reader set; tests that passed *through* the defect they should have caught; and three slice premises believed from durable records the goal itself wrote.
-- **The counter-move is the north star's P4 extended from observers to POPULATIONS:** take the refuting measurement in a different tree, not only through a different reader. That is what cracked this session — running shipped code against five real consuming repos (`../stdy.blog`, `../cmanki`, `../ceal`, `../ceal-cli`, `../journal.stdy.blog`), which no in-repo channel could surface.
-- **Measure the premise before shaping the slice.** Three consecutive slices had theirs refuted by one command each. Cheapest habit available.
-- **The closeout floor works — let it refuse.** Every issue closed across this
-  session was first returned NOT-CLOSABLE by a delegated reviewer, and the
-  refusals were load-bearing three times: a repair had made a defect HONEST rather
-  than FIXED; a repair shipped a NEW false completeness claim in the census that
-  advertised its own coverage; and a reachability gate was armed everywhere except
-  the one push class that creates the defect it catches.
-- **A gate can catch what two review rounds miss.** Both bounded rounds read the
-  adapter-version repairs and neither flagged the two unreachable branches the
-  changed-line coverage gate refused. Reviewers and gates fail differently; do not
-  read a clean review as a reason to expect a clean gate.
+- The latest release is published and read back (`git describe --tags --abbrev=0`;
+  `gh release view` reported draft=false). Do not re-run any release phase.
+- The backlog goal is COMPLETE. Start from the two owed items in `## Next Session`.
 
 ## Current State
 
-- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md)
-  reached its closeout: `v4.1.0` published at `cd7ab479`, carriers at `916119c5`,
-  `fd35f382`, `44268c8e`.
-- **Nine issues closed against this release, each behind a delegated fresh-eye
-  refusal round:** `#574`, `#575` with the release, then `#573`, `#563`, `#570`,
-  `#549`, `#545`, `#523`, `#566`. Each close carries a behavioral verdict from a
-  channel distinct from CLOSED state and its carrier, plus the residual its
-  reviewer refused to let the close smooth over. Both post-release closeout
-  critiques are in [charness-artifacts/critique](../charness-artifacts/critique).
-- **The first `v4.1.0` publish attempt FAILED at the pre-publish lock and published
-  nothing**, and its rollback left no tag, no release, and a restored artifact —
-  that recovery path is now proven rather than assumed.
-- `#576` remains an explicit no-verdict design gap and is not claimed fixed. A broad
-  consumer census was considered and REFUTED as unjustified; do not re-open one
-  without new evidence, and read the discriminator in the
-  [no-observed-effect census](../charness-artifacts/audit/2026-08-09-no-observed-effect-census.md) first.
-- The publish-state claim below is a captured, offline-reconciled snapshot, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json): rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
+- 19 open issues, from 24. Eleven closed: nine consolidations render `NOT_PLANNED`,
+  two resolutions (`#554`, `#571`) render `COMPLETED`.
+- Four umbrellas filed — `#582` `#583` `#584` `#585` — each naming its members and
+  each passing the consolidation readback against the live tracker before any close.
+- `#514` refused by the crosswalk (`matrix_incomplete`); `#582` carries a
+  correction saying it absorbed three of four members.
+- New: `#586` (a check that never fires on the wired path), `#587` (serial pre-push
+  aggregate), `#580` (budget measures fan-out), `#581` (shipped adapter example
+  cannot create an issue). `#572` still the one open red; untouched.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -53,24 +25,53 @@
 
 ## Next Session
 
-1. Read the hosted `Mutation Tests` result on the release tree and settle `#572`.
-   The last two scheduled runs failed on `18a9a439`; nothing has proven the
-   current tree either way. `Quality Core` on `44268c8e` was unread at session end.
-2. Work the four deferred follow-ups, which live as `valid-but-defer` Structured
-   Findings in the two post-release closeout critiques and name their own
-   file:line: the pre-push validators outside the durable-log aggregator plus this
-   repo's missing `lefthook.yml`; the closeout-comment write path's absent
-   private-media check; the unratcheted root-surface size; and the invented
-   docs-graph orphan fixture. Decide whether to file them or keep them here.
-3. `#545` is closed for the create path and the Slack host family ONLY. A private
-   Notion, Drive, Figma, or `*.slack-edge.com` URL is still unguarded. Do not read
-   the `v4.1.0` note's "provider-private media" as the shipped scope.
+0. Read the closing
+   [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md)
+   — measured waste, north-star alignment, and the axis that became `#586`.
+1. **Design the successor goal.** The closing session declined it with a weak
+   reason and said so. `#586` is the strongest axis: six measured instances, three
+   candidate guards ranked, vocabulary-parity clearly cheapest.
+2. **Settle `#514` / `#515` / `#518`** — see `## Discuss`.
+3. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
+   measured defective, and reverted; its comment carries the alternative. `#580`
+   stays open on its root cause: the bar still measures fan-out, not the check.
 
 ## Discuss
 
-- **`#576` has no chosen direction.** Leave the gap documented, resolve readers against the installed plugin root, or give consumers a declared key space. The second was already rejected once as a new capability rather than a refusal-to-claim.
-- `#561`'s equality-versus-invariant pin and `#547`'s re-scope remain operator-only and block nothing.
-- Korean-titled artifacts are NOT renamed; charness must not couple a surface's correctness to a document's language.
+- **The "consumer-repo measurement" blocker on `#514`/`#515`/`#518` is FALSE, and
+  its recurrence is the defect.** The completed goal's Non-Goals says those repos
+  "have been read repeatedly across sessions and their findings already sit in the
+  issue bodies. Measurement is not the bottleneck." Its Verification Plan says the
+  opposite; the closing session sided with the wrong one. It keeps resurfacing
+  because each issue body carries a `Re-read obligation` that every session treats
+  as binding without checking whether the measurement already happened.
+- **So the question is what is missing to fold EXISTING findings into the
+  crosswalk's acceptance matrix**, which is `matrix_state: bootstrap` with empty
+  criteria. Draft criteria for `#518`/`#515` sit in 2026-08-10 comments on those
+  issues; they lack `artifact_path` and `final_reader_route` — in-repo work. Trap
+  recorded there: a criterion for declared browser/sync surfaces cannot be written
+  against current code, so scope it down rather than write a false one.
+- Also decide whether the crosswalk should protect all three at equal strength,
+  given `#518`/`#515` were substantially repaired by `892d6b95` and `#514` was not.
+  `#576` still has no chosen direction; a comment records why it is honest silence.
+- The `Premise-residue:` seam reads markers and nothing writes them; exactly one
+  exists. If records do not start writing them the record channel stays empty.
+
+## Continuation Capability
+
+- **A check can exist, pass its tests, and never run on the caller's path.** Six
+  instances in one goal. Coverage and reachability are different questions — the
+  changed-line gate caught none of them, because the lines WERE covered by the
+  direct-call test.
+- **The round that reads the REPAIRS finds a different class than the round that
+  reads the original.** Four for four; one returned HOLD and killed a repair.
+- **Run the cheapest disconfirming probe BEFORE building a heuristic.** Two designs
+  were built and deleted; both probes took under a minute and both ran too late. A
+  constant whose tuning history you can narrate is a fitted constant.
+- **Hardcoded prose in a portable skill fails silently in consumer repos.** Prefer a
+  typed marker an author writes over wording a scanner infers.
+- **Let the floors refuse your own work.** Three fired on this session's own
+  mutations before they landed, and each was right.
 
 ## References
 
