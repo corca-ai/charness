@@ -295,6 +295,25 @@ def test_load_issue_source_config_defaults_without_block(src, tmp_path):
     }
 
 
+def test_load_issue_source_config_ignores_block_from_unsupported_adapter(src, tmp_path):
+    _write_adapter(
+        tmp_path,
+        "version: 7\nrepo: t\noutput_dir: docs\n"
+        "issue_source:\n  enabled: false\n  limit: 1\n",
+    )
+
+    config = src.load_issue_source_config(tmp_path)
+
+    assert config["enabled"] is False
+    assert config["limit"] == src.DEFAULT_ISSUE_LIMIT
+    assert src.LAST_HANDOFF_ADAPTER_REPORT == {
+        "valid": False,
+        "errors": ["version must be 1"],
+        "warnings": [],
+        "path": str(tmp_path / ".agents" / "handoff-adapter.yaml"),
+    }
+
+
 def test_load_issue_source_config_parses_full_block(src, tmp_path):
     """Block-style lists + scalars all flow into the normalized config."""
     _write_adapter(
@@ -597,7 +616,8 @@ def test_list_open_issues_raises_on_malformed_payload(backend):
 # uninterpreted-line warnings are "legibility, not teeth. Nothing reads it today"
 # and named this exact consumer: build_issue_entries took `adapter["data"]` and
 # dropped `valid`/`warnings` on the floor. These tests pin the reader AND pin
-# that it stayed a reader -- the refusal is still deferred.
+# that uninterpreted-line warnings stay reporting-only. Schema-version errors
+# are different: a reader cannot safely honor fields from a version it does not speak.
 
 
 def _issue_adapter_stub(adapter_payload):
@@ -677,14 +697,9 @@ def test_clean_adapter_reports_nothing_so_absence_never_means_not_checked(
     assert src.LAST_ISSUE_ADAPTER_REPORT is None
 
 
-def test_invalid_adapter_is_reported_but_never_gates_the_listing(
+def test_invalid_adapter_is_reported_and_stops_before_provider_listing(
     src, monkeypatch, tmp_path
 ):
-    """The refusal D46 defers: `valid: false` must NOT empty the backlog.
-
-    Dropping the listing here would be indistinguishable from the documented
-    trackerless fallback, which is why this stayed reporting-only.
-    """
     _enable_issue_source(src, monkeypatch)
     # Faithful to the real loader: `errors` and `warnings` are DISJOINT, and
     # "version must be an integer" is an errors-list message. A fixture that put it
@@ -694,17 +709,28 @@ def test_invalid_adapter_is_reported_but_never_gates_the_listing(
          "warnings": [], "path": "/x/.agents/issue-adapter.yaml", "data": {}}
     ))
 
-    entries = src.build_issue_entries(
-        tmp_path, start_index=1,
-        runner=lambda argv: [{"number": 467, "title": "still listed", "labels": [], "body": ""}],
-    )
+    provider_called = False
 
-    assert [e.referenced_issues[0] for e in entries] == [467]
+    def runner(argv):
+        nonlocal provider_called
+        provider_called = True
+        return []
+
+    entries = src.build_issue_entries(tmp_path, start_index=1, runner=runner)
+
+    assert entries == []
+    assert provider_called is False
     assert src.LAST_ISSUE_ADAPTER_REPORT == {
         "valid": False,
         "errors": ["version must be an integer"],
         "warnings": [],
         "path": "/x/.agents/issue-adapter.yaml",
+    }
+    assert src.LAST_ISSUE_SOURCE_DIAGNOSTIC == {
+        "stage": "load_issue_adapter",
+        "provider_attempted": False,
+        "type": "InvalidAdapter",
+        "message": "version must be an integer",
     }
 
 

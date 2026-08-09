@@ -11,7 +11,13 @@ import re
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file, optional_bool, optional_string, optional_string_list
+from scripts.adapter_lib import (
+    load_yaml_file,
+    optional_bool,
+    optional_string,
+    optional_string_list,
+    validate_adapter_version,
+)
 from scripts.control_plane_lib import load_manifests_for_discovery, load_support_capabilities
 from scripts.repo_layout import generated_support_dir, public_skills_dir, support_dir
 from scripts.support_sync_lib import support_link_name, support_state_for_manifest
@@ -215,17 +221,19 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
         if not isinstance(raw, dict):
             raw = {}
             warnings.append("Adapter file did not contain a mapping; using inferred defaults.")
-        for field in ("repo", "language", "preset_id", "preset_version", "customized_from"):
-            value = optional_string(raw.get(field), field, errors)
-            if value is not None:
-                defaults[field] = value
-        roots = optional_string_list(raw.get("trusted_skill_roots", raw.get("official_skill_roots")), "trusted_skill_roots", errors)
-        if roots is not None:
-            defaults["trusted_skill_roots"] = roots
-        for field in ("prefer_local_first", "allow_external_registry"):
-            value = optional_bool(raw.get(field), field, errors)
-            if value is not None:
-                defaults[field] = value
+        validate_adapter_version(raw, {}, errors)
+        if not errors:
+            for field in ("repo", "language", "preset_id", "preset_version", "customized_from"):
+                value = optional_string(raw.get(field), field, errors)
+                if value is not None:
+                    defaults[field] = value
+            roots = optional_string_list(raw.get("trusted_skill_roots", raw.get("official_skill_roots")), "trusted_skill_roots", errors)
+            if roots is not None:
+                defaults["trusted_skill_roots"] = roots
+            for field in ("prefer_local_first", "allow_external_registry"):
+                value = optional_bool(raw.get(field), field, errors)
+                if value is not None:
+                    defaults[field] = value
     return {"found": path is not None, "valid": not errors, "path": path.relative_to(repo_root).as_posix() if path else None, "data": defaults, "errors": errors, "warnings": warnings}
 
 
@@ -265,4 +273,4 @@ def build_inventory(repo_root: Path) -> dict[str, Any]:
         trusted += _skill_entries([(f"trusted-root-{index}", (root / relative).resolve())], repo_root=root, layer="trusted skill")
     shadowed = {item["id"] for item in [*public, *support]} | {item["name"] for item in [*public, *support]}
     trusted = [item for item in trusted if item["id"] not in shadowed and item["name"] not in shadowed]
-    return {"adapter": {"found": adapter["found"], "valid": adapter["valid"], "path": adapter["path"], "warnings": adapter["warnings"], "trusted_skill_roots": adapter["data"].get("trusted_skill_roots", []), "allow_external_registry": adapter["data"].get("allow_external_registry", False), "prefer_local_first": adapter["data"].get("prefer_local_first", True)}, "public_skills": public, "support_skills": support, "support_capabilities": _support_caps(root), "integrations": integrations(root), "trusted_skills": trusted}
+    return {"adapter": {"found": adapter["found"], "valid": adapter["valid"], "path": adapter["path"], "errors": adapter["errors"], "warnings": adapter["warnings"], "trusted_skill_roots": adapter["data"].get("trusted_skill_roots", []), "allow_external_registry": adapter["data"].get("allow_external_registry", False), "prefer_local_first": adapter["data"].get("prefer_local_first", True)}, "public_skills": public, "support_skills": support, "support_capabilities": _support_caps(root), "integrations": integrations(root), "trusted_skills": trusted}

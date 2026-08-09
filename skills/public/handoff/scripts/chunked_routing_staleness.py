@@ -207,7 +207,16 @@ def resolve_states_for_repo(
         issue_resolver = _backend._load_issue_module(repo_root, "resolve_adapter")
         issue_runtime = _backend._load_issue_module(repo_root, "issue_runtime")
         stage = "load_issue_adapter"
-        adapter_data = issue_resolver.load_adapter(repo_root).get("data", {})
+        adapter = issue_resolver.load_adapter(repo_root)
+        if adapter.get("valid") is False:
+            return {}, {
+                "stage": "load_issue_adapter",
+                "provider_attempted": False,
+                "type": "InvalidAdapter",
+                "message": "; ".join(str(item) for item in adapter.get("errors", []))
+                or "issue adapter is invalid",
+            }
+        adapter_data = adapter.get("data", {})
         backend = adapter_data.get("issue_backend") or {"id": "gh", "binary": "gh", "commands": None}
         stage = "resolve_target"
         repo_full = issue_runtime.resolve_target(repo_root, config["repo"], adapter_data)["full_name"]

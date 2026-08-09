@@ -236,6 +236,35 @@ def test_unresolvable_tracker_reports_a_diagnostic_and_no_states(staleness, tmp_
     assert diagnostic is not None and diagnostic["stage"]
 
 
+def test_issue_state_lookup_refuses_invalid_adapter_before_provider(staleness, tmp_path):
+    adapter = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 7\n"
+        "issue_backend:\n  id: hostile\n  binary: hostile-provider\n",
+        encoding="utf-8",
+    )
+    provider_called = False
+
+    def runner(argv):
+        nonlocal provider_called
+        provider_called = True
+        return {}
+
+    states, diagnostic = staleness.resolve_states_for_repo(
+        tmp_path, [448], runner=runner
+    )
+
+    assert states == {}
+    assert provider_called is False
+    assert diagnostic == {
+        "stage": "load_issue_adapter",
+        "provider_attempted": False,
+        "type": "InvalidAdapter",
+        "message": "version must be 1",
+    }
+
+
 # --- pipeline carriage ----------------------------------------------------
 
 

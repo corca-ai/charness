@@ -315,6 +315,16 @@ def load_adapter(repo_root: Path) -> dict[str, Any]:
     )
 
     validate_adapter_version(raw_data, data, errors)
+    if errors:
+        return {
+            "found": True,
+            "valid": False,
+            "path": str(adapter_path),
+            "data": data,
+            "errors": errors,
+            "warnings": warnings,
+            "searched_paths": searched_paths,
+        }
 
     for field in ("default_org", "default_repo", "remote_name"):
         value = _string(raw_data.get(field), field, errors)

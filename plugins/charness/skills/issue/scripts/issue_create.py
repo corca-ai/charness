@@ -18,6 +18,7 @@ import re
 import runpy
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlparse
 
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BACKEND = _load_local("issue_backend", "issue_create_backend")
@@ -53,6 +54,74 @@ CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "title", "body_file"})
 VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
 
 _ISSUE_NUMBER_RE = re.compile(r"/issues/(\d+)\b")
+_MARKDOWN_IMAGE_RE = re.compile(r"(?<!\\)!\[[^\]]*\]\(\s*<?(https?://[^\s)>]+)>?", re.IGNORECASE)
+_MARKDOWN_IMAGE_REFERENCE_RE = re.compile(
+    r"(?<!\\)!\[([^\]]+)\]\[([^\]]*)\]", re.IGNORECASE
+)
+_MARKDOWN_IMAGE_SHORTCUT_RE = re.compile(
+    r"(?<!\\)!\[([^\]]+)\](?![ \t]*[\[(])", re.IGNORECASE
+)
+_MARKDOWN_REFERENCE_DEFINITION_RE = re.compile(
+    r"^\s*\[([^\]]+)\]:\s*<?(https?://[^\s>]+)>?", re.IGNORECASE | re.MULTILINE
+)
+_HTML_IMAGE_RE = re.compile(
+    r"<img\b[^>]*\bsrc\s*=\s*(?:['\"](https?://[^'\"]+)['\"]|(https?://[^\s>]+))[^>]*>",
+    re.IGNORECASE,
+)
+_HTML_COMMENT_RE = re.compile(r"<!--.*?-->", re.DOTALL)
+_INLINE_CODE_RE = re.compile(r"(?P<ticks>`+).*?(?P=ticks)", re.DOTALL)
+
+
+class IssuePreparationError(RuntimeError):
+    """Typed refusal raised before an issue backend can mutate state."""
+
+    def __init__(self, code: str, message: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
+def _outside_fenced_code(text: str) -> str:
+    text = _HTML_COMMENT_RE.sub("", text)
+    kept: list[str] = []
+    fence: str | None = None
+    for line in text.splitlines(keepends=True):
+        stripped = line.lstrip()
+        marker = stripped[:3]
+        if marker in {"```", "~~~"}:
+            fence = None if fence == marker else marker if fence is None else fence
+            kept.append("\n" if line.endswith("\n") else "")
+        elif fence is None and not line.startswith(("    ", "\t")):
+            kept.append(line)
+        else:
+            kept.append("\n" if line.endswith("\n") else "")
+    return _INLINE_CODE_RE.sub("", "".join(kept))
+
+
+def _is_private_provider_media_url(url: str) -> bool:
+    parsed = urlparse(url)
+    host = (parsed.hostname or "").casefold()
+    path = parsed.path.casefold()
+    return (host == "files.slack.com" or host.endswith(".slack.com")) and any(
+        marker in path for marker in ("/files/", "/files-pri/", "/files-tmb/")
+    )
+
+
+def _private_provider_image_urls(body_text: str) -> list[str]:
+    prose = _outside_fenced_code(body_text)
+    urls = [match.group(1) for match in _MARKDOWN_IMAGE_RE.finditer(prose)]
+    urls.extend(match.group(1) or match.group(2) for match in _HTML_IMAGE_RE.finditer(prose))
+    definitions = {
+        match.group(1).strip().casefold(): match.group(2)
+        for match in _MARKDOWN_REFERENCE_DEFINITION_RE.finditer(prose)
+    }
+    for match in _MARKDOWN_IMAGE_REFERENCE_RE.finditer(prose):
+        label = match.group(2).strip() or match.group(1).strip()
+        if url := definitions.get(label.casefold()):
+            urls.append(url)
+    for match in _MARKDOWN_IMAGE_SHORTCUT_RE.finditer(prose):
+        if url := definitions.get(match.group(1).strip().casefold()):
+            urls.append(url)
+    return sorted({url for url in urls if _is_private_provider_media_url(url)})
 
 
 def _parse_created_number(stdout: str) -> int | None:
@@ -93,6 +162,14 @@ def create_issue(
     if not body_file.is_file():
         raise RuntimeError(f"create body file not found: {body_file}")
     body_text = body_file.read_text(encoding="utf-8")
+    private_media = _private_provider_image_urls(body_text)
+    if private_media:
+        raise IssuePreparationError(
+            "private_provider_media_unpublished",
+            "private provider image reference refused before issue creation; "
+            "materialize it at a durable URL the target audience can read, or replace "
+            "the image syntax with an explicit `Media evidence unavailable:` disposition",
+        )
 
     create_argv = resolve_op(
         backend,
@@ -212,6 +289,16 @@ def command_create(args: argparse.Namespace) -> int:
             skip_readback=args.skip_readback,
             allow_placeholder_title=args.allow_placeholder_title,
         )
+    except IssuePreparationError as exc:
+        _emit(
+            {
+                "ok": False,
+                "error": str(exc),
+                "error_code": exc.code,
+                "selected_backend": resolved["backend"],
+            }
+        )
+        return 2
     except RuntimeError as exc:
         _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
         return 2

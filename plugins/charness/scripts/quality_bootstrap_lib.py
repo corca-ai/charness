@@ -3,7 +3,11 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file_report, uninterpreted_warnings
+from scripts.adapter_lib import (
+    load_yaml_file_report,
+    uninterpreted_warnings,
+    validate_adapter_version,
+)
 from scripts.quality_bootstrap_absence import load_deliberately_absent
 from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
 from scripts.quality_bootstrap_detect import (
@@ -190,6 +194,14 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     if not isinstance(raw, dict):
         defaults["_explicit_fields"] = set()
         return defaults
+    version_errors: list[str] = []
+    validate_adapter_version(raw, {}, version_errors)
+    if version_errors:
+        details = "; ".join(version_errors)
+        raise BootstrapValidationError(
+            f"{adapter_path}: invalid adapter version; {details}. "
+            "Repair the adapter before rerunning bootstrap."
+        )
     validated_skill_rules = _load_explicit_skill_rules(raw, adapter_path)
     mutation_testing = _load_explicit_mutation_testing(raw, adapter_path)
     try:

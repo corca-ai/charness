@@ -3,7 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Any
 
-from scripts.adapter_lib import load_yaml_file
+from scripts.adapter_lib import load_yaml_file, validate_adapter_version
 from scripts.source_guard_scan_lib import DEFAULT_SOURCE_GUARD_SCAN_ROOTS, fixed_source_guard_rows
 
 ADAPTER_CANDIDATES = (
@@ -28,6 +28,17 @@ def load_setup_adapter(repo_root: Path) -> tuple[dict[str, Any], str | None, lis
         )
     raw = load_yaml_file(adapter_path)
     if isinstance(raw, dict):
+        version_errors: list[str] = []
+        validate_adapter_version(raw, {}, version_errors)
+        if version_errors:
+            return (
+                {},
+                str(adapter_path),
+                [
+                    {"type": "invalid_adapter_version", "message": message}
+                    for message in version_errors
+                ],
+            )
         return raw, str(adapter_path), _validate_recommendation_fields(raw)
     return (
         {},

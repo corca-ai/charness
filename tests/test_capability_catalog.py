@@ -449,6 +449,28 @@ def test_catalog_sources_cover_sibling_support_malformed_adapter_and_exported_ro
     assert any(item["id"] == "plugin-skill" for item in inventory["public_skills"])
 
 
+def test_catalog_source_refuses_unsupported_adapter_before_trust_fields(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    adapter = repo / ".agents" / "capability-catalog-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 7\n"
+        "trusted_skill_roots:\n"
+        "- /private/provider-cache\n"
+        "allow_external_registry: true\n",
+        encoding="utf-8",
+    )
+
+    loaded = sources.load_adapter(repo)
+
+    assert loaded["valid"] is False
+    assert loaded["errors"] == ["version must be 1"]
+    assert loaded["data"]["trusted_skill_roots"] == []
+    assert loaded["data"]["allow_external_registry"] is False
+    inventory = sources.build_inventory(repo)
+    assert inventory["adapter"]["errors"] == ["version must be 1"]
+
+
 def test_catalog_persist_refuses_to_erase_existing_support_surface(tmp_path: Path) -> None:
     prior = {
         "public_skills": [],

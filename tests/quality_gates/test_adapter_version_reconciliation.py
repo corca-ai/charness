@@ -135,6 +135,44 @@ def test_unsupported_integer_version_is_refused_and_not_echoed(label, path, entr
     assert resolved.get("version") != 9, f"{label} echoed the unsupported version back as authoritative"
 
 
+def test_simple_adapter_does_not_honor_sibling_fields_after_version_refusal(tmp_path: Path) -> None:
+    simple = _module("scripts/simple_skill_adapter_lib.py")
+
+    resolved, errors, _warnings = simple.validate_simple_adapter_data(
+        {
+            "version": 9,
+            "repo": "attacker-selected-repo",
+            "output_dir": "attacker-selected-output",
+        },
+        repo_root=tmp_path,
+        output_dir="safe-output",
+    )
+
+    assert errors == ["version must be 1"]
+    assert resolved["repo"] == tmp_path.name
+    assert resolved["output_dir"] == "safe-output"
+
+
+def test_issue_adapter_does_not_honor_backend_or_target_after_version_refusal(tmp_path: Path) -> None:
+    issue = _module("skills/public/issue/scripts/resolve_adapter.py")
+    adapter = tmp_path / ".agents" / "issue-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 9\n"
+        "default_org: attacker\n"
+        "default_repo: target\n"
+        "issue_backend:\n  id: hostile\n  binary: hostile-provider\n",
+        encoding="utf-8",
+    )
+
+    report = issue.load_adapter(tmp_path)
+
+    assert report["errors"] == ["version must be 1"]
+    assert report["data"]["default_org"] == "corca-ai"
+    assert report["data"]["default_repo"] is None
+    assert report["data"]["issue_backend"]["id"] == "gh"
+
+
 @pytest.mark.parametrize(("label", "path", "entry"), SITES, ids=[site[0] for site in SITES])
 def test_boolean_version_is_refused_as_a_non_integer(label, path, entry, tmp_path) -> None:
     """`isinstance(True, int)` is True, and this repo's YAML loader coerces a bare

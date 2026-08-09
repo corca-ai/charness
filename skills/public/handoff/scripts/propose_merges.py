@@ -36,7 +36,12 @@ chunked_routing_cli = SKILL_RUNTIME.load_local_skill_module(__file__, "chunked_r
 
 
 # Facts the parser established that must reach the agent-facing packet unchanged.
-CARRIED_KEYS = ("issue_source_diagnostic", "staleness", "issue_adapter_report")
+CARRIED_KEYS = (
+    "issue_source_diagnostic",
+    "staleness",
+    "issue_adapter_report",
+    "handoff_adapter_report",
+)
 
 
 def parse_args() -> argparse.Namespace:

@@ -82,6 +82,14 @@ def load_chunk_policy_config(repo_root: Path) -> dict[str, Any]:
     try:
         resolve = _load_sibling("resolve_adapter")
         adapter = resolve.load_adapter(repo_root)
+        if not adapter.get("valid", False):
+            config["_adapter_report"] = {
+                "valid": False,
+                "path": adapter.get("path"),
+                "errors": list(adapter.get("errors") or []),
+                "warnings": list(adapter.get("warnings") or []),
+            }
+            return config
         adapter_path = adapter.get("path")
         if not adapter_path:
             return config

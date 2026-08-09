@@ -96,6 +96,63 @@ def test_adapter_report_survives_propose_merges_and_prepare_chunk_packet(tmp_pat
     assert packet["issue_adapter_report"] == report
 
 
+def test_handoff_adapter_report_survives_both_pipeline_stages(tmp_path):
+    report = {"valid": False, "errors": ["version must be 1"], "warnings": [], "path": None}
+    payload = {
+        "entries": [{
+            "index": 1, "title": "t", "body": "b", "referenced_paths": [],
+            "referenced_issues": [], "referenced_skills": [], "boundary_tokens": [],
+        }],
+        "handoff_adapter_report": report,
+    }
+
+    merged = json.loads(subprocess.run(
+        [sys.executable, str(SCRIPTS / "propose_merges.py")],
+        input=json.dumps(payload), capture_output=True, text=True, check=True,
+    ).stdout)
+    assert merged["handoff_adapter_report"] == report
+
+    packet = json.loads(subprocess.run(
+        [sys.executable, str(SCRIPTS / "prepare_chunk_packet.py"), "--repo-root", str(tmp_path)],
+        input=json.dumps(payload), capture_output=True, text=True, check=True,
+    ).stdout)
+    assert packet["handoff_adapter_report"] == report
+
+
+def test_parser_reports_invalid_handoff_adapter_without_provider_access(tmp_path):
+    handoff = tmp_path / "handoff.md"
+    handoff.write_text(
+        "## Next Session\n\n1. **Only.** do a thing.\n\n## End\n",
+        encoding="utf-8",
+    )
+    adapter = tmp_path / ".agents" / "handoff-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 7\nissue_source:\n  enabled: true\n",
+        encoding="utf-8",
+    )
+
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(PARSER_SCRIPT),
+            "--handoff-path",
+            str(handoff),
+            "--repo-root",
+            str(tmp_path),
+            "--with-issues",
+        ],
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+
+    payload = json.loads(result.stdout)
+    assert payload["issue_entry_count"] == 0
+    assert payload["handoff_adapter_report"]["valid"] is False
+    assert payload["handoff_adapter_report"]["errors"] == ["version must be 1"]
+
+
 # --- the shared pipeline-stage helpers the forwarding extraction created ---------
 
 

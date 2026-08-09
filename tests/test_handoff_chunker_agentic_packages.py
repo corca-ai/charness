@@ -292,6 +292,26 @@ def test_adapter_policy_can_allow_repo_specific_broad_label(lib, entries):
     assert report["ok"] is True, report["issues"]
 
 
+def test_chunk_policy_ignores_block_from_unsupported_adapter(lib, tmp_path: Path) -> None:
+    policy = _load("chunked_routing_agentic_policy")
+    adapter = tmp_path / ".agents" / "handoff-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 7\nrepo: t\noutput_dir: docs\n"
+        "chunk_policy:\n  max_package_sources: 99\n",
+        encoding="utf-8",
+    )
+
+    loaded = policy.load_chunk_policy_config(tmp_path)
+
+    assert loaded["max_package_sources"] == policy.DEFAULT_MAX_PACKAGE_SOURCES
+    assert loaded["_adapter_report"]["valid"] is False
+    assert loaded["_adapter_report"]["errors"] == ["version must be 1"]
+
+    packet = lib.build_chunk_proposal_packet([], policy=loaded)
+    assert packet["handoff_adapter_report"] == loaded["_adapter_report"]
+
+
 def test_prepare_chunk_packet_cli_emits_agentic_packet(entries):
     payload = {"entries": [entry.to_dict() for entry in entries]}
     result = subprocess.run(

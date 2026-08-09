@@ -133,7 +133,7 @@ def build_chunk_proposal_packet(
 ) -> dict[str, Any]:
     """Build the packet an agent fills with work-package proposals."""
     effective_policy = policy or default_chunk_policy()
-    return {
+    packet = {
         "version": CHUNK_PROPOSAL_PACKET_VERSION,
         # Empty `missing_paths` / `closed_issues` on a source mean "nothing
         # stale" ONLY when `staleness` says the corresponding check ran. Without
@@ -164,6 +164,9 @@ def build_chunk_proposal_packet(
         "chunk_proposer_prompt": CHUNK_PROPOSER_PROMPT,
         "response_schema": CHUNK_PROPOSAL_RESPONSE_SCHEMA,
     }
+    if adapter_report := effective_policy.get("_adapter_report"):
+        packet["handoff_adapter_report"] = adapter_report
+    return packet
 
 
 def materialize_chunk_proposal_response(

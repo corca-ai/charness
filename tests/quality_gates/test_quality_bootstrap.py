@@ -385,6 +385,19 @@ def test_quality_bootstrap_rejects_invalid_explicit_skill_ergonomics_rules(tmp_p
     assert "Repair the adapter before rerunning bootstrap" in result.stderr
 
 
+def test_quality_bootstrap_refuses_unsupported_adapter_without_rewriting_it(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    original = "version: 7\ngate_commands:\n- false-green-command\n"
+    adapter.write_text(original, encoding="utf-8")
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo), "--migrate")
+
+    assert result.returncode == 1
+    assert "invalid adapter version; version must be 1" in result.stderr
+    assert adapter.read_text(encoding="utf-8") == original
+
+
 def test_quality_adapter_load_modes_name_strict_and_permissive_contracts(tmp_path: Path) -> None:
     repo = seed_quality_repo(tmp_path)
     (repo / ".agents" / "quality-adapter.yaml").write_text(

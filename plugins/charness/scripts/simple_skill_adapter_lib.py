@@ -160,6 +160,8 @@ def validate_simple_adapter_data(
     validated = infer_simple_adapter_defaults(repo_root, output_dir=output_dir)
 
     validate_adapter_version(data, validated, errors)
+    if errors:
+        return validated, errors, warnings
 
     for field in STRING_FIELDS:
         value = optional_string(data.get(field), field, errors)
@@ -193,6 +195,8 @@ def load_simple_adapter(
             data, repo_root=root, output_dir=default_output_dir
         )
         validated["artifact_class"] = artifact_class
+        if errors:
+            return validated, errors, warnings
         configured_artifact_class = data.get("artifact_class")
         if isinstance(configured_artifact_class, str) and configured_artifact_class in ARTIFACT_CLASSES:
             validated["artifact_class"] = configured_artifact_class

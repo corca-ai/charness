@@ -44,7 +44,11 @@ closing anything.
    only a weak optional solution direction.
 3. Assign only existing repository labels and milestones. Gate requested
    milestones with `issue_tool.py resolve-milestone`; never invent one.
-4. Create through `issue_tool.py create --body-file <path>`, then report only
+4. Before creation, materialize image evidence from private provider URLs at a
+   durable URL the issue audience can read, or replace the image syntax with an
+   explicit `Media evidence unavailable:` disposition. A private source identity
+   may remain as provenance; it is not itself renderable media evidence.
+5. Create through `issue_tool.py create --body-file <path>`, then report only
    from the verified `{repo, number, url}` ledger plus the helper-returned title
    and `body_preview` summary. Warn explicitly when `body_verified` is not true.
    Exact placeholder titles `x` and `test` (case-insensitive after trimming) are

@@ -166,6 +166,7 @@ def main() -> int:
         issue_count = 0
         issue_source_diagnostic = None
         issue_adapter_report = None
+        handoff_adapter_report = None
         open_issue_numbers: set[int] = set()
         if args.with_issues:
             issue_repo_root = _repo_root_for_adapter(args)
@@ -185,6 +186,11 @@ def main() -> int:
             issue_adapter_report = getattr(
                 chunked_routing_issue_source,
                 "LAST_ISSUE_ADAPTER_REPORT",
+                None,
+            )
+            handoff_adapter_report = getattr(
+                chunked_routing_issue_source,
+                "LAST_HANDOFF_ADAPTER_REPORT",
                 None,
             )
             entries = chunked_routing_issue_source.dedup_and_union(entries, issue_entries)
@@ -263,6 +269,8 @@ def main() -> int:
             # gates the listing -- see LAST_ISSUE_ADAPTER_REPORT's contract.
             if issue_adapter_report is not None:
                 payload["issue_adapter_report"] = issue_adapter_report
+            if handoff_adapter_report is not None:
+                payload["handoff_adapter_report"] = handoff_adapter_report
         sys.stdout.write(json.dumps(payload, ensure_ascii=False, indent=2) + "\n")
         return 0
     finally:

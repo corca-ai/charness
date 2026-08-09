@@ -4,7 +4,7 @@ import json
 import subprocess
 from pathlib import Path
 
-from .support import inspect_setup_repo
+from .support import SETUP_RESOLVE_ADAPTER, inspect_setup_repo
 
 
 def _make_active_worktrees(repo: Path, count: int) -> None:
@@ -48,6 +48,33 @@ def _seed_minimal_repo_with_adapter(repo: Path) -> None:
         "version: 1\nrepo: repo\n",
         encoding="utf-8",
     )
+
+
+def test_setup_inspect_refuses_unsupported_adapter_before_surface_overrides(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    _seed_minimal_repo_with_adapter(repo)
+    (repo / ".agents" / "setup-adapter.yaml").write_text(
+        "version: 7\n"
+        "output_dir: private-provider/output\n"
+        "surfaces:\n"
+        "  readme: private-provider/README.md\n",
+        encoding="utf-8",
+    )
+
+    payload = _run_inspect(repo)
+
+    assert payload["adapter"]["valid"] is False
+    assert payload["adapter"]["warnings"] == [
+        {"type": "invalid_adapter_version", "message": "version must be 1"}
+    ]
+    assert payload["surfaces"]["readme"]["path"] == "README.md"
+    assert "configured_path" not in payload["surfaces"]["readme"]
+    assert payload["surfaces"]["readme"]["source"] == "default"
+
+    resolver_payload = SETUP_RESOLVE_ADAPTER.load_adapter(repo)
+    assert resolver_payload["valid"] is False
+    assert resolver_payload["errors"] == ["version must be 1"]
+    assert resolver_payload["data"]["output_dir"] == "charness-artifacts/setup"
 
 
 def test_setup_inspect_recommends_seed_worktree_adapter_for_lefthook(tmp_path: Path) -> None:

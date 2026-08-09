@@ -46,6 +46,10 @@ SETUP_INSPECT_REPO = _load_script_module(
     "tests.quality_gates.support_setup_inspect_repo",
     ROOT / "skills/public/setup/scripts/inspect_repo.py",
 )
+SETUP_RESOLVE_ADAPTER = _load_script_module(
+    "tests.quality_gates.support_setup_resolve_adapter",
+    ROOT / "skills/public/setup/scripts/resolve_adapter.py",
+)
 
 
 def run_script(

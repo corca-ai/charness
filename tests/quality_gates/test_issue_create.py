@@ -253,6 +253,144 @@ def test_create_fails_when_body_file_missing(tmp_path: Path) -> None:
     assert "body file not found" in payload["error"]
 
 
+@pytest.mark.parametrize(
+    "image_markup",
+    [
+        "![private screenshot](https://corca.slack.com/files/U01/F02/screenshot.png)",
+        '<img src="https://files.slack.com/files-pri/T01-F02/screenshot.png">',
+        "<img src=https://files.slack.com/files-pri/T01-F02/screenshot.png>",
+        "![private screenshot][capture]\n\n[capture]: https://corca.slack.com/files/U01/F02/screenshot.png",
+        "![capture][]\n\n[capture]: https://corca.slack.com/files-tmb/U01/F02/screenshot.png",
+        "![capture]\n\n[capture]: https://corca.slack.com/files/U01/F02/screenshot.png",
+    ],
+)
+def test_create_refuses_private_provider_image_before_backend_mutation(
+    tmp_path: Path, image_markup: str
+) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text(image_markup + "\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "private media boundary",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 2
+    payload = json.loads(result.stdout)
+    assert payload["error_code"] == "private_provider_media_unpublished"
+    assert "Media evidence unavailable:" in payload["error"]
+    assert not count_file.exists()
+
+
+def test_create_allows_private_source_identity_with_explicit_media_disposition(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text(
+        "Source identity: https://corca.slack.com/archives/C01/p123\n\n"
+        "Media evidence unavailable: private provider attachment was not published.\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "private source identity remains traceable",
+        "--body-file",
+        str(body_file),
+        "--skip-readback",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert count_file.read_text().splitlines() == ["create"]
+
+
+@pytest.mark.parametrize(
+    "example",
+    [
+        "```markdown\n![example](https://corca.slack.com/files/U01/F02/example.png)\n```\n",
+        "`![example](https://corca.slack.com/files/U01/F02/example.png)`\n",
+        "\\![example](https://corca.slack.com/files/U01/F02/example.png)\n",
+        "    ![example](https://corca.slack.com/files/U01/F02/example.png)\n",
+        '<!-- <img src="https://files.slack.com/files-pri/T01-F02/example.png"> -->\n',
+    ],
+)
+def test_create_ignores_private_image_example_in_nonrendering_context(
+    tmp_path: Path, example: str
+) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text(example, encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "documented example",
+        "--body-file",
+        str(body_file),
+        "--skip-readback",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert count_file.read_text().splitlines() == ["create"]
+
+
+def test_create_allows_plain_private_file_url_as_provenance(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text(
+        "Source identity: https://corca.slack.com/files/U01/F02/screenshot.png\n",
+        encoding="utf-8",
+    )
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "private file provenance",
+        "--body-file",
+        str(body_file),
+        "--skip-readback",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert count_file.read_text().splitlines() == ["create"]
+
+
 @pytest.mark.parametrize("title", [" X ", "  TeSt  "])
 def test_create_rejects_placeholder_title_before_backend_mutation(tmp_path: Path, title: str) -> None:
     bin_dir = tmp_path / "bin"

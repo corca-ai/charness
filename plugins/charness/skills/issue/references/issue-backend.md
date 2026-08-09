@@ -330,6 +330,11 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
   and case-folding, before invoking the backend. Use
   `--allow-placeholder-title` only when that title is intentional; no broad
   minimum-length rule is applied.
+- The helper also refuses Markdown or HTML image references to private Slack
+  file URLs before invoking the backend. Publish the media at a durable URL the
+  target audience can read, or replace the image syntax with an explicit
+  `Media evidence unavailable:` disposition. Plain private source-identity URLs
+  remain allowed as provenance; the helper does not mistake them for images.
 - Use `--skip-readback` only when the caller accepts an unverified result:
   creation still occurs, and this flag skips only the post-create `view`
   readback. The returned `view_argv` (when readback runs) or a separate

@@ -265,7 +265,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 4r | **Unplanned repair:** reconcile local focused changed-line proof with the red remote broad mirror for the regenerable-facts slice | Main is red and planned work cannot honestly continue across a locally green/remote red proof boundary | Dynamic-loader mapping fixture; local fail-before on the eight CI targets; direct in-process coverage; same-range local pass; two bounded review rounds | **DONE** |
 | 4s-a | `#573` — make mutation application recoverable across process termination, or refuse to export the unsafe helper | Every later proof-surface repair may rely on this tool; a killed verifier must not leave the source tree as its mutant | Write-ahead recovery identity; TERM/INT recovery; explicit stale-journal detection/recovery; kill-path tests; source/plugin parity | **DONE locally; issue closeout pending final bundle.** Durable git-metadata journal precedes atomic source replacement; TERM/INT route through restore; SIGKILL recovery first stops the owned mutated-test process group, refuses a live writer or human-changed target, then restores exact bytes. Pre-commit and quality refuse pending recovery. Round 2 caught and repaired the leaked-child false-clean path. |
 | 4s-b | `#575` + `#570` — narrow regenerable-facts to surfaces that assert current state, and brief chunked routing on what it authors | Both are new consumer-facing behavior after `v4.0.0`; one hard-fails real history records and the other briefs a forbidden surface | Consumer-population fail-before/pass-after evidence; no default `docs/**/*.md` history sweep; goal-authoring preflight for chunked routing; two verdict rounds | **DONE locally; issue closeout pending final bundle.** Five consumers moved from 4/5 historical hard failures to 5/5 typed `NOT CONFIGURED FOR DOCS` exit-0 non-verdicts; unclassified docs counts are preserved below. Explicit empty scope now refuses. Chunked routing carries no handoff-authoring preflight and still routes through the goal generator/achieve validator. Both capped round-2 reviews completed. |
-| 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | pending |
+| 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | **DONE locally; issue closeout pending final bundle.** Five adapter consumer families now refuse unsupported versions before fields and carry the reason to operator packets; issue/handoff stop before provider access. Rendered private Slack images are typed-refused before backend resolution, while provenance and non-rendering examples remain legal. Both capped round-2 reviews found and triggered repairs. |
 | 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | pending |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
@@ -296,6 +296,29 @@ enforces them so this paragraph stops being the thing that has to remember.
   refill. `#570` live plan readback is `{kind: run_chunked_routing, preflights:
   [], chunked_reference: true}`; the generator/achieve chain stayed green in the
   independent round-2 cohort (`46 passed`).
+- **4s-c adapter-version causal bottom / proof.** The shared version validator
+  existed, but validity was not transported with data: catalog and setup readers
+  parsed raw fields independently, handoff readers computed then discarded the
+  verdict, bootstrap rewrote unsupported input, and the issue resolver continued
+  parsing after an error. The final repair short-circuits shared simple adapters
+  and issue adapters before sibling fields, preserves bootstrap bytes, carries
+  catalog/handoff errors to final payloads, and makes issue-source/staleness stop
+  before provider access. Constructed `version: 7` consumer tests cover catalog,
+  setup inspect + resolver, handoff issue source + chunk policy + packet, quality
+  bootstrap, and issue backend/target selection. The capped round-2 review found
+  four residual consumers; those repairs are accepted-unreviewed per the two-round
+  cap. Focused combined proof: `253 passed`; packaging validation passed.
+- **4s-c private-media causal bottom / proof.** Byte-identical body readback only
+  proved storage, not that the audience could render provider-private media. The
+  create helper now classifies rendered Slack file images before `resolve_op` or
+  backend invocation and returns typed
+  `private_provider_media_unpublished`. Inline/full/collapsed/shortcut Markdown
+  and quoted/unquoted HTML forms are covered; fences, inline/indented code,
+  escaped examples, HTML comments, plain private source identities, and public
+  URLs remain outside the refusal. The capped round-2 review found both parser
+  bypasses and false positives; those repairs are accepted-unreviewed per the cap.
+  **Non-claim:** this is not generic URL reachability and does not add network
+  probes or media upload transport.
 
 **Consolidated 2026-08-09 to ONE active goal.** Six artifacts read `Status:
 active`; five are now `complete` with a retirement note naming why. Three were

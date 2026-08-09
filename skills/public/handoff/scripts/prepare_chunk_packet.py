@@ -46,7 +46,7 @@ def parse_args() -> argparse.Namespace:
 
 # `staleness` is already an argument to build_chunk_proposal_packet above; the rest
 # would die here, at the last stage before the agent reads the packet.
-CARRIED_KEYS = ("issue_adapter_report",)
+CARRIED_KEYS = ("issue_adapter_report", "handoff_adapter_report")
 
 
 def main() -> int:
