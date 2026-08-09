@@ -75,10 +75,20 @@ _CONSOLIDATION_VERB = (
     r"|eliminat(?:e|es|ed|ing)"
     # INFLECTED forms only. Bare `drop` matched `drop-in copies`, refusing a
     # ledger that asserted zero consolidation; `dropped`/`drops` cannot.
-    r"|drop(?:s|ped|ping))"
+    r"|drop(?:s|ped|ping)"
+    # `unif*` was NAMED as a known miss in the round-2 comment above and then
+    # never added to the list the comment sits on -- so `Four implementations,
+    # three unified.` passed a floor built to refuse exactly that ambiguity,
+    # while the synonym `consolidated` was refused. A defect a comment records
+    # and the code does not carry is the same shape as a record nobody re-read.
+    r"|unif(?:y|ies|ied|ying|ication|ications))"
 )
-#: Bounded to a clause: `.`/`;`/newline end the span, and 80 characters cap it.
-_CLAUSE = r"[^.;\n]{0,80}"
+#: Bounded to a clause: `.`/`;`/newline end the span. There is no character cap.
+#: The previous `{0,80}` was a fitted constant with no contract behind it -- a
+#: count separated from its verb by 81 characters slipped the floor. The clause
+#: boundary is the real bound, and widening here fails CLOSED: a wider match
+#: means the floor APPLIES more often, never that it passes more often.
+_CLAUSE = r"[^.;\n]*"
 _COUNTING_CLAIM = re.compile(
     rf"(?i){_NUMBER}{_CLAUSE}\b{_CONSOLIDATION_VERB}\b"
     rf"|\b{_CONSOLIDATION_VERB}\b{_CLAUSE}{_NUMBER}"
@@ -100,7 +110,7 @@ _POPULATION_LABEL = r"(?:populations?|implementations?|instances?|copies|sites|c
 #: field over.
 _REMOVED_LABEL = (
     r"(?:removed|removals?|deleted|consolidated|merged|folded|collapsed|bundled"
-    r"|pruned|retired|absorbed|subsumed|eliminated|deduplicated|dropped)"
+    r"|pruned|retired|absorbed|subsumed|eliminated|deduplicated|dropped|unified)"
 )
 
 

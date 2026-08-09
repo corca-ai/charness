@@ -32,11 +32,44 @@ _EXTERNAL_URL = re.compile(r"https?://\S", re.IGNORECASE)
 
 
 # Deliberately precise; the bare word "release" would over-trigger.
+#
+# ECOSYSTEM-STANDARD IDENTIFIERS, not this repo's house style. The first version
+# of this list held only `bump_version`, `publish_release`, `marketplace.json`
+# and `charness-artifacts/release/` -- four names belonging to THIS repo. In any
+# consuming repo none of them ever appears, so `release_triggered` returned False
+# for every goal, the release coordination floor never fired, and a goal that
+# bumped a version closed with no release evidence and no line saying the check
+# had not applied. A floor that is silently inert everywhere but its authoring
+# repo is worse than no floor: it reads as coverage.
+#
+# What is listed now are version manifests and publish commands whose names are
+# fixed by their ecosystems, so matching them is matching a declared convention
+# rather than a writing style. Repo-specific surfaces belong in the adapter's
+# `release_surface_tokens`, not here.
 _RELEASE_SURFACE_TOKENS = (
+    # this repo's own surfaces, kept so its behavior is unchanged
     "bump_version",
     "publish_release",
     "marketplace.json",
     "charness-artifacts/release/",
+    # version manifests
+    "pyproject.toml",
+    "package.json",
+    "cargo.toml",
+    "pom.xml",
+    "build.gradle",
+    "setup.py",
+    "setup.cfg",
+    "version.txt",
+    "changelog.md",
+    # publish commands
+    "npm publish",
+    "cargo publish",
+    "twine upload",
+    "gh release",
+    "git tag",
+    "poetry publish",
+    "goreleaser",
 )
 
 
@@ -101,20 +134,36 @@ def gather_triggered(text: str) -> bool:
     return _EXTERNAL_URL.search(body) is not None
 
 
-def release_triggered(text: str) -> bool:
+def release_triggered(text: str, repo_root: Path | None = None) -> bool:
     """True when the goal's recorded work names a release-surface token.
 
     The Coordination Cues span is blanked before the scan so a ``Release:``
     reference value (e.g. ``charness-artifacts/release/...``) or a seeded example
     in that section never counts as release work — only the *rest* of the body
     (Slice Plan / Slice Log / etc., where the run records what it changed) does.
+
+    ``repo_root`` is optional and additive: when given, the consuming repo's
+    achieve adapter may declare extra ``release_surface_tokens`` for a release
+    surface the built-in ecosystem list does not name. Resolution is graceful, so
+    a missing or broken adapter simply leaves the built-in list in force.
     """
     masked = _mask_fences(text)
     span = _section_span(masked, COORDINATION_SECTION)
     if span is not None:
         masked = masked[: span[0]] + (" " * (span[1] - span[0])) + masked[span[1] :]
     low = masked.lower()
-    return any(token in low for token in _RELEASE_SURFACE_TOKENS)
+    tokens = list(_RELEASE_SURFACE_TOKENS)
+    if repo_root is not None:
+        try:
+            from achieve_adapter_policy import resolve_release_surface_tokens
+
+            tokens.extend(resolve_release_surface_tokens(repo_root))
+        except Exception:
+            # An adapter problem must not decide a floor. Falling back to the
+            # built-in list keeps the floor armed rather than silently inert,
+            # which is the failure this whole repair is about.
+            pass
+    return any(token in low for token in tokens)
 
 
 def _parse_step(section_body: str | None, ref_re: "re.Pattern[str]") -> tuple[str | None, str | None]:

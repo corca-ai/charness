@@ -1064,3 +1064,4 @@ def test_optout_census_is_produced_by_the_real_closeout_path(tmp_path: Path) -> 
     agg = report["coordination_optout_aggregate"]
     assert "gather" in agg["opted_out_obligations"]
     assert agg["reason"].startswith("this goal opted out of 1 of its")
+

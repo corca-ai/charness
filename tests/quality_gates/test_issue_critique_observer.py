@@ -616,3 +616,53 @@ def _load_resolution_critique():
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     return module
+
+
+def test_a_negation_beyond_the_old_character_window_is_still_a_denial() -> None:
+    """The measured defect the clause repair fixes.
+
+    The previous reader scanned a 24-character window before the token, so a
+    sentence stating plainly that NO delegation happened returned `delegated` and
+    permitted an issue close asserting a review nobody ran. The window was fitted
+    to this repo's corpus, not derived from a contract; clause scoping replaces it.
+    """
+    observer = _load_observer()
+
+    for denial in (
+        "no fresh-eye reviewer was available, so nothing parent-delegated ran",
+        "none of the parent-delegated reviewers could be spawned",
+        "the host was unable to run any parent-delegated review",
+    ):
+        assert observer.observer_disposition(
+            f"Fresh-eye satisfaction: {denial}\n", strip_code_fences=_strip_code_fences
+        )["disposition"] == "undelegated", denial
+
+
+def test_a_negation_after_the_token_is_a_denial() -> None:
+    """A negation governs its clause wherever it sits; a leading window saw only
+    one side, so `parent-delegated review never ran` read as a delegation."""
+    observer = _load_observer()
+
+    assert observer.observer_disposition(
+        "Fresh-eye satisfaction: parent-delegated review never ran\n",
+        strip_code_fences=_strip_code_fences,
+    )["disposition"] == "undelegated"
+
+
+def test_a_paragraph_break_is_a_clause_boundary() -> None:
+    """A checked-in artifact writes the typed value on its own line and an
+    unrelated paragraph below it. Flattening the section body onto one line merged
+    them into a single clause, so `parent-delegated` + `The reviewer had no Bash`
+    scored as a denial — an over-block on an honest record."""
+    observer = _load_observer()
+
+    text = (
+        "## Fresh-Eye Satisfaction\n\n"
+        "parent-delegated\n\n"
+        "The reviewer had no Bash, so it could not run the gate.\n\n"
+        "## Next Section\n"
+    )
+
+    assert observer.observer_disposition(text, strip_code_fences=_strip_code_fences)[
+        "disposition"
+    ] == "delegated"

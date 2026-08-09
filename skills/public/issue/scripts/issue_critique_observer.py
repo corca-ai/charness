@@ -102,12 +102,21 @@ DEFAULT_MIN_BLOCKED_SIGNAL = 20
 #: and misreading a machine incapacity as a user's deliberate "no" is the more
 #: damaging direction of the two.
 _DECLINED_SIGNAL_RE = re.compile(r"delegation-declined|delegation signal:")
-#: Words that DENY the delegated token they precede. Matched ONLY in the short
-#: window immediately before the token, never anywhere in the value: the corpus's
-#: real records are prose sentences that routinely say "no blockers" and "not
-#: shipped" while recording a genuine delegation, and a value-wide scan demoted
-#: eleven honest post-cutoff artifacts on exactly those words.
-_NEGATION_RE = re.compile(r"(?:^|\W)(?:not|no|never|without|failed to)\W+$")
+#: Clause boundaries. A CLAUSE is the scope a negation governs, and using it
+#: replaces a fitted character window (see `_denies_delegation`). Punctuation is
+#: structural, not vocabulary: it needs no word list and works in any language
+#: that uses these marks.
+_CLAUSE_SPLIT_RE = re.compile(r"[.;:!?\n]|—|--|,\s")
+#: Words that DENY the delegated token in their clause. Position-independent
+#: within the clause, because a negation governs its clause wherever it sits:
+#: "nothing parent-delegated ran" negates from the left, "parent-delegated review
+#: never ran" from the right, and a character window catches neither reliably.
+#: STILL ENGLISH-ONLY, and that is a known, unfixed limitation stated rather than
+#: hidden — a negation written in another language is not detected here, so this
+#: floor's refusal is a floor on English records only.
+_NEGATION_RE = re.compile(
+    r"(?:^|\W)(?:not|no|never|without|nothing|none|failed to|unable to)(?:\W|$)"
+)
 #: An unedited `todo` anywhere in the value is not a delegation, wherever it
 #: sits: a scaffold claiming delegation is the same-observer rubber stamp wearing
 #: a typed value, which the authoring-side floor also refuses.
@@ -115,22 +124,49 @@ _TODO_MARKER = "todo"
 
 
 def _denies_delegation(normalized: str) -> bool:
-    """Whether every occurrence of a delegated token is negated or unedited.
+    """Whether every clause naming a delegated token negates it, or it is unedited.
 
-    One un-negated occurrence is a record of a delegation. This floor is
-    presence/typed-form only — whether the delegation it records actually
-    happened stays reviewer judgment, the same boundary every sibling floor
-    holds — so it does not try to adjudicate contrary prose surrounding an
-    otherwise plain claim.
+    CLAUSE-SCOPED, NOT WINDOW-SCOPED, and that is a deliberate replacement of what
+    stood here. The previous version searched for a hand-written English
+    negation list (`not|no|never|without|failed to`) inside a 24-character window
+    before the token. Both halves were wrong in the same way: the word list is
+    English-only, so a negation in any other language read as a delegation; and
+    the window was fitted — this file's own comment recorded that a value-wide
+    scan "demoted eleven honest post-cutoff artifacts", so the span was narrowed
+    until this repo's corpus looked right. No contract produced 24.
+
+    The measured failure it allowed: `no fresh-eye reviewer was available, so
+    nothing parent-delegated ran` returned `delegated`, because the negation sits
+    more than 24 characters before the token. A sentence stating that NO
+    delegation happened permitted an issue close asserting one did — at an
+    irreversible public boundary, in the fail-OPEN direction.
+
+    The replacement scopes the negation to the CLAUSE containing the token, using
+    punctuation rather than a character count. A negation governs its clause, so
+    position within it does not matter: `nothing parent-delegated ran` negates
+    from the left and `parent-delegated review never ran` from the right, and no
+    window catches both. Clause scoping also keeps the property the window was
+    reaching for — `parent-delegated. Round 2 returned no blockers` stays a
+    delegation, because the `no` is in a different clause.
+
+    A LEADING-TOKEN (prefix) test was considered and rejected on evidence: ten
+    checked-in artifacts record delegation as `satisfied — parent-delegated ...`,
+    and a sibling test pins that form deliberately. Refusing them would put this
+    floor's whole cost on honest authors and none on the failure mode.
+
+    WHAT IS STILL WRONG HERE, STATED RATHER THAN HIDDEN. The negation vocabulary
+    is English-only. A record that denies delegation in another language reads as
+    a delegation, in the fail-OPEN direction, at a boundary that authorizes an
+    irreversible public close. Removing the fitted window does not fix that; it
+    removes one of the two defects. This is a floor on English records.
     """
     if _TODO_MARKER in normalized:
         return True
-    for claim in DELEGATED_VALUES:
-        start = normalized.find(claim)
-        while start != -1:
-            if not _NEGATION_RE.search(normalized[max(0, start - 24) : start]):
-                return False
-            start = normalized.find(claim, start + 1)
+    for clause in _CLAUSE_SPLIT_RE.split(normalized):
+        if not any(claim in clause for claim in DELEGATED_VALUES):
+            continue
+        if not _NEGATION_RE.search(clause):
+            return False
     return True
 
 
@@ -182,7 +218,13 @@ def _declared_value(lines: list[str]) -> str | None:
             # reader was already repaired once to avoid.
             joined = " ".join(body).lower()
             if joined.startswith(BLOCKED_VALUE) or any(claim in joined for claim in DELEGATED_VALUES):
-                return " ".join(body)
+                # Joined on NEWLINE, not a space: a paragraph break is a clause
+                # boundary, and flattening it merged a typed `parent-delegated`
+                # line with the unrelated paragraph below it into one clause --
+                # so an artifact reading "parent-delegated" then "The reviewer had
+                # no Bash" scored as a denied delegation. `_CLAUSE_SPLIT_RE` reads
+                # the newline; nothing else depends on the separator.
+                return "\n".join(body)
             # A section whose body is itself the bullet form.
             return _split_field(body[0]) or body[0]
     for line in lines:

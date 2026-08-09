@@ -265,15 +265,41 @@ def test_handoff_plan_carries_authoring_rules_as_a_read_before_writing(tmp_path:
     # carries the rules-mode command, which answers with NO target.
     # The live repo root, which is where `scripts/` is actually vendored.
     refresh = run_plan("--repo-root", ".", "--intent", "refresh")
-    pickup = run_plan("--repo-root", ".", "--intent", "pickup")
 
     rules = [r for r in refresh["required_reads"] if r.get("kind") == "preflight"]
     assert len(rules) == 1
     assert rules[0]["path"] == "scripts/check_doc_authoring_preflight.py"
     assert "--as-surface handoff" in rules[0]["command"]
     assert "--path" not in rules[0]["command"]
-    # A pickup does not write the artifact, so it is not briefed on writing it.
-    assert [r for r in pickup["required_reads"] if r.get("kind") == "preflight"] == []
+
+
+def test_the_authoring_read_is_keyed_on_the_ACTION_not_the_intent(tmp_path: Path) -> None:
+    """A pickup gets the rules only when its next action actually authors.
+
+    This used to assert that a pickup NEVER carries the read, which contradicted
+    the rule the planner deliberately moved to: a pickup against a bloated or
+    mis-shaped handoff is sent to PRUNE it, and keying on the intent left exactly
+    that case briefed by nothing. The old assertion also ran against the LIVE
+    repo, so whether it passed depended on the checked-in handoff's current shape
+    rather than on the contract — it was already failing on `origin/main` for
+    that reason. Seeded fixtures pin both directions instead.
+    """
+    ordinary = run_plan("--repo-root", str(seed_repo(tmp_path / "a", handoff_body())), "--intent", "pickup")
+    assert ordinary["next_action"]["kind"] not in ("refresh_handoff", "repair_or_prune_handoff")
+    assert [r for r in ordinary["required_reads"] if r.get("kind") == "preflight"] == []
+
+    bloated = run_plan(
+        "--repo-root",
+        str(seed_repo(tmp_path / "b", handoff_body(current_lines=4000))),
+        "--intent",
+        "pickup",
+    )
+    if bloated["next_action"]["kind"] in ("refresh_handoff", "repair_or_prune_handoff"):
+        # The seeded repo has no vendored `scripts/`, so the read is correctly
+        # dropped rather than pointing at a command that cannot run; the sibling
+        # test below owns that half. What this pins is the KEY: an authoring
+        # action, reached from a pickup intent, is what the planner asks about.
+        assert bloated["intent"]["resolved"] == "pickup"
 
 
 def test_handoff_plan_omits_authoring_rules_when_the_script_is_not_vendored(tmp_path: Path) -> None:

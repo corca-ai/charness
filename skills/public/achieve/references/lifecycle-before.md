@@ -39,6 +39,58 @@ Shape scope only after recounting the tracker, and record the split in
 `Claims:` (issues this goal takes), `Not claimed:` (issues it deliberately
 leaves, with the reason).
 
+**Counting is not re-verifying.** A recount says how many issues are open; it
+says nothing about whether they are still TRUE. An append-only backlog
+accumulates issues whose premise the tree has already refuted — one was found by
+hand only after a reviewer round had been spent on it, and its fix quoted its own
+complaint as the reason the fix existed. Before claiming or declining an issue,
+render its premise state:
+
+```bash
+python3 "$SKILL_DIR/scripts/recount_premise_state.py" --repo-root . \
+  --premise-file <your judgements>.json --with-bodies \
+  --exclude <the goal artifact you are shaping>
+```
+
+It emits one of `premise-holds`, `premise-refuted-clean`,
+`premise-refuted-with-live-residue`, or `unverifiable-by-machine` per open issue,
+**and then stops** — it never closes an issue and never recommends closing one.
+Read these before trusting a verdict:
+
+- The PREMISE judgement is yours, supplied through `--premise-file`. With no file,
+  every issue renders `unverifiable-by-machine`; the tool will not invent a
+  judgement you did not make.
+- `premise-refuted-with-live-residue` is a REFUSAL to recommend, not a close
+  candidate. A refuted premise is not a close signal: the motivating instance was
+  genuinely refuted and still must not close, because a further ask was live and a
+  durable record had said so.
+- A residue channel that did not RUN is not a channel that came back clean. Without
+  `--with-bodies`, against a wrong `--repo-root`, or where every record is
+  gitignored or excluded, the tool refuses rather than reporting `clean`.
+- `--exclude` the artifact you are shaping, so a marker you just wrote in it does
+  not come back to you as someone else's evidence.
+
+**Residue is STRUCTURAL, and `premise-refuted-clean` is not a claim that nobody
+declined.** The tool reads exactly two signals, both of which mean one thing in
+every repo and every language: an explicit `Premise-residue:` marker in a durable
+record, and unchecked `- [ ]` task items in the issue body. It deliberately does
+**not** infer a decline from wording. An earlier version matched hand-written
+English and Korean phrase lists inside proximity windows; that was repo-specific
+hardcoding in a portable skill, and its window sizes had been tuned against this
+repo's own backlog until the output looked right — a verdict surface fitted to its
+own test set, which is the defect this seam exists to remove.
+
+So when a record declines to close an issue, **write the marker**; nothing infers
+it for you:
+
+```text
+Premise-residue: <issue anchor> — part 2 (the automated helper) is unbuilt; do not
+close on part 1 shipping alone.
+```
+
+A marker needs a reason, and one inside a fenced block is skipped and reported —
+so this example cannot become a live disposition.
+
 The Before phase used to shape outcome, non-goals, boundaries, acceptance and a
 slice sequence without ever opening the tracker, and `--pursue-ready` — the
 surface that decides a goal may activate — validated headings, placeholders and

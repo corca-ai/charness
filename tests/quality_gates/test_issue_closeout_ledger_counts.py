@@ -186,15 +186,40 @@ def test_ordinary_prose_using_those_words_is_not_a_consolidation_claim() -> None
         assert evaluate(text)["applies"] is False, text
 
 
-def test_the_clause_span_cap_is_pinned() -> None:
-    """The cap had ZERO test pressure: the old test named distance and tested a `.`.
+def test_the_clause_boundary_bounds_the_span_without_a_character_cap() -> None:
+    """The cap was a FITTED constant; the clause boundary is the real bound.
 
-    Single clause, no `.`/`;`, so only the 80-character cap can decide.
+    `{0,80}` had no contract behind it, so a count separated from its verb by 81
+    characters slipped a floor built to refuse exactly that ambiguity. Removing it
+    widens the trigger, which fails CLOSED here: a wider match means the floor
+    APPLIES more often, never that it passes more often. What must still bound the
+    span is the clause — a verb in one sentence and a number in the next are not a
+    counting claim.
     """
     near = "consolidated the shims, and 3 of them were private copies"
     far = "consolidated the shims " + "x" * 90 + " and 3 were private"
     assert evaluate(near)["applies"] is True
-    assert evaluate(far)["applies"] is False
+    assert evaluate(far)["applies"] is True, "a fitted 80-char cap must not decide this"
+
+    for separated in (
+        "consolidated the shims. There were 3 private copies elsewhere",
+        "consolidated the shims; 3 unrelated tests were renamed",
+        "consolidated the shims\nThe suite has 3 remaining fixtures",
+    ):
+        assert evaluate(separated)["applies"] is False, separated
+
+
+def test_a_synonym_the_comment_named_is_actually_carried_by_the_code() -> None:
+    """`unif*` was named as a known miss in a comment and never added.
+
+    So `Four implementations, three unified.` passed the floor while its synonym
+    `three consolidated.` was refused — the floor's own ambiguity, slipping the
+    floor. A defect a comment records and the code does not carry is the same
+    shape as a record nobody re-read.
+    """
+    assert evaluate("Four implementations, three unified.")["applies"] is True
+    assert evaluate("Four implementations, three unified.")["ok"] is False
+    assert evaluate("Population: 4 implementations; unified: 2")["ok"] is True
 
 
 def test_a_placeholder_siblings_field_is_one_defect_not_two() -> None:

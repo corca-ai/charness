@@ -196,7 +196,7 @@
     {
       "candidate_id": "next_improvement:a0c0624ca5fc",
       "kind": "next_improvement",
-      "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571. → tracked issue #571",
+      "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571 — verified against its body rather than its title: its instance 2 is `#567`, \"already fully repaired… the session's first disposition was re-scope — based on the issue body rather than on the commit that fixed it\", which is the same shape as the `#554` draft close. → tracked issue #571",
       "normalized_key": "before closing an issue as already fixed read the slice log of the goal",
       "recurrence_class": null,
       "source_count": 1,
@@ -215,7 +215,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571. → tracked issue #571"
+          "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571 — verified against its body rather than its title: its instance 2 is `#567`, \"already fully repaired… the session's first disposition was re-scope — based on the issue body rather than on the commit that fixed it\", which is the same shape as the `#554` draft close. → tracked issue #571"
         }
       ]
     },
@@ -246,10 +246,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:65fed4e62388",
+      "candidate_id": "next_improvement:5f0aaf14b99c",
       "kind": "next_improvement",
-      "lesson": "this retro plus the recent-lessons digest, carrying the specialization of the \"spoke before measuring\" trap into \"acted on a record before re-reading it\". → applied: this artifact and the digest refreshed from it",
-      "normalized_key": "this retro plus the recent lessons digest carrying the specialization of the spoke before",
+      "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it",
+      "normalized_key": "this retro and the digest refreshed from it which now carries both improvement lines",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -267,7 +267,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "this retro plus the recent-lessons digest, carrying the specialization of the \"spoke before measuring\" trap into \"acted on a record before re-reading it\". → applied: this artifact and the digest refreshed from it"
+          "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it"
         }
       ]
     },
@@ -566,7 +566,7 @@
     {
       "candidate_id": "next_improvement:a0c0624ca5fc",
       "kind": "next_improvement",
-      "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571. → tracked issue #571",
+      "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571 — verified against its body rather than its title: its instance 2 is `#567`, \"already fully repaired… the session's first disposition was re-scope — based on the issue body rather than on the commit that fixed it\", which is the same shape as the `#554` draft close. → tracked issue #571",
       "normalized_key": "before closing an issue as already fixed read the slice log of the goal",
       "recurrence_class": null,
       "source_count": 1,
@@ -585,7 +585,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571. → tracked issue #571"
+          "lesson": "before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571 — verified against its body rather than its title: its instance 2 is `#567`, \"already fully repaired… the session's first disposition was re-scope — based on the issue body rather than on the commit that fixed it\", which is the same shape as the `#554` draft close. → tracked issue #571"
         }
       ]
     },
@@ -616,10 +616,10 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:65fed4e62388",
+      "candidate_id": "next_improvement:5f0aaf14b99c",
       "kind": "next_improvement",
-      "lesson": "this retro plus the recent-lessons digest, carrying the specialization of the \"spoke before measuring\" trap into \"acted on a record before re-reading it\". → applied: this artifact and the digest refreshed from it",
-      "normalized_key": "this retro plus the recent lessons digest carrying the specialization of the spoke before",
+      "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it",
+      "normalized_key": "this retro and the digest refreshed from it which now carries both improvement lines",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -637,7 +637,7 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "this retro plus the recent-lessons digest, carrying the specialization of the \"spoke before measuring\" trap into \"acted on a record before re-reading it\". → applied: this artifact and the digest refreshed from it"
+          "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it"
         }
       ]
     },

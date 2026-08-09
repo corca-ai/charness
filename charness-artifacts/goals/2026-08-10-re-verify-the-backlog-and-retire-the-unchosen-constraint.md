@@ -1,6 +1,6 @@
 # Achieve Goal: A record is not a fact: re-verify the backlog, consolidate what survives, and retire the constraint nobody chose
 
-Status: draft
+Status: active
 Created: 2026-08-10
 Activation: `/goal @charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`
 
@@ -9,14 +9,30 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: real draft/backlog awaiting activation.
-- Current slice intent: real draft/backlog awaiting activation; reshape before
-  activating if the acceptance boundary has changed. Once active, this names
-  the reviewable-intent unit in progress and the commits it spans; critique
-  and broad proof do not re-fire within one unchanged intent — update it when
-  the intent changes, not per commit (meaningful-slice-cadence).
-- Next action: activate with `/goal @charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md` after confirming the draft is
-  still intended.
+- Current slice: 3 — consolidate on GitHub behind a typed `consolidated`
+  disposition.
+- Current slice intent: add `consolidated` as a sixth classification that swaps
+  the resolution floor for its own machine-verifiable checks (destination named,
+  OPEN at close time by backend readback, destination body containing this
+  issue's number, no chains, backend reason `not planned`, and a refusal when the
+  carrier claims a repair). Then file up to four umbrella issues and move members
+  behind it. This names the reviewable-intent unit in progress and the commits it
+  spans; critique and broad proof do not re-fire within one unchanged intent
+  (meaningful-slice-cadence).
+- Next action: land slices 1-2 as one commit, then push and cut the release the
+  operator granted, then implement the `consolidated` classification.
+- Slice 1 status: done before activation in `ac019102`, re-verified against the
+  tracker on 2026-08-10 (`#521` `#519` `#520` all CLOSED; 22 open, not 25).
+- Slice 2 status: done. The seam ships with NO prose matching and NO fitted
+  constants — residue is a typed `Premise-residue:` marker plus unchecked
+  `- [ ]` items. Two bounded rounds ran; round 2 measured the prose version
+  collapsing to 21-of-22 refusals and the operator refuted the approach itself.
+- External side-effect grant, phase-scoped: the operator granted PUSH and
+  RELEASE for the slice 1+2 bundle on 2026-08-10. It does not carry into slice 3;
+  slice 3's issue closes need their own grant and their own per-close floor.
+- Carried into slice 3: the record residue channel is WORKING BUT EMPTY —
+  historical records carry no marker. Consolidation must WRITE `Premise-residue:`
+  markers as it moves members, because nothing recovers intent from prose.
 - Verification cadence: cheap deterministic checks at commit boundaries;
   higher-cost or fresh-eye proof at slice boundaries; final broad/live proof at
   closeout.
@@ -129,8 +145,8 @@ See `## Active Operating Frame` for when each is proven.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Retire the constraint nobody chose | A cut vertex: a prior goal parked `AGENTS.md` shrinking underneath it, and slices 3-4 may need compaction moves it forbids. Cheapest unblock available | The policy scoped to its own pipeline; the operator ruling recorded with date and reasoning; `#521` closed citing it | planned |
-| 2 | Make backlog re-verification executable, as an EXTENSION of the existing recount seam | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A typed premise state per open issue, emitted by the recount seam rather than by a second backlog reader; `#554` reproduced as `premise-refuted-with-live-residue`; `#571` closed in place | planned |
+| 1 | Retire the constraint nobody chose | A cut vertex: a prior goal parked `AGENTS.md` shrinking underneath it, and slices 3-4 may need compaction moves it forbids. Cheapest unblock available | The policy scoped to its own pipeline; the operator ruling recorded with date and reasoning; `#521` closed citing it | done (`ac019102`, tracker-verified 2026-08-10) |
+| 2 | Make backlog re-verification executable, as an EXTENSION of the existing recount seam (STATUS: done — structural markers only; the prose/threshold design was built, measured, and deleted) | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A typed premise state per open issue, emitted by the recount seam rather than by a second backlog reader; `#554` reproduced as `premise-refuted-with-live-residue`; `#571` closed in place | done — with one revision to the recorded expectation: `#554` is reproduced as a refusal via a typed marker, NOT by inferring a decline from record prose, and `#571` stays open into slice 3 |
 | 3 | Consolidate on GitHub | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | planned |
 | 4 | Close the family that reaches consumers | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | planned |
 
@@ -230,6 +246,9 @@ Open, and inherited:
 - `#561`'s equality-versus-invariant probe pin. Both costs are already measured in
   a predecessor's queue. If it is consolidated rather than decided, say so on the
   issue.
+- Premise-residue: `#561` — an operator decision is open on it (equality-versus-invariant
+  probe pin), inherited from a predecessor's queue and not taken in this goal. Refuse to
+  recommend closing it until that decision is recorded.
 
 ## Coordination Cues
 
@@ -289,6 +308,34 @@ per the bullets above when that boundary is crossed):
   disposition names.
 
 ## Slice Log
+
+### Slice 1: Slice 1 — retire the constraint nobody chose
+
+- Objective: Stop `docs/prompt-mutation-policy.md` from governing ordinary editorial deletion and compaction of prompt surface, keeping its evidentiary rule inside the mutation-experiment pipeline where it was actually chosen. Close `#521` citing the operator ruling, and close `#519`/`#520` as a cadence question owned by `../cautilus`.
+- Why this approach: The Slice Plan named this a cut vertex: a prior goal parked "may `AGENTS.md` be physically shrunk" underneath an unarmed agent-authored document, so slices 3 and 4 could not use compaction moves until the reach was cut. Cheapest available unblock.
+- Commits: `ac019102` docs: scope the prompt-mutation policy to its own verdicts
+- What changed: `docs/prompt-mutation-policy.md` gained a `## Scope: this governs the pipeline's verdicts, not editing` section recording the operator ruling with its date and reasoning, and the demote-never-delete section was retitled to say it is about the verdict, not about the editor. The goal artifact carried the shaping.
+- Alternatives rejected: Deleting the policy outright was rejected: its evidentiary rule ("a survival verdict is not a deletion proof") is still true inside the experiment pipeline, so the correct move keeps the meaning and cuts the reach. Relabelling `#521` as a question was rejected because the operator had already ruled.
+- Targeted verification: Tracker readback rather than record trust — the goal's own thesis applied to its own slice. `gh issue view` reports `#521` CLOSED 2026-08-09T17:35:28Z, `#520` CLOSED 2026-08-09T17:35:29Z, `#519` CLOSED. `gh issue list --state open` now returns 22, down from the 25 recorded in `## Backlog Recount`. The Scope section is present in the working tree at `docs/prompt-mutation-policy.md`.
+- Test duplication pressure: n/a — no tests added or expanded; this slice changed one docs surface.
+- Critique: Deferred to the slice-2/3 boundary: the policy retirement is a docs-scope change with no executable verdict surface, and the goal's Agent Verification Plan binds its bounded fresh-eye round alongside the consolidated-close disposition, which IS a proof surface. Recorded here so the obligation is not lost.
+- Off-goal findings: None filed.
+- Lessons carried forward: This slice landed before activation and was re-verified against the tracker rather than believed from the commit message — the exact discipline slice 2 is about to make executable. The recount in the goal artifact is now stale by three issues, which is itself evidence for slice 2: a hand-written count decays the moment work lands.
+- Metrics:
+
+### Slice 2: Slice 2 — make backlog re-verification executable, as an extension of the recount seam
+
+- Objective: Answer "is this issue still true?" in one command instead of a reading session: emit a typed premise state per open issue from the `achieve` recount seam, and STOP — never close an issue, never recommend closing one.
+- Why this approach: It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked. It is also the originating issue's part 2, which the tracker-backend consolidation had unblocked.
+- Commits: pending — this slice's commit lands with this log entry
+- What changed: NEW `skills/public/achieve/scripts/recount_premise_state.py` (tracker seam + report envelope), `recount_premise_lib.py` (verdict typing), `recount_residue_lib.py` (structural residue detection). `references/lifecycle-before.md` gained the routing and the marker contract. `skills/public/quality/references/attention-state-visibility.json` declares both new skipped-state surfaces. `charness-artifacts/quality/dup-review.json` classifies three loader/idiom families. `docs/public-skill-dogfood.json` records the review for `achieve`, `issue`, `quality`. Generated `plugins/` mirror synced. Two OFF-SLICE proof-surface repairs came from a sweep this slice provoked and are recorded under Off-goal findings.
+- Alternatives rejected: REJECTED — a second backlog reader inside `achieve`: the originating issue names that as the wrong repair, so the tracker goes through the `issue` skill's `issue_backend.resolve_op`/`run_backend`, the contractual owner. REJECTED — importing `handoff`'s `list_open_issues`: it is gated behind the handoff adapter's optional `issue_source:` block, so a host disabling handoff pickup would silently disable this too, and a floor another skill's adapter can switch off is not a floor. REJECTED — a two-state `premise-holds`/`premise-refuted` typing: the motivating instance was genuinely refuted and still must not close. REJECTED, AFTER BUILDING IT — inferring a decline from record wording: see Critique.
+- Targeted verification: 61 tests in `tests/test_recount_premise_state.py`, seeded in both directions so a constant-answer tool fails. LIVE MARKER ROUND-TRIP against this repo's 22 open issues: a `Premise-residue:` marker written into a durable record produced exactly one refusal citing that marker's path and line, with the other 21 clean. `run_slice_closeout.py --skip-broad-pytest` structural sweep green after declaring both skipped-state surfaces. Dup ratchet OK (0 new fixable families). 707 issue-lane tests green after the off-slice repairs. Broad `pytest tests/` run at the slice boundary.
+- Test duplication pressure: `check_dup_ratchet.py --repo-root . --summary` run three times during the slice. It first reported 8 new fixable families; 5 were removed by real deduplication (collapsing two module loaders into one, delegating the backend runner to the `issue` skill's owner, collapsing two one-line accessor wrappers the ratchet named immediately), and 3 were classified `intentional` in `dup-review.json` with reasons. Final state OK, `fixable_ceiling=0 <= floor_F=0`. The advisory hook fired on every write and was acted on inside the slice rather than at closeout.
+- Critique: TWO bounded fresh-eye rounds, both unnamed and read-only, both boundary-verified clean with `reviewer_boundary_fingerprint.py`. This is verdict logic on a proof surface, so the second round was owed and it earned itself. ROUND 1 confirmed the typing (caller-supplied judgement, bare-mention-is-not-residue, never-recommends-close all survived attack) and found four recall defects, each producing the close-leaning state on evidence a human reads as "do not close": line-scoped matching missing wrapped declines, a truncated root list, a silent empty scan, and an unread body silently meaning "no further ask" while the reason string asserted the body was clear. ROUND 2 read the REPAIRS and found what round 1 could not: the repairs' own defects. Measured, not asserted — with all 22 issues judged refuted, 21 refused, i.e. the tool had become a constant. Root cause was a CATEGORY ERROR: this repo's own recount floor REQUIRES a `Not claimed:` bullet naming the issues a goal does not take, and "this goal is not taking it" says nothing about closability; one such bullet reads "closable now" of the very issue the scanner was citing as evidence not to close. Round 2 also found JSON/JSONL collapsing into one block, `files_scanned == 0` not being a channel gap, and F4 reopened at the CLI seam via `.get("body") or ""`. THE OPERATOR THEN REFUTED THE WHOLE APPROACH, and correctly: the decline vocabulary was repo-specific English/Korean hardcoding inside a PORTABLE skill, and the proximity windows had been fitted by watching this repo's clean count go 1, 3, 7, 10 across successive tunings — a verdict surface fitted to its own test set, which is the defect this goal family exists to remove, arriving inside the tool built to remove it. All prose matching and all fitted constants were deleted.
+- Off-goal findings: A bounded read-only sweep for the same defect class across `skills/public/**`, `skills/support/**`, `skills/shared/**` found ~11 instances in ~326 files — present but not widespread, clustered in the achieve closeout floors and the issue closeout observer. Three were fixed IN THIS SLICE at the operator's instruction rather than filed. (1) `issue_critique_observer._denies_delegation`: an English negation list inside a 24-character window, the span narrowed until this repo's corpus looked right. MEASURED: `no fresh-eye reviewer was available, so nothing parent-delegated ran` returned `delegated`, permitting an issue close asserting a review nobody ran. Repaired to clause-scoped negation using punctuation boundaries; also catches right-side negation (`never ran`) that no leading window could, and a paragraph break is now a clause boundary. A leading-token test was considered and REJECTED on evidence (ten artifacts use `satisfied — parent-delegated ...`). Residual English-only limitation stated in the module, not hidden. (2) `goal_artifact_coordination_floors._RELEASE_SURFACE_TOKENS`: four of this repo's own script/artifact names gating the release coordination floor, making it silently inert in every consuming repo — worse than no floor, because it reads as coverage. Repaired with ecosystem-standard version manifests and publish commands plus an adapter-declared `release_surface_tokens` seam. (3) `issue_closeout_ledger_counts`: a comment named `unif*` as a known miss and the code never carried it, so `Four implementations, three unified.` passed a floor that refused the synonym `three consolidated.`; the fitted `{0,80}` clause cap is also gone. Surfaces confirmed CLEAN are recorded in the sweep, including `goal_artifact_disposition_grammar`, which documents the word-list trap in-file and matches structure only.
+- Lessons carried forward: The round that reads the REPAIRS catches a different class than the round that reads the original — round 2's finding inverted the tool's value and round 1 could not have seen it, because it did not exist yet. Measure a heuristic's output distribution before believing it: 21-of-22 refusals looked like caution and was a constant. And the strongest signal that a threshold is fitted is that you can narrate the sequence of values you tried — if the number came from watching the output, it is a fit, not a contract. Slice 3 inherits a working but EMPTY record channel: historical records carry no `Premise-residue:` marker, so consolidation must write markers as it goes rather than expecting the tool to recover intent from prose.
+- Metrics:
 
 ## Context Sources
 
