@@ -24,9 +24,17 @@ runs the activation command.
   issues and closing members are external side effects, and the only external grant
   this run holds is the push/release one for the slice 1+2 bundle, which is
   phase-scoped and does not carry.
-- Next action: file the four umbrella issues (corrected families, below), each
-  naming its members in the BODY — the readback's third check requires that
-  before any member closes — then move members.
+- Slice 3b part 2: DONE. Four umbrellas filed (`#582` `#583` `#584` `#585`), each
+  naming its members in the body; all four passed the consolidation readback
+  against the live tracker before any close ran. Eleven issues closed: nine
+  consolidations as `NOT_PLANNED` and two genuine resolutions (`#554` `#571`) as
+  `COMPLETED`, so the tracker renders the distinction publicly. `#514` REFUSED and
+  stays open — the evidence-boundary crosswalk reported `matrix_incomplete`, which
+  is a real protection on `#514`/`#515`/`#518`, not an obstacle to route around;
+  `#582` carries a correction saying it absorbed three of four.
+- Next action: slice 4 — group A (`#576` `#518` `#528` `#515` `#546`), the family
+  whose defect reaches consumers as a false green. Note `#515` and `#518` sit
+  behind the same crosswalk bootstrap that refused `#514`.
 - PUSH AND RELEASE: DONE. `v4.2.0` is published and verified on the public
   surface (`gh release view` reports draft=false, prerelease=false; hosted `main`
   and local both at `6b49ba0e`; installed readback reports `version: 4.2.0`).
@@ -432,6 +440,20 @@ per the bullets above when that boundary is crossed):
 - Critique: One bounded round on this surface, boundary-verified clean, and it found the same shape a third time. THE HEADLINE: the readback ran in `verify_closeout` but NOT in `close-with-comment` — which is the one carrier a consolidated close is REQUIRED to use, because it is the only path that passes `--reason 'not planned'`. So the carrier a consolidation must use was the one carrier checking neither its destination grammar nor whether that destination exists. The close floor's own comments already name this asymmetry twice for HOTL and AI-provenance; this was the third instance. ALSO FOUND: (a) the readback never checked that the payload described the destination it ASKED about — the sibling expected-state loop already does this and records why ('being told is not obeying, and a wrong-repo answer carries the RIGHT number'), and without it a cross-repo anchor would be fetched against the source repo where an unrelated same-numbered issue could pass all four checks; (b) a truthy non-dict payload escaped as an AttributeError traceback, contradicting the module's own rule that any backend failure is 'did not run'; (c) failure amplification — twenty closes into one bad umbrella produced ~40 byte-identical lines that buried every other finding, because three of the four facts are destination-scoped and were re-emitted per source. All repaired with regression tests. NOT REPAIRED, recorded instead: the chain check is near-inert against real chains (a consolidated destination is CLOSED, so check 2 catches what check 4 claims to) and can false-positive on an umbrella that documents the convention in a fence.
 - Off-goal findings: None new. `#580` still blocks the operator-granted push and release.
 - Lessons carried forward: Three surfaces in this goal have now shipped a check that existed and never ran: the premise-state channels, the `consolidated` classification itself, and now these readbacks. The tell is identical each time — a green test exercising a DIRECT call while the wired path never reaches the code — so the durable remedy applied here is that every check is tested through the surface an operator actually invokes, including one test that asserts a backend call was made at all. That is the same defect this goal was designed from, arriving three more times inside the work meant to remove it.
+- Metrics:
+
+### Slice 5: Slice 3b part 2 — consolidate on GitHub
+
+- Objective: File the umbrella issues and move their members behind the typed `consolidated` disposition, so the open list reads as work units rather than as one gap seen from four angles.
+- Why this approach: Both reasons for holding had dissolved: the disposition and its readbacks were published in v4.2.0, so the closes no longer cite local-only machinery, and the corrected families were recorded. Filing is standing-approved; closing is standing-approved once the closeout floor passes, and the floor now exists.
+- Commits: `31b3ccd9` (the resolution critique binding `#554`/`#571`), plus the goal artifact record. The closes themselves are GitHub mutations, not commits.
+- What changed: Four umbrella issues filed: `#582` (proof/evidence infrastructure is prose, not schema — `#514` `#524` `#525` `#535`), `#583` (a verification surface silently stops verifying — `#568` `#569`), `#584` (a harness surface discards state it already has — `#531` `#532`), `#585` (a gate pins volatile identity instead of the invariant — `#534` `#561`). Eleven issues closed. NEW `charness-artifacts/critique/2026-08-10-issue-554-571-resolution-critique.md`.
+- Alternatives rejected: REJECTED — the audit's original grouping: it grouped by SURFACE, and a bounded read of every member body moved four issues and created one pairing it did not have. REJECTED — consolidating `#527` wholesale: only one of its six observations fits any family, and its own author asks for a split. REJECTED — consolidating `#550`, `#539`, `#542`: singletons, and `#550` in particular is the dup ratchet working CORRECTLY, the opposite of `#534`'s false block that the audit had paired it with. REJECTED — routing around the `#514` refusal: the crosswalk protection is real.
+- Targeted verification: The consolidation readback was run against the LIVE tracker for all four umbrellas before any close: every (source, destination) pair returned all four facts OK — destination exists, is OPEN, its body names the source, and it is not itself a consolidation. Every close body was validated through `evaluate_close_comment_floor` before mutation. State read back per issue afterwards: nine `CLOSED / NOT_PLANNED`, two `CLOSED / COMPLETED`, one still `OPEN`. Open count 24 -> 17.
+- Test duplication pressure: n/a — no tests added or expanded; this slice ran the machinery the previous slices built.
+- Critique: The machinery critiqued itself, which is the useful part. THE CONSOLIDATED-REASON REFUSAL FIRED ON THE LIVE CLI: a close attempted with `--reason completed` was refused before any mutation, with the message naming `not planned`. THE CROSSWALK REFUSED `#514` with `matrix_incomplete`, protecting three issues whose acceptance matrix does not exist — a refusal I did not anticipate and did not route around. THE CLOSE-COMMENT FLOOR REFUSED the first `#554` draft because the critique it cited was a goal artifact carrying no typed `Fresh-eye satisfaction:` line, so the observer read it `absent`; that is the observer floor doing exactly its job on my own work, and it forced the resolution critique that should have existed anyway. Bounded fresh-eye review was NOT re-run for this slice: it executes decisions two prior rounds already reviewed, and the release critique covered the shipped surfaces. The judgement that is genuinely new here — the corrected grouping — WAS externally reviewed, by the bounded read that refuted the audit's families.
+- Off-goal findings: `#581` filed earlier still open. `#514` remains open behind the crosswalk bootstrap, and `#582` carries a comment correcting its own member claim rather than leaving the list to imply four moved when three did.
+- Lessons carried forward: The tool built in slice 2 rendered `premise-refuted-clean` for `#554` and `#571` and did NOT recommend closing them — which is exactly the designed behaviour, and it meant the close decision stayed a human's, informed by evidence the tool does not supply. That is the north star's P5 working in the one case that mattered most, since `#554` is the issue this whole goal was designed from. Second: three separate refusals fired on my own work in this slice (reason, crosswalk, observer), each before a mutation. A floor that only ever refuses other people's work has not been tested.
 - Metrics:
 
 ## Context Sources
