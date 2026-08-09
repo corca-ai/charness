@@ -2,9 +2,9 @@
 
 ## Workflow Trigger
 
-- **Next pickup: slice 2 — unblock the push.** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `Status: active`; slice 1 is DONE and its `## Slice Log` carries what it measured.
-- **Push first if it is approved.** Four commits are unpushed and three of them are closeout carriers, so `#560`, `#565`, and `#567` all still read OPEN on GitHub. `issue_tool.py verify-closeout --expect-state CLOSED` confirms that today. One push converts all three; nothing else will.
-- **The slice plan was RE-SHAPED on 2026-08-09** after slice 1 and an unplanned stance slice landed. Two units that were not in the original plan are now first: unblock the push, then wire the regenerable-fact stance into `setup` so it reaches consuming repos at all. `#564`, `#563`, `#521`/`#546`, and `#523` follow, in that order.
+- **Next pickup: slice 3b (`#530`).** Run `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`. It is `Status: active`; slices 1, 1b, 2 and 3 are DONE and the `## Slice Log` carries what each measured.
+- **The push is UNBLOCKED but NOT TAKEN, and it needs an explicit grant.** The old blocker was refuted, not fixed around: `check-cli-skill-surface` was reporting its own 20s timeout as the probe's cost. The full gate now runs green (`bash scripts/run-quality.sh`, redirect to a file). Sixteen commits are unpushed and several are closeout carriers, so `#560`, `#565`, `#567` still read OPEN on GitHub — recount with `issue_tool.py verify-closeout --expect-state CLOSED`. One approved push converts them; nothing else will.
+- **Two slices in a row had their premise refuted by one command.** Before shaping the next slice around a remedy any durable record proposes — including this file — run the command that re-establishes its premise. See `#571`.
 - **`#561` and `#547` are DECIDED** and recorded in the goal's `## Operator Decision Queue`: retire the equality pin and convert D47 to a command; close `#547` as superseded by `#562`, whose retirement left no locator digests for a re-stamp to launder. Neither is scheduled yet.
 
 ## Continuation Capability
@@ -19,7 +19,7 @@
 
 ## Current State
 
-- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`, five slices, **slice 1 DONE**. It shipped [scripts/mutate_and_restore.py](../scripts/mutate_and_restore.py) plus its test module: a sweep runner that refuses a kill it cannot evidence. Two delegated review rounds, both DEFECTIVE, seven blockers — four in the first draft, three inside the repairs for those four.
+- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`, **slices 1, 1b, 2 and 3 DONE**. Slice 1 shipped [scripts/mutate_and_restore.py](../scripts/mutate_and_restore.py). Slice 2 repaired `check-cli-skill-surface`, which reported a starved probe as a failed one. Slice 3 put the regenerable-facts gate into `quality`'s shipped catalog — it was absent, so no consumer surface named it — and repaired three false claims in the docs describing it. Every slice so far ran two delegated review rounds and every round returned DEFECTIVE; in slices 2 and 3 the SECOND round caught the repair reintroducing the class it fixed.
 - [close-the-gap-between-a-repair-and-its-caller](../charness-artifacts/goals/2026-08-10-close-the-gap-between-a-repair-and-its-caller.md) is SUPERSEDED and must not be activated.
 - Open and filed this session: `#570` (chunked-routing runs briefed on a surface they must not write) and `#571` (achieve recounts the tracker but never re-checks a durable record's proposed remedy — six measured instances across three sessions).
 - Backlog: recount it. It was 33 open before `#570`/`#571` were filed.
@@ -32,10 +32,12 @@
 
 ## Next Session
 
-1. **Slice 2 (`#564`)**, then slice 3 (`#563`, a DELETION), 4 (`#521`/`#546`), 5 (`#523`). Order is in the goal's `## Slice Plan` and is tool-first by design.
-2. **Use [the sweep runner](../scripts/mutate_and_restore.py) for every repair proof from here on.** It is the reason slice 1 went first. Hand-rolling a sweep now is a regression, not a shortcut — the retro measured five hand-rolls in one session before the tool existed.
-3. **Two operator decisions are queued and block nothing:** which NO-OBSERVED-EFFECT census survivors to delete (`check-public-doc-coupling` is the clean one, 9 internal references), and `#561`/`#547`. They are in the goal's `## Operator Decision Queue`.
-4. Recount before re-shaping: `gh issue list --repo corca-ai/charness --state open`.
+1. **Slice 3b (`#530`, one shared adapter-contract check)**, then 4 (`#564`), 5 (`#563`, a DELETION), 6 (`#521`/`#546`), 7 (`#523`). The goal's `## Slice Plan` is authoritative; slice numbering moved when slice 2 was re-shaped.
+2. **MEASURE THE PREMISE BEFORE SHAPING THE SLICE.** Slices 2 and 3 both had their premise refuted by one command each, and both false premises came from durable records this goal itself wrote (`the probe costs ~21s`; `a consumer only ever sees NOT CONFIGURED`). Evidence is on `#571`. This is the single highest-yield habit for the next session.
+3. **A killed mutation sweep leaves the tree MUTATED** (`#573`, filed this session, hit three times). After any interrupted sweep, re-check EVERY mutation site in the plan, not the few you happen to grep — one residue was a call-site deletion that survived `git status` and three greps because the file was already legitimately modified.
+4. **Use [the sweep runner](../scripts/mutate_and_restore.py) for every repair proof from here on.** It is the reason slice 1 went first. Hand-rolling a sweep now is a regression, not a shortcut — the retro measured five hand-rolls in one session before the tool existed.
+5. **Two operator decisions are queued and block nothing:** which NO-OBSERVED-EFFECT census survivors to delete (`check-public-doc-coupling` is the clean one, 9 internal references), and `#561`/`#547`. They are in the goal's `## Operator Decision Queue`.
+6. Recount before re-shaping: `gh issue list --repo corca-ai/charness --state open`.
 
 ## Discuss
 
