@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-10",
-  "source_artifact_count": 468,
-  "candidate_count": 1917,
+  "source_artifact_count": 469,
+  "candidate_count": 1925,
   "top_candidates": [
     {
       "candidate_id": "class:3b52f9af8951",
@@ -168,6 +168,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c3effd03421e",
+      "kind": "current_focus",
+      "lesson": "A four-slice goal built from one finding: `#554` had been FIXED before it was last read, and its own fix quoted its complaint as the reason the fix existed.",
+      "normalized_key": "a four slice goal built from one finding 554 had been fixed before it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "A four-slice goal built from one finding: `#554` had been FIXED before it was last read, and its own fix quoted its complaint as the reason the fix existed."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:60b97e75a6b6",
       "kind": "current_focus",
       "lesson": "Closeout retro for the `refuse-the-verdict-a-surface-never-earned` goal, picked up mid-flight from a Codex session that had stalled waiting on hosted CI behind a GitHub rate limit.",
@@ -246,6 +272,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8ed6385a3cb2",
+      "kind": "next_improvement",
+      "lesson": "`Premise-residue:` markers must be WRITTEN by records that decline to close an issue — the seam now reads them and nothing yet writes them except this goal's own one instance.",
+      "normalized_key": "premise residue markers must be written by records that decline to close an issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`Premise-residue:` markers must be WRITTEN by records that decline to close an issue — the seam now reads them and nothing yet writes them except this goal's own one instance."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cb18779ad902",
+      "kind": "next_improvement",
+      "lesson": "run the cheapest disconfirming probe BEFORE building a heuristic, not after review names it — applied twice this run, both times too late.",
+      "normalized_key": "run the cheapest disconfirming probe before building a heuristic not after review names it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the cheapest disconfirming probe BEFORE building a heuristic, not after review names it — applied twice this run, both times too late."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fad0c5f8baba",
+      "kind": "next_improvement",
+      "lesson": "the pre-push aggregate should surface all blockers at once, the way the commit-time aggregate already does; 13 push attempts is the measured cost.",
+      "normalized_key": "the pre push aggregate should surface all blockers at once the way the commit",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the pre-push aggregate should surface all blockers at once, the way the commit-time aggregate already does; 13 push attempts is the measured cost."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5f0aaf14b99c",
       "kind": "next_improvement",
       "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it",
@@ -268,118 +372,6 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it"
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:2aa33565760a",
-      "kind": "repeat_trap",
-      "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning.",
-      "normalized_key": "three planned items were premises not debt and one was work that already shipped",
-      "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 14,
-      "recency_weight": 0.806,
-      "alpha": 0.24,
-      "selection_weight": 0.9995,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The same class then bit a fourth time inside the resolution.** The sibling-scan audit still listed Tier 1 as \"worth fixing first\", which is what generated the phantom slice — and I only found that because a stranded reviewer's recovered transcript said so. Fixing the instance without fixing the artifact that produced it is what let it recur."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:a3f5a2777042",
-      "kind": "current_focus",
-      "lesson": "One session that started from \"design the next work\" and ended having shipped it.",
-      "normalized_key": "one session that started from design the next work and ended having shipped it",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-09-session-retro.md",
-      "latest_source_date": "2026-08-09",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-09-session-retro.md",
-          "date": "2026-08-09",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "One session that started from \"design the next work\" and ended having shipped it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:f05dcf9cf110",
-      "kind": "current_focus",
-      "lesson": "The `make-proof-surfaces-report-what-they-observed` goal, all eight slices, ending in the `v4.0.0` release and push.",
-      "normalized_key": "the make proof surfaces report what they observed goal all eight slices ending in",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md",
-      "latest_source_date": "2026-08-09",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md",
-          "date": "2026-08-09",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The `make-proof-surfaces-report-what-they-observed` goal, all eight slices, ending in the `v4.0.0` release and push."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:99da49479c9b",
-      "kind": "next_improvement",
-      "lesson": "a check that flags a test asserting an external tool's output shape from a hand-written string when no captured fixture for that tool exists.",
-      "normalized_key": "a check that flags a test asserting an external tool s output shape from",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md",
-      "latest_source_date": "2026-08-09",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md",
-          "date": "2026-08-09",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a check that flags a test asserting an external tool's output shape from a hand-written string when no captured fixture for that tool exists."
         }
       ]
     }
@@ -538,6 +530,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:c3effd03421e",
+      "kind": "current_focus",
+      "lesson": "A four-slice goal built from one finding: `#554` had been FIXED before it was last read, and its own fix quoted its complaint as the reason the fix existed.",
+      "normalized_key": "a four slice goal built from one finding 554 had been fixed before it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "A four-slice goal built from one finding: `#554` had been FIXED before it was last read, and its own fix quoted its complaint as the reason the fix existed."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:60b97e75a6b6",
       "kind": "current_focus",
       "lesson": "Closeout retro for the `refuse-the-verdict-a-surface-never-earned` goal, picked up mid-flight from a Codex session that had stalled waiting on hosted CI behind a GitHub rate limit.",
@@ -616,6 +634,84 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:8ed6385a3cb2",
+      "kind": "next_improvement",
+      "lesson": "`Premise-residue:` markers must be WRITTEN by records that decline to close an issue — the seam now reads them and nothing yet writes them except this goal's own one instance.",
+      "normalized_key": "premise residue markers must be written by records that decline to close an issue",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "`Premise-residue:` markers must be WRITTEN by records that decline to close an issue — the seam now reads them and nothing yet writes them except this goal's own one instance."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:cb18779ad902",
+      "kind": "next_improvement",
+      "lesson": "run the cheapest disconfirming probe BEFORE building a heuristic, not after review names it — applied twice this run, both times too late.",
+      "normalized_key": "run the cheapest disconfirming probe before building a heuristic not after review names it",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the cheapest disconfirming probe BEFORE building a heuristic, not after review names it — applied twice this run, both times too late."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:fad0c5f8baba",
+      "kind": "next_improvement",
+      "lesson": "the pre-push aggregate should surface all blockers at once, the way the commit-time aggregate already does; 13 push attempts is the measured cost.",
+      "normalized_key": "the pre push aggregate should surface all blockers at once the way the commit",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "the pre-push aggregate should surface all blockers at once, the way the commit-time aggregate already does; 13 push attempts is the measured cost."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:5f0aaf14b99c",
       "kind": "next_improvement",
       "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it",
@@ -638,6 +734,110 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "this retro, and the digest refreshed from it, which now carries both improvement lines in its Next-Time Checklist. Stated precisely because a disposition reviewer checked it: the digest's `## Repeat Traps` slot still shows only the older \"spoke before measuring\" phrasing, since that slot is filled by a recency/recurrence policy rather than by this retro, so the specialization is recorded here and in the checklist, not in the trap slot. → applied: this artifact and the digest refreshed from it"
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:448a84715486",
+      "kind": "repeat_trap",
+      "lesson": "**13 push attempts to land one bundle.** Each ran the ~95s pre-push gate. The cause was serial single-blocker discovery: budget, then mutation coverage, then ruff, then coverage again. The repo's own implementation discipline names this exact trap — \"if a commit is rejected by one of these gates, run the aggregate to surface ALL of them at once rather than fix-and-retry one rejection at a time\" — and the PRE-PUSH aggregate has no such affordance, so I rediscovered it by hand.",
+      "normalized_key": "13 push attempts to land one bundle each ran the 95s pre push gate",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**13 push attempts to land one bundle.** Each ran the ~95s pre-push gate. The cause was serial single-blocker discovery: budget, then mutation coverage, then ruff, then coverage again. The repo's own implementation discipline names this exact trap — \"if a commit is rejected by one of these gates, run the aggregate to surface ALL of them at once rather than fix-and-retry one rejection at a time\" — and the PRE-PUSH aggregate has no such affordance, so I rediscovered it by hand."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:47be3277b065",
+      "kind": "repeat_trap",
+      "lesson": "**Four length/lint/dup gate rejections mid-slice**, each costing a split or a reclassification after the code was written. The advisory hook fires on write and I acted on it late.",
+      "normalized_key": "four length lint dup gate rejections mid slice each costing a split or a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Four length/lint/dup gate rejections mid-slice**, each costing a split or a reclassification after the code was written. The advisory hook fires on write and I acted on it late."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:32021189cda0",
+      "kind": "repeat_trap",
+      "lesson": "Repeated 12-minute broad suites (4 full runs) where a scoped run would have answered the question.",
+      "normalized_key": "repeated 12 minute broad suites 4 full runs where a scoped run would have",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Repeated 12-minute broad suites (4 full runs) where a scoped run would have answered the question."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f8ec74a1db23",
+      "kind": "repeat_trap",
+      "lesson": "**Two full designs built and deleted** (the prose-matching residue scanner, the `#546` budget discriminator). Not pure waste — both produced measurements that are now the record — but both were built before the cheapest disconfirming probe was run. The `#546` probe that killed it took under a minute and could have run first.",
+      "normalized_key": "two full designs built and deleted the prose matching residue scanner the 546 budget",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+      "latest_source_date": "2026-08-10",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md",
+          "date": "2026-08-10",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two full designs built and deleted** (the prose-matching residue scanner, the `#546` budget discriminator). Not pure waste — both produced measurements that are now the record — but both were built before the cheapest disconfirming probe was run. The `#546` probe that killed it took under a minute and could have run first."
         }
       ]
     },

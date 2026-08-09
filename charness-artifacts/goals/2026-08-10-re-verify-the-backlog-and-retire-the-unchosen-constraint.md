@@ -1,6 +1,6 @@
 # Achieve Goal: A record is not a fact: re-verify the backlog, consolidate what survives, and retire the constraint nobody chose
 
-Status: active
+Status: complete
 Created: 2026-08-10
 Activation: `/goal @charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`
 
@@ -288,6 +288,8 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
+- Decision: whether `#514` / `#515` / `#518` should stay permanently unclosable, or whether building the evidence-boundary acceptance matrix is worth scheduling. This run did NOT route around the `matrix_incomplete` refusal and does not propose to; the matrix needs per-issue acceptance criteria and, for two of the three, a measurement taken in a consuming repo — which this goal named as a non-goal. Operator-only because it trades a real protection against three issues that cannot otherwise move.
+
 Already taken this session, carried in rather than re-asked:
 
 - Deletion and compaction of prompt surface are actively allowed; the
@@ -375,8 +377,18 @@ placeholder is intentionally non-satisfying (the Gather / Release / Issue
 closeout floors are presence-only, so no stub is seeded for them — add their line
 per the bullets above when that boundary is crossed):
 
-- `Phases: <declared phases, or n/a — why none were crossed>`
-- `Routing: <skill> — <why this phase needs it>`
+- Phases: impl, quality, issue, release, critique, retro
+- Routing: achieve — owns the goal lifecycle slot and the closeout floors; selected from installed skill metadata at activation
+- Routing: impl — the slice-2/3a/3b builds (the premise seam, the consolidated disposition, the readbacks) were code work under an implementation contract
+- Routing: quality — the seed-fixture budget relevel and the attention-state declarations are quality-contract surfaces, which this repo routes through `quality` before implementation
+- Routing: issue — all 11 closes, 6 filings, and 5 dispositions went through the `issue` skill's closeout floors and backend, never through raw `gh` for a mutation that has a floor
+- Routing: release — v4.2.0 was cut through `release`'s planner and publish helper, which refused a foreign-copy helper and was re-run from this repo's own copy
+- Routing: critique — six bounded fresh-eye rounds, plus the release critique the publish gate binds
+- Routing: retro — the closeout review, persisted to the lesson-selection index
+- Gather: n/a — no external URL, Slack, Notion, Docs or Drive source was consulted; every input was this repo's tree, its tracker, and its own records
+- Release: charness-artifacts/release/2026-08-10-v4.2.0-notes.md — v4.2.0 published and verified on the public surface (`gh release view` reports draft=false, prerelease=false; hosted `main` matched local at the time of the release commit)
+- Issue closeout: closed 11 — `#554` `#571` as `feature` resolutions (carrier close-with-comment, reason `completed`), and `#524` `#525` `#535` `#568` `#569` `#531` `#532` `#534` `#561` as `consolidated` (reason `not planned`). Every body passed `evaluate_close_comment_floor` before mutation and every state was read back per issue afterwards. `#514` REFUSED by the evidence-boundary crosswalk (`matrix_incomplete`) and left open. Filed `#580` `#581` `#582` `#583` `#584` `#585` `#586` `#587`; dispositioned `#576` `#518` `#528` `#515` `#546` with reasons recorded on each issue.
+- Successor goal: n/a — deliberately not designed, and the reason is this run's own measurement rather than fatigue. The three things this goal learned are already filed as issues with their evidence (`#586` the wired-path pattern, `#587` the serial pre-push aggregate, `#546` the refuted budget option), and the largest remaining work — building the evidence-boundary acceptance matrix so `#514`/`#515`/`#518` can ever close — is gated on a measurement in a tree that is not this one, which this goal named as a non-goal. Shaping a successor around work whose bottleneck is an unavailable measurement would repeat the exact error this goal exists to name.
 
 ## Discuss Before Activation
 
@@ -558,13 +570,24 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Verification lock: `./scripts/run-quality.sh --release` — 88 passed, 0 failed, 97.7s, run at the final bundle state. Per-check failure logs are retained under `.charness/quality-failure-logs/` and none were written by this run.
+Broad suite: 8505 passed, 0 failed at the last full `pytest tests/` run of this goal.
+Acceptance, measured against `## User Acceptance` rather than asserted:
+  - MET — group A is explicitly dispositioned with the reason recorded on each of the five issues.
+  - MET — "is this issue still true?" is one command; run against the live backlog it named issues whose premise the tree had refuted, and named `#561` as refused via a typed marker.
+  - MET — shrinking a prompt surface needs no operator decision, and `docs/prompt-mutation-policy.md` records who decided and when.
+  - MET — nothing in the closeout record claims a consolidated issue was fixed; the nine consolidated closes render `NOT_PLANNED`, their bodies say the close claims nothing about the defect, and `#582` carries a correction rather than implying it absorbed a member it did not.
+  - PARTIALLY MET, stated rather than rounded up — the open list is 17, not "roughly six". Nine issues are closed and linked to where they went, and the four umbrellas are each pickup-able, but the count target was not reached. This goal's own Interview Decisions REJECTED the count as the success metric ("the north star says count is not the metric in either direction, and a count target pressures the run toward whatever closes cheapest"), so the bullet is recorded as unmet on its number and met on its substance. It is not claimed as met.
+Retro: charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md
+Host log probe: skipped: host-log-not-exposed: `probe_host_logs.py` ran and returned thread-wide claude-session signals only (624 function calls, 70 patch applications, 10 subagent spawns, 0 compactions). No `Host metric window:` was recorded at activation, so no per-goal window can be reconstructed after the fact, and the probe's own output labels these as thread-wide pressure rather than a per-goal total. The numbers are carried into the retro's Evidence Summary with that caveat attached rather than presented as this goal's cost.
+Disposition review: charness-artifacts/critique/2026-08-10-issue-546-unenforceable-budget-critique.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #586 (recurs: six instances inside this one goal — the premise-state channels, the `consolidated` classification unreachable on every live carrier, the readbacks absent from the required carrier, `REQUIRED_CLOSE_REASON` read by nobody, the self-reference check firing only in its own direct call, and `release_surface_tokens` advertised and dead. Each was caught by a bounded round or a probe and none by the suite, because a green test existed for the code that never ran)
+Retro dispositions: issue #587 (novel: the serial pre-push aggregate, measured at 13 push attempts to land one bundle, with the commit-time aggregate's own discipline doc naming the trap it does not fix)
+Retro dispositions: applied: the workflow lesson "run the cheapest disconfirming probe before building a heuristic" is applied in this goal's own record rather than only stated — the `#546` refutation and the residue-scanner collapse are both recorded as measurements with the command that produced them, so the next session inherits the probe, not the advice
+Retro dispositions: accepted-risk: the `Premise-residue:` marker seam reads markers and nothing yet writes them except this goal's single instance, so the record channel is working but empty. Accepted rather than filed: the seam is documented in `lifecycle-before.md`, an empty channel reports itself as empty rather than as clean, and manufacturing markers for historical records would be exactly the retro-fitting this goal removed.
+Structural follow-up: issue #586 (recurs: the retro's `## Sibling Search` names one transferable axis — a check that passes its own direct-call test while never firing on the wired path — with six instances measured inside this single goal. The repair applied each time was local (test through the wired surface) and adds no structural guard, which is why it recurred after being named twice. `#586` carries the pattern, the six triggering instances, and three candidate guards ranked by cost, including the observation that the changed-line mutation gate does NOT catch this class because coverage and reachability-from-the-caller are different questions.)

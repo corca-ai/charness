@@ -2,15 +2,15 @@
 
 ## Current Focus
 
+- A four-slice goal built from one finding: `#554` had been FIXED before it was last read, and its own fix quoted its complaint as the reason the fix existed. (source: `charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`)
 - Closeout retro for the `refuse-the-verdict-a-surface-never-earned` goal, picked up mid-flight from a Codex session that had stalled waiting on hosted CI behind a GitHub rate limit. (source: `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`)
-- One session that started from "design the next work" and ended having shipped it. (source: `charness-artifacts/retro/2026-08-09-session-retro.md`)
 
 ## Repeat Traps
 
 - Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately. (source: `charness-artifacts/retro/2026-08-07-session-retro.md`; sources: 3)
 - **Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage ("four release publishes died to one shape"). (source: `charness-artifacts/retro/2026-07-27-session-retro.md`; sources: 3)
-- **Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning. (source: `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`; sources: 2)
-- A crude regex proxy produced "14 checks cannot fail" including `pytest` and `dup-ratchet`. Discarded before use, but it was run and reported before being sanity-checked. All three are the same shape: **I spoke before measuring, on questions a command could answer in seconds.** The repo already names this ("Settle by measuring, not by debating, when a command can answer") and it still fired three times. **Not waste, recorded so it is not mistaken for it:** the census's 744K subagent tokens bought a decision on an open `question`-labelled issue that had been unanswerable for days, and its adversarial pass prevented four wrong deletions. The gate-runtime telemetry (peak 475s) is the standing suite doing its job; this session ran targeted modules instead and paid it only at commit boundaries. (source: `charness-artifacts/retro/2026-08-09-session-retro.md`)
+- **13 push attempts to land one bundle.** Each ran the ~95s pre-push gate. The cause was serial single-blocker discovery: budget, then mutation coverage, then ruff, then coverage again. The repo's own implementation discipline names this exact trap — "if a commit is rejected by one of these gates, run the aggregate to surface ALL of them at once rather than fix-and-retry one rejection at a time" — and the PRE-PUSH aggregate has no such affordance, so I rediscovered it by hand. (source: `charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`)
+- **Four length/lint/dup gate rejections mid-slice**, each costing a split or a reclassification after the code was written. The advisory hook fires on write and I acted on it late. (source: `charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`)
 
 ## Next-Time Checklist
 
@@ -27,7 +27,6 @@
 
 ## Sources
 
-- `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
 - `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`
 - `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`
@@ -35,5 +34,5 @@
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
-- `charness-artifacts/retro/2026-08-09-session-retro.md`
+- `charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md`
 - `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`

@@ -1,5 +1,7 @@
 # Resolution critique — #546 (an unenforceable bar that reads as protection)
 Date: 2026-08-10
+Goal: charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md
+(slice 4 of the re-verify-the-backlog-and-retire-the-unchosen-constraint goal)
 
 ## Decision Under Review
 
