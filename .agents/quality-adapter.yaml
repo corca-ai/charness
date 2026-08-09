@@ -185,7 +185,25 @@ runtime_budget_profiles:
       # leaving it to re-report: n=20, all passing, range 520-572ms, so this window is
       # unusually tight and 1000 (1.4x worst, the standard derivation) still absorbs
       # nearly 2x the observed spread.
-      check-seed-fixture-budget: 1000
+      #
+      # 2026-08-10 relevel, by the SAME derivation on current samples: n=20, range
+      # 827-1282ms, 1.4x worst = 1795. The old 1000 was refusing every push.
+      #
+      # WHAT MOVED IS NOT THE CHECK. Measured directly: the script runs in 0.06s
+      # (three runs: 0.08/0.05/0.06) over a 152 KiB / 12-file tree, and reports
+      # `total 152.00 KiB / 10.00 GiB`. So ~1.1s of the recorded sample is process
+      # startup plus contention against the ~85 other gates, not seed-fixture work --
+      # the same contended-relevel cause the `default` map above already records for
+      # check-markdown and check-secrets. Two other hypotheses were tested and
+      # REFUTED: machine load (still 1167ms at load average 2.5) and accumulated
+      # pytest scratch (pruned 126 MiB / 13,012 files across 15 temp trees down to
+      # 152 KiB; the sample did not move).
+      #
+      # This preserves the regression defence -- a seed footprint that genuinely grew
+      # would still blow 1795 -- while removing a bar that measures the runner's
+      # fan-out. That the bar measures the wrong thing at all is the deeper defect and
+      # is tracked separately; relevelling does not close it.
+      check-seed-fixture-budget: 1795
       # The 2.5s limit was set in May; a 5s bar replaced it because the release
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
       # (contended) was 5000; post-change max 6980
