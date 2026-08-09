@@ -76,6 +76,31 @@ def test_quality_run_plan_main_emits_yaml_detail_and_hidden_json_in_process(
     assert json.loads(capsys.readouterr().out) == plan
 
 
+@pytest.mark.parametrize(
+    ("loader_name", "adjacent_name"),
+    [
+        ("_load_declaration_lifecycle", "quality_declaration_lifecycle.py"),
+        ("_load_plan_renderer", "quality_run_plan_render.py"),
+    ],
+)
+def test_quality_run_plan_fails_loudly_when_adjacent_module_is_not_loadable(
+    monkeypatch: pytest.MonkeyPatch, loader_name: str, adjacent_name: str
+) -> None:
+    real_spec_from_file_location = PLAN.importlib.util.spec_from_file_location
+
+    def missing_adjacent_spec(name: str, path: Path):
+        if Path(path).name == adjacent_name:
+            return None
+        return real_spec_from_file_location(name, path)
+
+    monkeypatch.setattr(
+        PLAN.importlib.util, "spec_from_file_location", missing_adjacent_spec
+    )
+
+    with pytest.raises(ImportError, match=rf"{adjacent_name} not loadable beside"):
+        getattr(PLAN, loader_name)()
+
+
 def _run_plan(repo: Path, *extra: str) -> dict[str, object]:
     result = run_script(SCRIPT, "--repo-root", str(repo), *extra, "--detail")
     assert result.returncode == 0, result.stderr
@@ -483,7 +508,13 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                         "packet_ids": ["adapter-review-1"],
                     }
                 ],
-                "declared_skill_paths": [],
+                "declared_skill_paths": [
+                    {
+                        "declaration": "skills/public/quality/SKILL.md",
+                        "target_state": "resolved",
+                        "packet_id": "skill-ergonomics",
+                    }
+                ],
                 "gaps": [
                     {"kind": "preset_not_reconciled", "detail": "typescript-quality"}
                 ],
@@ -497,6 +528,32 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                 "questions": [
                     {"id": "target_vs_ambient", "question": "Separate target and ambient findings."}
                 ],
+            },
+            "brief": {
+                "gate_classification": {
+                    "closeout_states": {
+                        "healthy": "works",
+                        "weak": "costly or redundant",
+                        "missing": "absent",
+                        "deferred": "later",
+                    },
+                    "detail_ref": "references/gate-classification.md",
+                },
+                "automation_promotion": {
+                    "cases": ["AUTO_EXISTING", "NON_AUTOMATABLE"],
+                    "detail_ref": "references/automation-promotion.md",
+                },
+                "maintainer_local_enforcement": {
+                    "prompt": "Name the final local gate.",
+                    "field_discipline": "missing stays explicit",
+                },
+                "inventory_dispatch": {
+                    "areas": [
+                        {"area": "skills", "inventories": ["inventory_skill.py"]},
+                        {"area": "runtime", "inventories": []},
+                    ],
+                    "detail_ref": "references/inventory-dispatch.md",
+                },
             },
             "gate_packets": [
                 {
@@ -517,7 +574,19 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     assert "preset typescript-quality: declared-only" in text
     assert "command review_commands: routed / not-run / npm run ui" in text
     assert "surface web_app: partial / adapter-review-1" in text
+    assert (
+        "skill path skills/public/quality/SKILL.md: resolved / skill-ergonomics"
+        in text
+    )
     assert "GAP preset_not_reconciled: typescript-quality" in text
+    assert "gate states: healthy, weak, missing, deferred" in text
+    assert "weak also = costly or redundant" in text
+    assert "automation: AUTO_EXISTING, NON_AUTOMATABLE" in text
+    assert "maintainer-local: Name the final local gate." in text
+    assert "field: missing stays explicit" in text
+    assert "inventory dispatch (2 concern areas" in text
+    assert "skills: inventory_skill.py" in text
+    assert "runtime: (detail_refs only)" in text
     assert "command: ./scripts/run-quality.sh --mode read-only" in text
     assert "- on_demand_reads: open only from concrete findings" in text
 

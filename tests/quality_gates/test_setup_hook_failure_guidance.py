@@ -5,6 +5,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+from scripts import setup_hook_failure_visibility_lib as visibility
 from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -212,6 +213,65 @@ def test_reader_does_not_parse_quoted_or_commented_operators_as_shell_control(
     assert payload["state"] == "live-verification-required"
     assert payload["commands"][0]["gaps"] == []
     assert payload["commands"][0]["manual_reconciliation"] == []
+
+
+def test_shell_reader_keeps_ambiguous_shell_constructs_out_of_a_static_verdict() -> None:
+    assert visibility._normalized_path("././logs/failure.log") == "logs/failure.log"
+
+    comment_view, _comment_quoted, comment_valid = visibility._shell_code_view(
+        "./gate # an ignored comment\n./next"
+    )
+    assert comment_valid is True and "ignored" not in comment_view
+
+    escaped_view, escaped_quoted, escaped_valid = visibility._shell_code_view('printf "a\\"b"')
+    assert escaped_valid is True and escaped_quoted
+    assert visibility._shell_constructs(escaped_view, escaped_quoted, escaped_valid) == []
+
+    for command, expected in (
+        ("./gate 'unterminated", "unclosed-quote"),
+        ("./gate &", "background-command"),
+        ("echo $(date)", "command-substitution"),
+        ("sh -c 'echo one; echo two'", "embedded-shell-command"),
+    ):
+        view, quoted, valid = visibility._shell_code_view(command)
+        assert expected in visibility._shell_constructs(view, quoted, valid)
+
+
+def test_reader_types_malformed_command_rows_and_stage_configs(tmp_path: Path) -> None:
+    non_mapping = visibility._command_row("pre-push", "quality", [])
+    assert non_mapping["gaps"] == ["command-entry-not-mapping"]
+
+    malformed = visibility._command_row(
+        "pre-push", "quality", {"run": 7, "fail_text": 8}
+    )
+    assert malformed["gaps"] == ["run-not-string", "fail-text-not-string"]
+
+    missing_pointer = visibility._command_row(
+        "pre-push", "quality", {"run": "./gate", "fail_text": "quality stopped"}
+    )
+    assert missing_pointer["gaps"] == [
+        "fail-text-does-not-name-stage",
+        "fail-text-has-no-next-evidence-action",
+    ]
+    blank = visibility._command_row("pre-push", "quality", {"run": "./gate", "fail_text": " "})
+    assert blank["gaps"] == ["fail-text-blank"]
+
+    invalid = _write_lefthook(
+        tmp_path / "invalid",
+        "pre-commit: []\npre-push:\n  commands: []\n",
+    )
+    assert invalid["state"] == "invalid-config"
+    assert invalid["config_errors"] == [
+        "pre-commit must be a mapping",
+        "pre-push.commands must be a mapping",
+    ]
+
+    root_invalid = _write_lefthook(tmp_path / "root-invalid", "[]\n")
+    assert root_invalid["state"] == "invalid-config"
+    assert root_invalid["config_errors"] == ["Lefthook config root must be a mapping"]
+
+    no_commands = _write_lefthook(tmp_path / "no-commands", "pre-push: {}\n")
+    assert no_commands["state"] == "no-applicable-hook-commands"
 
 
 def test_default_source_and_plugin_inspectors_carry_the_reader_verdict(tmp_path: Path) -> None:

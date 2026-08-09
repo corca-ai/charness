@@ -311,6 +311,24 @@ def test_dead_code_advisory_scans_untracked_nonignored_python(tmp_path: Path) ->
     ]
 
 
+def test_dead_code_advisory_non_python_census_timeout_is_bounded(
+    tmp_path: Path, monkeypatch
+) -> None:
+    spec = importlib.util.spec_from_file_location(
+        "run_dead_code_advisory_non_python_timeout", SCRIPT
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+
+    def time_out(*_args, **_kwargs):
+        raise module.subprocess.TimeoutExpired(["git", "ls-files"], 30)
+
+    monkeypatch.setattr(module.subprocess, "run", time_out)
+
+    assert module.git_visible_non_python_sources(tmp_path) == []
+
+
 def test_dead_code_advisory_skips_deleted_tracked_python(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     repo.mkdir()

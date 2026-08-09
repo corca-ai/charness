@@ -72,6 +72,32 @@ def test_unreasoned_exemptions_render_the_refusal_directly() -> None:
     ]
 
 
+def test_findings_render_the_unclassified_docs_nonclaim() -> None:
+    lines = gate.render(
+        {
+            "adapter_refusal": None,
+            "checked": 1,
+            "exempted": [],
+            "unreasoned_exemptions": [],
+            "findings": [
+                {
+                    "path": "AGENTS.md",
+                    "line": 7,
+                    "label": "transcribed version",
+                    "literal": "v4.0.0",
+                    "remedy": "carry the recount command",
+                }
+            ],
+            "unclassified_docs": ["docs/history.md"],
+        }
+    )
+
+    assert lines[-1] == (
+        "NON-CLAIM: 1 docs file(s) were not classified by the conservative defaults; "
+        "this failure verdict covers only the named default surfaces."
+    )
+
+
 @pytest.mark.parametrize(
     ("error", "detail"),
     [(StopIteration(), "StopIteration"), (RuntimeError("broken adapter"), "RuntimeError: broken adapter")],

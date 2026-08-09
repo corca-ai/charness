@@ -45,6 +45,11 @@ def src():
     return _load("chunked_routing_issue_source")
 
 
+@pytest.fixture(scope="module")
+def issue_config():
+    return _load("chunked_routing_issue_config")
+
+
 # --- conversion -----------------------------------------------------------
 
 
@@ -362,6 +367,44 @@ def test_load_issue_source_config_swallows_resolution_failure(src, monkeypatch, 
     monkeypatch.setattr(src, "_load_sibling", boom)
     config = src.load_issue_source_config(tmp_path)
     assert config["enabled"] is True and config["repo"] is None
+
+
+def test_issue_config_loader_refuses_missing_sibling_spec(issue_config, monkeypatch):
+    monkeypatch.setattr(issue_config.importlib.util, "spec_from_file_location", lambda *_args: None)
+
+    with pytest.raises(ImportError, match="resolve_adapter.py not found"):
+        issue_config._load_sibling("resolve_adapter")
+
+
+def test_issue_config_loader_skips_unloadable_adapter_candidates(issue_config, monkeypatch):
+    monkeypatch.setattr(issue_config.Path, "is_file", lambda path: path.name == "adapter_lib.py")
+    monkeypatch.setattr(issue_config.importlib.util, "spec_from_file_location", lambda *_args: None)
+
+    assert issue_config._adapter_yaml_loader() is None
+
+
+def test_issue_config_keeps_defaults_when_yaml_loader_is_unavailable(
+    issue_config, monkeypatch, tmp_path
+):
+    class Resolver:
+        @staticmethod
+        def load_adapter(_repo_root):
+            return {"found": True, "valid": True, "path": tmp_path / ".agents" / "handoff-adapter.yaml"}
+
+    monkeypatch.setattr(issue_config, "_load_sibling", lambda _name: Resolver)
+    monkeypatch.setattr(issue_config, "_adapter_yaml_loader", lambda: None)
+
+    config, report = issue_config.load_issue_source_config(tmp_path, default_issue_limit=17)
+
+    assert config == {
+        "enabled": True,
+        "limit": 17,
+        "repo": None,
+        "labels_include": (),
+        "labels_exclude": (),
+        "exclude_numbers": (),
+    }
+    assert report is None
 
 
 def test_label_names_accepts_plain_string_labels(src):

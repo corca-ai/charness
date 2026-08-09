@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import subprocess
+import sys
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -17,6 +19,123 @@ def _declared_paths(repo: Path, *declarations: str) -> list[dict[str, object]]:
     return LIFECYCLE._declared_skill_paths(
         repo, {"skill_ergonomics_skill_paths": list(declarations)}
     )
+
+
+def test_repo_module_bootstraps_repo_import_path_and_fails_loudly(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    root_text = str(ROOT)
+    monkeypatch.setattr(
+        LIFECYCLE.sys, "path", [entry for entry in sys.path if entry != root_text]
+    )
+
+    module = LIFECYCLE._repo_module("scripts.adapter_lib")
+
+    assert module.__name__ == "scripts.adapter_lib"
+    assert LIFECYCLE.sys.path[0] == root_text
+    with pytest.raises(ImportError, match="not found from quality skill runtime"):
+        LIFECYCLE._repo_module("scripts.quality_module_that_does_not_exist")
+
+
+def test_declaration_helpers_skip_non_values_without_creating_routes(
+    tmp_path: Path,
+) -> None:
+    command_rows, packets = LIFECYCLE._declared_commands(
+        {"gate_commands": [None, "", "python3 -m pytest"]}, []
+    )
+    repo = tmp_path / "app"
+    repo.mkdir()
+
+    path_rows = LIFECYCLE._declared_skill_paths(
+        repo, {"skill_ergonomics_skill_paths": [None, ""]}
+    )
+
+    assert [row["command"] for row in command_rows] == ["python3 -m pytest"]
+    assert len(packets) == 1
+    assert path_rows == []
+
+
+def test_declared_paths_report_uninterpretable_patterns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "app"
+    repo.mkdir()
+
+    def fail_listing(_repo: Path, _patterns: tuple[str, ...]):
+        raise ValueError("bad pattern")
+
+    monkeypatch.setattr(
+        LIFECYCLE._REPO_FILE_LISTING, "iter_matching_repo_files", fail_listing
+    )
+
+    row = _declared_paths(repo, "skills/*/SKILL.md")[0]
+
+    assert row["target_state"] == "unreachable"
+    assert row["resolved_paths"] == []
+    assert row["declaration_error"] == "path pattern could not be interpreted"
+
+
+def test_declared_paths_skip_non_skills_and_count_unresolvable_candidates(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "app"
+    repo.mkdir()
+    readme = repo / "README.md"
+    readme.write_text("# app\n", encoding="utf-8")
+
+    class UnresolvableSkill:
+        name = "SKILL.md"
+
+        @staticmethod
+        def is_file() -> bool:
+            return True
+
+        @staticmethod
+        def resolve() -> Path:
+            raise OSError("unreadable target")
+
+    monkeypatch.setattr(
+        LIFECYCLE._REPO_FILE_LISTING,
+        "iter_matching_repo_files",
+        lambda _repo, _patterns: [readme, UnresolvableSkill()],
+    )
+
+    row = _declared_paths(repo, "**/*")[0]
+
+    assert row["target_state"] == "unreachable"
+    assert row["routing_state"] == "partial"
+    assert row["excluded_match_count"] == 1
+
+
+def test_declaration_lifecycle_treats_non_mapping_yaml_as_empty(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    modules = {
+        "scripts.quality_adapter_lib": SimpleNamespace(
+            load_quality_adapter_permissive=lambda _repo: {
+                "found": True,
+                "valid": True,
+                "path": str(tmp_path / ".agents" / "quality-adapter.yaml"),
+                "errors": [],
+                "warnings": [],
+            }
+        ),
+        "scripts.adapter_lib": SimpleNamespace(load_yaml_file=lambda _path: []),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(
+            detect_preset_lineage=lambda _repo: []
+        ),
+    }
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
+
+    report, packets = LIFECYCLE.build_declaration_lifecycle(
+        tmp_path, skills=[], catalog_gates=[]
+    )
+
+    assert report["status"] == "configured"
+    assert report["commands"] == []
+    assert report["surfaces"] == []
+    assert report["declared_skill_paths"] == []
+    assert packets == []
 
 
 def test_declared_paths_do_not_resolve_ignored_repo_skills(tmp_path: Path) -> None:

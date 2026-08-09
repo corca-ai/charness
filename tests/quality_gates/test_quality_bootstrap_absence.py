@@ -26,6 +26,7 @@ from scripts.quality_adapter_lib import (
     names_a_filesystem_location,
     path_bearing_entries,
 )
+from scripts.quality_bootstrap_absence import remove_nested_absences
 from scripts.quality_bootstrap_lib import build_bootstrap_state
 
 from .quality_bootstrap_support import _run_quality_bootstrap_adapter, seed_quality_repo
@@ -115,6 +116,20 @@ def test_dotted_absence_survives_bootstrap_and_resolution(tmp_path: Path) -> Non
         resolved["data"], "coverage_floor_policy.lefthook_path"
     )
     assert _bootstrap(repo)["adapter_status"] == "unchanged"
+
+
+def test_nested_absence_skips_a_scalar_parent_and_continues_to_later_paths() -> None:
+    data = {"not_a_mapping": "preserve", "policy": {"remove": True, "keep": True}}
+
+    remove_nested_absences(
+        data,
+        {
+            "not_a_mapping.nested.remove": "cannot descend into a scalar",
+            "policy.remove": "deliberately absent",
+        },
+    )
+
+    assert data == {"not_a_mapping": "preserve", "policy": {"keep": True}}
 
 
 def test_dotted_absence_refuses_a_leaf_that_is_also_set(tmp_path: Path) -> None:
