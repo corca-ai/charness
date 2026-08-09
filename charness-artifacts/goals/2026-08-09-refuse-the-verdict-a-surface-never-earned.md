@@ -838,6 +838,21 @@ Found during shaping, before activation:
   which has one. Unverified either way; must be measured before anyone builds
   against it.
 
+Found during the operator-directed runtime/test-economics follow-up, outside
+this goal's slice plan:
+
+- `#577` — CLI timeout/drain tests pay production deadlines and leave escaped
+  grandchildren alive. Local resolution, full quality proof, and delegated
+  critique are complete; the direct-commit carrier closes only after an
+  explicitly authorized push and remains owned by the issue workflow.
+- `#578` — synthetic test-economics cases inherit and rescan the ambient pytest
+  temp tree. Local resolution, full quality proof, and delegated critique are
+  complete; remote close/readback remains owned by the issue workflow.
+- `#579` — the generated SLOC inventory measured its own prior output, so every
+  clean closeout dirtied the tracked result and refused before verification.
+  Two delegated rounds rejected broad path-glob repairs; exact report-identity
+  filtering is locally complete and remote close/readback remains issue-owned.
+
 ## Final Verification
 
 Closeout evidence — replace each `TODO` with a bound `<path>` (a checked-in

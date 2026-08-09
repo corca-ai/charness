@@ -4,17 +4,16 @@
 
 - **Next pickup: work the open backlog.** Run `/handoff` to chunk the live tracker, then `issue` per chunk. Recount first: `gh issue list --repo corca-ai/charness --state open --limit 200`.
 - **FIRST, publish and verify the local CI repair if push approval is granted.**
-  The structural repair is committed locally: the shared selector now resolves
-  supported dynamic-loader literals, the owning test observes the entry and
-  fallback branches in-process, the original failing range's consumer returns
-  0 with `status: clean`, and the branch verification lock passes. Long quality
-  runs now emit stderr `START`/`WAIT` progress before buffered phase output, so
-  a combined redirected transcript no longer stays empty during broad pytest.
-  The hosted result
-  is still the old red head because `git push` is per-request and was not
-  authorized. After an approved push, read it back with
-  `gh run list --repo corca-ai/charness --limit 5`; do not infer remote green
+  Local commits repair dynamic-loader changed-line selection and emit early
+  `START`/`WAIT` progress from long quality runs. The hosted result is still the
+  old red head because push was not authorized; after approval, read back
+  `gh run list --repo corca-ai/charness --limit 5` rather than inferring green
   from the push exit code.
+- **The current local tip also carries the #577/#578/#579 runtime/test-economics
+  repair.** Tests own process/temp resources, redundant controls have stronger
+  siblings, and SLOC sync removes only its exact output report. The carrier has
+  all three `Closes` lines; the issues remain OPEN until an authorized push, then
+  require separate issue-state and hosted-CI readbacks.
 - **A MINOR release was approved and is HELD** until the repaired hosted CI run
   is green. Do not cut it from local proof alone.
 
@@ -32,6 +31,8 @@
 - [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`. Remaining: slice 5 (`#563`, a DELETION — decided, not done) and slice 7 (`#523`); read its `## Slice Plan` for status.
 - `#530` and `#564` are CLOSED through the full floor (delegated critique, `validate-closeout-draft`, behavioural verdict on a distinct channel, `verify-closeout --expect-state CLOSED`). Critique artifacts are checked in under [charness-artifacts/critique/](../charness-artifacts/critique/).
 - Filed this session and unworked: `#574` (version-unchecked adapter readers outside the resolver glob, one honoring trust-boundary fields), `#575` (the regenerable-facts gate's comment claims dated-record directories are out of scope while its default globs include them — fires in 4 of 5 real consumer repos), `#576` (charness renders no adapter-key verdict in any consumer repo — the gap the `#530` repair created by design).
+- `#577`, `#578`, and `#579` are locally resolved and critique/draft-validated. Their
+  remote state is deliberately still OPEN because push is not authorized.
 - **A census was considered and REFUTED as unjustified.** The discriminator: consumers' own gate commands invoke zero charness scripts, and the canonical list of what a consumer is told to run is the four entries in [catalog.yaml](../skills/public/quality/references/catalog.yaml) — three of them charness scripts, all clean against the five repos. Do not re-open a broad census without new evidence.
 - The publish-state claim below is a captured, offline-reconciled snapshot, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json): rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
 
@@ -43,8 +44,9 @@
 ## Next Session
 
 1. **With explicit push approval, publish the committed repair and verify the
-   hosted `Quality Core` result through GitHub.** Local old-range and branch-lock
-   proof are green; remote green is the only remaining CI claim.
+   hosted `Quality Core` result through GitHub.** Also verify #577/#578/#579 close
+   state through the issue adapter. Local proof is green; remote green/closed
+   are the remaining publication claims.
 2. Then cut the approved MINOR release, and confirm it through a channel other than the publish exit code.
 3. Then chunk the backlog and work it. `#575` is the strongest candidate: consumer-facing, evidence from five real repos, and it repairs a surface this repo shipped to its own catalog.
 4. `#572` is a CI-generated mutation regression on an older head; check whether a green run supersedes it before treating it as work.

@@ -231,34 +231,10 @@ def test_resolve_repo_python_bootstraps_when_launcher_is_absent(monkeypatch, tmp
     assert len(commands) == 1
 
 
-def test_resolve_repo_python_bootstraps_when_contract_schema_is_invalid(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_fast_path_invalid_schema", CHARNESS_PATH)
-    repo_root = tmp_path / "repo"
-    copy_bootstrap_contract(repo_root)
-    contract_path = repo_root / "packaging" / "bootstrap-python.json"
-    contract = json.loads(contract_path.read_text(encoding="utf-8"))
-    contract["schema_version"] = 2
-    contract_path.write_text(json.dumps(contract), encoding="utf-8")
-    commands: list[list[str]] = []
-
-    def fake_run(
-        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
-    ) -> subprocess.CompletedProcess[str]:
-        del cwd, env
-        commands.append(command)
-        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
-        return completed(command, stdout="/tmp/repaired/bin/python\n")
-
-    monkeypatch.setattr(module, "run", fake_run)
-    module._BOOTSTRAP_PYTHON_CACHE.clear()
-
-    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
-    assert len(commands) == 1
-
-
 @pytest.mark.parametrize(
     ("field_path", "invalid_value"),
     [
+        pytest.param(("schema_version",), 2, id="schema-version-unsupported"),
         pytest.param(("python", "min_version"), None, id="min-version-wrong-type"),
         pytest.param(("python", "min_version"), "3", id="min-version-too-short"),
         pytest.param(("python", "min_version"), "three.ten", id="min-version-not-numeric"),
@@ -305,13 +281,28 @@ def test_resolve_repo_python_leaves_malformed_contracts_to_bootstrap(
     assert len(commands) == 1
 
 
-def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_fast_path_unhealthy", CHARNESS_PATH)
+@pytest.mark.parametrize(
+    ("launcher_content", "requires_version_guard"),
+    [
+        pytest.param("stale launcher\n", False, id="probe-nonzero"),
+        pytest.param("old launcher\n", True, id="python-too-old"),
+    ],
+)
+def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(
+    monkeypatch,
+    tmp_path: Path,
+    launcher_content: str,
+    requires_version_guard: bool,
+) -> None:
+    module = load_module(
+        f"charness_bootstrap_fast_path_unhealthy_{requires_version_guard}",
+        CHARNESS_PATH,
+    )
     repo_root = tmp_path / "repo"
     copy_bootstrap_contract(repo_root)
     launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
     launcher.parent.mkdir(parents=True)
-    launcher.write_text("stale launcher\n", encoding="utf-8")
+    launcher.write_text(launcher_content, encoding="utf-8")
     commands: list[list[str]] = []
 
     def fake_run(
@@ -320,33 +311,8 @@ def test_resolve_repo_python_bootstraps_when_launcher_probe_fails(monkeypatch, t
         del cwd, env
         commands.append(command)
         if command[0] == str(launcher):
-            return completed(command, returncode=1)
-        assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
-        return completed(command, stdout="/tmp/repaired/bin/python\n")
-
-    monkeypatch.setattr(module, "run", fake_run)
-    module._BOOTSTRAP_PYTHON_CACHE.clear()
-
-    assert module.resolve_repo_python(repo_root) == "/tmp/repaired/bin/python"
-    assert [command[0] for command in commands] == [str(launcher), sys.executable]
-
-
-def test_resolve_repo_python_bootstraps_when_launcher_is_too_old(monkeypatch, tmp_path: Path) -> None:
-    module = load_module("charness_bootstrap_fast_path_old_python", CHARNESS_PATH)
-    repo_root = tmp_path / "repo"
-    copy_bootstrap_contract(repo_root)
-    launcher = repo_root / ".charness" / "bootstrap-python" / ("Scripts/python.cmd" if os.name == "nt" else "bin/python")
-    launcher.parent.mkdir(parents=True)
-    launcher.write_text("old launcher\n", encoding="utf-8")
-    commands: list[list[str]] = []
-
-    def fake_run(
-        command: list[str], *, cwd: Path | None = None, env: dict[str, str] | None = None
-    ) -> subprocess.CompletedProcess[str]:
-        del cwd, env
-        commands.append(command)
-        if command[0] == str(launcher):
-            assert "sys.version_info[:2] < minimum" in command[2]
+            if requires_version_guard:
+                assert "sys.version_info[:2] < minimum" in command[2]
             return completed(command, returncode=1)
         assert command[:2] == [sys.executable, "scripts/bootstrap_runtime.py"]
         return completed(command, stdout="/tmp/repaired/bin/python\n")

@@ -157,6 +157,38 @@ in-process branch tests and prove the same lane passes.
   independent read-only review found no blocker and its three evidence/test
   hardenings were applied.
 
+## Follow-up Slice Carry-Forward
+
+- User-directed follow-up: resolve `#577`, `#578`, and `#579`, which were found while
+  measuring the repaired quality runner's code and test economics.
+- Preserved interrupt: the remote changed-line seam remains locally resolved
+  and hosted CI readback remains pending explicit push approval. This follow-up
+  does not alter mapper policy, changed-line verdict logic, CI topology, or the
+  remote non-claim.
+- Current capability: timeout/drain behavior tests must prove containment
+  without retaining escaped processes or paying production-scale deadlines;
+  synthetic inventory tests must observe only their declared pytest temp root.
+  Generated SLOC inventory must not measure its mutable runtime state or its
+  own output, and must not exclude a different versioned file by glob suffix.
+- Acceptance: the focused CLI-surface tests leave no owned escapee process and
+  complete under injected test deadlines; the economics suite produces the
+  same payloads against a fixture-owned temp root and no longer scans ambient
+  retained sessions. Broad standing proof and issue closeout remain separate
+  final gates.
+- Result: the CLI module passes in 6.35s serial; every retry-owned holder is
+  registered by its parent, ordinary group cleanup leaves no identity-matched
+  running process, escaped holders acknowledge test-owned stop signals, and
+  five repeated race runs leave no holder. Economics/discovery focus passes in
+  2.00s under xdist against the fixture root. Critique round 2 caught the late
+  PID-registration race; its repair is accepted-unreviewed under the two-round
+  cap and remains covered by the repeated execution above.
+  Clean-closeout rehearsal then reproduced SLOC self-contamination. Six focused
+  tests now prove exact output identity, same-suffix preservation, literal
+  metacharacters, and byte stability; its round-2 repair is accepted-unreviewed.
+- Non-goals: pruning tests from counts alone, removing portability bootstrap
+  shims, weakening local/CI mirror proof, changing runtime budgets, or claiming
+  the still-unpushed hosted CI repair is green.
+
 ## Boundary Ownership
 
 - `preserve`: the selector produces reachability evidence; it does not produce a

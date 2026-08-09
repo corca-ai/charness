@@ -21,6 +21,8 @@ from runtime_bootstrap import import_repo_module
 
 from .support import ROOT
 
+PRE_PUSH_HOOK_TEXT = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+
 
 def test_install_git_hooks_sets_core_hookspath(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
@@ -168,7 +170,7 @@ def test_validate_maintainer_setup_refuses_a_pre_push_hook_that_stopped_arming_t
     Reproduced against a copy of this repo's real hook before the fix: the
     disarmed hook printed `Validated maintainer hook setup` and exited 0.
     """
-    hook = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    hook = PRE_PUSH_HOOK_TEXT
     assert "CHARNESS_PRE_PUSH=1 " in hook, "the real hook must arm the lane, or this test proves nothing"
 
     armed = _run_maintainer_setup(_seed_source_repo_for_maintainer_setup(tmp_path / "armed", hook))
@@ -209,7 +211,7 @@ def test_validate_maintainer_setup_reads_invocations_not_mentions() -> None:
     module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
     invocations = module.quality_runner_invocations
 
-    hook = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    hook = PRE_PUSH_HOOK_TEXT
     armed, unarmed, unclear, swallowed = invocations(hook)
     assert len(armed) == 2, armed  # the docs-only branch and the full branch
     assert not unarmed and not unclear and not swallowed, (unarmed, unclear, swallowed)
@@ -294,7 +296,7 @@ LEGITIMATE_REWRITES = {
 
 
 def _rewrite_full_branch(replacement: str) -> str:
-    hook = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    hook = PRE_PUSH_HOOK_TEXT
     full_branch = "  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only"
     assert full_branch in hook, "the full-gate branch moved; these rewrites are stale"
     return hook.replace(full_branch, replacement)
@@ -356,7 +358,7 @@ def test_each_refusal_branch_names_its_own_reason(label: str, tmp_path: Path) ->
 def test_check_pre_push_arming_accepts_the_real_hook(tmp_path: Path) -> None:
     module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
     hook = tmp_path / "pre-push"
-    hook.write_text((ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8"), encoding="utf-8")
+    hook.write_text(PRE_PUSH_HOOK_TEXT, encoding="utf-8")
     module.check_pre_push_arming(hook, ".githooks/pre-push")  # must not raise
 
 
@@ -389,7 +391,7 @@ def test_main_runs_the_arming_check_on_a_source_shaped_repo(tmp_path: Path, monk
     """
     module = import_repo_module(__file__, "scripts.validate_maintainer_setup")
     repo = _seed_source_repo_for_maintainer_setup(
-        tmp_path, (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+        tmp_path, PRE_PUSH_HOOK_TEXT
     )
     # The PATH is recorded too, not just the rel label: a `main()` that handed the
     # checker `pre-commit` under the `.githooks/pre-push` label would validate the
@@ -421,7 +423,7 @@ def test_validate_maintainer_setup_refuses_a_single_disarmed_branch(tmp_path: Pa
     This is the arm the zero-invocation backstop cannot catch, because the other
     branch keeps `armed` non-empty.
     """
-    hook = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    hook = PRE_PUSH_HOOK_TEXT
     full_branch = "  CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only"
     assert full_branch in hook
     disarmed = hook.replace(full_branch, "  ./scripts/run-quality.sh --read-only")
@@ -431,7 +433,7 @@ def test_validate_maintainer_setup_refuses_a_single_disarmed_branch(tmp_path: Pa
 
 
 def test_validate_maintainer_setup_refuses_a_pre_push_hook_that_stopped_calling_the_runner(tmp_path: Path) -> None:
-    hook = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+    hook = PRE_PUSH_HOOK_TEXT
     gutted = "\n".join(
         "true" if "run-quality.sh" in line and not line.strip().startswith(("#", "echo")) else line
         for line in hook.splitlines()
@@ -456,5 +458,4 @@ def test_pre_push_arming_var_is_the_one_the_runner_actually_reads() -> None:
     # would stay green with the branch body gutted.
     body = runner.split(guard, 1)[1].split("fi", 1)[0]
     assert "--refuse-unestablished" in body, body
-
 

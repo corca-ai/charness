@@ -4,6 +4,7 @@
   ],
   "engine": "tokei",
   "exclude": [
+    ".charness",
     ".git",
     ".mypy_cache",
     ".pytest_cache",
@@ -24,9 +25,9 @@
     },
     "JSON": {
       "blanks": 0,
-      "code": 158373,
+      "code": 159091,
       "comments": 0,
-      "files": 886
+      "files": 891
     },
     "JavaScript": {
       "blanks": 396,
@@ -35,10 +36,10 @@
       "files": 20
     },
     "Markdown": {
-      "blanks": 66471,
+      "blanks": 66682,
       "code": 0,
-      "comments": 289260,
-      "files": 3182
+      "comments": 290271,
+      "files": 3190
     },
     "Plain Text": {
       "blanks": 715,
@@ -47,9 +48,9 @@
       "files": 96
     },
     "Python": {
-      "blanks": 62073,
-      "code": 377906,
-      "comments": 20758,
+      "blanks": 62088,
+      "code": 378100,
+      "comments": 20751,
       "files": 1945
     },
     "Shell": {
@@ -77,9 +78,9 @@
   "status": "ok",
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
-    "blanks": 130045,
-    "code": 547609,
-    "comments": 313710,
-    "files": 6205
+    "blanks": 130271,
+    "code": 548521,
+    "comments": 314714,
+    "files": 6218
   }
 }

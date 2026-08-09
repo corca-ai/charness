@@ -25,6 +25,9 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 REFERENCE = ROOT / "skills/shared/references/fresh-eye-subagent-review.md"
 RECORD_RELPATH = ".agents/subagent-delegation.json"
+SUBAGENT_DELEGATION_TEMPLATE = (
+    ROOT / "scripts/templates/agents_subagent_delegation.txt"
+).read_text(encoding="utf-8")
 
 
 def _load_module(relpath: str, name: str):
@@ -646,7 +649,7 @@ def test_the_shipped_setup_template_satisfies_BOTH_readers_of_the_contract() -> 
     """
     resolver = _load_module("skills/shared/scripts/resolve_subagent_delegation.py", "_rsd_tmpl")
     inspector = _load_module("scripts/setup_agent_docs_fresh_eye_lib.py", "_fe_tmpl")
-    template = (ROOT / "scripts/templates/agents_subagent_delegation.txt").read_text(encoding="utf-8")
+    template = SUBAGENT_DELEGATION_TEMPLATE
 
     normalized = resolver.normalize_contract_text(template)
     for marker in resolver.DELEGATION_CONTRACT_MARKERS:
@@ -684,7 +687,7 @@ def test_a_repo_set_up_from_the_shipped_template_reads_as_adopted(
     """The end-to-end shape of #476, through every reader that acts on adoption."""
     (tmp_path / "AGENTS.md").write_text(
         "# Consumer repo\n\n"
-        + (ROOT / "scripts/templates/agents_subagent_delegation.txt").read_text(encoding="utf-8"),
+        + SUBAGENT_DELEGATION_TEMPLATE,
         encoding="utf-8",
     )
     assert resolver.resolve(tmp_path)["delegation"] == resolver.GRANTED

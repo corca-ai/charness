@@ -83,6 +83,12 @@ def _empty_root(tmp_path: Path) -> Path:
         ("scripts/validate_packaging.py", [], "no packaging manifests found"),
         ("scripts/check_export_safe_imports.py", [], "no export-surface Python files found"),
         ("scripts/check_bootstrap_shim_consistency.py", [], "no bootstrap shim copies found"),
+        # S42: zero SKILL.md under the named root.
+        ("scripts/check_skill_bootstrap_vars.py", [], "no public/support SKILL.md files found"),
+        # S46: no tests/ means the gate inspected no Python files.
+        ("scripts/check_test_repo_copy_invariants.py", [], "no test Python files found"),
+        # S49: every per-manifest rule iterates a hardcoded glob under the root.
+        ("scripts/validate_integrations.py", [], "no integration manifests found"),
     ],
 )
 def test_zero_scope_scan_refuses(tmp_path: Path, script: str, args: list[str], expected_fragment: str) -> None:
@@ -91,18 +97,9 @@ def test_zero_scope_scan_refuses(tmp_path: Path, script: str, args: list[str], e
     assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
 
 
-@pytest.mark.parametrize(
-    "script",
-    [
-        "scripts/validate_packaging.py",
-        "scripts/check_export_safe_imports.py",
-        "scripts/check_bootstrap_shim_consistency.py",
-    ],
-)
-def test_zero_scope_refusal_is_not_an_unconditional_failure(script: str) -> None:
-    """Positive control: an implementation that simply exits 1 always would pass
-    every refusal test above. These gates must still pass on the real repo."""
-    result = run_gate(script, "--repo-root", str(ROOT))
+def test_export_safe_zero_scope_refusal_is_not_an_unconditional_failure() -> None:
+    """Keep the only whole-entrypoint positive control for export-safe imports."""
+    result = run_gate("scripts/check_export_safe_imports.py", "--repo-root", str(ROOT))
     assert result.returncode == 0, result.stdout + result.stderr
 
 
@@ -253,41 +250,6 @@ def test_known_red_run_is_distinguishable_from_unknown_conclusion() -> None:
 # pass. The third shape these added: named paths this gate does not govern
 # (`plugins/` mirrors, root-level helpers) stay a pass, but may not print a
 # `Validated ... 0 file(s)` verdict.
-
-
-@pytest.mark.parametrize(
-    ("script", "args", "expected_fragment"),
-    [
-        # S42: zero SKILL.md under the named root.
-        ("scripts/check_skill_bootstrap_vars.py", [], "no public/support SKILL.md files found"),
-        # S46: `find_violations` returns [] with no tests/ dir, and --repo-root
-        # defaults to the CWD, so a wrong cwd certified PASS over zero files.
-        ("scripts/check_test_repo_copy_invariants.py", [], "no test Python files found"),
-        # S49: every per-manifest rule iterates a hardcoded glob under the root.
-        ("scripts/validate_integrations.py", [], "no integration manifests found"),
-    ],
-)
-def test_zero_scope_scan_refuses_sweep(
-    tmp_path: Path, script: str, args: list[str], expected_fragment: str
-) -> None:
-    result = run_gate(script, "--repo-root", str(_empty_root(tmp_path)), *args)
-    assert result.returncode != 0, result.stdout + result.stderr
-    assert expected_fragment.lower() in (result.stdout + result.stderr).lower()
-
-
-@pytest.mark.parametrize(
-    "script",
-    [
-        "scripts/check_skill_bootstrap_vars.py",
-        "scripts/check_test_repo_copy_invariants.py",
-        "scripts/validate_integrations.py",
-    ],
-)
-def test_zero_scope_refusal_is_not_an_unconditional_failure_sweep(script: str) -> None:
-    """Positive control: an implementation that exits 1 always would pass every
-    refusal above. These gates must still pass on the real repo."""
-    result = run_gate(script, "--repo-root", str(ROOT))
-    assert result.returncode == 0, result.stdout + result.stderr
 
 
 def test_skill_cut_safety_named_non_skill_path_refuses() -> None:

@@ -18,6 +18,8 @@ import textwrap
 import tokenize
 from pathlib import Path
 
+import pytest
+
 from .support import ROOT
 
 SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -138,8 +140,9 @@ def test_v2_falls_back_to_v1_when_span_does_not_tokenize(tmp_path: Path) -> None
     assert fp.member_fingerprint(tmp_path, "a.py", 1, 3) == v1_expected
 
 
-def test_v2_multiplicity_sensitivity_no_set_collapse(tmp_path: Path) -> None:
-    # {A, A, B} must still NOT collapse to {A, B} under v2 (mirrors the v1 test).
+@pytest.mark.parametrize("algo", ["1", "2"], ids=["v1", "v2"])
+def test_multiplicity_sensitivity_no_set_collapse(tmp_path: Path, algo: str) -> None:
+    # {A, A, B} must NOT collapse to {A, B} under either fingerprint algorithm.
     _write(tmp_path, "a.py", SPAN)
     _write(tmp_path, "a2.py", SPAN)  # byte-identical copy of A
     _write(tmp_path, "b.py", "def g():\n    return 0\n")
@@ -149,7 +152,9 @@ def test_v2_multiplicity_sensitivity_no_set_collapse(tmp_path: Path) -> None:
         {"file": "b.py", "start": 1, "end": 2},
     )
     fam_ab = _family({"file": "a.py", "start": 1, "end": 3}, {"file": "b.py", "start": 1, "end": 2})
-    assert fp.family_content_fingerprint(fam_aab, tmp_path) != fp.family_content_fingerprint(fam_ab, tmp_path)
+    assert fp.family_content_fingerprint(fam_aab, tmp_path, algo=algo) != fp.family_content_fingerprint(
+        fam_ab, tmp_path, algo=algo
+    )
 
 
 def test_offset_invariance(tmp_path: Path) -> None:
@@ -167,21 +172,6 @@ def test_path_and_member_order_invariance(tmp_path: Path) -> None:
     fam_ba = _family({"file": "deep/nested/b.py", "start": 1, "end": 3}, {"file": "a.py", "start": 1, "end": 3})
     # Same content in different files / different member order -> same family fingerprint.
     assert fp.family_content_fingerprint(fam_ab, tmp_path) == fp.family_content_fingerprint(fam_ba, tmp_path)
-
-
-def test_multiplicity_sensitivity_no_set_collapse(tmp_path: Path) -> None:
-    # {A, A, B} must NOT collapse to {A, B} (a set()-dedup bug would collide a 3-member
-    # family with byte-identical A-copies against a real 2-member {A, B}).
-    _write(tmp_path, "a.py", SPAN)
-    _write(tmp_path, "a2.py", SPAN)  # byte-identical copy of A
-    _write(tmp_path, "b.py", "def g():\n    return 0\n")
-    fam_aab = _family(
-        {"file": "a.py", "start": 1, "end": 3},
-        {"file": "a2.py", "start": 1, "end": 3},
-        {"file": "b.py", "start": 1, "end": 2},
-    )
-    fam_ab = _family({"file": "a.py", "start": 1, "end": 3}, {"file": "b.py", "start": 1, "end": 2})
-    assert fp.family_content_fingerprint(fam_aab, tmp_path) != fp.family_content_fingerprint(fam_ab, tmp_path)
 
 
 def test_content_sensitivity(tmp_path: Path) -> None:

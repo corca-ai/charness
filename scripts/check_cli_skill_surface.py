@@ -33,6 +33,8 @@ DEFAULT_PROBE_TIMEOUT_SECONDS = 20.0
 TIMEOUT_EXIT_CODE = 124
 PROBE_ATTEMPTS = 2
 DRAIN_TIMEOUT_SECONDS = 5.0
+PROBE_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"
+DRAIN_TIMEOUT_ENV = "CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"
 _adapter_lib = import_repo_module(__file__, "scripts.adapter_lib")
 load_yaml_file = _adapter_lib.load_yaml_file
 _agent_browser_probe_policy = import_repo_module(__file__, "scripts.agent_browser_probe_policy")
@@ -120,15 +122,23 @@ def _probe_commands(data: dict[str, Any]) -> list[str]:
     return _string_list(data, "cli_skill_surface_probe_commands")
 
 
-def _probe_timeout_seconds() -> float:
-    raw = os.environ.get("CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS")
+def _positive_timeout_seconds(env_name: str, default: float) -> float:
+    raw = os.environ.get(env_name)
     if raw is None:
-        return DEFAULT_PROBE_TIMEOUT_SECONDS
+        return default
     try:
         value = float(raw)
     except ValueError:
-        return DEFAULT_PROBE_TIMEOUT_SECONDS
-    return value if value > 0 else DEFAULT_PROBE_TIMEOUT_SECONDS
+        return default
+    return value if value > 0 else default
+
+
+def _probe_timeout_seconds() -> float:
+    return _positive_timeout_seconds(PROBE_TIMEOUT_ENV, DEFAULT_PROBE_TIMEOUT_SECONDS)
+
+
+def _drain_timeout_seconds() -> float:
+    return _positive_timeout_seconds(DRAIN_TIMEOUT_ENV, DRAIN_TIMEOUT_SECONDS)
 
 
 def _decoded(value: object) -> str:
@@ -163,7 +173,7 @@ def _kill_group_and_drain(process: subprocess.Popen[str]) -> tuple[str, str]:
     except (ProcessLookupError, PermissionError, OSError):
         process.kill()
     try:
-        return process.communicate(timeout=DRAIN_TIMEOUT_SECONDS)
+        return process.communicate(timeout=_drain_timeout_seconds())
     except subprocess.TimeoutExpired as exc:
         # Keep what the pipe already yielded. `TimeoutExpired` carries every byte
         # read so far -- INCLUDING the bytes the probe-deadline `communicate`

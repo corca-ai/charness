@@ -206,6 +206,75 @@ tool) by being about the order of speech and measurement.
 
 n/a (no adapter sections)
 
+## Runtime-Waste Repair Addendum
+
+The operator's follow-up exposed two kinds of test-harness waste that the first
+window had not measured: detached subprocess fixtures surviving for 600 seconds,
+and standing-economics tests scanning ambient pytest temp roots. The repair is
+carried by issues `#577`, `#578`, and the closeout-discovered `#579`, the quality report
+`charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md`, and the
+two-round critique at
+`charness-artifacts/critique/2026-08-09-test-runtime-waste-repair-critique.md`.
+
+The waste was concrete. Three CLI fixtures deliberately escaped the process
+group but had no test-owned cleanup channel, so repeated runs left four observed
+orphans and paid real retry/drain waits. The first repair itself repeated the
+class: raw-PID liveness could mistake a zombie or reused PID for ownership, and
+child-side PID registration left a race before the parent blocked. The two
+fresh-eye rounds caught both. The final helper registers ownership from the test
+parent before any wait, identifies the exact process by its unique stop path,
+and requires an exit acknowledgement. The three formerly slow cases now finish
+in roughly 1.5 seconds each, repeated five times with no matching survivor.
+
+The economics fixture now gives inventory subprocesses a fixture-owned temp
+root, reducing its focused lane from 10.81 seconds to 2.00 seconds. Five
+positive-control cases were deleted only after stronger whole-entrypoint sibling
+tests proved the same success verdict; repeated stable-root reads were hoisted;
+and one apparent duplicate was repaired into explicit algorithm-v1/v2 coverage
+instead of being deleted. No scheduler or worker-count change shipped: an exact
+disposable-clone A/B showed the current 16-worker setting faster than 12 or 8,
+and the operator explicitly bounded further tuning out of this slice.
+
+The first full quality rerun found expected pinned-corpus drift after adding a
+quality artifact. Refreshing the marker/floor evidence before that run would
+have saved one gate cycle. The final read-only gate passed 87 checks with one
+honest dirty-tree UNPROVEN verdict; the clean-tree closeout remains the commit
+boundary proof.
+
+The recurring telemetry cluster is already owned by closed issue `#503`, so a
+duplicate issue would add tracking waste. The new concrete defects were filed as
+`#577`, `#578`, and `#579` and are resolved locally; they remain remotely OPEN until an
+authorized push carries the closing commit.
+
+### Expert Counterfactual
+
+Douglas Engelbart's `(H + LAM + T)` lens says the fixture-control mechanism is
+part of the work system, not cleanup bolted onto a test after it leaks. At the
+first reproduction, the test helper should have owned registration, identity,
+stop, and acknowledgement as one protocol. That would have prevented both
+review-round repairs. The direct operational rule is: whenever a test spawns a
+descendant, register it from the controlling parent before the child can block,
+and prove cleanup by identity plus acknowledgement rather than raw PID
+liveness.
+
+### Sibling Search And Next Moves
+
+- Exact subprocess-fixture search found only the three repaired holders; a
+  generic lifecycle framework is deferred because there is no second consumer.
+- Structural inventory found four stable-root reread clusters and no remaining
+  discovery/broad-scanner candidates after the hoists.
+- When a quality artifact changes the pinned corpus, refresh its evidence probes
+  before paying for the next full gate.
+- A generated inventory must remove its exact prior output identity from its
+  input population. Basename and suffix globs both produced false-stable
+  verdicts during #579's two bounded rounds.
+- Keep the current worker count unless a later frozen-workload measurement
+  reverses this slice's A/B result.
+
+## Packet Consumed For Addendum
+
+`charness-artifacts/retro/2026-08-09-103302-packet.md`
+
 ## Persisted
 
 Persisted: yes: charness-artifacts/retro/2026-08-09-session-retro.md

@@ -5,19 +5,19 @@
     "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
     "date": "2026-08-09",
     "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-    "repo_head_at_run": "7cd421c40cf14f87f5884ede1263948c2f693cf7",
-    "synchronized_after": "Refreshed the floor probe after the 2026-08-09 remote-CI changed-line reconciliation slice added a quality artifact (131 -> 132) and advanced `quality/latest.md`; label values moved 374 -> 378 while the minimum and floor-20 counterfactual stayed unchanged.",
+    "repo_head_at_run": "276ffb1fefa81e5e88b816307a256a717f85c8a4",
+    "synchronized_after": "Refreshed the floor probe after the 2026-08-09 test-runtime waste slice added a quality artifact (132 -> 133) and advanced `quality/latest.md`; label values moved 378 -> 382 while the minimum and floor-20 counterfactual stayed unchanged.",
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed. Kept in lockstep with 2026-08-01-inventory-marker-rule.json, whose D47 denominator is this probe's `field_mention_residuals.count`.",
     "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-    "worktree": "dirty: the remote-CI closeout artifacts and new quality review are present; the residual rule and floor are unchanged"
+    "worktree": "dirty: the test-runtime repair and new quality review are present; the residual rule and floor are unchanged"
   },
-  "artifacts": 132,
+  "artifacts": 133,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 132,
+    "not-claimed": 133,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -29,7 +29,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 378,
+    "count": 382,
     "median": 45,
     "min": 7
   },
@@ -1502,11 +1502,20 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "uncommitted",
+      "commit_state": "dated",
       "declared_date": "2026-08-09",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-09",
       "path": "charness-artifacts/quality/2026-08-09-quality-review.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "uncommitted",
+      "declared_date": "2026-08-09",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-09",
+      "path": "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md"
     },
     {
       "citations": {},

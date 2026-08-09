@@ -17,6 +17,8 @@ from .support import (
     write_executable,
 )
 
+RUN_QUALITY_SCRIPT_TEXT = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+
 
 def test_run_quality_summarizes_success_without_replaying_logs(tmp_path: Path, seeded_quality_runner_repo: Path) -> None:
     repo, env = clone_quality_runner_repo(tmp_path, seeded_quality_runner_repo)
@@ -646,7 +648,7 @@ def test_every_queued_repo_script_gate_has_a_seeded_harness_stub() -> None:
 
     from .support import QUALITY_PYTHON_STUBS, QUALITY_SHELL_STUBS
 
-    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    runner = RUN_QUALITY_SCRIPT_TEXT
     queued = set(re.findall(r'queue_selected "[^"]+" python3 scripts/([a-z0-9_]+\.py)', runner))
     # A gate wrapped in `bash -c` can still call a repo script, and the pattern above
     # cannot see it -- the specdown step is exactly that shape, and its seeding had to
@@ -691,7 +693,7 @@ def test_quality_runner_keeps_specdown_reports_out_of_the_worktree() -> None:
     test is named after. Assert the redirect that actually decides it: the runner
     must pass a `-config`, and the config that helper produces must point every
     reporter outside the repo."""
-    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    runner = RUN_QUALITY_SCRIPT_TEXT
     specdown_command = next(line for line in runner.splitlines() if 'queue_selected "specdown"' in line)
 
     # Unescape the nested `bash -c` quoting so the assertions can bind the flag to

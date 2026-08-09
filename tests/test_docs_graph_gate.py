@@ -20,6 +20,7 @@ from runtime_bootstrap import import_repo_module
 ROOT = Path(__file__).resolve().parents[1]
 GATE = "scripts/check_docs_graph.py"
 _gate = import_repo_module(__file__, "scripts.check_docs_graph")
+_RUN_QUALITY_SCRIPT = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
 
 # CAPTURED from awiki 0.5.0, not hand-written. The passing line is the one that
 # matters: it OMITS `orphans`/`islands` entirely, which is what forced the
@@ -219,7 +220,7 @@ def test_every_run_names_what_it_did_not_judge(monkeypatch: pytest.MonkeyPatch) 
 def test_the_not_run_exit_code_is_the_runners_unestablished_byte() -> None:
     # Drift guard: the runner renders UNPROVEN off this exact byte. If they
     # disagree, a not-run reports as a hard failure or, worse, as a pass.
-    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    runner = _RUN_QUALITY_SCRIPT
     assert f"UNESTABLISHED_EXIT={_gate.UNESTABLISHED_EXIT}" in runner
     assert "docs-graph" in runner
     unestablished_line = next(
@@ -229,7 +230,7 @@ def test_the_not_run_exit_code_is_the_runners_unestablished_byte() -> None:
 
 
 def test_the_gate_is_wired_into_the_quality_runner() -> None:
-    runner = (ROOT / "scripts" / "run-quality.sh").read_text(encoding="utf-8")
+    runner = _RUN_QUALITY_SCRIPT
     assert 'queue_selected "docs-graph" python3 scripts/check_docs_graph.py' in runner
 
 

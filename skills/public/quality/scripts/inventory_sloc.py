@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from summary_output_lib import add_output_args, emit_selected  # noqa: E402
 
 DEFAULT_EXCLUDES = (
+    ".charness",
     ".git",
     ".mypy_cache",
     ".pytest_cache",
@@ -98,7 +99,26 @@ def _summarize_languages(report: dict) -> tuple[dict, dict]:
     return languages, totals
 
 
-def inventory_sloc(repo_root: Path, *, excludes: list[str]) -> dict:
+def _remove_output_report(report: dict, output: Path | None) -> None:
+    if output is None:
+        return
+    target = str(output.resolve())
+    for language, language_report in report.items():
+        if language == "Total" or not isinstance(language_report, dict):
+            continue
+        reports = language_report.get("reports")
+        reports = reports if isinstance(reports, list) else []
+        retained = [item for item in reports if item.get("name") != target]
+        if len(retained) == len(reports):
+            continue
+        language_report["reports"] = retained
+        for field in ("code", "comments", "blanks"):
+            language_report[field] = sum(
+                int(item.get("stats", {}).get(field, 0)) for item in retained
+            )
+
+
+def inventory_sloc(repo_root: Path, *, excludes: list[str], output: Path | None = None) -> dict:
     payload: dict = {
         "schema_version": 1,
         "scope": "tokei-sloc",
@@ -135,6 +155,7 @@ def inventory_sloc(repo_root: Path, *, excludes: list[str]) -> dict:
             totals={"code": 0, "comments": 0, "blanks": 0, "files": 0},
         )
         return payload
+    _remove_output_report(report, output)
     languages, totals = _summarize_languages(report)
     payload.update(
         status="ok",
@@ -143,6 +164,14 @@ def inventory_sloc(repo_root: Path, *, excludes: list[str]) -> dict:
         totals=totals,
     )
     return payload
+
+
+def _in_repo_output(repo_root: Path, output: Path | None) -> Path | None:
+    if output is not None:
+        resolved = output.resolve()
+        if resolved.is_relative_to(repo_root):
+            return resolved
+    return None
 
 
 def summarize(payload: dict) -> dict:
@@ -184,8 +213,13 @@ def main() -> int:
     )
     args = parser.parse_args()
 
+    repo_root = args.repo_root.resolve()
     excludes = list(args.exclude) if args.exclude else list(DEFAULT_EXCLUDES)
-    payload = inventory_sloc(args.repo_root.resolve(), excludes=excludes)
+    payload = inventory_sloc(
+        repo_root,
+        excludes=excludes,
+        output=_in_repo_output(repo_root, args.output),
+    )
     rendered = json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True)
     if args.output is not None:
         args.output.parent.mkdir(parents=True, exist_ok=True)

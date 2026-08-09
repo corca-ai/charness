@@ -147,7 +147,9 @@ def test_cli_skill_surface_reports_probe_timeout(tmp_path: Path) -> None:
     assert "did not close its output within 0.1s on each of 2 attempts" in payload["unobserved"][0]
 
 
-def test_cli_skill_surface_retries_a_starved_probe_before_concluding(tmp_path: Path) -> None:
+def test_cli_skill_surface_retries_a_starved_probe_before_concluding(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
     """A probe starved once by gate contention must not be reported at all."""
     repo = seed_repo(
         tmp_path,
@@ -158,7 +160,7 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(tmp_path: P
                 "- installable_cli",
                 "- bundled_skill",
                 "cli_skill_surface_probe_commands:",
-                "- python3 scripts/flaky.py doctor --json",
+                "- ./demo doctor --json",
                 "cli_skill_surface_command_docs:",
                 "- .agents/command-docs.yaml",
                 "",
@@ -166,24 +168,30 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(tmp_path: P
         ),
     )
     (repo / ".agents" / "command-docs.yaml").write_text("commands:\n  root:\n    help_command: ./demo --help\n", encoding="utf-8")
-    # Hangs on the first invocation only, exactly like a probe starved by a
-    # concurrent sibling; the marker makes the second run cheap and passing.
-    write_executable(
-        repo / "scripts" / "flaky.py",
-        "#!/usr/bin/env python3\n"
-        "import pathlib, time\n"
-        "marker = pathlib.Path(__file__).with_name('flaky.marker')\n"
-        "if not marker.exists():\n"
-        "    marker.write_text('1')\n"
-        "    time.sleep(600)\n",
-    )
-    env = os.environ.copy()
-    # Generous on purpose: the second attempt pays a cold CPython start, and
-    # this test runs inside the very gate whose contention it is asserting
-    # tolerance of. A tight budget here would make the starve test starve.
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "10"
+    attempts: list[tuple[Path, str, float]] = []
 
-    result = run_script("scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env)
+    def fake_attempt(repo_root: Path, command: str, timeout_seconds: float):
+        attempts.append((repo_root, command, timeout_seconds))
+        if len(attempts) == 1:
+            return {
+                "command": command,
+                "returncode": 124,
+                "stdout_preview": "",
+                "stderr_preview": "",
+                "timed_out": True,
+            }
+        return {
+            "command": command,
+            "returncode": 0,
+            "stdout_preview": "ok",
+            "stderr_preview": "",
+            "timed_out": False,
+        }
+
+    monkeypatch.setattr(_check_cli_skill_surface, "_attempt_probe", fake_attempt)
+    result = run_cli_skill_surface(
+        monkeypatch, capsys, "--repo-root", str(repo), "--run-probes", "--json"
+    )
     payload = json.loads(result.stdout)
 
     assert result.returncode == 0, result.stderr
@@ -191,6 +199,28 @@ def test_cli_skill_surface_retries_a_starved_probe_before_concluding(tmp_path: P
     assert payload["unobserved"] == []
     assert payload["probe_results"][0]["timed_out"] is False
     assert payload["probe_results"][0]["attempts"] == 2
+    assert [command for _repo, command, _timeout in attempts] == [
+        "./demo doctor --json",
+        "./demo doctor --json",
+    ]
+
+
+def test_cli_skill_surface_drain_timeout_override_is_positive_only(monkeypatch) -> None:
+    monkeypatch.delenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, raising=False)
+    assert (
+        _check_cli_skill_surface._drain_timeout_seconds()
+        == _check_cli_skill_surface.DRAIN_TIMEOUT_SECONDS
+    )
+
+    monkeypatch.setenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, "0.125")
+    assert _check_cli_skill_surface._drain_timeout_seconds() == 0.125
+
+    for invalid in ("invalid", "0", "-1"):
+        monkeypatch.setenv(_check_cli_skill_surface.DRAIN_TIMEOUT_ENV, invalid)
+        assert (
+            _check_cli_skill_surface._drain_timeout_seconds()
+            == _check_cli_skill_surface.DRAIN_TIMEOUT_SECONDS
+        )
 
 
 def test_cli_skill_surface_keeps_an_observed_failure_out_of_unobserved(tmp_path: Path) -> None:
@@ -386,6 +416,65 @@ def _probe_repo(tmp_path: Path, command: str) -> Path:
     return repo
 
 
+def _recorded_pids(path: Path) -> list[int]:
+    if not path.is_file():
+        return []
+    return [int(line) for line in path.read_text(encoding="utf-8").splitlines() if line]
+
+
+def _write_controlled_pipe_holder(repo: Path) -> Path:
+    holder = repo / "scripts" / "pipe_holder.py"
+    write_executable(
+        holder,
+        "#!/usr/bin/env python3\n"
+        "import os, signal, sys, time\n"
+        "from pathlib import Path\n"
+        "stop_path, exit_dir = map(Path, sys.argv[1:])\n"
+        "pid = os.getpid()\n"
+        "def finish(*_args):\n"
+        "    exit_dir.mkdir(parents=True, exist_ok=True)\n"
+        "    (exit_dir / str(pid)).write_text('exited\\n', encoding='utf-8')\n"
+        "    raise SystemExit(0)\n"
+        "signal.signal(signal.SIGTERM, finish)\n"
+        "deadline = time.monotonic() + 5.0\n"
+        "while not stop_path.exists() and time.monotonic() < deadline:\n"
+        "    time.sleep(0.01)\n"
+        "finish()\n",
+    )
+    return holder
+
+
+def _owned_process_is_running(pid: int, identity: str) -> bool:
+    process = subprocess.run(
+        ["ps", "-o", "stat=,args=", "-p", str(pid)],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    fields = process.stdout.strip().split(maxsplit=1)
+    if process.returncode != 0 or len(fields) != 2:
+        return False
+    state, argv = fields
+    return not state.startswith("Z") and identity in argv
+
+
+def _stop_recorded_children(
+    pid_log: Path, stop_path: Path, exit_dir: Path
+) -> tuple[list[int], list[int], list[int]]:
+    stop_path.write_text("stop\n", encoding="utf-8")
+    pids = _recorded_pids(pid_log)
+    identity = str(stop_path)
+    deadline = time.monotonic() + 6.0
+    while time.monotonic() < deadline:
+        survivors = [pid for pid in pids if _owned_process_is_running(pid, identity)]
+        if not survivors:
+            break
+        time.sleep(0.01)
+    exited = [pid for pid in pids if (exit_dir / str(pid)).is_file()]
+    survivors = [pid for pid in pids if _owned_process_is_running(pid, identity)]
+    return pids, exited, survivors
+
+
 def test_cli_skill_surface_separates_a_real_124_exit_from_an_unobserved_probe(tmp_path: Path) -> None:
     """A command that ANSWERS 124 is a blocker; only an unread verdict is unobserved.
 
@@ -416,28 +505,42 @@ def test_cli_skill_surface_survives_a_probe_whose_grandchild_holds_the_pipe(tmp_
     `run-quality.sh`, not the pre-push hook -- puts a wall clock around a label,
     so the gate would hang rather than refuse.
     """
+    pid_log = tmp_path / "orphan-pids.txt"
+    stop_path = tmp_path / "stop-orphans"
+    exit_dir = tmp_path / "orphan-exits"
     repo = _probe_repo(tmp_path, "python3 scripts/orphan.py doctor --json")
+    holder = _write_controlled_pipe_holder(repo)
     write_executable(
         repo / "scripts" / "orphan.py",
         "#!/usr/bin/env python3\n"
-        "import subprocess, sys\n"
+        "import subprocess, sys, time\n"
         # The grandchild inherits stdout/stderr and outlives the parent.
-        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'])\n"
+        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}])\n"
+        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
         "print('partial verdict before the hang')\n"
         "sys.stdout.flush()\n"
-        "import time; time.sleep(600)\n",
+        "time.sleep(600)\n",
     )
     env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "1"
+    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
 
-    result = _run_bounded_in_own_session(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env
-    )
+    try:
+        result = _run_bounded_in_own_session(
+            "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env
+        )
+        recorded_pids = _recorded_pids(pid_log)
+        production_survivors = [pid for pid in recorded_pids if _owned_process_is_running(pid, str(stop_path))]
+    finally:
+        cleanup_pids, _, cleanup_survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
     assert result is not None, "the check did not bound its own probe deadline; it hung on the orphan-held pipe"
+    assert recorded_pids, "the fixture never established an inherited pipe holder"
+    assert not production_survivors, "the production group kill left an ordinary descendant running"
+    assert not cleanup_survivors, "the fixture failed to clean every recorded descendant"
     payload = json.loads(result)
 
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
+    assert len(recorded_pids) == payload["probe_results"][0]["attempts"]
     # Partial output captured before the deadline is EVIDENCE, not noise: it is
     # what tells a reader the command was mid-verdict rather than never started.
     assert "partial verdict before the hang" in payload["probe_results"][0]["stdout_preview"]
@@ -452,32 +555,51 @@ def test_cli_skill_surface_bounds_the_drain_when_the_grandchild_escapes_the_grou
     green. A grandchild that calls `setsid()` escapes the group, still holds the
     inherited pipe, and is the input that makes the deadline load-bearing.
     """
+    pid_log = tmp_path / "escapee-pids.txt"
+    stop_path = tmp_path / "stop-escapees"
+    exit_dir = tmp_path / "escapee-exits"
     repo = _probe_repo(tmp_path, "python3 scripts/escapee.py doctor --json")
+    holder = _write_controlled_pipe_holder(repo)
     write_executable(
         repo / "scripts" / "escapee.py",
         "#!/usr/bin/env python3\n"
         "import subprocess, sys, time\n"
         # start_new_session puts the grandchild in its OWN session, so killpg on
         # the probe's group never reaches it; it keeps the pipe open regardless.
-        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'], start_new_session=True)\n"
+        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
+        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
         "time.sleep(600)\n",
     )
     env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "1"
+    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
+    env["CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"] = "0.1"
 
     started = time.monotonic()
-    result = _run_bounded_in_own_session(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env
-    )
-    elapsed = time.monotonic() - started
+    try:
+        result = _run_bounded_in_own_session(
+            "scripts/check_cli_skill_surface.py",
+            "--repo-root",
+            str(repo),
+            "--run-probes",
+            "--json",
+            env=env,
+        )
+        elapsed = time.monotonic() - started
+    finally:
+        escaped_pids, exited_pids, survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
 
     assert result is not None, "the drain was unbounded; the escaped grandchild held the pipe open forever"
+    assert escaped_pids, "the fixture never established an escaped pipe holder"
+    assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
+    assert not survivors
     payload = json.loads(result)
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
-    # 2 attempts x (1s deadline + <=5s drain) plus interpreter start. The upper
-    # bound is what proves the drain deadline fired rather than the outer bound.
-    assert elapsed < 25, f"drain deadline did not bind: {elapsed:.1f}s"
+    assert len(escaped_pids) == payload["probe_results"][0]["attempts"]
+    # The production default stays at five seconds. This test proves the same
+    # deadline branch under a test-owned budget and retains the independent
+    # outer bound above as regression containment.
+    assert elapsed < 5, f"test-owned drain deadline did not bind: {elapsed:.1f}s"
 
 
 def test_kill_group_and_drain_never_signals_a_group_the_probe_does_not_own(tmp_path: Path) -> None:
@@ -536,27 +658,45 @@ def test_cli_skill_surface_keeps_partial_output_when_even_the_drain_times_out(tm
     grandchild holding the pipe -- is the input that reaches the discard, which
     is where the original defect had been reintroduced one call deeper.
     """
+    pid_log = tmp_path / "loud-escapee-pids.txt"
+    stop_path = tmp_path / "stop-loud-escapees"
+    exit_dir = tmp_path / "loud-escapee-exits"
     repo = _probe_repo(tmp_path, "python3 scripts/loud_escapee.py doctor --json")
+    holder = _write_controlled_pipe_holder(repo)
     write_executable(
         repo / "scripts" / "loud_escapee.py",
         "#!/usr/bin/env python3\n"
         "import subprocess, sys, time\n"
-        "subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(600)'], start_new_session=True)\n"
+        f"child = subprocess.Popen([sys.executable, {str(holder)!r}, {str(stop_path)!r}, {str(exit_dir)!r}], start_new_session=True)\n"
+        f"with open({str(pid_log)!r}, 'a', encoding='utf-8') as stream: stream.write(str(child.pid) + '\\n')\n"
         "print('partial verdict that must survive the drain')\n"
         "sys.stdout.flush()\n"
         "time.sleep(600)\n",
     )
     env = os.environ.copy()
-    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "1"
+    env["CHARNESS_CLI_SKILL_SURFACE_PROBE_TIMEOUT_SECONDS"] = "0.5"
+    env["CHARNESS_CLI_SKILL_SURFACE_DRAIN_TIMEOUT_SECONDS"] = "0.1"
 
-    result = _run_bounded_in_own_session(
-        "scripts/check_cli_skill_surface.py", "--repo-root", str(repo), "--run-probes", "--json", env=env
-    )
+    try:
+        result = _run_bounded_in_own_session(
+            "scripts/check_cli_skill_surface.py",
+            "--repo-root",
+            str(repo),
+            "--run-probes",
+            "--json",
+            env=env,
+        )
+    finally:
+        escaped_pids, exited_pids, survivors = _stop_recorded_children(pid_log, stop_path, exit_dir)
     assert result is not None, "the check hung instead of bounding its drain"
+    assert escaped_pids, "the fixture never established an escaped pipe holder"
+    assert exited_pids == escaped_pids, "the fixture failed to stop every escaped pipe holder"
+    assert not survivors
     payload = json.loads(result)
 
     assert payload["status"] == "unobserved"
     assert payload["probe_results"][0]["timed_out"] is True
+    assert len(escaped_pids) == payload["probe_results"][0]["attempts"]
     assert "partial verdict that must survive the drain" in payload["probe_results"][0]["stdout_preview"]
 
 

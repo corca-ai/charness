@@ -688,7 +688,7 @@ the evidence is sufficient for the boundary at hand.
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over the current denominator (132 top-level artifacts, 34 citing a declared
+  Over the current denominator (133 top-level artifacts, 34 citing a declared
   inventory): the presence-only mention total is **196**, **188** of those clear today's
   residual floor, **153** carry a value marker and **35** do not, and a
   marker rule would refuse **4 citations across 3 artifacts**
@@ -696,7 +696,7 @@ the evidence is sufficient for the boundary at hand.
   `2026-08-06-runtime-evidence-and-nose`). Marker kinds are reported per mention and
   overlap: 129 backticked, 87 `field=`, 31 `field:`. With `--recursive`, which reaches
   the `history/` directory the sibling script's non-recursive glob silently excludes:
-  150 artifacts (269 presence-only), 261 floor-clearing mentions, 217 marked, 44
+  151 artifacts (269 presence-only), 261 floor-clearing mentions, 217 marked, 44
   unmarked, 6 citations across 4 artifacts (the three above plus `history/2026-06-11`).
   Its marker kinds are 187 backticked, 99 `field=`, and 36 `field:`. Both variants are
   recorded in the probe and pinned by the test, so neither number is an unrecorded
@@ -718,6 +718,12 @@ the evidence is sufficient for the boundary at hand.
   marker, and refusal counts did not move. This is the FOURTH refresh (2026-08-01,
   2026-08-06, 2026-08-07, 2026-08-09), preserving the existing #536 finding without
   turning routine corpus growth into evidence that the deferred rule changed.
+- **Refreshed 2026-08-09 again (test-runtime waste repair), and the toll stayed
+  flat.** The new quality review again cites no declared inventory: shallow
+  artifacts moved 132 -> **133**, recursive artifacts 150 -> **151**, and floor
+  label values moved 378 -> **382**. Presence, marker, refusal, minimum, and
+  floor-20 counterfactual counts did not move. This is the FIFTH refresh, the
+  same standing corpus-write tax tracked by #536 rather than a D47 policy change.
 - **The first executed number was WRONG, and how it was wrong is the point.** The initial
   marker test used `` `[^`]*field[^`]*` ``, which matches the GAP BETWEEN two adjacent code
   spans — so a bare English mention sitting between two unrelated spans scored as marked.

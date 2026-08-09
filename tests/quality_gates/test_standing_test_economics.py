@@ -42,6 +42,12 @@ def _load_inventory_cli() -> ModuleType:
 
 
 def _run_inventory_cli(*args: str, env: dict[str, str] | None = None):
+    if env is None:
+        try:
+            repo_root = Path(args[args.index("--repo-root") + 1])
+        except (ValueError, IndexError) as exc:
+            raise AssertionError("synthetic inventory calls must name --repo-root") from exc
+        env = {**os.environ, "PYTEST_DEBUG_TEMPROOT": str(repo_root.parent)}
     return run_loaded_script_main(
         "inventory_standing_test_economics.py",
         _load_inventory_cli(),
@@ -74,6 +80,7 @@ def test_standing_test_economics_surfaces_runner_startup_shape(tmp_path: Path) -
         "transpiler_startup_surface",
         "nested_cli_fanout",
     }.issubset(finding_types)
+    assert payload["pytest_temp_footprint"]["root"].startswith(str(tmp_path))
 
 
 def test_standing_test_economics_summary_omits_full_nested_cli_list(tmp_path: Path) -> None:
@@ -814,4 +821,3 @@ def test_pytest_temp_iter_helpers_skip_missing_and_stale_children(
 
     assert list(lib._iter_child_stats(missing)) == []
     assert [item.st_size for item in lib._iter_file_stats(root)] == [1]
-

@@ -1,0 +1,271 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-09T11:08:53Z",
+  "prepared_for": "test-runtime-waste-repair-final-binding",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- plugins/charness/skills/quality/scripts/inventory_sloc.py\n- skills/public/quality/scripts/inventory_sloc.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/quality/scripts/inventory_sloc.py\n  derived matches: plugins/charness/skills/quality/scripts/inventory_sloc.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/quality/scripts/inventory_sloc.py\n  derived matches: plugins/charness/skills/quality/scripts/inventory_sloc.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/quality/scripts/inventory_sloc.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/quality/scripts/inventory_sloc.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/quality/scripts/inventory_sloc.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "2f6d85c284742afe63bc541942d8ddb7511743df",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-09-remote-ci-changed-line-reconciliation-debug.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+      "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+      "charness-artifacts/quality/2026-08-09-quality-review.md",
+      "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/retro/2026-08-09-103302-packet.json",
+      "charness-artifacts/retro/2026-08-09-103302-packet.md",
+      "charness-artifacts/retro/2026-08-09-session-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md",
+      "docs/deferred-decisions.md",
+      "docs/handoff.md",
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/scripts/check_cli_skill_surface.py",
+      "plugins/charness/scripts/run-quality.sh",
+      "plugins/charness/scripts/suggest_mutation_coverage_command.py",
+      "plugins/charness/skills/quality/scripts/inventory_sloc.py",
+      "scripts/check_cli_skill_surface.py",
+      "scripts/run-quality.sh",
+      "scripts/suggest_mutation_coverage_command.py",
+      "skills/public/quality/scripts/inventory_sloc.py",
+      "tests/charness_cli/test_bootstrap_runtime.py",
+      "tests/quality_gates/test_check_spec_evidence_durability.py",
+      "tests/quality_gates/test_cli_skill_surface.py",
+      "tests/quality_gates/test_empty_scope_refusals.py",
+      "tests/quality_gates/test_gate_summary_names_failures.py",
+      "tests/quality_gates/test_maintainer_hooks.py",
+      "tests/quality_gates/test_nose_fingerprint.py",
+      "tests/quality_gates/test_quality_runner.py",
+      "tests/quality_gates/test_quality_sloc_inventory.py",
+      "tests/quality_gates/test_regenerable_facts.py",
+      "tests/quality_gates/test_standing_test_economics.py",
+      "tests/quality_gates/test_subagent_delegation_ladder.py",
+      "tests/quality_gates/test_suggest_mutation_coverage_command.py",
+      "tests/test_docs_graph_gate.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-09-remote-ci-changed-line-reconciliation-debug.md",
+        "content_sha256": "565a98b2a85ce2a6937db553111ee08cd3a5909fed7d864edae79da06e6f272b"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "559b1c7fdfdecc2fdbe98ba14081e157242536c5123c5ac4ef167bb5b392a2e6"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "8779730430dbb2e923f025fe62a913a463ae496b4d2660e1bc6af061ffea2b4e"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md",
+        "content_sha256": "c928bcb5988d1c638494073be28cd52f306303207f8b1c5ca989c8a2c55afb0b"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "a83db63f7ac27041c5cf460f5194a65b60fb24fdeb446b9f1b1dbc92f76b3562"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+        "content_sha256": "371d38d7fdfbb387f0ee01a914b48791f711bcc0078f9a3d28702f7c677fd778"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+        "content_sha256": "be17386208db659dabd6a05213a2e8d39f7cef14067897ae2abdc9fab64f3cb4"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-09-quality-review.md",
+        "content_sha256": "a5b9830fcddabfc97a48436cff4393fb006897fff88cd66a8f6ee690e50d0331"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md",
+        "content_sha256": "4b9a059e5274463dce94c40281220eb1d27b21ea9947aad23ad87459086577e7"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "15386766af4aaf940966c524ce53cda901bbb6ac438c625d65389b4ce5adfd35"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-09-103302-packet.json",
+        "content_sha256": "de17e25e7a52b361ea35b178a66ea5c1d98f6937b0ef69749700b5733448fc2b"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-09-103302-packet.md",
+        "content_sha256": "fbbce5223ac3d8ccc8f26939663963326a04a65f26efad16e17f1e91bf64fbeb"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-09-session-retro.md",
+        "content_sha256": "e2fdcf73559a7e5704f81a1fb14c79c35f7b172edabc706c6d3b02a2a4501ca9"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "880d4db7e896252f8aa88b1e9eaccf03bcf1f1cebe1d5bdb931ea3945e381532"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md",
+        "content_sha256": "819d4ca362a707c25ac78f0c9a12f595bb3ae3d220710516bffa3ccdb9ad96f0"
+      },
+      {
+        "path": "docs/deferred-decisions.md",
+        "content_sha256": "f260d7d324a8db235ee7a7051dcde9af292bb23eba69aafb6bc355a407851944"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "cde3344aa9ad6c5f98d36e1c33f8308375038a3d7ba2d88597c5d8054757770c"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "5e3b105161427f6aee6cba8bcbe693b69a4dc4090e6dbc9cea64f4c3832453aa"
+      },
+      {
+        "path": "plugins/charness/scripts/check_cli_skill_surface.py",
+        "content_sha256": "b5f503b4f19a7096ed37c00fae80ff3c4e6f905044c199f736e6a1ab3be2fef5"
+      },
+      {
+        "path": "plugins/charness/scripts/run-quality.sh",
+        "content_sha256": "1dffb2be9f1aa5bf41d9409f611a4286a165e8cc2d2c6e6794a894a66e8aeec3"
+      },
+      {
+        "path": "plugins/charness/scripts/suggest_mutation_coverage_command.py",
+        "content_sha256": "93aefbcfaeb7d844982b1490e920c577a053f6ff5b2edd476a50efe9a49d0102"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/inventory_sloc.py",
+        "content_sha256": "72eefe79c85459bbb6b372daf8f828613b75f90e6dac02cb9dd87b3c0b395ff5"
+      },
+      {
+        "path": "scripts/check_cli_skill_surface.py",
+        "content_sha256": "b5f503b4f19a7096ed37c00fae80ff3c4e6f905044c199f736e6a1ab3be2fef5"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "1dffb2be9f1aa5bf41d9409f611a4286a165e8cc2d2c6e6794a894a66e8aeec3"
+      },
+      {
+        "path": "scripts/suggest_mutation_coverage_command.py",
+        "content_sha256": "93aefbcfaeb7d844982b1490e920c577a053f6ff5b2edd476a50efe9a49d0102"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_sloc.py",
+        "content_sha256": "72eefe79c85459bbb6b372daf8f828613b75f90e6dac02cb9dd87b3c0b395ff5"
+      },
+      {
+        "path": "tests/charness_cli/test_bootstrap_runtime.py",
+        "content_sha256": "ba2ca613b2d9e8585c9377f211d7d7bd3058915afd116cca23373a32bd5332ae"
+      },
+      {
+        "path": "tests/quality_gates/test_check_spec_evidence_durability.py",
+        "content_sha256": "54591e567124fa09fc686acf53281d5e91110dc8a437b05a89edf3105128b92d"
+      },
+      {
+        "path": "tests/quality_gates/test_cli_skill_surface.py",
+        "content_sha256": "0fb4ff86e06b70a602a8086afd063a1894b3f40abb30f8685dcaf8dcb781ec61"
+      },
+      {
+        "path": "tests/quality_gates/test_empty_scope_refusals.py",
+        "content_sha256": "2baf7d8add77dc9aa0f7497f9a28009a6703ca25704ba0d6e73a05db345a57e3"
+      },
+      {
+        "path": "tests/quality_gates/test_gate_summary_names_failures.py",
+        "content_sha256": "2ad490e9e1a355c39cebb14e5324bd9114ea8754b5a0b770330fd0f629c5e368"
+      },
+      {
+        "path": "tests/quality_gates/test_maintainer_hooks.py",
+        "content_sha256": "a3a3d3a01af09a7a65f29021f2da49732cc79831fce2d2e6ca46f96189133a37"
+      },
+      {
+        "path": "tests/quality_gates/test_nose_fingerprint.py",
+        "content_sha256": "97c9f59df05419a85982a01eb744ea51996ef415111eb6824de1346afc284e8c"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_runner.py",
+        "content_sha256": "4671a9a06e924c83dec66ff7b19700d2b4eaff63f1f5db23e854b1a14aae8a86"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_sloc_inventory.py",
+        "content_sha256": "62d0bf2ebfbad414989f8cec00504147ad41fe659687756812fd3263ae8c910b"
+      },
+      {
+        "path": "tests/quality_gates/test_regenerable_facts.py",
+        "content_sha256": "81bba6331abcec4e5557a6e8e9210d8201120230823ea0314063256a4f896726"
+      },
+      {
+        "path": "tests/quality_gates/test_standing_test_economics.py",
+        "content_sha256": "93c58926b13e35fdd18a81da61c6bcdb6760a9d798443c478d6bd35e79fe0b54"
+      },
+      {
+        "path": "tests/quality_gates/test_subagent_delegation_ladder.py",
+        "content_sha256": "d8d6d398c6c69c175b37714fc82da1d0cd6857d7540c265c50e0c8c2df073ac6"
+      },
+      {
+        "path": "tests/quality_gates/test_suggest_mutation_coverage_command.py",
+        "content_sha256": "1d8625f35c96ab462aa710b081ce724c2d58ef46d107cbe042d03720b8bc8238"
+      },
+      {
+        "path": "tests/test_docs_graph_gate.py",
+        "content_sha256": "3f367f914f11ad08c1f55e04b32546bf54524b144728b1205c9b8245f0959ace"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "569ca636345561bbaf5253b1da825a7c64bd170076131a8c64181867216de676",
+    "declared_untracked": [],
+    "auto_excluded_paths": [],
+    "identity_sha256": "72deffa2d31f78a70ce9ec9456da79f4f67e99a5503224b47eb6d0b6894f8cd8"
+  }
+}
