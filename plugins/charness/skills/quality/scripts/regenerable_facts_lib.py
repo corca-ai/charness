@@ -34,8 +34,11 @@ from __future__ import annotations
 
 import fnmatch
 import re
-import subprocess
+import sys
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from git_inventory_lib import visible_repo_files  # noqa: E402
 
 # Surfaces a reader treats as current. Deliberately excludes any dated-record
 # directory: those are out of scope by nature, not by exemption.
@@ -165,26 +168,31 @@ def exemption_for(rel: str, exemptions: dict[str, str]) -> str | None:
     return None
 
 
-def repo_files(repo_root: Path) -> set[str] | None:
-    """Gitignored and vendored trees are not this repo's prose.
+def visible_matching_files(repo_root: Path, surfaces: tuple[str, ...]) -> list[Path]:
+    """Return the in-scope files, sourced from git rather than a bare tree walk.
 
-    A bare filesystem walk reads `node_modules/`, `vendor/`, and build output --
-    files no reader treats as this repo's forward-looking prose, and files the
-    author cannot fix. Returns None when git is unavailable, in which case the
-    caller falls back to the filesystem rather than scanning nothing.
+    A filesystem walk reads `node_modules/`, `vendor/`, and build output -- files
+    no reader treats as this repo's forward-looking prose and the author cannot
+    fix. `visible_repo_files` runs `git ls-files --cached --others
+    --exclude-standard`, so gitignored paths never enter the candidate set. When
+    git is unavailable the glob stands alone, because scanning nothing would be a
+    worse answer than scanning a superset.
     """
     try:
-        completed = subprocess.run(
-            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
-            cwd=repo_root,
-            capture_output=True,
-            check=False,
-        )
-    except OSError:
-        return None
-    if completed.returncode != 0:
-        return None
-    return {entry for entry in completed.stdout.decode("utf-8", "replace").split("\0") if entry}
+        visible = visible_repo_files(repo_root)
+    except Exception:  # noqa: BLE001 - a repo without git still gets a scan
+        visible = None
+    matched: list[Path] = []
+    seen: set[Path] = set()
+    for pattern in surfaces:
+        for path in sorted(repo_root.glob(pattern)):
+            if not path.is_file() or path in seen:
+                continue
+            if visible is not None and path.resolve() not in visible:
+                continue
+            seen.add(path)
+            matched.append(path)
+    return matched
 
 
 def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
@@ -192,25 +200,17 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
     findings: list[dict[str, object]] = []
     exempted: list[dict[str, str]] = []
     checked = 0
-    seen: set[Path] = set()
-    listed = repo_files(repo_root)
-    for pattern in surfaces:
-        for path in sorted(repo_root.glob(pattern)):
-            if not path.is_file() or path in seen:
-                continue
-            if listed is not None and path.relative_to(repo_root).as_posix() not in listed:
-                continue  # gitignored or otherwise not part of the repo's own prose
-            seen.add(path)
-            rel = path.relative_to(repo_root).as_posix()
-            reason = exemption_for(rel, exemptions)
-            if reason is not None:
-                exempted.append({"path": rel, "reason": reason})
-                continue
-            checked += 1
-            for lineno, literal, label, remedy in scan_text(path.read_text(encoding="utf-8", errors="ignore")):
-                findings.append(
-                    {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
-                )
+    for path in visible_matching_files(repo_root, surfaces):
+        rel = path.relative_to(repo_root).as_posix()
+        reason = exemption_for(rel, exemptions)
+        if reason is not None:
+            exempted.append({"path": rel, "reason": reason})
+            continue
+        checked += 1
+        for lineno, literal, label, remedy in scan_text(path.read_text(encoding="utf-8", errors="ignore")):
+            findings.append(
+                {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
+            )
     return {
         "declared": declared_surfaces(adapter),
         "checked": checked,

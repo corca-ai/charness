@@ -547,3 +547,58 @@ def test_the_human_summary_names_the_baseline_it_measured_against(tmp_path: Path
 
     assert completed.returncode == 0, completed.stderr
     assert "over a baseline of 1 passing tests" in completed.stdout
+
+
+def test_main_in_process_covers_the_exit_paths(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The CLI tests above run subprocesses, which coverage cannot see, so the
+    # exit-code mapping read as uncovered changed lines. Drive main() in-process.
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    plan_path = tmp_path / "p.json"
+
+    def run(plan: dict) -> int:
+        plan_path.write_text(json.dumps(plan), encoding="utf-8")
+        monkeypatch.setattr(
+            sys, "argv", ["mutate_and_restore.py", "--repo-root", str(repo), "--plan", str(plan_path)]
+        )
+        return mar.main()
+
+    assert run(_plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}])) == 0
+    assert run(_plan(mutants=[{"id": "s", "path": "subject.py", "find": "a - b", "replace": "a // b"}])) == 1
+
+    # exit 2: a SweepError out of the sweep itself.
+    monkeypatch.setattr(mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(mar.SweepError("boom")))
+    assert run(_plan(mutants=[])) == 2
+
+    # exit 3: any other crash, kept distinct from 1 so it cannot read as survivors.
+    monkeypatch.setattr(mar, "run_sweep", lambda *_a, **_k: (_ for _ in ()).throw(RuntimeError("kaboom")))
+    assert run(_plan(mutants=[])) == 3
+
+
+def test_a_non_python_target_skips_bytecode_invalidation(tmp_path: Path) -> None:
+    # The early return for a non-.py file: there is no bytecode cache to drop.
+    target = tmp_path / "notes.md"
+    target.write_text("x\n", encoding="utf-8")
+
+    mar.invalidate_bytecode(target)  # must not raise
+
+    assert target.read_text(encoding="utf-8") == "x\n"
+
+
+def test_a_failure_inside_apply_restores_and_re_raises(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # The `except BaseException: restore; raise` arm, driven by a non-SweepError
+    # out of apply_mutation itself.
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    baseline = mar.Baseline(returncode=0, passed=1, output="")
+
+    def boom(_path, _find, _replace):
+        (repo / "subject.py").write_text("MUTATED\n", encoding="utf-8")
+        raise RuntimeError("apply exploded")
+
+    monkeypatch.setattr(mar, "apply_mutation", boom)
+
+    with pytest.raises(RuntimeError, match="apply exploded"):
+        mar.run_mutant(
+            {"id": "m", "path": "subject.py", "find": "a + b", "replace": "a * b"}, PYTEST_CMD, repo, baseline
+        )
+
+    assert (repo / "subject.py").read_text(encoding="utf-8") == SUBJECT
