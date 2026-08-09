@@ -312,11 +312,6 @@ def test_timing_pull_validate_surfaces_fires_for_manifest_edit_only() -> None:
     assert "validate-surfaces" not in _labels([".agents/quality-adapter.yaml"])
 
 
-def test_timing_pull_title_slug_drift_fires_for_markdown_only() -> None:
-    assert "check-title-slug-drift" in _labels(["docs/usage.md"])
-    assert "check-title-slug-drift" not in _labels(["scripts/new_helper.py"])
-
-
 def test_timing_pull_ci_parity_fires_for_workflow_edits_only() -> None:
     # The slice-3 parity miss was caught only by the bundle pytest watchdog;
     # a workflow edit now pays the same bar (--require-canonical-gate-match)
@@ -505,7 +500,6 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "check-plugin-doc-links",
         "check-plugin-dir-references",
         "check-markdown",
-        "check-title-slug-drift",
     ]
 
     plugin_json_result = run_script(

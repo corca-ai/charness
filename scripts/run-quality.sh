@@ -789,7 +789,6 @@ queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugi
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
-queue_selected "check-title-slug-drift" python3 scripts/check_title_slug_drift.py
 queue_selected "check-markdown" ./scripts/check-markdown.sh
 
 # No barrier here: `flush_phase` is not fail-fast (every phase runs regardless of

@@ -39,10 +39,6 @@ SHIMS = {
         REPO_ROOT / "skills" / "public" / "impl" / "SKILL.md",
         REPO_ROOT / "skills" / "public" / "spec" / "SKILL.md",
     ),
-    "check_title_slug_drift.py": (
-        REPO_ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md",
-        REPO_ROOT / "skills" / "public" / "critique" / "references" / "rename-critique.md",
-    ),
     "validate_skills.py": (
         REPO_ROOT / "skills" / "shared" / "references" / "binary-preflight.md",
     ),
@@ -186,9 +182,8 @@ def test_the_call_sites_name_a_path_that_resolves_in_both_layouts(name: str) -> 
     """
     for call_site in SHIMS[name]:
         text = call_site.read_text(encoding="utf-8")
-        # Only lines carrying a PATH are constrained. A doc may legitimately
-        # mention the script by bare name ("`check_title_slug_drift.py` output"),
-        # and requiring a prefix there would be a manufactured finding.
+        # Only lines carrying a PATH are constrained; requiring a prefix on a
+        # bare conceptual mention would be a manufactured finding.
         pathed = [line for line in text.splitlines() if f"scripts/{name}" in line]
         assert pathed, f"{call_site}: no longer names a path to {name}"
         for line in pathed:

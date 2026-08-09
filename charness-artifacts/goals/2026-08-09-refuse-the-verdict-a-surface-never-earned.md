@@ -267,8 +267,8 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 4s-b | `#575` + `#570` — narrow regenerable-facts to surfaces that assert current state, and brief chunked routing on what it authors | Both are new consumer-facing behavior after `v4.0.0`; one hard-fails real history records and the other briefs a forbidden surface | Consumer-population fail-before/pass-after evidence; no default `docs/**/*.md` history sweep; goal-authoring preflight for chunked routing; two verdict rounds | **DONE locally; issue closeout pending final bundle.** Five consumers moved from 4/5 historical hard failures to 5/5 typed `NOT CONFIGURED FOR DOCS` exit-0 non-verdicts; unclassified docs counts are preserved below. Explicit empty scope now refuses. Chunked routing carries no handoff-authoring preflight and still routes through the goal generator/achieve validator. Both capped round-2 reviews completed. |
 | 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | **DONE locally; issue closeout pending final bundle.** Five adapter consumer families now refuse unsupported versions before fields and carry the reason to operator packets; issue/handoff stop before provider access. Rendered private Slack images are typed-refused before backend resolution, while provenance and non-rendering examples remain legal. Both capped round-2 reviews found and triggered repairs. |
 | 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | **DONE locally — commit/issue closeout pending** |
-| 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
-| 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
+| 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | **DONE locally — closeout pending** |
+| 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | **DONE — survivor refuted; missing count 0; issues updated** |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
 | 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | pending |
 | 9 | Final bundle and `v4.1.0` release | All selected consumer and proof-surface work is complete; publication is now the remaining irreversible boundary | Locked closeout, release critique + claims review, source-tree publish helper, hosted CI, public/install/doctor and issue-state readbacks | pending |
@@ -737,6 +737,36 @@ applies.
 - Non-claims: planner inclusion never says a command ran; no language-specific
   gate is invented; preset automation is not claimed; consumer commands were
   enumerated but not executed by the planner.
+
+### Slice 8: delete the checker that never earned a verdict; refute the census
+
+- Objective: delete `check_title_slug_drift.py` and every live consumer while
+  preserving rename/title coherence as reviewer judgment; independently
+  re-check the no-observed-effect census and measure `#546` before changing a
+  gate.
+- What changed: source, shared shim, plugin copies, run-quality lane, pre-push
+  subset, staged-plan route, registries, dedicated tests, timing docs, and public
+  command guidance are gone. Critique now asks for inspected paths,
+  H1/filename comparison, incoming-link/generated-index evidence, and
+  first-reader friction, explicitly without an aggregate clean verdict.
+- Deletion proof: exact live command/label search outside historical artifacts
+  returns nothing; the docs-only subset and its contract both say 13 labels;
+  source/plugin mirrors are synchronized. Focused proof passed 133 tests before
+  review and 120 after the round-1 contract repair; packaging and diff checks
+  pass.
+- Critique: round 1 caught three shipped instructions still demanding or
+  proposing the deleted checker. Round 2 caught a live-linked standing-floors
+  audit still classifying it as `keep`. All were repaired; the round-2 repair is
+  accepted-unreviewed under the cap. Both reviewer fingerprints were clean.
+- Census correction: independent review refuted `check-public-doc-coupling` as
+  no-effect. Its CLI is advisory, but a real-repo zero-baseline standing pytest
+  hard-fails a new finding and the runner's `ADVISORY:` consumer changes log
+  visibility. Historical `2 of 90` remains a dated baseline, not a current
+  inventory. The correction was posted to `#521`.
+- Runtime-budget disposition: the current profile has 28 budgets, zero missing
+  samples, zero violations, and exit 0. Per the predeclared boundary, no absence
+  floor was added. Synthetic missing-sample WARN/exit-0 behavior and other
+  profiles remain explicit non-claims; `#546` records the re-scope.
 
 ## Context Sources
 

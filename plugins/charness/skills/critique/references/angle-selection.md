@@ -113,10 +113,9 @@ Include the `first-reader` angle when the change touches durable docs, spec
 indexes, public skill prose, README-like surfaces, or source-of-truth
 narrative. For rename-heavy edits, the title-slug coherence lens belongs in
 the same angle so structural rewrites do not hide stale slugs, links, or
-duplicated concept-home pages behind a polished outline. Run
-`python3 "$SKILL_DIR/../../shared/scripts/check_title_slug_drift.py"` against the affected spec or
-docs roots as deterministic evidence for the title-slug lens before relying
-on prose judgment alone.
+duplicated concept-home pages behind a polished outline. Compare the affected
+H1s, filenames, incoming links, and first-reader description directly; this is
+a judgment lens, not a deterministic clean verdict.
 
 Keep the angle set bounded.
 Three strong angles plus one counterweight pass is usually better than six weak

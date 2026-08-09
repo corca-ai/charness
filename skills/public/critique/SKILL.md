@@ -157,7 +157,7 @@ The result should usually include:
 
 The target reference's `Output Shape` section names additional sections
 required for that target (for example, release surface-lock inventory or
-rename slug-drift evidence).
+rename title/slug coherence review evidence).
 
 If the host blocks the canonical subagent path before execution, report
 `Execution: blocked <host-signal>` and the next move; record

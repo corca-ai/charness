@@ -594,8 +594,7 @@ def _portable_repo(tmp_path: Path, body: str, *, extra: dict[str, str] | None = 
 
 
 def test_an_unmarked_repo_path_in_a_shipped_skill_doc_is_refused(tmp_path: Path, monkeypatch, capsys) -> None:
-    """The real A4 defect: `scripts/check_title_slug_drift.py` naming no tree."""
-    repo = _portable_repo(tmp_path, "Run `scripts/check_title_slug_drift.py` first.\n")
+    repo = _portable_repo(tmp_path, "Run `scripts/check_docs_graph.py` first.\n")
 
     result = run_check_doc_links(monkeypatch, capsys, "--repo-root", str(repo))
 

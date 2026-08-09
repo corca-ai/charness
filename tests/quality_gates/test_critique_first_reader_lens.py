@@ -5,6 +5,12 @@ from .support import ROOT
 ANGLE_SELECTION = (
     ROOT / "skills" / "public" / "critique" / "references" / "angle-selection.md"
 ).read_text(encoding="utf-8")
+RENAME_CRITIQUE = (
+    ROOT / "skills" / "public" / "critique" / "references" / "rename-critique.md"
+).read_text(encoding="utf-8")
+CRITIQUE_SKILL = (ROOT / "skills" / "public" / "critique" / "SKILL.md").read_text(
+    encoding="utf-8"
+)
 
 
 def test_angle_selection_lists_first_reader_lens() -> None:
@@ -28,15 +34,26 @@ def test_angle_selection_triggers_first_reader_lens_for_durable_doc_decisions() 
         "public skill prose",
         "README-like surfaces",
         "source-of-truth narrative",
-        "check_title_slug_drift.py",
+        "incoming links",
     ):
         assert trigger in rotation_section, f"missing trigger: {trigger}"
 
 
-def test_proposal_flow_recommends_drift_check_for_rename_heavy_edits() -> None:
+def test_proposal_flow_recommends_first_reader_check_for_rename_heavy_edits() -> None:
     text = (ROOT / "skills" / "public" / "quality" / "references" / "proposal-flow.md").read_text(
         encoding="utf-8"
     )
 
-    assert "check_title_slug_drift.py" in text
-    assert "docs/specs" in text
+    assert "first-reader" in text
+    assert "incoming" in text
+    assert "across languages" in text
+
+
+def test_rename_output_shape_uses_judgment_evidence_not_deleted_checker() -> None:
+    normalized = " ".join(RENAME_CRITIQUE.split())
+    assert "`Title-Slug Coherence Review`" in RENAME_CRITIQUE
+    assert "H1/filename comparison" in RENAME_CRITIQUE
+    assert "incoming-link/generated-index" in RENAME_CRITIQUE
+    assert "without an aggregate clean verdict" in normalized
+    assert "rename title/slug coherence review evidence" in CRITIQUE_SKILL
+    assert "slug-drift checker" not in RENAME_CRITIQUE

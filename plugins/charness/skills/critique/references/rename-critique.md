@@ -56,7 +56,7 @@ specific tightening:
 - **Bundle Anyway** — cheap fixes touchable in the same churn: a stale
   comment that mentions the old name in a way the new reader will misread,
   a deprecated cite advisory that should remain N releases for consumer
-  migration, a deferred wiring of the slug-drift checker into pre-push.
+  migration, or an incoming-link/index update discovered by the bounded review.
 - **Over-Worry** — concerns that imagine consumers who have never been
   observed, aesthetic objections to the new name when the contract
   semantics are unchanged, or "search will be slightly worse" without
@@ -80,33 +80,30 @@ coherent mental model on first read? Concretely:
 A first-reader probe that fails routes the concern to `Act Before Ship`
 unless the reviewer can show the friction is bounded and worth the slice.
 
-## Slug Drift Check
+## Title-Slug Coherence Review
 
-Run `python3 "$SKILL_DIR/../../shared/scripts/check_title_slug_drift.py"` against the affected
-spec or docs roots as deterministic evidence for the title-slug lens
-before relying on prose judgment alone. The validator is advisory in current
-Charness releases; treat its findings as `Bundle Anyway` if cheap,
-`Act Before Ship` if a generated surface is wrong, and surface its dogfood as
-part of the output.
+Compare each affected filename/slug with its H1 and first-reader description.
+Inspect incoming links and generated indexes separately so a polished title does
+not hide a stale route. This is reviewer judgment: record the paths inspected and
+do not render an aggregate clean verdict from word overlap.
 
 ## Per-Removed-Concept Verdict (deletion is an irreversible boundary)
 
 Deleting a cited concept is irreversible: consumers that depended on it lose it,
 and the removal enters shared history others build on. So per *P4* of the
-authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`, a passing
-slug-drift run and "I updated the cites" are *claims* the cite sites were found —
+authoring-repo-internal `<authoring-repo>/docs/design-north-star.md`, a title/slug
+comparison and "I updated the cites" are *claims* the cite sites were found —
 not proof each consumer still behaves without the removed concept.
 
 For **each** removed or renamed concept, render a verdict that its dependents
 resolve, confirmed through a channel **distinct from** your own edit pass: the
-`check_title_slug_drift.py` output, the rename validator allowlist, and an actual
-first-read of a consumer that knows only the new name (the First-Reader Probe
+rename validator allowlist, an incoming-link inventory, and an actual first-read
+of a consumer that knows only the new name (the First-Reader Probe
 above) — **or** record an explicit disposition (a deprecation cite kept N releases
 for consumer migration, an `Act Before Ship` hold, a deferred allowlist
-tightening). A slug-drift run or first-reader probe you do not actually read back
+tightening). An inventory or first-reader probe you do not actually read back
 is not this verdict. This is a per-concept **question to render, never a
-"cites look updated, ship it" aggregate sign-off to declare**; it adds no gate
-beyond the advisory slug-drift checker already named.
+"cites look updated, ship it" aggregate sign-off to declare**; it adds no gate.
 
 ## Output Shape
 
@@ -120,6 +117,8 @@ critique records:
   notes, etc.)
 - `First-Reader Probe Result` — pass/fail summary plus the concrete
   friction observed
-- `Slug Drift Result` — output of the deterministic checker
+- `Title-Slug Coherence Review` — paths inspected; H1/filename comparison;
+  incoming-link/generated-index result; and any first-reader friction, without
+  an aggregate clean verdict
 - `Pre-Merge Action` — for each `Act Before Ship` concern, the concrete
   cite update, manifest sync, or generated-surface regen required
