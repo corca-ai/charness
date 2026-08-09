@@ -14,6 +14,7 @@ from runtime_bootstrap import import_repo_module
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPT = "skills/public/handoff/scripts/plan_handoff_run.py"
 SCRIPT_PATH = ROOT / SCRIPT
+CHUNKED_ROUTING_TEXT = (ROOT / "skills/public/handoff/references/chunked-routing.md").read_text(encoding="utf-8")
 _handoff_validator = import_repo_module(ROOT / "scripts" / "validate_handoff_artifact.py", "scripts.validate_handoff_artifact")
 
 
@@ -196,6 +197,11 @@ def test_handoff_plan_routes_direct_invocation_to_chunked_routing() -> None:
         "base": "skill",
         "why": "deterministic trigger says route backlog before pickup",
     } in plan["required_reads"]
+    assert [read for read in plan["required_reads"] if read.get("kind") == "preflight"] == [], (
+        "chunked routing reads the handoff but must not be briefed to author it"
+    )
+    assert "draft_goal_from_chunk.py" in CHUNKED_ROUTING_TEXT
+    assert "must **never** rewrite `handoff.md`" in CHUNKED_ROUTING_TEXT.replace("\n", " ")
 
 
 def test_handoff_plan_routes_declared_chunked_routing_intent() -> None:

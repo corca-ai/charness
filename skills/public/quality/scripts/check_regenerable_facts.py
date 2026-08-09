@@ -65,6 +65,13 @@ def render(report: dict) -> list[str]:
             + ", ".join(report["unreasoned_exemptions"])
             + " -- an unexplained exemption is the claim this rule exists to remove"
         ]
+    if not report["findings"] and report.get("unclassified_docs"):
+        return [
+            f"regenerable-facts: NOT CONFIGURED FOR DOCS — checked {report['checked']} canonical "
+            f"forward-looking file(s), but {len(report['unclassified_docs'])} docs file(s) remain "
+            "unclassified. Declare `regenerable_facts.surfaces` and reasoned exemptions before "
+            "treating the docs tree as clean."
+        ]
     if not report["findings"]:
         return [
             f"no regenerable facts in {report['checked']} forward-looking file(s) "
@@ -81,6 +88,11 @@ def render(report: dict) -> list[str]:
         "AND a link to the checked-in artifact holding its output -- do not make every "
         "future reader re-run it."
     )
+    if report.get("unclassified_docs"):
+        lines.append(
+            f"NON-CLAIM: {len(report['unclassified_docs'])} docs file(s) were not classified by "
+            "the conservative defaults; this failure verdict covers only the named default surfaces."
+        )
     return lines
 
 
@@ -114,7 +126,14 @@ def main() -> int:
         # Do NOT scan on a refusal: findings from the default scope, emitted beside
         # "declared surfaces are unknown", invite a machine consumer to act on a
         # scope the same payload just said nobody chose.
-        report = {"checked": 0, "surfaces": [], "exempted": [], "findings": [], "unreasoned_exemptions": []}
+        report = {
+            "checked": 0,
+            "surfaces": [],
+            "exempted": [],
+            "findings": [],
+            "unreasoned_exemptions": [],
+            "unclassified_docs": [],
+        }
     else:
         report = lib.scan_repo(repo_root, adapter if isinstance(adapter, dict) else None)
     report["adapter_refusal"] = refusal

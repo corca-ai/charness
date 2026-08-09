@@ -545,20 +545,23 @@ Gates FORWARD-LOOKING prose against transcribed facts a command can regenerate.
 A number in prose is read as today's answer, so it must be the command that
 produces it, not the output of one run.
 
-- `surfaces`: globs of prose a reader treats as current. Defaults to the agent
-  prompt files (`AGENTS.md`, `CLAUDE.md`), `README.md`, the whole docs tree
-  (`docs/**/*.md`), and shipped skill prose (`SKILL.md` and `references/*.md`).
-  Name your own globs when your prose lives elsewhere. Dated,
-  append-only records — retros, critiques, audits, slice logs — are deliberately
-  absent by DEFAULT rather than exempted: a number there describes one moment,
-  which is the whole reason it is written.
+- `surfaces`: globs of prose a reader treats as current. Conservative defaults
+  cover agent prompt files (`AGENTS.md`, `CLAUDE.md`), `README.md`, and shipped
+  skill prose (`SKILL.md` and `references/*.md`). An unconfigured hard gate does
+  **not** assume an arbitrary `docs/` tree is forward-looking: consumer repos
+  commonly keep retros, requests, completed implementation records, and lessons
+  there. Opt current docs in explicitly and exempt the historical records in that
+  repo's own taxonomy. A number in a dated append-only record describes one
+  moment, which is the whole reason it is written. When an unconfigured repo has
+  a docs tree, the command reports `NOT CONFIGURED FOR DOCS` at exit 0 rather
+  than claiming the smaller canonical default set proves docs clean.
 - `exemptions`: `path -> reason`. The reason is required, and a blank one is
   refused with an error. An unexplained exemption is exactly the unfalsifiable
   claim the rule removes, one level up.
 
 **Declaring `surfaces` REPLACES the defaults; it does not add to them.** One
 extra glob for a prose directory silently drops `AGENTS.md`, `CLAUDE.md`,
-`README.md`, the docs tree, and skill prose from scope, and the gate goes green
+`README.md`, and skill prose from scope, and the gate goes green
 over the smaller scope. Re-list the defaults you still want. Declaring
 `surfaces` also flips the zero-match case from a benign report into a hard
 refusal, per (1) below.
@@ -572,7 +575,8 @@ they configured anything. (2) The quality adapter is present but INVALID —
 falling back to defaults would discard the surfaces and exemptions you declared
 and report clean over a scope you did not choose, so it refuses instead. (3) An
 exemption carries no reason. An absent adapter is different and is fine: the
-defaults apply.
+defaults apply. An explicitly empty `surfaces: []` is still a declaration and
+refuses as a zero-match scope; it is never coerced back to defaults.
 
 The remedy the gate names depends on what the command COSTS. A cheap command
 (`git describe`, a grep, an issue list) goes in the prose by itself. An expensive

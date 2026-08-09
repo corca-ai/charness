@@ -150,7 +150,7 @@ def test_the_rule_reads_surfaces_and_exemptions_from_the_adapter(tmp_path: Path)
     (repo / "docs" / "notes.md").write_text("Pinned at v1.2.3.\n", encoding="utf-8")
 
     bare = lib.scan_repo(repo, None)
-    assert {f["path"] for f in bare["findings"]} == {"AGENTS.md", "docs/notes.md"}
+    assert {f["path"] for f in bare["findings"]} == {"AGENTS.md"}
 
     adapter = {"data": {"regenerable_facts": {"surfaces": ["AGENTS.md"], "exemptions": {}}}}
     narrowed = lib.scan_repo(repo, adapter)
@@ -177,12 +177,63 @@ def test_an_exemption_without_a_reason_is_reported_not_honoured(tmp_path: Path) 
     assert report["unreasoned_exemptions"] == ["AGENTS.md"]
 
 
-def test_dated_record_directories_are_out_of_scope_by_default() -> None:
-    # The seam: a number in a retro or critique describes one moment and that is
-    # what it is for. They are absent from the default surfaces entirely, rather
-    # than exempted, so no repo has to remember to exclude them.
+def test_arbitrary_docs_trees_are_out_of_scope_by_default() -> None:
+    # The default cannot know whether docs/ is a current manual or a dated
+    # request/implementation/lessons ledger. A hard gate must not guess.
     assert not any(surface.startswith("charness-artifacts") for surface in lib.DEFAULT_SURFACES)
     assert all("retro" not in surface and "critique" not in surface for surface in lib.DEFAULT_SURFACES)
+    assert all(not surface.startswith("docs/") for surface in lib.DEFAULT_SURFACES)
+
+
+def test_a_historical_docs_record_does_not_hard_fail_an_unconfigured_consumer(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    (repo / "docs" / "requests").mkdir(parents=True)
+    (repo / "README.md").write_text("# Consumer\n", encoding="utf-8")
+    record = repo / "docs" / "requests" / "2026-07-27-readiness.md"
+    record.write_text("The decision was taken after 172 tests.\n", encoding="utf-8")
+
+    code, out = _run(repo)
+
+    assert code == 0, out
+    assert "NOT CONFIGURED FOR DOCS" in out
+    assert "1 docs file(s) remain unclassified" in out
+    assert "172 tests" not in out
+    explicit = lib.scan_repo(
+        repo,
+        {"data": {"regenerable_facts": {"surfaces": ["docs/**/*.md"], "exemptions": {}}}},
+    )
+    assert [finding["path"] for finding in explicit["findings"]] == [
+        "docs/requests/2026-07-27-readiness.md"
+    ]
+
+
+def test_a_current_docs_claim_cannot_hide_behind_a_clean_default_file(tmp_path: Path) -> None:
+    repo = tmp_path / "current-docs"
+    (repo / "docs").mkdir(parents=True)
+    (repo / "README.md").write_text("# Clean entrypoint\n", encoding="utf-8")
+    (repo / "docs" / "handoff.md").write_text(
+        "# Operative state\n\nThe current suite has 145 tests.\n", encoding="utf-8"
+    )
+
+    code, out = _run(repo)
+
+    assert code == 0, out
+    assert "no regenerable facts" not in out
+    assert "NOT CONFIGURED FOR DOCS" in out
+
+
+def test_an_explicit_empty_surface_list_refuses_instead_of_falling_back(tmp_path: Path) -> None:
+    repo = tmp_path / "empty-declaration"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "README.md").write_text("# Clean entrypoint\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nregenerable_facts:\n  surfaces: []\n", encoding="utf-8"
+    )
+
+    code, out = _run(repo)
+
+    assert code == 1, out
+    assert "declared `regenerable_facts.surfaces` matched 0 files" in out
 
 
 def test_this_repo_is_currently_clean_under_its_own_adapter() -> None:
@@ -302,12 +353,11 @@ def test_an_identifier_keeps_its_own_digits() -> None:
     assert _hits("The backlog holds 24 issues.") == ["24 issues"]
 
 
-def test_the_widened_surfaces_are_pinned_not_merely_configured() -> None:
-    # Round 2's blocker: the widening was defended by nothing. Deleting CLAUDE.md,
-    # the recursive docs glob, or skill prose from either the defaults or this
-    # repo's adapter left all tests green, so the stance in operating-contract.md
-    # rested on a config line no executable check defended.
-    assert {"AGENTS.md", "CLAUDE.md", "docs/**/*.md"} <= set(lib.DEFAULT_SURFACES)
+def test_the_conservative_default_surfaces_are_pinned_not_merely_configured() -> None:
+    # Canonical defaults and the deliberate docs omission are both executable
+    # contract. This repo opts its own docs tree in through its adapter below.
+    assert {"AGENTS.md", "CLAUDE.md", "README.md"} <= set(lib.DEFAULT_SURFACES)
+    assert "docs/**/*.md" not in lib.DEFAULT_SURFACES
     assert any(s.endswith("SKILL.md") for s in lib.DEFAULT_SURFACES), "shipped skill prose must be a default surface"
     assert any("references" in s for s in lib.DEFAULT_SURFACES)
 
@@ -394,6 +444,13 @@ def test_the_adapter_validator_accepts_a_well_formed_block() -> None:
 
     assert errors == []
     assert validated["regenerable_facts"] == {"surfaces": ["AGENTS.md"], "exemptions": {"a.md": "why"}}
+
+
+def test_an_exemptions_only_block_preserves_absent_surfaces() -> None:
+    errors, validated = _validate({"exemptions": {"README.md": "historical fixture"}})
+
+    assert errors == []
+    assert validated["regenerable_facts"] == {"exemptions": {"README.md": "historical fixture"}}
 
 
 def test_an_absent_block_leaves_the_key_unset() -> None:

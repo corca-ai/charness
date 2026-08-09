@@ -143,8 +143,8 @@ gates:
     run_when: runtime, slow gate, budget, or cost is in scope
   - id: regenerable-facts
     command: python3 "$SKILL_DIR/scripts/check_regenerable_facts.py" --repo-root .
-    purpose: refuse a transcribed number in forward-looking prose; carry the command that regenerates it
-    trust_model: hard gate; refuses rather than passing when it scanned zero files or the adapter is invalid
+    purpose: refuse a transcribed number in forward-looking prose; conservative defaults do not guess that docs/** is current
+    trust_model: hard on findings or invalid declared scope; unconfigured docs are a typed no-verdict at exit 0, never a clean claim
     cost_tier: cheap
     parallel_group: serial-critical
     run_when: the repo carries forward-looking prose a reader treats as current

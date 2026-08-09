@@ -194,9 +194,11 @@ def _resolve_intent(*, requested: str, invoked_directly: bool) -> dict[str, Any]
     }
 
 
-# The next actions that AUTHOR the artifact by hand. `scaffold_missing_artifact`
-# is deliberately absent: a generator writes that file, not an author.
-WRITING_ACTIONS = frozenset({"refresh_handoff", "repair_or_prune_handoff", "run_chunked_routing"})
+# The next actions that AUTHOR the handoff by hand. Generator-backed actions are
+# deliberately absent: `scaffold_missing_artifact` writes through a scaffold,
+# and `run_chunked_routing` reads the handoff but generates a goal skeleton. The
+# latter is explicitly forbidden from rewriting the pickup handoff.
+HANDOFF_AUTHORING_ACTIONS = frozenset({"refresh_handoff", "repair_or_prune_handoff"})
 
 
 def _authoring_rules_read(repo_root: Path, artifact_path: str) -> dict[str, str] | None:
@@ -262,11 +264,11 @@ def _required_reads(
             )
         )
 
-    # A run that WRITES the artifact owes the rules first, and the next action is
-    # what says whether it writes — not the intent. A PICKUP against a bloated or
-    # mis-shaped artifact is sent to prune it, which is authoring; keying this on
-    # the intent left that one case briefed by nothing.
-    if action_kind in WRITING_ACTIONS:
+    # A run that manually AUTHORS the handoff owes its rules first, and the next
+    # action is what says whether it authors — not the intent. A PICKUP against a
+    # bloated or mis-shaped handoff is sent to prune it; keying this on the intent
+    # left that one case briefed by nothing.
+    if action_kind in HANDOFF_AUTHORING_ACTIONS:
         rules_read = _authoring_rules_read(repo_root, str(artifact["path"]))
         if rules_read is not None:
             reads.append(rules_read)

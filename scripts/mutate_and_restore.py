@@ -20,10 +20,13 @@ Three properties, each narrower than "this cannot be fooled":
    accounts for the baseline's tests, or the mutant is REFUSED. Reading a bare
    exit code as a kill is the very defect this file exists to end, so it is not
    reproduced per-mutant here.
-3. **Restore runs in a `finally` that covers the write itself**, including when
-   the test command raises, and the restoration is VERIFIED by comparing bytes.
-   It is not unconditional: a filesystem that refuses the write back is reported
-   loudly with its own exit code rather than silently.
+3. **Restore owns the whole mutation lifecycle.** A `finally` covers the write
+   itself when Python regains control, SIGINT/SIGTERM are converted into that
+   restoring path, and a durable repo-local journal written before each mutation
+   makes an untrappable SIGKILL detectable and explicitly recoverable. Restoration
+   is VERIFIED by comparing bytes before the journal is cleared. It is not
+   unconditional: a filesystem that refuses the write back is reported loudly
+   with its own exit code rather than silently.
 
 A mutant whose `find` text is absent, or present more than once, is refused
 rather than counted: an ambiguous edit that silently hit the wrong occurrence
@@ -54,15 +57,24 @@ the trigger.
 from __future__ import annotations
 
 import argparse
-import ast
 import glob as globlib
 import json
 import re
 import subprocess
 import sys
-from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
+
+from mutation_plan_semantics import MutationPlanError, removed_calls
+from mutation_plan_semantics import mutation_bytes as plan_mutation_bytes
+from mutation_recovery import (
+    MutationRecovery,
+    RecoveryError,
+    SweepTerminated,
+    atomic_write_bytes,
+    run_mutation_command,
+    termination_handlers,
+)
 
 PASSED_RE = re.compile(r"(\d+) passed")
 FAILED_RE = re.compile(r"(\d+) failed")
@@ -78,8 +90,7 @@ SURVIVED = "survived"
 REFUSED = "refused"
 
 
-class SweepError(Exception):
-    """A refusal the caller must see rather than a result it can misread."""
+SweepError = RecoveryError
 
 
 @dataclass
@@ -232,90 +243,24 @@ def invalidate_bytecode(path: Path) -> None:
         cached.unlink(missing_ok=True)
 
 
+def mutation_bytes(original: bytes, find: str, replace: str) -> bytes:
+    try:
+        return plan_mutation_bytes(original, find, replace)
+    except MutationPlanError as exc:
+        raise SweepError(str(exc)) from exc
+
+
 def apply_mutation(path: Path, find: str, replace: str) -> bytes:
     """Replace exactly one occurrence, returning the original bytes for restore."""
-    if find == replace:
-        raise SweepError(
-            "mutation text equals its replacement; a no-op mutant can only ever be "
-            "reported SURVIVED, which is a verdict about code that was never changed"
-        )
     original = path.read_bytes()
-    text = original.decode("utf-8")
-    occurrences = text.count(find)
-    if occurrences == 0:
-        raise SweepError("mutation text not found; the mutant would be a no-op reported as killed")
-    if occurrences > 1:
-        raise SweepError(
-            f"mutation text occurs {occurrences} times; an ambiguous edit produces a kill "
-            "nobody can attribute to a line"
-        )
-    path.write_bytes(text.replace(find, replace, 1).encode("utf-8"))
+    atomic_write_bytes(path, mutation_bytes(original, find, replace))
     invalidate_bytecode(path)
     return original
 
 
-def _called_names(source: bytes) -> "Counter[str] | None":
-    """Every call expression in ``source``, by callee name, or None if it will not parse.
-
-    Attribute calls are keyed by the ATTRIBUTE (`lib.helper()` -> `helper`) rather than the
-    dotted path: the same helper is reached as `helper()`, `mod.helper()` and
-    `self.helper()` across this repo, and keying on the spelling would call a moved import
-    a removed call. Anything not a plain name or attribute (`funcs[0]()`, a lambda) is
-    bucketed rather than dropped, so it can still register as a removal.
-    """
-    try:
-        tree = ast.parse(source)
-    except (SyntaxError, ValueError):
-        # Deliberate syntax-error mutants are a legitimate plan entry, and a sweep that
-        # died here would refuse a mutant over a REPORTING feature. Unparseable means
-        # unclassified, not unrunnable.
-        return None
-    names: Counter[str] = Counter()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Call):
-            func = node.func
-            if isinstance(func, ast.Name):
-                names[func.id] += 1
-            elif isinstance(func, ast.Attribute):
-                names[func.attr] += 1
-            else:
-                names["<computed>"] += 1
-    return names
-
-
-def removed_calls(original: bytes, mutated: bytes) -> tuple[str, ...] | None:
-    """Which callees the mutation DELETED, or None when either side will not parse.
-
-    This is what makes `#564` the tool's behaviour instead of a rule someone remembers. A
-    repair pinned only at its own function survives deletion of its CALL SITE: the suite
-    stays green while the repair is dead in production. Measured three times in one goal,
-    once per slice, and none of the three was visible to careful reading of the diff --
-    which is also why a second review round does not reliably catch it, since the code
-    reads correctly.
-
-    Answered by parsing both versions rather than by inspecting the plan's `find` text. A
-    snippet is often an indented fragment that does not parse standalone, and a textual
-    "does it look like a call" test would count `foo(` inside a string or a comment. The
-    difference of the two call multisets is the fact itself: this edit removed an
-    invocation that used to happen.
-    """
-    before, after = _called_names(original), _called_names(mutated)
-    if before is None or after is None:
-        return None
-    # NO BUILTINS FILTER, and its removal is the point rather than an omission. One was
-    # written while removed calls still drove the non-claim, to stop `tuple`/`sorted`/`len`
-    # removals inflating that inferred signal. The declaration replaced the inference, so
-    # the filter's only remaining effect was FALSE NEGATIVES -- and it produced one
-    # immediately: a mutant deleting the non-claim's own `print(...)` call is a genuine
-    # call-site deletion, and the filter made it invisible, so an honest declaration was
-    # REFUSED. Reporting every removed callee is the faithful answer to the question this
-    # function's name asks; judging which ones matter is the reader's job, not a filter's.
-    return tuple(sorted((before - after).elements()))
-
-
 def restore(path: Path, original: bytes) -> None:
     """Put the file back and PROVE it, rather than assuming the write landed."""
-    path.write_bytes(original)
+    atomic_write_bytes(path, original)
     if path.read_bytes() != original:
         raise SweepError(f"failed to restore {path}; the worktree is left mutated")
     invalidate_bytecode(path)
@@ -403,14 +348,22 @@ def run_mutant(
     # window where a failure after the write had no copy to restore from.
     original = path.read_bytes()
     try:
+        expected_mutated = mutation_bytes(original, spec["find"], spec["replace"])
+    except SweepError as exc:
+        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared)
+    recovery = MutationRecovery(repo_root)
+    journal_id = recovery.begin(path, original, expected_mutated)
+    try:
         apply_mutation(path, spec["find"], spec["replace"])
     except SweepError as exc:
         restore(path, original)
+        recovery.clear(journal_id)
         return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared)
     except BaseException:
         # apply_mutation writes and THEN invalidates bytecode; a failure between
         # those two would otherwise leave the tree mutated with no restore.
         restore(path, original)
+        recovery.clear(journal_id)
         raise
     try:
         # INSIDE the restoring `try`, not above it. Sitting between `apply_mutation` and
@@ -430,14 +383,18 @@ def run_mutant(
                 "worse than none, because it SILENCES the caller-side non-claim",
                 None, removed, declared,
             )
-        completed = run_command(command, repo_root)
+        completed = run_mutation_command(command, repo_root, recovery, journal_id)
         verdict, detail = classify_mutant_run(completed, baseline)
         return MutantResult(mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared)
     finally:
         restore(path, original)
+        # The journal is cleared only AFTER restore's byte-for-byte verification.
+        # A failed restore therefore leaves the recovery consumer armed.
+        recovery.clear(journal_id)
 
 
 def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
+    MutationRecovery(repo_root).assert_clear()
     command = plan["test_command"]
     baseline = measure_baseline(command, repo_root)
     # The count goes out BEFORE the first mutant, so a reader of a truncated log
@@ -546,24 +503,61 @@ def main() -> int:
         description="Run a mutation sweep that refuses to report a kill without a passing baseline."
     )
     parser.add_argument("--repo-root", type=Path, default=Path("."))
-    parser.add_argument(
+    action = parser.add_mutually_exclusive_group(required=True)
+    action.add_argument(
         "--plan",
         type=Path,
-        required=True,
         help=(
             'JSON: {"test_command": [...], "mutants": [{"path":..., "find":..., "replace":..., '
             '"call_site": true}]}. Set `call_site` on the mutant that deletes the repair\'s '
             "CALLER; without one the sweep reports what it did not establish (#564)."
         ),
     )
+    action.add_argument(
+        "--check-recovery",
+        action="store_true",
+        help="exit 2 when an interrupted mutation journal requires operator attention",
+    )
+    action.add_argument(
+        "--recover",
+        action="store_true",
+        help="restore the exact interrupted mutation when the target still matches its journal",
+    )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
+    recovery = MutationRecovery(repo_root)
+    if args.check_recovery:
+        if recovery.pending:
+            print(
+                "mutate-and-restore: interrupted mutation recovery is REQUIRED; "
+                f"record: {recovery.state_dir}; run with --recover",
+                file=sys.stderr,
+            )
+            return 2
+        print("mutate-and-restore: no interrupted mutation recovery is pending")
+        return 0
+    if args.recover:
+        try:
+            print(f"mutate-and-restore: {recovery.recover(restore)}")
+        except SweepError as exc:
+            print(f"mutate-and-restore: {exc}", file=sys.stderr)
+            return 2
+        return 0
+    assert args.plan is not None
     plan = json.loads(args.plan.read_text(encoding="utf-8"))
     lines: list[str] = []
     emit = lines.append if args.json else print
     try:
-        sweep = run_sweep(plan, repo_root, emit=emit)
+        with termination_handlers():
+            sweep = run_sweep(plan, repo_root, emit=emit)
+    except SweepTerminated as exc:
+        sys.stdout.flush()
+        print(
+            f"mutate-and-restore INTERRUPTED by signal {exc.signum}; any active mutation was restored",
+            file=sys.stderr,
+        )
+        return 128 + exc.signum
     except SweepError as exc:
         sys.stdout.flush()
         print(f"mutate-and-restore: {exc}", file=sys.stderr)

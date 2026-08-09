@@ -189,6 +189,25 @@ in-process branch tests and prove the same lane passes.
   shims, weakening local/CI mirror proof, changing runtime budgets, or claiming
   the still-unpushed hosted CI repair is green.
 
+## Release-Stabilization Carry-Forward
+
+- Operator direction: finish the release-blocker and P2 backlog selected in the
+  active goal, then push and publish `v4.1.0` as one final bundle. This replaces
+  the earlier sequence that released before the consumer-facing backlog.
+- Preserved interrupt: the exact old-range selector and changed-line consumer
+  remain a locked regression seam. Later slices may change other proof surfaces,
+  but they must not alter mapper policy, shrink changed-line scope, or describe
+  the hosted repair as green before GitHub reads the final pushed SHA.
+- Recheck trigger: if a stabilization slice touches the selector, its readers,
+  regenerable-facts entry/library coverage, or CI mirror topology, rerun the
+  original-range mapper and final-consumer checks before ordinary closeout. If
+  none of those surfaces changes, retain the committed `7cd421c4` local proof
+  and keep hosted CI as the explicit final-release non-claim.
+- Publication boundary: the user granted the final push and release for this
+  bundle. Local implementation still precedes sync, verification, critique,
+  version mutation, push, hosted-CI readback, and public/install readback in
+  that order; an earlier local or push exit cannot satisfy a later boundary.
+
 ## Boundary Ownership
 
 - `preserve`: the selector produces reachability evidence; it does not produce a

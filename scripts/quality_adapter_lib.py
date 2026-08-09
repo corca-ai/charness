@@ -426,10 +426,14 @@ def _apply_regenerable_facts(
             "regenerable_facts.exemptions needs a reason for: " + ", ".join(unreasoned)
         )
         return
-    validated["regenerable_facts"] = {
-        "surfaces": list(surfaces) if surfaces else [],
-        "exemptions": {str(k): str(v).strip() for k, v in exemptions.items()},
-    }
+    resolved = {"exemptions": {str(k): str(v).strip() for k, v in exemptions.items()}}
+    # Absence and an explicit empty list are different declarations. Writing
+    # `surfaces: []` for an exemptions-only block made the final gate treat
+    # defaults as an explicitly empty scope (or, before #575, silently refill
+    # them). Preserve the producer's state through the adapter transport.
+    if "surfaces" in block:
+        resolved["surfaces"] = list(surfaces) if surfaces else []
+    validated["regenerable_facts"] = resolved
 
 
 def validate_quality_adapter_data(

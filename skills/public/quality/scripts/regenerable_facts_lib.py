@@ -24,10 +24,12 @@ Two ways to satisfy it, and the difference is what the command COSTS:
   provenance: it records what was run, when, and against what, so the prose links
   it instead of copying numbers out of it.
 
-Portability: nothing here knows one repo's layout. Surfaces and exemptions are
-resolved from the consuming repo's quality adapter, with defaults that fit an
-ordinary repo. A consumer's exemptions belong in that consumer's adapter, never in
-this shipped file.
+Portability: nothing here guesses whether an arbitrary `docs/` tree is a current
+manual or a historical ledger. Unconfigured defaults cover only canonical
+forward-looking entrypoints and shipped skill instructions. Repos opt their docs
+tree in through the quality adapter, where they can state its actual record seam.
+A consumer's exemptions belong in that consumer's adapter, never in this shipped
+file.
 """
 
 from __future__ import annotations
@@ -40,14 +42,15 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from git_inventory_lib import visible_repo_files  # noqa: E402
 
-# Surfaces a reader treats as current. Deliberately excludes any dated-record
-# directory: those are out of scope by nature, not by exemption.
+# Conservative surfaces a reader can treat as current without knowing the repo's
+# documentation taxonomy. An arbitrary docs tree is deliberately NOT a default:
+# real consumers keep retros, requests, completed implementation records, and
+# lessons there, so a recursive docs default made a hard gate fail historical
+# facts while claiming those records were outside its scope.
 DEFAULT_SURFACES = (
     "AGENTS.md",
     "CLAUDE.md",
     "README.md",
-    "docs/*.md",
-    "docs/**/*.md",
     "skills/*/*/SKILL.md",
     "skills/*/*/references/*.md",
 )
@@ -134,7 +137,7 @@ def declared_surfaces(adapter: dict | None) -> bool:
     report and wrong to fail on, because failing would make the gate hostile on
     install in every consumer.
     """
-    return bool(_config(adapter).get("surfaces"))
+    return "surfaces" in _config(adapter)
 
 
 def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str]]:
@@ -146,7 +149,7 @@ def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str
     already unwrapped it.
     """
     config = _config(adapter)
-    surfaces = tuple(config.get("surfaces") or DEFAULT_SURFACES)
+    surfaces = tuple(config.get("surfaces") or ()) if "surfaces" in config else DEFAULT_SURFACES
     exemptions = dict(config.get("exemptions") or {})
     return surfaces, exemptions
 
@@ -197,6 +200,7 @@ def visible_matching_files(repo_root: Path, surfaces: tuple[str, ...]) -> list[P
 
 def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
     surfaces, exemptions = resolve_config(adapter)
+    declared = declared_surfaces(adapter)
     findings: list[dict[str, object]] = []
     exempted: list[dict[str, str]] = []
     checked = 0
@@ -211,12 +215,27 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
             findings.append(
                 {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
             )
+    unclassified_docs = []
+    if not declared:
+        checked_paths = {
+            path.relative_to(repo_root).as_posix()
+            for path in visible_matching_files(repo_root, surfaces)
+        }
+        unclassified_docs = sorted(
+            path.relative_to(repo_root).as_posix()
+            for path in visible_matching_files(repo_root, ("docs/*.md", "docs/**/*.md"))
+            if path.relative_to(repo_root).as_posix() not in checked_paths
+        )
     return {
-        "declared": declared_surfaces(adapter),
+        "declared": declared,
         "checked": checked,
         "surfaces": list(surfaces),
         "exempted": exempted,
         "findings": findings,
+        # A conservative default cannot classify an arbitrary docs tree. Carry
+        # that population to the final renderer so a clean README never turns
+        # skipped current handoff prose into a terminal green.
+        "unclassified_docs": unclassified_docs,
         # An exemption without a stated reason is the same unfalsifiable claim the
         # rule exists to remove, so it is reported rather than honoured silently.
         "unreasoned_exemptions": sorted(p for p, r in exemptions.items() if not _reason_text(r)),

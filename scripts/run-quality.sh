@@ -65,6 +65,13 @@ RUN_QUALITY_PROGRESS_SCOPE="${CHARNESS_QUALITY_LABELS:-all}"
 printf 'run-quality: START mode=%s release=%s requested_scope=%s (phase output is buffered)\n' \
   "$RUN_QUALITY_MODE" "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" "$RUN_QUALITY_PROGRESS_SCOPE" >&2
 
+RUN_QUALITY_GIT_DIR="$(git rev-parse --git-dir 2>/dev/null || true)"
+if [[ ( -n "$RUN_QUALITY_GIT_DIR" && -e "$RUN_QUALITY_GIT_DIR/charness-mutation-recovery" ) \
+   || -e "$REPO_ROOT/.charness/mutation-recovery" ]]; then
+  echo "run-quality: FAIL interrupted mutation recovery is REQUIRED; run python3 scripts/mutate_and_restore.py --repo-root . --check-recovery, then --recover" >&2
+  exit 2
+fi
+
 STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 

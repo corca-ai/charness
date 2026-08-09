@@ -159,12 +159,12 @@ def test_the_file_is_restored_even_when_the_test_command_raises(
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
     seen: list[str] = []
 
-    def explode(_command, _cwd):
+    def explode(_command, _cwd, _recovery, _journal_id):
         seen.append((repo / "subject.py").read_text(encoding="utf-8"))
         raise OSError("command could not be spawned")
 
     baseline = mar.Baseline(returncode=0, passed=1, output="1 passed")
-    monkeypatch.setattr(mar, "run_command", explode)
+    monkeypatch.setattr(mar, "run_mutation_command", explode)
 
     with pytest.raises(OSError):
         mar.run_mutant(

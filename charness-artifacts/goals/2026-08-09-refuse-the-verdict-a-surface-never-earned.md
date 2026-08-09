@@ -9,8 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: planned slice 5 (`#563`, a DELETION). Slices 1, 1b, 2, 3, 3b,
-  4, and urgent repair 4r are DONE.
+- Current slice: operator-expanded release stabilization. Slices 1, 1b, 2, 3,
+  3b, 4, and urgent repair 4r are DONE; new slices 4s-a through 4s-d precede
+  the existing deletion/context slices and the final `v4.1.0` release.
 - Repair 4r evidence: the original `ec67291e...18a9a439` range maps both
   regenerable-facts files locally, first blocked on the eight real gaps, and its
   final consumer now returns 0 with `status: clean`; the branch verification
@@ -40,14 +41,16 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: obtain per-push approval and read back remote CI on the repaired
-  SHA; then return to planned slice 5.
+- Next action: causal-review and plan-critique the expanded issue bundle, then
+  implement it locally. The operator explicitly granted the final push and
+  release after P2 completion; no intermediate push is planned.
 - Two consecutive slices have now had their premise refuted by one measurement
   each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
   NOT CONFIGURED"). Both premises came from durable records this goal wrote.
   Measure the premise before shaping the next slice; it has paid twice.
-- Delivery is no longer blocked: the pre-push gate runs green (exit 0). The push
-  itself is NOT taken and is NOT standing-approved; ask per push.
+- Delivery is locally unblocked: the pre-push gate runs green. The final bundle
+  carries an explicit push and release grant; the grant does not waive any gate
+  or distinct-channel hosted/public readback.
 - Critique and broad proof do not re-fire within one unchanged intent — update
   this when the intent changes, not per commit (meaningful-slice-cadence).
 - Verification cadence: cheap deterministic checks at commit boundaries;
@@ -125,8 +128,9 @@ them is queued for the operator rather than taken here.
   question, that is a finding to record, not a licence to add the prose line.
 - **Not renaming the three Korean-titled goal artifacts.** English stays
   canonical for filename slugs; the repair is in the checker.
-- Not a release. No version bump, tag, or publish belongs to this goal.
-- Not `#568` / `#569` / `#518` / `#515` / `#547` / `#561`. Named in
+- No intermediate release or per-slice push. The only publication is the final
+  verified `v4.1.0` bundle authorized by the operator after all claimed P2 work.
+- Not `#568` / `#569` / `#547` / `#561`. Named in
   `## Backlog Recount` with reasons.
 
 ## Boundaries
@@ -243,9 +247,10 @@ enforces them so this paragraph stops being the thing that has to remember.
   through the adapter for each issue this goal closes, with the `Behavior #N:`
   verdict naming a channel distinct from the one that produced the fix.
 - A delegated resolution critique per closed issue, BEFORE the close call.
-- No push, no release, no remote CI is claimed by this goal. If a push is later
-  granted, its remote-CI verdict is read back through a different observer and
-  channel than the push exit code.
+- Final push and `v4.1.0` publication are in scope under the operator's explicit
+  grant. Remote CI, public release visibility, installed version/doctor, issue
+  states, and baton reconciliation are each read back through channels distinct
+  from the mutation that produced them.
 
 ## Slice Plan
 
@@ -258,9 +263,39 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 3b | **Folded in from the retired declaration-to-verdict goal: `#530`.** Sixteen of seventeen adapter resolvers accept ANY `version` and write it back as authoritative; exactly one compares against a supported value. Replace the hand-copied blocks with one shared contract check, and refuse an unknown key instead of dropping it | Measured LIVE on 2026-08-09 on a resolver that goal had not reached: a new `regenerable_facts` key was dropped with `valid: true`, `errors: []`, no warning, and the gate silently ran on defaults. Found by a consumer of the contract, never by a gate. Slice 1b had to hand-write the seventeenth block, so the goal is now paying the tax it exists to remove | One shared check in `scripts/adapter_lib.py`; an unsupported `version` refused at every site; an unknown key refused rather than dropped; the `regenerable_facts` validator folded into the shared seam | **DONE — PREMISE REFUTED, re-scoped.** All four planned evidence items were ALREADY satisfied by the folded goal's own commits: `validate_adapter_version` exists at `adapter_lib.py:418`, 16/16 resolvers refuse `version: 7` and none echoes it back (live probe), and the unknown-key tier is armed and wired at `run-quality.sh:678`. What measurement exposed instead: that armed tier warns on CORRECT keys in every consumer repo (3/3 through the shipped mirror; 126 false warnings at `--repo-root plugins/charness`), because it scans the consumer's tree for readers that live in the plugin. Shipped the refusal-to-claim plus the uninterpreted-line channel. Version-half gaps outside the 16-resolver glob filed as `#574` |
 | 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | **DONE.** Premise HELD (the streak of three refutations broke). The runner now takes a plan-level `"call_site": true` declaration, VERIFIES it against the edit (a declared mutant that removed no call is REFUSED), and states an explicit non-claim when no mutant was declared. Inference was tried first and killed by review: it let an incidental `.join` removal silence the tool's own `#564` warning. 58 tests; 13/13 mutants killed over a stated baseline of 57, 3 declared call-site. `#564` is repaired, NOT closed — its closeout floor has not been run |
 | 4r | **Unplanned repair:** reconcile local focused changed-line proof with the red remote broad mirror for the regenerable-facts slice | Main is red and planned work cannot honestly continue across a locally green/remote red proof boundary | Dynamic-loader mapping fixture; local fail-before on the eight CI targets; direct in-process coverage; same-range local pass; two bounded review rounds | **DONE** |
+| 4s-a | `#573` — make mutation application recoverable across process termination, or refuse to export the unsafe helper | Every later proof-surface repair may rely on this tool; a killed verifier must not leave the source tree as its mutant | Write-ahead recovery identity; TERM/INT recovery; explicit stale-journal detection/recovery; kill-path tests; source/plugin parity | **DONE locally; issue closeout pending final bundle.** Durable git-metadata journal precedes atomic source replacement; TERM/INT route through restore; SIGKILL recovery first stops the owned mutated-test process group, refuses a live writer or human-changed target, then restores exact bytes. Pre-commit and quality refuse pending recovery. Round 2 caught and repaired the leaked-child false-clean path. |
+| 4s-b | `#575` + `#570` — narrow regenerable-facts to surfaces that assert current state, and brief chunked routing on what it authors | Both are new consumer-facing behavior after `v4.0.0`; one hard-fails real history records and the other briefs a forbidden surface | Consumer-population fail-before/pass-after evidence; no default `docs/**/*.md` history sweep; goal-authoring preflight for chunked routing; two verdict rounds | **DONE locally; issue closeout pending final bundle.** Five consumers moved from 4/5 historical hard failures to 5/5 typed `NOT CONFIGURED FOR DOCS` exit-0 non-verdicts; unclassified docs counts are preserved below. Explicit empty scope now refuses. Chunked routing carries no handoff-authoring preflight and still routes through the goal generator/achieve validator. Both capped round-2 reviews completed. |
+| 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | pending |
+| 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | pending |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
+| 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | pending |
+| 9 | Final bundle and `v4.1.0` release | All selected consumer and proof-surface work is complete; publication is now the remaining irreversible boundary | Locked closeout, release critique + claims review, source-tree publish helper, hosted CI, public/install/doctor and issue-state readbacks | pending |
+
+### Release-stabilization execution ledger
+
+- **4s-a causal bottom / proof.** Normal exceptions were already safe; process
+  death erased the only pristine-byte owner. The repair writes the journal before
+  mutation, atomically replaces source bytes, and keeps the child command stopped
+  until its isolated process group is bound into that journal. The SIGKILL test
+  kills the sweep parent, observes the pending journal, executes the later
+  recovery consumer, and verifies the mutated child is absent or zombie before
+  recovery returns. A human edit after interruption is preserved and leaves the
+  journal armed. Focused mutation/regenerable/handoff proof: `115 passed`; repo
+  copy/hook proof: `60 passed`. **Non-claim:** not every instruction boundary was
+  killed; round 2 explicitly limits proof to active mutation, killed-parent child
+  ownership, exact-byte recovery, and final-consumer refusal.
+- **4s-b consumer population / proof.** Before repair, the shipped default failed
+  `stdy.blog`, `cmanki`, `ceal-cli`, and `ceal` on historical facts (4/5; maximum
+  52 findings). After the capped round-2 repair, the same source-tree command
+  returns exit 0 but never clean: `journal.stdy.blog` reports 6 unclassified docs,
+  `stdy.blog` 18, `cmanki` 36, `ceal-cli` 40, and `ceal` 253, each rendered
+  `NOT CONFIGURED FOR DOCS`. A clean README cannot mask a current handoff claim,
+  and `surfaces: []` is an explicit zero-match refusal rather than a default
+  refill. `#570` live plan readback is `{kind: run_chunked_routing, preflights:
+  [], chunked_reference: true}`; the generator/achieve chain stayed green in the
+  independent round-2 cohort (`46 passed`).
 
 **Consolidated 2026-08-09 to ONE active goal.** Six artifacts read `Status:
 active`; five are now `complete` with a retirement note naming why. Three were
@@ -300,11 +335,10 @@ and is planned, not discovered.
 
 Recount the tracker before scope; see `references/lifecycle-before.md`.
 
-- Counted: 33 open issues on 2026-08-09 via
-  `gh issue list --repo corca-ai/charness --state open --limit 200`.
-- Claims: `#565`, `#564` (re-scoped), `#563` (closed by DELETION, not repair),
-  `#546` (as one row of slice 4's census), `#521` (the census is the evidence its
-  question was opened without), `#523`.
+- Recount command: `gh issue list --repo corca-ai/charness --state open --limit 200`.
+- Claims: `#565`, `#564` (re-scoped), `#573`, `#575`, `#570`, `#574`, `#545`,
+  `#515`, `#518`, `#528`, `#563` (closed by DELETION, not repair), `#546`,
+  `#521`, `#523`, `#549`, and `#566`.
 - Not claimed: `#560` — closable now and handled as Tier 0 pre-work OUTSIDE this
   goal, because it needs only its closeout floor run, not a slice. `#567` — its
   problem 1 was already fixed by the predecessor's slice 1 (no keyword branching
@@ -314,9 +348,8 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
   `plan_handoff_run.py:206-216`, so it must be measured before anyone builds
   against it. `#568`, `#569` — debt created by the predecessor goal; real, small,
   and deliberately left so this goal is not the predecessor's cleanup crew.
-  `#518`, `#515`, `#514` — consumer-owned false-green classes carrying
-  consumer-repo evidence; they need that owner in the loop and repeated goals
-  have declined them for exactly that reason. `#561`, `#547` — operator
+  `#514` — a consumer-owned false-green class outside the selected bundle.
+  `#561`, `#547` — operator
   decisions, not work; carried forward unresolved. `#534` — a prior goal built it
   green, REFUTED it, and reverted in full; re-scope from the refutation, never
   from the title. `#566` — step 1 done, step 2 was the predecessor goal;
@@ -455,7 +488,14 @@ proof, issue close/split, broad scope, irreversible side effect, or a
 proof-level non-claim); replace the `fill` line below, or delete it when none
 applies.
 
-- Discuss before activation: RESOLVED — four consequential decisions were settled with the operator during shaping. (1) **Direction**: the operator chose the false-green cluster over the consumer-facing tier, then chose to add `#523` back, so this goal is deliberately not single-class. (2) **`#563` becomes a DELETION**: the operator asked whether the checker should be code at all; measurement showed it is advisory, exits 0 everywhere, reports 0 findings on its default scope, and has two lifetime commits, and the operator decided to delete rather than repair — overruling `78a1790b`'s "demote, do not delete" with a year of no observed effect. Deletion is on the north star's irreversible list, which is why its completeness bar is in `## Boundaries`. (3) **Slice 4 census added**: the operator asked whether many such checks exist; a Sonnet-backed dynamic workflow with adversarial refutation was the requested instrument. It ranks and does not delete. (4) **Issue closes**: this goal intends to close tracked issues, each through the full closeout floor with a delegated resolution critique before the close call. No live/prod proof, no push, and no release is claimed.
+- Discuss before activation: RESOLVED — the operator expanded the already-active
+  goal through the previously grouped P2 backlog and explicitly authorized the
+  final push and `v4.1.0` release after completion. Existing decisions remain:
+  `#563` is a completeness-proven deletion, `#523` preserves the full
+  `## Subagent Delegation` block byte-for-byte, issue closes use the full
+  delegated critique/carrier/readback floor, and Cautilus remains ask-before-run
+  and is not authorized by this release grant. No intermediate publication or
+  weakened gate is authorized.
 
 ## Slice Log
 

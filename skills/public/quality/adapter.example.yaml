@@ -159,17 +159,21 @@ dup_ratchet:
 # link the checked-in artifact holding its output -- never make every future
 # reader re-run a multi-minute gate to learn one number.
 #
-# Dated append-only records (retros, critiques, audits) are deliberately NOT
-# listed: a number there describes one moment, which is what it is for.
+# An arbitrary docs tree is not a safe default: many repos keep dated requests,
+# completed implementation records, retros, or lessons under docs/. Opt the
+# current portion in and exempt historical records using this repo's taxonomy.
 regenerable_facts:
-  # Omit to accept the defaults: AGENTS.md, CLAUDE.md, README.md, docs/**/*.md,
-  # and shipped skill prose (SKILL.md, references/*.md). List your own globs when
-  # your prose lives elsewhere.
+  # Omit to accept the conservative defaults: AGENTS.md, CLAUDE.md, README.md,
+  # and shipped skill prose (SKILL.md, references/*.md). List docs globs only
+  # when this adapter also owns their current-vs-record seam.
   #
   # The gate EXITS 1 rather than passing when a DECLARED scope scanned zero files, when the
   # adapter is present but invalid, or when an exemption has no reason -- a gate
   # that matched nothing has verified nothing, and defaults silently replacing
   # your declared scope would report clean over a scope you did not choose.
+  # `surfaces: []` is an explicit empty declaration and therefore refuses; it
+  # does not fall back to defaults. With no declaration, an existing docs tree
+  # is reported `NOT CONFIGURED FOR DOCS` at exit 0, never as clean.
   surfaces:
     - AGENTS.md
     - README.md
