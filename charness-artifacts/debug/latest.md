@@ -1,1 +1,1 @@
-2026-08-07-issue-518-quality-declaration-reconciliation-debug.md
+2026-08-09-remote-ci-changed-line-reconciliation-debug.md

@@ -9,9 +9,14 @@ avoidance rather than the habit.
 
 from __future__ import annotations
 
+import importlib.util
+import json
 import runpy
+import sys
 from pathlib import Path
 from types import SimpleNamespace
+
+import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 SKILL_SCRIPTS = ROOT / "skills" / "public" / "quality" / "scripts"
@@ -19,8 +24,88 @@ _bootstrap = SimpleNamespace(**runpy.run_path(str(ROOT / "scripts" / "skill_runt
 lib = _bootstrap.load_local_skill_module(str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "regenerable_facts_lib")
 
 
+def _load_gate():
+    """Import the CLI in-process so coverage observes its refusal branches."""
+    path = SKILL_SCRIPTS / "check_regenerable_facts.py"
+    spec = importlib.util.spec_from_file_location("check_regenerable_facts_under_test", path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+gate = _load_gate()
+
+
 def _hits(text: str) -> list[str]:
     return [literal for _line, literal, _label, _remedy in lib.scan_text(text)]
+
+
+def test_missing_runtime_bootstrap_is_an_explicit_import_error(monkeypatch) -> None:
+    real_is_file = Path.is_file
+
+    def hide_runtime_bootstrap(path: Path) -> bool:
+        if path.name == "skill_runtime_bootstrap.py":
+            return False
+        return real_is_file(path)
+
+    monkeypatch.setattr(Path, "is_file", hide_runtime_bootstrap)
+
+    with pytest.raises(ImportError, match="skill_runtime_bootstrap.py not found"):
+        gate._load_skill_runtime_bootstrap()
+
+
+def test_unreasoned_exemptions_render_the_refusal_directly() -> None:
+    lines = gate.render(
+        {
+            "adapter_refusal": None,
+            "checked": 1,
+            "exempted": [],
+            "unreasoned_exemptions": ["docs/a.md", "docs/b.md"],
+            "findings": [],
+        }
+    )
+
+    assert lines == [
+        "regenerable-facts: exemption(s) with no recorded reason: docs/a.md, docs/b.md"
+        " -- an unexplained exemption is the claim this rule exists to remove"
+    ]
+
+
+@pytest.mark.parametrize(
+    ("error", "detail"),
+    [(StopIteration(), "StopIteration"), (RuntimeError("broken adapter"), "RuntimeError: broken adapter")],
+)
+def test_adapter_load_errors_are_json_refusals_in_process(
+    monkeypatch, capsys, error: Exception, detail: str
+) -> None:
+    def fail_adapter(_repo_root: Path):
+        raise error
+
+    monkeypatch.setattr(gate, "load_adapter", fail_adapter)
+    monkeypatch.setattr(sys, "argv", ["check_regenerable_facts.py", "--repo-root", str(ROOT), "--json"])
+
+    assert gate.main() == 1
+
+    report = json.loads(capsys.readouterr().out)
+    assert report["adapter_refusal"] == (
+        f"quality adapter could not be loaded ({detail}); declared surfaces are unknown"
+    )
+    assert report["checked"] == 0
+
+
+def test_git_listing_failure_falls_back_to_the_declared_glob(tmp_path: Path, monkeypatch) -> None:
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    surface = repo / "AGENTS.md"
+    surface.write_text("# Demo\n", encoding="utf-8")
+
+    def fail_listing(_repo_root: Path):
+        raise OSError("git unavailable")
+
+    monkeypatch.setattr(lib, "visible_repo_files", fail_listing)
+
+    assert lib.visible_matching_files(repo, ("AGENTS.md",)) == [surface]
 
 
 def test_a_transcribed_version_is_refused() -> None:

@@ -251,6 +251,75 @@ def test_maps_changed_local_module_through_loader_parent(tmp_path: Path) -> None
     assert matches == {"scripts/worker.py": ["tests/quality_gates/test_entry.py"]}
 
 
+@pytest.mark.parametrize(
+    "loader_expression",
+    [
+        'runtime.load_local_skill_module("scripts/loader_target.py", "loader_target_lib")',
+        'runtime.load_local_skill_module(str(SCRIPT_ROOT / "loader_target.py"), "loader_target_lib")',
+        'runtime._load_sibling("loader_target")',
+    ],
+    ids=["full-path", "filename", "stem"],
+)
+def test_maps_literal_token_inside_supported_loader_call(
+    tmp_path: Path, loader_expression: str
+) -> None:
+    """Resolve the exact alias-plus-``str(...)`` shape that escaped locally.
+
+    The old regex stopped at the nested closing parenthesis, so an existing test
+    was reported as absent and deliberate mapper policy let the push continue.
+    The unrelated quoted filename is the discriminating control: filenames are
+    evidence only inside a supported loader boundary.
+    """
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    (repo / "scripts" / "loader_target.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "tests" / "quality_gates" / "test_loader_target.py").write_text(
+        f"MODULE = {loader_expression}\n",
+        encoding="utf-8",
+    )
+    (repo / "tests" / "quality_gates" / "test_loader_decoy.py").write_text(
+        'LABEL = "loader_target.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(repo, ["scripts/loader_target.py"])
+
+    assert matches == {
+        "scripts/loader_target.py": ["tests/quality_gates/test_loader_target.py"]
+    }
+
+
+def test_loader_basename_can_safely_overselect_but_plain_string_cannot(tmp_path: Path) -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    repo, _base = _seed_repo(tmp_path)
+    for directory in (repo / "scripts" / "one", repo / "scripts" / "two"):
+        directory.mkdir()
+        (directory / "shared.py").write_text("VALUE = 1\n", encoding="utf-8")
+    (repo / "tests" / "quality_gates" / "test_loader_shared.py").write_text(
+        'MODULE = runtime.load_local_skill_module(str(ROOT / "shared.py"), "shared_lib")\n',
+        encoding="utf-8",
+    )
+    (repo / "tests" / "quality_gates" / "test_plain_shared.py").write_text(
+        'LABEL = "shared.py"\n', encoding="utf-8"
+    )
+
+    matches = sugg.tests_referencing_paths(
+        repo, ["scripts/one/shared.py", "scripts/two/shared.py"]
+    )
+
+    assert matches == {
+        "scripts/one/shared.py": ["tests/quality_gates/test_loader_shared.py"],
+        "scripts/two/shared.py": ["tests/quality_gates/test_loader_shared.py"],
+    }
+
+
+def test_invalid_loader_source_has_no_literal_tokens() -> None:
+    from scripts import suggest_mutation_coverage_command as sugg
+
+    assert sugg._loader_literal_tokens('load_local_skill_module(str(ROOT / "worker.py")') == set()
+
+
 def test_maps_release_local_module_through_loader_parent(tmp_path: Path) -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 

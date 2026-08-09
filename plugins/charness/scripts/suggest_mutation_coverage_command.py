@@ -35,6 +35,14 @@ Workflow:
   4. For missing or blocked, run the broad mutation coverage producer instead.
 """
 
+_LITERAL_PATH_LOADERS = frozenset(
+    {
+        "load_local_skill_module",
+        "_load_local_release_module",
+        "_load_sibling",
+    }
+)
+
 
 def _module_name(path: str) -> str:
     without_suffix = path[:-3] if path.endswith(".py") else path
@@ -110,6 +118,51 @@ def _loads_local_sibling(text: str, module_stem: str) -> bool:
         )
         or re.search(rf"with_name\(\s*['\"]{token}\.py['\"]\s*\)", text)
     )
+
+
+def _loader_literal_tokens(text: str) -> set[str]:
+    """Literal path/module tokens nested inside supported dynamic loaders.
+
+    Tests commonly spell a script as
+    ``load_local_skill_module(str(SKILL_SCRIPTS / "entry.py"), "sibling")``.
+    The existing regex deliberately cannot cross the nested ``str(...)`` call,
+    so it misses a real dependency and the focused lane reports the changed file
+    as unmapped. AST traversal keeps the exception at the loader boundary instead
+    of treating every quoted filename in a test as executable reachability.
+
+    A basename-only match can select an extra test when two directories carry the
+    same script name. That is the selector's safe error direction: extra focused
+    runtime or a local false stop, never a false covered verdict.
+    """
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return set()
+
+    tokens: set[str] = set()
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        function = node.func
+        if isinstance(function, ast.Attribute):
+            name = function.attr
+        elif isinstance(function, ast.Name):
+            name = function.id
+        else:
+            continue
+        if name not in _LITERAL_PATH_LOADERS:
+            continue
+        tokens.update(
+            child.value
+            for child in ast.walk(node)
+            if isinstance(child, ast.Constant) and isinstance(child.value, str)
+        )
+    return tokens
+
+
+def _loader_tokens_reference(tokens: set[str], path: str) -> bool:
+    target = Path(path)
+    return bool(tokens & {path, target.name, target.stem})
 
 
 def _local_loader_ancestor_levels(repo_root: Path, path: str) -> list[list[str]]:
@@ -231,6 +284,11 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
         except OSError:
             continue
     test_sources = _test_source_closures(source_text)
+    loader_tokens = {
+        source_path: _loader_literal_tokens(text)
+        for source_path, text in source_text.items()
+        if any(loader in text for loader in _LITERAL_PATH_LOADERS)
+    }
     matches: dict[str, list[str]] = {}
     for changed_path in changed_paths:
         # A changed file inside the closure of a test is covered BY RUNNING that test —
@@ -246,15 +304,19 @@ def tests_referencing_paths(repo_root: Path, changed_paths: list[str]) -> dict[s
         all_found: set[str] = set()
         for level in path_levels:
             probes = [
-                (_reference_prefilter(related), _reference_patterns(related))
+                (related, _reference_prefilter(related), _reference_patterns(related))
                 for related in level
             ]
             referring_sources = {
                 source_path
                 for source_path, text in source_text.items()
                 if any(
-                    prefilter in text and any(pattern.search(text) for pattern in patterns)
-                    for prefilter, patterns in probes
+                    prefilter in text
+                    and (
+                        any(pattern.search(text) for pattern in patterns)
+                        or _loader_tokens_reference(loader_tokens.get(source_path, set()), related)
+                    )
+                    for related, prefilter, patterns in probes
                 )
             }
             all_found.update(
