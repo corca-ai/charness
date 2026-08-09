@@ -91,6 +91,88 @@ def test_dead_code_advisory_reports_primary_and_sweep(tmp_path: Path, monkeypatc
     ]
 
 
+def test_dead_code_advisory_reports_not_applicable_for_typescript_only_repo(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _seed_fake_vulture(bin_dir, sweep_finding=None)
+    repo = tmp_path / "repo"
+    (repo / "src").mkdir(parents=True)
+    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
+    (repo / "package.json").write_text('{"scripts":{"test":"vitest"}}\n', encoding="utf-8")
+    init_git_repo(repo, "src/app.ts", "package.json")
+
+    payload = _run_dead_code_advisory(
+        monkeypatch, bin_dir, "--repo-root", str(repo), "--json"
+    )
+    human = _run_dead_code_advisory_stdout(
+        monkeypatch, bin_dir, "--repo-root", str(repo)
+    )
+
+    assert payload["applicability"] == "not-applicable-no-python-paths"
+    assert payload["primary"]["status"] == "not-applicable"
+    assert payload["sweep"]["status"] == "not-applicable"
+    assert "NOT APPLICABLE:" in human
+    assert "clean" not in human
+
+
+def test_dead_code_advisory_reports_partial_for_mixed_language_repo(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _seed_fake_vulture(bin_dir, sweep_finding=None)
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "src").mkdir()
+    (repo / "scripts" / "helper.py").write_text("KEEP = True\n", encoding="utf-8")
+    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
+    init_git_repo(repo, "scripts/helper.py", "src/app.ts")
+
+    payload = _run_dead_code_advisory(
+        monkeypatch, bin_dir, "--repo-root", str(repo), "--json"
+    )
+    human = _run_dead_code_advisory_stdout(
+        monkeypatch, bin_dir, "--repo-root", str(repo)
+    )
+
+    assert payload["applicability"] == "partial-python-only"
+    assert payload["git_visible_python_file_count"] == 1
+    assert payload["git_visible_non_python_source_count"] == 1
+    assert payload["non_python_source_sample"] == ["src/app.ts"]
+    assert human.splitlines()[0].startswith("PARTIAL:")
+    assert "no repo-wide dead-code verdict" in human
+
+
+def test_dead_code_advisory_explicit_path_scopes_non_python_census(
+    tmp_path: Path, monkeypatch
+) -> None:
+    bin_dir = tmp_path / "bin"
+    bin_dir.mkdir()
+    _seed_fake_vulture(bin_dir, sweep_finding=None)
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "src").mkdir()
+    (repo / "scripts" / "helper.py").write_text("KEEP = True\n", encoding="utf-8")
+    (repo / "src" / "app.ts").write_text("export const app = true;\n", encoding="utf-8")
+    init_git_repo(repo, "scripts/helper.py", "src/app.ts")
+
+    payload = _run_dead_code_advisory(
+        monkeypatch,
+        bin_dir,
+        "--repo-root",
+        str(repo),
+        "--path",
+        "scripts",
+        "--json",
+    )
+
+    assert payload["applicability"] == "applicable-python-scope"
+    assert payload["non_python_scope"] == "requested-roots"
+    assert payload["git_visible_non_python_source_count"] == 0
+
+
 def test_dead_code_advisory_summary_omits_full_command_and_findings(tmp_path: Path, monkeypatch) -> None:
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()

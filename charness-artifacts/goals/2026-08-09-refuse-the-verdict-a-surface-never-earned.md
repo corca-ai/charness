@@ -41,9 +41,9 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: causal-review and plan-critique the expanded issue bundle, then
-  implement it locally. The operator explicitly granted the final push and
-  release after P2 completion; no intermediate push is planned.
+- Next action: commit the completed declaration-lifecycle slice, then finish
+  the remaining deletion/context/evidence dispositions before the single final
+  push and release. No intermediate push is planned.
 - Two consecutive slices have now had their premise refuted by one measurement
   each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
   NOT CONFIGURED"). Both premises came from durable records this goal wrote.
@@ -266,7 +266,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 4s-a | `#573` — make mutation application recoverable across process termination, or refuse to export the unsafe helper | Every later proof-surface repair may rely on this tool; a killed verifier must not leave the source tree as its mutant | Write-ahead recovery identity; TERM/INT recovery; explicit stale-journal detection/recovery; kill-path tests; source/plugin parity | **DONE locally; issue closeout pending final bundle.** Durable git-metadata journal precedes atomic source replacement; TERM/INT route through restore; SIGKILL recovery first stops the owned mutated-test process group, refuses a live writer or human-changed target, then restores exact bytes. Pre-commit and quality refuse pending recovery. Round 2 caught and repaired the leaked-child false-clean path. |
 | 4s-b | `#575` + `#570` — narrow regenerable-facts to surfaces that assert current state, and brief chunked routing on what it authors | Both are new consumer-facing behavior after `v4.0.0`; one hard-fails real history records and the other briefs a forbidden surface | Consumer-population fail-before/pass-after evidence; no default `docs/**/*.md` history sweep; goal-authoring preflight for chunked routing; two verdict rounds | **DONE locally; issue closeout pending final bundle.** Five consumers moved from 4/5 historical hard failures to 5/5 typed `NOT CONFIGURED FOR DOCS` exit-0 non-verdicts; unclassified docs counts are preserved below. Explicit empty scope now refuses. Chunked routing carries no handoff-authoring preflight and still routes through the goal generator/achieve validator. Both capped round-2 reviews completed. |
 | 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | **DONE locally; issue closeout pending final bundle.** Five adapter consumer families now refuse unsupported versions before fields and carry the reason to operator packets; issue/handoff stop before provider access. Rendered private Slack images are typed-refused before backend resolution, while provenance and non-rendering examples remain legal. Both capped round-2 reviews found and triggered repairs. |
-| 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | pending |
+| 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | **DONE locally — commit/issue closeout pending** |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
@@ -701,6 +701,42 @@ applies.
   `changed-line-selector-dynamic-loader-opacity` as converted to a durable test.
 - Lessons carried forward: A standing test is not evidence that a selector can discover it, and a subprocess pass is not in-process coverage. Run the final consumer on a clean analyzed tree: the first clean run caught a branch every earlier green unit suite missed.
 - Metrics: Targeted suite: 66 passing tests. Recorded hosted escape: eight uncovered lines. Verification-lock broad coverage-producing pytest: pass; hosted repaired-SHA CI: not run pending push approval.
+
+### Slice 7: declarations are routes, not receipts
+
+- Objective: close `#515`, `#518`, and `#528` at their common boundary:
+  declaration, routing, execution, and coverage are separate states, and no
+  configured-looking value may collapse them into a terminal verdict.
+- What changed: the quality planner now carries a declaration lifecycle for
+  presets, commands, product/docs/skill surfaces, and exact executable packets;
+  its default human output names every gap and command. Presets remain
+  `declared-only`, routed commands remain `not-run`, and partial or unreachable
+  surfaces stay explicit. Dotted `deliberately_absent` leaves survive bootstrap
+  and resolved defaults without dropping sibling values. The dead-code advisory
+  returns not-applicable for TypeScript-only scope and partial for a default
+  mixed-language repo; an explicit `--path` scopes both Python and non-Python
+  discovery to that same root.
+- Consumer proof: the current source planner against `cmanki` reports
+  `action-required`, nine routed commands all `not-run`, two checked-in support
+  skills, `typescript-quality` as `declared-only`, and `web_app` as partial over
+  five review packets with zero dangling packet ids. The dead-code packet reports
+  two Python files and 132 non-Python files as `partial-python-only`, never a
+  repo-wide clean verdict.
+- Targeted verification: 112 planner, dead-code, and bootstrap-absence tests
+  pass; ruff and packaging validation pass. Source/plugin mirrors are synchronized
+  before commit. The default planner invocation was executed and visibly includes
+  lifecycle rows, gaps, and exact commands.
+- Critique: the second bounded round found three ship blockers in the repairs:
+  the prescribed default output hid the rows it told operators to inspect; the
+  dotted-absence reference contradicted itself; and product surfaces synthesized
+  packet ids independently from command reconciliation, creating dangling
+  references when a catalog packet was reused. All three are repaired. The same
+  round flagged explicit-path language census mismatch; it is also repaired.
+  Reviewer boundary verification was clean. Per the two-round cap, these final
+  repairs are accepted-unreviewed.
+- Non-claims: planner inclusion never says a command ran; no language-specific
+  gate is invented; preset automation is not claimed; consumer commands were
+  enumerated but not executed by the planner.
 
 ## Context Sources
 

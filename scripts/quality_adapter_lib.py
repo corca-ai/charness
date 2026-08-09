@@ -8,6 +8,7 @@ from typing import Any
 
 from scripts.adapter_lib import load_yaml_file, optional_string, optional_string_list
 from scripts.artifact_naming_lib import ARTIFACT_CLASSES, RECORD_PATTERN
+from scripts.quality_bootstrap_absence import remove_nested_absences
 from scripts.quality_bootstrap_lib import ADAPTER_CANDIDATES
 from scripts.quality_dup_ratchet_policy import DEFAULT_DUP_RATCHET, validate_dup_ratchet
 from scripts.quality_policy_defaults import (
@@ -372,6 +373,7 @@ def _apply_deliberate_absence(data: dict[str, Any], validated: dict[str, Any], w
     if not honored:
         return
     validated["deliberately_absent"] = honored
+    remove_nested_absences(validated, honored)
     still_defaulted = sorted(
         field
         for field in honored

@@ -8,7 +8,7 @@ from scripts.adapter_lib import (
     uninterpreted_warnings,
     validate_adapter_version,
 )
-from scripts.quality_bootstrap_absence import load_deliberately_absent
+from scripts.quality_bootstrap_absence import load_deliberately_absent, remove_nested_absences
 from scripts.quality_bootstrap_common import classify_command_deferral, merge_unique
 from scripts.quality_bootstrap_detect import (
     detect_concept_paths,
@@ -110,6 +110,25 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
 KNOWN_ADAPTER_FIELDS = frozenset(_infer_defaults(Path("."))) | _FIELDS_RENDERED_WITHOUT_DEFAULTS
 
 
+def _known_absence_paths() -> set[str]:
+    paths = set(KNOWN_ADAPTER_FIELDS)
+
+    def walk(prefix: str, value: Any) -> None:
+        if not isinstance(value, dict):
+            return
+        for key, child in value.items():
+            path = f"{prefix}.{key}"
+            paths.add(path)
+            walk(path, child)
+
+    for field, value in _infer_defaults(Path(".")).items():
+        walk(field, value)
+    return paths
+
+
+KNOWN_ABSENCE_PATHS = _known_absence_paths()
+
+
 def _existing_adapter_path(repo_root: Path) -> Path | None:
     return next((repo_root / candidate for candidate in ADAPTER_CANDIDATES if (repo_root / candidate).is_file()), None)
 
@@ -205,7 +224,9 @@ def _load_existing_adapter_data(repo_root: Path) -> dict[str, Any]:
     validated_skill_rules = _load_explicit_skill_rules(raw, adapter_path)
     mutation_testing = _load_explicit_mutation_testing(raw, adapter_path)
     try:
-        deliberately_absent, absence_warnings = load_deliberately_absent(raw, adapter_path, KNOWN_ADAPTER_FIELDS)
+        deliberately_absent, absence_warnings = load_deliberately_absent(
+            raw, adapter_path, KNOWN_ABSENCE_PATHS
+        )
     except ValueError as exc:
         raise BootstrapValidationError(str(exc)) from exc
     data = dict(defaults)
@@ -397,6 +418,34 @@ def _add_prompt_and_runtime_fields(
     field_statuses["quality_phases"] = "preserved" if "quality_phases" in explicit_fields else "defaulted"
 
 
+def _apply_absence_intent(
+    final: dict[str, Any],
+    existing: dict[str, Any],
+    field_statuses: dict[str, str],
+    subkey_refills: dict[str, list[str]],
+    deferred_setup: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    deliberately_absent = existing.get("deliberately_absent") or {}
+    final["deliberately_absent"] = dict(deliberately_absent)
+    final["_absence_warnings"] = list(existing.get("_absence_warnings") or [])
+    for field in deliberately_absent:
+        if "." not in field:
+            field_statuses[field] = "deliberately-absent"
+    remove_nested_absences(final, deliberately_absent)
+    for field, refills in list(subkey_refills.items()):
+        subkey_refills[field] = [
+            refill
+            for refill in refills
+            if f"{field}.{refill}" not in deliberately_absent
+        ]
+        if not subkey_refills[field]:
+            subkey_refills.pop(field)
+            if field_statuses.get(field) == "augmented":
+                field_statuses[field] = "preserved"
+    absent_roots = {field.split(".", 1)[0] for field in deliberately_absent}
+    return [entry for entry in deferred_setup if entry.get("field") not in absent_roots]
+
+
 def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, str], list[dict[str, Any]]]:
     existing = _load_existing_adapter_data(repo_root)
     explicit_fields = existing.get("_explicit_fields", set())
@@ -479,12 +528,9 @@ def build_bootstrap_state(repo_root: Path) -> tuple[dict[str, Any], dict[str, st
     # rather than defaulted. Suppressing the matching `deferred_setup` nag is part of the
     # same intent: prompting to install a gate the repo deliberately does not have is
     # exactly the "sends the next session hunting for them" failure (#481).
-    deliberately_absent = existing.get("deliberately_absent") or {}
-    final["deliberately_absent"] = dict(deliberately_absent)
-    final["_absence_warnings"] = list(existing.get("_absence_warnings") or [])
-    for field in deliberately_absent:
-        field_statuses[field] = "deliberately-absent"
-    deferred_setup = [entry for entry in deferred_setup if entry.get("field") not in deliberately_absent]
+    deferred_setup = _apply_absence_intent(
+        final, existing, field_statuses, subkey_refills, deferred_setup
+    )
 
     # Unknown top-level fields (repo-extended config such as a consumer-owned
     # gate block) must round-trip verbatim: every known field is in `final` by

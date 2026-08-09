@@ -81,6 +81,72 @@ def test_declared_absence_is_not_refilled_with_defaults(tmp_path: Path) -> None:
     assert "npm run gate" in rewritten
 
 
+def test_dotted_absence_survives_bootstrap_and_resolution(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\nlanguage: en\n"
+        "output_dir: charness-artifacts/quality\n"
+        "preset_id: portable-defaults\ncustomized_from: portable-defaults\n"
+        "deliberately_absent:\n"
+        "  coverage_floor_policy.lefthook_path: this repo uses checked-in git hooks\n"
+        "  coverage_floor_policy.ci_workflow_glob: this repo has no CI workflow\n"
+        "  coverage_floor_policy.exemption_list_path: this repo has no exemption list\n"
+        "coverage_floor_policy:\n"
+        "  min_statements_threshold: 30\n"
+        "  fail_below_pct: 80.0\n"
+        "  warn_ceiling_pct: 95.0\n"
+        "  floor_drift_lock_pp: 1.0\n"
+        "  gate_script_pattern: '*-quality-gate.sh'\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo, "--migrate")
+    resolved = load_quality_adapter_permissive(repo)
+    policy = resolved["data"]["coverage_floor_policy"]
+
+    assert payload["adapter_status"] == "migrated"
+    assert "coverage_floor_policy" not in {
+        change["surface"] for change in payload["requested_changes"]
+    }
+    assert "lefthook_path" not in policy
+    assert "ci_workflow_glob" not in policy
+    assert "exemption_list_path" not in policy
+    assert is_deliberately_absent(
+        resolved["data"], "coverage_floor_policy.lefthook_path"
+    )
+    assert _bootstrap(repo)["adapter_status"] == "unchanged"
+
+
+def test_dotted_absence_refuses_a_leaf_that_is_also_set(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n"
+        "  coverage_floor_policy.lefthook_path: no lefthook here\n"
+        "coverage_floor_policy:\n  lefthook_path: lefthook.yml\n",
+        encoding="utf-8",
+    )
+
+    result = _run_quality_bootstrap_adapter("--repo-root", str(repo))
+
+    assert result.returncode == 1
+    assert "declared absent but is also set" in result.stderr
+
+
+def test_dotted_absence_typo_is_reported_instead_of_becoming_inert(tmp_path: Path) -> None:
+    repo = seed_quality_repo(tmp_path)
+    _adapter(repo).write_text(
+        "version: 1\nrepo: demo\noutput_dir: charness-artifacts/quality\n"
+        "deliberately_absent:\n"
+        "  coverage_floor_policy.lefthook_pat: typo should be visible\n",
+        encoding="utf-8",
+    )
+
+    payload = _bootstrap(repo)
+
+    assert "coverage_floor_policy.lefthook_pat" in payload["absence_warnings"][0]
+
+
 def test_declared_absence_silences_the_matching_setup_nag(tmp_path: Path) -> None:
     """Prompting to install a gate the repo deliberately lacks is the same failure."""
     repo = seed_quality_repo(tmp_path)

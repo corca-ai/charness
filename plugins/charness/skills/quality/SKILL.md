@@ -43,6 +43,10 @@ that retains existing comments.
 1. Restate the quality question and scope.
 2. Run `plan_quality_run.py`; when the quality question names a target skill,
    pass `--target-skill <skill-id>` so the planner anchors the structural packet.
+   Read `declaration_lifecycle` before treating any configured preset, command,
+   product surface, canonical document, or skill path as covered. `declared-only`,
+   `unreachable`, `missing`, and `not-run` are explicit non-verdicts. Execute the
+   adapter-derived `gate_packets`; planner routing proves reachability, not success.
 3. Read every planner `required_reads` entry before broad gates. The planner
    `brief` carries the load-bearing classification, automation-promotion, and
    maintainer-local-enforcement discipline plus the inventory-dispatch routing
@@ -107,6 +111,9 @@ that retains existing comments.
 ## Invariants
 
 - Passing gates are evidence, not success by themselves.
+- A declaration is not execution: every adapter-derived command remains `not-run`
+  until a later receipt records otherwise, and preset lineage remains metadata
+  unless a concrete gate route reconciles it.
 - When the next quality move is repo-local, deterministic, and low-risk,
   implement it the same turn unless review-only was requested.
 - If you stop short of an obvious repo-owned deterministic gate, name the

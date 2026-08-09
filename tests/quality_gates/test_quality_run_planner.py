@@ -102,6 +102,7 @@ def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: 
         read["path"] == "references/quality-lenses.md" and read["why"]
         for read in reads
     )
+    assert plan["declaration_lifecycle"]["status"] == "not-configured"
 
 
 def test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo(tmp_path: Path) -> None:
@@ -153,6 +154,138 @@ def test_quality_run_plan_includes_skill_refs_for_skill_authoring_repo(tmp_path:
     assert any("before fixing" in barrier for barrier in plan["phase_barriers"])
     assert any("structural_review_packet" in barrier for barrier in plan["phase_barriers"])
     assert any("trust_model" in barrier for barrier in plan["phase_barriers"])
+
+
+def test_quality_run_plan_routes_declared_commands_and_surfaces_without_claiming_execution(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "typescript_app"
+    skill = repo / "skills" / "support" / "feedback-review"
+    skill.mkdir(parents=True)
+    (skill / "SKILL.md").write_text("# Feedback review\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("# Agents\n", encoding="utf-8")
+    (repo / "tsconfig.json").write_text("{}\n", encoding="utf-8")
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 1\nrepo: typescript_app\noutput_dir: charness-artifacts/quality\n"
+        "preset_lineage:\n- typescript-quality\n"
+        "gate_commands:\n- npm run quality:report\n"
+        "review_commands:\n- npm run ui\n"
+        "security_commands:\n- npm audit\n"
+        "product_surfaces:\n- installable_cli\n- bundled_skill\n- web_app\n- support_skill\n"
+        "cli_skill_surface_probe_commands:\n- npm run cli -- --help\n"
+        "canonical_markdown_surfaces:\n- AGENTS.md\n"
+        "skill_ergonomics_skill_paths:\n- skills/support/feedback-review/SKILL.md\n",
+        encoding="utf-8",
+    )
+
+    plan = _run_plan(repo)
+    lifecycle = plan["declaration_lifecycle"]
+
+    assert lifecycle["status"] == "action-required"
+    assert lifecycle["presets"] == [
+        {
+            "preset": "typescript-quality",
+            "declaration_state": "declared",
+            "reconciliation_state": "declared-only",
+            "repo_signal_detected": True,
+        }
+    ]
+    assert {row["command"] for row in lifecycle["commands"]} == {
+        "npm run quality:report",
+        "npm run ui",
+        "npm audit",
+    }
+    assert all(row["execution_state"] == "not-run" for row in lifecycle["commands"])
+    assert lifecycle["skills"][0]["path"] == "skills/support/feedback-review/SKILL.md"
+    assert lifecycle["declared_skill_paths"][0]["target_state"] == "resolved"
+    assert {row["surface"] for row in lifecycle["surfaces"]} >= {
+        "installable_cli",
+        "bundled_skill",
+        "web_app",
+        "support_skill",
+        "AGENTS.md",
+    }
+    assert next(row for row in lifecycle["surfaces"] if row["surface"] == "web_app")[
+        "routing_state"
+    ] == "partial"
+    assert next(row for row in lifecycle["surfaces"] if row["surface"] == "support_skill")[
+        "routing_state"
+    ] == "routed"
+    packet_commands = {packet["command"] for packet in plan["gate_packets"]}
+    assert "npm run quality:report" in packet_commands
+    assert "npm audit" in packet_commands
+    assert "npm run ui" in packet_commands
+    assert "npm run cli -- --help" in packet_commands
+    assert any("inventory_entrypoint_docs_ergonomics.py" in command for command in packet_commands)
+    assert any("declared-only" in barrier for barrier in plan["phase_barriers"])
+    available_packet_ids = {packet["id"] for packet in plan["gate_packets"]}
+    referenced_packet_ids = {
+        packet_id
+        for row in lifecycle["surfaces"]
+        for packet_id in row.get("packet_ids", [])
+    }
+    assert referenced_packet_ids <= available_packet_ids
+
+
+def test_quality_run_plan_surface_reuses_reconciled_catalog_packet_id(
+    tmp_path: Path,
+) -> None:
+    lifecycle_module = PLAN._load_declaration_lifecycle()
+    raw = {
+        "review_commands": ["same-command"],
+        "product_surfaces": ["web_app"],
+    }
+    command_rows, packets = lifecycle_module._declared_commands(
+        raw, [{"id": "existing", "command": "same-command"}]
+    )
+
+    surfaces, _surface_packets = lifecycle_module._surface_rows(
+        tmp_path, raw, [], command_rows
+    )
+
+    assert packets == []
+    assert command_rows[0]["packet_id"] == "existing"
+    assert surfaces[0]["packet_ids"] == ["existing"]
+
+
+def test_quality_run_plan_names_unreachable_declared_surface(tmp_path: Path) -> None:
+    repo = tmp_path / "app"
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 1\nrepo: app\noutput_dir: charness-artifacts/quality\n"
+        "product_surfaces:\n- installable_cli\n"
+        "skill_ergonomics_skill_paths:\n- AGENTS.md\n",
+        encoding="utf-8",
+    )
+
+    lifecycle = _run_plan(repo)["declaration_lifecycle"]
+
+    cli = next(row for row in lifecycle["surfaces"] if row["surface"] == "installable_cli")
+    assert cli["routing_state"] == "unreachable"
+    assert lifecycle["declared_skill_paths"][0]["target_state"] == "unreachable"
+    assert {gap["kind"] for gap in lifecycle["gaps"]} == {"declared_surface_unreachable"}
+
+
+def test_quality_run_plan_does_not_route_commands_from_invalid_adapter(tmp_path: Path) -> None:
+    repo = tmp_path / "app"
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 7\ngate_commands:\n- destructive-command\n",
+        encoding="utf-8",
+    )
+
+    plan = _run_plan(repo)
+
+    lifecycle = plan["declaration_lifecycle"]
+    assert lifecycle["status"] == "invalid"
+    assert lifecycle["adapter"]["errors"] == ["version must be 1"]
+    assert "destructive-command" not in {
+        packet["command"] for packet in plan["gate_packets"]
+    }
 
 
 def test_quality_run_plan_resolves_target_skill_for_structural_review(tmp_path: Path) -> None:
@@ -329,6 +462,32 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
             "skills_in_scope": False,
             "skill_scope_reason": "no skills found",
             "gate_plan": "report_first",
+            "declaration_lifecycle": {
+                "status": "action-required",
+                "adapter": {"found": True, "valid": True},
+                "presets": [
+                    {"preset": "typescript-quality", "reconciliation_state": "declared-only"}
+                ],
+                "commands": [
+                    {
+                        "field": "review_commands",
+                        "routing_state": "routed",
+                        "execution_state": "not-run",
+                        "command": "npm run ui",
+                    }
+                ],
+                "surfaces": [
+                    {
+                        "surface": "web_app",
+                        "routing_state": "partial",
+                        "packet_ids": ["adapter-review-1"],
+                    }
+                ],
+                "declared_skill_paths": [],
+                "gaps": [
+                    {"kind": "preset_not_reconciled", "detail": "typescript-quality"}
+                ],
+            },
             "required_reads": [
                 {"path": "references/quality-lenses.md", "why": "judge the report"}
             ],
@@ -342,6 +501,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
             "gate_packets": [
                 {
                     "id": "read-only-quality",
+                    "command": "./scripts/run-quality.sh --mode read-only",
                     "cost_tier": "broad",
                     "trust_model": "advisory-plus-deterministic",
                 }
@@ -354,6 +514,11 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     assert "target_vs_ambient: Separate target and ambient findings." in text
     assert "- gate_packets:" in text
     assert "read-only-quality: broad / advisory-plus-deterministic" in text
+    assert "preset typescript-quality: declared-only" in text
+    assert "command review_commands: routed / not-run / npm run ui" in text
+    assert "surface web_app: partial / adapter-review-1" in text
+    assert "GAP preset_not_reconciled: typescript-quality" in text
+    assert "command: ./scripts/run-quality.sh --mode read-only" in text
     assert "- on_demand_reads: open only from concrete findings" in text
 
 

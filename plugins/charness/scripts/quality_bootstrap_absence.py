@@ -33,6 +33,34 @@ STRUCTURAL_FIELDS = frozenset(
 FIELD = "deliberately_absent"
 
 
+def absence_path_parts(field: str) -> tuple[str, ...]:
+    return tuple(part for part in field.split(".") if part)
+
+
+def nested_path_is_set(data: dict[str, Any], field: str) -> bool:
+    current: Any = data
+    for part in absence_path_parts(field):
+        if not isinstance(current, dict) or part not in current:
+            return False
+        current = current[part]
+    return True
+
+
+def remove_nested_absences(data: dict[str, Any], declared: dict[str, str]) -> None:
+    """Remove declared dotted leaves after permissive policy merges refill them."""
+    for field in declared:
+        parts = absence_path_parts(field)
+        if len(parts) < 2:
+            continue
+        current: Any = data
+        for part in parts[:-1]:
+            if not isinstance(current, dict):
+                break
+            current = current.get(part)
+        if isinstance(current, dict):
+            current.pop(parts[-1], None)
+
+
 def load_deliberately_absent(
     raw: dict[str, Any], adapter_path: Path, known_fields: set[str] | None = None
 ) -> tuple[dict[str, str], list[str]]:
@@ -61,10 +89,12 @@ def load_deliberately_absent(
                 "reader cannot tell it from an oversight"
             )
             continue
-        if field in STRUCTURAL_FIELDS:
+        parts = absence_path_parts(field)
+        root = parts[0] if parts else field
+        if root in STRUCTURAL_FIELDS:
             errors.append(f"`{field}` is structural and cannot be declared absent")
             continue
-        if field in raw:
+        if nested_path_is_set(raw, field):
             errors.append(
                 f"`{field}` is declared absent but is also set in this adapter; remove one "
                 "of the two so the intent is unambiguous"

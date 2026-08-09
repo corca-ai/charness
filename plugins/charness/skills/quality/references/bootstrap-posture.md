@@ -71,6 +71,12 @@ Status meanings:
 - `deliberately-absent`: the adapter declared this field absent on purpose, so
   bootstrap left it out instead of refilling it from a default
 
+The same vocabulary accepts dotted mapping leaves, for example
+`coverage_floor_policy.lefthook_path`. Bootstrap removes that leaf after the
+permissive merge and before rendering, and the resolver does not return the
+phantom default. A dotted declaration that is also set is invalid; an unknown
+dotted path is reported as an absence warning rather than becoming inert.
+
 ## Declaring a field deliberately absent
 
 An absent field cannot say why it is absent. `field not in adapter` reads the same
@@ -116,12 +122,12 @@ So a resolved adapter carries the default value alongside the declaration, plus:
   reason, and next action; migration uses the same ledger after explicit
   authorization.
 
-**`deliberately_absent` names whole FIELDS only.** There is no way to declare a
-single sub-key absent on purpose: the closest available move is to drop the whole
-block and declare the field, which keeps it out of the adapter FILE and marks its
-paths unasserted — resolution still supplies the default value to consumers. Dropping
-the block without the declaration is worse than doing nothing: the field becomes
-non-explicit and the next bootstrap refills all of it.
+**`deliberately_absent` names whole fields or known dotted mapping leaves.** A
+whole-field declaration keeps the field out of the adapter file and resolution
+data. A dotted declaration such as `coverage.minimums.patch` removes only that
+leaf after defaults are merged, while its siblings remain available to consumers.
+Dropping either shape without the declaration is worse than doing nothing: the
+next bootstrap treats it as non-explicit and refills the default.
 
 - `deliberately_absent_unasserted_paths` — the resolved path values the repo does
   **not** claim exist. Keys are `<field>.<key>` for a mapping (dotted for nesting) and

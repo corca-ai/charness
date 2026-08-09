@@ -28,7 +28,11 @@ Optional deliberate-absence declaration:
 
 - `deliberately_absent` — mapping of field name to the reason that field is absent
   on purpose. Hand-authored; keeps bootstrap from refilling the field from a default.
-  See `bootstrap-posture.md` for the rules and the resolution-scope limit.
+  A dotted mapping leaf is valid, for example
+  `coverage_floor_policy.lefthook_path: this repo uses checked-in git hooks`.
+  Whole-field absence keeps its backwards-compatible resolved preset plus an
+  unasserted-path warning; dotted absence removes the named leaf from bootstrap
+  output and resolver data. See `bootstrap-posture.md` for validation rules.
 
 Optional shared provenance:
 

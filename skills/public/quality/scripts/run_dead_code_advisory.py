@@ -36,6 +36,9 @@ SOURCE_SCANNED_CONTRACTS = {
 }
 GIT_LIST_TIMEOUT_SECONDS = 30
 VULTURE_TIMEOUT_SECONDS = 120
+NON_PYTHON_SOURCE_SUFFIXES = frozenset(
+    {".c", ".cc", ".cpp", ".go", ".java", ".js", ".jsx", ".kt", ".rs", ".svelte", ".ts", ".tsx"}
+)
 
 
 def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[str]:
@@ -61,6 +64,36 @@ def git_visible_python_paths(repo_root: Path, roots: tuple[str, ...]) -> list[st
             continue
         if any(rel == root or rel.startswith(f"{root}/") for root in roots):
             selected.append(rel)
+    return sorted(selected)
+
+
+def git_visible_non_python_sources(
+    repo_root: Path, roots: tuple[str, ...] | None = None
+) -> list[str]:
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            cwd=repo_root,
+            check=False,
+            capture_output=True,
+            timeout=GIT_LIST_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return []
+    if result.returncode != 0:
+        return []
+    selected: list[str] = []
+    for raw in result.stdout.split(b"\0"):
+        if not raw:
+            continue
+        rel = raw.decode("utf-8")
+        if Path(rel).suffix.casefold() not in NON_PYTHON_SOURCE_SUFFIXES:
+            continue
+        if roots is not None and not any(
+            rel == root or rel.startswith(f"{root}/") for root in roots
+        ):
+            continue
+        selected.append(rel)
     return sorted(selected)
 
 
@@ -196,8 +229,10 @@ def summarize(payload: dict[str, object], *, sample_limit: int = 10) -> dict[str
     return {
         "summary_note": "summary is triage output; use --detail for full vulture command and findings",
         "repo_root": payload["repo_root"],
+        "applicability": payload["applicability"],
         "paths": payload["paths"],
         "git_visible_python_file_count": payload["git_visible_python_file_count"],
+        "git_visible_non_python_source_count": payload["git_visible_non_python_source_count"],
         "primary": summarize_run(payload["primary"], sample_limit=sample_limit),
         "sweep": summarize_run(payload["sweep"], sample_limit=sample_limit),
         "notes": payload["notes"],
@@ -243,6 +278,18 @@ def run_vulture(repo_root: Path, paths: list[str], *, confidence: int) -> dict[s
     }
 
 
+def not_applicable_run(confidence: int) -> dict[str, object]:
+    return {
+        "confidence": confidence,
+        "status": "not-applicable",
+        "command": None,
+        "exit_code": None,
+        "findings": [],
+        "classification_counts": {},
+        "stderr": "",
+    }
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--repo-root", type=Path, required=True, help="Repo root for the vulture-backed dead-code advisory scan")
@@ -259,12 +306,36 @@ def main() -> int:
     repo_root = args.repo_root.resolve()
     roots = tuple(args.path or DEFAULT_PATHS)
     paths = git_visible_python_paths(repo_root, roots)
-    primary = run_vulture(repo_root, paths, confidence=args.primary_confidence)
-    sweep = run_vulture(repo_root, paths, confidence=args.sweep_confidence)
+    non_python_scope = "requested-roots" if args.path else "repo-wide-default-guard"
+    non_python_sources = git_visible_non_python_sources(
+        repo_root, roots if args.path else None
+    )
+    applicable = bool(paths)
+    applicability = (
+        "not-applicable-no-python-paths"
+        if not applicable
+        else "partial-python-only"
+        if non_python_sources
+        else "applicable-python-scope"
+    )
+    primary = (
+        run_vulture(repo_root, paths, confidence=args.primary_confidence)
+        if applicable
+        else not_applicable_run(args.primary_confidence)
+    )
+    sweep = (
+        run_vulture(repo_root, paths, confidence=args.sweep_confidence)
+        if applicable
+        else not_applicable_run(args.sweep_confidence)
+    )
     payload = {
         "repo_root": str(repo_root),
+        "applicability": applicability,
         "paths": roots,
         "git_visible_python_file_count": len(paths),
+        "git_visible_non_python_source_count": len(non_python_sources),
+        "non_python_scope": non_python_scope,
+        "non_python_source_sample": non_python_sources[:10],
         "primary": primary,
         "sweep": sweep,
         "notes": [
@@ -286,8 +357,16 @@ def main() -> int:
             f"ADVISORY: vulture flagged {len(review_candidates)} dead-code review_candidate "
             f"finding(s) of {len(sweep['findings'])} total for separate triage (advisory only, never blocks)."
         )
-    print(f"Primary ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)")
-    print(f"Sweep ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)")
+    if not applicable:
+        print("NOT APPLICABLE: no Git-visible Python files matched the requested roots; no dead-code verdict was produced.")
+    elif non_python_sources:
+        print(
+            f"PARTIAL: vulture covers {len(paths)} Python file(s), not "
+            f"{len(non_python_sources)} Git-visible non-Python source file(s); "
+            "no repo-wide dead-code verdict was produced."
+        )
+    print(f"Primary Python scope ({args.primary_confidence}%): {primary['status']} ({len(primary['findings'])} findings)")
+    print(f"Sweep Python scope ({args.sweep_confidence}%): {sweep['status']} ({len(sweep['findings'])} findings)")
     # `.get`: the vulture-missing run dict has no `classification_counts` key (only
     # the ran-clean/findings/error dicts do). Keying it directly here crashed the human
     # path (exit 1) when vulture was absent, so an opted-in advisory gate falsely turned

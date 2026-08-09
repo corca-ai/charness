@@ -84,9 +84,9 @@ def refilled_policy_subkeys(raw_value: Any, defaults: dict[str, Any], merged: di
     unequal to the defaults, and naming it as refilled is a MIS-name. Over-naming a real
     loss is the only direction this function may err in.
 
-    Dotted names are a REPORT granularity, not a declaration vocabulary: nothing parses
-    these back into a key path, and the dotted ``deliberately_absent`` declaration stays
-    deferred as the operator decided on 2026-08-05.
+    Dotted names are also the deliberate-absence vocabulary. Bootstrap records refills
+    first, then removes a declared dotted leaf before rendering and removes that leaf
+    from the refill report, so the merge stays permissive without overriding intent.
     """
     if not isinstance(raw_value, dict):
         return sorted(defaults)

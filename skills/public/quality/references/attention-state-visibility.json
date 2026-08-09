@@ -948,6 +948,20 @@
       ],
       "rationale": "The compact skill ergonomics summary carries prose-review-required state and the advisory list so reviewers do not need the full per-skill payload to see the non-blocking attention state."
     },
+    "skills/public/quality/scripts/quality_declaration_lifecycle.py": {
+      "states": [
+        "not_configured"
+      ],
+      "visibility": [
+        "operator_summary",
+        "terminal_payload"
+      ],
+      "evidence_terms": [
+        "not-configured",
+        "gaps"
+      ],
+      "rationale": "The declaration lifecycle is embedded in the planner payload, and the prescribed default human rendering prints its status, every gap, every routed command, and each not-run execution state. A missing adapter is therefore a typed non-verdict rather than a clean plan."
+    },
     "skills/public/quality/scripts/skill_ergonomics_lib.py": {
       "states": [
         "prose_review_status"

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import runpy
 import sys
@@ -15,6 +16,26 @@ CATALOG_PATH = Path(__file__).resolve().parents[1] / "references" / "catalog.yam
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
+
+
+def _load_declaration_lifecycle():
+    path = Path(__file__).resolve().parent / "quality_declaration_lifecycle.py"
+    spec = importlib.util.spec_from_file_location("quality_declaration_lifecycle", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"quality_declaration_lifecycle.py not loadable beside {Path(__file__).name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def _load_plan_renderer():
+    path = Path(__file__).resolve().parent / "quality_run_plan_render.py"
+    spec = importlib.util.spec_from_file_location("quality_run_plan_render", path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"quality_run_plan_render.py not loadable beside {Path(__file__).name}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _load_yaml_file(path: Path) -> dict[str, Any]:
@@ -268,6 +289,10 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     catalog = _catalog()
     references = catalog.get("references", [])
     gates = catalog.get("gates", [])
+    declaration_lifecycle, adapter_packets = _load_declaration_lifecycle().build_declaration_lifecycle(
+        repo_root, skills=skills, catalog_gates=gates
+    )
+    gates = [*gates, *adapter_packets]
     required_reads = [
         ref
         for ref in references
@@ -284,6 +309,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     structural_packet = _structural_review_packet(repo_root, skills, target_skill)
     brief = _quality_brief(repo_root, catalog)
     phase_barriers = [
+        "Read declaration_lifecycle before gates; declared-only, unreachable, missing, and not-run are not covered verdicts.",
         "Read required_reads (also exposed as required_primer_refs for compatibility) before broad gates.",
         "The brief carries the load-bearing classification/automation/maintainer-enforcement discipline and the inventory-dispatch routing index (concern area -> inventories + detail_refs) inline; apply it and open a brief detail_ref only when its trigger fires.",
         "Run deterministic gates as evidence packets, then analyze the report against the primer refs before fixing.",
@@ -302,6 +328,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         gate_packets=gates,
         repo_root=str(repo_root),
         brief=brief,
+        declaration_lifecycle=declaration_lifecycle,
         skills_in_scope=skills_in_scope,
         skill_scope_reason=(
             f"found {len(skills)} checked-in skill package(s)" if skills else "no skills/public or skills/support SKILL.md files found"
@@ -317,52 +344,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
 
 
 def format_human(plan: dict[str, Any]) -> str:
-    lines = [
-        "Quality run plan:",
-        f"- next_action: {plan['next_action']['kind']}",
-        f"- skills_in_scope: {str(plan['skills_in_scope']).lower()} ({plan['skill_scope_reason']})",
-        f"- gate_plan: {plan['gate_plan']}",
-        "- required_reads:",
-    ]
-    lines.extend(f"  - {ref['path']}: {ref.get('why', 'required')}" for ref in plan["required_reads"])
-    lines.append("- phase_barriers:")
-    lines.extend(f"  - {barrier}" for barrier in plan["phase_barriers"])
-    packet = plan.get("structural_review_packet")
-    if packet:
-        target = packet["target_skill"]
-        lines.append("- structural_review_packet:")
-        lines.append(f"  - target: {target['status']} {target.get('path') or target.get('requested') or '(unspecified)'}")
-        lines.extend(f"  - {question['id']}: {question['question']}" for question in packet["questions"])
-    brief = plan.get("brief")
-    if brief:
-        lines.append("- brief (load-bearing residue of demoted primers; open detail_ref on trigger):")
-        gc = brief.get("gate_classification", {})
-        if gc.get("closeout_states"):
-            lines.append(f"  - gate states: {', '.join(gc['closeout_states'])} (see {gc.get('detail_ref', '')})")
-            lines.append(f"  - weak also = {gc['closeout_states'].get('weak', '')}")
-        ap = brief.get("automation_promotion", {})
-        if ap.get("cases"):
-            lines.append(f"  - automation: {', '.join(ap['cases'])} (see {ap.get('detail_ref', '')})")
-        mle = brief.get("maintainer_local_enforcement", {})
-        if mle.get("prompt"):
-            lines.append(f"  - maintainer-local: {mle['prompt']}")
-        if mle.get("field_discipline"):
-            lines.append(f"    field: {mle['field_discipline']}")
-        idp = brief.get("inventory_dispatch", {})
-        if idp.get("areas"):
-            lines.append(
-                f"  - inventory dispatch ({len(idp['areas'])} concern areas; open {idp.get('detail_ref', '')} on trigger):"
-            )
-            for area in idp["areas"]:
-                inv = ", ".join(area.get("inventories", [])) or "(detail_refs only)"
-                lines.append(f"    - {area['area']}: {inv}")
-    lines.append("- gate_packets:")
-    lines.extend(
-        f"  - {gate['id']}: {gate['cost_tier']} / {gate['trust_model']}"
-        for gate in plan["gate_packets"]
-    )
-    lines.append("- on_demand_reads: open only from concrete findings")
-    return "\n".join(lines)
+    return _load_plan_renderer().format_human(plan)
 
 
 def main() -> int:
