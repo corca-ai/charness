@@ -6,6 +6,27 @@ observation and any change to shipped prompt prose. The pilot that grounded
 this policy is
 [2026-07-09-prompt-mutation-pilot.md](../charness-artifacts/goals/2026-07-09-prompt-mutation-pilot.md).
 
+## Scope: this governs the pipeline's verdicts, not editing
+
+**Operator ruling, 2026-08-09: deleting and compacting prompt surface is
+actively allowed, and this document does not gate it.** Everything below is an
+EVIDENTIARY rule about what a mutation run's `NO-OBSERVED-EFFECT` verdict may be
+used to justify. It says a survival observation is not a deletion proof. It does
+not say a human or an agent needs a mutation run before removing text.
+
+The distinction is load-bearing because the document was read the other way for
+a month. Every commit here was authored by an agent identity during the
+2026-07-09 pilot; no script, gate, or skill consumes the file; and a prior goal
+still parked "may `AGENTS.md` be physically shrunk" underneath it as an operator
+decision. An unarmed document nobody chose became a cut vertex on real work —
+which is the same shape as a stale issue believed because re-reading it was
+nobody's step. Editorial judgment about what a prompt should say is a REVERSIBLE
+surface, and the north star's P1 puts the burden on the constraint, not on the
+edit.
+
+So: shrink, split, merge, and delete prompt prose on judgment. Come here only
+when the JUSTIFICATION you want to cite is a mutation verdict.
+
 ## What The Pipeline Is
 
 A **ranking and scenario-coverage detector, never a deletion prover**. It
@@ -50,7 +71,10 @@ all-arm sentinels), [witness_coverage.py](../scripts/witness_coverage.py)
   baseline run. A baseline whose witness never fires cannot detect anything,
   so no mutant verdicts are emitted at all.
 
-## What Survival May Authorize: Demote, Never Delete
+## What A Survival Verdict May Authorize: Demote, Never Delete
+
+This section is about the verdict, not about the editor. An ordinary edit needs
+none of it; see *Scope* above.
 
 `NO-OBSERVED-EFFECT` authorizes at most a **demotion proposal**: moving the
 unit from the always-loaded core (`SKILL.md`) to a progressive-disclosure

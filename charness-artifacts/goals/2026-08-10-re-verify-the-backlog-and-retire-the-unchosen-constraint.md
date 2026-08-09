@@ -134,6 +134,48 @@ See `## Active Operating Frame` for when each is proven.
 | 3 | Consolidate on GitHub | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | planned |
 | 4 | Close the family that reaches consumers | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | planned |
 
+
+### Slice 3 design — decided 2026-08-09, execute as written
+
+The question slice 3 forces: **what closeout floor applies to a close that
+claims nothing about the defect?** Neither existing branch fits. The resolution
+classifications (`bug`/`feature`/`deferred-work`) demand `Implementation:`,
+`Prevention:`, and `Behavior #N:` — a consolidation implements nothing, so
+satisfying them means writing sentences that are not true. The exempt
+classifications (`question`/`decision-needed`) fit no better: using them would
+misclassify the issue AND open a path where any inconvenient bug reaches the
+light floor by relabelling.
+
+**Decision: add `consolidated` as a sixth classification. It is not floor-exempt;
+it swaps the resolution floor for its own.** All of its checks are
+machine-verifiable and none declares completion:
+
+1. `Consolidated into: #N` is present and names exactly one destination.
+2. `#N` exists and is OPEN at close time, read back from the backend rather than
+   asserted in prose. Consolidating into a closed issue would evaporate the work.
+3. **`#N`'s body contains this issue's number.** This is the load-bearing check:
+   it forces the question "does the content actually live somewhere?" without
+   answering "therefore this is resolved", and prose cannot satisfy it.
+4. `#N` is not itself closed as `consolidated` — no chains.
+5. The backend close reason is `not planned`, not `completed`.
+   `skills/public/issue/scripts/issue_close.py` already threads `--reason`
+   through the backend command templates, so this needs no new plumbing. The
+   tracker itself then renders the distinction, which puts the signal on a
+   channel outside this repo's prose.
+6. No `Behavior #N:` and no `Critique #N:` are required, because nothing about
+   the defect is claimed. Conversely, a carrier that DOES claim a repair must be
+   refused under `consolidated`.
+
+**Member survival, decided alongside it.** An umbrella's own close carries the
+normal resolution floor AND must state an outcome for every member number it
+absorbed — fixed, declined, or re-split. Without that rule, consolidation is a
+laundering path: fifteen issues close quietly when one umbrella closes.
+
+Implementation notes for the executing session: `KNOWN_CLASSIFICATIONS` and
+`FLOOR_EXEMPT_CLASSIFICATIONS` both live in `skills/public/issue/scripts/`;
+`consolidated` joins the first and NOT the second. This is a proof-surface
+change, so it owes the second bounded review round reading the repaired surface.
+
 ## Backlog Recount
 
 Recount the tracker before scope; see `references/lifecycle-before.md`.
