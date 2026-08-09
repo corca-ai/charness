@@ -57,7 +57,13 @@ fi
 # Docs-only quality subset that still runs when classification = docs-artifact-only.
 # These check the things a pure docs/artifact change could break and would
 # otherwise land on remote unchecked (slice-7 critique F1). Order does not matter.
-DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness"
+# `docs-graph` is here because reachability is the ONE property a docs-only push can
+# break by itself: adding an unlinked page, or deleting the only link into an existing
+# one, is exactly a docs-artifact-only change. Leaving it out meant the lane that
+# catches orphans never ran on the change class that creates them. It is safe to add:
+# it costs ~0.07s, and on a machine without `awiki` it reports UNPROVEN and blocks
+# nothing rather than failing the push.
+DOCS_ONLY_LABELS="check-doc-links,check-markdown,check-links-internal,check-references-link-inventory,check-spec-evidence-durability,validate-handoff-artifact,validate-debug-artifact,validate-quality-artifact,validate-retro-artifact,validate-ideation-artifact,validate-critique-artifacts,inventory-quality-handoff,validate-current-pointer-freshness,docs-graph"
 
 if [[ "$classification" == "docs-artifact-only" ]]; then
   echo "charness pre-push: docs/artifact-only push detected ($reason)"

@@ -229,7 +229,7 @@ def _evaluate(repo_root: Path, scan_root: str) -> dict[str, object]:
         # awiki's OWN verdict token, and only when the ratios it does print
         # corroborate it. A contradictory summary reports NOT-RUN.
         if verdict == PASSING_VERDICT and _corroborates_clean(summary):
-            return {"status": "pass", "summary": summary, "failures": {}, "named": {}}
+            return {"status": "pass", "summary": summary, "failures": {}, "named": {}, "scan_root": scan_root}
         return _not_run(
             f"`awiki lint` reported no {', '.join(missing)} field on a `{verdict}` line, so the "
             "connectivity question was NOT answered. The summary format changed; re-read it "
@@ -240,6 +240,7 @@ def _evaluate(repo_root: Path, scan_root: str) -> dict[str, object]:
     return {
         "status": "fail" if failures else "pass",
         "summary": summary,
+        "scan_root": scan_root,
         "failures": failures,
         # Both failing metrics name their pages. Naming only orphans left an
         # islands-only failure reporting a bare count.
@@ -280,8 +281,12 @@ def format_human(result: dict[str, object]) -> str:
         f"{key}={int(value) if float(value).is_integer() else value}"
         for key, value in sorted(summary.items())
     )
+    # The scanned population belongs on the verdict line, not only in the not-run
+    # branch: a PASS that does not say WHICH tree it read is a verdict over a scope it
+    # never stated, and everything outside this root is ungraphed.
+    scope = f" over {result.get('scan_root', '?')}/"
     if status == "fail":
-        lines.append(f"docs-graph: FAIL ({observed})")
+        lines.append(f"docs-graph: FAIL{scope} ({observed})")
         for metric, count in sorted(result["failures"].items()):
             lines.append(f"  - {metric}={count}")
             for name in result["named"].get(metric, []):
@@ -289,8 +294,11 @@ def format_human(result: dict[str, object]) -> str:
         for metric in sorted(result["failures"]):
             lines.append("  " + _REMEDY[metric])
     else:
-        lines.append(f"docs-graph: PASS ({observed})")
-    lines.append("  did NOT judge: " + "; ".join(NOT_JUDGED))
+        lines.append(f"docs-graph: PASS{scope} ({observed})")
+    lines.append(
+        "  did NOT judge: "
+        + "; ".join((*NOT_JUDGED, f"any page outside {result.get('scan_root', '?')}/, which this run never read"))
+    )
     return "\n".join(lines)
 
 
