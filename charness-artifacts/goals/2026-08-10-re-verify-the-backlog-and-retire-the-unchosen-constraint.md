@@ -258,7 +258,9 @@ Open, and RAISED BY THIS RUN — the push the operator granted is blocked on it:
   the budget, measure the check's own work instead of wall-clock-under-fan-out, or
   give the gate a reachable per-label escape. This run did NOT weaken the floor and
   did NOT use `--no-verify`, because either would revoke the push grant itself.
-  Commit `512376b7` is landed locally, fully gated, and unpushed pending this.
+  Two commits are landed locally, fully gated, and unpushed pending this. Every
+  other gate is green: the final push attempt reported `85 passed, 1 failed`
+  with `check-runtime-budget` as the only failure.
 
 Open, and inherited:
 
