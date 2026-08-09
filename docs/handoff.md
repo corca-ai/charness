@@ -2,46 +2,48 @@
 
 ## Workflow Trigger
 
-- **Continue the active release goal, not a new backlog chunk.** The selected
-  P0-P2 implementation is committed through `f62e283f`; the operator explicitly
-  authorized the final push and `v4.1.0` publication, with no Cautilus evaluation.
-- **Finish the release-critique repair first.** The active heuristic and every
-  gate reference to `check_title_slug_drift.py` stay retired, but `v4.1.0` must
-  preserve the four `v4.0.0` invocation paths as deprecated direct-call
-  compatibility with corrected default goal-record scope. Re-run the release
-  safety review after this repair.
-- **Then lock, push, and observe in phases.** Commit release preparation, run the
-  verification lock, push the final branch, and read hosted `Quality Core`
-  through GitHub. Create/tag the public release only after that distinct hosted
-  result is green; verify public visibility, installed version/doctor, baton,
-  and linked issue states through separate readbacks.
+- **`v4.1.0` is published and read back; the release goal is done.** Tag `cd7ab479`,
+  release confirmed through the authenticated API and the public tag page,
+  installed `charness version` reports `4.1.0`, doctor clean. Do not re-run any
+  release phase; start from the backlog. Nine issues closed, 25 open.
+- **`#572` is the one open red.** The last two scheduled `Mutation Tests` runs on
+  `main` failed on an older SHA and none has landed on the release tree.
 
 ## Continuation Capability
 
 - **The pattern this repo keeps shipping:** a proof surface renders a verdict over a scope or population it never established.
 - **The pattern OF that pattern, and the most transferable thing measured this session:** the measurement that would have refuted the surface was only ever taken where the answer was already favorable. The adapter warn tier refused to arm one state at a 13% false-positive rate, then shipped another at ~100% in consumer repos — same code, unmeasured population. Four more instances of the same shape: a probe's cost read from the gate's own timeout record; a verdict drawn from a grep population that was not the reader set; tests that passed *through* the defect they should have caught; and three slice premises believed from durable records the goal itself wrote.
 - **The counter-move is the north star's P4 extended from observers to POPULATIONS:** take the refuting measurement in a different tree, not only through a different reader. That is what cracked this session — running shipped code against five real consuming repos (`../stdy.blog`, `../cmanki`, `../ceal`, `../ceal-cli`, `../journal.stdy.blog`), which no in-repo channel could surface.
-- **Measure the premise before shaping the slice.** Three consecutive slices had theirs refuted by one command each; the fourth held. Cheapest habit available.
-- **The closeout floor works — let it refuse.** Both issues closed this session were first returned NOT-CLOSABLE by a delegated critique, and one refusal was load-bearing: the repair had made a defect HONEST rather than FIXED, and closing on the first draft would have buried the residue.
-- A killed or timed-out mutation sweep leaves the tree MUTATED. Re-check every site in the plan, not the ones you happen to grep.
+- **Measure the premise before shaping the slice.** Three consecutive slices had theirs refuted by one command each. Cheapest habit available.
+- **The closeout floor works — let it refuse.** Every issue closed across this
+  session was first returned NOT-CLOSABLE by a delegated reviewer, and the
+  refusals were load-bearing three times: a repair had made a defect HONEST rather
+  than FIXED; a repair shipped a NEW false completeness claim in the census that
+  advertised its own coverage; and a reachability gate was armed everywhere except
+  the one push class that creates the defect it catches.
+- **A gate can catch what two review rounds miss.** Both bounded rounds read the
+  adapter-version repairs and neither flagged the two unreachable branches the
+  changed-line coverage gate refused. Reviewers and gates fail differently; do not
+  read a clean review as a reason to expect a clean gate.
 
 ## Current State
 
-- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`; all implementation slices are complete and slice 9 release/issue closeout remains.
-- Committed local repairs include changed-line CI reconciliation, visible gate
-  progress, test process/temp isolation, exact SLOC-output exclusion, mutation
-  crash recovery, adapter/private-media trust boundaries, declaration lifecycle,
-  root routing, regenerable-facts scope, handoff routing, hook-failure visibility,
-  and docs graph proof.
-- `#574`, `#575`, `#577`, `#578`, and `#579` are repaired locally, not unworked.
-  `#576` remains an explicit no-verdict design gap and is not claimed fixed.
-- The release critique blocked `v4.1.0` on the removed and then semantically
-  neutered installed title-slug command, and on this handoff's stale push
-  sequence. Deprecated direct-call compatibility is the semver repair; the
-  operator's later final-bundle authorization owns
-  the sequence written above. Hosted CI/public/install/issue readbacks remain
-  pending and are not inferred from local proof.
-- **A census was considered and REFUTED as unjustified.** The discriminator: consumers' own gate commands invoke zero charness scripts, and the canonical list of what a consumer is told to run is the four entries in [catalog.yaml](../skills/public/quality/references/catalog.yaml) — three of them charness scripts, all clean against the five repos. Do not re-open a broad census without new evidence.
+- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md)
+  reached its closeout: `v4.1.0` published at `cd7ab479`, carriers at `916119c5`,
+  `fd35f382`, `44268c8e`.
+- **Nine issues closed against this release, each behind a delegated fresh-eye
+  refusal round:** `#574`, `#575` with the release, then `#573`, `#563`, `#570`,
+  `#549`, `#545`, `#523`, `#566`. Each close carries a behavioral verdict from a
+  channel distinct from CLOSED state and its carrier, plus the residual its
+  reviewer refused to let the close smooth over. Both post-release closeout
+  critiques are in [charness-artifacts/critique](../charness-artifacts/critique).
+- **The first `v4.1.0` publish attempt FAILED at the pre-publish lock and published
+  nothing**, and its rollback left no tag, no release, and a restored artifact —
+  that recovery path is now proven rather than assumed.
+- `#576` remains an explicit no-verdict design gap and is not claimed fixed. A broad
+  consumer census was considered and REFUTED as unjustified; do not re-open one
+  without new evidence, and read the discriminator in the
+  [no-observed-effect census](../charness-artifacts/audit/2026-08-09-no-observed-effect-census.md) first.
 - The publish-state claim below is a captured, offline-reconciled snapshot, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json): rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
@@ -51,10 +53,18 @@
 
 ## Next Session
 
-1. Finish and independently re-read the title-slug compatibility repair; commit it with the release critique disposition.
-2. Draft `v4.1.0` notes, run the distinct release-record claims review, bump/sync, and run the final verification lock.
-3. Push the final branch, wait for hosted `Quality Core`, then tag/create `v4.1.0` and verify public/install/doctor/baton surfaces.
-4. Close only repaired issues whose delegated critique, validated ledger, distinct behavior evidence, and backend state readback all satisfy the issue floor. Treat #572 as superseded only if the new hosted changed-line run proves it.
+1. Read the hosted `Mutation Tests` result on the release tree and settle `#572`.
+   The last two scheduled runs failed on `18a9a439`; nothing has proven the
+   current tree either way. `Quality Core` on `44268c8e` was unread at session end.
+2. Work the four deferred follow-ups, which live as `valid-but-defer` Structured
+   Findings in the two post-release closeout critiques and name their own
+   file:line: the pre-push validators outside the durable-log aggregator plus this
+   repo's missing `lefthook.yml`; the closeout-comment write path's absent
+   private-media check; the unratcheted root-surface size; and the invented
+   docs-graph orphan fixture. Decide whether to file them or keep them here.
+3. `#545` is closed for the create path and the Slack host family ONLY. A private
+   Notion, Drive, Figma, or `*.slack-edge.com` URL is still unguarded. Do not read
+   the `v4.1.0` note's "provider-private media" as the shipped scope.
 
 ## Discuss
 
