@@ -28,16 +28,39 @@ Three properties, each narrower than "this cannot be fooled":
 A mutant whose `find` text is absent, or present more than once, is refused
 rather than counted: an ambiguous edit that silently hit the wrong occurrence
 would be a kill nobody can attribute.
+
+A fourth property, mostly REPORTED rather than enforced: a sweep in which no
+mutant was declared a CALL-SITE test says so out loud. `#564` measured three
+repairs in one goal that were pinned only at their own function -- delete the
+caller and the whole suite stayed green while the repair was dead in production,
+and none of the three was visible in the diff. That is also why a second review
+round does not reliably catch it: the code reads correctly.
+
+A plan entry opts in with `"call_site": true`, and the tool checks that claim
+against the edit: a declared call-site mutant that removed NO call is REFUSED.
+That is the one place there are teeth here, and it is a fact the runner can
+establish. Whether a call-site mutant was WARRANTED is not -- a sweep over a
+constant table has no call to delete -- so the absence is stated and the
+judgement is left with the reader.
+
+The declaration is required because INFERENCE was tried and is wrong in both
+directions. Attribute calls are keyed by attribute, so an incidental `.join` or
+`.elements` removal in a body mutant counted as caller-side proof and SILENCED
+this warning. A signal that unreliable must not be allowed to suppress a
+finding, so removed calls are reported as corroborating evidence and never as
+the trigger.
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import glob as globlib
 import json
 import re
 import subprocess
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -78,6 +101,16 @@ class MutantResult:
     verdict: str
     detail: str = ""
     returncode: int | None = None
+    # None means "not classified" (the mutant was refused before it was applied, or one
+    # side would not parse) and is deliberately distinct from `()`, which means "applied,
+    # parsed, removed no call". Collapsing them would let an unclassifiable sweep read as
+    # a sweep that looked and found nothing -- this repo's own recurring shape.
+    removed_calls: tuple[str, ...] | None = None
+    # What the PLAN asserted (`"call_site": true`), kept separate from what the edit did.
+    # The pair is the point: a declaration nobody checks is the shape this repo keeps
+    # finding, and evidence nobody declared cannot tell an intended caller test from an
+    # incidental `.join` removal.
+    declared_call_site: bool = False
 
 
 @dataclass
@@ -92,6 +125,31 @@ class Sweep:
     @property
     def refused(self) -> list[MutantResult]:
         return [m for m in self.mutants if m.verdict == REFUSED]
+
+    @property
+    def call_site_mutants(self) -> list[MutantResult]:
+        """Mutants the PLAN declared as call-site tests AND whose edit removed a call.
+
+        Declaration plus evidence, never evidence alone. Inferring the answer from removed
+        calls was tried and is wrong in both directions: `return tuple(sorted(x.elements()))`
+        -> `return ()` removes `elements`, so a pure body mutant on a pure helper counted
+        as caller-side proof, while a `super().__init__()` deletion -- the textbook dead
+        repair -- counted as nothing. An unreliable signal that SILENCES a warning is worse
+        than no signal, so the author declares the intent and the tool checks the edit
+        against it.
+
+        AND THE RUN MUST HAVE REACHED A VERDICT. A REFUSED mutant established nothing: no
+        test ran to an answer, which is the whole premise of property 2 above. Counting one
+        as "the caller-side question was asked" silences the non-claim on a mutant that
+        produced no answer -- this file's own class, on the new axis. SURVIVED is different
+        and is deliberately counted: the question WAS asked and answered badly, and the
+        survivor plus the non-zero exit already carry that.
+        """
+        return [
+            m
+            for m in self.mutants
+            if m.declared_call_site and m.removed_calls and m.verdict in (KILLED, SURVIVED)
+        ]
 
 
 def summary_line(output: str) -> str | None:
@@ -196,6 +254,65 @@ def apply_mutation(path: Path, find: str, replace: str) -> bytes:
     return original
 
 
+def _called_names(source: bytes) -> "Counter[str] | None":
+    """Every call expression in ``source``, by callee name, or None if it will not parse.
+
+    Attribute calls are keyed by the ATTRIBUTE (`lib.helper()` -> `helper`) rather than the
+    dotted path: the same helper is reached as `helper()`, `mod.helper()` and
+    `self.helper()` across this repo, and keying on the spelling would call a moved import
+    a removed call. Anything not a plain name or attribute (`funcs[0]()`, a lambda) is
+    bucketed rather than dropped, so it can still register as a removal.
+    """
+    try:
+        tree = ast.parse(source)
+    except (SyntaxError, ValueError):
+        # Deliberate syntax-error mutants are a legitimate plan entry, and a sweep that
+        # died here would refuse a mutant over a REPORTING feature. Unparseable means
+        # unclassified, not unrunnable.
+        return None
+    names: Counter[str] = Counter()
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call):
+            func = node.func
+            if isinstance(func, ast.Name):
+                names[func.id] += 1
+            elif isinstance(func, ast.Attribute):
+                names[func.attr] += 1
+            else:
+                names["<computed>"] += 1
+    return names
+
+
+def removed_calls(original: bytes, mutated: bytes) -> tuple[str, ...] | None:
+    """Which callees the mutation DELETED, or None when either side will not parse.
+
+    This is what makes `#564` the tool's behaviour instead of a rule someone remembers. A
+    repair pinned only at its own function survives deletion of its CALL SITE: the suite
+    stays green while the repair is dead in production. Measured three times in one goal,
+    once per slice, and none of the three was visible to careful reading of the diff --
+    which is also why a second review round does not reliably catch it, since the code
+    reads correctly.
+
+    Answered by parsing both versions rather than by inspecting the plan's `find` text. A
+    snippet is often an indented fragment that does not parse standalone, and a textual
+    "does it look like a call" test would count `foo(` inside a string or a comment. The
+    difference of the two call multisets is the fact itself: this edit removed an
+    invocation that used to happen.
+    """
+    before, after = _called_names(original), _called_names(mutated)
+    if before is None or after is None:
+        return None
+    # NO BUILTINS FILTER, and its removal is the point rather than an omission. One was
+    # written while removed calls still drove the non-claim, to stop `tuple`/`sorted`/`len`
+    # removals inflating that inferred signal. The declaration replaced the inference, so
+    # the filter's only remaining effect was FALSE NEGATIVES -- and it produced one
+    # immediately: a mutant deleting the non-claim's own `print(...)` call is a genuine
+    # call-site deletion, and the filter made it invisible, so an honest declaration was
+    # REFUSED. Reporting every removed callee is the faithful answer to the question this
+    # function's name asks; judging which ones matter is the reader's job, not a filter's.
+    return tuple(sorted((before - after).elements()))
+
+
 def restore(path: Path, original: bytes) -> None:
     """Put the file back and PROVE it, rather than assuming the write landed."""
     path.write_bytes(original)
@@ -259,12 +376,28 @@ def run_mutant(
     if missing_keys:
         label = spec.get("id") or spec.get("path", "<unnamed>")
         return MutantResult(label, spec.get("path", "?"), REFUSED, f"plan entry is missing {missing_keys}")
+    # Read BEFORE the early returns, so `declared_call_site` reports what the plan said
+    # even for a mutant refused on its path or its find text. It used to be read after
+    # them, so a declared mutant with a typo'd `find` reported `declared_call_site: false`
+    # -- the field stating the opposite of the plan to the author debugging that typo.
+    #
+    # A non-bool is REFUSED, not coerced. `bool("false")` is True, so a templated plan
+    # could declare the opposite of what its author meant and silence the non-claim;
+    # every other mis-keyed plan entry in this file is refused loudly rather than guessed.
+    declared_raw = spec.get("call_site", False)
+    if not isinstance(declared_raw, bool):
+        return MutantResult(
+            spec.get("id") or spec["path"], spec["path"], REFUSED,
+            f"`call_site` must be a boolean, got {declared_raw!r}; a truthy string would "
+            "declare a caller test nobody wrote and silence the caller-side non-claim",
+        )
+    declared = declared_raw
     path = (repo_root / spec["path"]).resolve()
     mutant_id = spec.get("id") or f"{spec['path']}:{spec['find'][:40]}"
     if not path.is_relative_to(repo_root.resolve()):
-        return MutantResult(mutant_id, spec["path"], REFUSED, "target escapes the repo root")
+        return MutantResult(mutant_id, spec["path"], REFUSED, "target escapes the repo root", None, None, declared)
     if not path.is_file():
-        return MutantResult(mutant_id, spec["path"], REFUSED, "target file does not exist")
+        return MutantResult(mutant_id, spec["path"], REFUSED, "target file does not exist", None, None, declared)
     # Read the pristine bytes BEFORE any write, so the restore in `finally`
     # covers the write itself. Taking them from apply_mutation's return left a
     # window where a failure after the write had no copy to restore from.
@@ -273,16 +406,33 @@ def run_mutant(
         apply_mutation(path, spec["find"], spec["replace"])
     except SweepError as exc:
         restore(path, original)
-        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc))
+        return MutantResult(mutant_id, spec["path"], REFUSED, str(exc), None, None, declared)
     except BaseException:
         # apply_mutation writes and THEN invalidates bytecode; a failure between
         # those two would otherwise leave the tree mutated with no restore.
         restore(path, original)
         raise
     try:
+        # INSIDE the restoring `try`, not above it. Sitting between `apply_mutation` and
+        # this block left a window the module's own property 3 says does not exist: a
+        # `RecursionError` from `ast.parse` on deeply nested source, or an `OSError` on
+        # the read, would escape with the file still mutated. That is `#573`, which this
+        # session hit three times, re-opened by a REPORTING feature.
+        #
+        # Read back the file we just wrote rather than re-deriving the mutated text: a
+        # second in-memory `replace` would copy `apply_mutation`'s logic with nothing
+        # reconciling the two, and would classify an edit that never reached disk.
+        removed = removed_calls(original, path.read_bytes())
+        if declared and removed == ():
+            return MutantResult(
+                mutant_id, spec["path"], REFUSED,
+                "declared `call_site` but the edit removed no call; a false declaration is "
+                "worse than none, because it SILENCES the caller-side non-claim",
+                None, removed, declared,
+            )
         completed = run_command(command, repo_root)
         verdict, detail = classify_mutant_run(completed, baseline)
-        return MutantResult(mutant_id, spec["path"], verdict, detail, completed.returncode)
+        return MutantResult(mutant_id, spec["path"], verdict, detail, completed.returncode, removed, declared)
     finally:
         restore(path, original)
 
@@ -301,7 +451,19 @@ def run_sweep(plan: dict, repo_root: Path, emit=print) -> Sweep:
     for spec in plan["mutants"]:
         result = run_mutant(spec, command, repo_root, baseline)
         sweep.mutants.append(result)
-        emit(f"  {result.verdict:<8} {result.id}" + (f" -- {result.detail}" if result.detail else ""))
+        # The removed callees go in the human line, not only in `--json`. Without them an
+        # operator reads `1 call-site` and cannot tell an intended caller test from an
+        # incidental `.join` -- which is exactly how the inferred version of this feature
+        # went wrong, invisibly, in its own self-sweep.
+        # The DECLARATION is the discriminating fact under the current design, so it is
+        # what the human line must show; removals alone rendered a declared caller test
+        # and an incidental `.join` identically, leaving the `N call-site` count
+        # unauditable outside `--json`.
+        bits = ["call-site"] if result.declared_call_site else []
+        if result.removed_calls:
+            bits.append("removes " + ", ".join(result.removed_calls))
+        calls = f" [{'; '.join(bits)}]" if bits else ""
+        emit(f"  {result.verdict:<8} {result.id}{calls}" + (f" -- {result.detail}" if result.detail else ""))
     return sweep
 
 
@@ -320,13 +482,55 @@ def render(sweep: Sweep) -> dict:
                 "verdict": m.verdict,
                 "detail": m.detail,
                 "returncode": m.returncode,
+                "removed_calls": list(m.removed_calls) if m.removed_calls is not None else None,
+                "declared_call_site": m.declared_call_site,
             }
             for m in sweep.mutants
         ],
         "killed": sum(1 for m in sweep.mutants if m.verdict == KILLED),
         "survived": len(sweep.survived),
         "refused": len(sweep.refused),
+        "call_site_mutants": len(sweep.call_site_mutants),
+        "call_site_non_claim": call_site_non_claim(sweep),
     }
+
+
+def call_site_non_claim(sweep: Sweep) -> str | None:
+    """What a clean sweep with no call-site mutant does NOT establish (`#564`).
+
+    Reported, never refused, and the boundary is deliberate. The tool can see that no
+    mutant was DECLARED a call-site test; it CANNOT see whether one was warranted -- a
+    sweep over a constant table or a pure predicate legitimately has none. Refusing on
+    that would make the runner assert something about the plan it never established,
+    which is the class it exists to stop, so this states the gap and leaves the judgement
+    with the reader. P5: force the question, do not declare completion.
+
+    Silenced ONLY by a declaration the edit corroborates. An earlier cut let the inferred
+    removed-call count silence it, which meant an incidental `.join` deletion in a body
+    mutant turned the warning off -- the tool suppressing its own finding on evidence that
+    did not mean what it counted.
+    """
+    # An EMPTY plan still gets the non-claim. It used to be silenced alongside an unearned
+    # baseline, which made the emptiest possible sweep -- `0 killed, 0 survived`, exit 0,
+    # no warning -- the most unearned clean report this tool can print, while the module
+    # docstring promised that a sweep with no declared call-site test says so out loud.
+    # An unearned baseline is different: it already refuses loudly and prints no counts.
+    if not sweep.baseline.earned:
+        return None
+    if sweep.call_site_mutants:
+        return None
+    # Says DECLARED, because that is the condition above. The first wording said "no
+    # mutant deleted a call site" -- vocabulary left over from the inference design -- and
+    # this tool's own suite has a run where that sentence is printed while the per-mutant
+    # line reads `[removes join, str]`. Two contradictory statements in one report, and
+    # the operator-facing one was the false one, on a surface whose whole thesis is not
+    # reporting what it did not establish.
+    return (
+        "no mutant was DECLARED a call-site test (`\"call_site\": true`), so a clean result "
+        "here says nothing about whether these repairs are still REACHED in production: a "
+        "repair pinned only at its own function survives deletion of its caller with the "
+        "suite green (#564, measured three times in one goal, none visible in the diff)"
+    )
 
 
 def exit_code(sweep: Sweep) -> int:
@@ -346,7 +550,11 @@ def main() -> int:
         "--plan",
         type=Path,
         required=True,
-        help='JSON: {"test_command": [...], "mutants": [{"path":..., "find":..., "replace":...}]}',
+        help=(
+            'JSON: {"test_command": [...], "mutants": [{"path":..., "find":..., "replace":..., '
+            '"call_site": true}]}. Set `call_site` on the mutant that deletes the repair\'s '
+            "CALLER; without one the sweep reports what it did not establish (#564)."
+        ),
     )
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
@@ -357,12 +565,17 @@ def main() -> int:
     try:
         sweep = run_sweep(plan, repo_root, emit=emit)
     except SweepError as exc:
+        sys.stdout.flush()
         print(f"mutate-and-restore: {exc}", file=sys.stderr)
         return 2
     except BaseException as exc:  # noqa: BLE001 - a crash must not read as a result
         # Exit 3, never 1. A crash that exits 1 is indistinguishable from
         # "survivors found" to any `if ! cmd` caller, which is how a broken
         # sweep gets read as a report.
+        # Same flush, same reason as the non-claim below: without it a `2>&1` log shows
+        # the crash ABOVE the baseline and per-mutant lines that preceded it, reading as
+        # a crash before the sweep ever started.
+        sys.stdout.flush()
         print(f"mutate-and-restore CRASHED: {type(exc).__name__}: {exc}", file=sys.stderr)
         return 3
     payload = render(sweep)
@@ -371,8 +584,17 @@ def main() -> int:
     elif sweep.baseline.earned:
         print(
             f"mutate-and-restore: {payload['killed']} killed, {payload['survived']} survived, "
-            f"{payload['refused']} refused, over a baseline of {sweep.baseline.passed} passing tests"
+            f"{payload['refused']} refused, {payload['call_site_mutants']} call-site, "
+            f"over a baseline of {sweep.baseline.passed} passing tests"
         )
+        # Flushed before the stderr write, because the ordering claim this comment used to
+        # make was false: under `cmd > f 2>&1` stdout is BLOCK-buffered while stderr is
+        # not, so the non-claim landed in the log ABOVE the summary it qualifies. Stderr
+        # is still the right stream -- a `2>&1` gate log keeps it and a bare `$(cmd)`
+        # capture must not silently swallow a warning into a variable.
+        sys.stdout.flush()
+        if payload["call_site_non_claim"]:
+            print(f"mutate-and-restore NON-CLAIM: {payload['call_site_non_claim']}", file=sys.stderr)
     return exit_code(sweep)
 
 
