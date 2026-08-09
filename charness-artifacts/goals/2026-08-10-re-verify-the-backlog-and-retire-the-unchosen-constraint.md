@@ -186,6 +186,41 @@ The residue check is what makes the tool worth building: grepping the issue numb
 across `charness-artifacts/goals/` is one command, and it is the command that would
 have caught `#554` before a reviewer round was spent on it.
 
+### Slice 3b grouping — the recount's groups were REFUTED on 2026-08-10
+
+A bounded read of all fourteen member bodies (several are Korean; the titles do
+not carry the gap) found the `## Backlog Recount` grouping was made by SURFACE
+rather than by defect. Corrected, with the reason each move is not cosmetic:
+
+- **Umbrella A — proof/evidence infrastructure is prose, not schema:** `#514`
+  `#524` `#525` `#535`. These four cross-reference each other's boundaries in
+  their own text, which is what a real family looks like. `#542` and `#561` were
+  in this group and do not belong: `#542` is refusal-message granularity in an
+  authorization branch, and `#561` is an equality-versus-invariant question in a
+  regression probe. Neither is about binding a claim to evidence.
+- **Umbrella B — a verification surface silently stops verifying:** `#568` `#569`.
+  Endorsed unchanged. Both are a green that says nothing.
+- **Umbrella C — a harness surface discards state it already has:** `#531` `#532`.
+  `#527` was grouped here and must NOT be consolidated wholesale: only one of its
+  six observations (the invocation lock on destructive skills) fits, and the
+  issue's own author asks for it to be split.
+- **Umbrella D — a gate pins volatile identity instead of the invariant:** `#534`
+  `#561`. This pairing did not exist in the recount at all. `#534`'s family id
+  rotates on a move; `#561`'s probe reds on any corpus write; each surface already
+  contains the fix template the other needs. `#561` still carries its open
+  operator decision and the umbrella must say so rather than absorb it.
+- **NOT consolidated — `#550` `#539` `#542`, and the rest of `#527`.** `#550` is
+  the ratchet working correctly and surfacing real duplication, which is the
+  opposite of `#534`'s false block; grouping them because they touch one tool is
+  the surface error in miniature.
+
+The second read also found two members whose CITED instances are already fixed
+while their real ask is live: `#535`'s issue-source freeze has a `refreeze`
+command, and `#569`'s two awiki tests now have captured fixtures. Neither is
+closable — both issues ask for the general rule, not the instances — but a
+maintainer picking them up must be told, which is exactly the staleness this
+goal exists to stop.
+
 ### Slice 3 design — decided 2026-08-09, execute as written
 
 The question slice 3 forces: **what closeout floor applies to a close that
