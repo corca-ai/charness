@@ -130,10 +130,39 @@ See `## Active Operating Frame` for when each is proven.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | Retire the constraint nobody chose | A cut vertex: a prior goal parked `AGENTS.md` shrinking underneath it, and slices 3-4 may need compaction moves it forbids. Cheapest unblock available | The policy scoped to its own pipeline; the operator ruling recorded with date and reasoning; `#521` closed citing it | planned |
-| 2 | Make backlog re-verification executable | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A repo-owned command emitting a typed premise state per open issue; `#554` reproduced as a refuted premise; `#571` closed in place | planned |
+| 2 | Make backlog re-verification executable, as an EXTENSION of the existing recount seam | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A typed premise state per open issue, emitted by the recount seam rather than by a second backlog reader; `#554` reproduced as `premise-refuted-with-live-residue`; `#571` closed in place | planned |
 | 3 | Consolidate on GitHub | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | planned |
 | 4 | Close the family that reaches consumers | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | planned |
 
+
+### Slice 2 design — two constraints that are not optional
+
+**It extends the recount seam; it is not a second backlog reader.** `#554`'s part
+2 says this outright — "building a second backlog reader inside `achieve` would be
+the wrong repair" — and the same conclusion arrives independently from the
+system-improving-itself lens: the recount step and the re-verification step are one
+artifact seen at two scales, and building the second without noticing it subsumes
+the first is how a harness accumulates parallel machinery. `#555` already
+consolidated the tracker-BACKEND rule to one owner; this must not re-fork it.
+
+**A refuted premise is not a close signal.** The naive typed state — `premise-holds`
+/ `premise-refuted` — would have pushed the wrong way on the very instance that
+motivated this slice. `#554`'s premise WAS refuted (the shaping step shipped) and
+the correct answer was still DO NOT CLOSE, because its part 2 was live and the
+goal that shipped part 1 said so in its own slice log. `#571`'s instance 2 (`#567`,
+fully repaired, dispositioned from the issue body rather than from the commit that
+fixed it) is the same shape. So the emitted state must distinguish:
+
+- `premise-holds` — the issue still describes the tree.
+- `premise-refuted-clean` — refuted, and no other ask or record contradicts closing.
+- `premise-refuted-with-live-residue` — refuted, but the body carries a further ask,
+  or a durable record (a goal slice log, an audit, an issue comment) explicitly
+  declined to close it. This state is a REFUSAL to recommend, not a close candidate.
+- `unverifiable-by-machine` — the premise is not decidable from the tree.
+
+The residue check is what makes the tool worth building: grepping the issue number
+across `charness-artifacts/goals/` is one command, and it is the command that would
+have caught `#554` before a reviewer round was spent on it.
 
 ### Slice 3 design — decided 2026-08-09, execute as written
 

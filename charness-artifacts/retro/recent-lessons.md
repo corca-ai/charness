@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Closeout retro for the `refuse-the-verdict-a-surface-never-earned` goal, picked up mid-flight from a Codex session that had stalled waiting on hosted CI behind a GitHub rate limit. (source: `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`)
 - One session that started from "design the next work" and ended having shipped it. (source: `charness-artifacts/retro/2026-08-09-session-retro.md`)
-- The `make-proof-surfaces-report-what-they-observed` goal, all eight slices, ending in the `v4.0.0` release and push. (source: `charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md`)
 
 ## Repeat Traps
 
@@ -16,8 +16,8 @@
 
 - issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
-- a check that flags a test asserting an external tool's output shape from a hand-written string when no captured fixture for that tool exists. (source: `charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md`)
-- **capability**: `achieve`'s Before phase should ask, for each remedy a durable record proposes, whether that remedy's premise still holds — the same shape as `## Backlog Recount` but pointed at prior goals, audits, and issue comments rather than the tracker. `#564` is the measured instance: two records had already declined its filed remedy. Destination: issue. (source: `charness-artifacts/retro/2026-08-09-session-retro.md`)
+- before closing an issue as already-fixed, read the slice log of the goal that shipped the fix, not only the issue's premise. One grep for the issue number across `charness-artifacts/goals/` would have caught `#554` before a reviewer round was spent. Structural pattern: a closeout is judged against the claim under review rather than against the record that already dispositioned it. Triggering instance(s): `#554`'s draft close, refused by a delegated reviewer citing a slice log neither the packet nor I had read. Destination: issue #571. → tracked issue #571 (source: `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`)
+- make backlog re-verification executable, specified as an extension of the existing tracker-recount seam rather than a second backlog reader — the shape `#554`'s part 2 named and the Engelbart lens independently reached. Structural pattern: a method that requires re-reading a record has no tool, so it degrades to memory. Triggering instance(s): three re-read failures in one session. Destination: the successor goal's slice 2, already specified. → applied: `charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md` slice 2, committed at `b7d93729` with its floor and non-goals written (source: `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`)
 
 ## Selection Policy
 
@@ -35,5 +35,5 @@
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
 - `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
-- `charness-artifacts/retro/2026-08-09-make-proof-surfaces-report-what-they-observed.md`
 - `charness-artifacts/retro/2026-08-09-session-retro.md`
+- `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md`

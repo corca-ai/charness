@@ -1,6 +1,6 @@
 # Achieve Goal: Refuse the verdict a surface never earned, and shrink the surface every session pays for
 
-Status: active
+Status: complete
 Created: 2026-08-09
 Activation: `/goal @charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md`
 
@@ -384,17 +384,15 @@ Recount the tracker before scope; see `references/lifecycle-before.md`.
 
 ## Operator Decision Queue
 
-Record decisions, confirmations, credential actions, manual proof steps, and
-external-boundary approvals discovered during the run when they do not block
-safe local progress. Use `none — <reason>` when the queue is empty at closeout.
+**Closeout state of this queue.** Four decisions were taken by the operator during
+this run and are recorded with their reasoning in the successor goal's own queue:
+prompt-surface deletion is actively allowed, the backlog consolidates on GitHub
+into umbrella issues, backlog re-verification becomes executable, and `#519`/`#520`
+close as a cadence question. Two remain open and are carried forward unresolved
+rather than adopted: `#561`'s equality-versus-invariant probe pin, and `#547`'s
+re-scope. The shaping-time items below are historical and were settled by the
+`#563` deletion.
 
-Queue item form:
-
-- Decision: operator-only decision or confirmation needed
-- Owner: operator or named human owner
-- Why deferred: why the run did not stop immediately
-- Unblock action: exact action or answer needed
-- Revisit trigger: event, date, or proof boundary that reopens this
 
 **Queued at shaping time — three on `check_title_slug_drift.py`, all raised by
 the operator's own "should this be code at all?" question during shaping.**
@@ -517,14 +515,16 @@ Shaped at Before-phase; update as the run crosses each boundary:
   `docs/prompt-mutation-policy.md` — agent-authored, consumed by nothing — had
   been acting as a cut vertex on real work. A record was treated as a fact
   because re-reading it was nobody's step.
-- **Operator-forced completion, 2026-08-09.** The operator authorized closing this
-  goal without its full closeout ritual. What DID run: the `v4.1.0` release with
-  its verification lock, the distinct-channel and installed readbacks, nine issue
-  closes each behind a delegated fresh-eye refusal round, and the two post-release
-  closeout critiques. What did NOT run: the goal-level retro, the closeout packet
-  binding at a frozen SHA, and the Auto-Retro disposition pass. Those are absent,
-  not satisfied, and this line is the record of that rather than a claim they were
-  covered elsewhere.
+- **Operator-directed completion, 2026-08-09, then closed on its own floor.** The
+  operator authorized forcing this goal closed. The completion gate refused the
+  flip anyway — retro artifact, host-log probe, and disposition review were all
+  missing — so rather than push the status past its own floor, each was produced:
+  the closeout retro, the persisted host-log probe, and a delegated disposition
+  review that REFUSED the first draft of the dispositions and forced four
+  corrections plus one real specification fix in the successor goal. What remains
+  absent is the closeout packet bound at a frozen SHA; that is absent, not
+  satisfied elsewhere, and the corrections the disposition review forced are
+  recorded as accepted-unreviewed.
 
 ## Discuss Before Activation
 
@@ -1105,13 +1105,15 @@ retro / host-log probe / disposition-review artifact) or an explicit
 `skipped: <allowed-reason>: <detail>`. The complete gate rejects a literal
 `TODO` / `<path>` / `TBD` until you do.
 
-Retro: TODO — create or explicitly skip with an allowed reason before complete
-Host log probe: TODO — create or explicitly skip with an allowed reason before complete
-Disposition review: TODO — create or explicitly skip only when policy allows before complete
+Retro: charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md
+Host log probe: charness-artifacts/probe/2026-08-10-refuse-the-verdict-host-log-probe.md
+Disposition review: charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned-disposition-review.md
 
 ## User Verification Instructions
 
 ## Auto-Retro
 
-Retro dispositions: TODO — disposition every surfaced improvement, or record the explicit no-improvement opt-out
-Structural follow-up: TODO — when the retro names a transferable waste item (a `## Sibling Search` trigger), classify its structural destination (`applied: <gate/hook/validator/test/contract change>` / `issue #N (recurs:|novel: <reason>)` / `repo-local guard: <path>` / `none — <reason>`); delete this line when no transferable waste was named
+Retro dispositions: issue #571 (recurs: #571's own body already measures three instances of this class — #564's declined remedy, #567 dispositioned from the issue body rather than the commit that fixed it, and a handoff pickup already done — and this run added three more, so a fresh narrow issue would be a re-file) — read the shipping goal's slice log before closing an issue as already-fixed. Verified against #571's body rather than its title: its instance 2 is `#567`, already fully repaired and dispositioned from the issue body rather than from the commit that fixed it, which is the `#554` shape.
+Retro dispositions: applied: the successor goal's `### Slice 2 design` block now binds two constraints a disposition reviewer found missing — the tool extends the existing recount seam rather than adding a second backlog reader, and a refuted premise is not a close signal (`premise-refuted-with-live-residue` is a refusal to recommend, because `#554`'s premise was refuted while its part 2 stayed live).
+Retro dispositions: applied: `charness-artifacts/retro/2026-08-10-refuse-the-verdict-closeout-retro.md` plus the digest refreshed from it, which carries both improvement lines in its Next-Time Checklist; the digest's Repeat Traps slot is filled by a recency policy and still shows the older phrasing, which the retro now says outright.
+Structural follow-up: issue #571 (recurs: three instances measured in this run's own body — a prior session's lesson treated as un-actioned, an audit's population claim, and an issue drafted closed-as-fixed while a live residue remained — each caught by a distinct observer, none by the author).
