@@ -3,9 +3,7 @@ Date: 2026-08-09
 
 ## Scope
 
-Prepared the complete untagged `charness` `4.1.0` release candidate (planned
-tag `v4.1.0`). This rolling pointer records candidate state only; it does not
-claim a pushed branch, tag, GitHub release, or public installation.
+Advanced `charness` toward release `4.1.0` (tag `v4.1.0`) through the repo-owned release helper.
 
 ## Current Version
 
@@ -16,45 +14,118 @@ claim a pushed branch, tag, GitHub release, or public installation.
 
 ## Verification
 
-- The final verification lock completed on code/test candidate `dfdcbf74`,
-  including standing pytest, mutation-coverage production, and its changed-line
-  consumer.
-- All five declared fresh-checkout probes passed on that candidate.
-- Source, checked-in plugin, Claude marketplace, and Codex plugin surfaces all
-  report `4.1.0` with no version drift.
-- Configured real-host triggers evaluated the exact
-  `v4.0.0..dfdcbf74` 240-path population and returned `required: false`.
-- Hosted Quality Core and public readbacks are still pending.
+- `./scripts/run-quality.sh --release` passed before publish.
+- `current_release.py` reported no version drift across packaging and generated install surfaces.
+- initial release push carried the release branch update and tag from the release helper.
 
 ## Release State
 
 - local release mutation: complete
-- branch/tag push: pending; neither the candidate branch nor tag has been pushed
-- GitHub release record: absent; publication has not run
-- public release surface verification: not run
-- audit narrative: provisional candidate record at `charness-artifacts/release/latest.md`; final publication evidence must replace it
+- branch/tag push: complete
+- GitHub release record: target URL `https://github.com/corca-ai/charness/releases/tag/v4.1.0`; creation runs after the branch/tag push
+- public release surface verification: not checked by this helper
+- audit narrative: durable record written to `charness-artifacts/release/latest.md` and committed with this slice
 
 ## Public Release Verification
 
-Not performed. The authorized sequence is candidate branch push, distinct
-hosted Quality Core readback, then tag/publication push and public/install/
-doctor/baton readback. A successful local gate or push exit cannot satisfy any
-later phase.
+- GitHub release publication: expected after branch/tag push; not verified yet.
+
+## Lifecycle Usage Capture
+
+- Lifecycle capture status: not recorded by this helper invocation.
+
+## Release Adapter Preflight
+
+- Release adapter focused preflight status: `not_required`.
+- Reason: release adapter did not change in the release delta
+- Focused preflight commands: none executed.
+
+## Retro Trigger Evaluation
+
+- Triggered: `True`.
+- Evaluated at: `final_release_paths`.
+- Input mode: `explicit_paths`.
+- Reason: Changed surfaces hit configured install/update/support/export/discovery retro triggers.
+- Closeout status: `written`.
+- Retro artifact: `charness-artifacts/retro/2026-08-09-v4-1-0-release-auto-retro.md`.
+- Recent lessons: `charness-artifacts/retro/recent-lessons.md`.
+- Surface hits: 2.
+  - `checked-in-plugin-export`
+  - `integrations-and-control-plane`
+- Path hits: 1.
+  - `scripts/capability_catalog_sources.py`
+- Evaluated changed paths: 250.
+  - `.agents/quality-adapter.yaml`
+  - `.claude-plugin/marketplace.json`
+  - `.githooks/pre-commit`
+  - `.githooks/pre-push`
+  - `AGENTS.md`
+  - `charness-artifacts/audit/2026-08-09-no-observed-effect-census.md`
+  - `charness-artifacts/audit/closeout-floors.md`
+  - `charness-artifacts/critique/2026-08-09-080414-packet.json`
+  - `charness-artifacts/critique/2026-08-09-080414-packet.md`
+  - `charness-artifacts/critique/2026-08-09-082846-packet.json`
+  - `charness-artifacts/critique/2026-08-09-082846-packet.md`
+  - `charness-artifacts/critique/2026-08-09-083309-packet.json`
+  - `charness-artifacts/critique/2026-08-09-083309-packet.md`
+  - `charness-artifacts/critique/2026-08-09-issue-523-root-routing-split-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-530-resolution-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-549-hook-failure-visibility-reader-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-560-resolution-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-563-title-slug-checker-deletion-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-564-resolution-critique.md`
+  - `charness-artifacts/critique/2026-08-09-issue-565-resolution-critique.md`
+  - ... 230 more
+
+## Real-Host Verification
+
+- No configured release-time real-host proof trigger matched this slice.
+- Evaluation scope: `evaluated`
+
+## Real-Host Proof
+
+- No configured release-time real-host proof trigger matched this slice.
 
 ## Review Proof
 
-- Release safety critique:
-  `charness-artifacts/critique/2026-08-09-release-4-1-0-safety-critique.md`.
-- Release-record claims review:
-  `charness-artifacts/critique/2026-08-09-release-4-1-0-claims-review.md`.
+- Review proof: `charness-artifacts/critique/2026-08-09-release-4-1-0-safety-critique.md`.
 
-## Non-Claims
+## Requested Review Gate
 
-- Cautilus was not run.
-- Hosted CI, the tag, the GitHub release, public visibility, installed 4.1.0,
-  doctor state, baton reconciliation, and linked issue closure are unverified.
+- Requested-review gate status: `ok`.
+- Configuration status: `advisory_only`.
+- Policy: `advisory-only`.
+- Configured command count: `0`.
+
+## Install Refresh
+
+- Post-publish install refresh: pending final publish verification.
+
+## Release Runtime
+
+- `requested_review_gate`: 0.002s
+- `cli_skill_surface_gate`: 0.079s
+- `quality_command`: 101.040s
+- `fresh_checkout_probes_initial`: 3.795s
+
+## Baton Reconcile
+
+- Baton reconcile observation: not recorded by this helper invocation.
+
+## Fresh Checkout Probes
+
+- Fresh-checkout probe status: passed.
+- `./charness --help >/dev/null`
+- `./charness goal check --help >/dev/null`
+- `python3 scripts/doctor.py --repo-root . --json --skip-release-probe >/dev/null`
+- `python3 scripts/closeout_bundle.py --help >/dev/null`
+- `python3 scripts/validate_retro_handoff_wiring.py --help >/dev/null`
+
+## Issue Closeout
+
+- Issue closeout verification: pending or not requested.
 
 ## User Update Steps
 
-After publication, run `charness update`, `charness version`, and
-`charness doctor`. Before publication these commands do not establish 4.1.0.
+- Run `charness update` to install the latest published Charness release.
+- Read the GitHub release notes for release-specific behavior changes, migrations, or rollback notes.
