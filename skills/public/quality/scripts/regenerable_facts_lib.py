@@ -110,6 +110,17 @@ def scan_text(text: str) -> list[tuple[int, str, str, str]]:
     return hits
 
 
+def _config(adapter: dict | None) -> dict:
+    """Unwrap the adapter result envelope and return the `regenerable_facts` block.
+
+    `load_adapter` returns `{found, valid, data}`, not the adapter body. Accepting
+    a bare body too keeps this callable from a test or a host that unwrapped it.
+    """
+    adapter = adapter or {}
+    body = adapter.get("data") if isinstance(adapter.get("data"), dict) else adapter
+    return (body or {}).get("regenerable_facts") or {}
+
+
 def declared_surfaces(adapter: dict | None) -> bool:
     """Did the repo CHOOSE this scope, or is it running on defaults?
 
@@ -120,10 +131,7 @@ def declared_surfaces(adapter: dict | None) -> bool:
     report and wrong to fail on, because failing would make the gate hostile on
     install in every consumer.
     """
-    adapter = adapter or {}
-    body = adapter.get("data") if isinstance(adapter.get("data"), dict) else adapter
-    config = (body or {}).get("regenerable_facts") or {}
-    return bool(config.get("surfaces"))
+    return bool(_config(adapter).get("surfaces"))
 
 
 def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str]]:
@@ -134,9 +142,7 @@ def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str
     Accepting the bare body too keeps this callable from a test or a host that
     already unwrapped it.
     """
-    adapter = adapter or {}
-    body = adapter.get("data") if isinstance(adapter.get("data"), dict) else adapter
-    config = (body or {}).get("regenerable_facts") or {}
+    config = _config(adapter)
     surfaces = tuple(config.get("surfaces") or DEFAULT_SURFACES)
     exemptions = dict(config.get("exemptions") or {})
     return surfaces, exemptions
