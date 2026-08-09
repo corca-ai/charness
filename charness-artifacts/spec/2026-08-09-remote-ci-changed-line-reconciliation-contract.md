@@ -118,6 +118,8 @@ in-process branch tests and prove the same lane passes.
 - Focused `coverage` JSON readback for lines 20, 63, 102, 106, 107, 122, 183, and 184 — integration, reproduction-only local output.
 - `python3 scripts/check_changed_surfaces.py --repo-root .` and `python3 scripts/check_staged_mirror_drift.py --repo-root .` — integration: owning/generated surfaces.
 - `bash scripts/run-quality.sh` redirected to a file — integration: local aggregate.
+- A redirected slow selected gate records `START` and `WAIT` before the selected
+  process finishes, while the final stdout summary remains the verdict.
 - GitHub `Quality Core` readback on the repaired SHA — e2e, pending explicit push approval.
 
 ## Tripwires
@@ -130,14 +132,30 @@ in-process branch tests and prove the same lane passes.
 
 ## Implementation Evidence
 
-- Mapper-only fail-before: the old-range final consumer exited 1 with
+- Mapper-only fail-before: the old-range final consumer returned 1 with
   `status: blocked` and named exactly entry lines 20, 63, 102, 106, 107, 122 and
   library lines 183, 184.
 - Post-test focused coverage: the coverage JSON recorded all eight target lines
   as executed.
-- Post-test final wrapper: exit 3, `status: unestablished`, `blocking: []`, and
+- Post-test final consumer: return 3, `status: unestablished`, `blocking: []`, and
   `changed_line_proof: unverified-dirty-worktree`; this is not a local aggregate
-  pass. Post-commit wrapper proof remains pending.
+  pass.
+- First clean-tree wrapper: the original eight targets were covered, and the
+  final consumer exposed one new uncovered branch in the mapper repair itself
+  (`scripts/suggest_mutation_coverage_command.py:152`). A test-only negative
+  case exercised the unsupported callable shape.
+- Final clean-tree proof: at `7cd421c4`, the exact old-range record shows its
+  inner consumer returned 0: `consumer_returncode: 0`, `status: clean`,
+  `blocking: []`, and no unmapped files. No separate shell-wrapper exit receipt
+  is claimed. The branch verification lock also passed broad standing pytest
+  and a fresh changed-line consumer over `origin/main..HEAD`.
+- Hosted CI readback remains pending explicit push approval.
+- Closeout operability follow-up: combined-stream gate logs previously remained
+  empty until the first concurrent batch completed. The runner now reports the
+  requested scope immediately and the queued check count/first/last labels
+  before waiting. Its focused summary/runtime suites pass 66 tests; an
+  independent read-only review found no blocker and its three evidence/test
+  hardenings were applied.
 
 ## Boundary Ownership
 

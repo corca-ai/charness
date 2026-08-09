@@ -54,6 +54,17 @@ case "$RUN_QUALITY_MODE" in
 esac
 export CHARNESS_QUALITY_MODE="$RUN_QUALITY_MODE"
 
+# Every gate command below writes to a per-phase file so concurrent checks cannot
+# interleave their output. Before this line existed, that useful buffering made a
+# healthy long run indistinguishable from a command that never started: a caller
+# redirecting both streams observed a zero-byte transcript until the slowest check
+# in the first batch (normally pytest) finished. Keep progress on stderr so stdout's
+# verdict/reporting contract stays machine-consumable, and emit it before discovery
+# or queue construction can introduce another silent interval.
+RUN_QUALITY_PROGRESS_SCOPE="${CHARNESS_QUALITY_LABELS:-all}"
+printf 'run-quality: START mode=%s release=%s requested_scope=%s (phase output is buffered)\n' \
+  "$RUN_QUALITY_MODE" "$RUN_QUALITY_INCLUDE_RELEASE_ONLY" "$RUN_QUALITY_PROGRESS_SCOPE" >&2
+
 STANDING_PYTEST_TARGETS_TEXT="$(python3 scripts/run_standing_pytest.py --repo-root "$REPO_ROOT" --print-expanded-targets)"
 mapfile -t STANDING_PYTEST_TARGETS <<<"$STANDING_PYTEST_TARGETS_TEXT"
 
@@ -475,11 +486,18 @@ print_phase_output() {
 flush_phase() {
   local rc=0
   local pid label log_path meta_path elapsed_ms status timestamp cmd_rc
+  local phase_count first_label last_label
   local -a meta_lines
 
   if ((${#PHASE_LABELS[@]} == 0)); then
     return 0
   fi
+
+  phase_count="${#PHASE_LABELS[@]}"
+  first_label="${PHASE_LABELS[0]}"
+  last_label="${PHASE_LABELS[$((phase_count - 1))]}"
+  printf 'run-quality: WAIT checks=%s first=%s last=%s\n' \
+    "$phase_count" "$first_label" "$last_label" >&2
 
   for pid in "${PHASE_PIDS[@]}"; do
     wait "$pid" || true

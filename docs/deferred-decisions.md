@@ -683,12 +683,12 @@ the evidence is sufficient for the boundary at hand.
   - Downstream decision delta: withdraw this remedy, keep the marker refusal unarmed, and require a different contract if the issue is reopened.
   - Status: withdrawn
 - **Executed measurement replacing the hand counts (first run 2026-08-01; figures below
-  are the CURRENT probe, refreshed 2026-08-07).** New script
+  are the CURRENT probe, refreshed 2026-08-09).** New script
   [measure_inventory_marker_rule.py](../scripts/measure_inventory_marker_rule.py), recorded
   at [2026-08-01-inventory-marker-rule.json](../charness-artifacts/probe/2026-08-01-inventory-marker-rule.json)
   and pinned against today's tree by
   [test_inventory_marker_rule_measurement.py](../tests/test_inventory_marker_rule_measurement.py).
-  Over the current denominator (131 top-level artifacts, 34 citing a declared
+  Over the current denominator (132 top-level artifacts, 34 citing a declared
   inventory): the presence-only mention total is **196**, **188** of those clear today's
   residual floor, **153** carry a value marker and **35** do not, and a
   marker rule would refuse **4 citations across 3 artifacts**
@@ -696,7 +696,7 @@ the evidence is sufficient for the boundary at hand.
   `2026-08-06-runtime-evidence-and-nose`). Marker kinds are reported per mention and
   overlap: 129 backticked, 87 `field=`, 31 `field:`. With `--recursive`, which reaches
   the `history/` directory the sibling script's non-recursive glob silently excludes:
-  149 artifacts (269 presence-only), 261 floor-clearing mentions, 217 marked, 44
+  150 artifacts (269 presence-only), 261 floor-clearing mentions, 217 marked, 44
   unmarked, 6 citations across 4 artifacts (the three above plus `history/2026-06-11`).
   Its marker kinds are 187 backticked, 99 `field=`, and 36 `field:`. Both variants are
   recorded in the probe and pinned by the test, so neither number is an unrecorded
@@ -712,6 +712,12 @@ the evidence is sufficient for the boundary at hand.
   quality corpus, so a quality-writing slice pays it every time. That standing tax is a
   separate finding from D47's question and is tracked as
   [#536](https://github.com/corca-ai/charness/issues/536) rather than absorbed here.
+- **Refreshed 2026-08-09 (remote-CI reconciliation), and the toll stayed flat.** The
+  new quality review cites no declared inventory, so only the corpus denominator moved:
+  shallow artifacts 131 -> **132** and recursive artifacts 149 -> **150**. Presence,
+  marker, and refusal counts did not move. This is the FOURTH refresh (2026-08-01,
+  2026-08-06, 2026-08-07, 2026-08-09), preserving the existing #536 finding without
+  turning routine corpus growth into evidence that the deferred rule changed.
 - **The first executed number was WRONG, and how it was wrong is the point.** The initial
   marker test used `` `[^`]*field[^`]*` ``, which matches the GAP BETWEEN two adjacent code
   spans — so a bare English mention sitting between two unrelated spans scored as marked.
@@ -720,7 +726,7 @@ the evidence is sufficient for the boundary at hand.
   smaller than this entry had recorded. It is not. Corrected, the refusal count landed on
   5 refused citations across 4 artifacts on the 2026-08-01 corpus, up from 3 artifacts.
   (Every figure in this bullet describes that 2026-08-01 run; the current corpus measures
-  lower — see the 2026-08-07 refresh bullet.) **Units matter here and an
+  lower — see the 2026-08-07 and 2026-08-09 refresh bullets.) **Units matter here and an
   earlier draft of this entry got them wrong:** the hand count's unit was REVIEWS (5);
   the script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS. On the hand
   count's own unit the executed answer is **4, not 5** — so the hand count was close and

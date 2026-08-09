@@ -32,6 +32,11 @@ both channels.
   path expression.
 - A focused coverage run of that test passes 26 tests, omits the entry script
   entirely from the report, and leaves library lines 183-184 missing.
+- During closeout, a combined-stream redirect of `run-quality.sh` remained
+  zero bytes while its first concurrent phase was still running. The gate had
+  not exited; its per-phase buffering withheld every line until broad pytest
+  completed, so the transcript could not distinguish healthy work from a
+  command that never started.
 
 ## Reproduction
 
@@ -65,11 +70,22 @@ both channels.
 ## Verification
 
 - confirmed diagnosis — after the mapper-only repair, the old-range final
-  consumer exited 1 and named exactly entry lines 20, 63, 102, 106, 107, 122 and
+  consumer returned 1 and named exactly entry lines 20, 63, 102, 106, 107, 122 and
   library lines 183, 184. After the direct branch tests, focused coverage
   executed all eight targets and the consumer reported no blocking lines, but
-  the wrapper exited 3 with `changed_line_proof: unverified-dirty-worktree`.
-  Post-commit final-consumer proof and hosted CI remain pending.
+  the consumer returned 3 with `changed_line_proof: unverified-dirty-worktree`.
+- confirmed repair — after commits `c138170b`, `314f4a28`, and `7cd421c4`, the
+  same old-range consumer returned 0 with `status: clean`, `blocking: []`, and
+  no unmapped files. The branch verification lock then passed broad standing
+  pytest and the fresh changed-line consumer over `origin/main..HEAD`. The
+  reproduction log records the inner consumer return, not a separate shell-
+  wrapper exit receipt.
+- hosted CI remains pending because no push approval has been granted.
+- confirmed operability follow-up — `run-quality.sh` now emits an immediate
+  `START` line and a `WAIT` line before each non-empty concurrent phase on
+  stderr, while stdout retains the verdict contract. A slow-validator
+  regression test observes both lines before the selected process finishes;
+  the focused runner suites pass 66 tests.
 
 ## Root Cause
 
@@ -93,8 +109,7 @@ mapper blind spot from an actual coverage gap before the push.
 - Interface-Shape Sibling Scan: `subprocess_only_coverage_advisory.py` consumes
   the same mapper; `tests/test_nose_inprocess_coverage.py` records the same
   subprocess/dynamic-loader opacity class.
-- Non-Claims: no repaired local verdict, pushed commit, or green remote CI run
-  exists yet.
+- Non-Claims: no pushed repaired commit or green hosted CI run exists yet.
 
 ## Detection Gap
 
@@ -136,7 +151,7 @@ mapper blind spot from an actual coverage gap before the push.
 
 ## Interrupt Decision
 
-- Resolution: open
+- Resolution: resolved
 - Critique Required: yes
 - Next Step: spec
 - Handoff Artifact: charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md
@@ -146,4 +161,6 @@ mapper blind spot from an actual coverage gap before the push.
 Repair the shared selector at the loader boundary, add direct failure-branch
 coverage in the owning test, prove the exact old CI range through the focused
 consumer and broad changed-line consumer, and keep remote CI as an explicit
-post-push non-claim until read back through GitHub.
+post-push non-claim until read back through GitHub. Keep long buffered gate runs
+observable with pre-wait progress on stderr so an empty transcript is never
+mistaken for a completed or unstarted command.

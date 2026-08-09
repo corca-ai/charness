@@ -3,8 +3,20 @@
 ## Workflow Trigger
 
 - **Next pickup: work the open backlog.** Run `/handoff` to chunk the live tracker, then `issue` per chunk. Recount first: `gh issue list --repo corca-ai/charness --state open --limit 200`.
-- **FIRST, before any new work: `main` is RED on remote CI.** `Quality Core` fails on the pushed head while the same tree's local `bash scripts/run-quality.sh` exits 0. Not a flake — the changed-line mirror treats as BLOCKING what the local gate reports as UNPROVEN, on two files inherited from the regenerable-facts slice ([check_regenerable_facts.py](../skills/public/quality/scripts/check_regenerable_facts.py), [regenerable_facts_lib.py](../skills/public/quality/scripts/regenerable_facts_lib.py)): they map to no standing test, so their changed lines are uncovered. Read it back with `gh run list --repo corca-ai/charness --limit 5`.
-- **A MINOR release was approved and is HELD** until CI is green. Do not cut it on a red main — a green push is not a green build, and this session proved that literally.
+- **FIRST, publish and verify the local CI repair if push approval is granted.**
+  The structural repair is committed locally: the shared selector now resolves
+  supported dynamic-loader literals, the owning test observes the entry and
+  fallback branches in-process, the original failing range's consumer returns
+  0 with `status: clean`, and the branch verification lock passes. Long quality
+  runs now emit stderr `START`/`WAIT` progress before buffered phase output, so
+  a combined redirected transcript no longer stays empty during broad pytest.
+  The hosted result
+  is still the old red head because `git push` is per-request and was not
+  authorized. After an approved push, read it back with
+  `gh run list --repo corca-ai/charness --limit 5`; do not infer remote green
+  from the push exit code.
+- **A MINOR release was approved and is HELD** until the repaired hosted CI run
+  is green. Do not cut it from local proof alone.
 
 ## Continuation Capability
 
@@ -30,11 +42,15 @@
 
 ## Next Session
 
-1. **Get `main` green.** Either cover the two regenerable-facts files' changed lines, or reconcile the local-vs-CI disagreement about the same signal — two proof surfaces disagreeing about one fact is itself this session's class.
+1. **With explicit push approval, publish the committed repair and verify the
+   hosted `Quality Core` result through GitHub.** Local old-range and branch-lock
+   proof are green; remote green is the only remaining CI claim.
 2. Then cut the approved MINOR release, and confirm it through a channel other than the publish exit code.
 3. Then chunk the backlog and work it. `#575` is the strongest candidate: consumer-facing, evidence from five real repos, and it repairs a surface this repo shipped to its own catalog.
 4. `#572` is a CI-generated mutation regression on an older head; check whether a green run supersedes it before treating it as work.
-5. Do not start slice 5's deletion on a red main — its bar is completeness across every referencing surface, including public skill prose a consumer reads.
+5. Do not start slice 5's deletion until the repaired hosted run is green — its
+   bar is completeness across every referencing surface, including public skill
+   prose a consumer reads.
 
 ## Discuss
 

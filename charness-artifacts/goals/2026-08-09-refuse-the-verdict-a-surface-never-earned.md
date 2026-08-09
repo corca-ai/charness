@@ -9,13 +9,14 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: urgent repair 4r reconciles the local focused changed-line
-  verdict with the red remote broad mirror before planned slice 5 (`#563`, a
-  DELETION). Slices 1, 1b, 2, 3, 3b and 4 are DONE.
-- Repair 4r expected evidence: the original `ec67291e...18a9a439` range maps
-  both regenerable-facts files locally, first blocks on the eight real gaps,
-  then passes after direct in-process coverage; remote CI stays unclaimed until
-  an explicitly approved push is read back through GitHub.
+- Current slice: planned slice 5 (`#563`, a DELETION). Slices 1, 1b, 2, 3, 3b,
+  4, and urgent repair 4r are DONE.
+- Repair 4r evidence: the original `ec67291e...18a9a439` range maps both
+  regenerable-facts files locally, first blocked on the eight real gaps, and its
+  final consumer now returns 0 with `status: clean`; the branch verification
+  lock also passed broad standing pytest and fresh changed-line coverage. Remote
+  CI stays unclaimed until an explicitly approved push is read back through
+  GitHub.
 - **`#564` is repaired but NOT closed**: the tool now asks the caller-side question.
   Its closeout floor (delegated resolution critique, `validate-closeout-draft`, a
   `Behavior #N:` verdict on a channel distinct from the fix) has not been run.
@@ -39,8 +40,8 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: finish repair 4r and restore a locally provable push boundary;
-  then return to planned slice 5.
+- Next action: obtain per-push approval and read back remote CI on the repaired
+  SHA; then return to planned slice 5.
 - Two consecutive slices have now had their premise refuted by one measurement
   each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
   NOT CONFIGURED"). Both premises came from durable records this goal wrote.
@@ -256,7 +257,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 3 | **RE-SCOPED — half its premise is refuted.** Measured on a fresh `git init` repo with README/AGENTS/docs and NO adapter: the gate is already ARMED on defaults and exits 1 on a real finding. `NOT CONFIGURED` fires ONLY when nothing matches the defaults at all (no README, no `docs/`, no `AGENTS.md`), which is not the consumer default. So SEEDING the key is not the unit — defaults already arm, and seeding would duplicate them as config that can drift. What survives: `skills/public/setup/` still has ZERO references, so the stance is not stated where a human choosing skills reads it | The discoverability half is real; the seeding half would have been unproven work, and building it would have made a fresh repo's config worse | The stance readable from a consumer-facing `setup` surface; NO redundant key seeded; the refutation recorded so the next session does not re-shape the seeding slice | pending (re-scoped) |
 | 3b | **Folded in from the retired declaration-to-verdict goal: `#530`.** Sixteen of seventeen adapter resolvers accept ANY `version` and write it back as authoritative; exactly one compares against a supported value. Replace the hand-copied blocks with one shared contract check, and refuse an unknown key instead of dropping it | Measured LIVE on 2026-08-09 on a resolver that goal had not reached: a new `regenerable_facts` key was dropped with `valid: true`, `errors: []`, no warning, and the gate silently ran on defaults. Found by a consumer of the contract, never by a gate. Slice 1b had to hand-write the seventeenth block, so the goal is now paying the tax it exists to remove | One shared check in `scripts/adapter_lib.py`; an unsupported `version` refused at every site; an unknown key refused rather than dropped; the `regenerable_facts` validator folded into the shared seam | **DONE — PREMISE REFUTED, re-scoped.** All four planned evidence items were ALREADY satisfied by the folded goal's own commits: `validate_adapter_version` exists at `adapter_lib.py:418`, 16/16 resolvers refuse `version: 7` and none echoes it back (live probe), and the unknown-key tier is armed and wired at `run-quality.sh:678`. What measurement exposed instead: that armed tier warns on CORRECT keys in every consumer repo (3/3 through the shipped mirror; 126 false warnings at `--repo-root plugins/charness`), because it scans the consumer's tree for readers that live in the plugin. Shipped the refusal-to-claim plus the uninterpreted-line channel. Version-half gaps outside the 16-resolver glob filed as `#574` |
 | 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | **DONE.** Premise HELD (the streak of three refutations broke). The runner now takes a plan-level `"call_site": true` declaration, VERIFIES it against the edit (a declared mutant that removed no call is REFUSED), and states an explicit non-claim when no mutant was declared. Inference was tried first and killed by review: it let an incidental `.join` removal silence the tool's own `#564` warning. 58 tests; 13/13 mutants killed over a stated baseline of 57, 3 declared call-site. `#564` is repaired, NOT closed — its closeout floor has not been run |
-| 4r | **Unplanned repair:** reconcile local focused changed-line proof with the red remote broad mirror for the regenerable-facts slice | Main is red and planned work cannot honestly continue across a locally green/remote red proof boundary | Dynamic-loader mapping fixture; local fail-before on the eight CI targets; direct in-process coverage; same-range local pass; two bounded review rounds | **ACTIVE** |
+| 4r | **Unplanned repair:** reconcile local focused changed-line proof with the red remote broad mirror for the regenerable-facts slice | Main is red and planned work cannot honestly continue across a locally green/remote red proof boundary | Dynamic-loader mapping fixture; local fail-before on the eight CI targets; direct in-process coverage; same-range local pass; two bounded review rounds | **DONE** |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | pending |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | pending |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
@@ -619,6 +620,24 @@ applies.
 - Off-goal findings: None filed by this slice. `#574` was filed by slice 3b.
 - Lessons carried forward: Do not let an INFERRED signal suppress a warning. The inference was cheap and looked right, and its failure mode was to silence the exact finding the feature exists to surface — a false negative in the reporting direction, which no test asserting the positive case can catch. Declaration-plus-verification beat inference: the author states intent, the tool checks the edit against it, and the tool has teeth only on the part it can actually establish. Second: the tool caught its own bugs twice by being run against itself — the inflated `4 call-site` count, the wrongly-refused honest declaration, and the mismatched-bracket render all surfaced in a self-sweep, not in review. Third: a REFUSED result is not a bad answer, it is NO answer, and anything that treats the two alike re-creates this repo's central class one axis over.
 - Metrics:
+
+### Slice 6: repair 4r — local changed-line proof reaches the same code as CI
+
+- Objective: Reconcile the local focused changed-line verdict with the red hosted broad mirror for the regenerable-facts failure range.
+- Why this approach: The local selector falsely reported an existing dynamically-loaded test as absent, while the test itself observed only the sibling library in-process. Repairing reachability and executable observation preserves the existing nonblocking policy for genuinely unknown dependencies.
+- Commits: `c138170b` structural repair and durable evidence; `314f4a28` clean-tree coverage follow-up; `7cd421c4` generated quality-inventory sync.
+- What changed: The shared selector extracts literal tokens only inside three supported loader families and matches full path, filename, or stem; plugin projection is synchronized. The owning regenerable-facts test imports the entry script in-process and drives six entry branches plus the two git-fallback lines. Debug, spec, critique, quality, goal, RCA, and handoff records carry the evidence boundary.
+- Alternatives rejected: Rejected reversing policy for truly unmapped files, weakening CI scope, exclusions, and arbitrary alias data-flow. Those either hide uncertainty or exceed the recorded loader escape.
+- Targeted verification: The mapper-only old-range consumer returned 1 on the exact eight hosted targets. Targeted tests pass. The first clean run exposed mapper line 152; a test-only negative case covered it. At `7cd421c4`, the final old-range consumer returned 0 with status clean, no blockers, and no unmapped files; no separate shell-wrapper exit receipt is claimed. The origin/main verification lock passed broad standing pytest and fresh changed-line coverage.
+- Operator follow-up: a zero-byte redirected quality transcript was a still-running buffered phase, not an exited gate. The runner now emits stderr `START`/`WAIT` progress before the slow batch completes; the focused runner suites pass 66 tests and a bounded review found no blocker.
+- Test duplication pressure: The closeout duplicate ratchet passed. New cases are property controls for token mode, same-basename direction, arbitrary-string exclusion, entry/fallback observation, and unsupported callable handling; no duplicate helper or second selector was added.
+- Critique: Round 1 used three bounded read-only angles plus a separate counterweight and repaired two blockers: evidence-state overclaim and incomplete token-mode fixtures. Round 2 read the repaired full verdict surface and found no blocker. All reviewer-boundary fingerprints verified clean. The later one-line test addition changed no verdict logic and satisfied the final consumer's own uncovered-line report.
+- Off-goal findings: The closeout transcript-visibility defect was fixed in the
+  same repair because it repeatedly obscured whether verification had started;
+  the RCA conversion ledger still records
+  `changed-line-selector-dynamic-loader-opacity` as converted to a durable test.
+- Lessons carried forward: A standing test is not evidence that a selector can discover it, and a subprocess pass is not in-process coverage. Run the final consumer on a clean analyzed tree: the first clean run caught a branch every earlier green unit suite missed.
+- Metrics: Targeted suite: 66 passing tests. Recorded hosted escape: eight uncovered lines. Verification-lock broad coverage-producing pytest: pass; hosted repaired-SHA CI: not run pending push approval.
 
 ## Context Sources
 

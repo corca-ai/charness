@@ -11,10 +11,13 @@ what the reader needs where truncation cannot reach it.
 """
 from __future__ import annotations
 
+import contextlib
 import os
 import re
+import signal
 import subprocess
 import sys
+import time
 from pathlib import Path
 
 import pytest
@@ -55,6 +58,59 @@ def _run_gate(
         cwd=repo, capture_output=True, text=True,
         env=env,
     )
+
+
+def test_run_quality_emits_progress_before_a_slow_phase_finishes(gate_repo: Path) -> None:
+    """A redirected run must not look like a command that never started.
+
+    Phase commands deliberately write to private logs so parallel output cannot
+    interleave. The progress channel has to cross that buffering boundary: observing
+    it only after ``flush_phase`` returns would recreate the zero-byte transcript that
+    prompted this regression test.
+    """
+    slow_validator = gate_repo / "scripts" / "validate_retro_artifact.py"
+    slow_validator.write_text(
+        "import time\ntime.sleep(30)\n",
+        encoding="utf-8",
+    )
+    env = {**os.environ, "CHARNESS_QUALITY_LABELS": "validate-retro-artifact"}
+    transcript = gate_repo / "run-quality-progress.log"
+    with transcript.open("w", encoding="utf-8") as stream:
+        process = subprocess.Popen(
+            ["./scripts/run-quality.sh"],
+            cwd=gate_repo,
+            stdout=stream,
+            stderr=subprocess.STDOUT,
+            text=True,
+            env=env,
+            start_new_session=True,
+        )
+        try:
+            observed = ""
+            deadline = time.monotonic() + 5
+            expected_wait = (
+                "run-quality: WAIT checks=1 first=validate-retro-artifact "
+                "last=validate-retro-artifact"
+            )
+            while time.monotonic() < deadline:
+                observed = transcript.read_text(encoding="utf-8")
+                if "run-quality: START " in observed and expected_wait in observed:
+                    break
+                if process.poll() is not None:
+                    break
+                time.sleep(0.05)
+            assert "requested_scope=validate-retro-artifact" in observed, observed
+            assert expected_wait in observed, observed
+            assert process.poll() is None, "progress arrived only after the slow gate exited"
+        finally:
+            with contextlib.suppress(ProcessLookupError):
+                os.killpg(process.pid, signal.SIGTERM)
+            try:
+                process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                with contextlib.suppress(ProcessLookupError):
+                    os.killpg(process.pid, signal.SIGKILL)
+                process.wait(timeout=5)
 
 
 def test_run_quality_preserves_gate_exit_when_receipt_write_fails(gate_repo: Path) -> None:
