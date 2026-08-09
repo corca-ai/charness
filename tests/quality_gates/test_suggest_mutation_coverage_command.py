@@ -318,6 +318,7 @@ def test_invalid_loader_source_has_no_literal_tokens() -> None:
     from scripts import suggest_mutation_coverage_command as sugg
 
     assert sugg._loader_literal_tokens('load_local_skill_module(str(ROOT / "worker.py")') == set()
+    assert sugg._loader_literal_tokens("(lambda: None)()") == set()
 
 
 def test_maps_release_local_module_through_loader_parent(tmp_path: Path) -> None:
