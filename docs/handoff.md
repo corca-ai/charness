@@ -2,20 +2,19 @@
 
 ## Workflow Trigger
 
-- **Next pickup: work the open backlog.** Run `/handoff` to chunk the live tracker, then `issue` per chunk. Recount first: `gh issue list --repo corca-ai/charness --state open --limit 200`.
-- **FIRST, publish and verify the local CI repair if push approval is granted.**
-  Local commits repair dynamic-loader changed-line selection and emit early
-  `START`/`WAIT` progress from long quality runs. The hosted result is still the
-  old red head because push was not authorized; after approval, read back
-  `gh run list --repo corca-ai/charness --limit 5` rather than inferring green
-  from the push exit code.
-- **The current local tip also carries the #577/#578/#579 runtime/test-economics
-  repair.** Tests own process/temp resources, redundant controls have stronger
-  siblings, and SLOC sync removes only its exact output report. The carrier has
-  all three `Closes` lines; the issues remain OPEN until an authorized push, then
-  require separate issue-state and hosted-CI readbacks.
-- **A MINOR release was approved and is HELD** until the repaired hosted CI run
-  is green. Do not cut it from local proof alone.
+- **Continue the active release goal, not a new backlog chunk.** The selected
+  P0-P2 implementation is committed through `f62e283f`; the operator explicitly
+  authorized the final push and `v4.1.0` publication, with no Cautilus evaluation.
+- **Finish the release-critique repair first.** The active heuristic and every
+  gate reference to `check_title_slug_drift.py` stay retired, but `v4.1.0` must
+  preserve the four `v4.0.0` invocation paths as deprecated direct-call
+  compatibility with corrected default goal-record scope. Re-run the release
+  safety review after this repair.
+- **Then lock, push, and observe in phases.** Commit release preparation, run the
+  verification lock, push the final branch, and read hosted `Quality Core`
+  through GitHub. Create/tag the public release only after that distinct hosted
+  result is green; verify public visibility, installed version/doctor, baton,
+  and linked issue states through separate readbacks.
 
 ## Continuation Capability
 
@@ -28,11 +27,20 @@
 
 ## Current State
 
-- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`. Remaining: slice 5 (`#563`, a DELETION — decided, not done) and slice 7 (`#523`); read its `## Slice Plan` for status.
-- `#530` and `#564` are CLOSED through the full floor (delegated critique, `validate-closeout-draft`, behavioural verdict on a distinct channel, `verify-closeout --expect-state CLOSED`). Critique artifacts are checked in under [charness-artifacts/critique/](../charness-artifacts/critique/).
-- Filed this session and unworked: `#574` (version-unchecked adapter readers outside the resolver glob, one honoring trust-boundary fields), `#575` (the regenerable-facts gate's comment claims dated-record directories are out of scope while its default globs include them — fires in 4 of 5 real consumer repos), `#576` (charness renders no adapter-key verdict in any consumer repo — the gap the `#530` repair created by design).
-- `#577`, `#578`, and `#579` are locally resolved and critique/draft-validated. Their
-  remote state is deliberately still OPEN because push is not authorized.
+- [refuse-the-verdict-a-surface-never-earned](../charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md) is `Status: active`; all implementation slices are complete and slice 9 release/issue closeout remains.
+- Committed local repairs include changed-line CI reconciliation, visible gate
+  progress, test process/temp isolation, exact SLOC-output exclusion, mutation
+  crash recovery, adapter/private-media trust boundaries, declaration lifecycle,
+  root routing, regenerable-facts scope, handoff routing, hook-failure visibility,
+  and docs graph proof.
+- `#574`, `#575`, `#577`, `#578`, and `#579` are repaired locally, not unworked.
+  `#576` remains an explicit no-verdict design gap and is not claimed fixed.
+- The release critique blocked `v4.1.0` on the removed and then semantically
+  neutered installed title-slug command, and on this handoff's stale push
+  sequence. Deprecated direct-call compatibility is the semver repair; the
+  operator's later final-bundle authorization owns
+  the sequence written above. Hosted CI/public/install/issue readbacks remain
+  pending and are not inferred from local proof.
 - **A census was considered and REFUTED as unjustified.** The discriminator: consumers' own gate commands invoke zero charness scripts, and the canonical list of what a consumer is told to run is the four entries in [catalog.yaml](../skills/public/quality/references/catalog.yaml) — three of them charness scripts, all clean against the five repos. Do not re-open a broad census without new evidence.
 - The publish-state claim below is a captured, offline-reconciled snapshot, not a current version or tag claim. It is a machine-read source locator declared by [the publish-state ledger](../charness-artifacts/goals/2026-08-06-post-push-publish-state-ledger.json): rewriting this handoff without carrying it forward refuses `publish_state_ledger.py` and reddens its whole test group. Recount with `python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py`.
 
@@ -43,16 +51,10 @@
 
 ## Next Session
 
-1. **With explicit push approval, publish the committed repair and verify the
-   hosted `Quality Core` result through GitHub.** Also verify #577/#578/#579 close
-   state through the issue adapter. Local proof is green; remote green/closed
-   are the remaining publication claims.
-2. Then cut the approved MINOR release, and confirm it through a channel other than the publish exit code.
-3. Then chunk the backlog and work it. `#575` is the strongest candidate: consumer-facing, evidence from five real repos, and it repairs a surface this repo shipped to its own catalog.
-4. `#572` is a CI-generated mutation regression on an older head; check whether a green run supersedes it before treating it as work.
-5. Do not start slice 5's deletion until the repaired hosted run is green — its
-   bar is completeness across every referencing surface, including public skill
-   prose a consumer reads.
+1. Finish and independently re-read the title-slug compatibility repair; commit it with the release critique disposition.
+2. Draft `v4.1.0` notes, run the distinct release-record claims review, bump/sync, and run the final verification lock.
+3. Push the final branch, wait for hosted `Quality Core`, then tag/create `v4.1.0` and verify public/install/doctor/baton surfaces.
+4. Close only repaired issues whose delegated critique, validated ledger, distinct behavior evidence, and backend state readback all satisfy the issue floor. Treat #572 as superseded only if the new hosted changed-line run proves it.
 
 ## Discuss
 

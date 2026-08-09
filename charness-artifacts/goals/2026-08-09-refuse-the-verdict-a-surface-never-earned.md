@@ -41,8 +41,10 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: close the locally complete issue ledgers, bind the release proof,
-  then perform the single final push and release. No intermediate push is planned.
+- Next action: close the locally complete issue ledgers and bind release proof,
+  then use two remote phases after the release candidate is complete: the final
+  code branch push for hosted CI evidence, followed only after green readback by
+  the tag/public-release push. No per-slice or work-in-progress push is planned.
 - Two consecutive slices have now had their premise refuted by one measurement
   each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
   NOT CONFIGURED"). Both premises came from durable records this goal wrote.
@@ -127,8 +129,10 @@ them is queued for the operator rather than taken here.
   question, that is a finding to record, not a licence to add the prose line.
 - **Not renaming the three Korean-titled goal artifacts.** English stays
   canonical for filename slugs; the repair is in the checker.
-- No intermediate release or per-slice push. The only publication is the final
-  verified `v4.1.0` bundle authorized by the operator after all claimed P2 work.
+- No intermediate release or per-slice/work-in-progress push. After all claimed
+  P2 work, the authorized final release phase has an untagged release-candidate
+  branch push for hosted CI and a later tag/publication push; the only public
+  release is the verified `v4.1.0` bundle.
 - Not `#568` / `#569` / `#547` / `#561`. Named in
   `## Backlog Recount` with reasons.
 
@@ -266,7 +270,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 4s-b | `#575` + `#570` — narrow regenerable-facts to surfaces that assert current state, and brief chunked routing on what it authors | Both are new consumer-facing behavior after `v4.0.0`; one hard-fails real history records and the other briefs a forbidden surface | Consumer-population fail-before/pass-after evidence; no default `docs/**/*.md` history sweep; goal-authoring preflight for chunked routing; two verdict rounds | **DONE locally; issue closeout pending final bundle.** Five consumers moved from 4/5 historical hard failures to 5/5 typed `NOT CONFIGURED FOR DOCS` exit-0 non-verdicts; unclassified docs counts are preserved below. Explicit empty scope now refuses. Chunked routing carries no handoff-authoring preflight and still routes through the goal generator/achieve validator. Both capped round-2 reviews completed. |
 | 4s-c | `#574` + `#545` — centralize adapter-version refusal and refuse non-durable provider-private media before external issue writes | These are the highest-severity trust/external-write seams already shipped | All adapter readers share one supported-version verdict; consumers cannot discard invalid verdicts; private URLs are typed-refused unless converted to durable evidence | **DONE locally; issue closeout pending final bundle.** Five adapter consumer families now refuse unsupported versions before fields and carry the reason to operator packets; issue/handoff stop before provider access. Rendered private Slack images are typed-refused before backend resolution, while provenance and non-rendering examples remain legal. Both capped round-2 reviews found and triggered repairs. |
 | 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | **DONE locally — commit/issue closeout pending** |
-| 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | **DONE locally — closeout pending** |
+| 5 | `#563` — RETIRE `check_title_slug_drift.py` from every standing gate and public recommendation, repairing the three public-skill prose sites rather than orphaning them; retain deprecated direct-call behavior required by v4.1.0 compatibility and correct its default goals scope | Operator-decided: an advisory heuristic with no recorded catch is not worth standing cost; release critique established that deleting or neutering an installed path would require a major bump | Hooks and gate-plan clean; public guidance no longer asks for it; deprecated CLI keeps advisory/strict/JSON semantics and includes goal records by default | **DONE locally — closeout pending** |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | **DONE — survivor refuted; missing count 0; issues updated** |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | **DONE locally — closeout pending** |
 | 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | **DONE locally — closeout pending final bundle** |
@@ -397,12 +401,18 @@ the operator's own "should this be code at all?" question during shaping.**
 
 **RESOLVED at shaping time by the operator — recorded, not re-openable by an
 agent.** All three `check_title_slug_drift.py` questions (widen the roots, arm
-`--strict`, or delete) collapsed into one answer: **delete it.** The widening and
-arming questions are moot. `78a1790b`'s "demote, do not delete" is overruled with
+`--strict`, or delete) collapsed into one answer: **delete it from standing use.**
+The widening and arming questions are moot for Charness-owned gates. `78a1790b`'s
+"demote, do not delete" is overruled with
 the operator's reason on record: the signal has been visible for a year and
 nothing ever acted on it, so keeping it visible was buying nothing. See `## Goal`
 for the deletion's real cost — 14 live referencing surfaces, three of them public
 skill prose that ships to consumers telling an agent to run it.
+
+Release critique later established a separate compatibility boundary: complete
+file/CLI removal belongs to a major release. The deprecated direct-call copy is
+therefore retained until that boundary, with the filed default-scope defect
+repaired; this does not reopen the operator's standing-use decision.
 
 **Still open and genuinely operator-only:**
 
@@ -499,7 +509,7 @@ Shaped at Before-phase; update as the run crosses each boundary:
 - `Issue closeout: n/a — no tracked issue is closed yet. #573 and #574 were FILED, not resolved. #530's two halves are now both repaired but its closeout floor (delegated resolution critique, validate-closeout-draft, a Behavior verdict on a channel distinct from the fix) has NOT been run, so it stays OPEN.`
 - `Routing: charness:issue — #574 filed under the standing approval for three version-unchecked adapter readers measured live during slice 3b.`
 - `Gather: n/a — every source is in-repo (issues via the gh adapter, artifacts, git history); no external URL or credentialed source was read.`
-- `Routing: charness:release — the operator expanded this goal through the P2 bundle and explicitly authorized one final push plus the v4.1.0 version/tag/publication sequence after locked proof; no intermediate push is authorized.`
+- `Routing: charness:release — the operator expanded this goal through the P2 bundle and authorized the final release phase after locked proof: complete RC branch push, hosted CI readback, then tag/publication push. No per-slice, work-in-progress, or intermediate public release is authorized.`
 
 ## Discuss Before Activation
 
@@ -512,12 +522,13 @@ applies.
 
 - Discuss before activation: RESOLVED — the operator expanded the already-active
   goal through the previously grouped P2 backlog and explicitly authorized the
-  final push and `v4.1.0` release after completion. Existing decisions remain:
-  `#563` is a completeness-proven deletion, `#523` preserves the full
+  final release phase and `v4.1.0` publication after completion. Existing
+  decisions remain: `#563` retires all standing/public use while deprecated
+  direct-call compatibility stays until a major release; `#523` preserves the full
   `## Subagent Delegation` block byte-for-byte, issue closes use the full
   delegated critique/carrier/readback floor, and Cautilus remains ask-before-run
-  and is not authorized by this release grant. No intermediate publication or
-  weakened gate is authorized.
+  and is not authorized by this release grant. The release phase uses the two
+  remote barriers above; no per-slice publication or weakened gate is authorized.
 
 ## Slice Log
 
@@ -748,22 +759,27 @@ applies.
   gate is invented; preset automation is not claimed; consumer commands were
   enumerated but not executed by the planner.
 
-### Slice 8: delete the checker that never earned a verdict; refute the census
+### Slice 8: retire the checker that never earned a verdict; refute the census
 
-- Objective: delete `check_title_slug_drift.py` and every live consumer while
-  preserving rename/title coherence as reviewer judgment; independently
+- Objective: delete the `check_title_slug_drift.py` heuristic and every live
+  consumer while preserving rename/title coherence as reviewer judgment;
+  retain only deprecated direct-call compatibility a minor release owes; independently
   re-check the no-observed-effect census and measure `#546` before changing a
   gate.
-- What changed: source, shared shim, plugin copies, run-quality lane, pre-push
-  subset, staged-plan route, registries, dedicated tests, timing docs, and public
-  command guidance are gone. Critique now asks for inspected paths,
+- What changed: the heuristic body, run-quality lane, pre-push subset,
+  staged-plan route, registries, dedicated behavior tests, timing docs, and
+  public command guidance are gone. Critique now asks for inspected paths,
   H1/filename comparison, incoming-link/generated-index evidence, and
   first-reader friction, explicitly without an aggregate clean verdict.
-- Deletion proof: exact live command/label search outside historical artifacts
-  returns nothing; the docs-only subset and its contract both say 13 labels;
-  source/plugin mirrors are synchronized. Focused proof passed 133 tests before
-  review and 120 after the round-1 contract repair; packaging and diff checks
-  pass.
+- Retirement proof: exact live gate/label search outside historical artifacts
+  returns nothing; the docs-only subset and its contract both say 13 labels.
+  A release-safety critique found that removing or neutering the four v4.0.0
+  installed paths would make the planned minor bump dishonest, so source/shared
+  and plugin compatibility copies retain advisory exit 0, strict 0/1, and the
+  legacy JSON fields under an explicit deprecation notice. Their corrected
+  default scope includes `charness-artifacts/goals`, the issue's missing
+  population. They carry no gate wiring or public recommendation. Source/plugin
+  mirrors are synchronized.
 - Critique: round 1 caught three shipped instructions still demanding or
   proposing the deleted checker. Round 2 caught a live-linked standing-floors
   audit still classifying it as `keep`. All were repaired; the round-2 repair is
@@ -915,7 +931,9 @@ itself so a fresh session sees the design space, not only the closed point.
   repo's backlog, not a value that varies on any host/provider/profile axis.`
 - **Should `check_title_slug_drift.py` exist as code at all?** Family
   considered: repair in place (name the scope, add `undecidable`); widen the scan
-  roots; arm `--strict`; delete. Chosen: delete. Rejected-alternatives reason:
+  roots; arm `--strict`; delete. Chosen: delete from standing use, with
+  deprecated direct-call compatibility until a major release.
+  Rejected-alternatives reason:
   repair was the default until measurement showed the surface renders no verdict
   at all (always exit 0), reports 0 findings on its default scope, and has two
   commits in its lifetime with no recorded catch — repairing it would have been
