@@ -1,6 +1,6 @@
 # Achieve Goal: Close every open issue: repair the declaration-to-verdict boundary, then the surfaces that grew on top of it
 
-Status: active — 8 closed (`#544` at `1a667f45`, `#538` at `a0dde3ca`). **The
+Status: complete — 8 closed (`#544` at `1a667f45`, `#538` at `a0dde3ca`). **The
 plan's central premise is measurably wrong; read `## Re-Scope Required` and the
 Slice 538 entry before continuing.** 24 issues are open, MORE than the 19 this
 goal was drafted against.
@@ -18,6 +18,8 @@ adapter, and closeout authorization surface carry forward unchanged as this goal
 Slice 4 substrate; nothing built there is rebuilt here.
 
 ## Active Operating Frame
+
+> **RETIRED 2026-08-09 as a DUPLICATE PLANNING LAYER. Its twelve open rows enumerate issues that the live goal now sequences directly, and a second artifact claiming the same backlog is how six goals came to read `active` at once.**
 
 - **Next action: the genuinely slice-shaped group — `#535`, `#532`, `#519`/`#520`.**
   `#544` is CLOSED. `#528` still looks ready and is not: root-before-consumer puts

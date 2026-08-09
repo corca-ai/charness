@@ -1,6 +1,6 @@
 # Achieve Goal: START HERE — skill claim-fidelity + doc-philosophy across ALL skills (public + support)
 
-Status: active
+Status: complete
 Created: 2026-06-23
 Activation: `/goal @charness-artifacts/goals/2026-06-23-skill-claim-fidelity-doc-philosophy.md`
 
@@ -8,6 +8,8 @@ This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
 ## Active Operating Frame
+
+> **RETIRED 2026-08-09. Untouched since 2026-06-28. Its slice 7 wants a captured `/charness:quality` run to validate a planner that has since been rewritten. Re-shape from the current planner if the claim-fidelity question is still live.**
 
 - Current disposition: active; Slices 1-6 are logged; Slice 5 failed the
   primary runtime-consultation predicate and Slice 6 added a report-first

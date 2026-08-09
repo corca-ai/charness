@@ -1,6 +1,6 @@
 # Achieve Goal: Sustained quality continuation after premature release
 
-Status: active
+Status: complete
 Created: 2026-06-27
 Activation: `/goal @charness-artifacts/goals/2026-06-27-sustained-quality-continuation-after-premature-release.md`
 
@@ -8,6 +8,8 @@ This goal continues the prior quality timebox after the `v0.56.5` release was
 cut too early relative to the user's intent to keep discovering quality slices.
 
 ## Active Operating Frame
+
+> **RETIRED 2026-08-09. Untouched since 2026-06-27. Its frame reads `slice 25 complete; ready to commit and push`, which happened; nothing since has consumed it.**
 
 - Current slice: slice 25 complete; ready to commit and push.
 - Current slice intent: reduce changed-line mutation coverage producer cost by

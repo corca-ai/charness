@@ -1,6 +1,6 @@
 # Achieve Goal: Repair the declaration-to-verdict boundary at its root, as a generative sequence
 
-Status: active
+Status: complete
 Created: 2026-08-07
 Activated: 2026-08-07
 Activation: `/goal @charness-artifacts/goals/2026-08-07-repair-declaration-to-verdict-at-root.md`
@@ -9,6 +9,8 @@ This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
 ## Active Operating Frame
+
+> **FOLDED 2026-08-09 into [refuse-the-verdict-a-surface-never-earned](./2026-08-09-refuse-the-verdict-a-surface-never-earned.md). Same family: a declaration nothing reconciles is a verdict nobody established. Its live slice 1 (`#530` — reconcile adapter `version` across the resolver sites) is carried into that goal's plan, with the 2026-08-09 live instance recorded in this file's frame. Read this one for the measured premise; the plan lives in the successor.**
 
 - Current slice: Slice 1 — make one declared field answerable: reconcile adapter
   `version` across all 17 resolver sites.

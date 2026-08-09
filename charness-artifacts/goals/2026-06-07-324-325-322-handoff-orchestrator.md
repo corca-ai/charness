@@ -1,6 +1,6 @@
 # Achieve Goal: Orchestrator: #324 (release-first) + #325 + #322 + handoff 2-4
 
-Status: active
+Status: complete
 Created: 2026-06-07
 Activation: `/goal @charness-artifacts/goals/2026-06-07-324-325-322-handoff-orchestrator.md`
 
@@ -8,6 +8,8 @@ This file is the living goal scratchpad. It becomes active only when the user
 runs the activation command.
 
 ## Active Operating Frame
+
+> **RETIRED 2026-08-09. Untouched since 2026-06-07. Its own frame says the only remaining work is operator activation of child goals that were never activated; the surrounding surfaces have moved several releases since. Kept as a record, not a plan. If any of its four open rows still matter, re-shape them from today's tree rather than from this file.**
 
 - Current slice: B1 RELEASED + B2 done & pushed; B3+B4 shaped as child `/achieve` goals.
 - Status: **active** — the only remaining work is operator activation+completion
