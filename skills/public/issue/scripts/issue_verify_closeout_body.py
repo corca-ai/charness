@@ -15,6 +15,7 @@ _load_local = runpy.run_path(
 )["sibling_loader"](__file__)
 _strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 _ledger_counts = _load_local("issue_closeout_ledger_counts")
+_consolidated = _load_local("issue_consolidated_closeout")
 
 _CLOSING_KEYWORD_LAUNCH_RE = re.compile(
     r"(?i)\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)"
@@ -89,6 +90,7 @@ BEHAVIORAL_VERDICT_CLASSIFICATIONS = ("bug", "feature", "deferred-work")
 # ``close-with-comment`` floor and the commit-msg carrier) so the floor-exemption
 # advisory and its exempt set cannot drift between them (D36).
 FLOOR_EXEMPT_CLASSIFICATIONS = ("question", "decision-needed")
+_CONSOLIDATED_CLASSIFICATION = "consolidated"
 
 
 def review_advisory_for_classification(
@@ -114,7 +116,14 @@ def review_advisory_for_classification(
     floor checks; this line makes that bypass visible instead of silent on BOTH
     carriers (advisory only, never blocks).
     """
-    if classification not in FLOOR_EXEMPT_CLASSIFICATIONS:
+    # `consolidated` is NOT floor-exempt, and it still needs this advisory. Bounded
+    # review found the two facts had been conflated: staying out of the exempt tuple
+    # bought the LABEL "not exempt" while silently forfeiting the line that made a
+    # light close legible. A `consolidated` close skips the behavioral-verdict, HOTL,
+    # AI-provenance and resolution-critique floors -- one more than `question` does --
+    # so printing nothing made it strictly stealthier than the classifications it was
+    # designed to avoid becoming.
+    if classification not in FLOOR_EXEMPT_CLASSIFICATIONS + (_CONSOLIDATED_CLASSIFICATION,):
         return []
     scope = ""
     if numbers:
@@ -122,9 +131,19 @@ def review_advisory_for_classification(
         where = source or "commit-message close keyword"
         scope = f" ({refs} via {where})"
     return [
-        f"REVIEW: classification '{classification}'{scope} exempts this close from the "
-        "behavioral-verdict and resolution-critique floors (only source preservation still "
-        "applies); confirm the classification is correct before treating this issue as "
+        # The exempt wording is BYTE-STABLE on purpose: two tests pin it, because
+        # that carrier's output was contractually identical before this owner existed.
+        # `consolidated` gets its own sentence rather than a reworded shared one.
+        f"REVIEW: classification '{classification}'{scope} "
+        + (
+            "skips the behavioral-verdict, HOTL-disposition, AI-provenance and "
+            "resolution-critique floors (source preservation still applies, and it owes "
+            "its own `Consolidated into:` destination floor instead)"
+            if classification == _CONSOLIDATED_CLASSIFICATION
+            else "exempts this close from the behavioral-verdict and resolution-critique "
+            "floors (only source preservation still applies)"
+        )
+        + "; confirm the classification is correct before treating this issue as "
         "resolved (advisory only, never blocks)."
     ]
 
@@ -216,45 +235,38 @@ def _has_substantive_value(value: str | None) -> bool:
     return normalized not in _NORMALIZED_PLACEHOLDER_VALUES and not normalized.startswith("missing ")
 
 
-def _classification_requirements(classification: str) -> list[tuple[str, tuple[str, ...]]]:
-    if classification == "bug":
-        return [
-            ("jtbd", ("jtbd",)),
-            ("root_cause", ("root cause",)),
-            ("debug_artifact", ("debug artifact",)),
-            ("siblings", ("siblings", "sibling search")),
-            ("prevention", ("prevention",)),
-        ]
-    if classification in {"feature", "deferred-work"}:
-        return [
-            ("jtbd", ("jtbd",)),
-            ("boundary", ("boundary",)),
-            ("resolution_brief", ("resolution brief",)),
-            ("implementation", ("implementation",)),
-            ("prevention", ("prevention",)),
-        ]
-    return [
-        ("jtbd", ("jtbd",)),
-        ("answer_or_decision", ("answer", "decision", "recorded decision")),
-    ]
+# Carriers whose close is performed by GitHub parsing a close keyword, where no
+# `--reason` argv exists. `manual-fallback` and the `close-with-comment` path go
+# through `issue_close`, which enforces the reason.
+_AUTO_CLOSING_CARRIERS = ("direct-commit", "pr-body")
 
 
-def _missing_ledger_fields(text: str, classification: str) -> list[str]:
+_classification_ledger = _load_local("issue_closeout_classification_ledger")
+_classification_requirements = _classification_ledger.classification_requirements
+_CLASSIFICATION_EXTRA_CHECKS = _classification_ledger.build_extra_checks(
+    ledger_counts=_ledger_counts,
+    consolidated=_consolidated,
+    first_field=lambda fields, aliases: _first_field(fields, aliases),
+    substantive=lambda value: _has_substantive_value(value),
+    # The issue being closed, read from the body's own close keywords. Without this
+    # the self-reference refusal never fired on the wired path.
+    self_numbers=lambda text: [number for _repo, number in iter_close_keyword_refs(text)],
+    strip_fences=lambda text: "\n".join(_strip_code_fences(text)),
+    ledger=_classification_ledger,
+    auto_closing_carriers=_AUTO_CLOSING_CARRIERS,
+)
+
+
+def _missing_ledger_fields(text: str, classification: str, *, carrier: str | None = None) -> list[str]:
     fields = _body_fields(text)
-    missing: list[str] = []
-    for field_id, aliases in _classification_requirements(classification):
-        if not _has_substantive_value(_first_field(fields, aliases)):
-            missing.append(field_id)
-    if classification == "bug":
-        # What the sibling-search field must STATE is owned by
-        # `issue_closeout_ledger_counts`: the decision/proof pair, and — when it
-        # makes a counting claim — population and removals as separate numbers.
-        missing.extend(
-            _ledger_counts.missing_sibling_ledger_fields(
-                _first_field(fields, ("siblings", "sibling search")),
-                substantive=_has_substantive_value,
-            )
-        )
+    missing = [
+        field_id
+        for field_id, aliases in _classification_requirements(classification)
+        if not _has_substantive_value(_first_field(fields, aliases))
+    ]
+    extra = _CLASSIFICATION_EXTRA_CHECKS.get(classification)
+    if extra is not None:
+        missing.extend(extra(text, fields, carrier))
     return missing
 
 

@@ -13,6 +13,7 @@ answer_repo = _BACKEND.answer_repo
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
 _AUTHZ = _load_local("issue_closeout_authorization")
+_consolidated = _load_local("issue_consolidated_closeout")
 
 GH_COMMENT_DEFAULT = [
     "issue",
@@ -117,6 +118,22 @@ def close_with_comment(
     manual_target_declaration: str | None = None,
 ) -> dict[str, Any]:
     backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    # A `consolidated` close claims nothing about the defect, so it must not land on
+    # the tracker as `completed`. Bounded review found this unwired: the module that
+    # owns the disposition declared `REQUIRED_CLOSE_REASON = "not planned"` and
+    # nothing read it, so twenty closes asserting "moved" would have rendered
+    # publicly as "completed" -- the repair claim the disposition refuses in prose,
+    # asserted on the one channel outside this repo's prose. Refused rather than
+    # silently corrected: a caller that asked for `completed` on a consolidation has
+    # a contradiction to resolve, not a default to inherit.
+    if classification == _consolidated.CLASSIFICATION:
+        required = _consolidated.REQUIRED_CLOSE_REASON
+        if reason != required:
+            raise RuntimeError(
+                f"classification `{classification}` requires --reason {required!r} "
+                f"(got {reason!r}): a consolidated close claims nothing about the defect, "
+                "so the tracker must not render it as a completed close"
+            )
     if not body_file.is_file():
         raise RuntimeError(f"close-comment body file not found: {body_file}")
     body = body_file.read_text(encoding="utf-8")

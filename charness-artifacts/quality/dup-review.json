@@ -1269,6 +1269,13 @@
     },
     {
       "class": "intentional",
+      "id": "6a1fa1d6288ff1cc",
+      "note": "two DISTINCT refusal messages in the consolidated-close evaluator that share only the `problems.append(<prose> + ', '.join(...) + <prose>)` shape: one refuses an auto-closing carrier (GitHub renders a keyword close as `completed`, asserting the repair the disposition denies), the other refuses a carrier that asserts a repair field. They name different subjects, cite different lists, and prescribe different remedies; extracting a shared message builder would parameterize three prose fragments to save one line and would make both refusals harder to read at the moment someone is blocked by them.",
+      "reviewed_at": "2026-08-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "6a29dc4549b6f485",
       "note": "ROTATION of 606ea765fb3c8ee8 / 217bca482c08d1da / cf4daacbe7eaf226 after the round-1 repairs moved parity_harness.py's line numbers: the same repo-standard gate `main()` skeleton (argparse `--repo-root`, `args.repo_root.resolve()`, run, print a summary or raise), paired with check_plugin_doc_links.py. Third rotation of one concept in one slice, which is the fingerprint-instability the handoff already records; the judgment is unchanged.",
       "reviewed_at": "2026-08-04",

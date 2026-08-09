@@ -37,7 +37,13 @@ from typing import Any
 REQUIRE_BRIEF_CLASSIFICATIONS = ("feature", "deferred-work")
 EVENT_KINDS = ("classification", "brief", "trivial_brief", "mutation", "close")
 # The vocabulary `check_issue_closeout_commit_msg.py` accepts on a closeout commit.
-KNOWN_CLASSIFICATIONS = ("bug", "feature", "deferred-work", "question", "decision-needed")
+# `consolidated` joins this set and NOT `FLOOR_EXEMPT_CLASSIFICATIONS`: a close that
+# claims nothing about the defect still owes a floor, just a different one
+# (`issue_consolidated_closeout`). Making it exempt would open the relabelling path
+# where an inconvenient bug reaches the light floor by changing one word.
+KNOWN_CLASSIFICATIONS = (
+    "bug", "feature", "deferred-work", "question", "decision-needed", "consolidated",
+)
 
 
 def load_transcript(path: Path) -> list[dict[str, Any]]:

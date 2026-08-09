@@ -9,18 +9,22 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3 — consolidate on GitHub behind a typed `consolidated`
-  disposition.
-- Current slice intent: add `consolidated` as a sixth classification that swaps
-  the resolution floor for its own machine-verifiable checks (destination named,
-  OPEN at close time by backend readback, destination body containing this
-  issue's number, no chains, backend reason `not planned`, and a refusal when the
-  carrier claims a repair). Then file up to four umbrella issues and move members
-  behind it. This names the reviewable-intent unit in progress and the commits it
-  spans; critique and broad proof do not re-fire within one unchanged intent
-  (meaningful-slice-cadence).
-- Next action: land slices 1-2 as one commit, then push and cut the release the
-  operator granted, then implement the `consolidated` classification.
+- Current slice: 3b — the consolidation itself: umbrella issues, the four backend
+  readbacks, then the member closes.
+- Current slice intent: implement the four BACKEND readbacks the disposition
+  names but does not perform (destination exists, is OPEN at close time, its body
+  contains this issue's number, and it is not itself a consolidated close), file
+  the umbrella issues, then move members. This names the reviewable-intent unit in
+  progress and the commits it spans; critique and broad proof do not re-fire
+  within one unchanged intent (meaningful-slice-cadence).
+- **No close may run until those four readbacks exist.** They are currently listed
+  in the disposition's `not_checked_here` and implemented nowhere, so today a
+  destination could be closed, nonexistent, or silently not mention the issue that
+  moved into it. A close on that evidence is the false verdict this goal exists to
+  remove.
+- Next action: implement the four backend readbacks, then file umbrella issues.
+  The operator-granted push/release for the slice 1+2 bundle stays BLOCKED on
+  `#580` and is the operator's call, not something to force.
 - Slice 1 status: done before activation in `ac019102`, re-verified against the
   tracker on 2026-08-10 (`#521` `#519` `#520` all CLOSED; 22 open, not 25).
 - Slice 2 status: done. The seam ships with NO prose matching and NO fitted
@@ -147,7 +151,7 @@ See `## Active Operating Frame` for when each is proven.
 | --- | --- | --- | --- | --- |
 | 1 | Retire the constraint nobody chose | A cut vertex: a prior goal parked `AGENTS.md` shrinking underneath it, and slices 3-4 may need compaction moves it forbids. Cheapest unblock available | The policy scoped to its own pipeline; the operator ruling recorded with date and reasoning; `#521` closed citing it | done (`ac019102`, tracker-verified 2026-08-10) |
 | 2 | Make backlog re-verification executable, as an EXTENSION of the existing recount seam (STATUS: done — structural markers only; the prose/threshold design was built, measured, and deleted) | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A typed premise state per open issue, emitted by the recount seam rather than by a second backlog reader; `#554` reproduced as `premise-refuted-with-live-residue`; `#571` closed in place | done — with one revision to the recorded expectation: `#554` is reproduced as a refusal via a typed marker, NOT by inferring a decline from record prose, and `#571` stays open into slice 3 |
-| 3 | Consolidate on GitHub | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | planned |
+| 3a | The `consolidated` disposition (done) / 3b consolidate on GitHub (not started) | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | 3a done — the typed disposition ships with two bounded rounds; 3b NOT started, and no close may run until the four backend readbacks exist |
 | 4 | Close the family that reaches consumers | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | planned |
 
 
@@ -240,6 +244,21 @@ Already taken this session, carried in rather than re-asked:
   Operator, 2026-08-09.
 - Backlog re-verification becomes executable in this goal. Operator, 2026-08-09.
 - `#519`/`#520` close as a cadence question. Operator, 2026-08-09.
+
+Open, and RAISED BY THIS RUN — the push the operator granted is blocked on it:
+
+- **`check-seed-fixture-budget`'s 1000ms budget refuses every push, and it is not
+  measuring this slice.** Filed as `#580` with the measurement: the check runs in
+  0.06s standalone over a 152 KiB / 12-file tree, and `run-quality.sh` records
+  1167ms for the same command — roughly 1.1s of process startup and contention
+  against ~85 parallel gates. Two hypotheses were tested and REFUTED: machine load
+  (still 1167ms at load 2.5) and accumulated pytest scratch (pruned 126 MiB / 13,012
+  files to 152 KiB; the sample did not move). The recent median is self-sustaining
+  because each blocked push appends another slow sample. DECISION NEEDED: re-baseline
+  the budget, measure the check's own work instead of wall-clock-under-fan-out, or
+  give the gate a reachable per-label escape. This run did NOT weaken the floor and
+  did NOT use `--no-verify`, because either would revoke the push grant itself.
+  Commit `512376b7` is landed locally, fully gated, and unpushed pending this.
 
 Open, and inherited:
 
@@ -335,6 +354,20 @@ per the bullets above when that boundary is crossed):
 - Critique: TWO bounded fresh-eye rounds, both unnamed and read-only, both boundary-verified clean with `reviewer_boundary_fingerprint.py`. This is verdict logic on a proof surface, so the second round was owed and it earned itself. ROUND 1 confirmed the typing (caller-supplied judgement, bare-mention-is-not-residue, never-recommends-close all survived attack) and found four recall defects, each producing the close-leaning state on evidence a human reads as "do not close": line-scoped matching missing wrapped declines, a truncated root list, a silent empty scan, and an unread body silently meaning "no further ask" while the reason string asserted the body was clear. ROUND 2 read the REPAIRS and found what round 1 could not: the repairs' own defects. Measured, not asserted — with all 22 issues judged refuted, 21 refused, i.e. the tool had become a constant. Root cause was a CATEGORY ERROR: this repo's own recount floor REQUIRES a `Not claimed:` bullet naming the issues a goal does not take, and "this goal is not taking it" says nothing about closability; one such bullet reads "closable now" of the very issue the scanner was citing as evidence not to close. Round 2 also found JSON/JSONL collapsing into one block, `files_scanned == 0` not being a channel gap, and F4 reopened at the CLI seam via `.get("body") or ""`. THE OPERATOR THEN REFUTED THE WHOLE APPROACH, and correctly: the decline vocabulary was repo-specific English/Korean hardcoding inside a PORTABLE skill, and the proximity windows had been fitted by watching this repo's clean count go 1, 3, 7, 10 across successive tunings — a verdict surface fitted to its own test set, which is the defect this goal family exists to remove, arriving inside the tool built to remove it. All prose matching and all fitted constants were deleted.
 - Off-goal findings: A bounded read-only sweep for the same defect class across `skills/public/**`, `skills/support/**`, `skills/shared/**` found ~11 instances in ~326 files — present but not widespread, clustered in the achieve closeout floors and the issue closeout observer. Three were fixed IN THIS SLICE at the operator's instruction rather than filed. (1) `issue_critique_observer._denies_delegation`: an English negation list inside a 24-character window, the span narrowed until this repo's corpus looked right. MEASURED: `no fresh-eye reviewer was available, so nothing parent-delegated ran` returned `delegated`, permitting an issue close asserting a review nobody ran. Repaired to clause-scoped negation using punctuation boundaries; also catches right-side negation (`never ran`) that no leading window could, and a paragraph break is now a clause boundary. A leading-token test was considered and REJECTED on evidence (ten artifacts use `satisfied — parent-delegated ...`). Residual English-only limitation stated in the module, not hidden. (2) `goal_artifact_coordination_floors._RELEASE_SURFACE_TOKENS`: four of this repo's own script/artifact names gating the release coordination floor, making it silently inert in every consuming repo — worse than no floor, because it reads as coverage. Repaired with ecosystem-standard version manifests and publish commands plus an adapter-declared `release_surface_tokens` seam. (3) `issue_closeout_ledger_counts`: a comment named `unif*` as a known miss and the code never carried it, so `Four implementations, three unified.` passed a floor that refused the synonym `three consolidated.`; the fitted `{0,80}` clause cap is also gone. Surfaces confirmed CLEAN are recorded in the sweep, including `goal_artifact_disposition_grammar`, which documents the word-list trap in-file and matches structure only.
 - Lessons carried forward: The round that reads the REPAIRS catches a different class than the round that reads the original — round 2's finding inverted the tool's value and round 1 could not have seen it, because it did not exist yet. Measure a heuristic's output distribution before believing it: 21-of-22 refusals looked like caution and was a constant. And the strongest signal that a threshold is fitted is that you can narrate the sequence of values you tried — if the number came from watching the output, it is a fit, not a contract. Slice 3 inherits a working but EMPTY record channel: historical records carry no `Premise-residue:` marker, so consolidation must write markers as it goes rather than expecting the tool to recover intent from prose.
+- Metrics:
+
+### Slice 3: Slice 3a — the `consolidated` disposition (the closes themselves are NOT run)
+
+- Objective: Answer the question this goal said slice 3 forces: what closeout floor applies to a close that claims NOTHING about the defect, only that it moved. Add `consolidated` as a sixth classification that swaps the resolution floor for its own machine-verifiable one.
+- Why this approach: It had to exist before any member could move. Both existing branches cost the floor its meaning: the resolution branch demands `Implementation:` and `Prevention:`, so satisfying it means writing sentences that are not true, and the exempt branch would misclassify the issue while opening a path where any inconvenient bug reaches the light floor by relabelling.
+- Commits: pending — lands with this log entry
+- What changed: NEW `skills/public/issue/scripts/issue_consolidated_closeout.py` (the disposition's own floor) and `issue_closeout_classification_ledger.py` (one table of what each classification owes, extracted because the new branch created a second dispatch on the same key). Wired through `issue_verify_closeout_body.py`, `issue_verify_closeout.py`, `issue_validate_closeout_draft.py`, `issue_close.py`, `audit_brief.py`, `scripts/check_issue_closeout_commit_msg.py`, plus the author-facing `SKILL.md` and `issue_plan.py`. 30 tests in `tests/quality_gates/test_issue_consolidated_closeout.py`.
+- Alternatives rejected: REJECTED — reuse `question`/`decision-needed`: floor-exempt, so it would both misclassify the issue and open a one-word relabelling path to the lightest floor. REJECTED — reuse a resolution classification: a consolidation implements nothing, so meeting that floor means writing false sentences, and a floor met by writing false sentences is worse than none because the false sentences become checked-in evidence. REJECTED, AFTER BUILDING IT — deriving the repair-claim set from the resolution rows: it over-refused (see Critique).
+- Targeted verification: 30 focused tests plus 1086 across the issue lane. Every refusal exercised against the wired path (`_missing_ledger_fields`), not only the module's direct call — round 2 showed that distinction was load-bearing, because three checks passed their direct-call tests while never firing where the carrier actually runs. Gate aggregate green; dup ratchet OK; broad suite at the slice boundary.
+- Test duplication pressure: One new fixable family (two refusal messages sharing a join-and-append shape) classified `intentional` with its reason rather than abstracted: they name different subjects, cite different lists, and prescribe different remedies, so a shared builder would parameterize three prose fragments to save one line and make both refusals harder to read at the moment someone is blocked by them.
+- Critique: TWO bounded rounds, both boundary-verified clean, and round 2 again found what round 1 could not. ROUND 1 found the classification UNREACHABLE: it was in `KNOWN_CLASSIFICATIONS` and the ledger table while every live carrier still refused it, and the commit hook's `_infer_classification` fell through to `bug` — so the only path that worked demanded exactly the repair claims the disposition exists to forbid. It also found `REQUIRED_CLOSE_REASON` read by nobody, and the self-reference check never firing on the wired path. ROUND 2 read those repairs and found the seams they left. (a) The close-reason floor was only half real: `issue_close` enforces it, but the PRIMARY carrier is GitHub auto-closing from a keyword, where no reason argv exists — and the module's own recommended neutral `Closes` produces the same public `completed` event. Repaired by refusing the auto-closing carriers outright. (b) Splitting presence and arity between two owners left a seam: `Consolidated into: the umbrella issue` satisfied the presence owner (a substantive string) while the arity owner had been told to stay silent about absence, so the one fact this disposition exists to require went unrequired. (c) The self-reference check compared only the first close-keyword number, so in the intended shape — one carrier closing twenty issues into an umbrella — the destination could be one of the other nineteen. (d) Fence stripping, correct for field reads, re-opened the documented fenced-`Fixes` evasion, which GitHub still honours. (e) The derived claim set over-refused: `Root cause:`, `Siblings:` and `Boundary:` are diagnostic or scoping, an unfixed issue can carry all three, and consolidating a cluster IS a sibling search — so the most natural honest sentence was being refused. The claim predicate is now what it always meant, an assertion that something was BUILT.
+- Off-goal findings: `#580` filed: `check-seed-fixture-budget`'s 1000ms budget measures runner contention rather than the 0.06s check, and it refuses every push. Two hypotheses were tested and refuted (machine load; accumulated pytest scratch). The operator-granted push and release for the slice 1+2 bundle are blocked on it, and this run did NOT weaken the floor or use `--no-verify`, because either revokes the grant.
+- Lessons carried forward: The pattern held a third and fourth time: the round that reads the REPAIRS finds a different class than the round that reads the original, and every one of round 2's findings lived in a seam the repair itself created. Two of them share one shape worth naming — a check that passes its own direct-call test while never firing on the wired path — which is this goal's originating defect in miniature: a record (the green test) treated as a fact about a path it never exercised. The remedy applied here is that every refusal is now tested through `_missing_ledger_fields`, the way the carrier calls it. NOT DONE, and deliberately: the ~20 member closes, the umbrella issues, and the four backend readbacks (destination exists, is OPEN, contains this issue's number, no chains) are unimplemented. Slice 3b owes them, and it must not run a single close until they exist.
 - Metrics:
 
 ## Context Sources

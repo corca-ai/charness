@@ -83,7 +83,14 @@ _ANSWER_REPO = _load_local("issue_backend", "issue_verify_issue_backend").answer
 GIT_TIMEOUT_SECONDS = 10
 
 CARRIERS = ("direct-commit", "pr-body", "manual-fallback")
-CLASSIFICATIONS = ("bug", "feature", "deferred-work", "question", "decision-needed")
+# `consolidated` is here because a classification absent from THIS tuple is not a
+# sixth classification -- it is a RuntimeError. Bounded review found it added to
+# `audit_brief.KNOWN_CLASSIFICATIONS` and the ledger table while every live carrier
+# still refused it, so the only path that worked was the commit hook inferring
+# `bug` and demanding the very repair claims the disposition exists to forbid.
+CLASSIFICATIONS = (
+    "bug", "feature", "deferred-work", "question", "decision-needed", "consolidated",
+)
 MANUAL_FALLBACK_REASONS = (
     "auto-close-unsupported",
     "auto-close-failed-after-remote-verification",
@@ -287,7 +294,10 @@ def verify_closeout(
         repo_root=repo_root, body=body, classification=classification, numbers=numbers
     )
     missing_close_keywords = [] if carrier == "manual-fallback" else _missing_close_keywords(body, numbers, repo)
-    missing_fields = _missing_ledger_fields(body, classification)
+    # The carrier is threaded because `consolidated` must refuse the AUTO-CLOSE
+    # carriers: GitHub renders a keyword close as `completed`, with no reason argv
+    # to intercept, which asserts the repair a consolidated close refuses.
+    missing_fields = _missing_ledger_fields(body, classification, carrier=carrier)
     source_preservation = evaluate_source_preservation(body)
     behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
     hotl_dispositions = evaluate_hotl_dispositions(body, classification)

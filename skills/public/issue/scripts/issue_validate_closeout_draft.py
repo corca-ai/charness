@@ -137,7 +137,9 @@ def register_validate_closeout_draft_subparser(
     parser.add_argument("--number", action="append", type=int, required=True, help="Issue number; repeat for bundles")
     parser.add_argument(
         "--classification",
-        choices=("bug", "feature", "deferred-work", "question", "decision-needed"),
+        # The verifier owns this vocabulary; a second hand-written copy here is how
+        # a new classification ships refused by argparse before any code runs.
+        choices=verifier.CLASSIFICATIONS,
         required=True,
         help="Fix-unit classification; selects the required closeout ledger fields",
     )

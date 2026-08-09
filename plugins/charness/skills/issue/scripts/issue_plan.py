@@ -195,6 +195,18 @@ def build_resolve_plan(
                 "action_id": "discuss_before_design",
                 "classification_may_change": True,
             },
+            # A close that claims NOTHING about the defect, only that it moved. It
+            # is not floor-exempt: it swaps the resolution floor for a destination
+            # floor, and it may not use an auto-closing carrier, because GitHub
+            # renders a keyword close as `completed` -- the repair this disposition
+            # refuses -- with no reason argv to intercept.
+            "consolidated": {
+                "action_id": "name_the_destination_and_move",
+                "review_pass": "not_required_by_default",
+                "requires_close_reason": "not planned",
+                "forbidden_carriers": ["direct-commit", "pr-body"],
+                "required_reads": ["references/closeout-discipline.md"],
+            },
         },
         phase_barriers=[
             "GitHub issue state is the source of truth for selection and freshness.",

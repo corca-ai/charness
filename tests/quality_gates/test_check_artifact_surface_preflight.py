@@ -565,7 +565,12 @@ def test_closeout_draft_stub_body_satisfies_the_real_validator_helpers() -> None
     for classification in desc._VERIFY.CLASSIFICATIONS:
         lines = ["Closes #5"]
         for field_id, aliases in body._classification_requirements(classification):
-            value = "a decision and proof" if field_id == "siblings" else "x"
+            # Field-shaped stubs: `siblings` owes a decision/proof pair and
+            # `consolidated_into` owes an issue ANCHOR, not arbitrary prose.
+            value = {
+                "siblings": "a decision and proof",
+                "consolidated_into": "#600",
+            }.get(field_id, "x")
             lines.append(f"{aliases[0].title()}: {value}")
         text = "\n".join(lines)
         assert body._missing_ledger_fields(text, classification) == [], classification

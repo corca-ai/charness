@@ -13,7 +13,13 @@ from typing import Any
 
 _CLASSIFICATION_RE = re.compile(
     r"(?im)^\s*(?:[-*]\s*)?(?:\*\*)?classification(?:\*\*)?\s*:\s*"
-    r"(?P<classification>bug|feature|deferred-work|question|decision-needed)\s*$"
+    # `consolidated` included, and the omission it repairs is worth recording: a
+    # classification missing from THIS alternation does not fail loudly -- it falls
+    # through to `_infer_classification`, which defaults to `bug`. So a consolidated
+    # closeout was checked as a bug, demanding `Root cause:` / `Prevention:` /
+    # `Behavior #N:` -- the hook's remedy for a close that claims nothing was to
+    # fabricate exactly the repair claims the disposition exists to refuse.
+    r"(?P<classification>bug|feature|deferred-work|question|decision-needed|consolidated)\s*$"
 )
 _COMMENT_LINE_RE = re.compile(r"^\s*#")
 # A pausing resolution brief (references/resolution-brief.md "Persistence")

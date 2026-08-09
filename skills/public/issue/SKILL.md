@@ -66,7 +66,10 @@ closing anything.
    `issue_tool.py read --repo <org/repo> --number <n>` and require
    `comments_read: true` before design.
 4. Capture the reporter's job-to-be-done in one line and classify the fix-unit:
-   `bug`, `feature`, `deferred-work`, `question`, or `decision-needed`.
+   `bug`, `feature`, `deferred-work`, `question`, `decision-needed`, or
+   `consolidated` (the issue MOVES to an umbrella and the close claims nothing
+   about the defect; it owes a destination floor instead of a resolution one,
+   and must close via `close-with-comment --reason "not planned"`).
 5. Follow the planner's `classification_actions`.
    - `bug`: run the causal-review fresh-eye subagent before design; if spawning
      is blocked, stop and report the host signal. Wrap shared-tree reviewers
