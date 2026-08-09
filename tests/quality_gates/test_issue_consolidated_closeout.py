@@ -27,6 +27,20 @@ class _Ledger:
 
     CLASSIFICATION_FIELDS = _LEDGER["CLASSIFICATION_FIELDS"]
 
+# Modules this file is the standing coverage for, declared as quoted repo-relative
+# paths so `suggest_mutation_coverage_command` can MAP them. The mapper reads
+# textual references, and these tests build their paths from a variable
+# (`_SCRIPTS / "x.py"`), which matches none of its patterns -- so the changed-line
+# coverage gate reported these files unmapped and then blocked on lines this suite
+# actually covers. Declaring the mapping is better than making the loader uglier to
+# be greppable.
+_COVERS = (
+    "skills/public/issue/scripts/issue_consolidated_closeout.py",
+    "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+    "skills/public/issue/scripts/issue_verify_closeout_body.py",
+)
+
+
 
 def evaluate(text, **kwargs):
     """Always pass the ledger: the claim set is DERIVED from it, not hand-listed."""

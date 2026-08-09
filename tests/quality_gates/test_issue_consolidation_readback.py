@@ -19,6 +19,22 @@ _MOD = runpy.run_path(str(_SCRIPTS / "issue_consolidation_readback.py"))
 evaluate_destination = _MOD["evaluate_destination"]
 verify_consolidation = _MOD["verify_consolidation"]
 
+# Modules this file is the standing coverage for, declared as quoted repo-relative
+# paths so `suggest_mutation_coverage_command` can MAP them. The mapper reads
+# textual references, and these tests build their paths from a variable
+# (`_SCRIPTS / "x.py"`), which matches none of its patterns -- so the changed-line
+# coverage gate reported these files unmapped and then blocked on lines this suite
+# actually covers. Declaring the mapping is better than making the loader uglier to
+# be greppable.
+_COVERS = (
+    "skills/public/issue/scripts/issue_consolidation_readback.py",
+    "skills/public/issue/scripts/issue_state_readback.py",
+    "skills/public/issue/scripts/issue_close_comment_floor.py",
+    "skills/public/issue/scripts/issue_verify_closeout.py",
+    "skills/public/issue/scripts/issue_close.py",
+)
+
+
 
 def destination(**overrides) -> dict:
     payload = {
@@ -316,3 +332,111 @@ def test_the_readback_runs_on_the_carrier_a_consolidated_close_MUST_use(tmp_path
             reason="not planned",
         )
     assert "presence floor" in str(excinfo.value)
+
+
+def test_a_fetch_failure_in_the_WIRED_loop_is_reported_on_the_verdict() -> None:
+    """`readbacks_for_closeout` has its own error branch, distinct from
+    `verify_consolidation`'s, and it was the one with no test — the wired path sets
+    `payload = None` and appends the backend's message to the refusal."""
+
+    def explode(_number):
+        raise RuntimeError("gh: could not resolve host")
+
+    readbacks = _MOD["readbacks_for_closeout"](
+        numbers=[555, 556], destinations=[600], fetch=explode
+    )
+    assert len(readbacks) == 2
+    assert all(entry["state"] == "unknown" for entry in readbacks)
+    assert "could not resolve host" in readbacks[0]["problems"][0]
+    # The dedupe still applies: one destination-scoped failure, surfaced once.
+    surfaced = [p for entry in readbacks for p in entry["problems_to_surface"]]
+    assert len(surfaced) == 1
+    assert readbacks[1]["unreported_duplicates"] == 1
+
+
+# --- the extracted backend state read -----------------------------------------
+
+_STATE = runpy.run_path(str(_SCRIPTS / "issue_state_readback.py"))
+view_issue_state = _STATE["view_issue_state"]
+GH_BACKEND = {"id": "gh", "binary": "gh", "commands": None}
+
+
+def test_a_non_gh_backend_without_a_view_command_is_refused(tmp_path) -> None:
+    """Carrier text alone is not issue closeout: a backend that cannot read state
+    must say so rather than let the caller proceed on prose."""
+    import pytest
+
+    with pytest.raises(RuntimeError, match="requires backend commands.view"):
+        view_issue_state(
+            tmp_path, repo="o/r", number=1, backend={"id": "acme", "binary": "acme"}
+        )
+
+
+def test_a_command_that_cannot_start_is_a_typed_refusal(tmp_path, monkeypatch) -> None:
+    import subprocess as sp
+
+    import pytest
+
+    monkeypatch.setattr(_STATE["subprocess"], "run", lambda *a, **k: (_ for _ in ()).throw(OSError("no such binary")))
+    with pytest.raises(RuntimeError, match="failed to start"):
+        view_issue_state(tmp_path, repo="o/r", number=1, backend=GH_BACKEND)
+    assert sp is not None
+
+
+def test_a_timeout_becomes_a_nonzero_result_rather_than_an_escape(tmp_path, monkeypatch) -> None:
+    """A timeout must land in the same refusal channel as any other failure, not
+    escape as a different exception type the caller does not handle."""
+    import subprocess
+
+    import pytest
+
+    def timeout(*_a, **_k):
+        raise subprocess.TimeoutExpired(cmd="gh", timeout=1)
+
+    monkeypatch.setattr(_STATE["subprocess"], "run", timeout)
+    with pytest.raises(RuntimeError, match="timed out"):
+        view_issue_state(tmp_path, repo="o/r", number=1, backend=GH_BACKEND)
+
+
+def test_a_nonzero_exit_names_the_issue_and_the_stderr(tmp_path, monkeypatch) -> None:
+    import subprocess
+
+    import pytest
+
+    monkeypatch.setattr(
+        _STATE["subprocess"],
+        "run",
+        lambda *a, **k: subprocess.CompletedProcess("gh", 1, "", "not found"),
+    )
+    with pytest.raises(RuntimeError, match=r"o/r#42.*not found"):
+        view_issue_state(tmp_path, repo="o/r", number=42, backend=GH_BACKEND)
+
+
+def test_unparseable_output_is_refused_rather_than_returned(tmp_path, monkeypatch) -> None:
+    """Invalid JSON must not reach `evaluate_destination` as a string — that is the
+    non-dict payload path, and refusing here is the earlier, clearer place."""
+    import subprocess
+
+    import pytest
+
+    monkeypatch.setattr(
+        _STATE["subprocess"],
+        "run",
+        lambda *a, **k: subprocess.CompletedProcess("gh", 0, "not json", ""),
+    )
+    with pytest.raises(RuntimeError, match="invalid JSON"):
+        view_issue_state(tmp_path, repo="o/r", number=1, backend=GH_BACKEND)
+
+
+def test_a_well_formed_read_returns_the_payload(tmp_path, monkeypatch) -> None:
+    import json as _json
+    import subprocess
+
+    monkeypatch.setattr(
+        _STATE["subprocess"],
+        "run",
+        lambda *a, **k: subprocess.CompletedProcess(
+            "gh", 0, _json.dumps({"number": 600, "state": "OPEN"}), ""
+        ),
+    )
+    assert view_issue_state(tmp_path, repo="o/r", number=600, backend=GH_BACKEND)["number"] == 600

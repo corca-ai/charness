@@ -21,6 +21,19 @@ import pytest
 
 _SCRIPTS = Path(__file__).resolve().parents[2] / "skills/public/achieve/scripts"
 
+# Modules this file is the standing coverage for, declared as quoted repo-relative
+# paths so `suggest_mutation_coverage_command` can MAP them. The mapper reads
+# textual references, and these tests build their paths from a variable
+# (`_SCRIPTS / "x.py"`), which matches none of its patterns -- so the changed-line
+# coverage gate reported these files unmapped and then blocked on lines this suite
+# actually covers. Declaring the mapping is better than making the loader uglier to
+# be greppable.
+_COVERS = (
+    "skills/public/achieve/scripts/goal_artifact_coordination_floors.py",
+    "skills/public/achieve/scripts/achieve_adapter_policy.py",
+)
+
+
 
 def _load(name: str):
     spec = importlib.util.spec_from_file_location(name, _SCRIPTS / f"{name}.py")

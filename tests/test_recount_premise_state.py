@@ -43,6 +43,20 @@ def premise_cli():
         "recount_premise_state_under_test", SCRIPTS / "recount_premise_state.py"
     )
 
+# Modules this file is the standing coverage for, declared as quoted repo-relative
+# paths so `suggest_mutation_coverage_command` can MAP them. The mapper reads
+# textual references, and these tests build their paths from a variable
+# (`_SCRIPTS / "x.py"`), which matches none of its patterns -- so the changed-line
+# coverage gate reported these files unmapped and then blocked on lines this suite
+# actually covers. Declaring the mapping is better than making the loader uglier to
+# be greppable.
+_COVERS = (
+    "skills/public/achieve/scripts/recount_premise_lib.py",
+    "skills/public/achieve/scripts/recount_residue_lib.py",
+    "skills/public/achieve/scripts/recount_premise_state.py",
+)
+
+
 
 def write_record(repo: Path, name: str, body: str, root: str = "goals") -> Path:
     path = repo / "charness-artifacts" / root / name
@@ -697,3 +711,181 @@ def test_backend_payload_without_a_body_key_counts_as_unread(tmp_path, premise_c
     entry = report["issues"][0]
     assert entry["body_read"] is False
     assert entry["state"] == "premise-refuted-with-live-residue"
+
+
+# --- the CLI and the backend seam ---------------------------------------------
+
+
+def test_main_renders_a_report_end_to_end(tmp_path, premise_cli, capsys, monkeypatch) -> None:
+    """`main` had only its error envelope covered; the path an operator actually runs
+    — list, evaluate, print — had none."""
+    write_record(tmp_path, "prior.md", "Premise-residue: #554 — part 2 is unbuilt\n")
+    premise_file = tmp_path / "p.json"
+    premise_file.write_text(
+        json.dumps({"554": {"verdict": "refuted"}, "576": {"verdict": "holds"}}), encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        premise_cli,
+        "backend_json",
+        lambda _root, argv: (
+            [{"number": 554, "title": "a"}, {"number": 576, "title": "b"}]
+            if "list" in argv
+            else {"number": int(argv[argv.index("view") + 1]), "body": ""}
+        ),
+    )
+
+    code = premise_cli.main(
+        ["--repo-root", str(tmp_path), "--premise-file", str(premise_file), "--with-bodies"]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 0 and payload["ok"] is True
+    states = {item["number"]: item["state"] for item in payload["issues"]}
+    assert states == {554: "premise-refuted-with-live-residue", 576: "premise-holds"}
+
+
+def test_main_state_filter_narrows_issues_but_not_counts(tmp_path, premise_cli, capsys, monkeypatch) -> None:
+    """`counts` stays a whole-backlog denominator, and the filter is recorded so the
+    disagreement with `counted` is visible rather than confusing."""
+    write_record(tmp_path, "g.md", "nothing\n")
+    monkeypatch.setattr(
+        premise_cli,
+        "backend_json",
+        lambda _root, argv: [{"number": 1, "title": "a"}, {"number": 2, "title": "b"}],
+    )
+    code = premise_cli.main(
+        ["--repo-root", str(tmp_path), "--state", "premise-holds"]
+    )
+    payload = json.loads(capsys.readouterr().out)
+    assert code == 0
+    assert payload["counted"] == 2 and payload["issues"] == []
+    assert payload["scan_scope"]["state_filter"] == "premise-holds"
+
+
+def test_backend_json_refuses_a_nonzero_backend(tmp_path, premise_cli, monkeypatch) -> None:
+    import subprocess
+
+    import pytest
+
+    owner = premise_cli.load_issue_module(ROOT, "issue_backend")
+    monkeypatch.setattr(
+        owner, "run_backend", lambda argv: subprocess.CompletedProcess(argv, 1, "", "boom")
+    )
+    with pytest.raises(RuntimeError, match="boom"):
+        premise_cli.backend_json(ROOT, ["gh", "issue", "list"])
+
+
+def test_backend_json_parses_a_successful_answer(tmp_path, premise_cli, monkeypatch) -> None:
+    import subprocess
+
+    owner = premise_cli.load_issue_module(ROOT, "issue_backend")
+    monkeypatch.setattr(
+        owner, "run_backend", lambda argv: subprocess.CompletedProcess(argv, 0, '[{"number": 1}]', "")
+    )
+    assert premise_cli.backend_json(ROOT, ["gh", "issue", "list"]) == [{"number": 1}]
+
+
+def test_a_list_that_is_not_a_list_is_refused(premise_cli) -> None:
+    import pytest
+
+    with pytest.raises(RuntimeError, match="did not return a list"):
+        premise_cli.list_open_issues(ROOT, repo="o/r", limit=5, runner=lambda _argv: {"n": 1})
+
+
+def test_view_issue_degrades_a_non_dict_payload(premise_cli) -> None:
+    assert premise_cli.view_issue(ROOT, 1, repo="o/r", runner=lambda _argv: ["nope"]) == {}
+
+
+def test_the_sibling_loader_memoizes_and_refuses_a_missing_module(premise_cli) -> None:
+    import pytest
+
+    assert premise_cli.sibling("recount_premise_lib") is premise_cli.sibling("recount_premise_lib")
+    with pytest.raises(ImportError, match="not found beside"):
+        premise_cli.sibling("recount_no_such_module")
+
+
+def test_the_issue_module_loader_refuses_a_missing_script(premise_cli, tmp_path) -> None:
+    import pytest
+
+    with pytest.raises(ImportError, match="issue skill script"):
+        premise_cli.load_issue_module(tmp_path, "no_such_issue_script")
+
+
+def test_a_git_listing_that_cannot_start_falls_back_and_says_so(tmp_path, residue_lib, monkeypatch) -> None:
+    """The git probe has two failure shapes — a nonzero exit and a binary that cannot
+    start — and only the first was exercised."""
+    monkeypatch.setattr(
+        residue_lib.subprocess, "run", lambda *a, **k: (_ for _ in ()).throw(OSError("no git"))
+    )
+    write_record(tmp_path, "g.md", "Premise-residue: #601 — reason\n")
+    scan = residue_lib.scan_residue(tmp_path, 601)
+    assert scan["provenance"]["listing_mode"] == "rglob-no-git"
+    assert len(scan["declining"]) == 1
+
+
+def test_a_fenced_marker_is_a_channel_gap_in_classify(premise_lib) -> None:
+    """The fenced-marker gap branch had no test: an unbalanced fence can hide every
+    marker below it, so the suppression must refuse rather than footnote."""
+    residue = ran_clean()
+    residue["provenance"]["fenced_markers_skipped"] = ["charness-artifacts/goals/g.md:4"]
+    verdict = premise_lib.classify(caller_verdict="refuted", residue=residue)
+    assert verdict["state"] == premise_lib.PREMISE_REFUTED_WITH_LIVE_RESIDUE
+    assert "fenced blocks" in verdict["reason"]
+
+
+def test_a_premise_file_key_that_is_not_an_issue_number_is_skipped(tmp_path, premise_cli) -> None:
+    """A stray key is not a judgement about anything, so it is dropped rather than
+    raising — the file is a human's notes and one bad line must not lose the rest."""
+    premise_file = tmp_path / "p.json"
+    premise_file.write_text(
+        json.dumps({"not-a-number": "holds", "#9": "refuted"}), encoding="utf-8"
+    )
+    verdicts = premise_cli.load_premise_verdicts(premise_file)
+    assert set(verdicts) == {9}
+
+
+def test_the_script_runs_as_a_command_and_exits_nonzero_on_a_bad_premise_file(tmp_path) -> None:
+    """Covers the `__main__` entry an operator actually invokes, not just `main()`.
+
+    A module whose CLI entry is only ever called in-process can ship an import-time
+    or argv-shape break that every in-process test misses.
+    """
+    import subprocess
+    import sys
+
+    premise_file = tmp_path / "p.json"
+    premise_file.write_text("[]", encoding="utf-8")
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(SCRIPTS / "recount_premise_state.py"),
+            "--repo-root", str(tmp_path),
+            "--premise-file", str(premise_file),
+        ],
+        capture_output=True,
+        text=True,
+        timeout=60,
+    )
+    assert result.returncode == 1
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is False
+    assert "JSON object" in payload["error"]
+
+
+def test_a_candidate_that_yields_no_loader_is_skipped_not_crashed(tmp_path, premise_cli, monkeypatch) -> None:
+    """A defensive branch, and this test says plainly what it proves and what it does not.
+
+    `spec_from_file_location` returns a loaderless spec only for a path Python cannot
+    recognise as a module, which the `is_file()` guard above makes unreachable for the
+    `.py` candidates this loader is given. So this proves the guard SKIPS rather than
+    raises — it does not prove the guard is reachable in production. Every sibling
+    loader in this repo carries the same guard; deleting it here would be the odd one
+    out, and a loader that crashed on an unloadable candidate would fail a whole run
+    for a file it was only ever going to skip.
+    """
+    import pytest
+
+    monkeypatch.setattr(premise_cli.importlib.util, "spec_from_file_location", lambda *a, **k: None)
+    premise_cli._MODULES.pop("recount_premise_lib", None)
+    with pytest.raises(ImportError, match="not found beside"):
+        premise_cli.sibling("recount_premise_lib")
+    premise_cli._MODULES.pop("recount_premise_lib", None)
