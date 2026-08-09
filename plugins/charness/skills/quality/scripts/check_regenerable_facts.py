@@ -30,10 +30,20 @@ lib = SKILL_RUNTIME.load_local_skill_module(__file__, "regenerable_facts_lib")
 def render(report: dict) -> list[str]:
     if report.get("adapter_refusal"):
         return [f"regenerable-facts: {report['adapter_refusal']}"]
+    if report["checked"] == 0 and not report.get("declared"):
+        # No adapter config and nothing at the defaults: this repo has no
+        # forward-looking prose where the gate looks. Report "no gate", do not
+        # claim clean, and do not fail -- failing here would redden every
+        # consumer's first quality run before they have configured anything.
+        return [
+            "regenerable-facts: NOT CONFIGURED — no file matched the default surfaces, "
+            "so this repo has no verdict from this gate. Name your forward-looking prose "
+            "in `regenerable_facts.surfaces` to arm it."
+        ]
     if report["checked"] == 0:
-        # Distinguish the two causes: an unconfigured scope and a scope whose every
-        # file is exempted need different remedies, and one message for both points
-        # half the readers at the wrong knob.
+        # Distinguish the two causes: a declared scope that matches nothing and a
+        # scope whose every file is exempted need different remedies, and one
+        # message for both points half the readers at the wrong knob.
         if report["exempted"]:
             return [
                 f"regenerable-facts: every matched file is exempted ({len(report['exempted'])} of them), "
@@ -41,9 +51,9 @@ def render(report: dict) -> list[str]:
                 "`regenerable_facts.surfaces`."
             ]
         return [
-            "regenerable-facts: scanned 0 files, so nothing was verified. Configure "
-            "`regenerable_facts.surfaces` in the quality adapter to name this repo's "
-            "forward-looking prose. A gate that matched no file is not a clean gate."
+            "regenerable-facts: the declared `regenerable_facts.surfaces` matched 0 files, "
+            "so nothing was verified. Fix the globs — a declared scope that matches "
+            "nothing is not a clean gate."
         ]
     if report["unreasoned_exemptions"]:
         return [
@@ -115,7 +125,9 @@ def main() -> int:
     failed = (
         report["findings"]
         or report["unreasoned_exemptions"]
-        or report["checked"] == 0
+        # A DECLARED scope matching nothing is a broken config and fails. An
+        # unconfigured repo matching nothing is "no gate", reported and not failed.
+        or (report["checked"] == 0 and report.get("declared"))
         or report.get("adapter_refusal")
     )
     return 1 if failed else 0

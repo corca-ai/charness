@@ -371,6 +371,7 @@ QUALITY_RUNTIME_STUBS = (
     ("doc-duplicates", "inventory_doc_duplicates.py"),
     ("inventory-nose-clones", "inventory_nose_clones.py"),
     ("dup-ratchet", "check_dup_ratchet.py"),
+    ("check-regenerable-facts", "check_regenerable_facts.py"),
 )
 QUALITY_SHELL_STUBS = (
     ("check-markdown", "check-markdown.sh"),

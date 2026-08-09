@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import fnmatch
 import re
+import subprocess
 from pathlib import Path
 
 # Surfaces a reader treats as current. Deliberately excludes any dated-record
@@ -109,6 +110,22 @@ def scan_text(text: str) -> list[tuple[int, str, str, str]]:
     return hits
 
 
+def declared_surfaces(adapter: dict | None) -> bool:
+    """Did the repo CHOOSE this scope, or is it running on defaults?
+
+    The difference decides what an empty scan means. A repo that declared its
+    surfaces and matched nothing has a broken config and must be told. A repo
+    that never configured the gate and matched nothing has no forward-looking
+    prose at the default locations -- that is "no gate here", which is honest to
+    report and wrong to fail on, because failing would make the gate hostile on
+    install in every consumer.
+    """
+    adapter = adapter or {}
+    body = adapter.get("data") if isinstance(adapter.get("data"), dict) else adapter
+    config = (body or {}).get("regenerable_facts") or {}
+    return bool(config.get("surfaces"))
+
+
 def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str]]:
     """Read surfaces and exemptions from the consuming repo's adapter.
 
@@ -142,16 +159,41 @@ def exemption_for(rel: str, exemptions: dict[str, str]) -> str | None:
     return None
 
 
+def repo_files(repo_root: Path) -> set[str] | None:
+    """Gitignored and vendored trees are not this repo's prose.
+
+    A bare filesystem walk reads `node_modules/`, `vendor/`, and build output --
+    files no reader treats as this repo's forward-looking prose, and files the
+    author cannot fix. Returns None when git is unavailable, in which case the
+    caller falls back to the filesystem rather than scanning nothing.
+    """
+    try:
+        completed = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            cwd=repo_root,
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return None
+    if completed.returncode != 0:
+        return None
+    return {entry for entry in completed.stdout.decode("utf-8", "replace").split("\0") if entry}
+
+
 def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
     surfaces, exemptions = resolve_config(adapter)
     findings: list[dict[str, object]] = []
     exempted: list[dict[str, str]] = []
     checked = 0
     seen: set[Path] = set()
+    listed = repo_files(repo_root)
     for pattern in surfaces:
         for path in sorted(repo_root.glob(pattern)):
             if not path.is_file() or path in seen:
                 continue
+            if listed is not None and path.relative_to(repo_root).as_posix() not in listed:
+                continue  # gitignored or otherwise not part of the repo's own prose
             seen.add(path)
             rel = path.relative_to(repo_root).as_posix()
             reason = exemption_for(rel, exemptions)
@@ -164,6 +206,7 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
                     {"path": rel, "line": lineno, "literal": literal, "label": label, "remedy": remedy}
                 )
     return {
+        "declared": declared_surfaces(adapter),
         "checked": checked,
         "surfaces": list(surfaces),
         "exempted": exempted,

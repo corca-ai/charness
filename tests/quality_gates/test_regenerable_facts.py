@@ -125,18 +125,37 @@ def _run(repo: Path, *extra: str) -> tuple[int, str]:
     return completed.returncode, completed.stdout + completed.stderr
 
 
-def test_a_scan_that_matched_no_file_is_REFUSED_not_reported_clean(tmp_path: Path) -> None:
-    # Round 1's blocker, verified live before repair: a consumer whose prose does
-    # not sit at the default globs got `checked: 0` and exit 0 -- a gate shipping
-    # as a permanently green no-op, which is this rule's own defect class.
+def test_an_unconfigured_repo_reports_NO_GATE_rather_than_clean_or_red(tmp_path: Path) -> None:
+    # Round 1's blocker was that scanning nothing returned a CLEAN verdict. The
+    # first repair failed instead -- which reddened every consumer's first quality
+    # run and the runner's own fixture repos. The honest split is by who chose the
+    # scope: an unconfigured repo gets "no gate here", stated, not claimed clean.
     repo = tmp_path / "empty"
     repo.mkdir()
     (repo / "NOTES.md").write_text("# nothing in scope\n", encoding="utf-8")
 
     code, out = _run(repo)
 
+    assert code == 0, out
+    assert "NOT CONFIGURED" in out
+    assert "no regenerable facts" not in out, "an unscanned repo must not read as clean"
+
+
+def test_a_DECLARED_scope_that_matches_nothing_is_REFUSED(tmp_path: Path) -> None:
+    # The other half: the repo chose these globs and they match nothing, so the
+    # config is broken and the gate must say so rather than pass.
+    repo = tmp_path / "declared"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "NOTES.md").write_text("# prose\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nregenerable_facts:\n  surfaces:\n    - docs/nowhere/*.md\n",
+        encoding="utf-8",
+    )
+
+    code, out = _run(repo)
+
     assert code == 1, out
-    assert "scanned 0 files" in out
+    assert "matched 0 files" in out
 
 
 def test_an_invalid_adapter_is_REFUSED_rather_than_silently_replaced_by_defaults(tmp_path: Path) -> None:
@@ -231,3 +250,69 @@ def test_a_comma_grouped_count_without_an_identifier_prefix_is_still_a_count() -
     # unpinned -- `#24` is blocked by the `#` alone. These cover the clause.
     assert _hits("The corpus holds 1,234 tests.") == ["1,234 tests"]
     assert _hits("Tracked as 24, issue 13 covers the rest.") == []
+
+
+def test_gitignored_files_are_not_this_repos_prose(tmp_path: Path) -> None:
+    # A bare filesystem walk reads node_modules/ and build output -- files no
+    # reader treats as the repo's prose and the author cannot fix. Caught by
+    # inventory-gitignore-scan-hygiene when this gate was first pushed.
+    import subprocess
+
+    repo = tmp_path / "git"
+    (repo / "docs").mkdir(parents=True)
+    subprocess.run(["git", "init", "-q"], cwd=repo, check=True)
+    (repo / ".gitignore").write_text("docs/vendored.md\n", encoding="utf-8")
+    (repo / "AGENTS.md").write_text("clean prose\n", encoding="utf-8")
+    (repo / "docs" / "vendored.md").write_text("Pinned at v9.9.9 by a vendor.\n", encoding="utf-8")
+
+    report = lib.scan_repo(repo, {"data": {"regenerable_facts": {"surfaces": ["AGENTS.md", "docs/**/*.md"]}}})
+
+    assert report["findings"] == [], "a gitignored file is not this repo's prose"
+    assert report["checked"] == 1
+
+    # And the filter must not swallow tracked files: the same content, tracked, IS a finding.
+    (repo / "docs" / "owned.md").write_text("Pinned at v9.9.9 by us.\n", encoding="utf-8")
+    subprocess.run(["git", "add", "-A"], cwd=repo, check=True)
+    tracked = lib.scan_repo(repo, {"data": {"regenerable_facts": {"surfaces": ["AGENTS.md", "docs/**/*.md"]}}})
+    assert [f["path"] for f in tracked["findings"]] == ["docs/owned.md"]
+
+
+def _validate(block: object) -> tuple[list[str], dict]:
+    from runtime_bootstrap import import_repo_module
+
+    qlib = import_repo_module(ROOT / "scripts" / "quality_adapter_lib.py", "scripts.quality_adapter_lib")
+    validated: dict = {}
+    errors: list[str] = []
+    qlib._apply_regenerable_facts({"regenerable_facts": block}, validated, errors, [])
+    return errors, validated
+
+
+def test_the_adapter_validator_refuses_each_malformed_block() -> None:
+    # Every refusal branch. Without these the validator's messages are unproven,
+    # and a consumer's malformed adapter would surface as a silent default.
+    assert _validate("not-a-mapping")[0] == ["regenerable_facts must be a mapping"]
+    assert _validate({"surfaces": "docs/*.md"})[0] == [
+        "regenerable_facts.surfaces must be a list of glob strings"
+    ]
+    assert _validate({"surfaces": ["ok.md", 7]})[0] == [
+        "regenerable_facts.surfaces must be a list of glob strings"
+    ]
+    assert _validate({"exemptions": ["a.md"]})[0] == [
+        "regenerable_facts.exemptions must be a mapping of path -> reason"
+    ]
+    errors, _ = _validate({"exemptions": {"b.md": "  ", "a.md": None}})
+    assert errors == ["regenerable_facts.exemptions needs a reason for: a.md, b.md"]
+
+
+def test_the_adapter_validator_accepts_a_well_formed_block() -> None:
+    errors, validated = _validate({"surfaces": ["AGENTS.md"], "exemptions": {"a.md": " why  "}})
+
+    assert errors == []
+    assert validated["regenerable_facts"] == {"surfaces": ["AGENTS.md"], "exemptions": {"a.md": "why"}}
+
+
+def test_an_absent_block_leaves_the_key_unset() -> None:
+    errors, validated = _validate(None)
+
+    assert errors == []
+    assert "regenerable_facts" not in validated

@@ -483,3 +483,67 @@ def test_a_no_op_mutant_is_refused_not_reported_as_survived(tmp_path: Path) -> N
 
     assert [m.verdict for m in sweep.mutants] == [mar.REFUSED]
     assert "no-op mutant" in sweep.mutants[0].detail
+
+
+def test_a_teardown_error_beside_a_real_failure_is_still_a_kill() -> None:
+    # pytest reports a fixture/teardown error alongside a genuine `failed`.
+    # Refusing that would throw away a real kill, which is why the error branch
+    # runs AFTER the failure check.
+    verdict, _ = _classify(1, "1 failed, 8 passed, 1 error in 0.10s", baseline_passed=9)
+    assert verdict == mar.KILLED
+
+
+def test_an_error_only_run_is_refused_with_the_error_reason() -> None:
+    verdict, detail = _classify(2, "2 errors in 0.10s", baseline_passed=0)
+    assert verdict == mar.REFUSED
+    assert "did not run to a verdict" in detail
+
+
+def test_a_failed_restore_is_raised_not_swallowed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # `restore` verifies bytes; a filesystem that accepts the write but returns
+    # different content must be loud, not silently leave a mutated worktree.
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    path = repo / "subject.py"
+    original = path.read_bytes()
+    monkeypatch.setattr(mar.Path, "read_bytes", lambda self: b"not what was written")
+
+    with pytest.raises(mar.SweepError, match="failed to restore"):
+        mar.restore(path, original)
+
+
+def test_the_cli_exits_two_on_a_sweep_error(tmp_path: Path) -> None:
+    # A SweepError is a refusal the caller must see, and it is exit 2 -- distinct
+    # from 1 (survivors/refusals) and 3 (crash).
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    plan_path = tmp_path / "bad.json"
+    plan_path.write_text(
+        json.dumps({"test_command": PYTEST_CMD, "mutants": [{"path": "subject.py", "find": "x"}]}), encoding="utf-8"
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
+        capture_output=True,
+        text=True,
+    )
+
+    # A missing `replace` key is a per-mutant REFUSED, so exit 1, not a crash.
+    assert completed.returncode == 1, completed.stderr
+    assert "missing" in completed.stdout
+
+
+def test_the_human_summary_names_the_baseline_it_measured_against(tmp_path: Path) -> None:
+    repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
+    plan_path = tmp_path / "p.json"
+    plan_path.write_text(
+        json.dumps(_plan(mutants=[{"id": "k", "path": "subject.py", "find": "a + b", "replace": "a * b"}])),
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(SCRIPT), "--repo-root", str(repo), "--plan", str(plan_path)],
+        capture_output=True,
+        text=True,
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert "over a baseline of 1 passing tests" in completed.stdout
