@@ -269,7 +269,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 4s-d | `#515` + `#518` + `#528` — make quality declarations render applied, partial, or unreachable instead of silently refilling or disappearing | Full preset automation is larger than the bugs; honest reconciliation is the smallest shared capability | Declared surface/preset/gate reachability report; unsupported-language scans say not-applicable; dotted absence survives resolution/bootstrap; current consumer repros | **DONE locally — commit/issue closeout pending** |
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | **DONE locally — closeout pending** |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | **DONE — survivor refuted; missing count 0; issues updated** |
-| 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | pending |
+| 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | **DONE locally — closeout pending** |
 | 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | pending |
 | 9 | Final bundle and `v4.1.0` release | All selected consumer and proof-surface work is complete; publication is now the remaining irreversible boundary | Locked closeout, release critique + claims review, source-tree publish helper, hosted CI, public/install/doctor and issue-state readbacks | pending |
 
@@ -767,6 +767,34 @@ applies.
   samples, zero violations, and exit 0. Per the predeclared boundary, no absence
   floor was added. Synthetic missing-sample WARN/exit-0 behavior and other
   profiles remain explicit non-claims; `#546` records the re-scope.
+
+### Slice 9: route from the root; keep the load-bearing delegation block
+
+- Objective: resolve `#523` by making the always-loaded root a routing surface
+  while preserving the full `## Subagent Delegation` authorization and safety
+  block byte-for-byte.
+- Premise re-read: the issue's fixed `craken-agents@4c49c96d` source routes from
+  a 1,105-byte root; `ceal-cli@1ec4154` keeps short rules in root and reasons in
+  focused docs. Charness cannot reach that size while its delegated-review block
+  remains load-bearing, so this slice targets ownership rather than imitation.
+- What changed: external side-effect detail moved under the operating contract;
+  dynamic workflow detail routes to setup's agent-doc policy; phase, commit,
+  closeout, failure-log, and repository maps are short owner links. The root
+  retains the authorization summaries needed before those docs are opened.
+- Measurement: `AGENTS.md` moved from 15,806 bytes / 129 lines to 9,409 bytes /
+  96 lines. The protected block is 4,151 bytes in both versions with SHA-256
+  `b3bdce1ef8f751ed019fb5b51a2e6983ce0df6259b4eafb5c0312297bf1d1486`;
+  `cmp` returns 0. `CLAUDE.md` remains a symlink to `AGENTS.md`.
+- Verification: 109 relevant root/setup/critique tests passed before review;
+  the repaired subset passed 93. Doc links, markdown, authoring preflights, and
+  diff checks pass.
+- Critique: round 1 caught a weakened precedence boundary in the compact dynamic
+  workflow summary; it now says higher-priority instructions and host capability
+  win and retains the no-second-message implication. Round 2 caught a pointer
+  that conflated this repo's `.charness/quality-failure-logs/` with a consumer's
+  Lefthook-owned `logs/` contract. The root now names the authoring-repo fact and
+  routes consumer configuration separately. Both fingerprints were clean; the
+  capped round-2 repair is accepted-unreviewed.
 
 ## Context Sources
 

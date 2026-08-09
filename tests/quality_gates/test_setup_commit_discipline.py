@@ -14,6 +14,8 @@ from scripts.setup_commit_discipline_lib import (
 )
 from scripts.setup_host_docs_lib import render_agents_template
 
+from .support import ROOT
+
 # #317: setup seeds a compact meaningful-slice commit-discipline block in a
 # greenfield AGENTS.md, and the inspector flags an AGENTS.md that has Charness
 # goal/skill routing but no commit-discipline rule (same tell-don't-rewrite
@@ -106,6 +108,26 @@ def test_greenfield_template_states_the_per_host_subagent_model_policy() -> None
     assert "## Dynamic Workflows" in agents_text
     assert "when the agent judges it earns its cost" in agents_text
     assert "A higher-priority system, developer, or host instruction may prohibit" in agents_text
+
+
+def test_live_root_dynamic_workflow_summary_preserves_authority_boundary() -> None:
+    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    dynamic = agents_text.split("## Dynamic Workflows", 1)[1].split("\n## ", 1)[0]
+
+    assert "standing-approved" in dynamic
+    assert "higher-priority system/developer/host instructions" in dynamic
+    assert "host capability" in dynamic
+    assert "Do not wait for a second user message" in dynamic
+
+
+def test_live_root_routes_failure_logs_without_conflating_consumer_hooks() -> None:
+    agents_text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    execution = agents_text.split("## Execution Discipline", 1)[1].split("\n## ", 1)[0]
+
+    assert ".charness/quality-failure-logs/" in execution
+    assert "final receipt" in execution
+    assert "Consumer hook configuration follows" in execution
+    assert "hook-failure-visibility.md" in execution
 
 
 def test_greenfield_template_passes_inspector(tmp_path: Path) -> None:

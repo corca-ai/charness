@@ -34,6 +34,29 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
   selected proof artifact with the cited fields. See
   [skills/public/spec/references/evidence-durability.md](../../skills/public/spec/references/evidence-durability.md).
 
+## External Side-Effect Discipline
+
+- Filing a GitHub issue is standing-approved when the issue skill's observed
+  problem, reproduction/evidence path, and source-preservation shape are met.
+- Closing an issue is standing-approved only when
+  `issue_tool.py validate-closeout-draft` reports `draft_verified`, a delegated
+  resolution critique ran before the close, the classification ledger is
+  complete, a `Behavior #N:` verdict names a channel distinct from the fix, and
+  `verify-closeout --expect-state CLOSED` reads the provider state back. The
+  detailed carrier contract lives in
+  [issue closeout discipline](../../skills/public/issue/references/closeout-discipline.md).
+  The floor is the authorization: placeholders, a skipped critique, or reuse of
+  the fix channel revoke it.
+- `git push` is not standing-approved. A green gate is not a push request, and a
+  granted push is conditional on unchanged gates and proof scope. `--no-verify`,
+  disarming a check, loosening a floor, or narrowing a test revokes the grant.
+  A successful push still needs remote CI confirmation through a different
+  observer and channel.
+- Reopening an issue, creating a PR, publishing a release, creating a tag,
+  changing a version, and running any `cautilus evaluate` each require an
+  explicit grant for that phase. Approval for one boundary does not carry to
+  another.
+
 ## Pointer-Write Discipline
 
 - Skill `latest.*` artifacts are read-mostly current pointers. When a skill
