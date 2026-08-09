@@ -7,6 +7,7 @@ import json
 import subprocess
 import sys
 from pathlib import Path
+from typing import Any
 
 from runtime_bootstrap import import_repo_module, load_path_module, repo_root_from_script
 
@@ -39,7 +40,9 @@ current_artifact_filename = _scripts_artifact_naming_lib_module.current_artifact
 _scripts_repo_file_listing_module = import_repo_module(__file__, "scripts.repo_file_listing")
 iter_matching_repo_files = _scripts_repo_file_listing_module.iter_matching_repo_files
 _scripts_adapter_key_registry_module = import_repo_module(__file__, "scripts.adapter_key_registry")
-unreconciled_keys = _scripts_adapter_key_registry_module.unreconciled_keys
+_scripts_adapter_warn_tier_module = import_repo_module(__file__, "scripts.adapter_warn_tier")
+unreconciled_keys = _scripts_adapter_warn_tier_module.unreconciled_keys
+unestablished_corpus_reason = _scripts_adapter_warn_tier_module.unestablished_corpus_reason
 _scripts_check_coverage_lib_module = import_repo_module(__file__, "scripts.check_coverage_lib")
 PER_FILE_MIN_COVERAGE = _scripts_check_coverage_lib_module.PER_FILE_MIN_COVERAGE
 PER_FILE_MIN_STATEMENTS = _scripts_check_coverage_lib_module.PER_FILE_MIN_STATEMENTS
@@ -362,7 +365,7 @@ def iter_warn_scope_adapters(root: Path, *, require_git: bool = False) -> list[P
     return iter_matching_repo_files(root, globs, require_git=require_git)
 
 
-def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> list[dict[str, str]]:
+def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> Any:
     """WARN -- never refuse -- on a declared key no module reads (#530).
 
     This is the tier the operator chose, and the distinction is the whole point. Every
@@ -381,13 +384,26 @@ def report_unreconciled_keys(root: Path, warn_scope: list[Path]) -> list[dict[st
     key(s) across 37 declaring file(s)` is a claim; silence is not, and a bare zero is
     only half of one.
     """
-    warnings = unreconciled_keys(root, warn_scope)
-    for warning in warnings:
+    result = unreconciled_keys(root, warn_scope)
+    for dropped in result.uninterpreted:
+        print(f"WARNING {dropped['adapter']}: {dropped['detail']}", file=sys.stderr)
+    for warning in result.findings:
         print(
             f"WARNING {warning['adapter']}: `{warning['key']}` is {warning['state']} -- {warning['detail']}",
             file=sys.stderr,
         )
-    return warnings
+    if not result.scope_established:
+        # Said out loud, because the alternative is the exact confusion the paragraph
+        # above refuses: with the key pass skipped, `0 unreconciled` would be a clean bill
+        # of health for a pass that never ran. This line is what the summary's count means
+        # when it says `not established`.
+        print(
+            f"WARNING adapter key reconciliation did not run: {unestablished_corpus_reason(root)}. "
+            "This tier cannot tell an unread key from a reader it cannot see, so declared keys "
+            "were left unclassified; uninterpreted lines were still reported.",
+            file=sys.stderr,
+        )
+    return result
 
 
 def main() -> int:
@@ -415,10 +431,20 @@ def main() -> int:
         validate_adapter_yaml(path)
         validate_adapter_integration_schema(path)
 
-    warnings = report_unreconciled_keys(root, warned_files)
+    result = report_unreconciled_keys(root, warned_files)
+    # The count and the SCOPE of the count travel together, per this function's own
+    # standing rule that a bare zero is only half a claim. `not established` is the third
+    # reading the old two-state line could not express: not "clean across 37" and not
+    # "clean across 18", but "no key verdict was rendered at all".
+    reconciled = (
+        f"{len(result.findings)} unreconciled declared key(s)"
+        if result.scope_established
+        else "declared keys not reconciled (reader corpus not established)"
+    )
     print(
         f"Validated {len(resolvers)} adapter resolvers and {len(adapter_yaml)} adapter YAML file(s); "
-        f"{len(warnings)} unreconciled declared key(s) across {len(warned_files)} declaring file(s)."
+        f"{reconciled} across {len(warned_files)} declaring file(s); "
+        f"{len(result.uninterpreted)} uninterpreted line(s)."
     )
     return 0
 

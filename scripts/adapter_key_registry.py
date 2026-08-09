@@ -26,8 +26,12 @@ could resolve to a module that only ever loads adapter B. That gap is closed:
 list to modules that actually read the file, and `survey` passes it. The prohibition
 outlived its reason and was itself a false claim on the instrument built to find them.
 
-`unknown` IS armed: `unreconciled_keys` below feeds `scripts/validate_adapters.py`, which
-warns an operator by name. It is the sound state -- no module in `scripts/` or `skills/`
+`unknown` IS armed, but the arming and its precondition live in
+`scripts/adapter_warn_tier.py` and are documented there -- including WHY a state that is
+sound in this tree is not sound in a consumer's, which cost a release. This module
+classifies; that one decides who gets told. One owner each, stated once.
+
+Within THIS tree `unknown` is the sound state -- no module in `scripts/` or `skills/`
 parses the name ANYWHERE -- and `find_readers`' bias (see its KNOWN LIMIT) is toward
 calling a key owned, so `unknown` under-reports gaps and cannot invent one.
 
@@ -91,7 +95,11 @@ READER_ROOTS = ("scripts", "skills")
 # below quotes `comparison_command_templates` as an example, so the scan matched itself
 # and reported the key as owned -- the module manufacturing the evidence it then reports.
 # Excluding self is the fix; the general limitation is stated in `find_readers`.
-EXCLUDED_READERS = ("scripts/adapter_key_registry.py",)
+# `adapter_warn_tier.py` is here for the SAME reason and was added with the split that
+# created it: its prose quotes `gate_commands`, `product_surfaces`, `startup_probes` as the
+# measured false-positive set, so without this entry the tier would report itself as their
+# owner. Splitting a module moves its literals; it does not move them out of scan range.
+EXCLUDED_READERS = ("scripts/adapter_key_registry.py", "scripts/adapter_warn_tier.py")
 
 _EXTENSION_PREFIX = "x-"
 _EXTENSION_CONTAINER = "host_extensions"
@@ -464,7 +472,7 @@ ADAPTER_GLOBS = (
 GAP_STATES = ("unknown", "reader-elsewhere", "text-asserted")
 
 
-def _load_yaml_file(path: Path) -> Any:
+def _adapter_lib() -> Any:
     """Import the shared loader lazily and layout-independently.
 
     A module-level `from scripts.adapter_lib import ...` works when this file is imported
@@ -473,7 +481,11 @@ def _load_yaml_file(path: Path) -> Any:
     """
     from runtime_bootstrap import import_repo_module
 
-    return import_repo_module(__file__, "scripts.adapter_lib").load_yaml_file(path)
+    return import_repo_module(__file__, "scripts.adapter_lib")
+
+
+def _load_yaml_file(path: Path) -> Any:
+    return _adapter_lib().load_yaml_file(path)
 
 
 def survey(repo_root: Path) -> dict[str, Any]:
@@ -515,49 +527,6 @@ def survey(repo_root: Path) -> dict[str, Any]:
         "gaps": gaps,
         "registry_problems": audit_registry(repo_root),
     }
-
-
-WARN_STATES = ("unknown",)
-
-
-def unreconciled_keys(repo_root: Path, paths: list[Path]) -> list[dict[str, str]]:
-    """Declared keys that reach an ARMED state, for the operator-visible warn tier.
-
-    Only `WARN_STATES` -- `unknown` -- is returned. The module docstring owns why
-    `reader-elsewhere` is excluded (measured 13% association residue, one instance inside
-    a shipped example); this function is where that decision is executable rather than
-    prose, so widening the tier means editing `WARN_STATES` and re-measuring, not quietly
-    adding a state at a call site.
-
-    NO `associated` ARGUMENT, AND THAT IS NOT A WEAKENING. `resolve_key` reaches `unknown`
-    only when `parsing` is empty, and `scoped` is a subset of `parsing` -- so the scoped
-    and unscoped verdicts are identical for exactly this state, and only for it. Skipping
-    it also skips `associated_modules`/`_reference_edges`, the whole import-graph closure,
-    which is the expensive half: over `survey`'s full 37-adapter / 445-key population the
-    same walk costs 4.6s with the closure and 3.1s without it. That
-    matters because `validate_adapters.py` runs at commit time, and a gate that gets slow
-    is a gate that gets moved somewhere it stops running. The equivalence is pinned by
-    test, not left to this comment: a future state added to `WARN_STATES` would NOT
-    inherit it.
-    """
-    findings: list[dict[str, str]] = []
-    for path in paths:
-        # No `relative_to` fallback and no `isinstance(key, str)` guard. Both were written,
-        # both SURVIVED the mutation check, and reading why killed them instead: the only
-        # caller (`validate_adapters.iter_warn_scope_adapters`) lists paths rooted at this
-        # same `repo_root`, so the ValueError branch is unreachable, and this repo's minimal loader coerces every
-        # key to `str` (`1:` parses to `"1"`), so the type guard is unreachable too. A
-        # branch that cannot run still reads as though a real hazard were handled -- the
-        # same false claim this tier exists to warn about, one layer down.
-        relative = str(path.relative_to(repo_root))
-        declared = _load_yaml_file(path)
-        for key in declared:
-            resolution = resolve_key(repo_root, key)
-            if resolution.state in WARN_STATES:
-                findings.append(
-                    {"adapter": relative, "key": key, "state": resolution.state, "detail": resolution.detail}
-                )
-    return findings
 
 
 def main() -> int:
