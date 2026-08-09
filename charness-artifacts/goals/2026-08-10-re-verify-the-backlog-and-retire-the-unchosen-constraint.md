@@ -9,7 +9,9 @@ runs the activation command.
 
 ## Active Operating Frame
 
-- Current slice: 3b (part 2) — file the umbrella issues, then move members.
+- Current slice: 4 — DONE. All five group A members dispositioned with the reason
+  recorded on the issue, which is what `## User Acceptance` allows. `#546`'s repair
+  was built, reviewed HOLD, measured defective, and reverted.
 - Current slice intent: implement the four BACKEND readbacks the disposition
   names but does not perform (destination exists, is OPEN at close time, its body
   contains this issue's number, and it is not itself a consolidated close), file
@@ -32,9 +34,11 @@ runs the activation command.
   stays open — the evidence-boundary crosswalk reported `matrix_incomplete`, which
   is a real protection on `#514`/`#515`/`#518`, not an obstacle to route around;
   `#582` carries a correction saying it absorbed three of four.
-- Next action: slice 4 — group A (`#576` `#518` `#528` `#515` `#546`), the family
-  whose defect reaches consumers as a false green. Note `#515` and `#518` sit
-  behind the same crosswalk bootstrap that refused `#514`.
+- Next action: closeout — the four planned slices are done. What group A did NOT
+  get is a fix, and the reason is the same for four of five: the measurement that
+  would license closing them has to be taken in a tree that is not this one, which
+  this goal named as a non-goal in its own Non-Goals section. That tension is the
+  honest residual, not a gap to paper over.
 - PUSH AND RELEASE: DONE. `v4.2.0` is published and verified on the public
   surface (`gh release view` reports draft=false, prerelease=false; hosted `main`
   and local both at `6b49ba0e`; installed readback reports `version: 4.2.0`).
@@ -166,7 +170,7 @@ See `## Active Operating Frame` for when each is proven.
 | 1 | Retire the constraint nobody chose | A cut vertex: a prior goal parked `AGENTS.md` shrinking underneath it, and slices 3-4 may need compaction moves it forbids. Cheapest unblock available | The policy scoped to its own pipeline; the operator ruling recorded with date and reasoning; `#521` closed citing it | done (`ac019102`, tracker-verified 2026-08-10) |
 | 2 | Make backlog re-verification executable, as an EXTENSION of the existing recount seam (STATUS: done — structural markers only; the prose/threshold design was built, measured, and deleted) | It shrinks the denominator for slices 3 and 4, and it is the durable answer to an append-only backlog. Building it later would mean consolidating issues nobody re-checked | A typed premise state per open issue, emitted by the recount seam rather than by a second backlog reader; `#554` reproduced as `premise-refuted-with-live-residue`; `#571` closed in place | done — with one revision to the recorded expectation: `#554` is reproduced as a refusal via a typed marker, NOT by inferring a decline from record prose, and `#571` stays open into slice 3 |
 | 3a | The `consolidated` disposition (done) / 3b consolidate on GitHub (not started) | Only safe now: the stale ones are known and the constraint is gone. Forces the unanswered design question of what floor applies to a close that claims nothing about the defect | A typed consolidated-close disposition in the closeout contract; up to four umbrella issues filed; members closed, linked, and state-verified | 3a done — the typed disposition ships with two bounded rounds; 3b NOT started, and no close may run until the four backend readbacks exist |
-| 4 | Close the family that reaches consumers | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | planned |
+| 4 | Close the family that reaches consumers (STATUS: dispositioned, not fixed) | Group A is the only remaining set whose defect ships as a false green to installing repos, which is what the north star's diagnosis is about | `#576` `#518` `#528` `#515` `#546` fixed or dispositioned, each proven against a tree that is not this repo | done as DISPOSITIONED, not fixed, and NOT proven against another tree — that proof was not taken, and every disposition says so on its own issue rather than implying otherwise |
 
 
 ### Slice 2 design — two constraints that are not optional
@@ -454,6 +458,20 @@ per the bullets above when that boundary is crossed):
 - Critique: The machinery critiqued itself, which is the useful part. THE CONSOLIDATED-REASON REFUSAL FIRED ON THE LIVE CLI: a close attempted with `--reason completed` was refused before any mutation, with the message naming `not planned`. THE CROSSWALK REFUSED `#514` with `matrix_incomplete`, protecting three issues whose acceptance matrix does not exist — a refusal I did not anticipate and did not route around. THE CLOSE-COMMENT FLOOR REFUSED the first `#554` draft because the critique it cited was a goal artifact carrying no typed `Fresh-eye satisfaction:` line, so the observer read it `absent`; that is the observer floor doing exactly its job on my own work, and it forced the resolution critique that should have existed anyway. Bounded fresh-eye review was NOT re-run for this slice: it executes decisions two prior rounds already reviewed, and the release critique covered the shipped surfaces. The judgement that is genuinely new here — the corrected grouping — WAS externally reviewed, by the bounded read that refuted the audit's families.
 - Off-goal findings: `#581` filed earlier still open. `#514` remains open behind the crosswalk bootstrap, and `#582` carries a comment correcting its own member claim rather than leaving the list to imply four moved when three did.
 - Lessons carried forward: The tool built in slice 2 rendered `premise-refuted-clean` for `#554` and `#571` and did NOT recommend closing them — which is exactly the designed behaviour, and it meant the close decision stayed a human's, informed by evidence the tool does not supply. That is the north star's P5 working in the one case that mattered most, since `#554` is the issue this whole goal was designed from. Second: three separate refusals fired on my own work in this slice (reason, crosswalk, observer), each before a mutation. A floor that only ever refuses other people's work has not been tested.
+- Metrics:
+
+### Slice 6: Slice 4 — group A, the family whose defect reaches consumers as a false green
+
+- Objective: Fix or explicitly disposition each of `#576` `#518` `#528` `#515` `#546`, with the reason recorded ON the issue, per this goal's own acceptance criterion.
+- Why this approach: Last planned slice, and the only family whose defect ships outward rather than staying inside this repo.
+- Commits: `31b3ccd9` (the `#554`/`#571` resolution critique) and this slice's record. The dispositions are GitHub comments, not commits. The one code repair attempted here was reverted before commit.
+- What changed: NEW `charness-artifacts/critique/2026-08-10-issue-546-unenforceable-budget-critique.md`. Five issue comments. NO source change: the `#546` repair was built, reviewed, measured defective, and reverted.
+- Alternatives rejected: REJECTED — closing `#518`/`#515` on the static evidence that `892d6b95` repaired most of what they report: both carry an explicit re-read obligation demanding a live re-run against the consuming repo, and both are protected by the evidence-boundary crosswalk in `bootstrap` state. REJECTED — routing around that crosswalk: the sibling `#514` close in the previous slice was refused with `matrix_incomplete`, and that refusal is correct. REJECTED — iterating on the `#546` fix: its defects were in the DISCRIMINATOR, not the implementation.
+- Targeted verification: For `#546`, the decisive claim was measured rather than argued: seeded with this repo's real 36-CPU budget block and every label sampled EXCEPT the one `print_final_summary` records after the gate, the built fix exited 1 — a fresh machine's first run would have hard-failed. After the revert, the live gate exits 0 and the 38 pre-existing budget tests pass. For the other four, the status claims are from static reading of the current tree and are labelled as such on each issue.
+- Test duplication pressure: n/a — the four tests written for the `#546` repair were reverted with it. Two of them were themselves defective (they exited through the first clause of the guard and never reached the comparison they were named for), which the review caught.
+- Critique: One bounded round on the `#546` repair, and it returned HOLD — the first HOLD of this goal. F1 had already been caught by a synthetic probe of my own first version (a signals file holding one label hard-failed every budget). The reviewer then found what the probe could not: `check-runtime-budget` is queued SECOND-TO-LAST and samples are written during the run, so by the time the gate executes the profile has sampled ~80 labels and my `commands`-non-empty guard reads 'this machine has run' while the history for THIS run is still partial. I confirmed it by executing the probe the reviewer named but could not run. It also found six legitimately conditional labels in this repo's own adapter that would fail permanently on a second machine, a timing-log fallback that breaks the discriminator, a crash on a malformed profile entry, and the two tautological tests. BOUNDARY: the verify for that window reports `boundary-drift`, and the drift is MINE — the five reverted files, written after the reviewer returned. Recorded as drift rather than claimed clean.
+- Off-goal findings: None filed. `#580` (budget measures fan-out) and `#581` (shipped adapter example cannot create an issue) remain from earlier slices.
+- Lessons carried forward: The review did not improve the repair; it STOPPED it, and that is the outcome this goal should value most. Reverting was right because F2 and F3 say the chosen discriminator is wrong rather than buggy: sample history cannot distinguish a dead label from an unexercised run mode, because that information is not in the signals file. What `#546` gains is a refuted option with a measured reason and a specified alternative — classify against the runner's DECLARED inventory, plus an adapter exemption for conditional labels and an operator escape matching the existing `CHARNESS_SEED_FIXTURE_ADVISORY` precedent. Second lesson, and it is the goal's own thesis one more time: my fresh-machine test PASSED while the fresh-machine case FAILED, because the fixture wrote no samples concurrently and the real runner does. A test that cannot reproduce the condition it is named for is a record treated as a fact.
 - Metrics:
 
 ## Context Sources
