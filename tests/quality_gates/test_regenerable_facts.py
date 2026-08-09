@@ -111,3 +111,123 @@ def test_this_repo_is_currently_clean_under_its_own_adapter() -> None:
     assert report["unreasoned_exemptions"] == []
     assert report["findings"] == [], report["findings"][:5]
     assert report["checked"] > 0, "the surfaces glob matched nothing; the gate would be vacuously green"
+
+
+def _run(repo: Path, *extra: str) -> tuple[int, str]:
+    import subprocess
+    import sys
+
+    completed = subprocess.run(
+        [sys.executable, str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "--repo-root", str(repo), *extra],
+        capture_output=True,
+        text=True,
+    )
+    return completed.returncode, completed.stdout + completed.stderr
+
+
+def test_a_scan_that_matched_no_file_is_REFUSED_not_reported_clean(tmp_path: Path) -> None:
+    # Round 1's blocker, verified live before repair: a consumer whose prose does
+    # not sit at the default globs got `checked: 0` and exit 0 -- a gate shipping
+    # as a permanently green no-op, which is this rule's own defect class.
+    repo = tmp_path / "empty"
+    repo.mkdir()
+    (repo / "NOTES.md").write_text("# nothing in scope\n", encoding="utf-8")
+
+    code, out = _run(repo)
+
+    assert code == 1, out
+    assert "scanned 0 files" in out
+
+
+def test_an_invalid_adapter_is_REFUSED_rather_than_silently_replaced_by_defaults(tmp_path: Path) -> None:
+    # Falling back to defaults would DISCARD the surfaces and exemptions the repo
+    # declared and then report clean over a scope nobody chose.
+    repo = tmp_path / "bad"
+    (repo / ".agents").mkdir(parents=True)
+    (repo / "AGENTS.md").write_text("clean prose\n", encoding="utf-8")
+    (repo / ".agents" / "quality-adapter.yaml").write_text(
+        "version: 1\nrepo: demo\nartifact_class: not-a-real-class\n", encoding="utf-8"
+    )
+
+    code, out = _run(repo)
+
+    assert code == 1, out
+    assert "adapter is invalid" in out
+
+
+def test_findings_map_to_exit_one(tmp_path: Path) -> None:
+    repo = tmp_path / "dirty"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("The tree holds 12 skills.\n", encoding="utf-8")
+
+    code, out = _run(repo)
+
+    assert code == 1, out
+    assert "12 skills" in out
+
+
+def test_a_clean_repo_in_scope_exits_zero(tmp_path: Path) -> None:
+    repo = tmp_path / "clean"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("Recount with `git log --oneline`.\n", encoding="utf-8")
+
+    code, out = _run(repo)
+
+    assert code == 0, out
+    assert "no regenerable facts in 1" in out
+
+
+def test_a_whitespace_only_exemption_reason_is_not_honoured(tmp_path: Path) -> None:
+    # `"   "` is truthy, so it silently exempted the file and was not reported.
+    repo = tmp_path / "ws"
+    repo.mkdir()
+    (repo / "AGENTS.md").write_text("The tree holds 12 skills.\n", encoding="utf-8")
+
+    report = lib.scan_repo(
+        repo, {"data": {"regenerable_facts": {"surfaces": ["AGENTS.md"], "exemptions": {"AGENTS.md": "   "}}}}
+    )
+
+    assert report["unreasoned_exemptions"] == ["AGENTS.md"]
+    assert report["exempted"] == []
+
+
+def test_an_identifier_keeps_its_own_digits() -> None:
+    # `#24 issues` is a reference, not an as-of count. The sibling engine in
+    # validate_handoff_artifact guards this with a lookbehind; this one did not.
+    assert _hits("Tracked as #24 issues go.") == []
+    assert _hits("The backlog holds 24 issues.") == ["24 issues"]
+
+
+def test_the_widened_surfaces_are_pinned_not_merely_configured() -> None:
+    # Round 2's blocker: the widening was defended by nothing. Deleting CLAUDE.md,
+    # the recursive docs glob, or skill prose from either the defaults or this
+    # repo's adapter left all tests green, so the stance in operating-contract.md
+    # rested on a config line no executable check defended.
+    assert {"AGENTS.md", "CLAUDE.md", "docs/**/*.md"} <= set(lib.DEFAULT_SURFACES)
+    assert any(s.endswith("SKILL.md") for s in lib.DEFAULT_SURFACES), "shipped skill prose must be a default surface"
+    assert any("references" in s for s in lib.DEFAULT_SURFACES)
+
+
+def test_this_repos_adapter_actually_covers_its_forward_looking_prose() -> None:
+    # The stance names agent prompt files, the docs tree, and shipped skill prose.
+    # Assert the CONFIGURED scope reaches all three, so narrowing the adapter back
+    # under the contract sentence fails here rather than silently.
+    load_adapter = _bootstrap.load_local_skill_module(
+        str(SKILL_SCRIPTS / "check_regenerable_facts.py"), "resolve_adapter"
+    ).load_adapter
+    surfaces, _exemptions = lib.resolve_config(load_adapter(ROOT))
+    scanned = {p.relative_to(ROOT).as_posix() for glob in surfaces for p in ROOT.glob(glob) if p.is_file()}
+
+    assert "AGENTS.md" in scanned and "CLAUDE.md" in scanned, "agent prompt files must be in scope"
+    assert any(p.startswith("docs/conventions/") for p in scanned), "the docs tree must be in scope"
+    assert any(p.endswith("/SKILL.md") for p in scanned), "shipped skill prose must be in scope"
+    assert any("/references/" in p for p in scanned)
+    # And the seam holds: dated records stay out, by construction rather than exemption.
+    assert not any(p.startswith("charness-artifacts/") for p in scanned)
+
+
+def test_a_comma_grouped_count_without_an_identifier_prefix_is_still_a_count() -> None:
+    # Round 2: after the lookbehind landed, the end-in-digit clause became
+    # unpinned -- `#24` is blocked by the `#` alone. These cover the clause.
+    assert _hits("The corpus holds 1,234 tests.") == ["1,234 tests"]
+    assert _hits("Tracked as 24, issue 13 covers the rest.") == []

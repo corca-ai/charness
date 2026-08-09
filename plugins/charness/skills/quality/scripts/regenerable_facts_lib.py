@@ -43,7 +43,9 @@ DEFAULT_SURFACES = (
     "CLAUDE.md",
     "README.md",
     "docs/*.md",
-    "docs/conventions/*.md",
+    "docs/**/*.md",
+    "skills/*/*/SKILL.md",
+    "skills/*/*/references/*.md",
 )
 
 FENCE_RE = re.compile(r"^\s*```")
@@ -68,7 +70,7 @@ PATTERNS = (
         re.compile(
             # The number must END in a digit. An identifier list -- `24, issue 13` --
             # is not a count, and `[\d,]*` alone swallowed the comma and matched it.
-            r"\b\d(?:[\d,]*\d)?\s+(?:commits?|issues?|files?|tests?|lines?|artifacts?|skills?|checks?|entries|findings?)\b",
+            r"(?<![#\w.\-])\d(?:[\d,]*\d)?\s+(?:commits?|issues?|files?|tests?|lines?|artifacts?|skills?|checks?|entries|findings?)\b",
             re.IGNORECASE,
         ),
         "an as-of count",
@@ -123,10 +125,20 @@ def resolve_config(adapter: dict | None) -> tuple[tuple[str, ...], dict[str, str
     return surfaces, exemptions
 
 
+def _reason_text(reason: object) -> str:
+    return reason.strip() if isinstance(reason, str) else ""
+
+
 def exemption_for(rel: str, exemptions: dict[str, str]) -> str | None:
+    """Return the RECORDED reason, or None when there is not a real one.
+
+    A whitespace-only or non-string reason is treated as absent rather than
+    honoured: it would otherwise be an invisible exemption, which is the
+    unfalsifiable claim this rule exists to remove.
+    """
     for pattern, reason in exemptions.items():
         if rel == pattern or fnmatch.fnmatch(rel, pattern):
-            return reason or None
+            return _reason_text(reason) or None
     return None
 
 
@@ -158,5 +170,5 @@ def scan_repo(repo_root: Path, adapter: dict | None = None) -> dict:
         "findings": findings,
         # An exemption without a stated reason is the same unfalsifiable claim the
         # rule exists to remove, so it is reported rather than honoured silently.
-        "unreasoned_exemptions": [p for p, r in exemptions.items() if not r],
+        "unreasoned_exemptions": sorted(p for p, r in exemptions.items() if not _reason_text(r)),
     }

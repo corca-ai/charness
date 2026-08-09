@@ -28,6 +28,23 @@ lib = SKILL_RUNTIME.load_local_skill_module(__file__, "regenerable_facts_lib")
 
 
 def render(report: dict) -> list[str]:
+    if report.get("adapter_refusal"):
+        return [f"regenerable-facts: {report['adapter_refusal']}"]
+    if report["checked"] == 0:
+        # Distinguish the two causes: an unconfigured scope and a scope whose every
+        # file is exempted need different remedies, and one message for both points
+        # half the readers at the wrong knob.
+        if report["exempted"]:
+            return [
+                f"regenerable-facts: every matched file is exempted ({len(report['exempted'])} of them), "
+                "so nothing was verified. Narrow the exemptions or widen "
+                "`regenerable_facts.surfaces`."
+            ]
+        return [
+            "regenerable-facts: scanned 0 files, so nothing was verified. Configure "
+            "`regenerable_facts.surfaces` in the quality adapter to name this repo's "
+            "forward-looking prose. A gate that matched no file is not a clean gate."
+        ]
     if report["unreasoned_exemptions"]:
         return [
             "regenerable-facts: exemption(s) with no recorded reason: "
@@ -65,17 +82,43 @@ def main() -> int:
     )
     args = parser.parse_args()
     repo_root = (args.repo_root or REPO_ROOT).resolve()
+    refusal = None
     try:
         adapter = load_adapter(repo_root)
-    except Exception:  # noqa: BLE001 - a repo without a quality adapter still gets the defaults
+    except Exception as exc:  # noqa: BLE001 - report it; do NOT quietly fall back to defaults
+        # `str(StopIteration())` is empty, and the portable adapter shim raises
+        # exactly that when the package is installed without its scripts sibling.
+        # A blank reason is a permanently red gate nobody can diagnose.
+        detail = f"{type(exc).__name__}: {exc}" if str(exc) else type(exc).__name__
+        adapter, refusal = None, f"quality adapter could not be loaded ({detail}); declared surfaces are unknown"
+    if isinstance(adapter, dict) and adapter.get("found") and not adapter.get("valid", True):
+        # Falling back to defaults here would silently DISCARD the surfaces and
+        # exemptions the repo declared, and report clean over a scope nobody chose.
+        refusal = "quality adapter is invalid (" + "; ".join(adapter.get("errors") or []) + ")"
         adapter = None
-    report = lib.scan_repo(repo_root, adapter if isinstance(adapter, dict) else None)
+    if refusal:
+        # Do NOT scan on a refusal: findings from the default scope, emitted beside
+        # "declared surfaces are unknown", invite a machine consumer to act on a
+        # scope the same payload just said nobody chose.
+        report = {"checked": 0, "surfaces": [], "exempted": [], "findings": [], "unreasoned_exemptions": []}
+    else:
+        report = lib.scan_repo(repo_root, adapter if isinstance(adapter, dict) else None)
+    report["adapter_refusal"] = refusal
     if args.json:
         print(json.dumps(report, indent=2))
     else:
         for line in render(report):
             print(line)
-    return 1 if report["findings"] or report["unreasoned_exemptions"] else 0
+    # `checked == 0` is a REFUSAL, not a pass: a gate that matched no file has
+    # verified nothing, and reporting that as clean is the defect this rule is
+    # about. It is the shipped guard, not a test-only assertion.
+    failed = (
+        report["findings"]
+        or report["unreasoned_exemptions"]
+        or report["checked"] == 0
+        or report.get("adapter_refusal")
+    )
+    return 1 if failed else 0
 
 
 if __name__ == "__main__":

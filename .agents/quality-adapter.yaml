@@ -743,9 +743,13 @@ dup_ratchet:
 regenerable_facts:
   surfaces:
     - AGENTS.md
+    - CLAUDE.md
     - README.md
     - docs/*.md
-    - docs/conventions/*.md
+    - docs/**/*.md
+    - skills/*/*/SKILL.md
+    - skills/*/*/references/*.md
+    - skills/shared/references/*.md
   exemptions:
     docs/deferred-decisions.md: >-
       historical context: every entry records the figures its decision was TAKEN
@@ -767,3 +771,13 @@ regenerable_facts:
       documents measured routing behaviour with the corpus it was measured on.
     docs/prescribed-skill-closeout-contract.md: >-
       quotes the corpus size a contract clause was sized against.
+    skills/public/create-cli/references/intent-first-grammar.md: >-
+      pins the tool version a documented grammar was observed in.
+    skills/public/quality/references/cautilus-on-demand.md: >-
+      pins the cautilus version the eval-only contract was written against.
+    skills/public/quality/references/mutation-testing.md: >-
+      pins the mutation-tool version the documented flags belong to.
+    skills/public/quality/references/unit-test-quality.md: >-
+      quotes a measured figure as the evidence behind a guideline.
+    skills/public/release/references/adapter-contract.md: >-
+      pins the version an adapter schema field landed in.

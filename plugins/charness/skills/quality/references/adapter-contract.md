@@ -546,13 +546,24 @@ A number in prose is read as today's answer, so it must be the command that
 produces it, not the output of one run.
 
 - `surfaces`: globs of prose a reader treats as current. Defaults to the agent
-  prompt files, `README.md`, `docs/*.md`, and `docs/conventions/*.md`. Dated,
+  prompt files (`AGENTS.md`, `CLAUDE.md`), `README.md`, the whole docs tree
+  (`docs/**/*.md`), and shipped skill prose (`SKILL.md` and `references/*.md`).
+  Name your own globs when your prose lives elsewhere. Dated,
   append-only records — retros, critiques, audits, slice logs — are deliberately
   absent by DEFAULT rather than exempted: a number there describes one moment,
   which is the whole reason it is written.
 - `exemptions`: `path -> reason`. The reason is required, and a blank one is
   refused with an error. An unexplained exemption is exactly the unfalsifiable
   claim the rule removes, one level up.
+
+**The gate REFUSES rather than passing in three cases, so a silent green is not
+reachable.** (1) It scanned zero files — an unconfigured repo whose prose is not
+at the defaults gets exit 1 telling it to name its surfaces, because a gate that
+matched nothing has verified nothing. (2) The quality adapter is present but
+INVALID — falling back to defaults would discard the surfaces and exemptions you
+declared and report clean over a scope you did not choose, so it refuses instead.
+(3) An exemption carries no reason. An absent adapter is different and is fine:
+the defaults apply.
 
 The remedy the gate names depends on what the command COSTS. A cheap command
 (`git describe`, a grep, an issue list) goes in the prose by itself. An expensive

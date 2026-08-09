@@ -218,8 +218,12 @@ These expand in [README.md Core Concepts](../../README.md#core-concepts):
 **A number in forward-looking prose is banned by default. Carry the command, not
 its output.** A transcribed version, sha, or count is true on the day it is
 written and misleading every day after, and the next reader acts on it instead of
-checking. This is a stance, not a style note: it already had teeth on one file and
-those teeth are now repo-wide.
+checking. This is a stance, not a style note: it had teeth on one file and now covers every
+surface this repo's quality adapter names under `regenerable_facts.surfaces` —
+the agent prompt files, the repo README, the docs tree, and shipped skill prose.
+Widening that list is an adapter edit, and a surface absent from it is NOT
+covered: the gate reports what it scanned so the scope is legible rather than
+assumed.
 
 The seam that decides whether a surface is in scope:
 
