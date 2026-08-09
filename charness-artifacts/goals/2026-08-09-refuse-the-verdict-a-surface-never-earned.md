@@ -41,9 +41,8 @@ runs the activation command.
   `check-cli-skill-surface` recorded its own timeout as the probe's cost and
   reported a starved probe as `probe failed ... exited 124`, i.e. a verdict about
   a CLI it never observed. That is this goal's class, and it is what shipped.
-- Next action: commit the completed declaration-lifecycle slice, then finish
-  the remaining deletion/context/evidence dispositions before the single final
-  push and release. No intermediate push is planned.
+- Next action: close the locally complete issue ledgers, bind the release proof,
+  then perform the single final push and release. No intermediate push is planned.
 - Two consecutive slices have now had their premise refuted by one measurement
   each (slice 2's "the probe costs 21s", slice 3's "a consumer only ever sees
   NOT CONFIGURED"). Both premises came from durable records this goal wrote.
@@ -259,7 +258,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 1 | `#565` — repo-owned mutate-and-restore helper that refuses a kill without a passing baseline test count, and restores on raise | It is the TOOL every later slice's proof depends on | Helper + tests; a broken-baseline run that REFUSES; a real run naming its baseline count; a restore-on-raise test | **DONE** |
 | 1b | **Unplanned, operator-driven, DONE:** the regenerable-fact stance — forward-looking prose carries the COMMAND, not one run's output; expensive commands carry the command AND a linked artifact. Contract clause, a portable gate shipping through `quality`, adapter key, and consumer docs | It arrived mid-goal as a standing operator stance and was built rather than deferred. Recorded here because the plan below is meaningless if the artifact pretends it did not happen | Contract section; gate + tests, mutation-proven; adapter key registered (which exposed `#530` live); `adapter.example.yaml` and the adapter-contract reference | **DONE** |
 | 2 | **Premise REFUTED, and repaired as the class it exposed.** The probe never cost 21s (1.6s alone, 5.5–6.0s in-gate); the 21,650ms sample WAS the 20s deadline. `check-cli-skill-surface` reported a starved probe as `probe failed ... exited 124` — a verdict over a CLI it never observed. Repaired: retry once, report a timeout as `unobserved` (never a `blocker`), preserve partial output, bound the drain, kill the probe's own group only | Delivery looked blocked and was not. The measurement cost one command; believing the recorded number cost a prior session a push cycle | Gate green, exit 0, `check-cli-skill-surface` PASS at 6.0s; 16 tests; two bounded rounds, both DEFECTIVE; every safety property mutation-killed; budget NOT widened | **DONE** |
-| 3 | **RE-SCOPED — half its premise is refuted.** Measured on a fresh `git init` repo with README/AGENTS/docs and NO adapter: the gate is already ARMED on defaults and exits 1 on a real finding. `NOT CONFIGURED` fires ONLY when nothing matches the defaults at all (no README, no `docs/`, no `AGENTS.md`), which is not the consumer default. So SEEDING the key is not the unit — defaults already arm, and seeding would duplicate them as config that can drift. What survives: `skills/public/setup/` still has ZERO references, so the stance is not stated where a human choosing skills reads it | The discoverability half is real; the seeding half would have been unproven work, and building it would have made a fresh repo's config worse | The stance readable from a consumer-facing `setup` surface; NO redundant key seeded; the refutation recorded so the next session does not re-shape the seeding slice | pending (re-scoped) |
+| 3 | **RE-SCOPED — half its premise is refuted.** Measured on a fresh `git init` repo with README/AGENTS/docs and NO adapter: the gate is already ARMED on defaults and exits 1 on a real finding. `NOT CONFIGURED` fires ONLY when nothing matches the defaults at all (no README, no `docs/`, no `AGENTS.md`), which is not the consumer default. So SEEDING the key is not the unit — defaults already arm, and seeding would duplicate them as config that can drift. What survives: `skills/public/setup/` still has ZERO references, so the stance is not stated where a human choosing skills reads it | The discoverability half is real; the seeding half would have been unproven work, and building it would have made a fresh repo's config worse | The stance readable from a consumer-facing `setup` surface; NO redundant key seeded; the refutation recorded so the next session does not re-shape the seeding slice | **DONE — re-scoped premise and shipped consumer reference/catalog route** |
 | 3b | **Folded in from the retired declaration-to-verdict goal: `#530`.** Sixteen of seventeen adapter resolvers accept ANY `version` and write it back as authoritative; exactly one compares against a supported value. Replace the hand-copied blocks with one shared contract check, and refuse an unknown key instead of dropping it | Measured LIVE on 2026-08-09 on a resolver that goal had not reached: a new `regenerable_facts` key was dropped with `valid: true`, `errors: []`, no warning, and the gate silently ran on defaults. Found by a consumer of the contract, never by a gate. Slice 1b had to hand-write the seventeenth block, so the goal is now paying the tax it exists to remove | One shared check in `scripts/adapter_lib.py`; an unsupported `version` refused at every site; an unknown key refused rather than dropped; the `regenerable_facts` validator folded into the shared seam | **DONE — PREMISE REFUTED, re-scoped.** All four planned evidence items were ALREADY satisfied by the folded goal's own commits: `validate_adapter_version` exists at `adapter_lib.py:418`, 16/16 resolvers refuse `version: 7` and none echoes it back (live probe), and the unknown-key tier is armed and wired at `run-quality.sh:678`. What measurement exposed instead: that armed tier warns on CORRECT keys in every consumer repo (3/3 through the shipped mirror; 126 false warnings at `--repo-root plugins/charness`), because it scans the consumer's tree for readers that live in the plugin. Shipped the refusal-to-claim plus the uninterpreted-line channel. Version-half gaps outside the 16-resolver glob filed as `#574` |
 | 4 | `#564` — re-scope onto slice 1's helper: make the call-site question the tool's behaviour, not a template rule; close or re-scope the issue | The filed remedy was declined on P3 grounds by two durable records; the defect is still real | Call-site mutant support exercised against a known-dead repair; issue closed or re-scoped with the declined-remedy reasoning on it | **DONE.** Premise HELD (the streak of three refutations broke). The runner now takes a plan-level `"call_site": true` declaration, VERIFIES it against the edit (a declared mutant that removed no call is REFUSED), and states an explicit non-claim when no mutant was declared. Inference was tried first and killed by review: it let an incidental `.join` removal silence the tool's own `#564` warning. 58 tests; 13/13 mutants killed over a stated baseline of 57, 3 declared call-site. `#564` is repaired, NOT closed — its closeout floor has not been run |
 | 4r | **Unplanned repair:** reconcile local focused changed-line proof with the red remote broad mirror for the regenerable-facts slice | Main is red and planned work cannot honestly continue across a locally green/remote red proof boundary | Dynamic-loader mapping fixture; local fail-before on the eight CI targets; direct in-process coverage; same-range local pass; two bounded review rounds | **DONE** |
@@ -270,7 +269,7 @@ enforces them so this paragraph stops being the thing that has to remember.
 | 5 | `#563` — DELETE `check_title_slug_drift.py` and every wiring that points at it, repairing the three public-skill prose sites rather than orphaning them | Operator-decided: an advisory heuristic that renders no verdict, with no recorded catch, is not worth repairing | The script and its shim gone; hooks and gate-plan clean; the six test modules updated; the three skill reference docs no longer naming a deleted script; a green quality run one check lighter | **DONE locally — closeout pending** |
 | 6 | `#521` + `#546` — re-verify the census's two survivors with a reviewer independent of the workflow agents, measure `#546`'s `missing_samples` subset, post both to `#521` | The census answers `#521` with evidence it never had; a census is itself a verdict surface and does not get an exemption | Reviewer confirmation or refutation of `check-public-doc-coupling`; the `#546` count; the census posted to `#521`; NO deletions taken here | **DONE — survivor refuted; missing count 0; issues updated** |
 | 7 | `#523` — split `AGENTS.md` into routing vs contract, `## Subagent Delegation` byte-identical | The audit's one surviving instruction is consumer-facing work, and this is its top-ranked pick | Before/after byte counts from a command, not transcribed; `## Subagent Delegation` diff empty; every moved contract reachable from its new home | **DONE locally — closeout pending** |
-| 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | pending |
+| 8 | `#549` + `#566` — export actionable failure visibility and complete awiki's declared quality-integration/disposition seam | These improve every later consumer diagnosis without widening runner parallelism | Consumer-facing failure-reading contract/reader; awiki dependency and overlap/disposition packet; no new terminal green | **DONE locally — closeout pending final bundle** |
 | 9 | Final bundle and `v4.1.0` release | All selected consumer and proof-surface work is complete; publication is now the remaining irreversible boundary | Locked closeout, release critique + claims review, source-tree publish helper, hosted CI, public/install/doctor and issue-state readbacks | pending |
 
 ### Release-stabilization execution ledger
@@ -500,7 +499,7 @@ Shaped at Before-phase; update as the run crosses each boundary:
 - `Issue closeout: n/a — no tracked issue is closed yet. #573 and #574 were FILED, not resolved. #530's two halves are now both repaired but its closeout floor (delegated resolution critique, validate-closeout-draft, a Behavior verdict on a channel distinct from the fix) has NOT been run, so it stays OPEN.`
 - `Routing: charness:issue — #574 filed under the standing approval for three version-unchecked adapter readers measured live during slice 3b.`
 - `Gather: n/a — every source is in-repo (issues via the gh adapter, artifacts, git history); no external URL or credentialed source was read.`
-- `Release: n/a — this goal takes no version bump, tag, or publish; the 4.0.0 release belongs to the predecessor goal.`
+- `Routing: charness:release — the operator expanded this goal through the P2 bundle and explicitly authorized one final push plus the v4.1.0 version/tag/publication sequence after locked proof; no intermediate push is authorized.`
 
 ## Discuss Before Activation
 
@@ -734,6 +733,17 @@ applies.
   round flagged explicit-path language census mismatch; it is also repaired.
   Reviewer boundary verification was clean. Per the two-round cap, these final
   repairs are accepted-unreviewed.
+- Closeout follow-up: the Git-ignore hygiene gate found that declared skill
+  paths still used raw `Path.glob`, so ignored files could earn `resolved`.
+  Two bounded rounds over that repair then found absolute/parent escape and
+  external-support provenance gaps, including an external-support symlink that
+  laundered an ignored repo file into `target_scope: repo`. The final reader
+  preserves candidate provenance, uses each Git population's own listing,
+  virtualizes valid external support, and refuses both symlink directions. The
+  repaired planner/path-boundary cohort has 46 focused passing tests. Closeout
+  then caught the general planner test file above its 800-code-line limit, so
+  the cohesive path-resolution cases moved to their own module without changing
+  the case set; the capped round-2 repair is accepted-unreviewed.
 - Non-claims: planner inclusion never says a command ran; no language-specific
   gate is invented; preset automation is not claimed; consumer commands were
   enumerated but not executed by the planner.
@@ -795,6 +805,51 @@ applies.
   Lefthook-owned `logs/` contract. The root now names the authoring-repo fact and
   routes consumer configuration separately. Both fingerprints were clean; the
   capped round-2 repair is accepted-unreviewed.
+
+### Slice 10: read the consumer's failure path; do not interpret its shell by wish
+
+- Objective: close `#549`'s missing executable-reader layer and re-establish
+  `#566`'s already-shipped awiki integration/disposition evidence without
+  widening runner parallelism.
+- What changed for `#549`: the default setup inspector now reads
+  `lefthook.yml`/`.yaml`, names every pre-commit/pre-push command, and reports
+  exact static gaps for missing fields, next-action, temporary or mismatched
+  logs, and stdout/stderr routing. A simple well-shaped command reports
+  `live-verification-required`, never pass or clean.
+- Shell boundary: ordered fd interpretation handles `> log 2>&1`, reversed
+  order, separate and append redirects, and `&>`. Anything compound, piped,
+  backgrounded, substituted, or delegated to an embedded shell stops at
+  `manual-reconciliation-required`; quoted/commented operators do not become
+  shell control. Final ordering, provisioning, actual gate identity, and a real
+  failing hook remain operator-owned live proof.
+- `#566` re-verification: awiki remains declared in the dependency manifest and
+  lock, `docs/docs-graph-checks.md` carries the overlap/disposition matrix, and
+  the live docs-graph consumer returns exit 0 with 42 documents, zero orphans,
+  zero islands, 1.0 largest-component ratio, and 1.0 content coverage. Those are
+  this run's facts, not a new aggregate terminal green.
+- Verification: 80 focused setup tests passed; skill, debug, packaging, plugin
+  import, mirror, Ruff, and diff checks pass. Source and exported-plugin
+  `inspect_repo.py` subprocess tests pin broken and statically well-shaped
+  consumer fixtures.
+- Public-skill review: the maintained setup prompt, routing, repo-mode,
+  normalization artifact, and three scenario IDs are unchanged. The new
+  inspection field is frozen in `docs/public-skill-dogfood.json` and pinned by
+  deterministic source/plugin subprocess tests, so no scenario-registry change
+  or live Cautilus run is claimed.
+- Critique: two delegated bounded rounds, both defective. Round 1 caught fd
+  ordering, missing-run, pipeline, and final-consumer gaps. Round 2 caught the
+  repaired regex flattening `;` boundaries and reading quoted/disabled pipefail
+  text as semantics. Both fingerprints were clean; the capped final repair is
+  accepted-unreviewed.
+- Closeout structural pressure: the duplicate ratchet found repeated
+  mutation-recovery cleanup and fsync paths, which were folded into shared
+  single-owner helpers before the remaining intentional idioms were recorded
+  with reasons. This changes neither mutation verdicts nor runner parallelism.
+- Pre-lock closeout: after the test-module split, every selected sync/verify
+  command completed, including Python length, duplicate ratchet, packaging,
+  docs, public-skill dogfood, Git-ignore scan hygiene, and runtime orphan guard.
+  Broad standing pytest remains deliberately reserved for the final verification
+  lock; no Cautilus evaluation ran or is claimed.
 
 ## Context Sources
 

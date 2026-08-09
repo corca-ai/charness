@@ -80,7 +80,8 @@ Then load only the references needed for the detected state:
 - repo wants durable retrospective pickup: `references/retro-memory-seam.md`
 - optional adapter, policy, or runtime seams: `references/bootstrap-seams.md`
 - detected Lefthook configuration or hook-failure visibility request:
-  `references/hook-failure-visibility.md`
+  `references/hook-failure-visibility.md`; read `inspect_repo.py`'s
+  `hook_failure_visibility`; resolve `action-required`, then intentionally fail the hook because `live-verification-required` is not a pass
 
 ## Workflow
 

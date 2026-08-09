@@ -69,3 +69,23 @@ simple-git-hooks have different configuration surfaces; this Lefthook reference
 does not claim to configure them. A consumer-facing test or an intentional
 failing hook run is the evidence that its configured `fail_text`, final visible
 pointer, and log path work end to end.
+
+The normal setup bootstrap command provides the executable reader:
+
+```bash
+python3 "$SKILL_DIR/scripts/inspect_repo.py" --repo-root .
+```
+
+Read its `hook_failure_visibility` payload. `action-required` names exact
+command-level static gaps, including a missing `run` or `fail_text`, an absent
+next evidence action, an advertised path the hook command does not redirect to,
+a temporary advertised path, or stderr left outside the advertised log.
+`manual-reconciliation-required` means the command uses compound shell syntax,
+a pipeline, background execution, command substitution, or an embedded shell
+that the reader deliberately does not flatten into one fd state. Reconcile that
+command manually, including its `pipefail` and unfiltered-log behavior.
+`live-verification-required` means static gaps or unreconciled shell constructs
+were not found; it deliberately does **not** mean pass or clean. The reader
+cannot prove that a directory is provisioned, that the runner leaves the pointer
+finally visible, that the message names the actual gate, or that a real failure
+keeps a non-zero exit. Prove those by intentionally failing the configured hook.

@@ -13,6 +13,7 @@ from scripts.setup_agent_docs_lib import (
     is_acknowledged,
     sort_recommendations,
 )
+from scripts.setup_hook_failure_visibility_lib import inspect_hook_failure_visibility
 
 DEFAULT_SURFACES = {
     "readme": Path("README.md"),
@@ -192,6 +193,7 @@ def build_setup_inspection_payload(
             "warnings": adapter_warnings,
         },
         "agent_docs": agent_docs,
+        "hook_failure_visibility": inspect_hook_failure_visibility(repo_root),
         "recommendations": recommendations,
         "prose_wrap": prose_wrap_state(repo_root, adapter_data),
         "surfaces": {surface_id: _surface_state(repo_root, spec) for surface_id, spec in specs.items()},

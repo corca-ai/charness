@@ -25,6 +25,9 @@ def _repo_module(name: str):
     raise ImportError(f"{name} not found from quality skill runtime")
 
 
+_REPO_FILE_LISTING = _repo_module("scripts.repo_file_listing")
+
+
 def _packet(
     packet_id: str,
     command: str,
@@ -94,27 +97,81 @@ def _declared_skill_paths(repo_root: Path, raw: dict[str, Any]) -> list[dict[str
     values = raw.get("skill_ergonomics_skill_paths")
     if not isinstance(values, list):
         return rows
+    canonical_repo_root = repo_root.resolve()
+    canonical_support_root = _REPO_FILE_LISTING.support_dir(repo_root).resolve()
+    support_is_external = canonical_support_root != (
+        canonical_repo_root / "skills" / "support"
+    ).resolve()
     for value in values:
         if not isinstance(value, str) or not value:
             continue
-        try:
-            matches = sorted(repo_root.glob(value)) if any(ch in value for ch in "*?[") else [repo_root / value]
-        except (OSError, ValueError):
+        declaration = Path(value)
+        declaration_error: str | None = None
+        if declaration.is_absolute() or ".." in declaration.parts:
             matches = []
-        skill_matches = [
-            path.relative_to(repo_root).as_posix()
-            for path in matches
-            if path.is_file() and path.name == "SKILL.md" and path.is_relative_to(repo_root)
-        ]
-        rows.append(
-            {
-                "declaration": value,
-                "target_state": "resolved" if skill_matches else "unreachable",
-                "resolved_paths": skill_matches,
-                "routing_state": "routed",
-                "packet_id": "skill-ergonomics",
-            }
-        )
+            declaration_error = "path must be repo-relative and contain no '..' segment"
+            candidate_scope = "repo"
+        else:
+            try:
+                if support_is_external and value.startswith("skills/support/"):
+                    support_pattern = value.removeprefix("skills/support/")
+                    matches = _REPO_FILE_LISTING.iter_matching_repo_files(
+                        canonical_support_root, (support_pattern,)
+                    )
+                    candidate_scope = "configured-external-support"
+                else:
+                    matches = _REPO_FILE_LISTING.iter_matching_repo_files(
+                        repo_root, (value,)
+                    )
+                    candidate_scope = "repo"
+            except (NotImplementedError, OSError, ValueError):
+                matches = []
+                declaration_error = "path pattern could not be interpreted"
+                candidate_scope = "repo"
+        skill_matches: list[str] = []
+        target_scopes: set[str] = set()
+        excluded_match_count = 0
+        for path in matches:
+            if not path.is_file() or path.name != "SKILL.md":
+                continue
+            try:
+                canonical_path = path.resolve()
+            except OSError:
+                excluded_match_count += 1
+                continue
+            if candidate_scope == "repo" and canonical_path.is_relative_to(
+                canonical_repo_root
+            ):
+                skill_matches.append(canonical_path.relative_to(canonical_repo_root).as_posix())
+                target_scopes.add("repo")
+                continue
+            if (
+                candidate_scope == "configured-external-support"
+                and canonical_path.is_relative_to(canonical_support_root)
+            ):
+                virtual_path = Path("skills/support") / canonical_path.relative_to(
+                    canonical_support_root
+                )
+                skill_matches.append(virtual_path.as_posix())
+                target_scopes.add("configured-external-support")
+                continue
+            excluded_match_count += 1
+        row: dict[str, Any] = {
+            "declaration": value,
+            "target_state": "resolved" if skill_matches else "unreachable",
+            "resolved_paths": sorted(set(skill_matches)),
+            "routing_state": "partial" if excluded_match_count else "routed",
+            "packet_id": "skill-ergonomics",
+        }
+        if target_scopes:
+            row["target_scope"] = (
+                next(iter(target_scopes)) if len(target_scopes) == 1 else "mixed"
+            )
+        if declaration_error is not None:
+            row["declaration_error"] = declaration_error
+        if excluded_match_count:
+            row["excluded_match_count"] = excluded_match_count
+        rows.append(row)
     return rows
 
 

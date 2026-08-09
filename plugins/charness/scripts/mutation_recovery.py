@@ -57,6 +57,14 @@ def recovery_state_dir(repo_root: Path) -> Path:
     return repo_root / ".charness" / "mutation-recovery"
 
 
+def _fsync_directory(path: Path) -> None:
+    directory_fd = os.open(path, os.O_RDONLY)
+    try:
+        os.fsync(directory_fd)
+    finally:
+        os.close(directory_fd)
+
+
 def atomic_write_bytes(path: Path, content: bytes) -> None:
     """Replace a source file atomically so process death cannot leave half a write."""
     staged = path.with_name(f".{path.name}.charness-write-{os.getpid()}-{uuid.uuid4().hex}")
@@ -68,11 +76,7 @@ def atomic_write_bytes(path: Path, content: bytes) -> None:
             handle.flush()
             os.fsync(handle.fileno())
         os.replace(staged, path)
-        directory_fd = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(directory_fd)
-        finally:
-            os.close(directory_fd)
+        _fsync_directory(path.parent)
     finally:
         staged.unlink(missing_ok=True)
 
@@ -134,11 +138,7 @@ class MutationRecovery:
             with staged.open("rb") as handle:
                 os.fsync(handle.fileno())
             os.replace(staged, self.journal_path)
-            directory_fd = os.open(self.state_dir, os.O_RDONLY)
-            try:
-                os.fsync(directory_fd)
-            finally:
-                os.close(directory_fd)
+            _fsync_directory(self.state_dir)
         finally:
             staged.unlink(missing_ok=True)
 
@@ -161,8 +161,7 @@ class MutationRecovery:
         payload = self._read()
         if payload.get("id") != journal_id:
             raise RecoveryError("mutation recovery ownership changed; refusing to clear another sweep's journal")
-        self.child_start.unlink(missing_ok=True)
-        self.child_marker.unlink(missing_ok=True)
+        self._clear_child_markers()
         self.journal_path.unlink()
         for staged in self.state_dir.glob("journal.*.tmp"):
             staged.unlink(missing_ok=True)
@@ -191,7 +190,7 @@ class MutationRecovery:
         self.child_start.write_text("start\n", encoding="utf-8")
         return process_group
 
-    def detach_child(self) -> None:
+    def _clear_child_markers(self) -> None:
         self.child_start.unlink(missing_ok=True)
         self.child_marker.unlink(missing_ok=True)
 
@@ -380,4 +379,4 @@ def run_mutation_command(
         process.wait()
         raise
     finally:
-        recovery.detach_child()
+        recovery._clear_child_markers()

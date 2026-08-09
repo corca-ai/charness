@@ -2750,6 +2750,90 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "05db4f7ed67269ea",
+      "note": "portable skill/repo entrypoints independently locate adapter or sibling modules before they can import shared code; this seven-line importlib fallback is the direct-execution boundary, and extracting it would require the import path it establishes",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0fcb2465ca7b5ab6",
+      "note": "four independent evidence and recovery owners compute a local SHA-256 digest with the standard hashlib one-liner; a shared hash wrapper would couple unrelated identity contracts without removing domain behavior",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "147e51338a772aac",
+      "note": "cautilus and narrative adapters import the same small subset of the shared adapter library, but remain separate adapter contracts; importing through one another would turn an explicit dependency into a re-export chain",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1b1bbf079bf900bb",
+      "note": "nose aligns two long handoff CLI main functions because both use the required timeout/try/finally and JSON lifecycle; one parses and annotates live backlog entries while the other validates and writes a fresh goal artifact, so a shared main would hide distinct side effects and refusal contracts",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "313be5be463ac19e",
+      "note": "two independent AST inspections use the idiomatic walk/call-name set construction for different policies (mutation call-site verification versus doc-authoring preflight); a shared traversal would couple their node semantics for a six-line idiom",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3545c3c0cc82104c",
+      "note": "overlapping windows within quality's own planner cover its repo-root fallback and YAML loader preamble; this is one implementation span fingerprinted twice, not two behavior owners to merge",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3d7b2ef149238b19",
+      "note": "overlapping windows within quality's planner cover the same local repo-root/bootstrap fallback; the family is scanner overlap inside one preamble rather than duplicated behavior",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4a96811e2359119d",
+      "note": "release, quality, and debug planners deliberately keep their skill-local bootstrap and run-plan envelopes directly executable; shared envelope construction is already factored, while the remaining adapter loading and required reads differ by skill",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "727fc0d1aba78282",
+      "note": "four tools run bounded git subprocesses for different source populations and failure policies; their try/nonzero/line iteration skeleton is stdlib plumbing, while sharing it would erase whether each caller degrades, refuses, or filters suffixes",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d841abf10fa05445",
+      "note": "portable achieve/handoff modules each load siblings through a local importlib boundary before shared imports are available; the repeated loader is the package portability seam and remains local by design",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d9856e7381523f57",
+      "note": "public skills keep adapter resolution entrypoints independently executable and schema-owned; simple_skill_adapter_lib already factors the common policy, while the remaining per-skill defaults, warnings, and output contracts intentionally stay local",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e96978ef70d5371a",
+      "note": "proof-semantics and critique adapter modules import overlapping shared adapter primitives but own independent schemas; using either as the other's import facade would add a cross-domain dependency rather than remove behavior duplication",
+      "reviewed_at": "2026-08-09",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 121,
-  "indexed_artifact_count": 109,
+  "source_artifact_count": 122,
+  "indexed_artifact_count": 110,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 16,
     "host-disproves-local": 2,
     "none": 38,
-    "operator-visible-recovery": 22,
+    "operator-visible-recovery": 23,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 92,
+    "monitor": 93,
     "none": 12
   },
   "entries": [
@@ -1517,6 +1517,20 @@
       "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-09-issue-549-hook-failure-visibility-reader-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-549-hook-failure-visibility-reader",
+      "risk_classes": [
+        "operator-visible-recovery"
+      ],
+      "seam": "consumer Lefthook config -> setup inspection -> operator live check.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/goals/2026-08-09-refuse-the-verdict-a-surface-never-earned.md",
       "forced": false
     },
     {
