@@ -18,6 +18,21 @@ runs the activation command.
   authoritative at 16 of 17 sites. This names the reviewable-intent unit in
   progress and the commits it spans; critique and broad proof do not re-fire
   within one unchanged intent (meaningful-slice-cadence).
+- **2026-08-09 update — the premise was re-confirmed LIVE, by accident, on a
+  different resolver.** While arming an unrelated quality gate, a new
+  `regenerable_facts` key was added to `.agents/quality-adapter.yaml` and the
+  quality resolver SILENTLY DROPPED it: `valid: true`, `errors: []`,
+  `warnings: []`, and the key simply absent from `data`. The gate then ran on its
+  defaults and reported findings for files the adapter had already exempted,
+  which is the only reason anyone noticed. That is this goal's root defect on a
+  resolver its slice plan had not yet reached, found by a consumer of the
+  contract rather than by a gate — the exact asymmetry the goal names. The fix
+  needed a hand-written `_apply_regenerable_facts` validator, which is the
+  seventeenth hand-copied block the goal exists to remove.
+- **Also 2026-08-09: `#530`'s sibling shape is now armed once.** The new
+  validator REFUSES an exemption whose reason is blank, rather than accepting and
+  echoing it. That is one site holding the contract the other sixteen do not, so
+  the goal's slice-1 target moved from "one site is right" to "two are".
 - Premise check (verdict BEFORE the build): **HOLDS, and is slightly worse than
   stated.** Measured at activation — 17 non-plugin sites carry a `version`
   check; 16 accept ANY integer and write it into `validated["version"]` as
