@@ -307,3 +307,139 @@ directly by the parent against the files.
    reading the operator asked for?
 5. What this plan does not mention at all. An omitted item is invisible to every check
    above.
+
+
+---
+
+# Deletable-surfaces sweep — 2026-08-11
+
+Four bounded angle reviewers (zero-consumer hunt / duplicate-surface hunt / teeth-without-
+a-cliff / re-examine-the-refutations). **No separate counterweight pass ran this round**,
+so the classification below is the parent's, not a triangulated four-bin triage. Reviewer
+boundary snapshot/verify: `clean`.
+
+Every candidate below carries the grep that establishes its consumer set, because the
+absence of that grep is what produced six wrong deletions.
+
+## The refutation that was itself wrong
+
+**`pickup.spec.json` — my refutation was wrong; the deletion is available.** Verified by
+the parent, not taken on the reviewer's word:
+
+- `scripts/claim_fidelity_lib.py:151` resolves the substance judge as
+  `(repo_root / spec_path).parent / "outcome-assertions.json"` — **per DIRECTORY**, so it
+  survives as long as any sibling spec remains.
+- `pickup-ambiguous.spec.json` is also a pickup-intent scenario (`"resume from the current
+  state and start the next workflow"`), and `outcome-assertions.json:15` keys the judge on
+  *"resume/pickup wording"*, never on a filename.
+- `pickup.spec.json` contributes **nothing** to the conditional-reads gate: its
+  `engage-always` set is empty, and its lone `classTag: INLINE` on `workflow-trigger.md` is
+  duplicated by `pickup-ambiguous.spec.json`.
+
+**It is still not an at-equal-capability deletion, and so it is NOT recommended on the
+taste rung.** Deleting it removes the CLEAR prompt variant
+(`"resume the pinned task ... start the named workflow"`), leaving the judge assertions
+gradable only through the AMBIGUOUS phrasing — which is the less common real-world case.
+The trade is one lost observation against one fewer ask-before-run Cautilus scenario.
+**Operator decision, recorded as open.**
+
+The general lesson, in the reviewer's words: a refutation that proves *the proposer's
+stated reason was wrong* is not a refutation that proves *the surface is load-bearing*.
+Only the second blocks a deletion. Four of my six refutations were the second kind; this
+one was the first.
+
+## Deletions that survive (execute next session)
+
+1. **`scripts/boundary_bypass_ratchet_lib.py:17` — drop `"candidate_key_count"` from
+   `COUNT_FIELDS`.** `filtered_summary:80,87` computes it as exactly the number of
+   non-exempt candidate keys, from the same filtered pass that `build_baseline:93,98-99`
+   writes `candidate_keys` from. So `current > baseline` on that field implies
+   `|current_keys| > |baseline_keys|` implies `new_keys` is non-empty: the arm **cannot
+   fire without `new_keys` firing first**. Strictly subsumed, contributes nothing to `ok`
+   at `:139`. Caveat to state in the commit: the implication holds only while the baseline
+   `summary` is generated rather than hand-edited. The other four count fields are
+   row-shaped, not key-shaped, and are NOT subsumed.
+2. **`tests/test_inventory_marker_rule_measurement.py:189-195` — narrow the recursive pin
+   to the fields D47 publishes, and delete the dead branch at `:190`.** Parent-verified:
+   `recursive_variant` has no `refused_citation_count` key, so the count-only comparison
+   the author wrote never executes and a full-list deep-equality on
+   `citations_refused_by_the_marker_rule` runs instead — the exact opposite of what the
+   shallow test does to the same field, for a reason the shallow test states at `:166-168`
+   ("D47's headline figure is the CITATION count, not the artifact list"). The loop also
+   deep-compares `rows` (~60 per-artifact entries), `pre_contract_citations_skipped`,
+   `corpus`, and `recursive`, **none of which D47 publishes**. Narrowing therefore does
+   NOT touch the open operator decision and does not wait on `#596`; it removes the
+   largest slice of the standing corpus-write tax.
+3. **`skills/public/quality/scripts/run_dead_code_advisory.py:100-101` —
+   `_dataclass_field_locations` is a pass-through wrapper.** Production reaches dataclass
+   fields via `_source_roles.source_role_locations` at `:167`, never through this. Only
+   consumer is `tests/quality_gates/test_quality_dead_code_advisory.py:762-764`, whose
+   three assertions repoint at `source_role_evidence.dataclass_field_locations` without
+   loss. Mirror sync required.
+
+## Candidates that died on inspection (do not re-propose)
+
+- **The two proof ladders are not the same ladder.** The prose one has zero machine
+  readers but **eight live skill-prose consumers**; the schema'd one
+  (`scripts/proof_semantics_adapter_lib.py:1-31`) is domain-blind by design and has no
+  levels of its own to give. `#524` is "the prose ladder has no schema", not "there are
+  two ladders".
+- **`resolve_adapter.py` copies are schemas, not copies** (30 to 389 lines), and the
+  extractable half was already extracted — `charness-artifacts/quality/2026-06-30-dup-portability-falsification-audit.md:29-32`
+  records the CLI tail moving into `SKILL_RUNTIME.run_adapter_cli` across 16 skills with
+  byte-identical proof.
+- **`check_title_slug_drift` shim** — parent checked `git show v4.0.0`: the shim IS present
+  at that tag, so the installed-caller compatibility argument transfers and the candidate
+  dies honestly.
+- **`boundary-bypass-baseline.json`** — all 59 candidate-key subjects exist; no stale
+  entries. **`validate_scenario_conditional_reads.allowlist.txt`** — its one entry's
+  subject exists.
+- **`dup-review.json`** — a ~60-entry sample of the `intentional` classifications found
+  none worth overturning.
+
+## Teeth without a cliff — and a five-week-old unaddressed audit
+
+The repo already has `charness-artifacts/audit/2026-07-04-gate-reclassification.md`, which
+classifies every wired gate irreversible / reversible / form. **Two of the findings below
+are that audit's own `review-needed` rows, still unaddressed.**
+
+- **`inventory-ubiquitous-language` blocks unconditionally**
+  (`skills/public/quality/scripts/inventory_ubiquitous_language.py:431`, queued at
+  `scripts/run-quality.sh:985`). Every sibling `inventory-*` gate is advisory or blocks
+  only behind an explicit caller flag; this is the sole exception. A wrong pass leaks a
+  word preference in markdown prose. **Split the arms:** `findings` should move behind a
+  `--require-empty`-style opt-in like its six siblings; `scope_findings` (`:313-320` —
+  declared globs matched no file, so a clean result establishes nothing) is a fail-open
+  detector for the gate's own scope and **keeps its teeth**.
+- **`check-references-link-inventory`** (`scripts/check_references_link_inventory.py:143-154`,
+  and in the pre-push docs-only subset at `.githooks/pre-push:66`, so it can block a push
+  alone) enforces bullet SHAPE inside `## References` sections. Nothing consumes the
+  section; `check-doc-links` / `check-plugin-doc-links` / `check-markdown` already hold
+  everything that resolves or renders. Recorded cost:
+  `charness-artifacts/retro/2026-08-06-session-retro.md:263` records it firing on a
+  wrapped bullet.
+- **`check-timing-layer-completeness`, `missing` arm only**
+  (`scripts/check_timing_layer_completeness.py:161-174`): a gate label lacking a row in a
+  docs table. This is the closest thing in the tree to the shape the north star does not
+  license (`:100-103`, a gate that checks gates). Its `stale` arm (`:176-186`) catches a
+  docs-only push reporting a clean pass while queueing one fewer gate — **real teeth,
+  keep**.
+- **`check-markdown` at the commit boundary** (`scripts/staged_commit_gate_plan.py:346-347`)
+  lints every tracked markdown file in the repo on any staged `.md`, and the identical
+  whole-repo command runs again at pre-push and again in CI. The same file already demoted
+  its `check_markdown_inline_code` half to WARN citing P1 by name.
+- **Two more exact-count pins of the `#561` shape:**
+  `tests/quality_gates/test_adapter_key_warn_tier.py:292-294` (`== 16`, `== 3`, `== 37` over
+  a live corpus — adding one `adapter.example.yaml` reds all three) and
+  `tests/quality_gates/test_quality_run_planner.py:387` (`== 35` derived straight from
+  `catalog.yaml`). For the first, a prior `>= 15` threshold was already refuted in review
+  because dropping a whole glob still left 16 — so the invariant wanted is per-family
+  NON-EMPTINESS, not a threshold and not a total.
+
+## What none of this establishes
+
+No gate was executed by a reviewer and no reviewer could read history; every claim above
+is a reading of the current worktree. The parent separately verified, through channels the
+reviewers lacked: the pickup spec engagement sets, `claim_fidelity_lib.py:151`, the absent
+`refused_citation_count` key, and `git show v4.0.0` for the shim. Nothing in this sweep has
+been executed.

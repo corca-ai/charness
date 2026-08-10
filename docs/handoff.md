@@ -10,22 +10,21 @@
 - **21 open issues, and the count is not falling because closing GENERATES issues:**
   Aug 7-10 created 60, closed 42; this session closed 1 and filed 2. Filing is one cheap
   command; every close owes the full floor. The residue is decision-shaped, not code-shaped.
-- **`#572` CLOSED as `consolidated` into `#590`** (first live use of that path; `#590`
-  holds all three of its events). **Do NOT read the green cron on `ed90c1f3` as
-  recovery** — it is an ANCESTOR of `#590`'s diagnostic `739a2a3e`. No scheduled mutation
-  run has hit main since; the next is the first real check.
-- **`#582`-`#585` now CARRY their own status** — each body states a per-member outcome
-  (not fixed / declined / partial) and its disposition, so the ten defects no longer live
-  only in closed issues. **CLASS REMAINS, 4/4.** Do not close them.
+- **`#572` CLOSED as `consolidated` into `#590`** (first live use of that path). **Do NOT
+  read the green cron on `ed90c1f3` as recovery** — it is an ANCESTOR of `#590`'s
+  diagnostic `739a2a3e`. No scheduled mutation run has hit main since.
+- **`#582`-`#585` now CARRY their own status** — per-member outcome and disposition in
+  each body, so the ten defects no longer live only in closed issues. **CLASS REMAINS,
+  4/4.** Do not close them.
 - **Gate green: 90 passed, 0 failed** — 2026-08-11 baseline, taken BEFORE any deletion so
-  a later red is attributable. `#596` (probe-pin tax, whose tracker `#536` is closed
-  COMPLETED) and `#597` (`check_quality_tool_fixtures` passes on an empty set and is not
-  in the gate) filed this session.
-- **D53/D54/D55** live in [deferred-decisions](./deferred-decisions.md), each with a
-  reopen trigger; D53's is explicitly NOT in-repo observable and says so.
-- The evidence-boundary crosswalk instance was RETIRED by operator ruling
-  ([record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md));
-  do not rebuild that matrix.
+  a later red is attributable. Filed: `#596` (probe-pin tax; its tracker `#536` is closed
+  COMPLETED), `#597` (`check_quality_tool_fixtures` passes on an empty set and is not in
+  the gate), `#598` (a gate blocking on a word preference, and a five-week-unactioned
+  reclassification audit).
+- **D53/D54/D55** in [deferred-decisions](./deferred-decisions.md) each name a reopen
+  trigger; D53's is explicitly NOT in-repo observable and says so.
+- The evidence-boundary crosswalk instance was RETIRED by operator ruling; do not rebuild
+  that matrix ([record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md)).
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -34,11 +33,12 @@
 
 ## Next Session
 
-1. **Rework slice — nothing left to delete.** Re-KEY `boundary_bypass_ratchet_lib.py`
-   (its `new_keys` arm is the only substitution detector; do NOT delete it), and `#531`
-   via the adapter `artifact_path`, never a hardcoded probe. Both owe a SECOND review
-   round. `plan_quality_run.py:327` is a small build, not a deletion.
-   Plan: [disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md).
+1. **Execute the recorded sweep** — 3 proven deletions + 2 reworks, consumer greps already
+   in the plan's `# Deletable-surfaces sweep`. **No counterweight ran on it — triage
+   first.** Reworks RE-key the boundary-bypass arm (never delete it) and fix `#531` via the
+   adapter `artifact_path`; both owe a second review round.
+   [Plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md),
+   [sweep critique](../charness-artifacts/critique/2026-08-11-deletable-surfaces-sweep.md).
 2. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 decides only RENAME;
    the marker makes the other two rot modes decidable, and phase 1's reader makes it
    verifiable. Record: [implementation critique](../charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md).
@@ -46,13 +46,13 @@
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`, not `expand_targets`.
 4. **Wave 2 — small concrete bugs, 2-3 per carrier.** `#539`, `#581`, `#588`, `#528`,
    `#589`, `#542`. Real code plus the fresh-eye review each classification owes.
-5. **Wave 3 — the rest.** `#586`, `#590`, `#593`, `#594`, `#595`, `#550`, `#527`, `#596`,
-   `#597`. The umbrellas are not in a wave: they stay open until their work ships.
+5. **Wave 3 — the rest.** `#586`, `#590`, `#593`-`#598`, `#550`, `#527`. The umbrellas
+   are not in a wave: they stay open until their work ships.
 
 ## Discuss
 
-- **A carrier cannot say "this does not close #N"** — the commit-msg recognizer is
-  anchored on keyword-then-number and cannot read negation. Say "`#N` stays open".
+- **A carrier cannot say "this does not close #N"** — the recognizer is keyword-then-number
+  and cannot read negation. Say "`#N` stays open".
 - The `Premise-residue:` seam has no marker writer BY DESIGN (`recount_residue_lib.py:63-67`)
   — a prior handoff read that as a defect and nearly got the seam deleted.
 - `#576` closed by commit keyword, which posts no comment, and the last release note
@@ -64,9 +64,9 @@
   of prose: the `#572` close draft claimed both older events were "structurally
   non-recurring"; the score signal is sample-relative and can recur, so the reviewer
   stopped a false disposition from reaching an irreversible public artifact.
-- **SIX of six proposed deletions were refuted**, each by a file the plan had not opened.
-  The survivor was an unused function parameter. Before proposing a deletion, name the
-  grep that shows zero consumers — that single step would have caught all six.
+- **Six of six deletions were refuted — then one refutation was itself refuted.** Proving
+  the proposer's REASON wrong is not proving the surface load-bearing; only the second
+  blocks a deletion. Name the consumer grep in both directions.
 - **Closing an issue can delete the only copy of a ruling.** Every durable in-repo
   mention of `#576` was a pointer AT it, and `#580`'s "tracked separately" pointed at
   itself. Before closing a record-shaped issue, ask where the record lands.
