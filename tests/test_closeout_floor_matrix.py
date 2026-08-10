@@ -16,12 +16,15 @@ from pathlib import Path
 import pytest
 
 from scripts.check_closeout_floor_matrix import MATRIX_REL, _problems
+from scripts.check_closeout_floor_matrix import main as gate_main
 from scripts.closeout_floor_matrix_lib import (
     CARRIERS,
     FLOORS,
     ProbeWorld,
+    _commit_msg,
     observe,
     probe_body,
+    run_ingress,
 )
 from tests.repo_copy import clone_seeded_charness_repo, seeded_charness_repo  # noqa: F401
 
@@ -386,6 +389,60 @@ def test_a_probe_body_is_broken_in_exactly_one_place() -> None:
     # Source preservation is presence-gated the other way: the baseline is inert
     # because it declares no external origin, so breaking it ADDS a line.
     assert len(probe_body("bug", "pr-body", "source_preservation")) > len(baseline)
+
+
+def test_every_carrier_accepts_the_baseline_and_refuses_a_broken_behavioral_verdict(
+    world: ProbeWorld,
+) -> None:
+    """The carriers the pair-level tests above do not enter.
+
+    `direct-commit` reads a real commit, `manual-fallback` needs its typed reason, and
+    `commit-msg` runs the hook as the subprocess a git hook runs -- three distinct
+    ingress mechanics, none exercised by the `pr-body` probes.
+    """
+    for carrier in ("direct-commit", "manual-fallback", "commit-msg"):
+        result = observe(world, carrier, "bug")
+        assert result["baseline"] == "passes", (carrier, result)
+        assert result["floors"]["behavioral_verdict"] == "fires", carrier
+
+
+def test_a_carrier_that_raises_is_recorded_as_a_refusal_without_attribution(
+    world: ProbeWorld,
+) -> None:
+    """A raise carries no per-floor record, so the probe must not credit the broken
+    floor with it -- that is what `refused-elsewhere` is for."""
+    ok, detail, refusing = run_ingress(
+        world, "close-with-comment", "consolidated",
+        probe_body("consolidated", "close-with-comment", None) + "\nBehavior: a repair claim\n",
+    )
+    assert ok is False
+    assert refusing == set()
+    assert detail
+
+
+def test_the_commit_msg_carrier_reports_a_non_json_verdict_as_an_engine_failure(
+    world: ProbeWorld,
+) -> None:
+    """The hook exits 1 with empty stdout on any internal exception. That must surface
+    as a RuntimeError naming the exit code, not as a silent refusal."""
+    world.source_root = world.root / "no-such-tree"
+    with pytest.raises(RuntimeError, match="no JSON verdict"):
+        _commit_msg(world, "bug", "Closes #77\n", None)
+
+
+def test_the_cli_reports_agreement_and_can_emit_the_observed_grid(tmp_path: Path) -> None:
+    """The `main()` path: exit 0, the operator summary, and `--emit-observed`."""
+    out = tmp_path / "observed.json"
+    exit_code = gate_main(["--repo-root", str(ROOT), "--emit-observed", str(out)])
+    assert exit_code == 0
+    grid = json.loads(out.read_text(encoding="utf-8"))
+    assert len(grid["pairs"]) == len(grid["carriers"]) * len(grid["classifications"])
+
+
+def test_the_cli_refuses_when_the_declaration_is_missing(tmp_path: Path, capsys) -> None:
+    (tmp_path / ".agents").mkdir()
+    assert gate_main(["--repo-root", str(tmp_path)]) == 1
+    assert "declaration not found" in capsys.readouterr().err
 
 
 @pytest.mark.release_only

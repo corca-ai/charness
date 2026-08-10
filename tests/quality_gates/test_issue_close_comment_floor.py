@@ -357,3 +357,50 @@ def test_close_with_comment_provenance_floor_skips_non_behavioral_classification
     )
     assert report["ai_provenance"]["applies"] is False
     assert report["ai_provenance"]["ok"] is True
+
+
+def _load_issue_close():
+    return import_repo_module(
+        ROOT / "skills/public/issue/scripts/issue_close.py",
+        "skills.public.issue.scripts.issue_close",
+    )
+
+
+def test_a_consolidated_close_asking_for_completed_is_refused_before_the_body_is_read(
+    tmp_path: Path,
+) -> None:
+    """Ordering pin for the extracted carrier evaluation.
+
+    `_refuse_completed_consolidation` is called from BOTH `close_with_comment` (ahead
+    of the body-file read, where it has always sat) and `evaluate_close_comment_carrier`
+    (so a direct caller of the extracted path is guarded too). The wrapper call is what
+    keeps a caller who asked for `--reason completed` on a consolidation from getting a
+    file-not-found instead of the contradiction they actually have.
+    """
+    closer = _load_issue_close()
+    missing = tmp_path / "never-written.md"
+    try:
+        closer.close_with_comment(
+            "corca-ai/charness", 42, missing,
+            repo_root=tmp_path, classification="consolidated", reason="completed",
+        )
+    except RuntimeError as exc:
+        assert "requires --reason 'not planned'" in str(exc)
+        assert "body file not found" not in str(exc)
+    else:  # pragma: no cover - the refusal is the contract
+        raise AssertionError("a consolidated close with --reason completed must refuse")
+
+
+def test_a_missing_close_comment_body_file_is_refused_before_any_backend_call(
+    tmp_path: Path,
+) -> None:
+    closer = _load_issue_close()
+    try:
+        closer.close_with_comment(
+            "corca-ai/charness", 42, tmp_path / "absent.md",
+            repo_root=tmp_path, classification="bug",
+        )
+    except RuntimeError as exc:
+        assert "close-comment body file not found" in str(exc)
+    else:  # pragma: no cover - the refusal is the contract
+        raise AssertionError("a missing body file must refuse")

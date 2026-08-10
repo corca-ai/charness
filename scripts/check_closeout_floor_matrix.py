@@ -164,7 +164,7 @@ def _pair_problems(key: str, declared: dict, observed: dict) -> list[str]:
     return problems
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo-root", type=Path, default=Path.cwd())
     parser.add_argument("--json", action="store_true")
@@ -172,7 +172,7 @@ def main() -> int:
         "--emit-observed", type=Path, default=None,
         help="write the observed grid here (for authoring the declaration; never a substitute for it)",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     repo_root = args.repo_root.resolve()
 
     matrix_path = repo_root / MATRIX_REL
