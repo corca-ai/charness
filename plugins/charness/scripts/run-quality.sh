@@ -80,6 +80,50 @@ trap 'rm -rf "$RUN_QUALITY_TMPDIR"' EXIT
 RUN_QUALITY_RUNTIME_BATCH="$RUN_QUALITY_TMPDIR/runtime-batch.jsonl"
 : >"$RUN_QUALITY_RUNTIME_BATCH"
 
+# The label universe (#546). `check-runtime-budget-universe` reconciles the
+# adapter's budget blocks against the labels a reader can find in THIS file, and a
+# budget whose label the reader missed reads as orphaned -- a blocking red whose
+# remedy tells the operator to delete a correct bar. So the reader is not trusted
+# alone: `queue_timed` refuses any label the reader did not find, which turns an
+# extraction miss into a loud failure naming the gate that caused it, at the moment
+# it is queued, instead of a wrong verdict about a correct adapter later.
+#
+# An EMPTY set disables the assertion rather than refusing every gate. That is the
+# consumer case (a runner this reader cannot see), where refusing would be the same
+# false-red the reconciliation exists to avoid. The reader keeps stdout to labels or
+# nothing and puts its prose on stderr precisely so this can be true: the first cut
+# printed "not derivable ..." on stdout, that sentence became a one-element universe,
+# the empty check below never fired, and the first gate was refused with a remedy
+# about queue-line quoting. A reader that genuinely cannot resolve a call site exits
+# nonzero instead of returning an empty set, and that is handled below.
+declare -A RUN_QUALITY_LABEL_UNIVERSE=()
+RUN_QUALITY_UNIVERSE_ERR="$RUN_QUALITY_TMPDIR/label-universe.err"
+if RUN_QUALITY_UNIVERSE_TEXT="$(python3 scripts/quality_label_universe.py --repo-root "$REPO_ROOT" 2>"$RUN_QUALITY_UNIVERSE_ERR")"; then
+  while IFS= read -r universe_label; do
+    if [[ -n "$universe_label" ]]; then
+      RUN_QUALITY_LABEL_UNIVERSE["$universe_label"]=1
+    fi
+  done <<<"$RUN_QUALITY_UNIVERSE_TEXT"
+else
+  # The reader's own message, captured rather than re-derived: invoking it a second
+  # time to print the reason risks reporting a different failure than the one that
+  # actually stopped the run.
+  echo "run-quality: FAIL the gate-label reader refused this runner, so no budget can be reconciled against it:" >&2
+  cat "$RUN_QUALITY_UNIVERSE_ERR" >&2
+  exit 2
+fi
+
+assert_label_in_universe() {
+  local label="$1"
+  if [[ ${#RUN_QUALITY_LABEL_UNIVERSE[@]} -eq 0 ]]; then
+    return 0
+  fi
+  if [[ -z "${RUN_QUALITY_LABEL_UNIVERSE[$label]:-}" ]]; then
+    echo "run-quality: FAIL gate label '${label}' is queued here but scripts/quality_label_universe.py did not find it in this file, so every budget naming it would read as orphaned. Spell the label as a plain double-quoted literal on the queue line, or add its wrapper to QUEUE_FUNCTIONS in that reader." >&2
+    exit 2
+  fi
+}
+
 RUN_QUALITY_VERBOSE="${CHARNESS_QUALITY_VERBOSE:-0}"
 RUN_QUALITY_LABELS="${CHARNESS_QUALITY_LABELS:-}"
 RUN_QUALITY_RUNTIME_PROFILE="${CHARNESS_RUNTIME_PROFILE:-}"
@@ -355,6 +399,9 @@ record_runtime() {
 queue_timed() {
   local label="$1"
   shift
+  # Every wrapper funnels here, so this is the one place that sees every label the
+  # run will actually queue -- including the two dispatchers' forwarded "$label".
+  assert_label_in_universe "$label"
   local slug="${label//[^A-Za-z0-9_.-]/_}"
   local log_path="$RUN_QUALITY_TMPDIR/${slug}.log"
   local meta_path="$RUN_QUALITY_TMPDIR/${slug}.meta"
@@ -761,6 +808,11 @@ queue_selected "check-bootstrap-shim-consistency" python3 scripts/check_bootstra
 queue_selected "check-public-doc-coupling" python3 scripts/check_public_doc_coupling.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-regenerable-facts" python3 skills/public/quality/scripts/check_regenerable_facts.py --repo-root "$REPO_ROOT"
 queue_selected "check-timing-layer-completeness" python3 scripts/check_timing_layer_completeness.py --repo-root "$REPO_ROOT"
+# Sibling of the line above: both reconcile a declaration against the label set
+# THIS file can queue. Queued here rather than beside `check-runtime-budget`
+# because it reads no samples -- it asks whether the runner still knows a budgeted
+# label's name, which is answerable before any gate has run.
+queue_selected "check-runtime-budget-universe" python3 scripts/check_runtime_budget_universe.py --repo-root "$REPO_ROOT"
 queue_selected "check-export-safe-imports" python3 scripts/check_export_safe_imports.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-plugin-import-smoke" python3 scripts/check_plugin_import_smoke.py --repo-root "$REPO_ROOT"
 queue_selected "check-command-docs" python3 scripts/check_command_docs.py --repo-root "$REPO_ROOT"

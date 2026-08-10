@@ -165,3 +165,59 @@ def test_main_is_silent_when_the_subset_matches(tmp_path: Path, monkeypatch, cap
 
     assert META.main() == 0
     assert "carry a timing verdict" in capsys.readouterr().out
+
+
+def test_labels_reach_the_table_through_every_queue_wrapper(tmp_path: Path) -> None:
+    """The widening this gate got on 2026-08-10, pinned.
+
+    Its reader saw only `queue_selected` for as long as it existed, so three opt-in
+    gates queued through `queue_timed` / `queue_agent_browser_runtime_gate` were
+    never required to carry a timing verdict -- an exhaustiveness gate that was not
+    exhaustive. A stub runner is used rather than the real one so this stays true
+    if those particular gates are retired.
+    """
+    text = (
+        'queue_selected "via-selected" foo\n'
+        'queue_timed "via-timed" bar\n'
+        'queue_agent_browser_runtime_gate "via-browser-gate" baz\n'
+    )
+    assert META.run_quality_labels(text) == [
+        "via-selected",
+        "via-timed",
+        "via-browser-gate",
+    ]
+
+
+def test_dispatcher_forwarding_is_not_read_as_a_gate_label(tmp_path: Path) -> None:
+    """`queue_selected` forwards `queue_timed "$label"`; reading that as a label
+    would put the literal string `$label` in the table's required set, which no
+    row can ever satisfy -- a permanent red on a correct table."""
+    text = (
+        "queue_selected() {\n"
+        '  queue_timed "$label" "$@"\n'
+        "}\n"
+        'queue_selected "real-gate" foo\n'
+    )
+    assert META.run_quality_labels(text) == ["real-gate"]
+
+
+def test_an_unresolvable_queue_line_is_a_named_refusal_not_a_traceback(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    """This gate is classified commit-time. The shared reader raises by design, so
+    an uncaught exception here surfaces as a Python traceback inside the pre-commit
+    hook, from a gate whose subject is the timing table."""
+    repo = tmp_path / "repo"
+    (repo / "scripts").mkdir(parents=True)
+    (repo / "docs" / "conventions").mkdir(parents=True)
+    (repo / "scripts" / "run-quality.sh").write_text(
+        'queue_selected "$computed" foo\n', encoding="utf-8"
+    )
+    (repo / "docs" / "conventions" / "validator-timing-layers.md").write_text(
+        "## Classification table\n\n| a | b |\n", encoding="utf-8"
+    )
+    monkeypatch.setattr(sys, "argv", ["prog", "--repo-root", str(repo)])
+    assert META.main() == 1
+    captured = capsys.readouterr()
+    assert "non-literal label" in captured.err
+    assert "Traceback" not in captured.err

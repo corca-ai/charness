@@ -2,8 +2,10 @@
 
 """Meta-gate (#368): the validator-timing classification table must stay EXHAUSTIVE.
 
-Every gate `run-quality.sh` runs (each `queue_selected "<label>"`) must carry a
-recorded timing verdict in `docs/conventions/validator-timing-layers.md`'s
+Every gate `run-quality.sh` runs (every `queue_*` wrapper's literal label, read by
+the shared `quality_label_universe` reader — this gate saw only `queue_selected`
+until 2026-08-10, so three opt-in gates were unclassified the whole time) must
+carry a recorded timing verdict in `docs/conventions/validator-timing-layers.md`'s
 classification table — either pulled to the commit boundary or an explicit
 "stays" reason. This closes the recurring shift-left class structurally
 (#314/#319/#332/#366/#368): each prior instance was a cheap, deterministic,
@@ -25,6 +27,8 @@ import re
 import sys
 from pathlib import Path
 
+import quality_label_universe
+
 from runtime_bootstrap import repo_root_from_script
 
 REPO_ROOT = repo_root_from_script(__file__)
@@ -33,16 +37,24 @@ RUN_QUALITY_PATH = Path("scripts/run-quality.sh")
 TIMING_DOC_PATH = Path("docs/conventions/validator-timing-layers.md")
 PRE_PUSH_PATH = Path(".githooks/pre-push")
 DOCS_ONLY_RE = re.compile(r'^DOCS_ONLY_LABELS="([^"]*)"', re.MULTILINE)
-QUEUE_SELECTED_RE = re.compile(r'queue_selected\s+"([^"]+)"')
 TABLE_HEADING = "## Classification table"
 
 
 def run_quality_labels(text: str) -> list[str]:
-    """The de-duplicated set of `queue_selected` labels, in first-seen order."""
-    seen: dict[str, None] = {}
-    for match in QUEUE_SELECTED_RE.finditer(text):
-        seen.setdefault(match.group(1), None)
-    return list(seen)
+    """The de-duplicated set of queued gate labels, in first-seen order.
+
+    Delegates to `quality_label_universe`, which reads every `queue_*` wrapper
+    rather than `queue_selected` alone. This gate's own reader used to see only
+    `queue_selected`, so three gates that reach the queue through `queue_timed`
+    and `queue_agent_browser_runtime_gate` ran unclassified for as long as they
+    have existed -- an exhaustiveness gate that was not exhaustive. One reader,
+    because two regexes over the same bash file drift silently and the direction
+    of the drift is always "the gate stops seeing something".
+
+    Call-site labels only: the aggregate and startup-probe halves of the universe
+    are not `run-quality.sh` gate entries and owe no timing verdict.
+    """
+    return list(quality_label_universe.queue_call_labels(text))
 
 
 def classification_region(doc_text: str) -> str:
@@ -132,7 +144,20 @@ def main() -> int:
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
 
-    missing, checked = unclassified_labels(repo_root)
+    try:
+        missing, checked = unclassified_labels(repo_root)
+        # Inside the same try on purpose. It is unreachable today (it re-reads the
+        # file `unclassified_labels` already parsed), but leaving a second call to a
+        # raising reader outside the handler is how the traceback comes back.
+        stale = stale_docs_only_labels(repo_root)
+    except quality_label_universe.UniverseError as error:
+        # This gate is classified commit-time, so before this handler existed the
+        # first symptom of an unresolvable queue line was a Python traceback inside
+        # the pre-commit hook, from a gate whose subject is the timing table. The
+        # shared reader raises by design; a caller that does not catch it converts
+        # a named refusal into a crash.
+        print(f"timing-layer completeness: {error}", file=sys.stderr)
+        return 1
     if not checked:
         print("timing-layer completeness: run-quality.sh or timing doc absent; no gate.")
         return 0
@@ -151,7 +176,6 @@ def main() -> int:
         )
         return 1
 
-    stale = stale_docs_only_labels(repo_root)
     if stale:
         print(
             f"{len(stale)} label(s) in `{PRE_PUSH_PATH}`'s DOCS_ONLY_LABELS name no "
@@ -161,7 +185,7 @@ def main() -> int:
         )
         for label in stale:
             print(f"  - {label}", file=sys.stderr)
-        print("Rename or drop each to match a `queue_selected` label.", file=sys.stderr)
+        print("Rename or drop each to match a queued gate label.", file=sys.stderr)
         return 1
 
     print(f"timing-layer completeness: all {len(checked)} run-quality validators carry a timing verdict.")

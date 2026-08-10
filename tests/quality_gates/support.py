@@ -327,6 +327,8 @@ QUALITY_PYTHON_STUBS = (
     ("validate-inventory-consumption-declaration", "validate_inventory_consumption_declaration.py"),
     ("check-inventory-declaration-coverage", "check_inventory_declaration_coverage.py"),
     ("check-timing-layer-completeness", "check_timing_layer_completeness.py"),
+    ("check-runtime-budget-universe", "check_runtime_budget_universe.py"),
+
     ("validate-quality-closeout-contract", "validate_quality_closeout_contract.py"),
     ("validate-critique-artifacts", "validate_critique_artifacts.py"),
     ("validate-ideation-artifact", "validate_ideation_artifact.py"),
@@ -578,6 +580,15 @@ def make_quality_runner_repo(tmp_path: Path) -> tuple[Path, dict[str, str]]:
         scripts_dir / "run_standing_pytest.py",
     )
     (scripts_dir / "run_standing_pytest.py").chmod(0o755)
+    # Copied rather than stubbed: the runner reads it at startup to build the label
+    # universe it asserts every queued label against (#546). A stub returning nothing
+    # would disable that assertion in every runner test -- the harness would then
+    # prove the runner works while proving nothing about the guard that keeps a
+    # mis-parsed gate list from reaching a budget verdict. The real reader also makes
+    # the harness's own copy of run-quality.sh the thing under test.
+    for real_name in ("quality_label_universe.py", "runtime_bootstrap.py", "adapter_lib.py"):
+        shutil.copy2(ROOT / "scripts" / real_name, scripts_dir / real_name)
+        (scripts_dir / real_name).chmod(0o755)
     # Copied rather than stubbed: the runner's specdown step calls it for real, and a
     # stub would let the runner keep passing if the redirect it produces ever broke.
     shutil.copy2(
