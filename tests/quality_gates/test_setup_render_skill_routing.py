@@ -152,7 +152,7 @@ def _shipped_routing_section_body() -> str:
     actually writes failed. A fixture spells the contract the way whichever matcher the
     author had in mind wants; that is how this hid for the life of the check.
     """
-    markdown, _ = _render_skill_routing._render_skill_routing([])
+    markdown, _ = _render_skill_routing._render_skill_routing()
     heading, _, body = markdown.partition("## Skill Routing")
     assert heading == "", "renderer no longer leads with its own heading"
     return body
@@ -184,7 +184,7 @@ def test_the_shipped_renderer_output_satisfies_BOTH_readers_of_the_routing_contr
     # renderer-derived text rather than a fixture, for the same reason as the pin above.
     # Written with the heading, because this call site reads the section back out of a
     # whole AGENTS.md via `extract_section` rather than taking a section body.
-    markdown, _ = _render_skill_routing._render_skill_routing([])
+    markdown, _ = _render_skill_routing._render_skill_routing()
     repo = tmp_path / "repo"
     repo.mkdir()
     (repo / "AGENTS.md").write_text("# Agents\n\n" + markdown, encoding="utf-8")
@@ -208,7 +208,7 @@ def test_a_setup_seeded_repo_can_produce_both_gated_agents_policy_findings() -> 
     the routing block alone (no `## Dynamic Workflows`, no `## Subagent Delegation`) must
     produce BOTH findings, and the real shipped delegation template must clear both.
     """
-    seeded_agents = "# Agents\n\n" + _render_skill_routing._render_skill_routing([])[0]
+    seeded_agents = "# Agents\n\n" + _render_skill_routing._render_skill_routing()[0]
 
     policy, findings = _detect_charness_subagent_policy(seeded_agents)
 

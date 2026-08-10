@@ -88,7 +88,7 @@ def test_setup_inspect_accepts_the_shipped_routing_block_an_operator_extended(tm
     `test_setup_inspect_policy.py`, covers this path with hand-written prose spelling
     `context-only` — exactly the tautology that kept this caller's defect invisible.
     """
-    markdown, _ = _render_skill_routing._render_skill_routing([])
+    markdown, _ = _render_skill_routing._render_skill_routing()
     hook_sentence = "The SessionStart hook"
     assert hook_sentence in markdown, "renderer no longer names the hook; rewrite this edit"
     extended = markdown.replace(

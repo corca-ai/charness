@@ -670,7 +670,7 @@ def test_the_shipped_setup_template_satisfies_BOTH_readers_of_the_contract() -> 
     # from the very check this test guards. Both halves now come from their writers.
     docs = _load_module("scripts/setup_agent_docs_lib.py", "_sad_tmpl")
     routing = _load_module("skills/public/setup/scripts/render_skill_routing.py", "_rsr_tmpl")
-    seeded_routing, _ = routing._render_skill_routing([])
+    seeded_routing, _ = routing._render_skill_routing()
     policy, _ = docs._detect_charness_subagent_policy("# Agents\n\n" + seeded_routing + "\n" + template)
     assert policy["charness_managed"] is True, (
         "the gate in front of the assertion below is shut, so it cannot fail"

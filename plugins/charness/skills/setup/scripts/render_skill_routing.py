@@ -42,7 +42,20 @@ def _installed_skill_ids(root: Path | None) -> list[str]:
     return sorted(path.parent.name for path in root.glob("*/SKILL.md"))
 
 
-def _render_skill_routing(public_skill_ids: list[str]) -> tuple[str, list[str]]:
+def _render_skill_routing() -> tuple[str, list[str]]:
+    """Render the compact routing block. It lists no skills, and that is pinned.
+
+    `scripts/eval_setup.py` raises unless the payload's `listed_skill_ids` is exactly
+    `[]`, and `tests/quality_gates/test_setup_render_skill_routing.py` asserts the same,
+    so the renderer must not grow a catalog here. An earlier signature accepted
+    `public_skill_ids` and never referenced it; it is gone, and the payload key is not.
+
+    What this does NOT claim: that ignoring the resolved skill list is settled design.
+    `_build_payload` still resolves and ships `public_skills`/`support_skills`, and this
+    markdown still ignores them — an open instance of "a harness surface holds the input
+    and emits static prose", tracked in the authoring repo's umbrella backlog. Deleting
+    the parameter removed a signature-shaped hint, not that defect.
+    """
     lines = [
         "## Skill Routing",
         "",
@@ -61,7 +74,7 @@ def _build_payload(repo_root: Path) -> dict[str, object]:
     support_skill_ids = _installed_skill_ids(support_root)
     agents = repo_root / "AGENTS.md"
     agents_text = agents.read_text(encoding="utf-8", errors="replace") if agents.is_file() else ""
-    markdown, listed_skill_ids = _render_skill_routing(public_skill_ids)
+    markdown, listed_skill_ids = _render_skill_routing()
     has_skill_routing = "## Skill Routing" in agents_text
     matches_compact_block = bool(markdown and markdown in agents_text)
     semantically_complete = bool(
