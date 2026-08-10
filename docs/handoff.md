@@ -7,19 +7,17 @@
 
 ## Current State
 
-- **19 open issues.** `#591`, `#576`, `#580`, `#592` closed on the push and were read
-  back CLOSED through the backend; `#572` closed after it. `#595` was filed and is in
-  no wave. Net count is not falling because closing generates issues: over Aug 7-10 the
-  repo created 60 and closed 42, and every close owes a sibling search. What accumulates
-  is the decision-shaped residue, not the code-shaped work.
+- **19 open issues, and the count is not falling because closing GENERATES issues:**
+  Aug 7-10 created 60, closed 42. Filing is one cheap command; every close owes a
+  sibling search and the full floor. The residue is decision-shaped, not code-shaped.
 - **`#572` CLOSED as `consolidated` into `#590`** — first live use of that path; `#590`'s
   body is the durable home of all three of its events. **Do NOT read the green cron on
   `ed90c1f3` as recovery**: it is an ANCESTOR of the `#590` diagnostic `739a2a3e` and ran
   on the pre-push tree. No scheduled mutation run has hit main since; the next is first.
-- **`#582`-`#585`: every member of all four umbrellas is already CLOSED** (`#524` `#525`
-  `#514` `#535`; `#568` `#569`; `#531` `#532`; `#534` `#561`). An umbrella's own close
-  must state an outcome per member, so the question is whether fixing the instances
-  removed the CLASS. `#585` has a channel (dup-ratchet green); `#582` claims most.
+- **`#582`-`#585` are NOT cheap closes — they are the only home of ten unrepaired
+  defects.** All ten members read CLOSED/`NOT_PLANNED`, i.e. `consolidated`, which claims
+  nothing about the defect. Four bounded reviewers verified the tree: **CLASS REMAINS,
+  4/4**. Closing them completes the laundering path that rule exists to block.
 - Three deferred rulings live in the tree rather than only in issue threads: **D53**,
   **D54**, **D55** in [deferred-decisions](./deferred-decisions.md). Each names its
   reopen trigger; D53's is explicitly NOT in-repo observable and says so.
@@ -37,7 +35,10 @@
 
 ## Next Session
 
-1. **Umbrella ruling on `#582`-`#585`.** All members are closed; the ruling is the work.
+1. **Re-split the umbrellas, do not close them** — per-member evidence and the four
+   class instances outside every member are in the
+   [class-survival review](../charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md).
+   `#561` also owes its open operator decision a `deferred-decisions` entry.
 2. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 decides only RENAME;
    the marker makes the other two rot modes decidable, and phase 1's reader makes it
    verifiable. Record: [implementation critique](../charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md).
@@ -54,7 +55,6 @@
 - **A carrier cannot say "this does not close #N"** — the commit-msg recognizer is
   anchored on keyword-then-number and cannot read negation. Say "`#N` stays open".
 - The `Premise-residue:` seam reads markers and nothing writes them.
-- The matrix's `not_measured` names ten gaps; two are worth a slice.
 - `#576` closed by commit keyword, which posts no comment, and the last release note
   points at it as the live record. A manual comment naming D53 is still owed.
 
