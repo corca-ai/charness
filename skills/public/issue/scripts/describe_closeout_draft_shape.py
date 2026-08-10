@@ -21,6 +21,7 @@ from pathlib import Path
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _VERIFY = _load_local("issue_verify_closeout")
 _BODY = _load_local("issue_verify_closeout_body")
+_FLOORS = _load_local("issue_closeout_rung1_floors")
 _CRITIQUE = _load_local("issue_resolution_critique")
 _ledger_counts = _load_local("issue_closeout_ledger_counts")
 
@@ -69,7 +70,7 @@ def _hotl_vocabulary() -> str:
     against the live pattern, so a shape that names a status the verifier would refuse
     cannot be printed -- the producer asks the rule rather than restating it.
     """
-    source = _BODY._HOTL_STATUS_LEAD.pattern
+    source = _FLOORS._HOTL_STATUS_LEAD.pattern
     body = source.split("(?:", 1)[1].rsplit(")", 1)[0].replace("\\b", "")
     tokens: set[str] = set()
     for part in _split_top_level(body):
@@ -79,7 +80,7 @@ def _hotl_vocabulary() -> str:
             tokens.update(f"{head}{alt}" for alt in _split_top_level(inner))
         else:
             tokens.add(part)
-    accepted = sorted(tok for tok in tokens if tok and _BODY._HOTL_STATUS_LEAD.match(tok))
+    accepted = sorted(tok for tok in tokens if tok and _FLOORS._HOTL_STATUS_LEAD.match(tok))
     return ", ".join(accepted)
 
 
@@ -102,7 +103,21 @@ def _split_top_level(pattern_body: str) -> list[str]:
 
 def required_shape() -> str:
     crit = ", ".join(_CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS)
-    behavioral = ", ".join(_BODY.BEHAVIORAL_VERDICT_CLASSIFICATIONS)
+    behavioral = ", ".join(_FLOORS.BEHAVIORAL_VERDICT_CLASSIFICATIONS)
+    # OBSERVED, not restated. Round 1 caught this line rendering the behavioral
+    # tuple for a floor that no longer shares it; hand-typing the replacement would
+    # have moved the drift one level up rather than removing it. Ask the floor.
+    provenance_scope = (
+        "EVERY classification"
+        if all(
+            _FLOORS.evaluate_ai_provenance("", value)["applies"]
+            for value in _VERIFY.CLASSIFICATIONS
+        )
+        else ", ".join(
+            value for value in _VERIFY.CLASSIFICATIONS
+            if _FLOORS.evaluate_ai_provenance("", value)["applies"]
+        )
+    )
     carriers = ", ".join(_VERIFY.CARRIERS)
     reasons = ", ".join(_VERIFY.MANUAL_FALLBACK_REASONS)
     # Three floors this shape used to omit while its own validator hard-blocked on
@@ -159,9 +174,11 @@ def required_shape() -> str:
         "  - a typed disposition satisfies it exactly as a confirmation does; this floor",
         "    refuses SILENCE, it never declares completion.",
         "",
-        f"AI-provenance (required for classifications: {behavioral}):",
+        f"AI-provenance (required for {provenance_scope}):",
         "  - an `AI-provenance: <…>` line, so the irreversible external write is legible",
         "    as agent-authored to the distinct observer. Presence/form only.",
+        "  - NOT scoped to the behavior-bearing classifications: authorship is not a fact",
+        "    about behavior change, so a light close owes the marker too.",
         "",
         "HOTL dispositions (only when the draft carries HOTL entries):",
         "  - each value must BEGIN with a typed status; an unanchored mention lets a",

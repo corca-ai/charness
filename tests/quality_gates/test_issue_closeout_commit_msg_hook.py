@@ -243,7 +243,7 @@ def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(
     substring heuristic and its sibling `_infer_classification` was not, so a
     staged artifact containing the word `Answer:` anywhere in its body — a quoted
     log, a prose sentence — bought the exemption that turns off the
-    behavioral-verdict, AI-provenance, and resolution-critique floors. Both
+    behavioral-verdict and resolution-critique floors. Both
     siblings now default to `bug`, the strictest classification, and the
     exemption is reachable only by explicit declaration (control below)."""
     _init_repo(tmp_path)
@@ -252,6 +252,7 @@ def test_commit_msg_gate_staged_artifact_never_infers_the_exempt_classification(
             "Close #55.",
             "JTBD: decide whether to ship the change.",
             "Answer: yes, proceed.",
+            "AI-provenance: authored by an agent session.",
         ]
     )
     _stage_issue_closeout(tmp_path, body)
@@ -283,6 +284,7 @@ def test_commit_msg_gate_explicit_question_classification_still_exempts(tmp_path
             "Classification: question",
             "JTBD: decide whether to ship the change.",
             "Answer: yes, proceed.",
+            "AI-provenance: authored by an agent session.",
         ]
     )
     _stage_issue_closeout(tmp_path, body)
@@ -312,6 +314,7 @@ def test_commit_msg_gate_surfaces_exemption_advisory_for_question_close(tmp_path
             "Classification: question",
             "JTBD: decide whether to ship the change.",
             "Answer: yes, proceed.",
+            "AI-provenance: authored by an agent session.",
         ]
     )
     _stage_issue_closeout(tmp_path, body)
@@ -640,9 +643,11 @@ def test_commit_msg_gate_bare_close_ignores_fenced_classification_line(tmp_path:
     report = json.loads(result.stdout)["reports"][0]
     assert report["trigger"] == "bare-close-keyword"
     assert report["classification"] == "bug"
-    # The floors an inferred/fenced `question` would have switched off.
+    # The floors an inferred/fenced `question` would have switched off. AI-provenance
+    # is deliberately NOT asserted here: it now applies unconditionally, so the
+    # assertion could not fail for any classification and would read as a
+    # discriminator while proving nothing.
     assert report["behavioral_verdict"]["applies"] is True
-    assert report["ai_provenance"]["applies"] is True
     assert report["resolution_critique_check"]["ok"] is False
 
 
@@ -655,7 +660,10 @@ def test_commit_msg_gate_bare_close_honors_unfenced_classification_line(tmp_path
         "Fixes #123\n\n"
         "Classification: question\n\n"
         "JTBD: decide whether to ship.\n\n"
-        "Answer: no, closing as answered.\n",
+        "Answer: no, closing as answered.\n\n"
+        # The exemption this test is about is the behavioral-verdict one. The
+        # provenance floor no longer rides the same gate, so the marker is scaffolding.
+        "AI-provenance: authored by an agent session.\n",
         encoding="utf-8",
     )
 
@@ -692,3 +700,62 @@ def test_commit_msg_gate_renders_the_specific_critique_failure(tmp_path: Path) -
     # A placeholder field is present-but-empty, not absent; "missing" alone
     # misdescribes the dominant post-B1 cause.
     assert "missing or placeholder ledger fields: prevention" in stderr
+
+
+def test_commit_msg_gate_refuses_a_question_close_with_no_provenance_marker(tmp_path: Path) -> None:
+    """The provenance floor's new reach, pinned on THIS carrier.
+
+    The other two body carriers pin it directly (verify-closeout and
+    close-with-comment). Without this, `evaluate_ai_provenance` could re-acquire a
+    classification gate -- or this hook could re-introduce a remap in the other
+    direction -- and every test in this file would stay green, on the one carrier
+    that can block `git commit`.
+    """
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #55.",
+            "Classification: question",
+            "JTBD: decide whether to ship the change.",
+            "Answer: yes, proceed.",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message), "--json")
+
+    assert result.returncode != 0
+    report = json.loads(result.stdout)["reports"][0]
+    assert report["classification"] == "question"
+    assert report["ai_provenance"]["applies"] is True
+    assert report["ai_provenance"]["ok"] is False
+
+
+def test_commit_msg_gate_names_the_undispositioned_hotl_entry_it_refused(tmp_path: Path) -> None:
+    """This carrier folded the HOTL floor into its verdict and printed NOTHING about
+    it — the same bare-refusal defect this file already repaired twice for the
+    behavioral and provenance floors, on the one carrier that can block `git commit`.
+    An author whose commit is rejected has to be told which line and what to do."""
+    _init_repo(tmp_path)
+    body = "\n\n".join(
+        [
+            "Close #55.",
+            "Classification: question",
+            "JTBD: decide whether to ship the change.",
+            "Answer: yes, proceed.",
+            "HOTL #55: not verified yet, will follow up",
+            "AI-provenance: authored by an agent session.",
+        ]
+    )
+    _stage_issue_closeout(tmp_path, body)
+    message = tmp_path / "message.txt"
+    message.write_text(body, encoding="utf-8")
+
+    result = run_script(SCRIPT, "--repo-root", str(tmp_path), "--commit-msg-file", str(message))
+
+    assert result.returncode != 0
+    assert "undispositioned HOTL entry" in result.stderr
+    assert "not verified yet, will follow up" in result.stderr
+    assert "DELETE the line" in result.stderr

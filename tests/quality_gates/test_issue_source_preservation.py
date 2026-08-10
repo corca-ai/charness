@@ -22,7 +22,7 @@ from tests.quality_gates.support import run_script
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 _ROOT = Path(__file__).resolve().parents[2]
 FIXTURE = _ROOT / "skills" / "public" / "issue" / "scripts" / "fixtures" / "slack-thread-source-preservation.json"
-BODY_MODULE_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_verify_closeout_body.py"
+BODY_MODULE_PATH = _ROOT / "skills" / "public" / "issue" / "scripts" / "issue_closeout_rung1_floors.py"
 
 
 def _load_body_module():

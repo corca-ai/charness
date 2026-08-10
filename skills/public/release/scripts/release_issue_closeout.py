@@ -34,8 +34,8 @@ def _load_issue_closeout_body_lib():
     here = Path(__file__).resolve()
     package_root, installed_first = _package_root(here)
     rels = (
-        Path("skills/issue/scripts/issue_verify_closeout_body.py"),
-        Path("skills/public/issue/scripts/issue_verify_closeout_body.py"),
+        Path("skills/issue/scripts/issue_closeout_rung1_floors.py"),
+        Path("skills/public/issue/scripts/issue_closeout_rung1_floors.py"),
     )
     if not installed_first:
         rels = tuple(reversed(rels))
@@ -43,14 +43,14 @@ def _load_issue_closeout_body_lib():
         candidate = package_root / rel
         if not candidate.is_file():
             continue
-        spec = importlib.util.spec_from_file_location("release_issue_verify_closeout_body", candidate)
+        spec = importlib.util.spec_from_file_location("release_issue_closeout_rung1_floors", candidate)
         if spec is None or spec.loader is None:
             continue
         module = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(module)
         return module
     raise ImportError(
-        "issue skill issue_verify_closeout_body.py not found in source-tree "
+        "issue skill issue_closeout_rung1_floors.py not found in source-tree "
         "skills/public/issue/scripts or installed skills/issue/scripts layout"
     )
 
@@ -168,7 +168,7 @@ def evaluate_release_behavioral_verdict(behavior_lines: list[str], issue_numbers
     if _ISSUE_CLOSEOUT_BODY is None:
         raise SystemExit(
             "release --close-issue requires the issue skill's "
-            "issue_verify_closeout_body.py (the behavioral-verdict floor helper), but it was "
+            "issue_closeout_rung1_floors.py (the behavioral-verdict floor helper), but it was "
             f"not found on this install: {_ISSUE_CLOSEOUT_BODY_ERROR}\n"
             "vendor/install the `issue` skill alongside `release` on this host, or drop "
             "--close-issue from this publish."

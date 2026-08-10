@@ -157,8 +157,8 @@ def _infer_classification(body: str) -> str:
     honored, including the floor-exempt values. Absent one, inference may only
     reach classifications that keep the floors LIVE: the loose
     ``decision:``/``answer:`` substring test used to hand the fully-exempt
-    ``question`` classification — which turns off the behavioral-verdict, AI-
-    provenance, and resolution-critique floors — to any artifact that happened to
+    ``question`` classification — which turns off the behavioral-verdict and
+    resolution-critique floors — to any artifact that happened to
     contain the word ``Answer:`` anywhere in its body, including inside a quoted
     log or a prose sentence (B3). ``_bare_classification`` was hardened against
     exactly this and the hardening was not applied here; it is now. An artifact
@@ -225,12 +225,15 @@ def _pause_brief_reports(pause_briefs: list[dict[str, Any]], verify_module: Any)
     # pause briefs with a one-line provenance floor the brief contract names.
     reports: list[dict[str, Any]] = []
     for artifact in pause_briefs:
-        # The pause floor is unconditional: a question/decision-needed
-        # self-classification must not bypass the one requirement kept.
-        floor_classification = artifact["classification"]
-        if floor_classification in verify_module.FLOOR_EXEMPT_CLASSIFICATIONS:
-            floor_classification = "feature"
-        provenance = verify_module.evaluate_ai_provenance(artifact["body"], floor_classification)
+        # The pause floor is unconditional, and now says so by simply passing the real
+        # classification. This used to rewrite a floor-exempt classification to
+        # `feature` so the provenance check would run at all -- a workaround for a
+        # classification gate on `evaluate_ai_provenance` that has since been removed,
+        # because authorship is not a fact about behavior change. The remap outliving
+        # its cause would have been a lie about what classification was checked.
+        provenance = verify_module.evaluate_ai_provenance(
+            artifact["body"], artifact["classification"]
+        )
         reports.append(
             {
                 "ok": bool(provenance.get("ok")),
@@ -476,6 +479,18 @@ def _format_failure(report: dict[str, Any]) -> str:
             lines.append(
                 "  missing per-issue behavioral verdict (a `Behavior #N:` line naming a "
                 f"distinct channel or a typed non-verified disposition): {missing_behavior}"
+            )
+        hotl = item.get("hotl_dispositions", {})
+        for entry in hotl.get("undispositioned", []) or []:
+            # This carrier folded the HOTL floor into its verdict and printed nothing
+            # about it -- the same bare-refusal defect this file already repaired twice
+            # for its sibling floors, on the ONE carrier that can block `git commit`.
+            lines.append(
+                f"  undispositioned HOTL entry {entry.get('target') or ''}: the value must "
+                f"LEAD WITH a typed HOTL status (or local-only-by-contract), not merely "
+                f"mention one; got {entry.get('value')!r}. If there was no live human loop, "
+                "DELETE the line rather than writing `none`/`n/a` -- a body with no HOTL "
+                "entry is inert and passes."
             )
         provenance = item.get("ai_provenance", {})
         if provenance.get("applies") and not provenance.get("ok", True):

@@ -19,6 +19,13 @@ ISSUE_SKILL = (ROOT / "skills" / "public" / "issue" / "SKILL.md").read_text(enco
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 
 
+# These tests pin the close-with-comment BACKEND mechanics (adapter templates, argv,
+# post-close readback), not the closeout floor. The provenance marker is here because
+# the floor now applies to every classification -- it is fixture scaffolding for these
+# tests, and the floor itself is pinned in test_issue_closeout_rung1_floors.py.
+_CLOSE_BODY = "{text}\n\nAI-provenance: authored by an agent session.\n"
+
+
 def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:
     result = run_script(SCRIPT, "resolve-target", "--repo-root", str(tmp_path), "--target", "demo")
 
@@ -182,7 +189,7 @@ def test_issue_close_with_comment_runs_adapter_comment_then_close(tmp_path: Path
         ],
     )
     body = tmp_path / "body.md"
-    body.write_text("Multi-line\nclose comment.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Multi-line\nclose comment."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -231,7 +238,7 @@ def test_issue_close_with_comment_fails_when_final_state_remains_open(tmp_path: 
     )
     fake.chmod(0o755)
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -275,7 +282,7 @@ def test_issue_close_with_comment_surfaces_partial_state_when_close_fails(tmp_pa
     )
     fake.chmod(0o755)
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -351,7 +358,7 @@ def test_issue_close_with_comment_uses_adapter_template(tmp_path: Path) -> None:
         encoding="utf-8",
     )
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -404,7 +411,7 @@ def test_issue_close_with_comment_requires_adapter_view_template(tmp_path: Path)
         encoding="utf-8",
     )
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -483,7 +490,7 @@ def test_issue_close_with_comment_substitutes_reason_when_adapter_comment_uses_i
         encoding="utf-8",
     )
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,
@@ -557,7 +564,7 @@ def test_issue_close_with_comment_rejects_adapter_template_with_unknown_placehol
         encoding="utf-8",
     )
     body = tmp_path / "body.md"
-    body.write_text("Body.\n", encoding="utf-8")
+    body.write_text(_CLOSE_BODY.format(text="Body."), encoding="utf-8")
 
     result = run_script(
         SCRIPT,

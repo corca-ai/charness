@@ -350,7 +350,10 @@ def test_question_closeout_does_not_require_critique(tmp_path: Path) -> None:
     body_file = tmp_path / "body.md"
     body_file.write_text(
         "Close #42.\n\nJTBD: answer a clarification question.\n"
-        "Recorded decision: keep the current behavior unchanged.\n",
+        "Recorded decision: keep the current behavior unchanged.\n"
+        # The critique floor still exempts `question`; the provenance floor no longer
+        # does, so the body carries the marker to keep this test about the critique.
+        "AI-provenance: authored by an agent session.\n",
         encoding="utf-8",
     )
 

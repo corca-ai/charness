@@ -148,7 +148,12 @@ def _close_with(
         _issue_close, "_run_backend", lambda argv: _Result(stdout=_json.dumps(payload))
     )
     body = tmp_path / "close-body.md"
-    body.write_text("closes the issue" + chr(10), encoding="utf-8")
+    # Scaffolding: this test is about the post-close identity readback, not the
+    # rung-1 body floor, which now applies to every classification.
+    body.write_text(
+        "closes the issue" + chr(10) * 2 + "AI-provenance: authored by an agent session." + chr(10),
+        encoding="utf-8",
+    )
     _issue_close.close_with_comment(
         "owner/repo", 42, body, repo_root=ROOT, classification="chore",
     )

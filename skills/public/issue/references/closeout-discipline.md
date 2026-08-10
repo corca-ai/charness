@@ -178,7 +178,9 @@ see `../../hotl/references/ledger-and-dispositions.md`). **Re-reading
 confirmation** — that is the same-proxy re-read *P4* names. The fresh-eye
 resolution critique (next section) is the natural distinct observer; render the
 per-issue verdict there. A `question`/`decision-needed` issue with no behavior
-change has nothing to confirm, and the state check stands alone.
+change has nothing to confirm, so *this* floor is exempt — but the state check does
+NOT stand alone: the AI-provenance marker below applies to every classification, and
+a presented HOTL entry is judged whatever the classification claims to be.
 
 This is a per-issue **question to render, never a completion condition to
 declare**: "confirm each issue, then close when all are confirmed" re-creates the
@@ -200,7 +202,11 @@ disposition real) is the fresh-eye reviewer's judgment (**rung-2**), never the
 floor's. This is the third option between judgment-only prose and a terminal-green
 gate: a gate may *force the question*; it may not *declare* the behavior proven.
 Alongside it, an `AI-provenance:` marker is required on the agent-authored carrier
-so the irreversible external write is legible to that distinct observer.
+so the irreversible external write is legible to that distinct observer. **That marker
+is required for EVERY classification**, not only the behavior-bearing ones: authorship
+is not a fact about behavior change, and an agent-posted `question` close comment is
+exactly as agent-authored as a `bug` one. A light close is lighter by two floors, not
+four.
 
 A sibling **rung-1 HOTL-disposition floor** (Direction-3) refuses an
 *undispositioned HOTL entry*. It is **presence-gated**: a carrier that presents no
@@ -289,6 +295,11 @@ What a consolidated close owes:
   refuses. So it must close via
   `issue_tool.py close-with-comment --reason "not planned"`, and `issue_close`
   enforces that reason. `direct-commit` and `pr-body` are refused.
+- **An `AI-provenance:` marker**, same as every other classification. The
+  provenance floor is not scoped to the behavior-bearing classifications:
+  authorship is not a fact about behavior change, and this disposition's only
+  legal carriers are the two that write to GitHub directly. A consolidated body
+  with the three items above and no marker is refused before the mutation.
 
 Four facts are then read back from the TRACKER before the close lands: the
 destination exists, is OPEN at close time, its body names the issue moving into

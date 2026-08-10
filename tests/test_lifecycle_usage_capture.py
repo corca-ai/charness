@@ -134,7 +134,12 @@ def test_issue_close_capture_runs_after_state_readback(tmp_path: Path) -> None:
     module["close_with_comment"].__globals__["_run_backend"] = fake_backend
     module["close_with_comment"].__globals__["_capture_lifecycle"] = lambda *_a, **_k: events.append("capture") or {"status": "appended"}
     body = tmp_path / "body.md"
-    body.write_text("Multi-line\nclose comment.\n", encoding="utf-8")
+    # Scaffolding: the provenance floor applies to every classification, and this
+    # test is about lifecycle capture ordering, not the floor.
+    body.write_text(
+        "Multi-line\nclose comment.\n\nAI-provenance: authored by an agent session.\n",
+        encoding="utf-8",
+    )
     result = module["close_with_comment"](
         "acme/demo", 42, body, repo_root=tmp_path, classification="question",
         backend={"id": "gh", "binary": "gh", "commands": None},

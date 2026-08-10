@@ -39,6 +39,7 @@ from typing import Any
 
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BODY = _load_local("issue_verify_closeout_body")
+_FLOORS = _load_local("issue_closeout_rung1_floors")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_close_comment_floor_critique")
 _CONSOLIDATED_CLASSIFICATION = "consolidated"
 
@@ -47,7 +48,7 @@ _CONSOLIDATED_CLASSIFICATION = "consolidated"
 # caller (``issue_close.py``'s ``_CLOSE_COMMENT_FLOOR.review_advisory_for_classification``)
 # keeps working while the commit-msg carrier shares the same implementation — no
 # duplicated advisory body to drift between carriers or trip the dup-ratchet gate.
-review_advisory_for_classification = _BODY.review_advisory_for_classification
+review_advisory_for_classification = _FLOORS.review_advisory_for_classification
 
 
 def evaluate_close_comment_floor(
@@ -64,20 +65,20 @@ def evaluate_close_comment_floor(
     is honest — that is the fresh-eye resolution critique (rung-2).
     """
     numbers = [number]
-    source_preservation = _BODY.evaluate_source_preservation(body)
-    behavioral_verdict = _BODY.evaluate_behavioral_verdict(body, classification, numbers)
+    source_preservation = _FLOORS.evaluate_source_preservation(body)
+    behavioral_verdict = _FLOORS.evaluate_behavioral_verdict(body, classification, numbers)
     # The HOTL-disposition floor landed after this composition and was never wired
     # in, so the carrier that mutates GitHub *directly* was the one carrier where an
     # undispositioned HOTL entry could not be refused. Presence-gated like the rest:
     # a body with no HOTL entry is inert, so this adds no obligation to bodies that
     # never had a live loop.
-    hotl_dispositions = _BODY.evaluate_hotl_dispositions(body, classification)
+    hotl_dispositions = _FLOORS.evaluate_hotl_dispositions(body, classification)
     # Same asymmetry as the HOTL floor above: `verify-closeout` and the commit-msg
     # carrier both check the AI-provenance marker, and this carrier — the only one
     # that writes to GitHub itself — did not. The marker is what makes the
     # irreversible external write legible as agent-authored to the rung-2 observer,
     # so the carrier with the strongest need for it was the one carrier without it.
-    ai_provenance = _BODY.evaluate_ai_provenance(body, classification)
+    ai_provenance = _FLOORS.evaluate_ai_provenance(body, classification)
     # THE THIRD INSTANCE OF THE ASYMMETRY THIS FILE ALREADY NAMES TWICE. The
     # `consolidated` disposition and its four tracker readbacks both landed on
     # `verify_closeout`, and a consolidated close is REQUIRED to use this carrier
@@ -143,7 +144,9 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
         target = entry.get("target") or f"#{report['number']}"
         lines.append(
             f"  undispositioned HOTL entry {target}: the value must LEAD WITH a typed HOTL "
-            f"status (or local-only-by-contract), not merely mention one; got {entry['value']!r}."
+            f"status (or local-only-by-contract), not merely mention one; got {entry['value']!r}. "
+            "This floor is presence-gated: if there was no live human loop, DELETE the line "
+            "rather than writing `none`/`n/a` -- a body with no HOTL entry is inert and passes."
         )
     provenance = report["ai_provenance"]
     if provenance.get("applies") and not provenance.get("ok", True):
@@ -162,6 +165,12 @@ def format_close_comment_floor_failure(report: dict[str, Any]) -> str:
             "  missing/invalid resolution-critique evidence: add `Critique: <path>` or "
             "`Critique: blocked <host-signal>`."
         )
+    # Rendered LAST and never omitted: this floor refuses on `missing_ledger_fields`
+    # and printed nothing for it, so a `consolidated` close that fixed its HOTL line by
+    # typing a status -- which the message above tells the author to do -- was refused
+    # again, this time by the repair-claim rule, with only the header line to read.
+    for finding in report.get("missing_ledger_fields") or []:
+        lines.append(f"  {finding}")
     preservation = report["source_preservation"]
     if preservation.get("missing"):
         lines.append(

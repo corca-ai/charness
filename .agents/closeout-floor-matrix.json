@@ -147,12 +147,12 @@
           "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -176,12 +176,12 @@
           "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -297,12 +297,12 @@
           "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -326,12 +326,12 @@
           "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -447,12 +447,12 @@
           "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -476,12 +476,12 @@
           "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -502,19 +502,19 @@
         },
         "behavioral_verdict": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. UNDERNEATH the repair-claim refusal, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. That underlying skip has a sound reason: a consolidation implements nothing, so there is no behavior to confirm and no resolution to critique."
         },
         "hotl_dispositions": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding. The underlying classification skip shares the defect filed as https://github.com/corca-ai/charness/issues/591: whether a human loop was dispositioned is not a fact about whether the close changes behavior."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. The repair-claim rule is the ONLY thing holding here: this floor lost its classification gate, so remove the repair-claim rule and a presented HOTL entry would be judged (`fires`), not skipped. That is the opposite of the sibling cells above and is why this cell must not be read as sharing their reason."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. UNDERNEATH the repair-claim refusal, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. That underlying skip has a sound reason: a consolidation implements nothing, so there is no behavior to confirm and no resolution to critique."
         },
         "consolidation_readback": {
           "state": "fires",
@@ -621,12 +621,12 @@
           "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -650,12 +650,12 @@
           "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -676,19 +676,19 @@
         },
         "behavioral_verdict": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. UNDERNEATH the repair-claim refusal, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. That underlying skip has a sound reason: a consolidation implements nothing, so there is no behavior to confirm and no resolution to critique."
         },
         "hotl_dispositions": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding. The underlying classification skip shares the defect filed as https://github.com/corca-ai/charness/issues/591: whether a human loop was dispositioned is not a fact about whether the close changes behavior."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. The repair-claim rule is the ONLY thing holding here: this floor lost its classification gate, so remove the repair-claim rule and a presented HOTL entry would be judged (`fires`), not skipped. That is the opposite of the sibling cells above and is why this cell must not be read as sharing their reason."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "input-refused",
-          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+          "reason": "`issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close -- measured by adding it, not read off the disposition. UNDERNEATH the repair-claim refusal, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. That underlying skip has a sound reason: a consolidation implements nothing, so there is no behavior to confirm and no resolution to critique."
         },
         "consolidation_readback": {
           "state": "fires",
@@ -795,12 +795,12 @@
           "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -824,12 +824,12 @@
           "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "skipped-by-design",
@@ -945,12 +945,12 @@
           "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "undispositioned",
@@ -974,12 +974,12 @@
           "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
         },
         "hotl_dispositions": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
         },
         "ai_provenance": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
           "state": "undispositioned",

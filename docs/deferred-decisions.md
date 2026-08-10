@@ -400,7 +400,7 @@ the evidence is sufficient for the boundary at hand.
 - Question: Should [`check_issue_closeout_commit_msg.py`](../scripts/check_issue_closeout_commit_msg.py) surface a non-blocking REVIEW advisory when a close self-classifies `question`/`decision-needed` (mirroring [`issue_close_comment_floor.review_advisory_for_classification`](../skills/public/issue/scripts/issue_close_comment_floor.py)), so the floor exemption is not the silent path on the commit-message carrier the way it already is not on `close-with-comment`?
 - Resolution: RESOLVED (2026-07-04, this session) exactly as the deferral named.
   `review_advisory_for_classification` now has a single carrier-neutral owner in
-  `issue_verify_closeout_body.py` (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
+  `issue_closeout_rung1_floors.py` (`FLOOR_EXEMPT_CLASSIFICATIONS` + a unified
   `(classification, *, numbers=None, source=None)` signature), re-exported through
   `issue_verify_closeout.py`, with `issue_close_comment_floor.py` reduced to a
   re-export (no duplicated body). `check_issue_closeout_commit_msg.py` surfaces the

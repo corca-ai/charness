@@ -212,7 +212,11 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
     resolution-critique floors (no live behavior to confirm), but the
     caller-supplied classification is not independently checked. The close
     must still succeed (exit 0, advisory only, never blocks) while surfacing a
-    REVIEW line so the bypass is visible rather than silent."""
+    REVIEW line so the bypass is visible rather than silent.
+
+    The body carries an `AI-provenance:` marker because that floor no longer rides
+    the same classification gate -- the skip this advisory reports is now two floors
+    wide, not four, and the advisory's own sentence says so."""
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     log = tmp_path / "gh-log.json"
@@ -227,7 +231,10 @@ def test_close_with_comment_question_classification_emits_review_advisory(tmp_pa
         ],
     )
     body = tmp_path / "body.md"
-    body.write_text("Answer: yes, proceed as discussed.\n", encoding="utf-8")
+    body.write_text(
+        "Answer: yes, proceed as discussed.\n\nAI-provenance: authored by an agent session.\n",
+        encoding="utf-8",
+    )
 
     result = run_script(
         SCRIPT,
@@ -341,22 +348,35 @@ def test_close_with_comment_refuses_body_without_ai_provenance(tmp_path: Path) -
     assert not log.exists(), "no gh call should have run before the floor refused"
 
 
-def test_close_with_comment_provenance_floor_skips_non_behavioral_classifications(
+def test_close_with_comment_provenance_floor_applies_to_a_light_classification(
     tmp_path: Path,
 ) -> None:
-    """The provenance floor is presence-gated by classification, exactly like the
-    behavioral-verdict floor it rides beside. A `question` closeout is not an
-    agent-authored fix carrier, so requiring the marker there would be an
-    obligation invented by the wiring rather than by the contract."""
+    """The provenance floor no longer rides the behavioral-verdict classification gate.
+
+    That gate's reason -- "this classification has no user-facing behavior to confirm"
+    -- is sound for the behavioral verdict and does not transfer to authorship: an
+    agent-posted `question` close comment is exactly as agent-authored as a `bug` one,
+    and this is the carrier that writes it to GitHub directly.
+    """
     floor = _load_close_comment_floor()
-    report = floor.evaluate_close_comment_floor(
+    silent = floor.evaluate_close_comment_floor(
         repo_root=tmp_path,
         body="Answered inline; no code change.\n",
         classification="question",
         number=42,
     )
-    assert report["ai_provenance"]["applies"] is False
-    assert report["ai_provenance"]["ok"] is True
+    assert silent["ai_provenance"]["applies"] is True
+    assert silent["ai_provenance"]["ok"] is False
+    assert silent["ok"] is False
+
+    marked = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body="Answered inline; no code change.\n\nAI-provenance: authored by an agent session.\n",
+        classification="question",
+        number=42,
+    )
+    assert marked["ai_provenance"]["ok"] is True
+    assert marked["ok"] is True
 
 
 def _load_issue_close():
@@ -404,3 +424,45 @@ def test_a_missing_close_comment_body_file_is_refused_before_any_backend_call(
         assert "close-comment body file not found" in str(exc)
     else:  # pragma: no cover - the refusal is the contract
         raise AssertionError("a missing body file must refuse")
+
+
+def test_the_hotl_refusal_message_names_deletion_as_the_legal_exit(tmp_path: Path) -> None:
+    """The floor is presence-gated, so a body with no HOTL entry passes -- but an
+    author who DECLARES there was no loop (`HOTL: none`) is refused, because `none`
+    is not a typed status. The remedy is deletion, and the message has to say so or
+    the author has no way to learn it from the refusal."""
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body="Answer: resolved inline.\n\nHOTL: none - no operator loop was involved.\n"
+             "AI-provenance: authored by an agent session.\n",
+        classification="question",
+        number=42,
+    )
+    assert report["ok"] is False
+    rendered = floor.format_close_comment_floor_failure(report)
+    assert "DELETE the line" in rendered
+    assert "a body with no HOTL entry is inert and passes" in rendered
+
+
+def test_a_consolidated_repair_claim_refusal_is_rendered_not_silent(tmp_path: Path) -> None:
+    """The floor refuses on `missing_ledger_fields` and used to print only its header.
+
+    The path is reachable straight from the HOTL advice above: an author told to give
+    the entry a typed status writes `HOTL: verified`, which the consolidated
+    disposition then refuses as a repair claim. Two refusals in a row, the second one
+    undiagnosed, at the carrier that writes to GitHub.
+    """
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body="JTBD: fold this into the umbrella.\nConsolidated into: #900\n"
+             "HOTL: verified: roundtrip observed\nAI-provenance: authored by an agent session.\n",
+        classification="consolidated",
+        number=42,
+    )
+    assert report["ok"] is False
+    assert report["missing_ledger_fields"]
+    rendered = floor.format_close_comment_floor_failure(report)
+    assert "asserts a repair via" in rendered
+    assert len(rendered.splitlines()) > 1, "a refusal that prints only its header is unreadable"

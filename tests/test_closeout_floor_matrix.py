@@ -377,8 +377,8 @@ def test_the_probe_reads_the_live_floor_and_not_a_declared_table(world: ProbeWor
     before = observe(world, "pr-body", "question")
     assert before["floors"]["behavioral_verdict"] == "inert"
 
-    body = world.verifier._BODY
-    body.BEHAVIORAL_VERDICT_CLASSIFICATIONS = body.BEHAVIORAL_VERDICT_CLASSIFICATIONS + ("question",)
+    floors = world.verifier._FLOORS
+    floors.BEHAVIORAL_VERDICT_CLASSIFICATIONS = floors.BEHAVIORAL_VERDICT_CLASSIFICATIONS + ("question",)
     after = observe(world, "pr-body", "question")
     assert after["floors"]["behavioral_verdict"] == "fires"
 
@@ -462,7 +462,7 @@ def test_the_gate_refuses_when_a_floor_changes_under_an_unchanged_declaration(
     )
     assert json.loads(green.stdout)["ok"], green.stdout
 
-    floor_source = repo / "skills/public/issue/scripts/issue_verify_closeout_body.py"
+    floor_source = repo / "skills/public/issue/scripts/issue_closeout_rung1_floors.py"
     floor_source.write_text(
         floor_source.read_text(encoding="utf-8").replace(
             'BEHAVIORAL_VERDICT_CLASSIFICATIONS = ("bug", "feature", "deferred-work")',

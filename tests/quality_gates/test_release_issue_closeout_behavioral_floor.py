@@ -102,8 +102,8 @@ def test_evaluate_release_behavioral_verdict_refuses_with_typed_message_on_the_r
     # non-empty issue_numbers so the floor is actually reached (unlike the
     # empty-list early return above).
     monkeypatch.setattr(_CLOSEOUT, "_ISSUE_CLOSEOUT_BODY", None)
-    monkeypatch.setattr(_CLOSEOUT, "_ISSUE_CLOSEOUT_BODY_ERROR", "issue_verify_closeout_body.py not found (forced)")
-    with pytest.raises(SystemExit, match="issue_verify_closeout_body.py"):
+    monkeypatch.setattr(_CLOSEOUT, "_ISSUE_CLOSEOUT_BODY_ERROR", "issue_closeout_rung1_floors.py not found (forced)")
+    with pytest.raises(SystemExit, match="issue_closeout_rung1_floors.py"):
         _CLOSEOUT.evaluate_release_behavioral_verdict(["Behavior #44: confirmed via fresh checkout"], [44])
 
 
@@ -227,20 +227,20 @@ def test_load_issue_closeout_body_lib_covers_missing_and_unloadable_candidates(
     # `if spec is None or spec.loader is None: continue` branch), so the loop
     # exhausts to the final "not found" raise -- all three in one pass.
     package_root = tmp_path / "pkg"
-    _seed_issue_helper(package_root, installed=True, filename="issue_verify_closeout_body.py")
+    _seed_issue_helper(package_root, installed=True, filename="issue_closeout_rung1_floors.py")
     monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, False))
     monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
 
-    with pytest.raises(ImportError, match="issue_verify_closeout_body.py not found"):
+    with pytest.raises(ImportError, match="issue_closeout_rung1_floors.py not found"):
         _CLOSEOUT._load_issue_closeout_body_lib()
 
 
 def test_load_issue_closeout_body_lib_skips_loader_without_spec(tmp_path: Path, monkeypatch) -> None:
     package_root = tmp_path / "pkg"
-    _seed_issue_helper(package_root, installed=False, filename="issue_verify_closeout_body.py")
+    _seed_issue_helper(package_root, installed=False, filename="issue_closeout_rung1_floors.py")
     monkeypatch.setattr(_CLOSEOUT, "_package_root", lambda _here: (package_root, True))
     monkeypatch.setattr(_CLOSEOUT.importlib.util, "spec_from_file_location", lambda *_a, **_k: None)
-    with pytest.raises(ImportError, match="issue_verify_closeout_body.py not found"):
+    with pytest.raises(ImportError, match="issue_closeout_rung1_floors.py not found"):
         _CLOSEOUT._load_issue_closeout_body_lib()
 
 
@@ -408,7 +408,7 @@ def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_pat
     # (b) --close-issue with the lib missing refuses with a typed message
     # naming the missing capability, not a bare traceback (AttributeError on
     # `None.evaluate_behavioral_verdict`).
-    with pytest.raises(SystemExit, match="issue_verify_closeout_body.py"):
+    with pytest.raises(SystemExit, match="issue_closeout_rung1_floors.py"):
         module.evaluate_release_behavioral_verdict(["Behavior #44: x"], [44])
 
     def run_never_called(*_args, **_kwargs):
@@ -417,7 +417,7 @@ def test_close_issue_refuses_with_typed_message_when_issue_skill_missing(tmp_pat
     payload: dict = {}
     carrier = tmp_path / "closeout.md"
     carrier.write_text(bug_closeout_body(close_line="Close #44.", behavior_line=None) + "\n", encoding="utf-8")
-    with pytest.raises(SystemExit, match="issue_verify_closeout_body.py"):
+    with pytest.raises(SystemExit, match="issue_closeout_rung1_floors.py"):
         module.preflight_release_issues(
             tmp_path, repo="example/demo", issue_numbers=[44], payload=payload, run=run_never_called,
             classification="bug", carrier_file=carrier,

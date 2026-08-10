@@ -895,6 +895,19 @@
    ],
    "rationale": "resolve_states_for_repo returns an EMPTY state map plus a typed diagnostic when the handoff adapter's issue_source is disabled or the tracker cannot be resolved, so the cited-issue half of the staleness check did not run. The parse payload reports this as staleness.issue_states_checked=false with the diagnostic attached, never as an empty closed_issues list -- 'nothing was closed' and 'nothing was checked' are the same empty tuples on the entries, and a reader who cannot tell them apart trusts a backlog line the tracker was never asked about. Facts-only path: no verdict, no entry is dropped, and unknown is never reported as closed."
   },
+  "skills/public/issue/scripts/issue_closeout_rung1_floors.py": {
+   "states": [
+    "skipped"
+   ],
+   "visibility": [
+    "terminal_payload",
+    "hard_failure_or_blocker"
+   ],
+   "evidence_terms": [
+    "skipped_classification"
+   ],
+   "rationale": "The rung-1 behavioral-verdict floor returns an explicit skipped_classification payload for question/decision-needed carriers (exempt: no user-facing behavior to confirm), so an exempt closeout reads as a typed non-claim rather than a clean behavior-confirmed pass. It is now the ONLY floor here that does: the AI-provenance and HOTL floors used to share this gate and lost it, because authorship and loop disposition are not facts about behavior change -- so neither can render a silent skip any more, and the surviving skip names the one floor whose reason is real."
+  },
   "skills/public/issue/scripts/issue_create.py": {
    "states": [
     "skipped"
@@ -922,19 +935,6 @@
     "host-blocked-subagent"
    ],
    "rationale": "Issue closeout verifier reports an explicit skipped_classification payload and refuses closure when a required resolution-critique skip lacks a recognized host-blocked reason."
-  },
-  "skills/public/issue/scripts/issue_verify_closeout_body.py": {
-   "states": [
-    "skipped"
-   ],
-   "visibility": [
-    "terminal_payload",
-    "hard_failure_or_blocker"
-   ],
-   "evidence_terms": [
-    "skipped_classification"
-   ],
-   "rationale": "The rung-1 behavioral-verdict and AI-provenance floors return an explicit skipped_classification payload for question/decision-needed carriers (exempt: no user-facing behavior to confirm), so an exempt closeout reads as a typed non-claim rather than a clean behavior-confirmed pass."
   },
   "skills/public/quality/references/find_inline_prompt_bulk.py": {
    "states": [

@@ -12,6 +12,10 @@ _resolve_op = _BACKEND.resolve_op
 answer_repo = _BACKEND.answer_repo
 BACKEND_TIMEOUT_SECONDS = _BACKEND.BACKEND_TIMEOUT_SECONDS
 _CLOSE_COMMENT_FLOOR = _load_local("issue_close_comment_floor")
+# Bound directly rather than reached through `_CLOSE_COMMENT_FLOOR._BODY`: a
+# three-deep private chain across two module boundaries becomes an AttributeError
+# on the carrier that writes to GitHub the moment either module is split.
+_strip_code_fences = _load_local("issue_markdown_lib").strip_code_fences
 _AUTHZ = _load_local("issue_closeout_authorization")
 _consolidated = _load_local("issue_consolidated_closeout")
 _consolidation_readback = _load_local("issue_consolidation_readback")
@@ -181,7 +185,7 @@ def evaluate_close_comment_carrier(
     readback = _consolidation_readback.readbacks_for_closeout(
         numbers=[number],
         destinations=_consolidated.destinations(
-            "\n".join(_CLOSE_COMMENT_FLOOR._BODY._strip_code_fences(body))
+            "\n".join(_strip_code_fences(body))
         ),
         fetch=lambda dest: _state_readback.view_issue_state(
             repo_root, repo=repo, number=dest, backend=backend,

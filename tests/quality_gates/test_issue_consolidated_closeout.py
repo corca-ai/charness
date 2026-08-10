@@ -50,7 +50,9 @@ missing_ledger_fields = runpy.run_path(str(_SCRIPTS / "issue_verify_closeout_bod
     "_missing_ledger_fields"
 ]
 KNOWN_CLASSIFICATIONS = runpy.run_path(str(_SCRIPTS / "audit_brief.py"))["KNOWN_CLASSIFICATIONS"]
-FLOOR_EXEMPT = runpy.run_path(str(_SCRIPTS / "issue_verify_closeout_body.py"))[
+# The rung-1 floors and their classification gates moved out of the body reader when
+# it hit its length gate; the body module now owns field parsing only.
+FLOOR_EXEMPT = runpy.run_path(str(_SCRIPTS / "issue_closeout_rung1_floors.py"))[
     "FLOOR_EXEMPT_CLASSIFICATIONS"
 ]
 
@@ -277,7 +279,7 @@ def test_a_second_destination_field_is_a_contradiction_not_an_ignored_line() -> 
 def test_a_consolidated_close_prints_the_review_advisory() -> None:
     """It skips one MORE floor than `question` does; printing nothing made it
     strictly stealthier than the classifications it was designed to avoid."""
-    body_mod = runpy.run_path(str(_SCRIPTS / "issue_verify_closeout_body.py"))
+    body_mod = runpy.run_path(str(_SCRIPTS / "issue_closeout_rung1_floors.py"))
     advisory = body_mod["review_advisory_for_classification"]("consolidated")
     assert advisory and "AI-provenance" in advisory[0]
     assert body_mod["review_advisory_for_classification"]("bug") == []

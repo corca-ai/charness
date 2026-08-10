@@ -129,12 +129,15 @@ behavioral-verdict, HOTL, resolution-critique — are **input-refused**: the
 disposition's repair-claim rule refuses any carrier that carries those lines, so the
 floors' inputs cannot exist on a consolidated body.
 
-That refusal is what the probe can see. It is **not** the only thing holding:
-`consolidated` is also outside all three floors' own classification gates, so they
-would skip the line even with the repair-claim rule removed. Round 2 caught the first
-declaration presenting the visible half as the whole design. For behavioral-verdict
-and resolution-critique the underlying skip has a sound reason (a consolidation
-implements nothing). For HOTL it does not — which is the finding below.
+That refusal is what the probe can see. As measured, it was **not** the only thing
+holding: `consolidated` was also outside all three floors' own classification gates, so
+they would have skipped the line even with the repair-claim rule removed. Round 2 caught
+the first declaration presenting the visible half as the whole design. For
+behavioral-verdict and resolution-critique the underlying skip has a sound reason (a
+consolidation implements nothing). For HOTL it did not — which is the finding below,
+and which the fix removed: HOTL now has no classification gate at all, so on a
+consolidated body the repair-claim rule is the only thing holding. The declaration's
+cells say so, and say it differently for HOTL than for its two siblings.
 
 **Two floors are silently skipped where the input is accepted and ignored:
 `AI-provenance` and `HOTL`, for `question` and `decision-needed` on all six
@@ -161,6 +164,59 @@ cell carrying neither a reason nor a finding, so this cannot go quiet again.
 reading of the measurement.** The first declaration labelled those twelve cells
 `skipped-by-design` with a reason — "no live HOTL loop to dispose" — that the probe's
 own fixture falsifies, because the fixture presents an entry.
+
+### The matrix caught its own surface changing
+
+`#591` was then FIXED on operator decision, and the gate's first real test was the
+change it was built to catch. Before re-declaring, the validator refused with exactly
+26 findings — every `undispositioned` cell, each reading "declared 'undispositioned'
+but the carrier observably 'fires' this floor". Nobody told it the floors had moved.
+
+The fix removed both classification gates: `evaluate_hotl_dispositions` now relies on
+the presence gate it always had, and `evaluate_ai_provenance` applies to every
+classification. Blast radius was measured before building, not asserted: across 84
+commit-msg closeout carriers in this repo's history plus the three consolidated closes
+on the direct-write carrier, **every** light-classification carrier already carried the
+marker voluntarily and **none** presented a HOTL entry — so the widened floors refuse
+nothing that previously passed. The matrix now declares 134 `fires`, up from 108.
+
+Two things fell out that only the fix could expose. The commit-msg carrier's pause-brief
+path rewrote a floor-exempt classification to `feature` so the provenance check would run
+at all — a workaround for exactly this gate, now deleted rather than left to outlive its
+cause. And the floor-exemption advisory's pinned sentence, "(only source preservation
+still applies)", had become false; byte-stability guards a carrier's output against
+accidental drift, not against an advisory that misreports which floors ran.
+
+The rung-1 floors moved to `issue_closeout_rung1_floors.py` when the body reader hit its
+length gate. That seam was already named by the repo's own test file: one module answers
+how a field is read out of markdown, the other what the body must carry and for which
+classification.
+
+Both bounded rounds found blockers again, and both were at the same place: not the
+floors, but the surfaces that TELL an author what the floors want.
+
+Round 1, found independently by both reviewers: the closeout-draft shape producer
+rendered "AI-provenance (required for classifications: bug, feature, deferred-work)"
+from the behavioral tuple, so an author drafting a light close would omit the marker
+and be refused by the floor the same surface exists to keep them off. Round 2 then
+found the repair had hand-typed the replacement clause in a module whose stated
+contract is that it never restates a rule — the same drift, one level up. It now
+renders that clause by OBSERVING the floor.
+
+Round 2's own blocker: the commit-msg carrier folds the HOTL floor into its verdict and
+rendered nothing for it, so an undispositioned entry blocked `git commit` with no line
+naming HOTL or the remedy — on the one carrier that can block a commit, in the file
+that already records repairing exactly this for its two sibling floors. Alongside it,
+`close-with-comment` refused on `missing_ledger_fields` while printing only its header,
+so an author following the new HOTL advice on a consolidated close walked from a
+diagnosed refusal into an undiagnosed one. Both render now.
+
+Two pre-existing defects the review surfaced are filed rather than folded in:
+[`#593`](https://github.com/corca-ai/charness/issues/593) (the HOTL floor judges quoted
+entries for issues the carrier is not closing) and
+[`#594`](https://github.com/corca-ai/charness/issues/594) (the draft shape contradicts
+the consolidated disposition it renders for). Round-2 repairs are recorded as
+accepted-unreviewed per the two-round cap.
 
 ### A second live asymmetry, on the release lane
 

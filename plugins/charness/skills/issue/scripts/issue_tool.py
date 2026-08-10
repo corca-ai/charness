@@ -18,6 +18,8 @@ BACKEND = _load_local("issue_backend", "issue_tool_backend")
 READ = _load_local("issue_read")
 VERIFY = _load_local("issue_verify_closeout")
 VERIFY_BODY = _load_local("issue_verify_closeout_body")
+# The rung-1 floors live beside the body reader, not inside it.
+CLOSEOUT_FLOORS = _load_local("issue_closeout_rung1_floors")
 VALIDATE_DRAFT = _load_local("issue_validate_closeout_draft")
 PLAN = _load_local("issue_plan")
 
@@ -180,7 +182,7 @@ def command_check_source_preservation(args: argparse.Namespace) -> int:
     if not body_file.is_file():
         emit({"ok": False, "error": f"body file not found: {body_file}"})
         return 2
-    result = VERIFY_BODY.evaluate_source_preservation(body_file.read_text(encoding="utf-8"))
+    result = CLOSEOUT_FLOORS.evaluate_source_preservation(body_file.read_text(encoding="utf-8"))
     require_external = bool(args.require_external)
     external_missing = require_external and not result["external_sourced"]
     ok = result["ok"] and not external_missing

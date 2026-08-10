@@ -74,6 +74,9 @@ def _fold_proof_mismatch(result: dict[str, Any], repo_root: Path, body: str) -> 
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 ISSUE_CLOSE = _load_local("issue_close", "issue_verify_issue_close")
 _BODY = _load_local("issue_verify_closeout_body")
+# The rung-1 floors moved to their own module when the body reader hit its length
+# gate; the seam is real (what a body MUST CARRY vs how a field is read out of it).
+_FLOORS = _load_local("issue_closeout_rung1_floors")
 _CRITIQUE = _load_local("issue_resolution_critique", "issue_resolution_critique")
 # The identity parse lives in the backend owner, not here: which repository a payload says it
 # describes is the same question the handoff staleness reader asks, and a second copy of it is
@@ -109,12 +112,12 @@ _consolidation_readback = _load_local("issue_consolidation_readback")
 _view_issue_state = _load_local("issue_state_readback").view_issue_state
 _missing_close_keywords = _BODY._missing_close_keywords
 iter_close_keyword_refs = _BODY.iter_close_keyword_refs
-evaluate_source_preservation = _BODY.evaluate_source_preservation
-evaluate_behavioral_verdict = _BODY.evaluate_behavioral_verdict
-evaluate_hotl_dispositions = _BODY.evaluate_hotl_dispositions
-evaluate_ai_provenance = _BODY.evaluate_ai_provenance
-FLOOR_EXEMPT_CLASSIFICATIONS = _BODY.FLOOR_EXEMPT_CLASSIFICATIONS
-review_advisory_for_classification = _BODY.review_advisory_for_classification
+evaluate_source_preservation = _FLOORS.evaluate_source_preservation
+evaluate_behavioral_verdict = _FLOORS.evaluate_behavioral_verdict
+evaluate_hotl_dispositions = _FLOORS.evaluate_hotl_dispositions
+evaluate_ai_provenance = _FLOORS.evaluate_ai_provenance
+FLOOR_EXEMPT_CLASSIFICATIONS = _FLOORS.FLOOR_EXEMPT_CLASSIFICATIONS
+review_advisory_for_classification = _FLOORS.review_advisory_for_classification
 strip_code_fences = _BODY._strip_code_fences
 
 

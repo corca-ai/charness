@@ -963,6 +963,7 @@
         "skills/public/issue/scripts/issue_close.py",
         "skills/public/issue/scripts/issue_close_comment_floor.py",
         "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+        "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
         "skills/public/issue/scripts/issue_consolidated_closeout.py",
         "skills/public/issue/scripts/issue_consolidation_readback.py",
         "skills/public/issue/scripts/issue_critique_observer.py",

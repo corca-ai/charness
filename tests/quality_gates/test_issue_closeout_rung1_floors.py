@@ -121,10 +121,19 @@ def test_issue_verify_closeout_inert_without_hotl_entry(tmp_path: Path) -> None:
 
 def test_evaluate_hotl_dispositions_unit() -> None:
     """Direct unit coverage of the WS-2 floor: presence-gating, typed vocabulary,
-    classification exemption, and multi-entry refusal."""
+    and multi-entry refusal.
+
+    NO classification exemption: this floor used to go inert for
+    question/decision-needed on the behavioral-verdict tuple's reason, which does not
+    transfer -- whether a human loop was dispositioned is not a fact about behavior
+    change. A presented entry is judged whatever the classification claims to be.
+    """
     fn = load_verify_module().evaluate_hotl_dispositions
-    # question/decision-needed have no live behavior -> inert
-    assert fn("HOTL #1: nonsense", "question")["applies"] is False
+    # a presented entry is judged on EVERY classification, light ones included
+    for classification in ("question", "decision-needed", "consolidated", "bug"):
+        verdict = fn("HOTL #1: nonsense", classification)
+        assert verdict["applies"] is True, classification
+        assert verdict["ok"] is False, classification
     # no entry -> inert
     assert fn("Close #1.\nBehavior: verified via X", "bug")["applies"] is False
     # local-only-by-contract disposes; every typed status disposes
@@ -194,9 +203,45 @@ def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Pa
     assert payload["ai_provenance"]["ok"] is False
 
 
-def test_issue_verify_closeout_question_class_exempt_from_rung1_floors(tmp_path: Path) -> None:
-    """A `question` carrier has no behavior to confirm: both rung-1 floors are
-    inert (mirroring the resolution-critique classification gate)."""
+def test_issue_verify_closeout_question_class_exempts_behavior_but_not_provenance(
+    tmp_path: Path,
+) -> None:
+    """A `question` carrier has no behavior to confirm, so THAT floor is inert.
+
+    AI-provenance is not: it is a fact about who authored the text, and an
+    agent-posted `question` close is exactly as agent-authored as a `bug` one. The
+    two floors used to share one classification gate; only one of them had a reason
+    for it.
+    """
+    seed_commit(
+        tmp_path,
+        "\n\n".join(
+            [
+                "Close #42.",
+                "JTBD: answer a clarification question.",
+                "Answer: documented the resolved decision in the issue thread.",
+                "AI-provenance: authored by an agent session.",
+            ]
+        ),
+    )
+
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "42",
+        "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["behavioral_verdict"]["applies"] is False
+    assert payload["ai_provenance"]["applies"] is True
+    assert payload["ai_provenance"]["ok"] is True
+
+
+def test_issue_verify_closeout_refuses_a_question_close_with_no_provenance_marker(
+    tmp_path: Path,
+) -> None:
+    """The other half, and the one that used to pass silently."""
     seed_commit(
         tmp_path,
         "\n\n".join(
@@ -214,10 +259,10 @@ def test_issue_verify_closeout_question_class_exempt_from_rung1_floors(tmp_path:
         "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
     )
 
-    assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
-    assert payload["behavioral_verdict"]["applies"] is False
-    assert payload["ai_provenance"]["applies"] is False
+    assert payload["ok"] is False
+    assert payload["ai_provenance"]["applies"] is True
+    assert payload["ai_provenance"]["ok"] is False
 
 
 def test_issue_verify_closeout_requires_per_issue_behavioral_verdict_in_bundle(tmp_path: Path) -> None:
