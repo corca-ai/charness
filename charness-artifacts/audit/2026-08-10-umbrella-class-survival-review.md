@@ -48,9 +48,13 @@ the laundering path the consolidated-close rule was written to block.
 **#583 — a verification surface can silently stop verifying.**
 
 - `#568` NOT FIXED — discrimination *relocated*, not restored. Both eval specs are still
-  registered (`evals/cautilus/claim-fidelity-registry.json:59-67`) and still collapsed;
-  `pickup.spec.json:10-11` has empty `requiredCommandFragments` **and** empty
-  `requiredSummaryFragments`, so the clear arm cannot fail on anything. Real
+  registered (`evals/cautilus/claim-fidelity-registry.json:59-67`) and still collapsed.
+  **CORRECTED 2026-08-11:** this section first said both arms had empty floors. Only
+  `pickup.spec.json:10-11` does; `pickup-ambiguous.spec.json` carries
+  `requiredCommandFragments: ["continuation-sequence.md"]` and is the ONLY `engage-always`
+  forcer of that reference, so deleting it reds `validate-scenario-conditional-reads`
+  (`scripts/run-quality.sh:747`). The collapse is real — both arms produce the same
+  planner output — but it is the CLEAR arm that cannot fail on anything. Real
   discriminating tests were built elsewhere (`tests/test_handoff_plan.py:442-472`). No
   collapse detector exists. `pickup.spec.json:2` admits the collapse in its own text;
   `pickup-ambiguous.spec.json:2` still carries the *uncorrected* draft claim.
@@ -94,8 +98,12 @@ the laundering path the consolidated-close rule was written to block.
   (`tests/test_inventory_marker_rule_measurement.py:153-171,189-195`;
   `tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py:370-381`). What
   shipped was a drift MESSAGE (`tests/probe_drift_support.py`), which that file itself
-  says does not change the pins. **The operator decision is still open** and lives only
-  in a superseded goal's queue — there is no `docs/deferred-decisions.md` entry for it.
+  says does not change the pins. **The operator decision is still open.**
+  **CORRECTED 2026-08-11:** "no `docs/deferred-decisions.md` entry" was wrong. D47
+  (`:636-703`) publishes the exact pinned figures, records a FOURTH and FIFTH refresh
+  (`:710-726`), and `:711-714` assigns the standing pin tax to `#536` rather than
+  absorbing it. The pins are therefore load-bearing for an OPEN operator decision, not
+  free-standing measurement records.
 
 ## Class instances outside every member
 
