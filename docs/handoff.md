@@ -12,8 +12,10 @@
   two resolutions (`#554`, `#571`) render `COMPLETED`.
 - Four umbrellas filed — `#582` `#583` `#584` `#585` — each naming its members and
   each passing the consolidation readback against the live tracker before any close.
-- `#514` refused by the crosswalk (`matrix_incomplete`); `#582` carries a
-  correction saying it absorbed three of four members.
+- `#514` was refused by the crosswalk (`matrix_incomplete`); that instance is now
+  RETIRED by operator ruling — see
+  [the retirement record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md).
+  `#582` carries a correction saying it absorbed three of four members.
 - New: `#586` (a check that never fires on the wired path), `#587` (serial pre-push
   aggregate), `#580` (budget measures fan-out), `#581` (shipped adapter example
   cannot create an issue). `#572` still the one open red; untouched.
@@ -31,29 +33,19 @@
 1. **Design the successor goal.** The closing session declined it with a weak
    reason and said so. `#586` is the strongest axis: six measured instances, three
    candidate guards ranked, vocabulary-parity clearly cheapest.
-2. **Settle `#514` / `#515` / `#518`** — see `## Discuss`.
-3. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
+2. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
    measured defective, and reverted; its comment carries the alternative. `#580`
    stays open on its root cause: the bar still measures fan-out, not the check.
 
 ## Discuss
 
-- **The "consumer-repo measurement" blocker on `#514`/`#515`/`#518` is FALSE, and
-  its recurrence is the defect.** The completed goal's Non-Goals says those repos
-  "have been read repeatedly across sessions and their findings already sit in the
-  issue bodies. Measurement is not the bottleneck." Its Verification Plan says the
-  opposite; the closing session sided with the wrong one. It keeps resurfacing
-  because each issue body carries a `Re-read obligation` that every session treats
-  as binding without checking whether the measurement already happened.
-- **So the question is what is missing to fold EXISTING findings into the
-  crosswalk's acceptance matrix**, which is `matrix_state: bootstrap` with empty
-  criteria. Draft criteria for `#518`/`#515` sit in 2026-08-10 comments on those
-  issues; they lack `artifact_path` and `final_reader_route` — in-repo work. Trap
-  recorded there: a criterion for declared browser/sync surfaces cannot be written
-  against current code, so scope it down rather than write a false one.
-- Also decide whether the crosswalk should protect all three at equal strength,
-  given `#518`/`#515` were substantially repaired by `892d6b95` and `#514` was not.
-  `#576` still has no chosen direction; a comment records why it is honest silence.
+- **`#514`/`#515`/`#518` are SETTLED and closed.** Operator ruling retired the
+  crosswalk instance rather than building its matrix; do not rebuild it or re-open
+  "protect all three at equal strength". Reasoning, lapsed protections, and
+  non-claims are in the retirement record. The "consumer-repo measurement" blocker
+  was false: only `#518` ever carried a `Re-read obligation` and its debug artifact
+  discharged it.
+- `#576` has no chosen direction; a comment records why it is honest silence.
 - The `Premise-residue:` seam reads markers and nothing writes them; exactly one
   exists. If records do not start writing them the record channel stays empty.
 

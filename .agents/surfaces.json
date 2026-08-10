@@ -583,28 +583,44 @@
     },
     {
       "surface_id": "issue-source-freeze-bundle",
-      "description": "Frozen GitHub issue source capture, owner inspection, freeze receipt, and closeout-authorization crosswalk that closeout paths read as authorization input. Paths are pinned per bundle, not globbed: a NEW bundle must be added here and to the verify command together.",
+      "description": "Frozen GitHub issue source capture, owner inspection, and freeze receipt kept as the historical source record for #514/#515/#518. Paths are pinned per bundle, not globbed: a NEW bundle must be added here and to the verify command together. The closeout-authorization crosswalk instance that once bound to this bundle was retired on 2026-08-10; see charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md.",
       "source_paths": [
         "charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json",
         "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-capture-receipt.json",
         "charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json",
         "charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json",
-        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-raw/**",
-        "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json"
+        "charness-artifacts/spec/2026-08-07-issue-514-515-518-source-raw/**"
       ],
       "derived_paths": [],
       "sync_commands": [],
       "verify_commands": [
         "python3 scripts/validate_issue_source_freeze.py validate --repo-root . --snapshot charness-artifacts/spec/2026-08-07-issue-514-515-518-source.json --inspection charness-artifacts/spec/2026-08-07-issue-514-515-518-owner-inspection.json --freeze-receipt charness-artifacts/spec/2026-08-07-issue-514-515-518-freeze-receipt.json --require-issues 514 515 518",
-        "python3 scripts/validate_evidence_boundary_crosswalk.py --repo-root . --crosswalk charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json",
         "python3 -m pytest -q tests/test_issue_source_freeze.py tests/test_issue_source_owner_inspection.py tests/test_issue_source_capture.py tests/test_evidence_boundary_crosswalk.py"
       ],
       "notes": [
         "`validate` re-derives the snapshot from the captured raw responses, so a hand-edited snapshot fails here rather than passing a schema check.",
         "The raw capture directory is part of the surface: deleting a page file breaks re-derivation, which is the point.",
         "Paths are literal ON PURPOSE. A glob like `charness-artifacts/spec/*-source.json` would let a new freeze bundle clear the `unmatched_surface_path` blocker while the verify command re-derived a DIFFERENT bundle -- coverage at the manifest level, nothing at the verifier level. Literal paths make a new bundle trip the blocker until someone extends both lists, which is the obligation stated as a gate instead of as a note.",
-        "The crosswalk needs its own validator line: the pytest module builds its world in tmp_path and never reads the checked-in crosswalk, so the freeze validator plus tests left this closeout-authorization input unvalidated.",
+        "This repo checks in NO crosswalk instance, by decision. `tests/test_evidence_boundary_crosswalk.py` asserts that absence and asserts that closeout authorization reports it as `applies=false` rather than as a pass. If a crosswalk is ever checked in again it needs its own validator line here, because the pytest module builds its world in tmp_path and would not otherwise read the checked-in artifact.",
         "Enforcement boundary, stated because the note above is slightly stronger than the gate: the verifier reads every raw page the capture receipt LISTS, so deleting or editing one refuses. An EXTRA file dropped into the raw directory is matched by `source_paths` and read by nothing. It changes no derivation, which is why it is recorded rather than gated."
+      ]
+    },
+    {
+      "surface_id": "retired-closeout-authorization-instance",
+      "description": "The retired #514/#515/#518 evidence-boundary crosswalk instance and the record that retired it. The crosswalk path is declared here while ABSENT on purpose: the deletion of a proof-surface instance is itself a change that needs an owning surface, and this one's verify command asserts the absence rather than the file.",
+      "source_paths": [
+        "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json",
+        "charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "python3 -m pytest -q tests/test_evidence_boundary_crosswalk.py::test_this_repo_checks_in_no_crosswalk_instance tests/test_evidence_boundary_crosswalk.py::test_absent_instance_is_reported_as_inapplicable_not_as_a_pass tests/test_evidence_boundary_crosswalk.py::test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoint"
+      ],
+      "notes": [
+        "Retiring the instance is not retiring the capability: `scripts/evidence_boundary_crosswalk.py`, its validator, and the `skills/public/issue` authorization ingress are unchanged and still exported, so a consuming repo that checks in its own crosswalk keeps the behavior it had. The plugin-projection test is in the verify command BECAUSE of that claim -- without it this surface asserted an export it never checked.",
+        "Node ids, not `-k`. A `-k 'a or b'` filter that still matches one renamed test exits 0 while proving half of what the surface claims; a missing node id is a collection error. This repo has a measured history (#586) of a check that passes while no longer reaching what it names.",
+        "If a crosswalk instance is ever checked in here again, this surface is the wrong home for it: move the path back to `issue-source-freeze-bundle` and restore that bundle's validator command, because the checked-in artifact would once again be a live closeout-authorization input rather than a recorded absence."
       ]
     },
     {

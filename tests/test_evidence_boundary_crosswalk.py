@@ -971,25 +971,58 @@ def test_the_validator_cli_renders_a_refusal_on_both_channels_and_exits_one(tmp_
     assert "REFUSED (empty_protected_set)" in captured.err
 
 
-def test_the_validator_module_main_guard_executes(monkeypatch) -> None:
+def test_the_validator_module_main_guard_executes(tmp_path, monkeypatch) -> None:
     # cover `raise SystemExit(main())` (the __main__ guard) in-process via runpy.
-    monkeypatch.setattr(sys, "argv", ["x"])
+    # Argv points at a built tmp world on purpose: this repo checks in no crosswalk,
+    # so bare argv would exercise the `crosswalk_missing` refusal instead of the
+    # success path this test exists to cover.
+    _crosswalk(tmp_path)
+    monkeypatch.setattr(sys, "argv", ["x", "--repo-root", str(tmp_path), "--crosswalk", CROSSWALK_REL])
     with pytest.raises(SystemExit) as excinfo:
         runpy.run_path(str(REPO_ROOT / "scripts" / "validate_evidence_boundary_crosswalk.py"), run_name="__main__")
 
     assert excinfo.value.code == 0
 
 
-# --- the real checked-in artifact -----------------------------------------
+# --- this repo checks in no crosswalk instance -----------------------------
+
+RETIRED_CROSSWALK_REL = "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json"
 
 
-def test_the_checked_in_charness_crosswalk_validates_in_bootstrap_state() -> None:
-    payload = validate_crosswalk(REPO_ROOT, "charness-artifacts/spec/2026-08-07-evidence-boundary-crosswalk.json")
+def test_this_repo_checks_in_no_crosswalk_instance() -> None:
+    """The #514/#515/#518 instance was retired on 2026-08-10; the capability was not.
 
-    assert payload["ok"] is True
-    assert payload["matrix_state"] == "bootstrap"
-    assert payload["protected_issues"] == [514, 515, 518]
-    assert payload["authorization_status"]["authorizes_protected_close"] is False
+    Asserted rather than merely deleted, because the failure mode of a retirement is
+    a file quietly reappearing — a checked-in crosswalk is load-bearing the moment it
+    exists, and nothing else in this suite reads the checked-in path.
+    """
+    assert not (REPO_ROOT / RETIRED_CROSSWALK_REL).exists()
+    record = REPO_ROOT / "charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md"
+    assert record.is_file(), "a retired proof surface must leave a record naming what carries the boundary"
+
+
+def test_absent_instance_is_reported_as_inapplicable_not_as_a_pass() -> None:
+    """`applies=false` with a status, never a bare authorized=true.
+
+    This is the whole safety property of the retirement: every former target now
+    takes the ordinary closeout floor, and the authorization record SAYS it did not
+    apply rather than implying it approved.
+    """
+    for number in PROTECTED:
+        result = authorize_closeout(
+            [{"repository": "corca-ai/charness", "issue_number": number, "source": "cli"}],
+            [],
+            "close-with-comment",
+            repo_root=REPO_ROOT,
+        )
+        assert result["applies"] is False
+        assert result["authorized"] is True
+        assert result["refusal"] is None
+        # Pinned to the exact code, not `!= "loaded"`. A differently-broken crosswalk
+        # (`crosswalk_invalid`, `stale_source`) also reports non-`loaded` while meaning
+        # something this test is not claiming, so the loose form would keep passing
+        # through a state it never checked.
+        assert result["crosswalk_status"] == "crosswalk_missing"
 
 
 def test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoint() -> None:
