@@ -2,23 +2,20 @@
 
 ## Workflow Trigger
 
-- The latest release is published and read back (`git describe --tags --abbrev=0`;
-  `gh release view` reported draft=false). Do not re-run any release phase.
-- The backlog goal is COMPLETE. Start from the two owed items in `## Next Session`.
+- No goal is running. The release is published and read back; do not re-run any
+  release phase. Start from `## Next Session` item 0.
+- Two commits are UNPUSHED (`93b2e1dc`, `739a2a3e`). Push needs its own grant.
 
 ## Current State
 
-- 18 open issues. `#514`/`#515`/`#518` closed `NOT_PLANNED` on 2026-08-10 after the
-  crosswalk retirement; `#588` and `#589` were filed as their carved-out residuals.
-- Four umbrellas open — `#582` `#583` `#584` `#585`. The crosswalk that made
-  `#514`/`#515`/`#518` unclosable is RETIRED by operator ruling; see
-  [the retirement record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md).
-- New: `#586` (a check that never fires on the wired path), `#587` (serial pre-push
-  aggregate), `#580` (budget measures fan-out), `#581` (shipped adapter example
-  cannot create an issue), `#588` (dogfood helper crashes in any consumer repo),
-  `#589` (preset reconciliation is a constant), `#590` (the mutation workflow
-  reports a JS symptom for a Python baseline failure). `#572` is the one open red
-  and `#590` is its diagnosed cause.
+- 20 open issues. `#514`/`#515`/`#518` closed `NOT_PLANNED` on 2026-08-10 after the
+  evidence-boundary crosswalk instance was RETIRED by operator ruling — see
+  [the retirement record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md);
+  do not rebuild that matrix.
+- Filed 2026-08-10: `#588` and `#589` (the carved-out residuals of those closes),
+  and `#590` (the mutation workflow reported a JS symptom for a Python failure).
+- `#572` is the one open red. `#590` diagnosed it and REPAIRED THE REPORTING at
+  `739a2a3e`; the failure itself is untouched, so the lane is still red.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -27,51 +24,54 @@
 
 ## Next Session
 
-0. Read the closing
-   [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md).
+0. **Read the newest `#572` comment, then fix the leaf cause.** Cheapest item,
+   highest payoff: `test_mutating_a_source_file_drops_its_stale_bytecode` fails on
+   the runner and passes locally, exiting the cosmic-ray baseline and redding the
+   lane. WHY is unknown — no bytecode-suppressing setting exists in the workflows,
+   the pytest config, the shared conftest, the cosmic-ray config, or the runner
+   script; all five were checked. `739a2a3e`
+   makes the test report the child's exit code, env, and directory contents, so the
+   next cron run (`17 */12 * * *`) names it. Read that, then fix.
 1. **Build the closeout floor x classification matrix** — decided, spec ready at
    [the spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md).
-   All three mechanizable `#586` guards measured 0-ish findings; this one starts
-   from a live one (`consolidated` skips four of six floors and only a
-   non-blocking advisory says so). The validator MUST be behavioral, not grep —
-   that constraint is the slice. Two bounded rounds owed.
-2. **`#572` red is diagnosed, not fixed — see `#590`.** A CI-only failure of
-   `test_mutating_a_source_file_drops_its_stale_bytecode` exits the cosmic-ray
-   baseline, the `&&` in `cmd_full` short-circuits, JS mutation never runs, and the
-   report blames the missing Stryker JSON. WHY that test fails on the runner and
-   passes locally is still unknown and is the first thing to find.
-3. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
-   measured defective, and reverted; its comment carries the alternative.
+   All three mechanizable `#586` guards measured ~0 findings; this one starts from a
+   live one (`consolidated` skips four of six close floors and only a non-blocking
+   advisory says so). The validator MUST be behavioral, not grep — that constraint
+   IS the slice. Two bounded rounds owed.
+2. **`#590` left a gap, recorded on the issue:** the workflow's inline script body
+   has ZERO automated coverage — how a temporal-dead-zone error survived round 1.
+   Worth its own slice; item 0's cron run is the only current check on it.
+3. `#546` has a refuted option, not a fix — built, reviewed HOLD, measured
+   defective, reverted; its comment carries the alternative.
 
 ## Discuss
 
-- **`#514`/`#515`/`#518` are SETTLED and closed** by operator ruling; do not rebuild
-  the matrix or re-open "protect all three at equal strength". The
-  "consumer-repo measurement" blocker was false: only `#518` carried a
-  `Re-read obligation` and its debug artifact discharged it.
 - `#576` has no chosen direction; a comment records why it is honest silence.
-- `#587` and `#580` were measured on 2026-08-10; both had a stale premise and both
-  are now retitled with the measurement on the issue. `#580` no longer blocks.
-  `#587` now asks ONE thing: what its iteration-#2 false blocker actually was —
+- `#587` and `#580` were measured on 2026-08-10 and both had a false premise; both
+  are retitled with the measurement on the issue. `#580` no longer blocks anything.
+  `#587` now asks ONE thing — what its iteration-#2 false blocker actually was —
   answerable only from the original session's record, not this tree.
 - The `Premise-residue:` seam reads markers and nothing writes them; exactly one
   exists. If records do not start writing them the record channel stays empty.
 
 ## Continuation Capability
 
-- **A check can exist, pass its tests, and never run on the caller's path.** Six
-  instances in one goal. Coverage and reachability are different questions — the
-  changed-line gate caught none of them, because the lines WERE covered by the
-  direct-call test.
-- **The round that reads the REPAIRS finds a different class than the round that
-  reads the original.** Four for four; one returned HOLD and killed a repair.
-- **Run the cheapest disconfirming probe BEFORE building a heuristic.** Two designs
-  were built and deleted; both probes took under a minute and both ran too late. A
-  constant whose tuning history you can narrate is a fitted constant.
-- **Hardcoded prose in a portable skill fails silently in consumer repos.** Prefer a
-  typed marker an author writes over wording a scanner infers.
-- **Let the floors refuse your own work.** Three fired on this session's own
-  mutations before they landed, and each was right.
+- **Read the source, not the summary.** Burned twice on 2026-08-10: an issue body
+  read without its latest comment (the signal had already moved), and a REST API
+  `conclusion: success` for a step that exited 1 (`continue-on-error` masks it; only
+  `outcome` carries the truth, and only inside the workflow).
+- **The round that reads the REPAIRS finds a different class.** Six for six. On
+  2026-08-10 round 2 caught a blocker the repair itself introduced, whose failure
+  mode was worse than the defect being fixed.
+- **Run the module that exercises the changed function**, not the ones that sound
+  related. Five tests began spawning a real external binary and the run that would
+  have shown it was skipped by assumption.
+- **The cheapest disconfirming probe, BEFORE building.** It ran on time three times
+  on 2026-08-10 and refuted three planned builds — a guard with no findings, a
+  remedy for a defect that did not exist, and a blocker that no longer blocked.
+- **Let the floors refuse your own work.** Several fired on this session's own
+  mutations, including a gate that rejected a code comment for containing the word
+  `closed`. The gate was right.
 
 ## References
 
