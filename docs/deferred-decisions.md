@@ -1040,11 +1040,16 @@ reopen trigger fires.
   traces were a docstring framing it as a settled design decision and pointers from four
   artifacts at the tracking issue, so a reader arriving at `#530` had nowhere to land.
   Recording it here is what lets that issue close without deleting the gap.
-- Why deferral is right at the time: the reach is bounded today.
-  [validate_adapters.py](../scripts/validate_adapters.py) is not one of the four gates
-  the consumer-facing catalog ships
-  ([catalog.yaml](../skills/public/quality/references/catalog.yaml) `gates:` block), and
-  its only in-repo call sites are [run-quality.sh](../scripts/run-quality.sh) and
+- Why deferral is right at the time: the reach is bounded today, and the bound is the
+  catalog gate's own `run_when` rather than a gate-id technicality.
+  [validate_adapters.py](../scripts/validate_adapters.py) is not itself a catalog gate,
+  but the catalog's `read-only-quality` gate IS `./scripts/run-quality.sh --read-only`,
+  which queues it unconditionally
+  ([run-quality.sh](../scripts/run-quality.sh) `queue_selected "validate-adapters"`) —
+  so what actually keeps it away from consumers is that gate's
+  `run_when: repo exposes this repo-native command`
+  ([catalog.yaml](../skills/public/quality/references/catalog.yaml)). A consumer without
+  `run-quality.sh` never reaches it. Its only in-repo call sites are that runner and
   [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py). A 2026-08-09 check
   of five charness-using repos (`stdy.blog`, `cmanki`, `ceal`, `ceal-cli`,
   `journal.stdy.blog`) found none invoking it. Option 3 (a shipped known-key declaration)
@@ -1071,7 +1076,11 @@ reopen trigger fires.
   [skill-quality.md](../skills/public/quality/references/skill-quality.md)).
 - Reopen trigger: `validate_adapters.py` reaching a consumer pipeline — a consumer
   adopting `run-quality.sh`, or the quality catalog gaining this gate — or a consumer
-  reporting a silently-mis-spelled adapter key.
+  reporting a silently-mis-spelled adapter key. **Only the middle clause is observable
+  from inside this repo, and nothing watches for it.** The other two require a consumer
+  tree this repo cannot inspect, and the third asks a consumer to notice a silence, which
+  is what the silence prevents. This deferral waits on the world; it is not a live
+  trip-wire, and it should not be read as one.
 
 ### D54. Should a per-gate runtime budget measure the gate's own work rather than contended wall clock?
 
@@ -1099,7 +1108,11 @@ reopen trigger fires.
   `charness-version: 500` against ~135ms samples, `check-inventory-declaration-coverage:
   500` against ~80-160ms samples. Measuring per-gate CPU or isolated time would change
   what every bar in four profile blocks means and would need all of them re-derived; no
-  bar is currently red, so nothing forces that now.
+  *runtime budget* bar is currently red, so nothing forces that now. Regenerate that fact
+  with `python3 skills/public/quality/scripts/check_runtime_budget.py --repo-root .
+  --json` (2026-08-10 on `local-linux-x86_64-36cpu`: 28 budgets, `missing_samples: []`,
+  `violations: []`, exit 0). Other quality gates may be red independently; this sentence
+  is only about the budget bars.
 - Non-claims: the mismatch is **not** fixed. The bar still grades fan-out, and the
   self-sustaining feedback `#580` described (the recorded median is whatever the
   contended lane produces) is unchanged in kind — it is currently below the bar, not
@@ -1113,3 +1126,49 @@ reopen trigger fires.
 - Reopen trigger: a bar that cannot be re-levelled without hiding a real regression; or a
   second gate whose bar exceeds its own work by an order of magnitude and starts
   false-redding; or per-gate isolated timing becoming available in the runner.
+
+### D55. Should the release lane force-apply the resolution-critique floor the way it force-applies the behavioral-verdict floor?
+
+- Question: `preflight_release_issues`
+  ([release_issue_closeout.py](../skills/public/release/scripts/release_issue_closeout.py))
+  overrides the caller's classification with a fixed `feature` for the behavioral-verdict
+  floor, on the stated ground that every release-linked close asserts a shipped item — and
+  in the same call passes the REAL classification to
+  [check_resolution_critique](../skills/public/issue/scripts/issue_resolution_critique.py),
+  whose `CRITIQUE_REQUIRED_CLASSIFICATIONS` then exempts `question` and `decision-needed`.
+  Should the second floor be force-applied too, or the first one revisited?
+- Current choice: **Defer — keep the asymmetry, and stop calling it undispositioned.** The
+  two floors differ in whether the release operator can satisfy them at all. The
+  behavioral floor is a presence check over an input channel that lane already owns
+  (`--close-issue-behavior`), so force-applying it costs one line the operator can write
+  from what they already know. The critique floor demands a checked-in artifact under
+  `charness-artifacts/critique/`, bound to the issue and itself passing
+  `validate_critique_artifacts`, and no automated substrate produces one for these
+  classifications — so force-applying it would rest entirely on author diligence, whose
+  predictable failure mode is a stub that satisfies the binding check. A floor met by
+  writing a file that says nothing is worse than no floor.
+- Why now: `#592` filed the asymmetry and two cells in
+  [closeout-floor-matrix.json](../.agents/closeout-floor-matrix.json) declared it
+  `undispositioned` against that issue. The matrix gate's `finding` check is a URL-shape
+  regex — it cannot see a pointer die — so closing `#592` without re-declaring the cells
+  would have left the gate green over a declaration that no longer meant what it said,
+  which is the `#586` shape the matrix exists to remove. This entry is the durable record
+  the cells now point at.
+- Non-claims: the artifact is **not impossible**. `issue_resolution_critique.py`
+  short-circuits before it looks; it does not refuse. This repo's standing bounded-review
+  contract already reviews light closes, so a real bindable artifact is producible by
+  author diligence today. The substrate claim is also weaker for `decision-needed` than
+  for `question`: `issue_plan.py` declares `review_pass: not_required_by_default` for
+  `question` and is silent for `decision-needed`. And the deferral leaves a
+  `question`/`decision-needed` release close with no fresh-eye review bound to it — a real
+  absence, not a proven non-need.
+- Impact surfaces:
+  [release_issue_closeout.py](../skills/public/release/scripts/release_issue_closeout.py),
+  [issue_resolution_critique.py](../skills/public/issue/scripts/issue_resolution_critique.py),
+  [closeout-floor-matrix.json](../.agents/closeout-floor-matrix.json) (the two
+  `release-draft|question` / `release-draft|decision-needed` `resolution_critique` cells),
+  and [the matrix spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md).
+- Reopen trigger: `question`/`decision-needed` gaining a critique substrate in the issue
+  skill, at which point force-applying this floor becomes satisfiable and the omission
+  becomes real; or a released light-classification close that should have been reviewed
+  and was not. Both are in-repo observable, unlike D53's.

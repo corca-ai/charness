@@ -244,7 +244,12 @@ for classifications whose critique substrate never runs — so force-applying it
 demand evidence of a process that did not happen, and the predictable result is a stub
 that satisfies the binding check. Non-claim carried in the cell: this leaves a
 `question`/`decision-needed` release close with no fresh-eye review bound to it, which is
-a real absence rather than a proven non-need. Reopen trigger is recorded in the cell.
+a real absence rather than a proven non-need. The durable record is **D55** in
+[deferred-decisions.md](../../docs/deferred-decisions.md); the cells point at it, because
+round-2 review caught that a ruling living only in a `reason` string the gate explicitly
+does not check has no reader. That same round also refuted the reason's first wording:
+`issue_resolution_critique.py:363` short-circuits before it looks rather than refusing,
+so the artifact is unproduced, not impossible — D55 carries that as a non-claim.
 
 ### The matrix caught a live instance-2 defect on the release lane
 
