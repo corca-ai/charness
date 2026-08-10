@@ -31,12 +31,12 @@
 0. Read the closing
    [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md)
    — measured waste, north-star alignment, and the axis that became `#586`.
-1. **Decide `#586` with the probes already taken.** Its two cheap guards were
-   measured on 2026-08-10 and BOTH have near-zero current findings — vocabulary
-   parity is clean across all five carriers, and only 9 of 5,493 production
-   functions are referenced solely by tests. Option 3 (rely on bounded review)
-   gained evidence instead. Comment on the issue carries the numbers and the
-   non-claims; do not build a guard without reading it first.
+1. **Build the closeout floor x classification matrix** — decided, spec ready at
+   [the spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md).
+   All three mechanizable `#586` guards measured 0-ish findings; this one starts
+   from a live one (`consolidated` skips four of six floors and only a
+   non-blocking advisory says so). The validator MUST be behavioral, not grep —
+   that constraint is the slice. Two bounded rounds owed.
 2. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
    measured defective, and reverted; its comment carries the alternative.
 
@@ -49,10 +49,10 @@
   was false: only `#518` ever carried a `Re-read obligation` and its debug artifact
   discharged it.
 - `#576` has no chosen direction; a comment records why it is honest silence.
-- `#587` and `#580` were BOTH measured on 2026-08-10 and both had a stale premise.
-  `#580` no longer blocks (budget relevelled to 1795ms; retitled). `#587`'s narrow
-  remedy is refuted — the gate already reports every blocking file and line, and one
-  repair pass converged. Dispose of both before treating either as work.
+- `#587` and `#580` were measured on 2026-08-10; both had a stale premise and both
+  are now retitled with the measurement on the issue. `#580` no longer blocks.
+  `#587` now asks ONE thing: what its iteration-#2 false blocker actually was —
+  answerable only from the original session's record, not this tree.
 - The `Premise-residue:` seam reads markers and nothing writes them; exactly one
   exists. If records do not start writing them the record channel stays empty.
 
