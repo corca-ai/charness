@@ -10,16 +10,15 @@
 
 - 18 open issues. `#514`/`#515`/`#518` closed `NOT_PLANNED` on 2026-08-10 after the
   crosswalk retirement; `#588` and `#589` were filed as their carved-out residuals.
-- Four umbrellas filed — `#582` `#583` `#584` `#585` — each naming its members and
-  each passing the consolidation readback against the live tracker before any close.
-- `#514` was refused by the crosswalk (`matrix_incomplete`); that instance is now
-  RETIRED by operator ruling — see
+- Four umbrellas open — `#582` `#583` `#584` `#585`. The crosswalk that made
+  `#514`/`#515`/`#518` unclosable is RETIRED by operator ruling; see
   [the retirement record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md).
-  `#582` carries a correction saying it absorbed three of four members.
 - New: `#586` (a check that never fires on the wired path), `#587` (serial pre-push
   aggregate), `#580` (budget measures fan-out), `#581` (shipped adapter example
   cannot create an issue), `#588` (dogfood helper crashes in any consumer repo),
-  `#589` (preset reconciliation is a constant). `#572` still the one open red.
+  `#589` (preset reconciliation is a constant), `#590` (the mutation workflow
+  reports a JS symptom for a Python baseline failure). `#572` is the one open red
+  and `#590` is its diagnosed cause.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -29,25 +28,27 @@
 ## Next Session
 
 0. Read the closing
-   [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md)
-   — measured waste, north-star alignment, and the axis that became `#586`.
+   [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md).
 1. **Build the closeout floor x classification matrix** — decided, spec ready at
    [the spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md).
    All three mechanizable `#586` guards measured 0-ish findings; this one starts
    from a live one (`consolidated` skips four of six floors and only a
    non-blocking advisory says so). The validator MUST be behavioral, not grep —
    that constraint is the slice. Two bounded rounds owed.
-2. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
+2. **`#572` red is diagnosed, not fixed — see `#590`.** A CI-only failure of
+   `test_mutating_a_source_file_drops_its_stale_bytecode` exits the cosmic-ray
+   baseline, the `&&` in `cmd_full` short-circuits, JS mutation never runs, and the
+   report blames the missing Stryker JSON. WHY that test fails on the runner and
+   passes locally is still unknown and is the first thing to find.
+3. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
    measured defective, and reverted; its comment carries the alternative.
 
 ## Discuss
 
-- **`#514`/`#515`/`#518` are SETTLED and closed.** Operator ruling retired the
-  crosswalk instance rather than building its matrix; do not rebuild it or re-open
-  "protect all three at equal strength". Reasoning, lapsed protections, and
-  non-claims are in the retirement record. The "consumer-repo measurement" blocker
-  was false: only `#518` ever carried a `Re-read obligation` and its debug artifact
-  discharged it.
+- **`#514`/`#515`/`#518` are SETTLED and closed** by operator ruling; do not rebuild
+  the matrix or re-open "protect all three at equal strength". The
+  "consumer-repo measurement" blocker was false: only `#518` carried a
+  `Re-read obligation` and its debug artifact discharged it.
 - `#576` has no chosen direction; a comment records why it is honest silence.
 - `#587` and `#580` were measured on 2026-08-10; both had a stale premise and both
   are now retitled with the measurement on the issue. `#580` no longer blocks.
