@@ -443,3 +443,85 @@ is a reading of the current worktree. The parent separately verified, through ch
 reviewers lacked: the pickup spec engagement sets, `claim_fidelity_lib.py:151`, the absent
 `refused_citation_count` key, and `git show v4.0.0` for the shim. Nothing in this sweep has
 been executed.
+
+
+---
+
+# Operator ruling 2026-08-11: delete the pickup ambiguity heuristic and its evals
+
+**Ruling:** the pickup ambiguity decision is skill BEHAVIOR. Prose governs it and Cautilus
+verifies it. A planner heuristic that guesses it from artifact text is the wrong shape and
+comes out.
+
+## Why the ruling is stronger than the argument that produced it
+
+The operator objected to "an ambiguous regex doing FP/FN". The current mechanism is one
+step past a regex and the objection lands harder for it:
+`plan_handoff_run.py:161-170` decides ambiguity from `pickup_target.strip()` plus
+`next_session_entry_count >= 2`, and that count comes from
+`chunked_routing_lib.parse_handoff_entries(raw)` (`:129`) — **a prose parser counting
+markdown entries under `## Next Session`.** Renumber the handoff, wrap a bullet, or split
+one item into two, and the planner's verdict about the OPERATOR's intent changes.
+
+**The repo already accepted this reasoning and stopped one step short.** The regex
+classifier `should_fire_chunker` was deleted for exactly this, and `_resolve_intent`'s
+docstring (`:172-175`) states the principle: *"Resolve routing from what the caller
+DECLARED, never from the invocation text. Python is not in the conversation, so a
+classifier here could only ever read..."*. Intent got the treatment; ambiguity did not,
+because it counts prose instead of matching it.
+
+## Scope — verified consumer sets, so the next session does not rediscover them
+
+Delete:
+
+- `_pickup_needs_continuation_sequence` (`:161-170`) and its call at `:278`, plus the
+  `pickup_skip_continuation` branch at `:284-287`.
+- `next_session_entry_count` (`:126-131`, `:157`). **Verified: its only functional consumer
+  is that predicate**; the sole other reference is one edge-case assertion at
+  `tests/test_handoff_plan.py:490`.
+- `--pickup-target` (`:234`, `:369`, `:383`, `:425`, `:434`). **Verified: its only consumer
+  is the same predicate**, plus `skills/public/handoff/SKILL.md:39` prose and two tests.
+- The four discriminating tests, `tests/test_handoff_plan.py:442-472`.
+- Both eval specs, their `evals/cautilus/claim-fidelity-registry.json` entries, and the
+  fixture registration in `tests/quality_gates/test_scenario_conditional_reads.py:139-159`.
+
+**The load-bearing edge, and the reason both specs become deletable as a CONSEQUENCE
+rather than as a separate argument:** `_handoff_planner_forceable`
+(`scripts/claim_fidelity_lib.py:283-301`) AST-scans the planner for **any** string literal
+matching `references/<name>.md`, *regardless of branch*. So deleting the branch is not
+enough — `continuation-sequence.md` stays in the forceable set while the literal survives
+at `plan_handoff_run.py:28`. **That literal must go too.** Once it does,
+`continuation-sequence.md` leaves the forceable set, `would_need_waiver` shrinks, and
+`pickup-ambiguous.spec.json`'s `engage-always` coverage stops being load-bearing — which
+dissolves the single refutation that has blocked this cluster all session, without
+appealing to any of the six.
+
+`references/continuation-sequence.md` itself STAYS. It becomes ordinary skill prose the
+agent opens by judgment, which is the ruling.
+
+## What must be preserved
+
+The substance judge. `evals/cautilus/handoff-claim-fidelity/outcome-assertions.json`
+resolves per directory and its assertions grade the behavior that actually matters —
+started the artifact-named workflow, verified live state through a channel other than the
+handoff text, did not invent a trigger. Deleting the two spec files must not orphan it:
+either `spec.json` / `refresh.spec.json` remain as its vehicles (they do), or the ruling
+loses the only thing verifying the behavior it says Cautilus should verify.
+
+## The class this points at — the larger prize
+
+The operator's stronger claim is that there are many of these. Three same-shape candidates,
+recorded for a later sweep and NOT yet checked for consumers:
+
+- `skills/public/setup/scripts/setup_skill_routing_lib.py` —
+  `agents_skill_routing_semantically_complete` decides by regex whether a **consumer's**
+  AGENTS.md prose means the right thing. Same shape, and its wrong answer ships outward.
+- `skills/public/handoff/scripts/chunked_routing_parser.py` — 11 regexes parsing handoff
+  prose into entries; the source of the count above, so the same family.
+- `scripts/classify_push_diff_lib.py` — 11 regexes classifying a diff into a category that
+  drives behavior.
+
+The discriminator for the sweep is NOT "does it use a regex". Form validators
+(`validate_skills.py`, `check_doc_links.py`) legitimately match shape. The question is
+**does a pattern-match decide what an agent or operator MEANT** — and if so, the declared
+route should replace it, exactly as `--intent` replaced `should_fire_chunker`.
