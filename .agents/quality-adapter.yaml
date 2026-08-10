@@ -202,7 +202,9 @@ runtime_budget_profiles:
       # This preserves the regression defence -- a seed footprint that genuinely grew
       # would still blow 1795 -- while removing a bar that measures the runner's
       # fan-out. That the bar measures the wrong thing at all is the deeper defect and
-      # is tracked separately; relevelling does not close it.
+      # is tracked as D54 in docs/deferred-decisions.md; relevelling does not close it.
+      # D54 also names the sibling bars in the same shape (charness-version,
+      # check-inventory-declaration-coverage), which were confirmed but not re-derived.
       check-seed-fixture-budget: 1795
       # The 2.5s limit was set in May; a 5s bar replaced it because the release
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.

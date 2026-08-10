@@ -1020,3 +1020,96 @@ reopen trigger fires.
 - Reopen trigger: the next closeout-bundle diagnostic change, or a second
   recorded execute refusal where first-error reporting materially obscures the
   repair set.
+
+### D53. Should adapter unknown-key reconciliation reach consumer repos, and how?
+
+- Question: [adapter_warn_tier.py](../scripts/adapter_warn_tier.py) renders unknown-key
+  verdicts only when `reader_corpus_established` is true (`:186`, `:205-206`), and that
+  predicate looks for the shared-core owner inside the scanned reader corpus (`:128`).
+  In a consuming repo the readers live inside the installed plugin and `_is_reader_file`
+  excludes any path with a `plugins` component, so the corpus is empty and no key verdict
+  is rendered at all. Should reader resolution be extended into plugin roots, should
+  consumers get a separate shipped known-key channel, or should the silence stand?
+- Current choice: **Defer — the silence stands, and it stays honest silence.** No
+  consumer-side key verdict is rendered; `WarnTierResult.scope_established` distinguishes
+  "no findings" from "no readers to ask", and the uninterpreted-line channel still fires
+  unconditionally. This is a real absence of a check, and it is deliberately not the same
+  defect as a check that lies.
+- Why now: `#530` closed a ~100% false-positive rate by replacing a wrong verdict with no
+  verdict, which was the right repair and left this gap by design. The gap's only durable
+  traces were a docstring framing it as a settled design decision and pointers from four
+  artifacts at the tracking issue, so a reader arriving at `#530` had nowhere to land.
+  Recording it here is what lets that issue close without deleting the gap.
+- Why deferral is right at the time: the reach is bounded today.
+  [validate_adapters.py](../scripts/validate_adapters.py) is not one of the four gates
+  the consumer-facing catalog ships
+  ([catalog.yaml](../skills/public/quality/references/catalog.yaml) `gates:` block), and
+  its only in-repo call sites are [run-quality.sh](../scripts/run-quality.sh) and
+  [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py). A 2026-08-09 check
+  of five charness-using repos (`stdy.blog`, `cmanki`, `ceal`, `ceal-cli`,
+  `journal.stdy.blog`) found none invoking it. Option 3 (a shipped known-key declaration)
+  additionally rests on an unretested premise: the loader-scoped known-key set that
+  `adapter_key_registry.py` rejected at the outset called four correct keys typos, and
+  whether that still holds has not been re-measured.
+- Non-claims: the script and both its gate wirings **do ship** —
+  the shipped mirrors of [run-quality.sh](../scripts/run-quality.sh) and
+  [staged_commit_gate_plan.py](../scripts/staged_commit_gate_plan.py) under the exported
+  plugin directory carry them, and the catalog gate
+  `read-only-quality` is `./scripts/run-quality.sh --read-only`. So "it does not reach
+  consumers" is false at the artifact level; the true statement is that it is not one of
+  the four catalog gate commands and that no measured consumer invoked it as of
+  2026-08-09. The 5-repo figure is a dated out-of-tree observation, not a current one,
+  and no consumer tree can be inspected from inside this repo — which is this deferral's
+  own point. Options 2 and 3 are deferred, not rejected.
+- Impact surfaces: [adapter_warn_tier.py](../scripts/adapter_warn_tier.py),
+  [validate_adapters.py](../scripts/validate_adapters.py),
+  [catalog.yaml](../skills/public/quality/references/catalog.yaml),
+  [adapter_key_registry.py](../scripts/adapter_key_registry.py), and the two consumer-
+  facing docs that advertise the surface without wiring it (see the non-claims above for
+  the shipped mirrors under `plugins/`)
+  ([prepare-packet.md](../skills/public/critique/references/prepare-packet.md),
+  [skill-quality.md](../skills/public/quality/references/skill-quality.md)).
+- Reopen trigger: `validate_adapters.py` reaching a consumer pipeline — a consumer
+  adopting `run-quality.sh`, or the quality catalog gaining this gate — or a consumer
+  reporting a silently-mis-spelled adapter key.
+
+### D54. Should a per-gate runtime budget measure the gate's own work rather than contended wall clock?
+
+- Question: A budget grades the recorded wall-clock of a queued command
+  ([record_quality_runtime.py](../scripts/record_quality_runtime.py) stores
+  `elapsed_ms`; the verdict reads `median_recent_elapsed_ms`). Since the 2026-07-26
+  barrier removal the runner executes gates concurrently, so that number is contended
+  wall time, not isolated gate time. `check-seed-fixture-budget` does ~0.06s of work and
+  carries a 1795ms bar on the 36-CPU profile — roughly 19x, of which ~1.1s is python
+  startup plus scheduling contention against the other ~90 gates. Should the sample
+  measure the gate's own work instead?
+- Current choice: **Defer — keep wall-clock samples and re-level the bars.** The bars in
+  [quality-adapter.yaml](../.agents/quality-adapter.yaml) are derived by the block's own
+  stated convention (1.4x the worst observed in a recent window) and re-levelled when a
+  bar starts refusing correct runs. This preserves the regression defence — a footprint
+  that genuinely grew still blows the bar — while accepting that the bar is calibrated
+  against the runner's fan-out rather than against the check.
+- Why now: `#580` recorded the mismatch for one label and was re-levelled 1000 → 1795 on
+  2026-08-10, which fixed the blocking half. The adapter comment beside that number said
+  the deeper defect "is tracked separately"; the separate tracker was `#580` itself, so
+  closing it would have left a checked-in comment pointing at nothing. This entry is that
+  destination.
+- Why deferral is right at the time: the class is wider than one label and the fix is
+  structural. Sibling bars sit in the same shape and are unmeasured against it —
+  `charness-version: 500` against ~135ms samples, `check-inventory-declaration-coverage:
+  500` against ~80-160ms samples. Measuring per-gate CPU or isolated time would change
+  what every bar in four profile blocks means and would need all of them re-derived; no
+  bar is currently red, so nothing forces that now.
+- Non-claims: the mismatch is **not** fixed. The bar still grades fan-out, and the
+  self-sustaining feedback `#580` described (the recorded median is whatever the
+  contended lane produces) is unchanged in kind — it is currently below the bar, not
+  broken. The re-level was validated only on `local-linux-x86_64-36cpu`; the 4-core and
+  aarch64 blocks carry different numbers and were not measured. The sibling bars named
+  above were confirmed to be in the same shape but were not re-derived.
+- Impact surfaces: [quality-adapter.yaml](../.agents/quality-adapter.yaml) (four
+  `runtime_budgets` blocks), [record_quality_runtime.py](../scripts/record_quality_runtime.py),
+  [runtime_budget_lib.py](../skills/public/quality/scripts/runtime_budget_lib.py),
+  and [run-quality.sh](../scripts/run-quality.sh)'s concurrent queue.
+- Reopen trigger: a bar that cannot be re-levelled without hiding a real regression; or a
+  second gate whose bar exceeds its own work by an order of magnitude and starts
+  false-redding; or per-gate isolated timing becoming available in the runner.

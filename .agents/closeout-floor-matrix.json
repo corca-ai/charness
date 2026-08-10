@@ -953,8 +953,9 @@
           "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/592 -- this lane force-applies the behavioral-verdict floor to every classification for a reason (a released close is a shipped-item claim) that applies just as well to the critique floor, which it leaves exempt. The light-close reason is refuted by the `behavioral_verdict` cell in this same row."
+          "state": "skipped-by-design",
+          "reason": "OPERATOR RULING 2026-08-10, closing #592: the asymmetry with the `behavioral_verdict` cell in this same row is DELIBERATE, and the light-close reason is indeed not what justifies it. The two floors differ in whether the release operator can satisfy them at all. The behavioral floor is a presence check over an input channel this lane already owns (`--close-issue-behavior`), so force-applying it costs one line the operator can write from what they already know. The critique floor demands a checked-in artifact under `charness-artifacts/critique/`, bound to the issue number and itself passing `validate_critique_artifacts` -- and `question`/`decision-needed` are precisely the classifications for which the skill never runs the critique substrate (no causal review, no resolution critique). Force-applying it would demand an artifact for a process that by definition did not run, and the predictable author response is a stub that satisfies the binding check: a floor met by writing a file that says nothing, which this repo treats as worse than no floor. So the exemption is not imported from the light-close reason; it is that the obligation is unsatisfiable without inventing its own evidence. NON-CLAIM: this leaves a `question`/`decision-needed` release close with no fresh-eye review bound to it, which is a real absence, not a proven non-need.",
+          "reopen_trigger": "`question`/`decision-needed` gaining a critique substrate in the issue skill, at which point force-applying this floor becomes satisfiable and the omission becomes real; or a released light-classification close that should have been reviewed and was not."
         },
         "consolidation_readback": {
           "state": "skipped-by-design",
@@ -982,8 +983,9 @@
           "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
         },
         "resolution_critique": {
-          "state": "undispositioned",
-          "finding": "https://github.com/corca-ai/charness/issues/592 -- this lane force-applies the behavioral-verdict floor to every classification for a reason (a released close is a shipped-item claim) that applies just as well to the critique floor, which it leaves exempt. The light-close reason is refuted by the `behavioral_verdict` cell in this same row."
+          "state": "skipped-by-design",
+          "reason": "OPERATOR RULING 2026-08-10, closing #592: the asymmetry with the `behavioral_verdict` cell in this same row is DELIBERATE, and the light-close reason is indeed not what justifies it. The two floors differ in whether the release operator can satisfy them at all. The behavioral floor is a presence check over an input channel this lane already owns (`--close-issue-behavior`), so force-applying it costs one line the operator can write from what they already know. The critique floor demands a checked-in artifact under `charness-artifacts/critique/`, bound to the issue number and itself passing `validate_critique_artifacts` -- and `question`/`decision-needed` are precisely the classifications for which the skill never runs the critique substrate (no causal review, no resolution critique). Force-applying it would demand an artifact for a process that by definition did not run, and the predictable author response is a stub that satisfies the binding check: a floor met by writing a file that says nothing, which this repo treats as worse than no floor. So the exemption is not imported from the light-close reason; it is that the obligation is unsatisfiable without inventing its own evidence. NON-CLAIM: this leaves a `question`/`decision-needed` release close with no fresh-eye review bound to it, which is a real absence, not a proven non-need.",
+          "reopen_trigger": "`question`/`decision-needed` gaining a critique substrate in the issue skill, at which point force-applying this floor becomes satisfiable and the omission becomes real; or a released light-classification close that should have been reviewed and was not."
         },
         "consolidation_readback": {
           "state": "skipped-by-design",
