@@ -8,8 +8,8 @@
 
 ## Current State
 
-- 19 open issues, from 24. Eleven closed: nine consolidations render `NOT_PLANNED`,
-  two resolutions (`#554`, `#571`) render `COMPLETED`.
+- 18 open issues. `#514`/`#515`/`#518` closed `NOT_PLANNED` on 2026-08-10 after the
+  crosswalk retirement; `#588` and `#589` were filed as their carved-out residuals.
 - Four umbrellas filed — `#582` `#583` `#584` `#585` — each naming its members and
   each passing the consolidation readback against the live tracker before any close.
 - `#514` was refused by the crosswalk (`matrix_incomplete`); that instance is now
@@ -18,7 +18,8 @@
   `#582` carries a correction saying it absorbed three of four members.
 - New: `#586` (a check that never fires on the wired path), `#587` (serial pre-push
   aggregate), `#580` (budget measures fan-out), `#581` (shipped adapter example
-  cannot create an issue). `#572` still the one open red; untouched.
+  cannot create an issue), `#588` (dogfood helper crashes in any consumer repo),
+  `#589` (preset reconciliation is a constant). `#572` still the one open red.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
