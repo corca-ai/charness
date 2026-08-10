@@ -724,6 +724,13 @@ the evidence is sufficient for the boundary at hand.
   label values moved 378 -> **382**. Presence, marker, refusal, minimum, and
   floor-20 counterfactual counts did not move. This is the FIFTH refresh, the
   same standing corpus-write tax tracked by #536 rather than a D47 policy change.
+- **The tax's tracking pointer went stale, 2026-08-11.** #536 is CLOSED as COMPLETED,
+  and correctly so — it asked for the FAILURE to say whether the corpus or the rule
+  moved, and that shipped. It made the tax legible; it did not remove it. So the two
+  entries above point a live cost at an issue whose state asserts completion. The live
+  home is now [#596](https://github.com/corca-ai/charness/issues/596), which also carries
+  the equality-pin-versus-property-pin decision this entry's figures depend on. Nothing
+  about D47's own question changes here.
 - **The first executed number was WRONG, and how it was wrong is the point.** The initial
   marker test used `` `[^`]*field[^`]*` ``, which matches the GAP BETWEEN two adjacent code
   spans — so a bare English mention sitting between two unrelated spans scored as marked.
