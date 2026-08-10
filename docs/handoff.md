@@ -31,12 +31,14 @@
 0. Read the closing
    [retro](../charness-artifacts/retro/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md)
    — measured waste, north-star alignment, and the axis that became `#586`.
-1. **Design the successor goal.** The closing session declined it with a weak
-   reason and said so. `#586` is the strongest axis: six measured instances, three
-   candidate guards ranked, vocabulary-parity clearly cheapest.
+1. **Decide `#586` with the probes already taken.** Its two cheap guards were
+   measured on 2026-08-10 and BOTH have near-zero current findings — vocabulary
+   parity is clean across all five carriers, and only 9 of 5,493 production
+   functions are referenced solely by tests. Option 3 (rely on bounded review)
+   gained evidence instead. Comment on the issue carries the numbers and the
+   non-claims; do not build a guard without reading it first.
 2. `#546` has a refuted option, not a fix — a repair was built, reviewed HOLD,
-   measured defective, and reverted; its comment carries the alternative. `#580`
-   stays open on its root cause: the bar still measures fan-out, not the check.
+   measured defective, and reverted; its comment carries the alternative.
 
 ## Discuss
 
@@ -47,6 +49,10 @@
   was false: only `#518` ever carried a `Re-read obligation` and its debug artifact
   discharged it.
 - `#576` has no chosen direction; a comment records why it is honest silence.
+- `#587` and `#580` were BOTH measured on 2026-08-10 and both had a stale premise.
+  `#580` no longer blocks (budget relevelled to 1795ms; retitled). `#587`'s narrow
+  remedy is refuted — the gate already reports every blocking file and line, and one
+  repair pass converged. Dispose of both before treating either as work.
 - The `Premise-residue:` seam reads markers and nothing writes them; exactly one
   exists. If records do not start writing them the record channel stays empty.
 
