@@ -15,6 +15,7 @@ from pathlib import Path
 
 import pytest
 
+import scripts.closeout_floor_matrix_lib as lib
 from scripts.check_closeout_floor_matrix import MATRIX_REL, _problems
 from scripts.check_closeout_floor_matrix import main as gate_main
 from scripts.closeout_floor_matrix_lib import (
@@ -479,3 +480,82 @@ def test_the_gate_refuses_when_a_floor_changes_under_an_unchanged_declaration(
         "|question/behavioral_verdict" in problem and "observably 'fires'" in problem
         for problem in payload["problems"]
     ), payload["problems"]
+
+
+def test_a_floors_value_that_is_not_an_object_refuses() -> None:
+    observed = _observed()
+    declared = _declared(observed)
+    declared["pairs"]["pr-body|bug"]["floors"] = ["ai_provenance"]
+    assert any("`floors` must be an object" in p for p in _problems(declared, observed))
+
+
+def test_a_cell_for_a_floor_that_does_not_exist_refuses() -> None:
+    observed = _observed()
+    declared = _declared(observed)
+    declared["pairs"]["pr-body|bug"]["floors"]["retired_floor"] = {"state": "fires"}
+    assert any("retired_floor: declared but no such floor" in p for p in _problems(declared, observed))
+
+
+def _repo_with_declaration(tmp_path: Path, mutate) -> Path:
+    """A repo root carrying a declaration derived from the real one, then mutated."""
+    declared = json.loads((ROOT / MATRIX_REL).read_text(encoding="utf-8"))
+    mutate(declared)
+    target = tmp_path / MATRIX_REL
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(declared), encoding="utf-8")
+    for rel in ("scripts", "skills", "AGENTS.md", "runtime_bootstrap.py", "skill_runtime_bootstrap.py"):
+        source = ROOT / rel
+        if source.exists():
+            (tmp_path / rel).symlink_to(source)
+    return tmp_path
+
+
+def test_the_cli_renders_disagreements_for_a_human_and_as_json(tmp_path: Path, capsys) -> None:
+    """Both reporting paths, on a declaration that disagrees with the real carriers."""
+    def break_a_cell(declared: dict) -> None:
+        declared["pairs"]["pr-body|question"]["floors"]["behavioral_verdict"] = {"state": "fires"}
+
+    repo = _repo_with_declaration(tmp_path, break_a_cell)
+    assert gate_main(["--repo-root", str(repo)]) == 1
+    human = capsys.readouterr().err
+    assert "the declaration disagrees with what the carriers actually do" in human
+    assert "pr-body|question/behavioral_verdict" in human
+    assert "Re-measure with:" in human
+
+    assert gate_main(["--repo-root", str(repo), "--json"]) == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["ok"] is False
+    assert any("pr-body|question/behavioral_verdict" in p for p in payload["problems"])
+
+
+def test_the_script_entrypoint_exits_nonzero_without_a_declaration(tmp_path: Path) -> None:
+    """Through `python3 scripts/...`, so the module's own `SystemExit(main())` runs."""
+    result = subprocess.run(
+        [sys.executable, GATE, "--repo-root", str(tmp_path)],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert result.returncode == 1
+    assert "declaration not found" in result.stderr
+
+
+def test_an_ingress_that_raises_is_a_refusal_the_probe_cannot_attribute(
+    world: ProbeWorld,
+) -> None:
+    """`verify_closeout` raises on an unknown classification. A raise carries no
+    per-floor record, so the probe must report it as an unattributed refusal rather
+    than crediting whichever floor happened to be broken."""
+    ok, detail, refusing = run_ingress(world, "pr-body", "not-a-classification", "Closes #77\n")
+    assert ok is False
+    assert refusing == set()
+    assert "unknown classification" in detail
+
+
+def test_a_readback_control_run_that_is_refused_never_claims_the_floor_fired(
+    world: ProbeWorld, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """If the `Consolidated into:` anchor itself is refused, the CLOSED run would prove
+    nothing -- the cell must not read `fires` off a refusal the anchor caused."""
+    monkeypatch.setattr(
+        lib, "run_ingress", lambda *a, **k: (False, "the anchor was refused", set())
+    )
+    assert lib._readback_outcome(world, "pr-body", "bug") == "input-refused"
