@@ -2,17 +2,24 @@
 
 ## Workflow Trigger
 
-- No goal is running. Everything is PUSHED and read back; the push hold is lifted and
-  the `#572` circularity is broken. Start from `## Next Session`.
+- No goal is running. One handoff commit is local and unpushed; ask for a push grant.
+  Start from `## Next Session`.
 
 ## Current State
 
-- **20 open issues.** `#591`, `#576`, `#580`, `#592` closed on the push and were read
-  back CLOSED through the backend. `#595` was filed this session and is in no wave.
-- **`#572` is now unblocked and is the cheapest close available.** Its diagnostic is on
-  main (`739a2a3e`), which is what it was waiting for; the cron runs there. Re-read it
-  before assuming the fix landed — the test passed locally, so main is the only place
-  its premise can be checked.
+- **19 open issues.** `#591`, `#576`, `#580`, `#592` closed on the push and were read
+  back CLOSED through the backend; `#572` closed after it. `#595` was filed and is in
+  no wave. Net count is not falling because closing generates issues: over Aug 7-10 the
+  repo created 60 and closed 42, and every close owes a sibling search. What accumulates
+  is the decision-shaped residue, not the code-shaped work.
+- **`#572` CLOSED as `consolidated` into `#590`** — first live use of that path; `#590`'s
+  body is the durable home of all three of its events. **Do NOT read the green cron on
+  `ed90c1f3` as recovery**: it is an ANCESTOR of the `#590` diagnostic `739a2a3e` and ran
+  on the pre-push tree. No scheduled mutation run has hit main since; the next is first.
+- **`#582`-`#585`: every member of all four umbrellas is already CLOSED** (`#524` `#525`
+  `#514` `#535`; `#568` `#569`; `#531` `#532`; `#534` `#561`). An umbrella's own close
+  must state an outcome per member, so the question is whether fixing the instances
+  removed the CLASS. `#585` has a channel (dup-ratchet green); `#582` claims most.
 - Three deferred rulings live in the tree rather than only in issue threads: **D53**,
   **D54**, **D55** in [deferred-decisions](./deferred-decisions.md). Each names its
   reopen trigger; D53's is explicitly NOT in-repo observable and says so.
@@ -30,22 +37,17 @@
 
 ## Next Session
 
-1. **`#572` — now closable, and cheap.** The push it was waiting on has happened.
-2. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 shipped and decides
-   only the RENAME rot mode; `dead-code-advisory` is a live instance the new gate
-   reports green. The marker makes the other two decidable, and phase 1 built the
-   reader that makes it verifiable rather than an unchecked annotation. Record:
-   [implementation critique](../charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md).
-3. **`#587` — edit, do not close.** Its retargeting refutes the wrong component:
-   `run_standing_pytest.expand_targets` is not "the mapper" here — `run-quality.sh`
+1. **Umbrella ruling on `#582`-`#585`.** All members are closed; the ruling is the work.
+2. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 decides only RENAME;
+   the marker makes the other two rot modes decidable, and phase 1's reader makes it
+   verifiable. Record: [implementation critique](../charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md).
+3. **`#587` — edit, do not close.** It refutes the wrong component: `run-quality.sh`
    wires the label to `prepush_focused_changed_line_coverage.py`, whose mapper is
-   `suggest_mutation_coverage_command.tests_referencing_paths` (`:85-87`: a missed
-   match "costs a false block"). Re-point the question at the partially-mapped case.
+   `suggest_mutation_coverage_command.tests_referencing_paths:85-87`, not `expand_targets`.
 4. **Wave 2 — small concrete bugs, 2-3 per carrier.** `#539`, `#581`, `#588`, `#528`,
    `#589`, `#542`. Real code plus the fresh-eye review each classification owes.
-5. **Wave 3 — the rest.** Umbrellas `#582`-`#585` and their instances, plus `#586`,
-   `#590`, `#593`, `#594`, `#595`, `#550`, `#527`. An umbrella closes when its
-   instances resolve or when a ruling retires it; making that call is the first task.
+5. **Wave 3 — the rest.** `#586`, `#590`, `#593`, `#594`, `#595`, `#550`, `#527`.
+   (The umbrellas moved to item 1: their instances are all already resolved.)
 
 ## Discuss
 
@@ -58,11 +60,10 @@
 
 ## Continuation Capability
 
-- **The round that reads the REPAIRS finds a different class.** Ten for ten. Sharpest
-  today: round 1 found a docstring claiming a safety mechanism that did not exist;
-  round 2 found that its repair shipped a SECOND claim with no mechanism — a
-  documented fail-open branch that was dead code, so the real behavior was
-  fail-closed with a wrong remedy.
+- **The round that reads the REPAIRS finds a different class.** Ten for ten. Also true
+  of prose: the `#572` close draft claimed both older events were "structurally
+  non-recurring"; the score signal is sample-relative and can recur, so the reviewer
+  stopped a false disposition from reaching an irreversible public artifact.
 - **A handoff list is a plan, not a verdict.** Wave 1 was handed off as six no-code
   closes; review closed four and pulled two out. Four of the six carried a comment
   arguing against their own close, and that comment was right twice.
