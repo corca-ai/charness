@@ -66,6 +66,7 @@ import json
 import re
 import sys
 from pathlib import Path
+from typing import Callable, TypeVar
 
 import adapter_lib
 
@@ -92,6 +93,8 @@ _LITERAL_LABEL_RE = re.compile(r'^"(?P<label>[^"$]+)"$')
 # this shape is what keeps `$label` and other non-names out of the universe when a
 # future dispatcher is added outside `QUEUE_FUNCTIONS`.
 _LABEL_SHAPE_RE = re.compile(r"^[a-z0-9][a-z0-9._-]*$")
+
+T = TypeVar("T")
 
 AGGREGATE_MODES = ("read-only", "full")
 AGGREGATE_RELEASE_SUFFIXES = ("", "-release")
@@ -289,16 +292,36 @@ def label_universe(repo_root: Path) -> dict[str, object]:
     }
 
 
+def read_or_refuse(gate_name: str, compute: Callable[[], T]) -> tuple[int, T | None]:
+    """Run `compute`, turning a `UniverseError` into a named refusal on stderr.
+
+    Every consumer of this reader owes exactly this handling, and duplicating it is
+    how one of them forgets. One did: `check_timing_layer_completeness` is queued at
+    COMMIT time and had no handler, so an unresolvable queue line surfaced as a
+    Python traceback inside the pre-commit hook, from a gate whose subject is the
+    timing table. A helper rather than three copies, so the next consumer inherits
+    the refusal instead of re-deriving it -- and so the failure mode cannot be
+    reintroduced one call site at a time.
+
+    Returns `(exit_code, value)`; `value` is None exactly when the code is nonzero.
+    """
+    try:
+        return 0, compute()
+    except UniverseError as error:
+        print(f"{gate_name}: {error}", file=sys.stderr)
+        return 1, None
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Print the run-quality label universe.")
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--json", action="store_true", help="emit the full payload")
     args = parser.parse_args()
-    try:
-        universe = label_universe(args.repo_root.resolve())
-    except UniverseError as error:
-        print(f"quality label universe: {error}", file=sys.stderr)
-        return 1
+    code, universe = read_or_refuse(
+        "quality label universe", lambda: label_universe(args.repo_root.resolve())
+    )
+    if universe is None:
+        return code
     if args.json:
         print(json.dumps(universe, indent=2, sort_keys=True))
         return 0

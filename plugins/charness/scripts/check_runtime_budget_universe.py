@@ -148,11 +148,11 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=REPO_ROOT)
     parser.add_argument("--json", action="store_true")
     args = parser.parse_args()
-    try:
-        report = evaluate(args.repo_root.resolve())
-    except quality_label_universe.UniverseError as error:
-        print(f"runtime budget universe: {error}", file=sys.stderr)
-        return 1
+    code, report = quality_label_universe.read_or_refuse(
+        "runtime budget universe", lambda: evaluate(args.repo_root.resolve())
+    )
+    if report is None:
+        return code
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
 

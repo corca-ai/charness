@@ -144,20 +144,17 @@ def main() -> int:
     args = parser.parse_args()
     repo_root = args.repo_root.resolve()
 
-    try:
-        missing, checked = unclassified_labels(repo_root)
-        # Inside the same try on purpose. It is unreachable today (it re-reads the
-        # file `unclassified_labels` already parsed), but leaving a second call to a
-        # raising reader outside the handler is how the traceback comes back.
-        stale = stale_docs_only_labels(repo_root)
-    except quality_label_universe.UniverseError as error:
-        # This gate is classified commit-time, so before this handler existed the
-        # first symptom of an unresolvable queue line was a Python traceback inside
-        # the pre-commit hook, from a gate whose subject is the timing table. The
-        # shared reader raises by design; a caller that does not catch it converts
-        # a named refusal into a crash.
-        print(f"timing-layer completeness: {error}", file=sys.stderr)
-        return 1
+    # Both reads go through ONE guarded call. `stale_docs_only_labels` re-reads the
+    # file `unclassified_labels` already parsed, so it cannot raise on its own today
+    # -- but leaving a second call to a raising reader outside the guard is exactly
+    # how the traceback comes back, and this gate is queued at COMMIT time.
+    code, read = quality_label_universe.read_or_refuse(
+        "timing-layer completeness",
+        lambda: (unclassified_labels(repo_root), stale_docs_only_labels(repo_root)),
+    )
+    if read is None:
+        return code
+    (missing, checked), stale = read
     if not checked:
         print("timing-layer completeness: run-quality.sh or timing doc absent; no gate.")
         return 0

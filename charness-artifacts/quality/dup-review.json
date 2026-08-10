@@ -65,6 +65,12 @@
     },
     {
       "class": "intentional",
+      "id": "0541b0f5e8d22e3c",
+      "note": "Module-bootstrap import header shared by two mutation-lane scripts: the `sys.path` repo-root insertion plus the `from scripts.changed_line_run_trust import (...)` block. An import statement cannot be factored out without an indirection module, and this repo deliberately keeps each script's bootstrap local so an exported script has no hidden loader dependency. The duplication IS the contract that both scripts depend on the same run-trust helpers, and it is visible where a reader of either script looks.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "059c8578bee19e5a",
       "note": "The publish-state ledger's reconciled/refused human renderer keeps the status branch explicit at its operator boundary, while the unchanged command-doc, prose-pin, and ubiquitous-language validators own parallel terminal rendering. These branches expose different verdict contracts; extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction.",
       "reviewed_at": "2026-08-06",
@@ -222,6 +228,12 @@
       "id": "119fa9bcafbd3048",
       "note": "gate CLI convention shared by seven validators (check_skill_surface_preflight, check_artifact_surface_preflight, eval_cautilus_chatbot_proposals, inventory_quality_handoff, suggest_public_skill_validation, check_command_docs, check_documented_command_flags): declare this gate's own flags, resolve --repo-root, call build_report, return 1 on findings. The shared *behavior* in this shape was already extracted this session into scripts/gate_report_emit.py (stream selection plus --json vs text), which is what made the residue visible. What rhymes after that extraction is each script's own argparse declaration -- the flags differ per gate, so a common main() would take them as data and every script would still spell the same list out through an indirection",
       "reviewed_at": "2026-07-26",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "122d976e89c4d200",
+      "note": "The cross-skill `spec_from_file_location` loader tail. Skills are INDEPENDENTLY EXPORTED packages: `release`, `handoff` and `achieve` ship as separate installable units, so a shared loader helper would create exactly the cross-skill coupling this pattern exists to avoid -- a consumer installing one skill would need another. `release_issue_closeout.py` names the pattern in its own docstring as 'the established way this repo shares a skill-owned library across skill boundaries'.",
       "surface": "code"
     },
     {
@@ -604,6 +616,12 @@
     },
     {
       "class": "intentional",
+      "id": "38b6a66e6b45e15b",
+      "note": "The `from scripts.mutation_baseline_abort_lib import (...)` block shared by the Python and JS mutation-score readers. That both consume the same baseline-abort vocabulary is the point (#590's collateral-marker fix depends on it); the shared surface is already the lib, and only the import naming it repeats.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "38fae250ba1dde05",
       "note": "The manifest validator's compact repository-entry refusal branches share an idiom-sized shape with unrelated validators. Their paths and evidence contracts are independently owned; a common formatter would couple refusal semantics without removing the checks.",
       "reviewed_at": "2026-08-06",
@@ -642,6 +660,18 @@
       "id": "3a2a1a48f75e2333",
       "note": "rotation of reviewed family 6962d4713943ed31 after the usage reporter added objective-lifecycle output; validator and reporter terminal renderers still share only JSON dispatch and a short error loop, while their successful plain-output contracts remain deliberately different",
       "reviewed_at": "2026-07-14",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3a880c28d15655c6",
+      "note": "The `issue_local_import` sibling-loader header inside the issue skill. Introduced when the #591 fix split the rung-1 floors into their own module; the header is how a module in that skill loads a sibling without assuming a package layout, and it is per-module by design so each file is independently loadable by `runpy.run_path`.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3b04b31b04638e4b",
+      "note": "A bare `sys.stdout.flush()`, four times in one file. One line, no logic, and the four sites flush different preceding writes in a script whose output ordering matters under CI buffering. Below any extractable unit.",
       "surface": "code"
     },
     {
@@ -1262,6 +1292,12 @@
     },
     {
       "class": "intentional",
+      "id": "68d2e9a0b8476c56",
+      "note": "The whole `_load_<x>_lib()` function around the loader tail of 122d976e89c4d200, matched between the release and handoff skills. Same export-boundary reason: the duplication is what keeps each skill installable alone. Both copies carry the source-tree vs installed `skills/public/<id>` / `skills/<id>` layout fallback, which is the part that must not drift and is pinned by each skill's own tests.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "69026ef11d8ee529",
       "note": "the `if __name__ == \"__main__\": try: sys.exit(main()) except ValidationError ...` entrypoint block, at a narrower cluster boundary than the nine-member spelling accepted as 1d36956dff2fc82b. Five members across five unrelated gates (check_doc_links, check_export_safe_imports, check_plugin_doc_links, validate_adapters, validate_presets), three untouched. Same block, same reasoning: centralizing it puts every gate's exit code and stderr contract behind one runner while each script still spells out the indirection.",
       "reviewed_at": "2026-08-04",
@@ -1766,6 +1802,12 @@
     },
     {
       "class": "intentional",
+      "id": "9622a9ac568c97dc",
+      "note": "The argparse-then-resolve preamble of two cosmic-ray entrypoints. The shapes rhyme because both take the same repo-root/config/session paths, but the flag SETS differ and each script's defaults are its contract with the workflow that invokes it. Factoring the common half would leave a helper whose only job is to be half of two argument parsers.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "9658646a2253de06",
       "note": "ROTATION of the repo-standard gate-skeleton families as check_plugin_dir_references joins them (main() argparse+resolve+report skeleton, the runtime_bootstrap portability preamble, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal -- 217bca482c08d1da, 606ea765fb3c8ee8, 804b8f9cc0c609cb, 3eb918907263eb6b, d7021cae01c1a7b0, 1d36956dff2fc82b and their rotations. Each new gate re-forms the cluster; the preamble cannot be imported (it IS the bootstrap), and a shared runner would own every gate's argument surface and its operator-facing summary wording, which is the part a reader relies on to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
@@ -2018,6 +2060,12 @@
     },
     {
       "class": "intentional",
+      "id": "b364d71c0ccd3a87",
+      "note": "Same `issue_local_import` header as 3a880c28d15655c6, matched between the new rung-1 floors module and the body-check module it loads. Same reason; the pair exists because the #591 fix split one module into two and each half keeps its own loader.",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "b3c057ebab07c6d3",
       "note": "ROTATION of the repo-standard gate-skeleton families as the A4 slice lengthened check_doc_links and check_plugin_dir_references (main() argparse+resolve+report skeleton, the guard-clause ladders, and the `__main__` ValidationError exit block). Accepted repeatedly across this goal with the same reasoning: the portability preamble IS the bootstrap and cannot be imported, and a shared runner would own each gate's argument surface and its operator-facing summary wording -- which is exactly the part a reader uses to tell one gate's silence from another's.",
       "reviewed_at": "2026-08-04",
@@ -2028,6 +2076,12 @@
       "id": "b3e08764961ab57c",
       "note": "Pre-existing and untouched by this slice: `validate_usage_episodes.py` and `report_usage_episodes.py` share the usage-episodes adapter-resolution preamble. Both members are outside the current diff; the family surfaced as the ratchet anchor moved. Recorded rather than repaired because it belongs to the usage-episodes surface, not to the artifact-path ownership question this slice closes, and repairing it here would put an unreviewed change in an unrelated verdict path.",
       "reviewed_at": "2026-08-08",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b46d1872e6a9a6c6",
+      "note": "The four-line `spec is None or spec.loader is None -> module_from_spec -> exec_module -> return` core of the same cross-skill loader, matched across nine call sites in four skills plus one repo script. Idiom-sized and export-boundary-required, per 122d976e89c4d200. Nine members is not nine decisions: it is one convention applied nine times, and centralizing it would make every skill depend on whichever package owned it.",
       "surface": "code"
     },
     {
@@ -2070,6 +2124,12 @@
       "id": "b65c38f8d0eb8e4f",
       "note": "The two check-doc-links regions handle different source and consumer reader positions. Their similar traversal scaffolding is deliberate because the ownership and false-positive rules differ.",
       "reviewed_at": "2026-08-06",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b7ab6ebb33a6a5c4",
+      "note": "Same bootstrap-header shape as 0541b0f5e8d22e3c, matched across the mutation-lane pair `check_changed_line_mutation_coverage` / `check_js_mutation_score`. Same reason: an import block is not extractable without adding the loader indirection the bootstrap convention exists to avoid.",
       "surface": "code"
     },
     {
@@ -2791,6 +2851,12 @@
       "id": "f74bdfa3abf4890f",
       "note": "the `_load_sibling` portability helper, shared across ten achieve/handoff modules of which most are untouched here; the canonical intentional-boilerplate family for skill packages that must load siblings without a repo-level import root",
       "reviewed_at": "2026-07-27",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f7c0f2b5a4ddab24",
+      "note": "Two adjacent `append_*_summary` functions in one file sharing their three-line write tail (`mkdir` / read-existing / append-write). Idiom-sized append-to-report shape; the functions differ in the lines they build, which is all either one is about.",
       "surface": "code"
     },
     {
