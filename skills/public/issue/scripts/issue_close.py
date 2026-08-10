@@ -108,37 +108,63 @@ def _authorize_direct_close(
     )
 
 
-def close_with_comment(
+def _refuse_completed_consolidation(classification: str, reason: str) -> None:
+    """A `consolidated` close claims nothing about the defect, so it must not land on
+    the tracker as `completed`. Bounded review found this unwired: the module that
+    owns the disposition declared `REQUIRED_CLOSE_REASON = "not planned"` and nothing
+    read it, so twenty closes asserting "moved" would have rendered publicly as
+    "completed" -- the repair claim the disposition refuses in prose, asserted on the
+    one channel outside this repo's prose. Refused rather than silently corrected: a
+    caller that asked for `completed` on a consolidation has a contradiction to
+    resolve, not a default to inherit.
+
+    One owner called from BOTH the carrier evaluation and `close_with_comment`. The
+    second call is not a duplicate check: it preserves this refusal's position ahead
+    of the body-file read, which is where it has always been, while still guarding
+    the extracted evaluation for any caller that enters there.
+    """
+    if classification != _consolidated.CLASSIFICATION:
+        return
+    required = _consolidated.REQUIRED_CLOSE_REASON
+    if reason != required:
+        raise RuntimeError(
+            f"classification `{classification}` requires --reason {required!r} "
+            f"(got {reason!r}): a consolidated close claims nothing about the defect, "
+            "so the tracker must not render it as a completed close"
+        )
+
+
+def evaluate_close_comment_carrier(
     repo: str,
     number: int,
-    body_file: Path,
+    body: str,
     *,
     repo_root: Path,
     classification: str,
-    backend: dict[str, Any] | None = None,
+    backend: dict[str, Any],
     reason: str = "completed",
     manual_target_declaration: str | None = None,
 ) -> dict[str, Any]:
-    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
-    # A `consolidated` close claims nothing about the defect, so it must not land on
-    # the tracker as `completed`. Bounded review found this unwired: the module that
-    # owns the disposition declared `REQUIRED_CLOSE_REASON = "not planned"` and
-    # nothing read it, so twenty closes asserting "moved" would have rendered
-    # publicly as "completed" -- the repair claim the disposition refuses in prose,
-    # asserted on the one channel outside this repo's prose. Refused rather than
-    # silently corrected: a caller that asked for `completed` on a consolidation has
-    # a contradiction to resolve, not a default to inherit.
-    if classification == _consolidated.CLASSIFICATION:
-        required = _consolidated.REQUIRED_CLOSE_REASON
-        if reason != required:
-            raise RuntimeError(
-                f"classification `{classification}` requires --reason {required!r} "
-                f"(got {reason!r}): a consolidated close claims nothing about the defect, "
-                "so the tracker must not render it as a completed close"
-            )
-    if not body_file.is_file():
-        raise RuntimeError(f"close-comment body file not found: {body_file}")
-    body = body_file.read_text(encoding="utf-8")
+    """Everything the BODY AND TARGET decide before `close_with_comment` mutates.
+
+    Extracted so the carrier's verdict can be OBSERVED without mutating GitHub.
+    The closeout floor matrix probes this function; probing
+    ``evaluate_close_comment_floor`` directly would have measured the floor rather
+    than what this carrier's caller gets, and the readback wiring below -- which
+    lives here and not in the floor -- is precisely the part that decides whether
+    the consolidation facts reach the verdict at all.
+
+    NOT everything `close_with_comment` decides before its first irreversible act.
+    These refusals deliberately stay with the caller, because they are about the
+    BACKEND rather than the closeout body, and an `ok` verdict here does not clear
+    any of them: the body-file existence check; the `comment`, `close` and `view`
+    `_resolve_op` template validations, including the `required={repo, number}`
+    identity floor on the view template; and the refusal of a non-`gh` backend that
+    declares no `commands.view` -- "comment plus close command success is not issue
+    closeout". A caller that posts and closes on the strength of this report alone
+    drops all five.
+    """
+    _refuse_completed_consolidation(classification, reason)
     # Authorization runs before BOTH backend mutations, not just the close. A comment
     # posted on the wrong issue is already an external side effect that cannot be
     # taken back, and this function's own error path documents that the close can fail
@@ -172,6 +198,34 @@ def close_with_comment(
         number=number,
         consolidation_readback=readback,
     )
+    floor_report["closeout_authorization"] = authorization
+    return floor_report
+
+
+def close_with_comment(
+    repo: str,
+    number: int,
+    body_file: Path,
+    *,
+    repo_root: Path,
+    classification: str,
+    backend: dict[str, Any] | None = None,
+    reason: str = "completed",
+    manual_target_declaration: str | None = None,
+) -> dict[str, Any]:
+    backend = backend or {"id": "gh", "binary": "gh", "commands": None}
+    # Ahead of the body read, where it has always been: a caller that asked for
+    # `completed` on a consolidation gets the contradiction, not a file-not-found.
+    _refuse_completed_consolidation(classification, reason)
+    if not body_file.is_file():
+        raise RuntimeError(f"close-comment body file not found: {body_file}")
+    body = body_file.read_text(encoding="utf-8")
+    floor_report = evaluate_close_comment_carrier(
+        repo, number, body,
+        repo_root=repo_root, classification=classification, backend=backend,
+        reason=reason, manual_target_declaration=manual_target_declaration,
+    )
+    authorization = floor_report["closeout_authorization"]
     if not floor_report["ok"]:
         # floor-addition-restraint: irreversible-boundary P5 floor, presence/form-only
         raise RuntimeError(_CLOSE_COMMENT_FLOOR.format_close_comment_floor_failure(floor_report))

@@ -1584,6 +1584,13 @@
     },
     {
       "class": "intentional",
+      "id": "81b265803962b754",
+      "note": "the repo's OWN sanctioned gate preamble, shared by scripts/check_closeout_floor_matrix.py and scripts/measure_evidence_residual.py: `from __future__`, the argparse/json/re/sys/Path import block, `from runtime_bootstrap import import_repo_module`, and the one `import_repo_module(__file__, 'scripts.<lib>')` call it exists to enable. check_standalone_imports.py names this preamble as the required shape for a repo script that loads a sibling library, so factoring it out is not available -- a helper that performed the bootstrap would itself need the bootstrap. The two gates import DIFFERENT libraries and share no logic. Surfaced as new because the closeout floor matrix gate was added; the other member is untouched.",
+      "reviewed_at": "2026-08-10",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "8209826f4d9b7376",
       "note": "after extracting the shared delivery target/index ownership, semantic_feedback_errors and reconcile_feedback still each iterate feedback rows and bind feedback_id; the residual family is two shared lines with different error-versus-summary consumers, so another iterator helper would obscure control flow for no behavior or maintenance gain",
       "reviewed_at": "2026-07-10",
@@ -1952,6 +1959,13 @@
       "note": "cross-SKILL.md structural phrasing (bootstrap/workflow boilerplate) shared across public skills; uniform skill structure is the planner-uniformity north star (one protocol to learn), so the parallel SKILL.md phrasing is intentional by design",
       "reviewed_at": "2026-06-30",
       "surface": "doc"
+    },
+    {
+      "class": "intentional",
+      "id": "ad0b426cd3ffde59",
+      "note": "the issue skill package's sibling-loader preamble, shared by issue_close.py and issue_runtime.py: the `runpy.run_path(... 'issue_local_import.py')['sibling_loader'](__file__)` line plus the `_BACKEND = _load_local('issue_backend', ...)` binding. This is the public-skill portability contract (a skill script must not import repo-internal modules), and every module in the package carries it by design -- it is the mechanism that makes factoring impossible, since the loader must exist before anything can be loaded. Surfaced as new because the close-comment carrier extraction shifted line offsets in issue_close.py; neither preamble was edited.",
+      "reviewed_at": "2026-08-10",
+      "surface": "code"
     },
     {
       "class": "intentional",

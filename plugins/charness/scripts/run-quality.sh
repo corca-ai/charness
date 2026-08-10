@@ -868,6 +868,7 @@ queue_selected "check-changed-line-mutation-coverage" python3 scripts/prepush_fo
 queue_selected "check-test-completeness" python3 scripts/check_test_completeness.py --repo-root "$REPO_ROOT" -- "${STANDING_PYTEST_TARGETS[@]}"
 queue_selected "check-test-production-ratio" python3 scripts/check_test_production_ratio.py --repo-root "$REPO_ROOT" --require-git-file-listing --advisory
 queue_selected "check-boundary-bypass-ratchet" python3 scripts/check_boundary_bypass_ratchet.py --repo-root "$REPO_ROOT"
+queue_selected "check-closeout-floor-matrix" python3 scripts/check_closeout_floor_matrix.py --repo-root "$REPO_ROOT"
 # The JSON reporter's destination lives in specdown.json, not behind -out, so an
 # unredirected run rewrites the tracked report on every gate with nothing changed
 # but its generatedAt timestamp. Run against an ephemeral config instead.

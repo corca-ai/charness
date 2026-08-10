@@ -1,0 +1,1000 @@
+{
+  "schema": "closeout-floor-matrix/v1",
+  "issue": "https://github.com/corca-ai/charness/issues/586",
+  "measured_on": "2026-08-10",
+  "how_to_read": [
+    "Rows are (carrier, classification) pairs; cells are floors.",
+    "`baseline: refused` means the carrier does not accept this classification at all, so no floor there is observable; `refusal_signature` pins WHICH refusal was seen.",
+    "`fires` means breaking that floor's input flips the carrier's own verdict AND the carrier's report attributes the refusal to that floor.",
+    "`skipped-by-design` means the carrier accepts the input and ignores it, for a stated reason.",
+    "`input-refused` means the carrier refuses the input outright, so the floor can never read it. It does NOT mean that refusal is the only thing keeping the floor inert -- read the cell reason.",
+    "`undispositioned` means inert with no reason that makes it deliberate; it must name a filed issue.",
+    "Every state pins exactly one observation. An absent pair or cell is a refusal, not a default."
+  ],
+  "not_measured": {
+    "closeout_authorization": "the protected-target crosswalk instance was RETIRED by operator ruling on 2026-08-10, so no probe can make this floor fire without rebuilding the artifact that ruling retired. A row that can never fire is the shape #586 exists to remove, so it is named here rather than declared as cells.",
+    "issue_owned_behavioral_floor_on_release": "on `release-draft` the behavioral-verdict cells measure the RELEASE lane's own floor, which refuses first. Any input that would break the issue-owned `evaluate_behavioral_verdict` downstream also empties the release channel, so that floor is structurally SHADOWED on this carrier: unwire it entirely and all six release cells read unchanged. This is a real property of the lane, not a probe limitation, and it is the reason the release behavioral cells carry a carrier-specific reason rather than a classification one.",
+    "resolution_critique_observer_arm": "the close-blocking observer arm (`_observer_refusals` / `repo_requires_delegated_observer`) is NOT exercised. The probe bodies bind their critique with `Critique: blocked <signal>`, which the shared helper records under `skipped` rather than as resolved evidence, so `fresh_eye_observer` is None and the refusal set is always empty. The probe world carries the repo's `AGENTS.md` so the delegation question is answered the way this repo answers it, but no declared cell moves on that arm and a change to it is invisible to this gate.",
+    "ledger_fields_on_close_with_comment": "`evaluate_close_comment_floor` applies `_missing_ledger_fields` ONLY to `consolidated`, while `verify_closeout` applies it to every classification. `issue_close_comment_floor.py` names this as deliberate scope restraint awaiting its own before/after. It is instance 2 of #586 living in a module docstring, it is NOT a row here, and a green gate over these 36 pairs must not be read as covering it.",
+    "three_of_the_four_consolidation_facts": "the readback checks that the destination EXISTS, is OPEN, NAMES this issue, and is not itself a consolidation. Only the OPEN check is probed (by moving the destination to CLOSED). The other three are unmeasured.",
+    "bundle_closes": "every probe closes a SINGLE issue, so the per-issue `Behavior #N:` / `Critique #N:` binding grammar is only ever exercised through its single-issue shorthand branch. Multi-issue closeouts are unmeasured.",
+    "commit-msg sub-paths": "the `commit-msg` carrier is probed on its BARE close-keyword path only. Its staged-artifact path (classification read from `charness-artifacts/issue/*.md` rather than the message) and its pause-brief path (which remaps a floor-exempt classification to `feature` before checking AI-provenance) are separate paths this matrix does not measure.",
+    "draft-vs-verify ingress": "`direct-commit`, `pr-body` and `manual-fallback` are probed through `verify_closeout`. `release-draft` reaches the sibling `validate_closeout_draft`, which remaps `direct-commit` to the `pr-body` rule set -- so five of the six release cells re-observe the `pr-body` rule set rather than an independent one, and the release lane passes `backend={}` so no backend-touching floor is genuinely exercised there.",
+    "reason prose": "the gate compares declared states to observations. No `reason` string is checked against behavior.",
+    "sufficiency": "a `fires` cell says the floor reaches the verdict. It says nothing about whether the floor is correct, and must not be read as evidence that a running floor is a sufficient one."
+  },
+  "classifications": [
+    "bug",
+    "feature",
+    "deferred-work",
+    "question",
+    "decision-needed",
+    "consolidated"
+  ],
+  "carriers": [
+    "direct-commit",
+    "pr-body",
+    "manual-fallback",
+    "close-with-comment",
+    "commit-msg",
+    "release-draft"
+  ],
+  "floors": [
+    "source_preservation",
+    "behavioral_verdict",
+    "hotl_dispositions",
+    "ai_provenance",
+    "resolution_critique",
+    "consolidation_readback"
+  ],
+  "pairs": {
+    "direct-commit|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "direct-commit|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "direct-commit|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "direct-commit|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`question` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "direct-commit|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "direct-commit|consolidated": {
+      "baseline": "refused",
+      "refusal_signature": "auto-closes",
+      "reason": "GitHub renders a close-keyword close as COMPLETED with no `--reason` argv to intercept, which asserts the repair a consolidated close refuses. `issue_consolidated_closeout` refuses this carrier outright; close it through `close-with-comment --reason 'not planned'` instead."
+    },
+    "pr-body|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "pr-body|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "pr-body|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "pr-body|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`question` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "pr-body|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "pr-body|consolidated": {
+      "baseline": "refused",
+      "refusal_signature": "auto-closes",
+      "reason": "GitHub renders a close-keyword close as COMPLETED with no `--reason` argv to intercept, which asserts the repair a consolidated close refuses. `issue_consolidated_closeout` refuses this carrier outright; close it through `close-with-comment --reason 'not planned'` instead."
+    },
+    "manual-fallback|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "manual-fallback|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "manual-fallback|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "manual-fallback|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`question` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "manual-fallback|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "manual-fallback|consolidated": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+        },
+        "hotl_dispositions": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding. The underlying classification skip shares the defect filed as https://github.com/corca-ai/charness/issues/591: whether a human loop was dispositioned is not a fact about whether the close changes behavior."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+        },
+        "consolidation_readback": {
+          "state": "fires",
+          "reason": "with a `Consolidated into:` anchor present, moving the destination to CLOSED refuses the close. Only that one of the four tracker facts is probed; see `not_measured`."
+        }
+      }
+    },
+    "close-with-comment|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "close-with-comment|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "close-with-comment|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "close-with-comment|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`question` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "close-with-comment|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "close-with-comment|consolidated": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+        },
+        "hotl_dispositions": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding. The underlying classification skip shares the defect filed as https://github.com/corca-ai/charness/issues/591: whether a human loop was dispositioned is not a fact about whether the close changes behavior."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "input-refused",
+          "reason": "TWO independent rules produce this, and only the first is observable: `issue_consolidated_closeout.repair_claims` refuses any carrier asserting a repair via this line, so adding the line back refuses the close (measured, not read). UNDERNEATH it, `consolidated` is also outside this floor's own classification gate, so the floor would skip the line even if the repair-claim rule were removed. The repair-claim rule is what the probe can see; it is not the only thing holding."
+        },
+        "consolidation_readback": {
+          "state": "fires",
+          "reason": "with a `Consolidated into:` anchor present, moving the destination to CLOSED refuses the close. Only that one of the four tracker facts is probed; see `not_measured`."
+        }
+      }
+    },
+    "commit-msg|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "commit-msg|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "commit-msg|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "this classification closes by changing user-facing behavior, so the carrier must carry a `Behavior #N:` line (single-issue shorthand `Behavior:`) naming a distinct evidence channel, or a typed non-verified disposition."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "commit-msg|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`question` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`question` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "commit-msg|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` closes nothing user-facing, so there is no behavior to confirm. The exemption is `BEHAVIORAL_VERDICT_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "skipped-by-design",
+          "reason": "`decision-needed` resolves nothing, so there is no resolution to critique. The exemption is `CRITIQUE_REQUIRED_CLASSIFICATIONS` and on this floor the reason transfers."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "commit-msg|consolidated": {
+      "baseline": "refused",
+      "refusal_signature": "auto-closes",
+      "reason": "GitHub renders a close-keyword close as COMPLETED with no `--reason` argv to intercept, which asserts the repair a consolidated close refuses. `issue_consolidated_closeout` refuses this carrier outright; close it through `close-with-comment --reason 'not planned'` instead."
+    },
+    "release-draft|bug": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "release-draft|feature": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "release-draft|deferred-work": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
+        },
+        "hotl_dispositions": {
+          "state": "fires",
+          "reason": "a presented HOTL entry whose value does not LEAD WITH a typed status is refused."
+        },
+        "ai_provenance": {
+          "state": "fires",
+          "reason": "an agent-authored carrier must name itself so the rung-2 observer can read the write for what it is."
+        },
+        "resolution_critique": {
+          "state": "fires",
+          "reason": "`CRITIQUE_REQUIRED_CLASSIFICATIONS` binds a fresh-eye resolution critique to this classification."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "release-draft|question": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/592 -- this lane force-applies the behavioral-verdict floor to every classification for a reason (a released close is a shipped-item claim) that applies just as well to the critique floor, which it leaves exempt. The light-close reason is refuted by the `behavioral_verdict` cell in this same row."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "release-draft|decision-needed": {
+      "baseline": "passes",
+      "floors": {
+        "source_preservation": {
+          "state": "fires",
+          "reason": "an externally-sourced body with no preservation form is refused. The floor has no classification gate at all, so it fires on every accepted pair."
+        },
+        "behavioral_verdict": {
+          "state": "fires",
+          "reason": "on this carrier the floor fires for EVERY classification, and not because of this one. `preflight_release_issues` runs its own behavioral-verdict floor before the issue-owned draft validation, over a separate input channel (`--close-issue-behavior`, NOT the carrier body) and with a FIXED classification (`_RELEASE_BEHAVIORAL_CLASSIFICATION = \"feature\"`), because a released close asserts a shipped item. Put the line in the flag, not in the carrier file."
+        },
+        "hotl_dispositions": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "ai_provenance": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/591 -- neither provenance nor HOTL disposition is a fact about whether the close changes user-facing behavior, so `BEHAVIORAL_VERDICT_CLASSIFICATIONS` imports a reason that does not transfer. Unreasoned, not deliberate."
+        },
+        "resolution_critique": {
+          "state": "undispositioned",
+          "finding": "https://github.com/corca-ai/charness/issues/592 -- this lane force-applies the behavioral-verdict floor to every classification for a reason (a released close is a shipped-item claim) that applies just as well to the critique floor, which it leaves exempt. The light-close reason is refuted by the `behavioral_verdict` cell in this same row."
+        },
+        "consolidation_readback": {
+          "state": "skipped-by-design",
+          "reason": "the readback is gated on the classification (`applies=classification == 'consolidated'`), not on the input. Measured with a `Consolidated into: #900` anchor PRESENT in the body and the destination moved to CLOSED: the carrier accepts it and never reads the destination. A skip, not an inapplicability."
+        }
+      }
+    },
+    "release-draft|consolidated": {
+      "baseline": "refused",
+      "refusal_signature": "auto-closes",
+      "reason": "GitHub renders a close-keyword close as COMPLETED with no `--reason` argv to intercept, which asserts the repair a consolidated close refuses. `issue_consolidated_closeout` refuses this carrier outright; close it through `close-with-comment --reason 'not planned'` instead."
+    }
+  }
+}
