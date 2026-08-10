@@ -10,6 +10,7 @@ the caller still observes a non-zero return code in the crash case.
 from __future__ import annotations
 
 import importlib.util
+import json
 import signal
 import subprocess
 import sys
@@ -361,3 +362,85 @@ def test_main_dry_run_does_not_restore(tmp_path: Path) -> None:
     # No exec means no mutation, so dry-run must not touch the working tree.
     assert rc == 0
     restore_mock.assert_not_called()
+
+
+def _fake_popen(lines: list[str], returncode: int):
+    """A `Popen` stand-in whose stdout is iterable, matching the streaming reader.
+
+    `_run_baseline` streams AND accumulates on purpose: `cosmic-ray baseline` runs
+    the whole unmutated suite with no internal timeout, so a job killed at its
+    ceiling would emit nothing under buffering. A `capture_output` fake would not
+    exercise that, so this one iterates.
+    """
+
+    class _Proc:
+        def __init__(self) -> None:
+            self.stdout = iter(lines)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, *exc):
+            return False
+
+        def wait(self) -> int:
+            return returncode
+
+    return lambda *args, **kwargs: _Proc()
+
+
+def test_baseline_streams_every_line_and_returns_on_success(
+    tmp_path: Path, capsys
+) -> None:
+    config = tmp_path / "cosmic-ray.toml"
+    config.touch()
+    marker = tmp_path / "abort.json"
+
+    with patch.object(RCRM.subprocess, "Popen", _fake_popen(["a\n", "b\n"], 0)):
+        RCRM._run_baseline(config, tmp_path, marker_path=marker)
+
+    out = capsys.readouterr().out
+    assert "a\nb\n" in out, "baseline output must reach the operator as it arrives"
+    assert not marker.exists(), "a clean baseline records no abort marker"
+
+
+def test_baseline_failure_writes_the_abort_marker_and_raises(tmp_path: Path) -> None:
+    """The marker is the whole point of #590's repair: without it a failing
+    baseline surfaces downstream as a missing JSON report, and the reader is told
+    to look at the collateral symptom instead of the real blocking signal."""
+    config = tmp_path / "cosmic-ray.toml"
+    config.touch()
+    marker = tmp_path / "abort.json"
+
+    with patch.object(RCRM.subprocess, "Popen", _fake_popen(["boom\n"], 3)):
+        try:
+            RCRM._run_baseline(config, tmp_path, marker_path=marker)
+        except subprocess.CalledProcessError as exc:
+            assert exc.returncode == 3
+            assert exc.output == "boom\n"
+        else:
+            raise AssertionError("a non-zero baseline must raise, not return")
+
+    assert marker.is_file()
+    payload = json.loads(marker.read_text(encoding="utf-8"))
+    assert payload["exit_code"] == 3
+    assert payload["stage"] == RCRM._abort_lib.STAGE_COSMIC_RAY_BASELINE
+
+
+def test_baseline_names_a_missing_executable_instead_of_crashing(tmp_path: Path) -> None:
+    """`FileNotFoundError` here means Cosmic Ray is not installed. A traceback
+    would send the reader into this wrapper; the SystemExit names the install
+    step instead."""
+    config = tmp_path / "cosmic-ray.toml"
+    config.touch()
+
+    def _raise(*args, **kwargs):
+        raise FileNotFoundError(2, "no such file")
+
+    with patch.object(RCRM.subprocess, "Popen", _raise):
+        try:
+            RCRM._run_baseline(config, tmp_path, marker_path=tmp_path / "m.json")
+        except SystemExit as exc:
+            assert "cosmic-ray executable not found" in str(exc)
+        else:
+            raise AssertionError("a missing executable must exit with a named reason")

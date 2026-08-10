@@ -392,3 +392,49 @@ def test_stdout_carries_labels_or_nothing_never_prose(tmp_path: Path) -> None:
     assert result.returncode == 0, result.stderr
     assert result.stdout == ""
     assert "not derivable" in result.stderr
+
+
+def test_the_gate_surfaces_a_reader_refusal_instead_of_a_verdict(tmp_path: Path) -> None:
+    """The gate's own `read_or_refuse` path. A reader refusal is not a budget
+    verdict, and reporting it as one would be a verdict rendered over an input the
+    reader said it could not read."""
+    runner = RUNNER_STUB + '\nqueue_selected "$computed" python3 x.py\n'
+    repo = _write_repo(tmp_path, runner=runner, adapter="runtime_budgets:\n  alpha-gate: 1000\n")
+    result = _run(GATE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "runtime budget universe:" in result.stderr
+    assert "non-literal label" in result.stderr
+
+
+def test_plain_output_prints_one_label_per_line(tmp_path: Path) -> None:
+    """`run-quality.sh` consumes exactly this: one label per line on stdout, which
+    it inserts as universe keys. The `--json` shape is for humans and tests."""
+    repo = _write_repo(tmp_path)
+    result = _run(UNIVERSE, "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+    lines = result.stdout.splitlines()
+    assert "alpha-gate" in lines
+    assert "run-quality-full" in lines
+    assert all(line.strip() == line and line for line in lines)
+
+
+def test_a_file_ending_mid_continuation_still_yields_its_last_line(
+    tmp_path: Path,
+) -> None:
+    """A runner whose final line ends in a backslash is malformed bash, but the
+    reader must not silently drop the statement it was accumulating -- a dropped
+    queue line is a label that leaves the universe without anyone saying so."""
+    runner = 'queue_selected "tail-gate" python3 x.py\nqueue_selected \\\\\n'
+    repo = _write_repo(tmp_path, runner=runner)
+    result = _run(UNIVERSE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "non-literal label" in result.stderr
+
+
+def test_startup_probes_declared_as_a_mapping_is_refused(tmp_path: Path) -> None:
+    """`startup_probes:` written as a mapping instead of a list. Returning `[]`
+    would orphan `charness-version`; the refusal names the shape instead."""
+    repo = _write_repo(tmp_path, adapter="startup_probes:\n  label: charness-version\n")
+    result = _run(UNIVERSE, "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "is not a list" in result.stderr

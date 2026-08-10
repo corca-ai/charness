@@ -24,6 +24,7 @@ from scripts import check_js_mutation_score, check_mutation_score
 from scripts.mutation_baseline_abort_lib import (
     STAGE_COSMIC_RAY_BASELINE,
     STAGE_SAMPLER_COVERAGE,
+    baseline_abort_cause,
     delete_stale_baseline_abort_marker,
     parse_failed_nodeids,
     read_baseline_abort_marker,
@@ -652,3 +653,21 @@ def test_the_js_reader_ignores_a_marker_older_than_this_run_s_own_artifacts(tmp_
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "collateral" not in summary
     assert "Blocking signal: JS mutation full mode did not produce a fresh JSON report." in summary
+
+
+def test_an_unrecognized_stage_renders_as_unrecognized_rather_than_guessing() -> None:
+    """The write path refuses an unknown stage, so this renderer only ever sees one
+    from a marker written by an older tool version or hand-edited. It must not fall
+    back to either real stage: naming the wrong cause is how a summary sends the
+    reader to the wrong file, which is the defect the marker exists to remove."""
+    rendered = baseline_abort_cause({"stage": "some-future-stage"})
+    assert "unrecognized stage" in rendered
+    assert "some-future-stage" in rendered
+    assert "sampler" not in rendered
+
+
+def test_a_marker_deleted_mid_read_is_not_stale_and_not_a_traceback(tmp_path: Path) -> None:
+    """A concurrent run can delete the marker between the read that proved it
+    existed and the stat that ages it. Absent means nothing to age out; a report
+    must not become a traceback over that race."""
+    assert check_js_mutation_score._marker_is_stale(tmp_path / "gone.json", tmp_path) is False
