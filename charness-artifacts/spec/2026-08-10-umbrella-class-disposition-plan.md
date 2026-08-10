@@ -47,20 +47,26 @@ no downstream actor still converts silence into a message; deleting it produces 
 unbounded silence the same document calls the worst failure mode (`:84-90`). Any future
 disposition pass must fix the stated test before applying it.
 
-## Proposed north-star amendment (operator-authored) — SEVERED
+## Proposed north-star amendment — RESOLVED: adopted as TASTE, not as a facet
 
-**Not adopted here.** The counterweight rejected it outright and the reasoning is not
-about the rules' merit: the amendment is drafted inside the artifact it grades, uses that
-artifact for its own worked example, and has **zero applications** in it — not one of the
-dispositions uses the words *capability* or *feature*. Its predicate ("at equal
-capability") is unobservable, and this plan is the live demonstration: it asserted equal
-capability four times and was wrong four times, which is exactly when rules 1-2 would
-have fired hardest. Rules 3-4 are a second idea (dependency posture, code style) that the
-document's own `:126-131` excludes.
+**Landed 2026-08-11 in `docs/design-north-star.md` under `## Taste`.** The operator
+overruled the counterweight's rejection on a category argument that holds: the ladder is
+**taste**, and a taste needs no observable predicate because it renders no verdicts — it
+orders preferences among options that already pass the five facets. The source
+([Tasteful software](https://wiki.g15e.com/pages/Tasteful%20software.md), gathered at
+`../gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md`) frames it
+exactly that way: taste is not innate, not finished, kept useful by unlearning, and its
+job is choosing among many possibilities.
 
-If the operator wants the tiebreak, the smallest honest form is a clause on P1's
-burden-of-proof sentence, drafted as its own change by someone not spending it. The text
-below is preserved verbatim as the input to that change.
+Three of the counterweight's four objections were therefore aimed at a gate that was
+never proposed. The FOURTH survives and is written into the north star as the rule's own
+guardrail: **the `at equal —` precondition is the rule.** This plan asserted equal
+capability four times and was wrong four times, and those four failures are cited in the
+north star by name so the next reader inherits the failure mode with the taste. Placement
+is beside P1-P5, never as P6, because a preference order is a different kind of statement
+than a principle with a measured failure behind it.
+
+The text below is the input as the operator wrote it.
 
 The current document says count is not the metric *in either direction* but gives no
 tiebreak when two designs close the same escapes. The operator proposes this ladder.

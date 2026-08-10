@@ -109,6 +109,43 @@ system even at the cost of speed. Irreversible-boundary safeguards are not
 "friction to fix" — they are the goal at the boundary. When goal and system
 genuinely conflict and the call is unclear, ask.
 
+## Taste (a preference order — not a sixth facet, not a gate)
+
+P1–P5 are each a principle with a measured failure behind it. This section is
+different in kind, and it sits apart on purpose. It is **taste**: a preference
+order for choosing among options that *all* already satisfy the five facets. It
+renders no verdicts and needs no back-test, because it never decides whether
+something is correct — only which of several correct things we would rather
+ship. Asking it for an observable predicate is a category error; that demand
+belongs to gates.
+
+Adopted 2026-08-11 from [Tasteful software](https://wiki.g15e.com/pages/Tasteful%20software.md)
+([gathered copy](../charness-artifacts/gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md)),
+where taste is explicitly not innate, not finished, and kept useful only by
+continual unlearning — and where its whole job is stated as choosing among many
+possibilities, "which also means discarding most of them."
+
+> **At equal capability, prefer less.**
+>
+> 1. At equal **capabilities** (what can be done), fewer **features** is better.
+>    Capability is possibility; a feature is one shipped path to it.
+> 2. At equal features, less code is better.
+> 3. At equal code, a higher share of open source is better.
+> 4. At equal code, declarative beats procedural.
+
+**The precondition is the rule.** Every rung opens with *at equal —*. The rung
+fires only once that equality is established, and establishing it is work, not
+an assumption. On 2026-08-11 a disposition plan asserted equal capability four
+times and was wrong four times: it proposed deleting a ratchet arm that was the
+only detector of one-for-one substitution, a probe pin that an open operator
+decision publishes its figures from, an eval spec that was the only forcer of a
+gated reference, and a marker seam whose absent writer was its specification.
+Each deletion *reduced* capability while reading as a tie. Taste applied before
+the equality check is not taste; it is a license.
+
+This does not contradict the count line below. Count still justifies nothing on
+its own — capability does. Count only breaks ties among equals.
+
 ## Failure signatures (you are misapplying this if)
 
 - you deleted a gate guarding an irreversible boundary and replaced it with
@@ -121,7 +158,9 @@ genuinely conflict and the call is unclear, ask.
   violation;
 - you cited "fewer lines / fewer gates" — or, inverted, *more* code / *more*
   gates as "thoroughness" — as success; count is not the metric in either
-  direction (escape-closed + concept-clearer is).
+  direction (escape-closed + concept-clearer is);
+- you invoked the taste ladder without establishing the *at equal —*
+  precondition it opens with, so a capability reduction read as a tie.
 
 ## Deliberately not in this document
 
