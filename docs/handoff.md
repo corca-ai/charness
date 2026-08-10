@@ -7,6 +7,7 @@
 - **Push is held by operator decision until the backlog is closed.** `git log --oneline
   origin/main..HEAD` lists the unpushed set. Four issues close on that push (`#591`,
   `#576`, `#580`, `#592`) — carriers are written and validated, do not re-author them.
+  `#595` was filed this session and is not in any wave yet.
   One decision is owed first — see the `#572` circularity below.
 
 ## Current State
@@ -32,10 +33,12 @@
 
 ## Next Session
 
-1. **`#546` — build it; the operator chose the build over a deferral ruling.** Start from
-   [the pre-design critique](../charness-artifacts/critique/2026-08-10-issue-546-declared-universe-pre-design-critique.md),
-   NOT from the three-source sketch: it carries six required changes and one scoping
-   decision that must be made before implementation.
+1. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 shipped
+   (`ac768bc2`) and closes only the RENAME mode; `dead-code-advisory` is a live
+   instance the new gate reports green. The marker is what makes the other two modes
+   decidable, and phase 1 built the reader that makes it verifiable rather than an
+   unchecked annotation. Record:
+   [implementation critique](../charness-artifacts/critique/2026-08-10-issue-546-label-universe-implementation-critique.md).
 2. **`#587` — edit, do not close.** Its retargeting refutes the wrong component:
    `run_standing_pytest.expand_targets` is not "the mapper" here — `run-quality.sh:867`
    wires the label to `prepush_focused_changed_line_coverage.py`, whose mapper is
@@ -49,28 +52,25 @@
 
 ## Discuss
 
-- **The `#546` scoping decision, owed before implementation:** the declared-universe
-  predicate catches only the RENAME rot mode of the three the issue names, and
-  `dead-code-advisory` is a live in-repo instance the new gate would report green. Either
-  also ship an adapter-declared `conditional:` marker (covers the other two modes and
-  supplies the exemption the reverted attempt lacked), or re-scope `#546` in writing.
-- The `Premise-residue:` seam reads markers and nothing writes them. If records do not
-  start writing them the record channel stays empty.
-- The matrix's `not_measured` names ten gaps; two are worth a slice (the `commit-msg`
-  sub-paths, and the `_missing_ledger_fields` asymmetry on `close-with-comment`).
+- **A carrier cannot say "this does not close #N"** — the commit-msg recognizer is
+  anchored on keyword-then-number and cannot read negation. Say "`#N` stays open".
+- The `Premise-residue:` seam reads markers and nothing writes them.
+- The matrix's `not_measured` names ten gaps; two are worth a slice.
 - `#576` closes by commit keyword, which posts no comment; the last release note points
   at it as the live record. Consider a manual comment naming D53.
 
 ## Continuation Capability
 
-- **The round that reads the REPAIRS finds a different class.** Nine for nine: round 2
-  caught that `#592`'s ruling lived only in a `reason` string the gate explicitly does
-  not check, and that the ruling's central word was refuted by the code it cited.
+- **The round that reads the REPAIRS finds a different class.** Ten for ten. Sharpest
+  today: round 1 found a docstring claiming a safety mechanism that did not exist;
+  round 2 found that its repair shipped a SECOND claim with no mechanism — a
+  documented fail-open branch that was dead code, so the real behavior was
+  fail-closed with a wrong remedy.
 - **A handoff list is a plan, not a verdict.** Wave 1 was handed off as six no-code
   closes; review closed four and pulled two out. Four of the six carried a comment
   arguing against their own close, and that comment was right twice.
 - **Closing an issue can delete the only copy of a ruling.** Every durable in-repo
-  mention of `#576` was a pointer AT `#576`, and `#580`'s "tracked separately" pointed at
+  mention of `#576` was a pointer AT it, and `#580`'s "tracked separately" pointed at
   itself. Before closing a record-shaped issue, ask where the record lands.
 
 ## References
