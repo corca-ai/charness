@@ -18,6 +18,20 @@ from pathlib import Path
 
 DEFAULT_BASELINE_ABORT_MARKER = Path("reports/mutation/baseline-abort.json")
 _MARKER_KIND = "coverage-baseline-pytest-failed"
+
+# WHICH baseline aborted. Two different commands can abort a baseline and both make
+# the JS slice's report absent, but only one of them is the sampler -- so a single
+# hardcoded sentence was true for one path and false for the other. The marker kind
+# is deliberately unchanged so an existing marker still reads.
+STAGE_SAMPLER_COVERAGE = "sampler-coverage-baseline"
+STAGE_COSMIC_RAY_BASELINE = "cosmic-ray-baseline"
+# The CAUSE only. Each reader frames it for its own vantage point: the Python
+# summary is written by the stage that failed, the JS summary is written by a slice
+# that never ran. One shared sentence had to be wrong for one of them.
+_STAGE_CAUSES = {
+    STAGE_SAMPLER_COVERAGE: "the sampler's coverage-baseline pytest failed",
+    STAGE_COSMIC_RAY_BASELINE: "`cosmic-ray baseline` failed",
+}
 _FAILED_SHORT_SUMMARY_RE = re.compile(r"^FAILED (\S+)(?: - .*)?$", re.MULTILINE)
 _FAILED_VERBOSE_RE = re.compile(r"^(\S+::\S+) FAILED\b", re.MULTILINE)
 _ERROR_COLLECTION_RE = re.compile(r"^ERROR (\S+)(?: - .*)?$", re.MULTILINE)
@@ -63,10 +77,18 @@ def write_baseline_abort_marker(
     test_command: str,
     failing_nodeids: list[str],
     log_tail: list[str],
+    stage: str,
 ) -> None:
+    # REQUIRED, not defaulted. A default of "sampler" is the same defect one layer
+    # down: a future writer that forgets the kwarg gets a silently valid, silently
+    # wrong label -- which is exactly the hardcoded-sampler sentence this vocabulary
+    # exists to remove. Both current callers already know their stage.
+    if stage not in _STAGE_CAUSES:
+        raise ValueError(f"unknown baseline-abort stage {stage!r}; allowed: {sorted(_STAGE_CAUSES)}")
     marker_path.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "kind": _MARKER_KIND,
+        "stage": stage,
         "exit_code": exit_code,
         "test_command": test_command,
         "failing_nodeids": failing_nodeids,
@@ -94,3 +116,17 @@ def read_baseline_abort_marker(marker_path: Path) -> dict | None:
 
 def log_tail_lines(text: str, limit: int = 30) -> list[str]:
     return text.splitlines()[-limit:]
+
+
+def baseline_abort_cause(marker: dict) -> str:
+    """WHICH baseline aborted, owned HERE so two readers cannot disagree about it.
+
+    A marker written before `stage` existed has none and reads as the sampler stage --
+    the only writer at that time. An unknown stage renders as unknown rather than as
+    either real one, because guessing is how a report names the wrong cause.
+    """
+    stage = marker.get("stage", STAGE_SAMPLER_COVERAGE)
+    cause = _STAGE_CAUSES.get(stage)
+    if cause is None:
+        return f"a mutation baseline aborted at an unrecognized stage ({stage!r})"
+    return cause

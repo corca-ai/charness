@@ -9,6 +9,7 @@ refuse.
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -289,8 +290,30 @@ def test_mutating_a_source_file_drops_its_stale_bytecode(tmp_path: Path) -> None
     # wrong reason), which is exactly how the first version of this test passed
     # while the guard was deleted.
     repo = _repo(tmp_path, subject=SUBJECT, test_body=GOOD_TEST)
-    mar.run_command(PYTEST_CMD, repo)
-    assert list(repo.glob("__pycache__/subject.*.pyc")), "precondition: bytecode cache exists"
+    # The inner run's own result is asserted BEFORE the side effect it produces.
+    # Discarding it meant any environment where the inner pytest cannot run surfaced
+    # as "precondition: bytecode cache exists" -- a message about bytecode for a
+    # failure that has nothing to do with bytecode. This test fails on the GitHub
+    # runner and passes locally (#590), and the runner's real reason was invisible
+    # because of exactly this ordering.
+    completed = mar.run_command(PYTEST_CMD, repo)
+    assert completed.returncode == 0, (
+        "precondition: the inner pytest must pass before its bytecode can be asserted; "
+        f"exited {completed.returncode}\n--- stdout ---\n{completed.stdout}\n--- stderr ---\n{completed.stderr}"
+    )
+    # The CHILD's evidence. The inner pytest is a separate `sys.executable`
+    # subprocess, so the parent's `sys.dont_write_bytecode` cannot explain it; only
+    # the inherited env vars are causal, and if none of them is the reason, the
+    # directory listing and the child's own stdout are what will name it.
+    assert list(repo.glob("__pycache__/subject.*.pyc")), (
+        "precondition: bytecode cache exists. The inner pytest PASSED, so nothing was "
+        "written where this test looks. Inherited env: PYTHONDONTWRITEBYTECODE="
+        f"{os.environ.get('PYTHONDONTWRITEBYTECODE')!r}, PYTHONPYCACHEPREFIX="
+        f"{os.environ.get('PYTHONPYCACHEPREFIX')!r}. repo contents="
+        f"{sorted(p.name for p in repo.iterdir())}; __pycache__ contents="
+        f"{sorted(p.name for p in (repo / '__pycache__').iterdir()) if (repo / '__pycache__').is_dir() else 'no __pycache__ dir'}"
+        f"\n--- inner pytest stdout ---\n{completed.stdout}"
+    )
 
     original = mar.apply_mutation(repo / "subject.py", "a + b", "a * b")
     try:

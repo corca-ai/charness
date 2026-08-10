@@ -25,6 +25,7 @@ if str(REPO_ROOT) not in sys.path:
 from scripts import check_mutation_score_summary_lib as mutation_score_summary  # noqa: E402
 from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
+    baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
 )
@@ -242,7 +243,9 @@ def _baseline_abort_summary_lines(marker: dict) -> list[str]:
         "# Mutation Testing Summary",
         "",
         "- Status: **FAIL**",
-        "- Blocking signal: coverage baseline pytest failed before mutation sampling; no mutants ran.",
+        # Same stage vocabulary as the JS slice, from the same owner. The old wording
+        # said "before mutation sampling", which is only true of the sampler stage.
+        f"- Blocking signal: {baseline_abort_cause(marker)} before mutation ran; no mutants ran.",
     ]
     failing_nodeids = marker.get("failing_nodeids") or []
     if failing_nodeids:
@@ -296,8 +299,12 @@ def main() -> int:
             summary_path.write_text(
                 "\n".join(_baseline_abort_summary_lines(marker)) + "\n", encoding="utf-8"
             )
+            # Rendered from the marker, like the summary line. Hardcoded here it said
+            # "before mutation sampling" for BOTH stages -- and this stream is tee'd
+            # into run.log, which the workflow now attaches to the issue, so the fixed
+            # sentence would have been republished by the slice's own new channel.
             sys.stderr.write(
-                "mutation coverage baseline pytest failed before mutation sampling; "
+                f"{baseline_abort_cause(marker)} before mutation ran; "
                 "see summary for failing nodeids.\n"
             )
             return 2

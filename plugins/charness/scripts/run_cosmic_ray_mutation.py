@@ -15,6 +15,10 @@ import subprocess
 import sys
 from pathlib import Path
 
+from runtime_bootstrap import import_repo_module
+
+_abort_lib = import_repo_module(__file__, "scripts.mutation_baseline_abort_lib")
+
 REPO_ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_CONFIG = Path("cosmic-ray.toml")
 DEFAULT_SESSION = Path("reports/mutation/cosmic-ray.sqlite")
@@ -39,6 +43,58 @@ def run(command: list[str], repo_root: Path) -> None:
             "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
             "or run the GitHub Actions workflow install step first"
         ) from exc
+
+
+def _run_baseline(config: Path, repo_root: Path, *, marker_path: Path) -> None:
+    """`cosmic-ray baseline`, with its failure RECORDED rather than only raised.
+
+    The raise alone was not enough. `cmd_full` chains this wrapper to the JS slice
+    with `&&`, so a baseline failure silently skips JS mutation entirely and the
+    summary then reports "StrykerJS JSON report missing" -- the last collateral
+    symptom, for a run in which JS mutation was never invoked (#590). The marker is
+    the channel the two summary scripts already read; nothing wrote it from here,
+    so the collateral branch they carry was unreachable on this path.
+
+    Output is captured so the marker can name the FAILING NODEIDS, then re-emitted
+    verbatim to stdout -- a baseline whose log stopped reaching CI would trade one
+    diagnosis problem for another.
+    """
+    command = ["cosmic-ray", "baseline", str(config)]
+    sys.stdout.write(f"+ {' '.join(command)}\n")
+    sys.stdout.flush()
+    # Streamed AND accumulated, not `capture_output`. `cosmic-ray baseline` runs the
+    # whole unmutated suite and carries no internal timeout, so a job killed at its
+    # 180-minute ceiling during baseline would emit NOTHING under buffering -- a
+    # diagnosability regression inside the diagnosability repair.
+    lines: list[str] = []
+    try:
+        with subprocess.Popen(
+            command, cwd=repo_root, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+        ) as proc:
+            assert proc.stdout is not None
+            for line in proc.stdout:
+                lines.append(line)
+                sys.stdout.write(line)
+                sys.stdout.flush()
+            returncode = proc.wait()
+    except FileNotFoundError as exc:
+        raise SystemExit(
+            "cosmic-ray executable not found; install Cosmic Ray 8.4.6 "
+            "or run the GitHub Actions workflow install step first"
+        ) from exc
+    combined = "".join(lines)
+    if returncode == 0:
+        return
+    failing_nodeids = _abort_lib.parse_failed_nodeids(combined)
+    _abort_lib.write_baseline_abort_marker(
+        marker_path,
+        exit_code=returncode,
+        test_command=" ".join(command),
+        failing_nodeids=failing_nodeids,
+        log_tail=[] if failing_nodeids else _abort_lib.log_tail_lines(combined),
+        stage=_abort_lib.STAGE_COSMIC_RAY_BASELINE,
+    )
+    raise subprocess.CalledProcessError(returncode, command, output=combined)
 
 
 def _run_exec_with_timeout(
@@ -287,6 +343,13 @@ def main() -> int:
     parser.add_argument("--coverage-json", type=Path, default=DEFAULT_COVERAGE_JSON)
     parser.add_argument("--timeout-marker", type=Path, default=DEFAULT_TIMEOUT_MARKER)
     parser.add_argument(
+        "--baseline-abort-marker",
+        type=Path,
+        default=_abort_lib.DEFAULT_BASELINE_ABORT_MARKER,
+        help="Where a failing `cosmic-ray baseline` records the real blocking signal, "
+        "so the summary scripts name it instead of the collateral missing-report symptom.",
+    )
+    parser.add_argument(
         "--exec-timeout-seconds",
         type=int,
         default=DEFAULT_EXEC_TIMEOUT_SECONDS,
@@ -311,6 +374,7 @@ def main() -> int:
     filter_script = resolve(repo_root, args.filter_script)
     coverage_json = resolve(repo_root, args.coverage_json)
     timeout_marker = resolve(repo_root, args.timeout_marker)
+    abort_marker = _abort_lib.resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
 
     if not config.is_file():
         sys.stderr.write(f"Cosmic Ray config not found at {config}\n")
@@ -326,9 +390,15 @@ def main() -> int:
         dump_path.unlink()
     if timeout_marker.exists():
         timeout_marker.unlink()
+    # This wrapper became a marker WRITER, so it must also be a marker CLEARER.
+    # Locally `reports/mutation/` persists, and the JS reader treats any marker as
+    # "the baseline aborted, so the JS slice never ran" -- a stale one turns a real
+    # JS failure into a collateral note that tells the reader to stop looking. That
+    # is #590 in mirror image and strictly worse than the symptom it replaced.
+    _abort_lib.delete_stale_baseline_abort_marker(abort_marker)
 
     try:
-        run(["cosmic-ray", "baseline", str(config)], repo_root)
+        _run_baseline(config, repo_root, marker_path=abort_marker)
         run(["cosmic-ray", "init", str(config), str(session)], repo_root)
         if filter_script.is_file():
             filter_command = [

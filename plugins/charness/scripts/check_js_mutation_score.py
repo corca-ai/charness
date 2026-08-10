@@ -14,6 +14,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
+    baseline_abort_cause,
     read_baseline_abort_marker,
     resolve_baseline_abort_marker,
 )
@@ -120,15 +121,41 @@ def append_missing_report_summary(
         f"- Missing report: `{report_path}`",
     ]
     if baseline_abort_marker is not None:
+        # Rendered by the lib, not restated here: this sentence used to name the
+        # sampler unconditionally, which was false for every abort that happened
+        # anywhere else -- and the abort that actually recurs is the other one (#590).
         lines.append(
-            "- Blocking signal: collateral — the sampler aborted on its coverage "
-            "baseline before JS mutation ran (see Mutation Testing Summary above)."
+            f"- Blocking signal: collateral — {baseline_abort_cause(baseline_abort_marker)}, "
+            "so the JS slice was never invoked (see Mutation Testing Summary above)."
         )
     else:
         lines.append("- Blocking signal: JS mutation full mode did not produce a fresh JSON report.")
     summary_path.parent.mkdir(parents=True, exist_ok=True)
     existing = summary_path.read_text(encoding="utf-8") if summary_path.is_file() else ""
     summary_path.write_text(existing.rstrip() + "\n" + "\n".join(lines) + "\n", encoding="utf-8")
+
+
+def _marker_is_stale(marker_path: Path, repo_root: Path) -> bool:
+    """True when this run's own mutation artifacts are strictly fresher than the marker.
+
+    Mirrors `check_mutation_score._marker_is_stale`, against the artifacts THIS slice
+    can see: the cosmic-ray dump proves the Python side ran past its baseline, so a
+    marker older than it belongs to a previous attempt. A same-mtime tie keeps the
+    marker authoritative, because on a coarse filesystem a persisted previous-run
+    artifact must not mask a genuine current abort.
+    """
+    try:
+        marker_mtime = marker_path.stat().st_mtime
+    except OSError:
+        # A concurrent run may delete the marker between the read that proved it
+        # existed and this stat. Absent means nothing to age out, and a report must
+        # not become a traceback over a race.
+        return False
+    for rel in ("reports/mutation/cosmic-ray-dump.jsonl", "reports/mutation/test-coverage.json"):
+        candidate = repo_root / rel
+        if candidate.is_file() and candidate.stat().st_mtime > marker_mtime:
+            return True
+    return False
 
 
 def main() -> int:
@@ -142,6 +169,13 @@ def main() -> int:
     if not report_path.is_file():
         baseline_abort_marker_path = resolve_baseline_abort_marker(repo_root, args.baseline_abort_marker)
         marker = read_baseline_abort_marker(baseline_abort_marker_path)
+        if marker is not None and _marker_is_stale(baseline_abort_marker_path, repo_root):
+            # A marker older than this run's own mutation artifacts describes an
+            # EARLIER attempt. Without this, a real JS failure (stryker crashed, node
+            # deps missing) after a since-repaired baseline reads as "collateral --
+            # the baseline failed, so the JS slice was never invoked", which tells the
+            # reader to stop looking at the thing that actually broke.
+            marker = None
         append_missing_report_summary(summary_path, report_path, baseline_abort_marker=marker)
         sys.stderr.write(f"StrykerJS report not found at {report_path}; failing JS mutation summary.\n")
         return 1

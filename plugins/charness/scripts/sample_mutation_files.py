@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from scripts.mutation_baseline_abort_lib import (  # noqa: E402
     DEFAULT_BASELINE_ABORT_MARKER,
+    STAGE_SAMPLER_COVERAGE,
     delete_stale_baseline_abort_marker,
     log_tail_lines,
     parse_failed_nodeids,
@@ -221,6 +222,7 @@ def select_eligible_for_mutation(
             test_command=test_command,
             failing_nodeids=failing_nodeids,
             log_tail=[] if failing_nodeids else log_tail_lines(combined_output),
+            stage=STAGE_SAMPLER_COVERAGE,
         )
         message = f"test-command coverage probe failed with exit {exc.returncode}: {test_command}"
         if failing_nodeids:

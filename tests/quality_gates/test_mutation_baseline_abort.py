@@ -22,6 +22,8 @@ import pytest
 import scripts.sample_mutation_files as sample_mutation_files
 from scripts import check_js_mutation_score, check_mutation_score
 from scripts.mutation_baseline_abort_lib import (
+    STAGE_COSMIC_RAY_BASELINE,
+    STAGE_SAMPLER_COVERAGE,
     delete_stale_baseline_abort_marker,
     parse_failed_nodeids,
     read_baseline_abort_marker,
@@ -105,6 +107,7 @@ def test_marker_round_trip(tmp_path: Path) -> None:
         test_command="python3 -m pytest -q tests",
         failing_nodeids=["tests/x.py::test_y"],
         log_tail=[],
+        stage=STAGE_SAMPLER_COVERAGE,
     )
 
     marker = read_baseline_abort_marker(marker_path)
@@ -406,6 +409,7 @@ def test_check_mutation_score_marker_ignored_when_stats_file_is_newer(tmp_path: 
         test_command="python3 -m pytest -q tests",
         failing_nodeids=["tests/x.py::test_y"],
         log_tail=[],
+        stage=STAGE_SAMPLER_COVERAGE,
     )
     os.utime(marker_path, (1_000, 1_000))
     os.utime(dump_path, (1_000, 2_000))
@@ -415,7 +419,7 @@ def test_check_mutation_score_marker_ignored_when_stats_file_is_newer(tmp_path: 
     )
 
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: coverage baseline pytest failed" not in summary
+    assert "Blocking signal: the sampler's coverage-baseline pytest failed" not in summary
     assert "Score denominator:" in summary
     assert result.returncode != 2
 
@@ -432,6 +436,7 @@ def test_check_mutation_score_marker_used_when_marker_is_newer_than_stats(tmp_pa
         test_command="python3 -m pytest -q tests",
         failing_nodeids=["tests/x.py::test_y"],
         log_tail=[],
+        stage=STAGE_SAMPLER_COVERAGE,
     )
     os.utime(dump_path, (1_000, 1_000))
     os.utime(marker_path, (1_000, 2_000))
@@ -442,7 +447,7 @@ def test_check_mutation_score_marker_used_when_marker_is_newer_than_stats(tmp_pa
 
     assert result.returncode == 2
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
-    assert "Blocking signal: coverage baseline pytest failed" in summary
+    assert "Blocking signal: the sampler's coverage-baseline pytest failed before mutation ran" in summary
     assert "tests/x.py::test_y" in summary
 
 
@@ -458,6 +463,7 @@ def test_check_mutation_score_marker_present_falls_back_to_log_tail_when_no_node
         test_command="python3 -m pytest -q tests",
         failing_nodeids=[],
         log_tail=["collection error: ModuleNotFoundError"],
+        stage=STAGE_SAMPLER_COVERAGE,
     )
 
     result = run_loaded_script_main(
@@ -498,6 +504,7 @@ def test_check_js_mutation_score_missing_report_with_marker_shows_collateral_sig
         test_command="pytest",
         failing_nodeids=["tests/x.py::test_y"],
         log_tail=[],
+        stage=STAGE_SAMPLER_COVERAGE,
     )
 
     result = run_loaded_script_main(
@@ -508,7 +515,56 @@ def test_check_js_mutation_score_missing_report_with_marker_shows_collateral_sig
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "Status: **FAIL** (StrykerJS JSON report missing)" in summary
     assert "collateral" in summary
-    assert "sampler aborted on its coverage baseline" in summary
+    assert "the sampler's coverage-baseline pytest failed" in summary
+    assert "so the JS slice was never invoked" in summary
+
+
+def test_check_js_mutation_score_names_the_cosmic_ray_baseline_stage_not_the_sampler(
+    tmp_path: Path,
+) -> None:
+    """The stage that actually recurs, and the reason `stage` exists (#590).
+
+    A single hardcoded sentence named the SAMPLER for every abort. When
+    `cosmic-ray baseline` is what failed -- which is what the 2026-08-10 runs did --
+    that sentence was false, and the alternative the reader saw instead was worse:
+    "JS mutation full mode did not produce a fresh JSON report", for a run in which
+    JS mutation was never invoked at all.
+    """
+    _write_adapter(tmp_path)
+    marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
+    marker_path.parent.mkdir(parents=True)
+    write_baseline_abort_marker(
+        marker_path,
+        exit_code=1,
+        test_command="cosmic-ray baseline cosmic-ray.toml",
+        failing_nodeids=["tests/quality_gates/test_mutate_and_restore.py::test_x"],
+        log_tail=[],
+        stage=STAGE_COSMIC_RAY_BASELINE,
+    )
+
+    result = run_loaded_script_main(
+        "check_js_mutation_score.py", check_js_mutation_score, "--repo-root", str(tmp_path)
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "`cosmic-ray baseline` failed" in summary
+    assert "sampler" not in summary
+    assert "did not produce a fresh JSON report" not in summary
+
+
+def test_an_unknown_baseline_abort_stage_is_refused_at_write_time(tmp_path: Path) -> None:
+    # A stage the renderer has no sentence for must not reach a report at all; the
+    # write refuses rather than letting a summary describe an abort it cannot name.
+    with pytest.raises(ValueError, match="unknown baseline-abort stage"):
+        write_baseline_abort_marker(
+            tmp_path / "m.json",
+            exit_code=1,
+            test_command="x",
+            failing_nodeids=[],
+            log_tail=[],
+            stage="not-a-stage",
+        )
 
 
 def test_check_js_mutation_score_missing_report_without_marker_unchanged(tmp_path: Path) -> None:
@@ -522,3 +578,77 @@ def test_check_js_mutation_score_missing_report_without_marker_unchanged(tmp_pat
     summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
     assert "Blocking signal: JS mutation full mode did not produce a fresh JSON report." in summary
     assert "collateral" not in summary
+
+
+# --- the MUST-2 repairs, each pinned so deleting it turns the suite red ---
+
+
+def test_the_cosmic_ray_wrapper_clears_a_stale_marker_before_its_baseline(tmp_path: Path) -> None:
+    """A marker WRITER that is not also a marker CLEARER poisons the next run.
+
+    `reports/mutation/` persists locally, and the JS reader treats any marker as "the
+    baseline aborted, so the JS slice never ran". A leftover one turns a real JS
+    failure into a collateral note that tells the reader to stop looking — #590 in
+    mirror image, and worse than the symptom it replaced.
+    """
+    import sys as _sys
+    from unittest.mock import patch
+
+    from runtime_bootstrap import import_repo_module
+
+    rcrm = import_repo_module(
+        Path(__file__).resolve().parents[2] / "scripts" / "run_cosmic_ray_mutation.py",
+        "scripts.run_cosmic_ray_mutation",
+    )
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    (repo / "cosmic-ray.toml").write_text('[cosmic-ray]\nmodule-path = ["mod.py"]\n', encoding="utf-8")
+    marker_path = repo / "reports" / "mutation" / "baseline-abort.json"
+    marker_path.parent.mkdir(parents=True)
+    write_baseline_abort_marker(
+        marker_path,
+        exit_code=1,
+        test_command="an earlier attempt",
+        failing_nodeids=["tests/stale.py::test_old"],
+        log_tail=[],
+        stage=STAGE_COSMIC_RAY_BASELINE,
+    )
+
+    argv = ["run_cosmic_ray_mutation.py", "--repo-root", str(repo), "--mode", "dry-run"]
+    with (
+        patch.object(_sys, "argv", argv),
+        patch.object(rcrm, "run"),
+        patch.object(rcrm, "_run_baseline"),
+    ):
+        assert rcrm.main() == 0
+
+    assert not marker_path.exists(), "a previous run's abort marker survived into a clean run"
+
+
+def test_the_js_reader_ignores_a_marker_older_than_this_run_s_own_artifacts(tmp_path: Path) -> None:
+    # Without this, a real JS failure after a since-repaired baseline reads as
+    # "collateral — the baseline failed, so the JS slice was never invoked".
+    _write_adapter(tmp_path)
+    marker_path = tmp_path / "reports" / "mutation" / "baseline-abort.json"
+    marker_path.parent.mkdir(parents=True)
+    write_baseline_abort_marker(
+        marker_path,
+        exit_code=1,
+        test_command="an earlier attempt",
+        failing_nodeids=["tests/stale.py::test_old"],
+        log_tail=[],
+        stage=STAGE_COSMIC_RAY_BASELINE,
+    )
+    dump_path = tmp_path / "reports" / "mutation" / "cosmic-ray-dump.jsonl"
+    dump_path.write_text("{}\n", encoding="utf-8")
+    os.utime(marker_path, (1_000, 1_000))
+    os.utime(dump_path, (1_000, 2_000))
+
+    result = run_loaded_script_main(
+        "check_js_mutation_score.py", check_js_mutation_score, "--repo-root", str(tmp_path)
+    )
+
+    assert result.returncode == 1
+    summary = (tmp_path / "reports" / "mutation" / "summary.md").read_text(encoding="utf-8")
+    assert "collateral" not in summary
+    assert "Blocking signal: JS mutation full mode did not produce a fresh JSON report." in summary

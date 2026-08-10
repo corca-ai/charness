@@ -266,6 +266,10 @@ def test_main_full_restores_after_clean_exec(tmp_path: Path) -> None:
     with (
         patch.object(sys, "argv", argv),
         patch.object(RCRM, "run"),
+        # `_run_baseline` no longer goes through `run()`, so it must be patched too or
+        # these tests spawn a REAL `cosmic-ray baseline` -- which is what this patch
+        # set exists to prevent, and which made all five fail when the split landed.
+        patch.object(RCRM, "_run_baseline"),
         patch.object(RCRM, "_run_exec_with_timeout", return_value=(False, 0)),
         patch.object(RCRM, "_dump_session", return_value=0),
         patch.object(RCRM, "_restore_module_paths") as restore_mock,
@@ -282,6 +286,10 @@ def test_main_full_restores_even_on_exec_crash(tmp_path: Path) -> None:
     with (
         patch.object(sys, "argv", argv),
         patch.object(RCRM, "run"),
+        # `_run_baseline` no longer goes through `run()`, so it must be patched too or
+        # these tests spawn a REAL `cosmic-ray baseline` -- which is what this patch
+        # set exists to prevent, and which made all five fail when the split landed.
+        patch.object(RCRM, "_run_baseline"),
         patch.object(RCRM, "_run_exec_with_timeout", return_value=(False, 2)),
         patch.object(RCRM, "_dump_session", return_value=0),
         patch.object(RCRM, "_restore_module_paths") as restore_mock,
@@ -299,6 +307,10 @@ def test_main_full_restores_even_on_timeout(tmp_path: Path) -> None:
     with (
         patch.object(sys, "argv", argv),
         patch.object(RCRM, "run"),
+        # `_run_baseline` no longer goes through `run()`, so it must be patched too or
+        # these tests spawn a REAL `cosmic-ray baseline` -- which is what this patch
+        # set exists to prevent, and which made all five fail when the split landed.
+        patch.object(RCRM, "_run_baseline"),
         patch.object(RCRM, "_run_exec_with_timeout", return_value=(True, -1)),
         patch.object(RCRM, "_dump_session", return_value=0),
         patch.object(RCRM, "_write_timeout_marker") as marker_mock,
@@ -317,6 +329,10 @@ def test_main_full_returns_dump_failure_after_timeout(tmp_path: Path) -> None:
     with (
         patch.object(sys, "argv", argv),
         patch.object(RCRM, "run"),
+        # `_run_baseline` no longer goes through `run()`, so it must be patched too or
+        # these tests spawn a REAL `cosmic-ray baseline` -- which is what this patch
+        # set exists to prevent, and which made all five fail when the split landed.
+        patch.object(RCRM, "_run_baseline"),
         patch.object(RCRM, "_run_exec_with_timeout", return_value=(True, -1)),
         patch.object(RCRM, "_dump_session", return_value=4),
         patch.object(RCRM, "_write_timeout_marker"),
@@ -334,6 +350,10 @@ def test_main_dry_run_does_not_restore(tmp_path: Path) -> None:
     with (
         patch.object(sys, "argv", argv),
         patch.object(RCRM, "run"),
+        # `_run_baseline` no longer goes through `run()`, so it must be patched too or
+        # these tests spawn a REAL `cosmic-ray baseline` -- which is what this patch
+        # set exists to prevent, and which made all five fail when the split landed.
+        patch.object(RCRM, "_run_baseline"),
         patch.object(RCRM, "_restore_module_paths") as restore_mock,
     ):
         rc = RCRM.main()
