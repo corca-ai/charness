@@ -106,3 +106,51 @@ def test_exported_retro_scaffold_validator_command_runs_from_consumer_repo(tmp_p
     )
     assert validation.returncode == 0, validation.stderr
     assert "Validated 1 retro artifact" in validation.stdout
+
+
+# The two mutants that survived the #572 mutation run are the two the #457 run
+# already killed in the CRITIQUE scaffold. The killing tests were written there and
+# never mirrored here, so the twin kept the gap. These are those tests, on this twin.
+
+
+def test_retro_scaffold_title_with_no_alnum_chars_falls_back_to_retro_slug(tmp_path: Path) -> None:
+    # `_slug` normalizes a title to `[a-z0-9]` runs joined by `-`, then strips
+    # leading/trailing dashes, so a title with no alnum characters normalizes to the
+    # empty string and must fall back to "retro" (`slug or "retro"`).
+    #
+    # This also pins the OTHER half, which is what the surviving `ReplaceOrWithAnd`
+    # mutant exposed: under `slug and "retro"` every real title collapses to the same
+    # filename, so two same-day retros with different titles would overwrite each
+    # other at the path built from this slug.
+    repo = tmp_path / "repo"
+    repo.mkdir()
+
+    empty = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "!!!").stdout)
+    assert empty["write_artifact_path"].endswith("-retro.md")
+
+    named = json.loads(run_script(SCAFFOLD, "--repo-root", str(repo), "--title", "Ship the gate").stdout)
+    assert named["write_artifact_path"].endswith("-ship-the-gate.md")
+    assert named["write_artifact_path"] != empty["write_artifact_path"]
+
+
+def test_payload_for_requires_the_title_to_be_named(tmp_path: Path) -> None:
+    """`payload_for(repo_root, *, title=...)` — the `*` is a real contract.
+
+    The `ReplaceBinaryOperator_Mul_Div` mutant that survived the #572 run turns that
+    `*` into `/`, which still lets `title` be passed by keyword and so changes nothing
+    at any current call site. What `/` DOES allow is a positional title:
+    `payload_for(repo, None)` would silently become a title argument. Asserting the
+    keyword-only boundary is what distinguishes the two, and it is the reason the
+    marker was written. Same finding, same repair, as the critique twin under #457.
+    """
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    # Keyword form is the supported call and must work.
+    assert SCAFFOLD_MODULE.payload_for(repo, title=None)["write_artifact_path"]
+    # Positional title must be rejected rather than silently accepted.
+    try:
+        SCAFFOLD_MODULE.payload_for(repo, "Some Title")
+    except TypeError as exc:
+        assert "positional" in str(exc)
+    else:
+        raise AssertionError("payload_for must not accept a positional title")

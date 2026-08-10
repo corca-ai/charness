@@ -10,6 +10,7 @@ happy path.
 """
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 
@@ -321,3 +322,102 @@ def test_the_not_run_verdict_is_rendered_and_exits_unestablished(monkeypatch: py
 
     monkeypatch.setattr(_gate.sys, "argv", ["check_docs_graph.py"])
     assert _gate.main(["--repo-root", str(ROOT)]) == _gate.UNESTABLISHED_EXIT
+
+
+# --- the wired path -------------------------------------------------------
+#
+# Everything above patches `_run_awiki` out, which is correct for verdict logic and
+# is also why four lines of this gate had never executed: the function that actually
+# invokes the tool, and the exit-code mapping the CI runner reads. Coverage and
+# reachability-from-the-caller are different questions (#586, #572); these tests ask
+# the second one.
+
+
+def _stub_awiki(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, script: str) -> Path:
+    """Put a real executable named `awiki` first on PATH, ahead of any installed one.
+
+    A stub on PATH rather than a patched `subprocess.run`: the argv order, the `cwd`,
+    the stdout/stderr merge and the timeout are contract with an external process, and
+    a patched runner would prove them against the patch.
+    """
+    binary = tmp_path / "awiki"
+    binary.write_text(script, encoding="utf-8")
+    binary.chmod(0o755)
+    # The stub directory goes FIRST, so it shadows a real awiki if one is installed,
+    # and `os.defpath` follows so the stub can still reach `sh`'s usual utilities --
+    # a PATH holding only the stub silently breaks the stub itself.
+    # `os.defpath` opens with an empty element, which POSIX reads as "the current
+    # directory" -- stripped, because a proof-surface test should not put cwd on the
+    # search path even where the stub would win the lookup anyway.
+    monkeypatch.setenv("PATH", f"{tmp_path}{os.pathsep}{os.defpath.lstrip(os.pathsep)}")
+    return binary
+
+
+def test_run_awiki_invokes_the_binary_with_the_argv_and_cwd_the_gate_declares(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    recorder = tmp_path / "argv.txt"
+    _stub_awiki(
+        tmp_path,
+        monkeypatch,
+        # Shell BUILTINS only (`printf`, `$*`, `$PWD`): the stub must not depend on
+        # PATH resolution to record what it was asked, or a lookup failure would read
+        # as the gate calling it wrong.
+        f'#!/bin/sh\nprintf \'%s\\n\' "$*" > "{recorder}"\n'
+        f'printf \'%s\\n\' "$PWD" >> "{recorder}"\n'
+        'printf "out\\n"\nprintf "err\\n" >&2\nexit 3\n',
+    )
+    scan_dir = tmp_path / "work"
+    scan_dir.mkdir()
+
+    returncode, output = _gate._run_awiki(scan_dir, "docs/wiki")
+
+    recorded = recorder.read_text(encoding="utf-8").splitlines()
+    assert recorded[0] == "lint -root docs/wiki -recursive"
+    assert Path(recorded[1]).resolve() == scan_dir.resolve()
+    assert returncode == 3
+    # stdout and stderr are MERGED, and stderr is not dropped: awiki writes its
+    # diagnostics there, and a summary parser reading only stdout would report
+    # not-run for a run that told it exactly what went wrong.
+    assert output == "out\n\nerr\n"
+
+
+def test_a_hung_awiki_times_out_rather_than_hanging_the_whole_quality_run(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # The declared reason `AWIKI_TIMEOUT_SECONDS` exists, executed for the first time.
+    # `evaluate` already renders a raised TimeoutExpired as NOT-RUN; what was never
+    # proven is that the timeout FIRES, so the guard the comment promises was resting
+    # on a keyword argument nothing had exercised.
+    _stub_awiki(tmp_path, monkeypatch, "#!/bin/sh\nsleep 30\n")
+    monkeypatch.setattr(_gate, "AWIKI_TIMEOUT_SECONDS", 0.25)
+
+    with pytest.raises(subprocess.TimeoutExpired):
+        _gate._run_awiki(tmp_path, "docs/wiki")
+
+
+def test_main_exits_nonzero_on_fail_and_zero_on_pass(monkeypatch: pytest.MonkeyPatch) -> None:
+    # The verdict-to-exit-code mapping the CI runner reads. Every prior test that
+    # reached `main` returned through the not-run branch, so neither half of this line
+    # had ever run: a failing docs-graph had never been shown to exit nonzero, and a
+    # passing one had never been shown to exit zero.
+    _patch_awiki(monkeypatch, _ORPHAN_OUTPUT, returncode=1)
+    assert _gate.main(["--repo-root", str(ROOT)]) == 1
+
+    _patch_awiki(monkeypatch, _CLEAN_OUTPUT, returncode=0)
+    assert _gate.main(["--repo-root", str(ROOT)]) == 0
+
+
+def test_the_module_main_guard_executes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    # `sys.exit(main())` -- the line every operator invocation goes through and no
+    # test had. PATH is emptied so `awiki` is definitely absent, which makes the
+    # verdict deterministic rather than dependent on the machine.
+    import runpy
+    import sys
+
+    monkeypatch.setenv("PATH", str(tmp_path))  # empty dir: `awiki` is definitely absent
+    monkeypatch.setattr(sys, "argv", ["check_docs_graph.py", "--repo-root", str(ROOT)])
+    with pytest.raises(SystemExit) as excinfo:
+        runpy.run_path(str(ROOT / GATE), run_name="__main__")
+
+    assert excinfo.value.code == _gate.UNESTABLISHED_EXIT
