@@ -34,11 +34,10 @@
 
 ## Next Session
 
-1. **Clean deletion slice.** `render_skill_routing.py`'s unused PARAMETER only (keep the
-   `listed_skill_ids` key — `eval_setup.py:220-224` raises without it),
-   `plan_quality_run.py:327`, and [pickup.spec.json](../evals/cautilus/handoff-claim-fidelity/pickup.spec.json) ONLY, with coverage substitution in
-   the same commit. Then rework: re-key `boundary_bypass_ratchet_lib.py` (do NOT delete
-   the arm), `#531` via the adapter `artifact_path`. Both owe a second review round.
+1. **Rework slice — nothing left to delete.** Re-KEY `boundary_bypass_ratchet_lib.py`
+   (its `new_keys` arm is the only substitution detector; do NOT delete it), and `#531`
+   via the adapter `artifact_path`, never a hardcoded probe. Both owe a SECOND review
+   round. `plan_quality_run.py:327` is a small build, not a deletion.
    Plan: [disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md).
 2. **`#546` phase 2 — the adapter `conditional:` marker.** Phase 1 decides only RENAME;
    the marker makes the other two rot modes decidable, and phase 1's reader makes it
@@ -65,8 +64,9 @@
   of prose: the `#572` close draft claimed both older events were "structurally
   non-recurring"; the score signal is sample-relative and can recur, so the reviewer
   stopped a false disposition from reaching an irreversible public artifact.
-- **A handoff list is a plan, not a verdict.** Wave 1 shipped as six no-code closes;
-  review closed four and pulled two out. Then a 6-deletion plan lost 5 to critique.
+- **SIX of six proposed deletions were refuted**, each by a file the plan had not opened.
+  The survivor was an unused function parameter. Before proposing a deletion, name the
+  grep that shows zero consumers — that single step would have caught all six.
 - **Closing an issue can delete the only copy of a ruling.** Every durable in-repo
   mention of `#576` was a pointer AT it, and `#580`'s "tracked separately" pointed at
   itself. Before closing a record-shaped issue, ask where the record lands.

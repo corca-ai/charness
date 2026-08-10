@@ -105,8 +105,9 @@ matters; everything below is the corrected disposition.
 
 ### The corrected count
 
-Not 12 delete-or-rule against 1 build. **One clean deletion, one partial, four
-rework-or-refuse, two builds, five rulings, one omitted item.** The first draft's
+Not 12 delete-or-rule against 1 build. **ONE clean deletion (shipped), zero partials,
+five rework-or-refuse, two builds, five rulings, one omitted item.** Six of six proposed
+deletions were refuted; the survivor was an unused function parameter. The first draft's
 headline ratio was a labelling artifact: "delete-or-rule" absorbed IGNORE, RETIRE, and a
 decision made before this plan existed, and one item carried no verb at all.
 
@@ -156,19 +157,27 @@ Executable only paired with D47: either date-stamp or de-pin D47's published fig
 keep the pins. Narrowing to the fields D47 does not quote is the most that is available
 without an operator ruling on #536.
 
-**#568 eval pair — PARTIAL, and the draft's premise was factually wrong.**
-`pickup-ambiguous.spec.json` carries `requiredCommandFragments:
-["continuation-sequence.md"]` — **not empty** — and is the ONLY `engage-always` forcer of
-that reference. `claim_fidelity_lib.py:390-403` raises on any unwaived planner-forceable
-ref, gate queued at `run-quality.sh:747`, and
-`tests/quality_gates/test_scenario_conditional_reads.py:136` `unlink()`s that exact file
-as its incident fixture, so the deletion would make that test *error*. Corrected
-disposition: delete `pickup.spec.json` only (its floors genuinely are both empty), keep
-`pickup-ambiguous.spec.json` as the forcing scenario, update the registry entry and the
-fixture registry in the same commit. Separately, the draft's claim that the property is
-"already held" by `tests/test_handoff_plan.py:442-472` conflates two observables: those
-tests assert what the PLANNER emits; the eval asserted whether an agent actually opened
-the reference. A unit test is not an eval.
+**#568 eval pair — RETRACTED 2026-08-11. Do not delete either spec.**
+The plan first proposed deleting both, then narrowed to `pickup.spec.json` after the
+critique showed `pickup-ambiguous.spec.json` is the only `engage-always` forcer of
+`continuation-sequence.md` (`claim_fidelity_lib.py:390-403`, gate at `run-quality.sh:747`,
+and `tests/quality_gates/test_scenario_conditional_reads.py:136` `unlink()`s that exact
+file as its incident fixture). Reading one more file before executing killed the
+remainder: `evals/cautilus/handoff-claim-fidelity/outcome-assertions.json` records the
+empty floor as a deliberate, capture-verified **floor MOVE**, not a collapse — "the
+pickup.spec.json deterministic floor move (RCF `[workflow-trigger.md]` -> `[]` on this
+substance floor) ... rides a fresh ask-before-run capture that VERIFIES this instrument
+grades correctly." That judge set resolves as the sibling of the whole directory and is
+written to hold for all four intents, so deleting the pickup scenario removes the only
+registered pickup-intent vehicle for `pickup-starts-named-workflow` and
+`trigger-fidelity-no-invention`.
+
+So `#568`'s real residue is neither spec: it is that **no collapse detector exists**, and
+that `pickup-ambiguous.spec.json:2` still carries an uncorrected draft comment while its
+sibling carries the correction. Both are edits, not deletions.
+
+**Six of six proposed deletions were refuted, and every one was answerable by reading a
+file the plan had not opened.** That is the plan's single most durable finding.
 
 **#531 — BUILD with corrected scope, and it is irreversible.** The draft's fix would
 have shipped a new defect: the handoff artifact path is adapter-configurable
