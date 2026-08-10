@@ -150,11 +150,15 @@ use (`manual-fallback` is the other; the remaining four refuse the disposition
 outright). For `consolidated` itself, `AI-provenance` is the silent one; HOTL is
 input-refused, with the same untransferred reason underneath.
 
-Corroborating: `issue_verify_closeout_body.py:116` says a `question` close "silently
-bypasses two of the three floor checks", and its advisory names only the
-behavioral-verdict and resolution-critique floors. The matrix declares **five**
-non-firing floors for `question` on the five body carriers — the module's own advisory
-undercounts, and two of the five have no justification at all.
+Corroborating, **as measured on 2026-08-10 before the fix**: `issue_verify_closeout_body.py:116`
+said a `question` close "silently bypasses two of the three floor checks", and its
+advisory named only the behavioral-verdict and resolution-critique floors. The matrix
+declares **five** non-firing floors for `question` on the five body carriers — the
+module's own advisory undercounted, and two of the five had no justification at all.
+(That file:line no longer exists: the floors moved to
+`skills/public/issue/scripts/issue_closeout_rung1_floors.py` and the advisory was
+rewritten with the fix below. The citation is preserved as the pre-fix observation it
+was.)
 
 Filed as [`#591`](https://github.com/corca-ai/charness/issues/591) and declared as 24
 `undispositioned` cells (two more point at `#592`, below). The gate refuses an inert
@@ -229,6 +233,18 @@ type — applies to the second. Filed as
 
 Round 2 found those two cells carrying the generic light-close reason, refuted by the
 `behavioral_verdict` cell one row above them in the same pair.
+
+**DISPOSITIONED 2026-08-10 by operator ruling, and `#592` closed on it.** The two cells
+are now `skipped-by-design` with a reason that confronts the neighbouring cell rather
+than reusing the light-close reason. The ruling: the two floors differ in whether the
+release operator can satisfy them at all. The behavioral floor is a presence check over
+an input channel this lane already owns (`--close-issue-behavior`); the critique floor
+demands a checked-in artifact bound to the issue and passing `validate_critique_artifacts`,
+for classifications whose critique substrate never runs — so force-applying it would
+demand evidence of a process that did not happen, and the predictable result is a stub
+that satisfies the binding check. Non-claim carried in the cell: this leaves a
+`question`/`decision-needed` release close with no fresh-eye review bound to it, which is
+a real absence rather than a proven non-need. Reopen trigger is recorded in the cell.
 
 ### The matrix caught a live instance-2 defect on the release lane
 
