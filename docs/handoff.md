@@ -4,8 +4,8 @@
 
 - No goal is running. The release is published and read back; do not re-run any
   release phase. Start from `## Next Session` item 0.
-- Six commits are UNPUSHED (`93b2e1dc`, `739a2a3e`, `ba899083`, `cfe712f8`,
-  `ab6b10f0`, `1820c95b`). Push needs its own grant.
+- Eight commits are UNPUSHED, from `93b2e1dc` through HEAD. Push needs its own
+  grant; `git log --oneline origin/main..HEAD` lists them.
 
 ## Current State
 
@@ -13,7 +13,8 @@
   crosswalk instance was RETIRED by operator ruling — see
   [the retirement record](../charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md);
   do not rebuild that matrix.
-- Filed 2026-08-10: `#588`, `#589`, `#590`, plus `#591`/`#592` from the matrix slice.
+- Filed 2026-08-10: `#588`, `#589`, `#590`, plus `#591`-`#594` from the matrix slice
+  and the `#591` fix. `#591` is FIXED and awaiting closeout; `#592`-`#594` are open.
 - `#572` is the one open red. `#590` diagnosed it and REPAIRED THE REPORTING at
   `739a2a3e`; the failure itself is untouched, so the lane is still red. `#586` stays
   open — the matrix slice covers instance 2 only.
@@ -34,39 +35,39 @@
    (`17 */12 * * *`) still executes the uninstrumented test and reports nothing new.
    The test passes locally, so it cannot be reproduced here either. This item is
    blocked on a push grant; do not re-diagnose it from this tree.
-1. **Decide `#591` and `#592`** — both filed by the matrix slice, both measured, both
-   at an irreversible boundary (each would newly refuse close bodies that pass today),
-   so each owes its own before/after, not a drive-by tightening. 26 matrix cells point
-   at them; the gate refuses if either goes quiet.
-2. **`#590` left a gap, recorded on the issue:** the mutation workflow's inline script
-   body has ZERO automated coverage — how a temporal-dead-zone error survived round 1.
-   Item 0's cron run is the only current check on it.
-3. `#546` has a refuted option, not a fix — built, reviewed HOLD, measured defective,
-   reverted; its comment carries the alternative.
+1. **Close `#591`** — the fix landed (both floors ungated, blast radius measured at
+   zero across 87 historical carriers, two bounded rounds, 134 matrix cells firing).
+   It needs the `issue` closeout floor run against it, nothing more.
+2. **`#593` and `#594`** — both found by bounded review of that fix, both pre-existing,
+   both false-refusal paths at the irreversible boundary. `#593` is the smaller and
+   has its fix shape named on the issue. `#592` stays open and unbuilt by decision:
+   no release has ever used `--close-issue`.
+3. **`#590` left a gap, recorded on the issue:** the mutation workflow's inline script
+   body has ZERO automated coverage. Item 0's cron run is the only check on it.
+4. `#546` has a refuted option, not a fix — reviewed HOLD, measured defective, reverted.
 
 ## Discuss
 
 - `#576` has no chosen direction; a comment records why it is honest silence.
-- `#587` and `#580` were measured on 2026-08-10 and both had a false premise; both
-  are retitled with the measurement. `#580` no longer blocks anything. `#587` now
-  asks ONE thing — what its iteration-#2 false blocker was — answerable only from the
+- `#587` and `#580` were measured and both had a false premise; both are retitled
+  with it. `#580` blocks nothing. `#587` asks one thing, answerable only from the
   original session's record, not this tree.
 - The `Premise-residue:` seam reads markers and nothing writes them. If records do not
   start writing them the record channel stays empty.
-- The matrix's `not_measured` names six gaps. Two are worth a slice: the `commit-msg`
-  staged-artifact and pause-brief sub-paths, and the `_missing_ledger_fields`
-  asymmetry on `close-with-comment` deferred in a module docstring.
+- The matrix's `not_measured` names six gaps; two are worth a slice (the `commit-msg`
+  sub-paths, and the `_missing_ledger_fields` asymmetry on `close-with-comment`).
 
 ## Continuation Capability
 
-- **Read the exit code of the thing you ran, not the pipeline's.** A full-suite run
-  reported through `pytest ...; echo $?; tail` was called green twice from the
-  compound's exit; the real run had 19 failures. Redirect and read the summary line.
-- **The round that reads the REPAIRS finds a different class.** Seven for seven. Round
-  2 found a round-1 repair had bought a smaller copy of the defect it fixed, plus 30
-  declared cells that could never move.
+- **Read the exit code of the thing you ran, not the pipeline's.** `pytest …; echo $?;
+  tail` reported green twice off `tail`'s exit; the real run had 19 failures.
+- **The round that reads the REPAIRS finds a different class.** Eight for eight, twice
+  more today — each time a round-1 repair had bought a smaller copy of its own defect.
 - **A gate generated from its own measurement agrees by construction.** The pin that
-  matters is "the observation MOVES when the code does", not "the gate is green".
+  matters is "the observation MOVES when the code does", not "the gate is green". The
+  matrix earned its keep on its first real change: 26 findings, unprompted.
+- **When a floor widens, the surfaces that TELL authors what it wants are where the
+  blockers are.** Both rounds of the `#591` fix found them there, not in the floors.
 - **Adding a gate to the quality runner is four registrations:** the seeded harness
   stub, a timing verdict in
   [validator-timing-layers](./conventions/validator-timing-layers.md), `release_only`

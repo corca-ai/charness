@@ -430,3 +430,22 @@ def test_bare_na_source_origin_is_not_externally_sourced(tmp_path: Path) -> None
     assert real["external_sourced"] is True
     assert real["missing"] is True
     assert real["ok"] is False
+
+
+def test_a_placeholder_behavior_value_does_not_bind_its_issue() -> None:
+    """`Behavior #N: TODO` is silence wearing a line's clothes.
+
+    The floor refuses SILENCE, and a placeholder value is silence — so the line must
+    not bind its issue. Without this the presence check could be satisfied by writing
+    the field name and nothing else, which is the shape the placeholder vocabulary
+    (`todo`/`tbd`/`n/a`/`missing`) exists to refuse everywhere else in the ledger.
+    """
+    fn = load_verify_module().evaluate_behavioral_verdict
+    for placeholder in ("TODO", "tbd", "n/a", "missing"):
+        verdict = fn(f"Behavior #42: {placeholder}", "bug", [42])
+        assert verdict["applies"] is True, placeholder
+        assert verdict["ok"] is False, placeholder
+        assert verdict["missing"] == [42], placeholder
+    # A substantive value on the same grammar binds, so the refusal above is the
+    # placeholder's doing and not the line shape's.
+    assert fn("Behavior #42: confirmed via the readback", "bug", [42])["ok"] is True
