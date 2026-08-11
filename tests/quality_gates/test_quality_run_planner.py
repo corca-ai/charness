@@ -384,7 +384,14 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    assert len(triggers) == 35
+    # Not `== 35`: a live-corpus total reds on any catalog addition while saying nothing about
+    # what the map is for. The map is built by dropping every on-demand read that has no
+    # trigger, so the relation below is the invariant the count was standing in for -- it
+    # catches a read silently losing its trigger, which a total never could.
+    assert triggers, "the on-demand trigger map is empty; the catalog or the planner filter dropped everything"
+    untriggered = [read["path"] for read in plan["on_demand_reads"] if not read.get("trigger")]
+    assert not untriggered, f"on-demand reads dropped from the trigger map for lack of a trigger: {untriggered}"
+    assert len(triggers) == len(plan["on_demand_reads"])
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers

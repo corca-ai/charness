@@ -97,10 +97,6 @@ def git_visible_non_python_sources(
     return sorted(selected)
 
 
-def _dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
-    return _source_roles.dataclass_field_locations(path)
-
-
 def classify_finding(
     path: str,
     message: str,

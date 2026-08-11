@@ -187,12 +187,9 @@ def test_the_recursive_variant_recorded_in_the_probe_is_reproducible():
     # fix rather than an allowlist entry, which would have weakened a real scanner to accommodate
     # a variable name.
     for probe_field, expected in recorded.items():
-        if probe_field == "refused_citation_count":
-            assert len(live["citations_refused_by_the_marker_rule"]) == expected
-        else:
-            assert live[probe_field] == expected, probe_drift_message(
-                probe_field, probe=MARKER_PROBE, variant="recursive variant"
-            )
+        assert live[probe_field] == expected, probe_drift_message(
+            probe_field, probe=MARKER_PROBE, variant="recursive variant"
+        )
 
 
 def test_the_presence_only_count_reproduces_the_denominator_d47_cited():

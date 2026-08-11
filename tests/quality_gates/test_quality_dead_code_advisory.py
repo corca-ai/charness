@@ -759,9 +759,12 @@ def test_dead_code_advisory_ignores_unreadable_dataclass_source(tmp_path: Path) 
     invalid_utf8 = tmp_path / "invalid_utf8.py"
     invalid_utf8.write_bytes(b"\xff")
 
-    assert module._dataclass_field_locations(tmp_path / "missing.py") == set()
-    assert module._dataclass_field_locations(invalid_syntax) == set()
-    assert module._dataclass_field_locations(invalid_utf8) == set()
+    # Reads the fail-closed branch where production reads it (`_source_roles`), not through a
+    # script-local alias: the alias was a pass-through and its only caller was this assertion,
+    # so keeping it would have made this test the sole reason the wrapper existed.
+    assert module._source_roles.dataclass_field_locations(tmp_path / "missing.py") == set()
+    assert module._source_roles.dataclass_field_locations(invalid_syntax) == set()
+    assert module._source_roles.dataclass_field_locations(invalid_utf8) == set()
 
 
 def test_dynamic_entrypoint_evidence_covers_fail_closed_ast_branches(tmp_path: Path) -> None:
