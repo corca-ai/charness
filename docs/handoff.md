@@ -44,15 +44,19 @@
 
 ## Next Session
 
-1. **Six operator decisions are queued**, each stated as a decision in the
-   [triage](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md#execution-status)
-   lineage — `#598`'s `--require-empty` wiring, `#596`/D47, the pre-push docs-only label, the
-   deprecation window for released-but-unobserved scripts, the judge-intent scenario, and
-   `#585`'s re-key direction. Start here; five REWORK items are blocked behind them.
-2. **`#587` — edit, do not close.** Mapper is
+1. **All six operator decisions are RULED and unexecuted** —
+   [six-operator-rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md).
+   Do not re-litigate; four overturned the framing handed up. Start with ruling 1, whose
+   design is measured, not just decided: scan shell fences plus inline code, skip comment
+   lines, and the derived subcommand check finds **two live defects** (`charness verify`,
+   `charness propose` — neither exists nor ever did) at zero false positives.
+2. **Ruling 6 is the largest slice** and the only one needing a schema change:
+   `inventory_boundary_bypass_lib` records no call-site line info, so the payload, its
+   public validator, and both baselines move together.
+3. **`#587` — edit, do not close.** Mapper is
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`.
-3. **`#546` phase 2 — the adapter `conditional:` marker.**
-4. **Waves 2-3.** `#539` `#581` `#588` `#528` `#589` `#542`, then `#586` `#590` `#593`-`#599`
+4. **`#546` phase 2 — the adapter `conditional:` marker.**
+5. **Waves 2-3.** `#539` `#581` `#588` `#528` `#589` `#542`, then `#586` `#590` `#593`-`#599`
    `#550` `#527`. Umbrellas wait on their own work.
 
 ## Discuss
@@ -72,5 +76,6 @@
 - [Deferred decisions](./deferred-decisions.md)
 - [Umbrella class disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md) — per-section execution status, the sweep with its consumer greps, and the pickup-deletion ruling.
 - [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) — the digest slot-policy finding and the autonomy precondition.
+- [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — all six with the evidence that produced them, and the two feasibility measurements.
 - [Validator timing layers](./conventions/validator-timing-layers.md) — the live registry and what its gate cannot check.
 - [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md)
