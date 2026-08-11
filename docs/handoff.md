@@ -5,7 +5,7 @@
 - **Read [recent lessons](../charness-artifacts/retro/recent-lessons.md) BEFORE acting.** A
   headless run proved this line works, and that the digest's 4 trap slots dropped the two
   sharpest lessons — THIS file and the spec artifact are the channel that carries.
-- No goal is running. Unpushed commits: `git log --oneline origin/main..HEAD`. The
+- No goal is running. Unpushed commits: `git log --oneline origin/main..HEAD` (16). The
   operator was asked for a push grant several times last session and steered elsewhere
   each time — state the count, do not open with the ask. Then `## Next Session`.
 
@@ -16,12 +16,14 @@
   recovery; it predates `#590`'s diagnostic `739a2a3e`.
 - **`#582`-`#585` CARRY their own status** (per-member outcome + disposition in each
   body). **CLASS REMAINS, 4/4.** Do not close them.
-- **Gate green: 89/0, 1 UNPROVEN** — baseline taken BEFORE any deletion. Filed `#596`
-  (probe-pin tax; tracker `#536` closed COMPLETED), `#597` (`check_quality_tool_fixtures`
-  passes on an empty set, unwired), `#598` (word-preference gate + a five-week-unactioned
-  audit), `#599` (no "what reads this?" command).
-- **D53/D54/D55** in [deferred-decisions](./deferred-decisions.md) name reopen triggers;
-  D53's is NOT in-repo observable.
+- **Gate 90/0, 0 UNPROVEN at `a24b0155`.** A handoff "gate green" line goes stale the
+  moment a later commit adds an unowned path: `2c95898b` committed a `.patch` with no
+  owning surface and blocked BOTH bundle-readiness gates for four commits while this file
+  advertised 89/0. Re-take the baseline; do not inherit the claim.
+- Filed `#596` (probe-pin tax; `#536` closed COMPLETED), `#597`
+  (`check_quality_tool_fixtures` passes on an empty set, unwired), `#598` (word-preference
+  gate + a five-week-unactioned audit), `#599` (no "what reads this?").
+- **D53's reopen trigger is NOT in-repo observable** ([deferred](./deferred-decisions.md)).
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -30,12 +32,12 @@
 
 ## Next Session
 
-1. **OPERATOR RULING — delete the pickup ambiguity heuristic and both eval specs.** Scope,
-   its two non-obvious edges, and a headless run's patch (evidence, not a shortcut) are in
-   the plan; re-do the work under verification.
-2. **Then the recorded sweep as a DYNAMIC WORKFLOW** (operator-directed), one agent per
+1. **The recorded sweep as a DYNAMIC WORKFLOW** (operator-directed), one agent per
    candidate, each REQUIRED to emit its consumer grep before proposing. **No counterweight
    ran on it — triage first.** Two of its five items are RE-keys, not deletions.
+2. **`state-selection.md` is waived by `classTag` for a gap the allowlist now owns.**
+   Forced only by `judge_from_user_request`, covered by no scenario — the twin of the
+   `workflow-trigger.md` case `a24b0155` moved. Pre-existing; touches a Slice-8 record.
 3. **`#546` phase 2 — the adapter `conditional:` marker.**
 4. **`#587` — edit, do not close.** The mapper is
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`.
@@ -58,8 +60,9 @@
 - **Budget hit? Rule #1: delete the unnecessary sentences, then send prose to a link.** Not
   compress the wording. A link line says what it CONTAINS (awiki `link_only_lines`), never
   why to open it. Never argue for an untaxed section — it becomes a dumping ground.
-- **Every correction last session was operator-initiated.** The reviewers were right every
-  time and were only spawned when asked. Run the adversarial pass before being told to.
+- **The round that reads the REPAIRS is the one that catches you.** `a24b0155`'s round-1
+  fix removed a waiver channel and left three sentences describing it; round 2 found the
+  contradiction its own repair created. Reviewers unprompted; round 2 is not optional.
 - **Autonomy needs `--dangerously-skip-permissions`, which the operator already uses.**
   Under `acceptEdits` a headless run cannot reach its own stop gate — the contract demands
   gates, the mode blocks `python3`. A precondition, NOT a harness defect; do not file it.
