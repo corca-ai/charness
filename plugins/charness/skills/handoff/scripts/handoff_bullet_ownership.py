@@ -31,9 +31,10 @@ speaking rather than a parser limit:
 - A blank line ends an entry, so an owner in a list item's second paragraph is
   not found. Put the link on the bullet.
 
-Supporting either one cost three review rounds: each was a branch, and every
-defect those rounds found came from the branches interacting rather than from
-any one of them. The scaffold models the accepted shape so an author does not
+Supporting either one cost three review rounds. Those rounds found single-rule
+defects too (a fence toggle, a section-bounds walk, two code-span bugs), but
+every defect in THIS parser's entry grouping came from these branches
+interacting rather than from any one of them. The scaffold models the accepted shape so an author does not
 reach for these.
 
 Known non-claims -- this is a FLOOR, not a completeness proof:
@@ -48,6 +49,10 @@ Known non-claims -- this is a FLOOR, not a completeness proof:
   passes exactly like a correct one.
 - Only list entries are checked; a bare paragraph under a covered heading is not
   reached, because widening to prose would fire on a section's framing sentence.
+- The command test is "the span contains whitespace", a PROXY for "takes
+  arguments". A backticked multi-word noun phrase satisfies it, so `` `## Slot
+  Policy` `` reads as a command. Separating the two needs a content classifier.
+- A bare `https://` URL is an accepted owner alongside the three named forms.
 - `#\\d+` is GitHub-shaped. A repo whose tracker uses `PROJ-123` effectively has
   two owner forms, not three, until an adapter names its id shape.
 - A hash plus a small ordinal in ordinary prose ("the hash-one priority", written
@@ -86,6 +91,9 @@ LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 # bug, and this module reintroduced it once already.
 FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 HEADING_RE = re.compile(r"^\s*## ")
+# Content column of a `- ` parent: a marker indented less than this is a
+# sibling, not a child.
+_CHILD_INDENT = 2
 
 
 def _is_command_span(content: str) -> bool:
@@ -167,12 +175,13 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str]]:
     entries: list[tuple[int, str]] = []
     current: list[str] = []
     current_offset: int | None = None
+    in_child = False
 
     def flush() -> None:
-        nonlocal current_offset, current
+        nonlocal current_offset, current, in_child
         if current_offset is not None and current:
             entries.append((current_offset, " ".join(current)))
-        current_offset, current = None, []
+        current_offset, current, in_child = None, [], False
 
     for index, raw, fenced in _walk(section_lines):
         if fenced:
@@ -183,16 +192,21 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str]]:
             flush()
             continue
         if LIST_ITEM_RE.match(raw):
-            if current_offset is not None and raw[:1].isspace():
-                # A nested child under an open parent: the parent already
-                # carries the owner, and charging the child would demand the
-                # same link twice.
-                current.append(stripped)
+            # Two spaces, not "any indentation": under a `- ` parent the content
+            # column is 2, so a ONE-space marker is a sibling and absorbing it
+            # hid a whole entry from the check.
+            if current_offset is not None and raw[: _CHILD_INDENT].isspace():
+                # A child under an open parent is SKIPPED, never merged. Merging
+                # pooled the texts and ran the check on the join, so a link in
+                # the child made an unowned parent owned -- the laundering
+                # direction is the opposite of the intent, and it turned the
+                # verdict on whether a blank line happened to precede the child.
+                in_child = True
                 continue
             flush()
             current_offset, current = index, [stripped]
             continue
-        if current_offset is not None:
+        if current_offset is not None and not in_child:
             current.append(stripped)
     flush()
     return entries

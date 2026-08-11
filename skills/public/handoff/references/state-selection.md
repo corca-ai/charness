@@ -49,3 +49,11 @@ answers it without the prose asserting a fact that decays tomorrow.
 For each bullet, ask: would removing this line make the next operator choose a
 different first action? If not, drop it or replace it with a reference. Trust
 the next operator to follow one good link and infer stable repo defaults.
+
+## Owner Forms
+
+Whatever survives the rules above still needs an OWNER in `## Current State` and
+`## Next Session`: a markdown link, an inline command that takes arguments, or an
+issue id. A repo-local task id, a bare path, and a single-word command are NOT
+owners — a path is a link, and a one-word command cannot be told from an
+identifier. See the `handoff` SKILL.md for the full statement.

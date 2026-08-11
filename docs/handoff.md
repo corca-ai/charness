@@ -25,21 +25,21 @@
 
 - [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — six rulings
   with an execution status line each; ruling 1 is #598 and reads executed.
-- [Issue #598](https://github.com/corca-ai/charness/issues/598) — ruling 1's issue; the `issue`
-  closeout floor has not run on it, and no entry below schedules it.
+- [Issue #598](https://github.com/corca-ai/charness/issues/598) — ruling 1's issue, still open;
+  its closeout floor is defined in [the issue skill](../skills/public/issue/SKILL.md).
 - [check_documented_subcommands](../scripts/check_documented_subcommands.py) — the gate whose
   docstring holds the three limits on the word "replaces" that a release note must carry.
 - [Issue #604](https://github.com/corca-ai/charness/issues/604) — shipped parity defaults against the
   bare scaffolded runner form; fails red to green.
-- [Issue #605](https://github.com/corca-ai/charness/issues/605) — a trim-back loop its guardian tests
-  no longer reach; unproven and deliberately undeleted.
+- [Issue #605](https://github.com/corca-ai/charness/issues/605) — a trim-back loop its guardian
+  tests no longer reach, recorded as unproven rather than deleted.
 - [Umbrella disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md)
   — per-section execution status for #582-#585, each carrying its own class verdict.
 - [Deferred decisions](./deferred-decisions.md) — D53's reopen trigger and its three clauses, one of
   them in-repo observable with nothing watching for it.
-- [Quality posture](../charness-artifacts/quality/latest.md) — the last recorded gate run. Issue
-  counts come from `gh issue list --state open`; the block below is a frozen capture whose
-  `issue_scope` predates the issues above.
+- [Quality posture](../charness-artifacts/quality/latest.md) — the last recorded gate run; live
+  issue counts come from `gh issue list --state open`. The block below is a captured snapshot,
+  and its `issue_scope` predates the issues named above.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json
@@ -52,8 +52,8 @@
    — the digest's slot-policy defect and two unimplemented proposals. The operator's selection
    design is NOT in it; that design has no artifact yet.
 2. [Ownership gate critique](../charness-artifacts/critique/2026-08-12-handoff-bullet-ownership-critique.md)
-   — three review rounds on the handoff ownership gate and each disposition. The narrowing those
-   rounds motivated is itself unreviewed.
+   — round 1's fourteen findings, a summary of rounds 2-4, and the dispositions including two
+   reversals. Its last section names what is accepted-unreviewed.
 3. [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — rulings
    2, 3, 5, and 6 carry `not executed`; ruling 6 is the only schema change.
 4. [suggest_mutation_coverage_command](../scripts/suggest_mutation_coverage_command.py) — holds

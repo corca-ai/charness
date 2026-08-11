@@ -21,16 +21,18 @@ that already owns that truth instead of keeping it in the handoff artifact.
 
 ## Replacement Pattern
 
-When spilling detail, leave a single action-oriented pointer. Write it as a
+When spilling detail, leave a single pointer that names what the spilled-to
+artifact HOLDS. Not what to do about it — the reading agent decides the action,
+and a contents line goes stale only when that document changes. Write it as a
 markdown LINK, not a backticked path: in `## Current State` and `## Next Session`
 a bare code-span path is not an owner the gate accepts, and the forms below used
 to model exactly the shape that rule rejects.
 
 Write the pointer as a markdown link whose target is the spilled-to artifact,
-followed by an em dash and one line on why to open it. Two live examples, given
+followed by an em dash and one line naming its contents. Two live examples, given
 as paths rather than as links because a reference doc's examples have to resolve
 from the reference doc: `<repo-root>/charness-artifacts/quality/latest.md` for
 gate posture, and a support seam's `references/runtime-contract.md` for
 acquisition invariants. In the handoff each becomes a bullet opening with a
-bracketed label, then the relative path in parentheses, then an em dash and the
-one line that tells the next operator why opening it changes their first action.
+bracketed label, then the relative path in parentheses, then an em dash and one
+line naming what that document contains.

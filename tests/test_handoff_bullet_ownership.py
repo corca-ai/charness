@@ -171,7 +171,10 @@ def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tm
     assert "second unowned claim" in result.stderr
 
 
-# --- round-1 review findings: each of these passed the first implementation ---
+# --- round-1 review findings ---
+# Each names an input the first implementation got wrong. Most PASSED when they
+# should have failed; the blank-line case is the opposite -- round 1 made it
+# pass, and the later narrowing deliberately charges it again.
 
 
 def test_validate_handoff_artifact_reads_an_unbalanced_backtick_as_unowned(tmp_path: Path) -> None:
@@ -308,16 +311,16 @@ def test_validate_handoff_artifact_ends_an_entry_at_a_blank_line(tmp_path: Path)
     assert "carry no owner" in result.stderr
 
 
-# --- round-2 review findings: the repairs' own defects ---
+# --- round-2 and round-3 review findings: the repairs' own defects ---
 
 
 def test_validate_handoff_artifact_does_not_let_a_child_launder_its_parent(tmp_path: Path) -> None:
     """Round 3: the inheritance merge ran BACKWARDS.
 
-    It appended the child's text into the parent's, so a link in a detached
-    child made an unowned parent owned — reaching back across the very boundary
-    that had just been added to stop the ledger block from doing the same. The
-    merge is gone; a detached child is its own entry.
+    It appended the child's text into the parent's, so a link in the child made
+    an unowned parent owned. Round 4 found the same laundering surviving for an
+    ATTACHED child, where the verdict then turned on whether a blank line
+    happened to precede it. A child is now skipped, never merged.
     """
     result = run_on_state(
         tmp_path,

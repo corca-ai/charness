@@ -50,8 +50,7 @@ or shortening reference links buys nothing, so cut state instead. Multiple dated
 `## This Session (<date>)` sections are a hard diary smell.
 Assume a competent next operator can follow one good link.
 Aim for `## Current State` and `## Next Session` to read as a list of links,
-with prose only where no artifact owns the claim yet:
-
+with prose only where no artifact owns the claim yet.
 Each entry is a link plus one line saying what that document HOLDS — not what to
 do about it. The reading agent decides the action; a contents description goes
 stale only when that document changes, while a next-action description goes
@@ -68,10 +67,12 @@ regenerates the fact, or an issue id), and the planner reports `unowned_entries`
 with line numbers. `## Discuss` is exempt: an open question has no owner yet,
 which is what makes it open.
 These sections are a FLAT list: one entry per line-group, no nesting beyond a
-sub-bullet under an open parent, no multi-paragraph entries, and no fenced
-blocks. A bullet that needs a code block belongs in the artifact it should be
-linking. An inline command must take arguments — a bare path is a link, not a
-command, and a single-word command is indistinguishable from an identifier.
+sub-bullet under an open parent, and no multi-paragraph entries. A fenced block
+may sit in the section — a machine-read ledger block often must — but it owns
+nothing, so a bullet whose only command is in a code block is refused; that
+bullet belongs in the artifact it should be linking. An inline command must take
+arguments — a bare path is a link, not a command, and a single-word command is
+indistinguishable from an identifier.
 The floor is narrower than the aim, and the gap is yours to close, not the
 gate's: `## Workflow Trigger` and `## Continuation Capability` are NOT checked,
 an entry passes on one owner while paraphrasing a second artifact beside it, and

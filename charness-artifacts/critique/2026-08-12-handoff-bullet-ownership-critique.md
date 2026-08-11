@@ -1,7 +1,7 @@
 # Handoff Bullet Ownership Gate Critique
 Date: 2026-08-12
 
-Fresh-eye satisfaction: parent-delegated (three bounded reviewers, spawned unnamed as `bounded-reviewer`; boundary fingerprint verify clean)
+Fresh-eye satisfaction: parent-delegated (four rounds, nine bounded reviewers total, each spawned unnamed as `bounded-reviewer`; boundary fingerprint snapshot/verify clean around every round)
 
 ## Decision Under Review
 
@@ -57,13 +57,40 @@ owner. The enforced sections and the ceiling stay with the repo validator. F13's
 tracker-shape gap is the one seam that belongs in an adapter and is recorded
 rather than resolved here.
 
+## Rounds 2-4
+
+Round 1's findings above are the ORIGINAL gate. Three further rounds read each
+successive repair, and every one of them found the repair carrying the class it
+fixed — the pattern the operating contract's two-round rule predicts, measured
+three times in one slice.
+
+- Round 2 (repairs of F1-F10): two repairs COLLIDED. Closing an entry at a fence
+  cleared the same variable the indent rule read as "no parent", so a child
+  after its parent's own code block was charged for a pointer the parent had.
+  The fence detachment also rested on a blank line nothing requires.
+- Round 3 (repairs of round 2): the inheritance merge ran BACKWARDS — it pooled
+  the child's text into the parent's, so a child's link laundered an unowned
+  parent. The HTML rule added in round 2 fired on `<https://...>` autolinks, one
+  of this rule's own owner forms, and discarded the rest of the bullet. Path
+  acceptance contradicted two shipped surfaces.
+- Round 4 (repairs of round 3, after the operator narrowed the contract to a
+  flat link list): the parser core verified clean against every earlier input,
+  but the merge still laundered an ATTACHED child, and four prose surfaces still
+  stated the pre-narrowing rule.
+
 ## Disposition
 
-F1-F10 repaired in this slice, each with a regression test naming the input that
-passed the first implementation. F11 repaired by removing the wrong pointer and
-routing the item to a spec that does not exist yet. F12, F13, F14 recorded and
-not resolved.
+F1-F10 repaired. F11 repaired by removing the wrong pointer and routing the item
+to a spec that does not exist yet. F12, F13, F14 recorded and not resolved.
 
-The repaired surface has NOT been read by a fresh context: this is round 1, and
-a slice changing verdict logic on a proof surface owes a second round reading
-the repairs. That round is owed and unproven.
+F7's second half was REVERSED rather than kept: round 1 made a multi-paragraph
+item find its owner in the second paragraph, and the narrowing deliberately
+charges it as unowned again, because supporting that shape was one of the
+branches whose interaction produced rounds 2 and 3. F1's repair was superseded
+rather than kept — a fence now attaches to nothing at all.
+
+The narrowing removed fence attachment, the sub-bullet merge, multi-paragraph
+entries, the HTML rule, and path acceptance. Round 4's own repairs — skipping a
+child instead of merging it, a two-space child indent, and four prose surfaces
+— are ACCEPTED-UNREVIEWED: the contract caps rounds at two, the operator
+authorized four, and no reviewer has read what round 4 motivated.
