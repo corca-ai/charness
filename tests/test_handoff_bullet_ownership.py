@@ -149,15 +149,80 @@ def test_validate_handoff_artifact_does_not_require_an_owner_in_discuss(tmp_path
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 0, result.stderr
 
-def test_validate_handoff_artifact_lets_a_sub_bullet_inherit_its_parent_owner(tmp_path: Path) -> None:
-    # Charging an indented elaboration separately would push authors to repeat
-    # the same link on every child.
+def test_validate_handoff_artifact_charges_a_sub_bullet_on_its_own(tmp_path: Path) -> None:
+    """There is no child rule: every marker starts an entry.
+
+    Each of five review rounds found a defect in whichever child rule was
+    current — a merge that laundered an unowned parent upward, a skip whose
+    verdict flipped on a blank line, and an indent test that swallowed a real
+    SIBLING of a numbered parent so it was never reported at all. A flat list
+    has no children, so the branch is gone; nesting costs a repeated link.
+    """
     result = run_on_state(
         tmp_path,
         "- Ruling status lives in [the rulings artifact](docs/guide.md).",
         "  - Ruling 4's deletion half predates its ruling.",
     )
-    assert result.returncode == 0, result.stderr
+    assert result.returncode == 1
+    assert "deletion half predates" in result.stderr
+
+
+def test_validate_handoff_artifact_reports_a_sibling_of_a_numbered_parent(tmp_path: Path) -> None:
+    # A `1. ` marker's content column is 3, so a marker indented 2 is a SIBLING.
+    # The fixed-width child test read it as a child and dropped it entirely.
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                OWNED_STATE,
+                "",
+                "## Next Session",
+                "",
+                "1. [Thesis](docs/guide.md) — what it holds.",
+                "  2. An unowned claim nobody checks.",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "An unowned claim nobody checks" in result.stderr
+
+
+def test_validate_handoff_artifact_refuses_an_unclosed_fence(tmp_path: Path) -> None:
+    """Silence is the one failure a floor must not have.
+
+    Every line after a stray delimiter reads as fenced, so the ownership scan
+    sees no entries and passes green. Markdownlint has no rule for this, so an
+    earlier record deferring it to the lint gate was false.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- [ok](docs/guide.md) — holds it.",
+        "",
+        "```bash",
+        "echo no closing fence",
+    )
+    assert result.returncode == 1
+    assert "unclosed" in result.stderr
 
 def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tmp_path: Path) -> None:
     result = run_on_state(

@@ -47,6 +47,7 @@ _ownership = load_path_module(
     "handoff_bullet_ownership", _skill_script(REPO_ROOT, "handoff_bullet_ownership.py")
 )
 unowned_entries = _ownership.unowned_entries
+has_unclosed_fence = _ownership.has_unclosed_fence
 OWNED_SECTIONS = _ownership.OWNED_SECTIONS
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
@@ -182,6 +183,22 @@ def validate_references(lines: list[str]) -> None:
         raise ValidationError("`## References` must contain at least one markdown link")
 
 
+def validate_closed_fences(lines: list[str]) -> None:
+    """Refuse an artifact whose fence never closes.
+
+    Not a style rule. An unclosed fence makes every later line read as fenced,
+    so the ownership scan silently sees no entries at all and the artifact
+    passes green. Markdownlint has no rule for this — CommonMark closes the
+    fence at EOF and the document is valid — so nothing else in the stack
+    notices.
+    """
+    if has_unclosed_fence(lines):
+        raise ValidationError(
+            "handoff artifact leaves a code fence unclosed; every line after it reads as fenced, "
+            "so the ownership rule would scan an empty section and pass. Close the fence."
+        )
+
+
 def validate_bullet_ownership(lines: list[str]) -> None:
     """Reject state/next-action entries the reader cannot open, run, or look up.
 
@@ -252,6 +269,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
         ),
         lambda: validate_nonempty_sections(lines, ordered_present_sections(lines)),
         lambda: validate_references(lines),
+        lambda: validate_closed_fences(lines),
         lambda: validate_bullet_ownership(lines),
         lambda: validate_no_regenerable_facts(path),
         lambda: validate_subagent_blocker_reasoning(lines),

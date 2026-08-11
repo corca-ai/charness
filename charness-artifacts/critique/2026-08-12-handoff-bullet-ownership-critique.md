@@ -1,7 +1,7 @@
 # Handoff Bullet Ownership Gate Critique
 Date: 2026-08-12
 
-Fresh-eye satisfaction: parent-delegated (four rounds, nine bounded reviewers total, each spawned unnamed as `bounded-reviewer`; boundary fingerprint snapshot/verify clean around every round)
+Fresh-eye satisfaction: parent-delegated (five rounds; reviewers per round 3/2/2/2/2, each spawned unnamed as `bounded-reviewer`; boundary fingerprint snapshot/verify around every round, parent writes declared)
 
 ## Decision Under Review
 
@@ -77,6 +77,16 @@ three times in one slice.
   flat link list): the parser core verified clean against every earlier input,
   but the merge still laundered an ATTACHED child, and four prose surfaces still
   stated the pre-narrowing rule.
+- Round 5 (repairs of round 4, plus a pass verifying the recorded non-claims):
+  the fixed two-column child test swallowed a real SIBLING of a numbered parent
+  — content column 3 — so an entry was never reported at all, the blank line
+  still decided a child's verdict with its direction merely inverted, and no
+  test distinguished the round-4 repair from the round-3 code it replaced. The
+  verification pass found one recorded non-claim FALSE: markdownlint ships no
+  unclosed-fence rule, so deferring that case to the lint gate named an owner
+  that cannot fire. Two more records were understated — the lost export scaffold
+  hint affects all seven registry surfaces and both hint sites, not handoff
+  alone, and the accepted URL form covers `http://` as well.
 
 ## Disposition
 
@@ -90,7 +100,14 @@ branches whose interaction produced rounds 2 and 3. F1's repair was superseded
 rather than kept — a fence now attaches to nothing at all.
 
 The narrowing removed fence attachment, the sub-bullet merge, multi-paragraph
-entries, the HTML rule, and path acceptance. Round 4's own repairs — skipping a
-child instead of merging it, a two-space child indent, and four prose surfaces
-— are ACCEPTED-UNREVIEWED: the contract caps rounds at two, the operator
-authorized four, and no reviewer has read what round 4 motivated.
+entries, the HTML rule, and path acceptance. Round 5 removed the child rule
+entirely: every list marker now starts an entry. Five rounds each found a defect
+in whichever child rule was current, which is the evidence that the branch, not
+any one implementation of it, was the defect.
+
+The false lint deferral is now a real guard — the validator refuses an artifact
+with an unclosed fence, because silence is the one failure mode a floor must not
+have. Round 5's own repairs are ACCEPTED-UNREVIEWED: the contract caps rounds at
+two, the operator authorized five, and no reviewer has read what round 5
+motivated. The export scaffold-hint path defect is recorded and NOT fixed; it
+predates this slice and spans seven surfaces.

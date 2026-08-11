@@ -34,8 +34,8 @@ speaking rather than a parser limit:
 Supporting either one cost three review rounds. Those rounds found single-rule
 defects too (a fence toggle, a section-bounds walk, two code-span bugs), but
 every defect in THIS parser's entry grouping came from these branches
-interacting rather than from any one of them. The scaffold models the accepted shape so an author does not
-reach for these.
+interacting rather than from any one of them. The scaffold models the accepted
+shape so an author does not reach for these.
 
 Known non-claims -- this is a FLOOR, not a completeness proof:
 
@@ -52,17 +52,26 @@ Known non-claims -- this is a FLOOR, not a completeness proof:
 - The command test is "the span contains whitespace", a PROXY for "takes
   arguments". A backticked multi-word noun phrase satisfies it, so `` `## Slot
   Policy` `` reads as a command. Separating the two needs a content classifier.
-- A bare `https://` URL is an accepted owner alongside the three named forms.
+- A bare `http://` or `https://` URL is an accepted owner alongside the three
+  forms every prose surface names; the URL form is test-covered and undocumented.
+- A sub-bullet is its own entry and needs its own owner. Nesting is not a
+  supported shape here, so an author who nests repeats the link.
+- A lazy continuation absorbs any non-blank, non-marker line, including a `###`
+  heading or a blockquote that CommonMark would not attach to the bullet. An
+  owner on such a line launders the entry above it.
 - `#\\d+` is GitHub-shaped. A repo whose tracker uses `PROJ-123` effectively has
   two owner forms, not three, until an adapter names its id shape.
 - A hash plus a small ordinal in ordinary prose ("the hash-one priority", written
   with the symbol) and an all-digit six-hex-digit colour still read as issue ids.
 - An UNCLOSED fence leaves every later line inside it, so both owned sections
-  become unscannable and the artifact passes in silence. Nothing reports this;
-  the markdown lint gate is the surface that should notice an unclosed fence.
-- `validate_nonempty_sections` in the repo validator is still fence-blind, so a
-  handoff carrying a fenced `##` heading fails there first, naming a different
-  defect than the one the author has.
+  become unscannable. The repo validator now refuses that artifact outright, so
+  the silence is closed; this remains listed because the PARSER still cannot
+  distinguish it and depends on that outer guard.
+- `find_index` and `iter_h2_headings` in the repo validator are fence-blind, so a
+  handoff carrying a fenced canonical `##` heading is also rejected by
+  `validate_exact_h2_sections` or `validate_nonempty_sections`, naming a
+  different defect. Those run alongside this rule, not instead of it: the CLI
+  collects every violation in one pass.
 """
 from __future__ import annotations
 
@@ -91,9 +100,6 @@ LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 # bug, and this module reintroduced it once already.
 FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 HEADING_RE = re.compile(r"^\s*## ")
-# Content column of a `- ` parent: a marker indented less than this is a
-# sibling, not a child.
-_CHILD_INDENT = 2
 
 
 def _is_command_span(content: str) -> bool:
@@ -119,20 +125,31 @@ def has_owner(text: str) -> bool:
     return any(_is_command_span(match.group(2)) for match in CODE_SPAN_RE.finditer(text))
 
 
+def _fence_transition(raw: str, open_marker: str | None) -> tuple[str | None, bool]:
+    """Next open-marker state for this line, and whether the line delimits a fence.
+
+    One owner for the CommonMark rule: a fence closes only on its OWN marker
+    character in a run at least as long as the opener. Both the entry walk and
+    the unclosed-fence check read it from here, because a second copy of this
+    rule is how the plain-toggle bug got reintroduced the first time.
+    """
+    match = FENCE_RE.match(raw)
+    if match is None:
+        return open_marker, False
+    run = match.group(1)
+    if open_marker is None:
+        return run, True
+    if run[0] == open_marker[0] and len(run) >= len(open_marker):
+        return None, True
+    return open_marker, True
+
+
 def _walk(lines: Sequence[str]) -> Iterator[tuple[int, str, bool]]:
     """`(index, raw, inside_or_delimiting_a_fence)` with CommonMark fences."""
     open_marker: str | None = None
     for index, raw in enumerate(lines):
-        match = FENCE_RE.match(raw)
-        if match is not None:
-            run = match.group(1)
-            if open_marker is None:
-                open_marker = run
-            elif run[0] == open_marker[0] and len(run) >= len(open_marker):
-                open_marker = None
-            yield index, raw, True
-            continue
-        yield index, raw, open_marker is not None
+        open_marker, is_delimiter = _fence_transition(raw, open_marker)
+        yield index, raw, is_delimiter or open_marker is not None
 
 
 def _section_bounds(lines: Sequence[str], heading: str) -> tuple[int, int] | None:
@@ -175,13 +192,12 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str]]:
     entries: list[tuple[int, str]] = []
     current: list[str] = []
     current_offset: int | None = None
-    in_child = False
 
     def flush() -> None:
-        nonlocal current_offset, current, in_child
+        nonlocal current_offset, current
         if current_offset is not None and current:
             entries.append((current_offset, " ".join(current)))
-        current_offset, current, in_child = None, [], False
+        current_offset, current = None, []
 
     for index, raw, fenced in _walk(section_lines):
         if fenced:
@@ -192,24 +208,39 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str]]:
             flush()
             continue
         if LIST_ITEM_RE.match(raw):
-            # Two spaces, not "any indentation": under a `- ` parent the content
-            # column is 2, so a ONE-space marker is a sibling and absorbing it
-            # hid a whole entry from the check.
-            if current_offset is not None and raw[: _CHILD_INDENT].isspace():
-                # A child under an open parent is SKIPPED, never merged. Merging
-                # pooled the texts and ran the check on the join, so a link in
-                # the child made an unowned parent owned -- the laundering
-                # direction is the opposite of the intent, and it turned the
-                # verdict on whether a blank line happened to precede the child.
-                in_child = True
-                continue
+            # EVERY marker starts an entry. There is no child rule, because a
+            # flat list has no children -- and because five review rounds each
+            # found a defect in whichever child rule was current at the time:
+            # a merge that laundered upward, a skip whose verdict flipped on a
+            # blank line, and an indent test that swallowed a sibling of a
+            # NUMBERED parent (content column 3, or 4 at `10.`) so the entry was
+            # never reported at all. Treating a sub-bullet as its own entry
+            # costs an author one repeated link in a shape the contract already
+            # says not to write.
             flush()
             current_offset, current = index, [stripped]
             continue
-        if current_offset is not None and not in_child:
+        if current_offset is not None:
             current.append(stripped)
     flush()
     return entries
+
+
+def has_unclosed_fence(lines: Sequence[str]) -> bool:
+    """Does a fence open and never close?
+
+    CommonMark closes an open fence at EOF, so the document stays valid and no
+    markdown linter reports it -- markdownlint ships no rule for this, which
+    makes an earlier record here ("the markdown lint gate is the surface that
+    should notice") false. Every line after the stray delimiter reads as fenced,
+    so both owned sections become unscannable and the artifact would pass in
+    SILENCE. That is the one failure mode a floor must not have, so the repo
+    validator refuses the artifact instead.
+    """
+    open_marker: str | None = None
+    for raw in lines:
+        open_marker, _is_delimiter = _fence_transition(raw, open_marker)
+    return open_marker is not None
 
 
 def unowned_entries(lines: Sequence[str]) -> list[tuple[str, int, str]]:

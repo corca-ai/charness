@@ -66,8 +66,8 @@ those two sections must carry an OWNER (a markdown link, an inline command that
 regenerates the fact, or an issue id), and the planner reports `unowned_entries`
 with line numbers. `## Discuss` is exempt: an open question has no owner yet,
 which is what makes it open.
-These sections are a FLAT list: one entry per line-group, no nesting beyond a
-sub-bullet under an open parent, and no multi-paragraph entries. A fenced block
+These sections are a FLAT list: every list marker starts its own entry, so a
+sub-bullet needs its own owner, and there are no multi-paragraph entries. A fenced block
 may sit in the section — a machine-read ledger block often must — but it owns
 nothing, so a bullet whose only command is in a code block is refused; that
 bullet belongs in the artifact it should be linking. An inline command must take
