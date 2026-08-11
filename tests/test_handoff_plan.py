@@ -37,13 +37,16 @@ def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated
         "## Current State",
         "",
     ]
-    lines.extend(f"- state {index}" for index in range(current_lines))
+    # Owned scaffolding: the ownership rule now feeds `status`, so a bare
+    # `- state` bullet would make every fixture report `unowned_entries`
+    # instead of the status the test is about.
+    lines.extend(f"- state {index} in `git status --short`" for index in range(current_lines))
     lines.extend(
         [
             "",
             "## Next Session",
             "",
-            "- next",
+            "- next: [guide](docs/guide.md)",
             "",
             "## Discuss",
             "",

@@ -49,13 +49,26 @@ reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming forma
 or shortening reference links buys nothing, so cut state instead. Multiple dated
 `## This Session (<date>)` sections are a hard diary smell.
 Assume a competent next operator can follow one good link.
-Every entry in `## Current State` and `## Next Session` must carry an OWNER: a
-markdown link to the artifact that holds the detail, an inline command that
-regenerates the fact, or an issue id. Prose describing another artifact's
-contents without pointing at it is the shape that goes stale in place, and the
-size budget cannot catch it — trimming unowned prose just makes it shorter.
-`## Discuss` is exempt: an open question has no owner yet, which is what makes
-it open. The planner reports `unowned_entries` with line numbers.
+Aim for `## Current State` and `## Next Session` to read as a list of links,
+with prose only where no artifact owns the claim yet:
+
+Each entry is a link plus one line on why to open it, with the link target being
+whatever artifact owns the detail — a quality artifact, a spec, a convention doc
+(`./references/state-selection.md` shows how to choose what survives at all).
+Where no artifact owns the claim, carry the command that regenerates it instead,
+and where nothing can, spill the detail first (`./references/spill-targets.md`).
+
+The gate enforces the floor under that aim: every list entry in
+those two sections must carry an OWNER (a markdown link, an inline command that
+regenerates the fact, or an issue id), and the planner reports `unowned_entries`
+with line numbers. `## Discuss` is exempt: an open question has no owner yet,
+which is what makes it open.
+The floor is narrower than the aim, and the gap is yours to close, not the
+gate's: `## Workflow Trigger` and `## Continuation Capability` are NOT checked,
+an entry passes on one owner while paraphrasing a second artifact beside it, and
+the link is never followed. Ownership makes a claim checkable; it does not make
+it true, and it does not shorten the artifact — only spilling detail to the
+owning artifact does that.
 
 ## Workflow
 

@@ -141,6 +141,11 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
     unowned = unowned_entries(lines)
     if content_line_count > MAX_CONTENT_LINES:
         status = "over_limit"
+    elif unowned:
+        # The gate blocks on this, so a plan that reported `ok` sent the author
+        # to a refusal it had already computed. Ranked under `over_limit` only
+        # because that one is also blocking and cheaper to read first.
+        status = "unowned_entries"
     elif dated_sessions:
         status = "diary_smell"
     elif missing or extra:
@@ -331,7 +336,7 @@ def _next_action(
             "run_chunked_routing",
             command='python3 "$SKILL_DIR/scripts/parse_handoff_entries.py" --repo-root . --with-issues',
             why="start the chunked-routing pipeline, then follow the reference")
-    if artifact["status"] in {"over_limit", "shape_issue", "diary_smell", "near_limit"}:
+    if artifact["status"] in {"over_limit", "unowned_entries", "shape_issue", "diary_smell", "near_limit"}:
         return ENVELOPE.next_action(
             "repair_or_prune_handoff",
             command=f"sed -n '1,220p' {artifact_path}",

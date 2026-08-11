@@ -767,3 +767,132 @@ def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tm
     assert "2 entry(s)" in result.stderr
     assert "first unowned claim" in result.stderr
     assert "second unowned claim" in result.stderr
+
+
+# --- round-1 review findings: each of these passed the first implementation ---
+
+
+def test_validate_handoff_artifact_reads_an_unbalanced_backtick_as_unowned(tmp_path: Path) -> None:
+    # A dropped closing backtick turned the rest of the entry into a "command"
+    # and laundered the bullet — the same class as the two-span bug.
+    result = run_on_state(tmp_path, "- Authors keep typing ` instead of a quote when naming flags.")
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_double_backtick_command(tmp_path: Path) -> None:
+    # The form an author MUST use when the command itself contains a backtick.
+    # Rejecting it refuses the replacement the rule asks for.
+    result = run_on_state(tmp_path, "- Re-take it with ``git log --oneline`` before inheriting.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_requires_a_left_boundary_on_an_issue_id(tmp_path: Path) -> None:
+    result = run_on_state(tmp_path, "- See issue#5 and guide.md#42 for the background.")
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+
+
+def test_validate_handoff_artifact_ignores_a_heading_inside_a_fence(tmp_path: Path) -> None:
+    """A fenced `## Next Session` used to bind the section to the EXAMPLE.
+
+    The real section was then never scanned and reported line numbers pointed
+    into a code block — a whole-section bypass.
+    """
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                OWNED_STATE,
+                "",
+                "```markdown",
+                "## Next Session",
+                "",
+                "1. a fenced example",
+                "```",
+                "",
+                "## Next Session",
+                "",
+                "1. An unowned claim nobody checks.",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "An unowned claim nobody checks" in result.stderr
+    assert "a fenced example" not in result.stderr
+
+
+def test_validate_handoff_artifact_does_not_let_a_tilde_line_close_a_backtick_fence(tmp_path: Path) -> None:
+    # A plain (```|~~~) toggle inverts on the inner `~~~` and leaks fence
+    # content into the document for the rest of the section.
+    result = run_on_state(
+        tmp_path,
+        "- Reproduce with:",
+        "",
+        "```",
+        "~~~",
+        "```",
+        "",
+        "- An unowned claim after the block.",
+    )
+    assert result.returncode == 1
+    assert "An unowned claim after the block" in result.stderr
+
+
+def test_validate_handoff_artifact_does_not_let_a_detached_fence_exempt_a_bullet(tmp_path: Path) -> None:
+    """The live artifact's ledger block used to exempt whatever bullet sat above it.
+
+    `docs/handoff.md` must carry the `charness-publish-state-claim` block at the
+    end of `## Current State`, so the exemption was permanent, in the gate's own
+    canonical artifact, and in the section the gate exists to police.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- An unowned claim nobody checks.",
+        "",
+        "<!-- charness-publish-state-claim:demo -->",
+        "```json",
+        '{"kind":"demo"}',
+        "```",
+    )
+    assert result.returncode == 1
+    assert "An unowned claim nobody checks" in result.stderr
+
+
+def test_validate_handoff_artifact_reports_an_indented_top_level_marker(tmp_path: Path) -> None:
+    # One leading space used to make the entry vanish: not reported at all,
+    # which is worse than a false pass.
+    result = run_on_state(tmp_path, " - An unowned claim nobody checks.")
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+
+
+def test_validate_handoff_artifact_finds_an_owner_in_a_later_paragraph(tmp_path: Path) -> None:
+    # A list item may hold several paragraphs; the owner is often in the second.
+    result = run_on_state(
+        tmp_path,
+        "- Ruling 1 is executed, both halves.",
+        "",
+        "  Status per ruling lives in [the rulings artifact](docs/guide.md).",
+    )
+    assert result.returncode == 0, result.stderr
