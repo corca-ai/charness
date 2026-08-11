@@ -40,8 +40,8 @@
     },
     "state-selection.md": {
       "engagement": "on-demand",
-      "rationale": "A refresh/judge-intent planner read; not opened on a chunked_routing run.",
-      "trigger": "refresh intent — keeping only state that changes the next action"
+      "rationale": "A judge_from_user_request-intent planner read; not opened on a chunked_routing run. NOT a refresh read since the 2026-07-05 Slice-8 MOVE — INTENT_REFERENCE_READS[\"refresh\"] carries spill-targets.md alone — and the earlier 'refresh/judge-intent' wording here outlived that move.",
+      "trigger": "judge_from_user_request intent (an UNDECLARED run) — avoiding stale or non-actionable state"
     },
     "workflow-trigger.md": {
       "engagement": "on-demand",

@@ -64,11 +64,14 @@ def _validate_engagement(spec_path: str, ref: str, value: object) -> tuple[str, 
         raise ValidationError(
             f"{spec_path}: referenceEngagement[{ref}].classTag must be one of {list(CLASS_TAG_VALUES)} when present"
         )
-    # A DUP/INLINE tag asserts the ref is redundant or belongs inlined; the
-    # universal rationale requirement above already forces a written reason for
-    # that downgrade, so the tag can never silently weaken the floor without a
-    # justification (the RCF cross-check in validate_spec closes the other side:
-    # a re-read floor may not be tagged DUP/INLINE).
+    # A DUP/INLINE tag asserts the ref is redundant or belongs inlined. Since
+    # 2026-08-11 it weakens NO blocking floor: it only narrows the advisory
+    # coverage denominator in scripts/agent-runtime/build-skill-execution-observation.mjs
+    # (referenceClass), and it no longer waives the conditional-reads cross-check
+    # below. The one place it still has teeth is the opposite direction --
+    # _validate_floor_channel refuses a DUP/INLINE tag on a live
+    # requiredCommandFragments ref, because a re-read floor asserts the ref IS
+    # load-bearing and the tag says it is not.
     return engagement, class_tag
 
 
@@ -221,7 +224,6 @@ def validate_spec(repo_root: Path, skill_id: str, scenario_id: str, spec_path: s
         "declared": len(declared),
         "engage_always": sorted(engage_always),
         "undeclared_on_disk": sorted(fs_refs - set(declared)),
-        "dup_inline_tags": sorted(ref for ref, tag in class_tags.items() if tag in ("DUP", "INLINE")),
     }
 
 
@@ -274,7 +276,8 @@ def validate_registry(repo_root: Path) -> dict[str, object]:
 # a forced read and no eval scenario forced that branch, so a regression on
 # that branch would have escaped every eval. This section cross-checks every
 # planner-forceable reference against the registry's engage-always coverage,
-# tolerating a DUP/INLINE classTag or a recorded allowlist waiver.
+# tolerating exactly one waiver channel: a recorded allowlist line with a reason,
+# which goes stale-advisory once real coverage appears.
 
 _HANDOFF_PLANNER_SCRIPT = Path("skills/public/handoff/scripts/plan_handoff_run.py")
 _REFERENCE_LITERAL_RE = re.compile(r"^references/([a-z0-9-]+\.md)$")
@@ -359,12 +362,28 @@ def cross_check_conditional_reads(
     for skill_id, extractor in extractors.items():
         forceable = extractor(repo_root)
         engage_always_union: set[str] = set()
-        dup_inline_union: set[str] = set()
         for entry in by_skill.get(skill_id, []):
             engage_always_union.update(entry.get("engage_always", []))
-            dup_inline_union.update(entry.get("dup_inline_tags", []))
         # The set that would be flagged absent any allowlist waiver.
-        would_need_waiver = forceable - engage_always_union - dup_inline_union
+        #
+        # A DUP/INLINE classTag used to subtract here too, and no longer does. The
+        # tag answers "is this DOC redundant with SKILL.md" — a content
+        # classification — which is not an answer to "does any scenario exercise
+        # this planner BRANCH". A redundant doc on a branch nothing covers still
+        # lets a regression on that branch escape every eval, which is the whole
+        # subject of this cross-check. The tag also had no stale detection: an
+        # allowlist waiver that stops being needed is reported below, a classTag
+        # waiver never was. Measured before removal: across 20 registered skills
+        # and 48 tagged engagement entries (24 of them DUP/INLINE, 20 of those 24
+        # already engage-always), the tag was load-bearing as a waiver
+        # for exactly ONE reference (handoff state-selection.md), because only
+        # handoff has a forced-read extractor and nearly every tagged entry is
+        # already engage-always. That one moved to the allowlist with its reason.
+        # classTag itself STAYS: it is the advisory coverage-denominator class in
+        # scripts/agent-runtime/build-skill-execution-observation.mjs, and
+        # _validate_floor_channel still refuses a DUP/INLINE tag on a live
+        # requiredCommandFragments floor.
+        would_need_waiver = forceable - engage_always_union
         skill_allowlist = allowlist.get(skill_id, {})
         allowlist_waived = set(skill_allowlist)
         flagged = sorted(would_need_waiver - allowlist_waived)
@@ -372,7 +391,6 @@ def cross_check_conditional_reads(
             "skill_id": skill_id,
             "forceable": sorted(forceable),
             "engage_always": sorted(engage_always_union),
-            "waived_class_tag": sorted(forceable & dup_inline_union),
             "waived_allowlist": sorted(would_need_waiver & allowlist_waived),
             "flagged": flagged,
         }
@@ -392,12 +410,12 @@ def cross_check_conditional_reads(
         # conditional required-read lets a planner-branch regression escape
         # every eval (north-star "wrong answer escapes"); advisory rejected:
         # advisory output has a recorded ignored-precedent (undeclared_on_disk);
-        # the classTag+allowlist waiver channel bounds authoring churn; goal
+        # the allowlist waiver channel bounds authoring churn; goal
         # 2026-07-08-retro-informed-improvement-5pack Slice V.
         details = "; ".join(f"`{skill_id}`: {refs}" for skill_id, refs in sorted(flagged_skills.items()))
         raise ValidationError(
             "conditional-reads cross-check: planner-forceable reference(s) with no engage-always "
-            f"scenario coverage and no classTag/allowlist waiver: {details}. Fix by either adding a "
+            f"scenario coverage and no allowlist waiver: {details}. Fix by either adding a "
             "scenario that engage-always forces the reference, or adding a waiver line to "
             f"{ALLOWLIST_PATH} with a reason."
         )

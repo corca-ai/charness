@@ -52,12 +52,19 @@ def test_unforced_on_demand_reference_is_flagged(tmp_path: Path) -> None:
         cross_check_conditional_reads(tmp_path, extractors={"alpha": lambda root: {"a.md", "b.md"}})
 
 
-def test_waived_via_class_tag(tmp_path: Path) -> None:
-    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(), "b.md": _od(class_tag="INLINE")}, rcf=["a.md"])
+@pytest.mark.parametrize("class_tag", ["INLINE", "DUP"])
+def test_class_tag_does_not_waive_coverage(tmp_path: Path, class_tag: str) -> None:
+    # INVERTED 2026-08-11. This used to assert a DUP/INLINE classTag waived the
+    # cross-check; now it asserts the opposite, because the tag answers "is this DOC
+    # redundant with SKILL.md" and the cross-check asks "does any scenario exercise
+    # this planner BRANCH". A redundant doc on an uncovered branch still lets a
+    # regression there escape every eval. The allowlist is the only waiver channel
+    # left: one line, one written reason, and a stale advisory when it stops being
+    # needed -- none of which the tag had.
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(), "b.md": _od(class_tag=class_tag)}, rcf=["a.md"])
     _write_registry(tmp_path, [entry])
-    report = cross_check_conditional_reads(tmp_path, extractors={"alpha": lambda root: {"a.md", "b.md"}})
-    assert report["skills"]["alpha"]["flagged"] == []
-    assert report["skills"]["alpha"]["waived_class_tag"] == ["b.md"]
+    with pytest.raises(ValidationError, match=r"conditional-reads cross-check:.*b\.md"):
+        cross_check_conditional_reads(tmp_path, extractors={"alpha": lambda root: {"a.md", "b.md"}})
 
 
 def test_waived_via_allowlist(tmp_path: Path) -> None:
@@ -121,16 +128,16 @@ def test_extractor_registry_and_forceable_set_pin() -> None:
 def test_live_repo_conditional_reads_cross_check_is_clean() -> None:
     report = cross_check_conditional_reads(ROOT)
     assert report["skills"]["handoff"]["flagged"] == []
-    assert "state-selection.md" in report["skills"]["handoff"]["waived_class_tag"]
     assert "adapter-contract.md" in report["skills"]["handoff"]["waived_allowlist"]
-    # workflow-trigger.md is forced ONLY by judge_from_user_request, which no scenario
-    # exercises. Its INLINE classTag lived in the two pickup specs deleted on
-    # 2026-08-11; rather than re-home a CONTENT classification as a COVERAGE waiver,
-    # the waiver moved to the allowlist, which carries a written reason AND goes
-    # stale-advisory the moment coverage appears. This assertion is a record of a
-    # known GAP, not a property worth preserving: adding a judge-intent scenario is
-    # expected to red it, alongside the stale_allowlist advisory naming the same line.
+    # Both reads the judge_from_user_request intent forces, and no scenario exercises
+    # that intent -- the planner resolves it for an UNDECLARED run, before any
+    # --intent exists to fixture from. Recorded here as a known GAP, not as a property
+    # worth preserving: adding a judge-intent scenario is expected to red these two
+    # lines, alongside the stale_allowlist advisory naming the same allowlist entries.
+    # Both used to ride the classTag channel, which said nothing about coverage and
+    # never went stale; that channel is deleted.
     assert "workflow-trigger.md" in report["skills"]["handoff"]["waived_allowlist"]
+    assert "state-selection.md" in report["skills"]["handoff"]["waived_allowlist"]
     # Deliberately NOT asserting `report["stale_allowlist"] == []`: staleness is an
     # ADVISORY signal the validator prints and never raises on, pinned as such by
     # test_stale_allowlist_entry_is_advisory_not_error above. Blocking on it here

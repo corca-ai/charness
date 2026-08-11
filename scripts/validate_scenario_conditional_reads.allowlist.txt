@@ -2,9 +2,15 @@
 # Each entry waives ONE planner-forceable reference (see
 # PLANNER_FORCED_READ_EXTRACTORS in scripts/claim_fidelity_lib.py) from the
 # conditional-reads cross-check when no eval scenario forces it via an
-# engage-always referenceEngagement and it carries no DUP/INLINE classTag
-# either. A waiver that is no longer needed is surfaced as a stale-allowlist
-# advisory, never silently dropped.
+# engage-always referenceEngagement. A waiver that is no longer needed is
+# surfaced as a stale-allowlist advisory, never silently dropped.
+#
+# This is now the ONLY waiver channel. A DUP/INLINE classTag used to waive here
+# too and no longer does: it classifies the DOC as redundant with SKILL.md,
+# which does not answer whether any scenario exercises the planner BRANCH, and
+# it carried no stale detection. Every waiver therefore costs one line and one
+# written reason, which is the point.
 
 handoff:adapter-contract.md:adapter-health branch (adapter missing/warned/invalid) is genuinely hard to fixture healthy -- decided waiver+reason 2026-07-08, not a new scenario (goal 5pack Slice V)
+handoff:state-selection.md:forced ONLY by the judge_from_user_request intent (the refresh intent stopped forcing it in the 2026-07-05 Slice-8 MOVE), which no registered scenario exercises. Waived here from 2026-08-11, when the classTag waiver channel was deleted: the INLINE tag on refresh.spec.json is a true census claim about the DOC and stays there for the advisory coverage denominator, but it was never an answer to the COVERAGE question and gave no stale signal. Discharge by adding a judge-intent scenario that engage-always forces this reference; this line then goes stale-advisory.
 handoff:workflow-trigger.md:forced ONLY by the judge_from_user_request intent, which no registered scenario exercises -- the undeclared-route branch cannot be fixtured from a spec prompt because the planner resolves it before any --intent is declared. Waived here rather than by the INLINE classTag it carried until 2026-08-11: the census tag says the DOC is redundant with SKILL.md, which is not an answer to the COVERAGE question, and a classTag waiver gets no stale advisory. Recorded 2026-08-11 when the two pickup specs carrying that tag were deleted with the pickup-ambiguity heuristic. Discharge by adding a judge-intent scenario that engage-always forces this reference; this line then goes stale-advisory.

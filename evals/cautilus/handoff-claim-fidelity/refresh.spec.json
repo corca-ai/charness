@@ -45,7 +45,7 @@
     "state-selection.md": {
       "engagement": "on-demand",
       "classTag": "INLINE",
-      "rationale": "RETIRED from requiredCommandFragments (reference-compaction MOVE, 2026-07-05): census INLINE — the Compression Rule ('keep only facts that change the next action') is inlined in SKILL.md (step 2, step 4 keep-enumeration, guardrails), so plan_handoff_run.py no longer forces a refresh to re-read this doc. The claim is now carried by the emitted-token RSF floor (`Refresh kept:` + `Refresh non-claims:`), OBSERVED by a fresh ask-before-run capture. Retained as a declared reference for on-demand depth.",
+      "rationale": "RETIRED from requiredCommandFragments (reference-compaction MOVE, 2026-07-05): census INLINE — the Compression Rule ('keep only facts that change the next action') is inlined in SKILL.md (step 2, step 4 keep-enumeration, guardrails), so plan_handoff_run.py no longer forces a refresh to re-read this doc. The claim is now carried by the emitted-token RSF floor (`Refresh kept:` + `Refresh non-claims:`), OBSERVED by a fresh ask-before-run capture. Retained as a declared reference for on-demand depth. The classTag stays as that census claim and NOTHING more: since 2026-08-11 it waives no coverage check, and this reference is still planner-forced by judge_from_user_request, whose COVERAGE waiver is a line in scripts/validate_scenario_conditional_reads.allowlist.txt. Deleting that line reds the conditional-reads cross-check; the tag will not cover for it.",
       "trigger": "authoring depth on the keep/drop rubric beyond the inlined Compression Rule gist."
     },
     "workflow-trigger.md": {

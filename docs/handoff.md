@@ -35,9 +35,9 @@
 1. **The recorded sweep as a DYNAMIC WORKFLOW** (operator-directed), one agent per
    candidate, each REQUIRED to emit its consumer grep before proposing. **No counterweight
    ran on it — triage first.** Two of its five items are RE-keys, not deletions.
-2. **`state-selection.md` is waived by `classTag` for a gap the allowlist now owns.**
-   Forced only by `judge_from_user_request`, covered by no scenario — the twin of the
-   `workflow-trigger.md` case `a24b0155` moved. Pre-existing; touches a Slice-8 record.
+2. **One judge-intent scenario discharges TWO allowlist waivers** (`workflow-trigger.md`,
+   `state-selection.md`) — 40% of handoff's forceable set. NOT blocked on a missing
+   `--intent`: no spec pins a route by flag. Hard part is making a run DECLINE to declare.
 3. **`#546` phase 2 — the adapter `conditional:` marker.**
 4. **`#587` — edit, do not close.** The mapper is
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`.
@@ -61,8 +61,8 @@
   compress the wording. A link line says what it CONTAINS (awiki `link_only_lines`), never
   why to open it. Never argue for an untaxed section — it becomes a dumping ground.
 - **The round that reads the REPAIRS is the one that catches you.** `a24b0155`'s round-1
-  fix removed a waiver channel and left three sentences describing it; round 2 found the
-  contradiction its own repair created. Reviewers unprompted; round 2 is not optional.
+  fix MOVED a waiver off the classTag channel and left three sentences describing the tag;
+  round 2 found the contradiction its own repair made. Round 2 is not optional.
 - **Autonomy needs `--dangerously-skip-permissions`, which the operator already uses.**
   Under `acceptEdits` a headless run cannot reach its own stop gate — the contract demands
   gates, the mode blocks `python3`. A precondition, NOT a harness defect; do not file it.
