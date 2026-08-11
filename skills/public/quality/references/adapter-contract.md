@@ -52,7 +52,6 @@ Quality-specific fields:
 - `public_spec_pointer_proof_markers`
 - `recommendation_defaults_version`
 - `adapter_review_sources`
-- `domain_language_contract`
 - `acknowledged_recommendations`
 - `gate_design_review_globs`
 - `product_surfaces`
@@ -412,55 +411,6 @@ runners that interpret the same adapter should accept the same env or expose
 their own equivalent flag. The legacy `CHARNESS_QUALITY_READ_ONLY` env was
 removed when this contract landed; wrappers that still set it now get the
 default full mode and should switch to the canonical surface.
-
-`domain_language_contract` optionally declares canonical repo terms for a
-DDD-style ubiquitous-language inventory, consumed by
-`scripts/inventory_ubiquitous_language.py`. Declaring the field is optional; once
-declared, it is NOT purely advisory — see "What hard-fails" below.
-
-Shape:
-
-```yaml
-domain_language_contract:
-  surface_globs:
-    - README.md
-    - docs/**/*.md
-    - skills/public/**/*.md
-  exemption_globs:
-    - skills/public/quality/references/adapter-contract.md
-  terms:
-    - id: external-tool-cli
-      canonical: "charness tool"
-      allowed_aliases:
-        - "external tool command"
-      deprecated_aliases:
-        - "charness install <tool>"
-```
-
-Use `allowed_aliases` for deliberately user-friendly phrasing and
-`deprecated_aliases` for low-noise strings that should disappear from
-user-facing docs, CLI references, adapters, or artifacts. An allowed alias
-without the canonical term is advisory review material.
-
-What hard-fails (exit 1), because a clean verdict over an unread scope is not a
-clean verdict:
-
-- a `deprecated_aliases` hit;
-- a `surface_globs` list you DECLARED that matches no file at all — the term was
-  never scanned, so its clean result establishes nothing. Remedy: correct the
-  glob, or remove the term. Note the scan enumerates through
-  `git ls-files --cached --others --exclude-standard`, so a declared surface that
-  is gitignored (a generated docs tree, say) reads as unmatched;
-- `surface_globs: []` (or `null`) on a term — a declared empty scope, which is
-  different from omitting the key to inherit the contract-level scope.
-
-What is reported but stays exit 0: a scope emptied entirely by `exemption_globs`
-(deliberate, and named in the output), and a glob in a multi-glob list that
-matched nothing while its siblings matched (that surface is silently unread, so
-the run says so). Use `exemption_globs` for quoted examples or historical records that
-intentionally document non-canonical wording; the default scan scope excludes
-adapter YAML files so the contract does not fail on its own deprecated alias
-declarations.
 
 `gate_commands` should stay suitable for quiet maintainer-local enforcement
 such as pre-push. `review_commands` should hold the fuller quality-review path

@@ -16,6 +16,10 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
+from runtime_bootstrap import import_repo_module  # noqa: E402
+
+_ADAPTER_LIB = import_repo_module(REPO_ROOT / "scripts/adapter_lib.py", "scripts.adapter_lib")
 GATE = REPO_ROOT / "scripts" / "check_runtime_budget_universe.py"
 UNIVERSE = REPO_ROOT / "scripts" / "quality_label_universe.py"
 
@@ -325,10 +329,26 @@ def test_gate_is_inert_without_an_adapter(tmp_path: Path) -> None:
     assert _payload(result)["armed"] is False
 
 
+def _declared_budget_labels() -> set[str]:
+    """Every budgeted label the adapter declares, across all four blocks.
+
+    Derived from the adapter rather than pinned, because the number moves for
+    honest reasons -- deleting a capability deletes its budgets -- and a
+    hand-bumped floor answers "still enough" to whatever it was last set to.
+    This repo has recorded that exact form as its worst available ratchet shape;
+    the union is the thing the assertion actually means.
+    """
+    adapter = _ADAPTER_LIB.load_yaml_file(REPO_ROOT / ".agents" / "quality-adapter.yaml")
+    labels = set(adapter.get("runtime_budgets") or {})
+    for profile in (adapter.get("runtime_budget_profiles") or {}).values():
+        labels.update((profile or {}).get("budgets") or {})
+    return labels
+
+
 def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
-    """The live blast-radius measurement, kept as a test rather than a claim: all
-    38 budgeted labels across all four blocks are names the runner still knows, so
-    arming this gate refused nothing that previously passed."""
+    """The live blast-radius measurement, kept as a test rather than a claim:
+    every budgeted label across all four blocks is a name the runner still knows,
+    so arming this gate refused nothing that previously passed."""
     result = _run(GATE, "--repo-root", str(REPO_ROOT), "--json")
     assert result.returncode == 0, result.stderr
     payload = _payload(result)
@@ -337,8 +357,11 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     # `> 0` would have stayed green through the regression that matters most here:
     # dropping `runtime_budget_profiles` from `budgeted_labels` leaves the ten
     # top-level budgets and hides every profile block, which is the exact
-    # single-profile blindness this gate reads the union to fix.
-    assert payload["checked"] >= 38, payload["checked"]
+    # single-profile blindness this gate reads the union to fix. Comparing
+    # against the DECLARED union catches that without a number to bump.
+    declared = _declared_budget_labels()
+    assert payload["checked"] >= len(declared), (payload["checked"], sorted(declared))
+    assert len(declared) > len(_ADAPTER_LIB.load_yaml_file(REPO_ROOT / ".agents" / "quality-adapter.yaml").get("runtime_budgets") or {})
     # `charness-version` is budgeted in all four blocks and reachable ONLY through
     # the standing-probe source; if that source empties, it orphans and the gate
     # turns red for a correct adapter.

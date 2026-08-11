@@ -45,7 +45,6 @@ _MODULES = {
         "scripts/check_test_repo_copy_invariants.py",
         "scripts/validate_integrations.py",
         "skills/public/quality/scripts/inventory_ci_local_gate_parity.py",
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
         "scripts/check_coverage.py",
     )
 }
@@ -537,65 +536,6 @@ def test_parity_gate_names_a_job_it_could_not_read(tmp_path: Path) -> None:
     assert unfolded.returncode == 0, unfolded.stdout + unfolded.stderr
 
 
-def _language_repo(tmp_path: Path, glob: str, *, exemption: str | None = None) -> Path:
-    repo = tmp_path / "lang-repo"
-    (repo / ".agents").mkdir(parents=True, exist_ok=True)
-    (repo / "docs").mkdir(parents=True, exist_ok=True)
-    (repo / "docs" / "a.md").write_text("corca-harness twice: corca-harness\n", encoding="utf-8")
-    lines = [
-        "domain_language_contract:",
-        "  terms:",
-        "    - id: harness",
-        "      canonical: charness",
-        "      deprecated_aliases:",
-        "        - corca-harness",
-        "      surface_globs:",
-        f"        - {glob}",
-    ]
-    if exemption:
-        lines += ["      exemption_globs:", f"        - {exemption}"]
-    (repo / ".agents" / "quality-adapter.yaml").write_text("\n".join(lines) + "\n", encoding="utf-8")
-    return repo
-
-
-def test_language_inventory_refuses_declared_globs_that_read_nothing(tmp_path: Path) -> None:
-    """S32: a typo'd `surface_globs` (`doc/**` for `docs/**`) scanned zero files and
-    reported `ok`, while a deprecated alias sat twice in a real doc. `ok` over an
-    unread scope is the same defect as a green over an empty one.
-    """
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(_language_repo(tmp_path, "doc/**/*.md")),
-    )
-    assert result.returncode == 1, result.stdout + result.stderr
-    assert "matched no file" in result.stdout + result.stderr
-
-    # Control: the corrected glob finds the alias it was blind to.
-    found = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(_language_repo(tmp_path, "docs/**/*.md")),
-    )
-    assert found.returncode == 1, found.stdout + found.stderr
-    assert "deprecated alias" in found.stdout + found.stderr
-
-
-def test_language_inventory_does_not_refuse_a_scope_emptied_by_exemption(tmp_path: Path) -> None:
-    """The false positive the first cut of the S32 repair shipped: a glob that
-    matches files, all of which are deliberately EXEMPT, is not a wrong contract.
-    It reads zero files for a reason the contract itself states, so it stays a pass.
-    """
-    repo = _language_repo(tmp_path, "docs/**/*.md", exemption="docs/a.md")
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-    assert "matched no file" not in result.stdout + result.stderr
-
-
 # --- Round 2 of the same slice: cases round 1 established the first cut missed.
 
 
@@ -688,95 +628,6 @@ def test_parity_require_evaluated_scope_has_both_arms(tmp_path: Path) -> None:
     assert json.loads(passed.stdout)["jobs_evaluated"] == 1
 
 
-def test_language_inventory_says_when_exemptions_emptied_the_scope(tmp_path: Path) -> None:
-    """Round 1's blocker on this slice: an exemption-emptied scope is a legitimate
-    PASS, but the first cut made it a SILENT pass — output byte-identical to a full
-    clean scan. The sibling parity gate is pinned to state its empty scope; this one
-    now states its own, and still does not refuse.
-    """
-    repo = _language_repo(tmp_path, "docs/**/*.md", exemption="docs/a.md")
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 0, result.stdout + result.stderr
-    output = result.stdout + result.stderr
-    assert "0 file(s) read" in output
-    assert "establishes nothing" in output
-    assert "matched no file" not in output  # still not the refusal
-
-    # Control: a scope that actually read files says nothing of the kind.
-    scanned = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(_language_repo(tmp_path, "docs/**/*.md")),
-    )
-    assert "0 file(s) read" not in scanned.stdout + scanned.stderr
-
-
-def test_language_inventory_refuses_an_explicitly_empty_declared_scope(tmp_path: Path) -> None:
-    """`surface_globs: []` is a declared empty scope, not an absent declaration.
-    Collapsing the two silently handed the term an inherited scope and then reported
-    globs it never declared."""
-    repo = tmp_path / "empty-scope-repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "a.md").write_text("corca-harness\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
-        "      deprecated_aliases:\n        - corca-harness\n      surface_globs: []\n",
-        encoding="utf-8",
-    )
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert result.returncode == 1, result.stdout + result.stderr
-    assert "declared EMPTY" in result.stdout + result.stderr
-
-
-def test_language_inventory_scope_rules_hold_inside_a_git_repo(tmp_path: Path) -> None:
-    """Round 1, MINOR 9: the new tests all ran the `rglob` fallback because their
-    fixture was not a git repo, while every real invocation takes the `git ls-files`
-    branch. Same two verdicts, other branch."""
-    repo = _seeded_repo(tmp_path)
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "a.md").write_text("corca-harness\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
-        "      deprecated_aliases:\n        - corca-harness\n      surface_globs:\n"
-        "        - doc/**/*.md\n",
-        encoding="utf-8",
-    )
-    _git(repo, "add", "-A")
-    _git(repo, "commit", "-qm", "seed language contract")
-
-    refused = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert refused.returncode == 1, refused.stdout + refused.stderr
-    assert "matched no file" in refused.stdout + refused.stderr
-
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        (repo / ".agents" / "quality-adapter.yaml").read_text(encoding="utf-8").replace(
-            "- doc/**", "- docs/**"
-        ),
-        encoding="utf-8",
-    )
-    found = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    assert found.returncode == 1, found.stdout + found.stderr
-    assert "deprecated alias" in found.stdout + found.stderr
-
-
 def test_per_file_floor_over_an_all_exempt_population_is_not_enforced() -> None:
     """Round 1's blocker on the S1 slice: the first cut keyed `status` on the INPUT
     length, so a population that is entirely unmeasured or entirely below the
@@ -836,76 +687,6 @@ def test_per_file_floor_human_output_names_the_unestablished_scope() -> None:
     assert "UNESTABLISHED" in check_coverage.format_per_file_floor_line(
         {"violations": [], "warn_band": []}, min_file_coverage=0.85
     )
-
-
-def test_language_inventory_advisories_do_not_invent_a_cause(tmp_path: Path) -> None:
-    """Round 2: the exemption advisory fired with `0 matched ... all were removed by
-    exemption_globs` when NO exemption was configured — a fabricated cause on the
-    built-in discovery fallback, which is the shape an unconfigured consumer hits.
-    """
-    repo = tmp_path / "no-surface-repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n",
-        encoding="utf-8",
-    )
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    output = result.stdout + result.stderr
-    assert result.returncode == 0, output
-    assert "no exemption was involved" in output
-    assert "removed by exemption_globs" not in output
-
-
-def test_language_inventory_names_a_dead_glob_among_live_ones(tmp_path: Path) -> None:
-    """Round 1, MINOR 4, which shipped with no discriminator: the aggregate hides the
-    likelier shape — one typo in a multi-glob list, siblings still matching, that
-    surface silently unread. Reported, not refused: the scan did establish something.
-    """
-    repo = tmp_path / "partial-repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "a.md").write_text("charness\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "domain_language_contract:\n  terms:\n    - id: harness\n      canonical: charness\n"
-        "      surface_globs:\n        - docs/**/*.md\n        - skil/**/*.md\n",
-        encoding="utf-8",
-    )
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    output = result.stdout + result.stderr
-    assert result.returncode == 0, output
-    assert "skil/**/*.md" in output
-    assert "silently unread" in output
-
-
-def test_language_inventory_empty_scope_message_names_the_term_key(tmp_path: Path) -> None:
-    """Round 2 blocker: `scope_declared` is False for `surface_globs: []`, so the
-    shared `owner` string named the CONTRACT-level key — a false statement whose
-    remedy would not clear the failure and would drop every other term's scope."""
-    repo = tmp_path / "empty-declared-repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / "docs" / "a.md").write_text("charness\n", encoding="utf-8")
-    (repo / ".agents" / "quality-adapter.yaml").write_text(
-        "domain_language_contract:\n  surface_globs:\n    - docs/**/*.md\n  terms:\n"
-        "    - id: harness\n      canonical: charness\n      surface_globs: []\n",
-        encoding="utf-8",
-    )
-    result = run_gate(
-        "skills/public/quality/scripts/inventory_ubiquitous_language.py",
-        "--repo-root",
-        str(repo),
-    )
-    output = result.stdout + result.stderr
-    assert result.returncode == 1, output
-    assert "domain_language_contract.harness.surface_globs is declared EMPTY" in output
 
 
 def test_parity_gate_names_a_job_whose_steps_it_could_not_parse(tmp_path: Path) -> None:

@@ -40,7 +40,6 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         ("cli_skill_surface_change_globs", data["cli_skill_surface_change_globs"]),
         ("canonical_markdown_surfaces", data["canonical_markdown_surfaces"]),
         ("prompt_asset_policy", data["prompt_asset_policy"]),
-        ("domain_language_contract", data["domain_language_contract"]),
         ("skill_ergonomics_gate_rules", data["skill_ergonomics_gate_rules"]),
         ("skill_ergonomics_skill_paths", data["skill_ergonomics_skill_paths"]),
         ("skill_ergonomics_runtime_install_skill_paths", data["skill_ergonomics_runtime_install_skill_paths"]),
@@ -64,7 +63,7 @@ def render_bootstrap_adapter(data: dict[str, Any], field_statuses: dict[str, str
         "cli_skill_surface_skill_paths cli_skill_surface_change_globs canonical_markdown_surfaces "
         "public_spec_section_exemptions public_spec_pointer_proof_markers "
         "skill_ergonomics_gate_rules skill_ergonomics_skill_paths skill_ergonomics_runtime_install_skill_paths "
-        "vendored_paths domain_language_contract runtime_budgets runtime_budget_profiles startup_probes quality_phases concept_paths preflight_commands "
+        "vendored_paths runtime_budgets runtime_budget_profiles startup_probes quality_phases concept_paths preflight_commands "
         "gate_commands review_commands security_commands".split()
     )
     policy_items = [

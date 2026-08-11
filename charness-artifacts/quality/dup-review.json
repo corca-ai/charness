@@ -2998,6 +2998,27 @@
       "note": "ROTATED from e44ea83ce8db9523 -- same two members (inventory_boundary_bypass_lib._iter_string_constants and check_documented_subcommands._iter_runtime_strings), same reasoning, re-fingerprinted when a round-2 review drove the module-docstring carve-out (`_reads_module_docstring`) into the neighbouring function. The shared shape is the stdlib idiom for reading string literals out of a parsed module: `ast.walk` plus `isinstance(node, ast.Constant) and isinstance(node.value, str)`. Not extractable: the boundary-bypass reader wants every string under a spawn call node, unlocated and undifferentiated; the subcommand reader wants operator-facing runtime text WITH its line number, with docstrings excluded EXCEPT where the module feeds `__doc__` to a parser, and with f-strings reassembled across their placeholders. A shared helper would yield the union and let each caller discard most of it, while making the portable boundary-bypass lib depend on a repo-level helper for four lines of stdlib.",
       "reviewed_at": "2026-08-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e0e6e461cdf68c45",
+      "note": "ROTATED from 059c8578bee19e5a by membership REDUCTION, not new duplication. That entry's own note names its members as 'the publish-state ledger's reconciled/refused human renderer' plus 'the unchanged command-doc, prose-pin, and ubiquitous-language validators'; this slice deleted inventory_ubiquitous_language.py, and the surviving three (publish_state_ledger.py, check_command_docs.py, check_prose_pin.py) re-fingerprinted. All three members are untouched by this diff. Reasoning unchanged from the original entry: the shape is `if <status> == <literal>: return <message>` at each validator's own operator boundary, and the branches expose different verdict contracts -- extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction behind a message helper.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ce235b3035dc420f",
+      "note": "The sibling-module loader idiom -- `spec.loader.exec_module(module); return module` followed by the `_load_*` call -- shared by skills/public/quality/scripts/nose_report_lib.py and skills/public/release/scripts/publish_release_resume.py. Both members are untouched by this diff; it surfaced as new because deleting inventory_ubiquitous_language.py from the corpus re-formed the family. Not extractable, and this is the boundary the harness keeps deliberately: a portable skill package must not import a repo-level `scripts/` helper, so the loader that lets a skill script reach its own sibling has to live inside each package. A shared loader would be exactly the repo-only import the idiom exists to avoid. I could NOT identify a named predecessor entry for this family; what is established is that no member changed and that the only code deletion in the diff is the ubiquitous-language script.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0c39d39618394623",
+      "note": "The two-line `if <x> is None: return []` empty-input guard, shared by check_command_docs.py, quality_bootstrap_lifecycle.py, chunked_routing_agentic.py, and three call sites in setup_adapter.py. Idiom-sized and below any extractable unit: a helper for `None -> []` would be longer at every call site than the branch it replaces, and each guard names a different absent input (a missing contract key, an absent adapter file, an unset routing chunk). All six members are untouched by this diff; it surfaced as new because deleting inventory_ubiquitous_language.py from the corpus re-formed the family. Same class already accepted here as 003780cc89f2ccfd and 349f5d577fe2588b. I could NOT identify a named predecessor entry for this family; what is established is that no member changed and that the only code deletion in the diff is the ubiquitous-language script.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

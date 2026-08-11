@@ -89,14 +89,6 @@ EXEMPT_SITES: tuple[tuple[str, tuple[str, ...], tuple[str, ...], str], ...] = (
         "fields -- the first selects subprocesses, the second can switch the gate off.",
     ),
     (
-        "ubiquitous_language_inventory",
-        ("skills/public/quality/scripts/inventory_ubiquitous_language.py",),
-        ("tests/quality_gates/test_quality_ubiquitous_language.py::"
-         "test_inventory_ubiquitous_language_refuses_an_adapter_version_it_does_not_speak",),
-        "reads the quality adapter raw for `domain_language_contract`, which selects its "
-        "scan scope and exemptions, and raises InventoryError instead of returning a payload.",
-    ),
-    (
         "worktree_doctor",
         ("scripts/worktree_doctor_lib.py",),
         ("tests/charness_cli/test_worktree_doctor.py::"

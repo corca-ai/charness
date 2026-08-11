@@ -107,7 +107,6 @@ def infer_quality_defaults(repo_root: Path) -> dict[str, Any]:
         "public_spec_pointer_proof_markers": list(DEFAULT_PUBLIC_SPEC_POINTER_PROOF_MARKERS),
         "prompt_asset_roots": [],
         "adapter_review_sources": [],
-        "domain_language_contract": {},
         "acknowledged_recommendations": [],
         "gate_design_review_globs": [],
         "product_surfaces": [],
@@ -192,14 +191,6 @@ def _apply_policy_fields(data: dict[str, Any], validated: dict[str, Any], errors
         validated["skill_ergonomics_gate_rules"] = skill_ergonomics_gate_rules
 
     adapter_validators.apply_runtime_fields(data, validated, errors)
-
-    domain_language_contract = data.get("domain_language_contract")
-    if domain_language_contract is None:
-        return
-    if not isinstance(domain_language_contract, dict):
-        errors.append("domain_language_contract must be a mapping")
-        return
-    validated["domain_language_contract"] = dict(domain_language_contract)
 
 
 def _apply_mutation_testing(

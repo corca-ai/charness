@@ -78,7 +78,6 @@ def _infer_defaults(repo_root: Path) -> dict[str, Any]:
         "spec_pytest_reference_format": DEFAULT_SPEC_PYTEST_REFERENCE_FORMAT,
         "prompt_asset_roots": [],
         "adapter_review_sources": [],
-        "domain_language_contract": {},
         "acknowledged_recommendations": [],
         "gate_design_review_globs": [],
         "product_surfaces": [],
@@ -178,8 +177,6 @@ def _apply_existing_policy_fields(data: dict[str, Any], raw: dict[str, Any], val
         data["specdown_smoke_patterns"] = list(specdown_smoke_patterns)
     if isinstance(raw.get("prompt_asset_policy"), dict):
         data["prompt_asset_policy"] = merge_prompt_asset_policy(raw.get("prompt_asset_policy"))
-    if isinstance(raw.get("domain_language_contract"), dict):
-        data["domain_language_contract"] = dict(raw.get("domain_language_contract"))
     if validated_skill_rules is not None:
         data["skill_ergonomics_gate_rules"] = validated_skill_rules
     runtime_budgets = raw.get("runtime_budgets")
@@ -402,8 +399,6 @@ def _add_prompt_and_runtime_fields(
         "prompt_asset_policy", existing, explicit_fields, final, field_statuses, subkey_refills,
         DEFAULT_PROMPT_ASSET_POLICY,
     )
-    final["domain_language_contract"] = dict(existing.get("domain_language_contract", {})) if "domain_language_contract" in explicit_fields else {}
-    field_statuses["domain_language_contract"] = "preserved" if "domain_language_contract" in explicit_fields else "defaulted"
     final["skill_ergonomics_gate_rules"] = list(existing.get("skill_ergonomics_gate_rules", [])) if "skill_ergonomics_gate_rules" in explicit_fields else list(DEFAULT_SKILL_ERGONOMICS_GATE_RULES)
     field_statuses["skill_ergonomics_gate_rules"] = "preserved" if "skill_ergonomics_gate_rules" in explicit_fields else "defaulted"
     final["runtime_profile_default"] = existing.get("runtime_profile_default", "default") if "runtime_profile_default" in explicit_fields else "default"

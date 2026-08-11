@@ -81,34 +81,6 @@ prompt_asset_policy:
     - plugins/**
     - skills/shared/references/success-criteria-review.md
     - .artifacts/**
-domain_language_contract:
-  surface_globs:
-    - README.md
-    - docs/**/*.md
-    - skills/public/**/*.md
-    - skills/shared/**/*.md
-    - charness
-    - scripts/**/*.py
-  exemption_globs:
-    - skills/public/quality/references/adapter-contract.md
-  terms:
-    - id: external-tool-cli
-      canonical: charness tool
-      deprecated_aliases:
-        - charness install <tool>
-        - charness sync-support
-        - charness update-tools
-    - id: support-capability-taxonomy
-      canonical: support capability
-      allowed_aliases:
-        - support skill
-        - integration manifest
-        - integration
-    - id: repo-initialization-skill
-      canonical: setup
-      allowed_aliases:
-        - initialize this repo
-        - repo initialization
 skill_ergonomics_gate_rules:
   - dated_incident_in_core
   - long_core
@@ -215,7 +187,6 @@ runtime_budget_profiles:
       # NOT a contention casualty: post-change max is 1081 and the old 1200 bar was
       # never approached, contended or not. 1200 was simply too tight to be a bar
       # (1.11x max); 1500 is 1.39x max and still 1.43x median.
-      inventory-ubiquitous-language: 1500
       # Tightened from 90000: the barrier removal made the whole read-only run
       # faster, and this aggregate is the bar that still has to trip on a real
       # slowdown. 1.4x the 54535ms max of the post-change window.
@@ -510,7 +481,6 @@ runtime_budget_profiles:
       check-spec-evidence-durability: 26000
       inventory-ci-local-gate-parity: 500
       inventory-sloc: 1000
-      inventory-ubiquitous-language: 3000
       pytest: 183500
       doc-duplicates: 51000
       check-markdown: 55500
@@ -625,7 +595,6 @@ runtime_budget_profiles:
       check-spec-evidence-durability: 26000
       inventory-ci-local-gate-parity: 1000
       inventory-sloc: 1500
-      inventory-ubiquitous-language: 2500
       # 4-core floor 130800ms (was 110000, a false red)
       pytest: 185000
       # 2026-07-26 (b): MEASURED at 4 cores at last, and retightened from 60000. This

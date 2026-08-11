@@ -246,7 +246,6 @@ brief:
       - area: language-adapter
         scope: domain-language alignment or adapter/gate design is in scope
         inventories:
-          - inventory_ubiquitous_language.py
           - inventory_adapter_gate_design.py
         detail_refs:
           - adapter-gate-review.md

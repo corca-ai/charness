@@ -114,7 +114,14 @@ def _intra_test_reread_candidates(repo_root: Path) -> list[dict[str, Any]]:
     for path in _test_sources(repo_root):
         try:
             tree = ast.parse(path.read_text(encoding="utf-8"))
-        except (UnicodeDecodeError, SyntaxError):
+        except (FileNotFoundError, UnicodeDecodeError, SyntaxError):
+            # `FileNotFoundError` is not hypothetical: `_test_sources` reads
+            # `git ls-files --cached`, which is the INDEX, so a test file deleted
+            # in the worktree but not yet staged is still listed and no longer
+            # readable. That is an ordinary working state -- it is what a
+            # `git rm` looks like after any command that restores changes
+            # unstaged -- and without this the whole blocking gate exits on a
+            # traceback rather than reporting on the files it can read.
             continue
         counts: dict[str, int] = {}
         for node in ast.walk(tree):

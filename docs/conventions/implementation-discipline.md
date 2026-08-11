@@ -257,7 +257,7 @@ never a finding, only "update the copy."
 | --- | --- | --- |
 | `should_fire_chunker` (deleted) | a regex over invocation text | the caller's declared `--intent` |
 | dup ratchet, pre-D30 | `<path>` family ids | the members' own content (`nose_fingerprint_lib.py`) |
-| `domain_language_contract` | retired CLI names in `deprecated_aliases` | `charness --help` (argparse) |
+| `domain_language_contract` (deleted) | retired CLI names in `deprecated_aliases` | `charness --help` (argparse) |
 | D47's entry | published measurement figures | the probe JSON |
 | boundary-bypass ratchet | `<test_file>::<target>` pairs | the call site's own content |
 

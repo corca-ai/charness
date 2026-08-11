@@ -266,8 +266,6 @@ scope, and artifacts.
 
 ## Language And Adapter Policy
 
-- ubiquitous language:
-  `$SKILL_DIR/scripts/inventory_ubiquitous_language.py --repo-root . --summary`
 - adapter/gate design:
   `$SKILL_DIR/scripts/inventory_adapter_gate_design.py --repo-root . --summary`
 
