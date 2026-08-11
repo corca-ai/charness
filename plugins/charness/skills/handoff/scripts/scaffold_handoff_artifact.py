@@ -45,19 +45,36 @@ def _heading_title(title: str) -> str:
 
 
 # One body per section, as DATA. The if-chain this replaces said the same four
-# lines five times, which read as five decisions and was one. `## Current State`
-# and `## Next Session` carry an owner because the stub itself has to VALIDATE:
-# the failure hint points authors at this scaffold, and a scaffold whose output
-# fails the gate teaches that the gate is noise.
+# lines five times, which read as five decisions and was one.
+#
+# The two gated sections MODEL the shape rather than describing it: link first,
+# em dash, one line. An author fills in a template; if the template is a
+# paragraph, the artifact becomes paragraphs, and the gate then refuses work
+# that already looks finished. The stub also has to VALIDATE — the failure hint
+# points authors at this scaffold, and a scaffold whose output fails the gate
+# teaches that the gate is noise.
+#
+# The line after the em dash says what the linked document HOLDS, never what to
+# do about it. That is the wiki convention this artifact follows, and it is also
+# the slower-rotting half: a description of contents goes stale when that
+# document changes, and its owner fixes it; a description of the next action
+# goes stale when the WORLD changes, which is every session. The measured
+# handoff errors in this repo were action and status claims, not
+# which-document-matters claims. The reading agent decides the action.
+#
+# Targets are `./handoff.md`: relative to the artifact's own directory, which is
+# where a relative link resolves from. A bare `docs/handoff.md` here resolved to
+# `docs/docs/handoff.md` and survived only because nothing runs a link gate over
+# a freshly scaffolded stub.
 SECTION_BODIES = {
     "## Workflow Trigger": "- TODO name the pickup workflow the next session invokes"
     " (e.g. `charness:handoff`) and the one-line condition that triggers it.",
-    "## Current State": "- TODO one state fact that changes the next action, with the"
-    " [artifact](docs/handoff.md) or command that owns it.",
-    "## Next Session": "- TODO the smallest next action, carrying its owner:"
-    " [target file](docs/handoff.md), a command, or an issue id.",
+    "## Current State": "- [TODO the artifact](./handoff.md)"
+    " — TODO what this document holds, in one line.",
+    "## Next Session": "- [TODO the artifact](./handoff.md)"
+    " — TODO what this document holds, in one line.",
     "## Discuss": "- TODO open decisions for the next operator, or `none` when there are none.",
-    "## References": "- [TODO pickup doc](docs/handoff.md)",
+    "## References": "- [TODO pickup doc](./handoff.md)",
 }
 
 

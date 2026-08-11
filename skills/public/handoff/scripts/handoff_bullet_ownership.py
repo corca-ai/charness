@@ -21,6 +21,21 @@ what is true now and what to do next, and both go stale between sessions.
 `## Discuss` is exempt because an open question legitimately has no owner yet;
 that is what makes it open.
 
+Two shapes are REFUSED on purpose, not by omission. Both are legal CommonMark
+and both are shapes these sections do not have, so the refusal is the contract
+speaking rather than a parser limit:
+
+- A fenced block owns nothing. `- Reproduce with:` followed by a command block
+  is charged as unowned; a bullet that needs a code block belongs in the
+  artifact it should be linking.
+- A blank line ends an entry, so an owner in a list item's second paragraph is
+  not found. Put the link on the bullet.
+
+Supporting either one cost three review rounds: each was a branch, and every
+defect those rounds found came from the branches interacting rather than from
+any one of them. The scaffold models the accepted shape so an author does not
+reach for these.
+
 Known non-claims -- this is a FLOOR, not a completeness proof:
 
 - `## Workflow Trigger` and `## Continuation Capability` are NOT read. A wrong
@@ -37,11 +52,6 @@ Known non-claims -- this is a FLOOR, not a completeness proof:
   two owner forms, not three, until an adapter names its id shape.
 - A hash plus a small ordinal in ordinary prose ("the hash-one priority", written
   with the symbol) and an all-digit six-hex-digit colour still read as issue ids.
-- A fenced block owns NOTHING. `- Reproduce with:` followed by a command block
-  is charged as unowned, because the owned sections are a flat list of links and
-  a bullet that needs a code block belongs in the artifact it should link.
-- A list item's second paragraph is not read: a blank line ends the entry, so an
-  owner placed below one is not found. Same reason -- that is not the shape.
 - An UNCLOSED fence leaves every later line inside it, so both owned sections
   become unscannable and the artifact passes in silence. Nothing reports this;
   the markdown lint gate is the surface that should notice an unclosed fence.

@@ -60,7 +60,13 @@ def test_handoff_scaffold_reports_validator_and_template(tmp_path: Path) -> None
     for heading in REQUIRED_HEADINGS:
         assert heading in template, heading
     # `## References` must carry a markdown link the validator asserts on.
-    assert "](docs/handoff.md)" in template
+    # `./handoff.md`, not `docs/handoff.md`: a relative link resolves from the
+    # artifact's own directory, so the old target pointed at `docs/docs/`.
+    assert "](./handoff.md)" in template
+    # The gated sections must MODEL the flat shape — link first, em dash, one
+    # line on what the document holds — not describe it in prose.
+    assert "## Current State\n\n- [" in template
+    assert "## Next Session\n\n- [" in template
     # Stay under the strict 70-line ceiling out of the box.
     assert len(template.splitlines()) <= 70
 

@@ -52,8 +52,12 @@ Assume a competent next operator can follow one good link.
 Aim for `## Current State` and `## Next Session` to read as a list of links,
 with prose only where no artifact owns the claim yet:
 
-Each entry is a link plus one line on why to open it, with the link target being
-whatever artifact owns the detail — a quality artifact, a spec, a convention doc
+Each entry is a link plus one line saying what that document HOLDS — not what to
+do about it. The reading agent decides the action; a contents description goes
+stale only when that document changes, while a next-action description goes
+stale whenever the world does. Order carries the priority, and the section
+heading carries the verb. The link target is whatever artifact owns the detail —
+a quality artifact, a spec, a convention doc
 (`./references/state-selection.md` shows how to choose what survives at all).
 Where no artifact owns the claim, carry the command that regenerates it instead,
 and where nothing can, spill the detail first (`./references/spill-targets.md`).
