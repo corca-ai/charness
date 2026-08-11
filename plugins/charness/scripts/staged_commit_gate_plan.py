@@ -343,8 +343,23 @@ def staged_commit_gate_plan(
             ("check-plugin-dir-references", "check_plugin_dir_references.py"),
         ):
             plan.extend(_plan_helpers.present_gate(repo_root, label, script, "--repo-root", str(repo_root)))
-        if (repo_root / "scripts" / "check-markdown.sh").exists():
-            plan.append(GateCommand("check-markdown", ("./scripts/check-markdown.sh",)))
+        # SCOPED to the staged `.md` files, unlike the broad-gate and CI invocations which lint
+        # every tracked markdown file. Unscoped here failed three of the four criteria in
+        # docs/conventions/validator-timing-layers.md: it is validate-all (a sweep over standing
+        # artifacts, which that document disqualifies by name), it is not changed-scoped (an
+        # unrelated file's lint error blocks your commit), and at ~5.0s over 540 files it is five
+        # times the document's own ~1s commit-time budget line, which the budget section never
+        # counted. Scoped it is ~1.0s, dominated by node start-up rather than file count.
+        #
+        # This is a deliberate exception to "wire the earlier invocation with the exact broad-gate
+        # command so the verdicts cannot drift": the rules and config are identical and the
+        # candidate set is still the tracked, non-excluded listing, so a scoped run renders a
+        # STRICT SUBSET of the unscoped verdicts, never a different one.
+        staged_markdown = [path for path in existing if path.endswith(".md")]
+        if staged_markdown and (repo_root / "scripts" / "check-markdown.sh").exists():
+            plan.append(
+                GateCommand("check-markdown (staged)", ("./scripts/check-markdown.sh", *staged_markdown))
+            )
 
     # Both hand file paths to a validator, so they take the existing-file list.
     plan.extend(_skill_core_headroom_gates(repo_root, existing))

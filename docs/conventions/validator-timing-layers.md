@@ -56,7 +56,15 @@ explicitly the revisit-first items if the commit path starts tempting
 `--no-verify`. They earn the budget anyway because the alternative timing was the
 ~4-min broad gate (a ~100× feedback win) and pre-commit stays bypassable.
 
-## Classification table (2026-06-10 audit)
+## Classification table
+
+Started as the 2026-06-10 audit and has been appended to continuously since; the heading
+carried that date until 2026-08-11, which read as a closed snapshot and cost a session a
+wrong call about whether editing it was in-bounds. It is a LIVE registry, and the contract
+`check-timing-layer-completeness` enforces is exactly one thing: every label
+`run-quality.sh` can queue has a row here. It cannot tell whether a row is TRUE — which is
+how `check-markdown` sat below carrying "pulled by prior work; unchanged" for two months
+while failing three of the four criteria above.
 
 Where each broad-gate check ran before the audit, and its timing verdict.
 "already earlier" = the commit-time dispatcher (or pre-push) invoked it before
@@ -66,8 +74,9 @@ this audit; those rows are listed compressed.
 | --- | --- | --- | --- |
 | check-closeout-floor-matrix | broad only (new 2026-08-10) | stays | It re-derives the closeout floor matrix by RUNNING all six closeout carriers in a throwaway git world -- ~6s and ~40 interpreter starts, and its inputs are eleven modules across two skill packages plus a repo gate. No staged-file trigger scopes that: a cell can be invalidated by an edit to a vocabulary constant three modules away from anything the commit touched. Keep it at the bundle boundary where the whole carrier set is available. |
 | check-plugin-asset-command-carriers | broad only (new 2026-08-06) | stays | Typed JSON/YAML assets are a cross-surface sweep over shipped packages, and a carrier can become unreachable when either its authoring source or generated export changes; no single staged-file trigger scopes that relationship. Keep it at the bundle boundary, where the full tracked asset set and source/export layout are available. |
-| py-compile, ruff, check-python-lengths, validate-attention-state-visibility, validate-skills, run-evals, validate-skill-ergonomics, validate-profiles, validate-adapters, validate-presets, validate-integrations, check-doc-links, check-markdown, check-boundary-bypass-ratchet, staged mirror drift, skill-core headroom, artifact shape | commit-time + broad | already earlier | pulled by prior work; unchanged |
+| py-compile, ruff, check-python-lengths, validate-attention-state-visibility, validate-skills, run-evals, validate-skill-ergonomics, validate-profiles, validate-adapters, validate-presets, validate-integrations, check-doc-links, check-boundary-bypass-ratchet, staged mirror drift, skill-core headroom, artifact shape | commit-time + broad | already earlier | pulled by prior work; unchanged |
 | validate-packaging, validate-packaging-committed, validate-current-pointer-freshness, check-changed-line-mutation-coverage | pre-push + broad (now also CI) | already earlier | bundle-range semantics; pre-push is their natural earliest timing |
+| check-markdown | commit-time + broad | **narrowed 2026-08-11 -> scoped commit-time + broad** | It was in the row above under "pulled by prior work; unchanged", meaning it had never been classified against the four criteria, and it failed three of them. Unscoped it lints every tracked markdown file (540) on any staged `.md`: validate-all, which the decision frame disqualifies by name; not changed-scoped, so an unrelated file's lint error blocks your commit; and **~5.0s measured**, five times the ~1s budget line, which the budget rule above never counted because it only tallied the `.py` path. It also hard-`exit 1`s without `markdownlint-cli2`/`npm` instead of degrading like its siblings. Now the commit layer passes the STAGED `.md` files (`check-markdown (staged)`, ~1.0s, node start-up rather than file count) and skips the repo-wide inline-code advisory, which is WARN-only and still runs unscoped at the broad gate and in CI. Deliberate exception to "the exact broad-gate command": rules and candidate set are identical, so a scoped run renders a strict SUBSET of the unscoped verdicts. |
 | check-python-filenames | broad only | **pulled → commit-time** | <0.3s, deterministic, only a staged .py can flip it |
 | check-skill-contracts | broad only | **pulled → commit-time** | <0.1s, skills/-scoped |
 | check-skill-bootstrap-vars | broad only | **pulled → commit-time** | <0.1s, skills/-scoped |

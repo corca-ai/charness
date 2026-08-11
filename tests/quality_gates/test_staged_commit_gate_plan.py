@@ -275,6 +275,11 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
             "presets/default.yaml",
             "integrations/tool.json",
             "docs/usage.md",
+            # A path that EXISTS, because check-markdown now takes the staged `.md` files as
+            # arguments and therefore obeys this module's `existing`-not-`paths` invariant
+            # (test_a_scope_path_never_reaches_a_per_file_validator). The fictional paths above
+            # still exercise the trigger for the gates that take no file arguments.
+            "README.md",
         ]
     )
 
@@ -286,7 +291,8 @@ def test_staged_commit_plan_covers_domain_and_markdown_triggers() -> None:
     assert "validate-integrations" in labels
     assert "staged-plugin-mirror-drift" in labels
     assert "check-doc-links" in labels
-    assert "check-markdown" in labels
+    # Scoped: the commit layer lints only the staged `.md` files, unlike the broad gate.
+    assert "check-markdown (staged)" in labels
 
 
 # Timing-layer pulls (docs/conventions/validator-timing-layers.md): one test per
@@ -499,7 +505,7 @@ def test_staged_commit_gate_plan_cli_json_and_text() -> None:
         "check-doc-links",
         "check-plugin-doc-links",
         "check-plugin-dir-references",
-        "check-markdown",
+        "check-markdown (staged)",
     ]
 
     plugin_json_result = run_script(

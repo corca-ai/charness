@@ -61,11 +61,31 @@ run_git_listing_to_file tracked-markdown "$tracked_markdown_list" \
   ':(exclude).pytest_cache/**'
 mapfile -t tracked_markdown_files <"$tracked_markdown_list"
 
+# Optional path arguments SCOPE the lint without changing which files are eligible: the
+# candidate set is still the tracked, non-excluded listing above, and arguments only intersect
+# with it. A path that the broad gate would not lint is not linted here either, so a scoped run
+# can never render a verdict the unscoped run would not — it renders FEWER, never different.
+# The commit-time layer passes the staged `.md` files; the broad gate and CI pass nothing and
+# lint everything. See docs/conventions/validator-timing-layers.md.
+scoped_paths=("$@")
 markdown_files=()
 for path in "${tracked_markdown_files[@]}"; do
-  if [[ -f "$path" ]]; then
-    markdown_files+=("$path")
+  if [[ ! -f "$path" ]]; then
+    continue
   fi
+  if [ "${#scoped_paths[@]}" -gt 0 ]; then
+    requested=0
+    for candidate in "${scoped_paths[@]}"; do
+      if [[ "$candidate" == "$path" ]]; then
+        requested=1
+        break
+      fi
+    done
+    if [ "$requested" -eq 0 ]; then
+      continue
+    fi
+  fi
+  markdown_files+=("$path")
 done
 
 if [ "${#markdown_files[@]}" -eq 0 ]; then
@@ -85,18 +105,28 @@ markdownlint_stderr_log="$listing_dir/markdownlint.stderr.log"
 
 # These scans are independent.  Run them together, then emit their logs in a
 # fixed advisory-then-blocking order so callers retain stable diagnostics.
-python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1 &
-inline_code_pid=$!
+# The inline-code scan is repo-wide and has no scoped mode, so a scoped run SKIPS it rather
+# than paying a whole-tree scan for a one-file lint. It is already advisory (WARN, never
+# blocking, per the P1 note above), and the unscoped broad-gate and CI runs still carry it —
+# so skipping costs no verdict, only an earlier warning.
+if [ "${#scoped_paths[@]}" -eq 0 ]; then
+  python3 "$REPO_ROOT/scripts/check_markdown_inline_code.py" --repo-root "$REPO_ROOT" >"$inline_code_log" 2>&1 &
+  inline_code_pid=$!
+fi
 "${MARKDOWNLINT_CMD[@]}" --no-globs "${markdown_files[@]}" >"$markdownlint_stdout_log" 2>"$markdownlint_stderr_log" &
 markdownlint_pid=$!
 
-if wait "$inline_code_pid"; then
-  cat "$inline_code_log"
+if [[ -n "$inline_code_pid" ]]; then
+  if wait "$inline_code_pid"; then
+    cat "$inline_code_log"
+  else
+    echo "WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):"
+    cat "$inline_code_log"
+  fi
+  inline_code_pid=""
 else
-  echo "WARN: inline code span check found issue(s) (advisory; rendered output is correct, not blocking):"
-  cat "$inline_code_log"
+  echo "check-markdown: scoped to ${#markdown_files[@]} file(s); repo-wide inline-code advisory not run."
 fi
-inline_code_pid=""
 
 if wait "$markdownlint_pid"; then
   markdownlint_status=0
