@@ -48,9 +48,9 @@
       "files": 96
     },
     "Python": {
-      "blanks": 63981,
-      "code": 391656,
-      "comments": 22019,
+      "blanks": 63990,
+      "code": 391722,
+      "comments": 22070,
       "files": 1992
     },
     "Shell": {
@@ -78,9 +78,9 @@
   "status": "ok",
   "tokei_version": "tokei 14.0.0 compiled with serialization support: json",
   "totals": {
-    "blanks": 133198,
-    "code": 563255,
-    "comments": 320778,
+    "blanks": 133207,
+    "code": 563321,
+    "comments": 320829,
     "files": 6301
   }
 }

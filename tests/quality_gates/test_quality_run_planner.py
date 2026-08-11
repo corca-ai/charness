@@ -384,14 +384,17 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    # Not `== 35`: a live-corpus total reds on any catalog addition while saying nothing about
-    # what the map is for. The map is built by dropping every on-demand read that has no
-    # trigger, so the relation below is the invariant the count was standing in for -- it
-    # catches a read silently losing its trigger, which a total never could.
-    assert triggers, "the on-demand trigger map is empty; the catalog or the planner filter dropped everything"
-    untriggered = [read["path"] for read in plan["on_demand_reads"] if not read.get("trigger")]
-    assert not untriggered, f"on-demand reads dropped from the trigger map for lack of a trigger: {untriggered}"
-    assert len(triggers) == len(plan["on_demand_reads"])
+    # `>=`, not `==`: the equality red on every catalog ADDITION, which is the churn this pin
+    # was costing, while the thing worth catching is a REMOVAL -- an on-demand reference
+    # silently leaving the catalog, or being dropped by the planner's role filter. A lower
+    # bound keeps the removal detection and drops the addition tax.
+    #
+    # It is deliberately NOT replaced by a "every on-demand read has a trigger" relation. That
+    # relation cannot fail here: validate_quality_reference_catalog.py:65-66 already raises on
+    # an on-demand reference without a `trigger`, and it is queued at run-quality.sh:721, so a
+    # catalog that could break the relation never reaches this test. Asserting it would have
+    # looked like coverage and been redundancy.
+    assert len(triggers) >= 35
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers

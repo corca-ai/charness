@@ -88,5 +88,3 @@ def source_role_locations(path: Path) -> dict[str, set[tuple[int, str]]]:
     }
 
 
-def dataclass_field_locations(path: Path) -> set[tuple[int, str]]:
-    return source_role_locations(path)["dataclass_fields"]
