@@ -49,6 +49,13 @@ reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming forma
 or shortening reference links buys nothing, so cut state instead. Multiple dated
 `## This Session (<date>)` sections are a hard diary smell.
 Assume a competent next operator can follow one good link.
+Every entry in `## Current State` and `## Next Session` must carry an OWNER: a
+markdown link to the artifact that holds the detail, an inline command that
+regenerates the fact, or an issue id. Prose describing another artifact's
+contents without pointing at it is the shape that goes stale in place, and the
+size budget cannot catch it — trimming unowned prose just makes it shorter.
+`## Discuss` is exempt: an open question has no owner yet, which is what makes
+it open. The planner reports `unowned_entries` with line numbers.
 
 ## Workflow
 
@@ -134,6 +141,8 @@ substring-matches these); the compression and spill WHY-prose stays in
   instead of only re-reading the handoff; mention-only reading is the
   recurring routing miss this contract guards against.
 - Do not write unverified state as fact.
+- Do not leave a `## Current State` or `## Next Session` entry without a link,
+  command, or issue id; spill the detail to its owning artifact and link that.
 - Handoff is a continuation pointer, not a diary: keep only what changes the next
   action and honor the size gate as a failure guard, not a target. The keep/drop,
   stale-detail, and dated-`This Session` rules live in

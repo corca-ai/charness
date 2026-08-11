@@ -40,6 +40,14 @@ content_lines = _budget.content_lines
 REQUIRED_SECTIONS = _budget.REQUIRED_SECTIONS
 OPTIONAL_SECTIONS = _budget.OPTIONAL_SECTIONS
 CANONICAL_SECTIONS = _budget.CANONICAL_SECTIONS
+# Ownership is the skill's authoring contract, not this repo's house style, so
+# the predicate ships with the skill for the same reason the budget does: the
+# run planner and this gate must agree on what counts as an owner.
+_ownership = load_path_module(
+    "handoff_bullet_ownership", _skill_script(REPO_ROOT, "handoff_bullet_ownership.py")
+)
+unowned_entries = _ownership.unowned_entries
+OWNED_SECTIONS = _ownership.OWNED_SECTIONS
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
 _scripts_artifact_validator_module = import_repo_module(__file__, "scripts.artifact_validator")
@@ -174,6 +182,26 @@ def validate_references(lines: list[str]) -> None:
         raise ValidationError("`## References` must contain at least one markdown link")
 
 
+def validate_bullet_ownership(lines: list[str]) -> None:
+    """Reject state/next-action entries the reader cannot open, run, or look up.
+
+    Reports every unowned entry at once. The one-pass contract exists because a
+    draft violating N rules used to cost N gate runs, and ownership is the rule
+    most likely to be violated several times in one rewrite.
+    """
+    found = unowned_entries(lines)
+    if not found:
+        return
+    detail = "; ".join(f"{section} line {lineno}: {text[:60]}" for section, lineno, text in found)
+    raise ValidationError(
+        f"{len(found)} entry(s) in {' and '.join(OWNED_SECTIONS)} carry no owner — {detail}. "
+        "A state or next-action claim needs something the next operator can check: a markdown "
+        "link to the artifact that owns the detail, an inline command that regenerates the fact, "
+        "or an issue id. Prose describing another artifact's contents without pointing at it is "
+        "the shape that goes stale in place."
+    )
+
+
 def validate_subagent_blocker_reasoning(lines: list[str]) -> None:
     for raw in lines:
         lowered = raw.lower()
@@ -224,6 +252,7 @@ def validate_handoff_artifact(path: Path, *, collect_all: bool = False) -> None:
         ),
         lambda: validate_nonempty_sections(lines, ordered_present_sections(lines)),
         lambda: validate_references(lines),
+        lambda: validate_bullet_ownership(lines),
         lambda: validate_no_regenerable_facts(path),
         lambda: validate_subagent_blocker_reasoning(lines),
     )

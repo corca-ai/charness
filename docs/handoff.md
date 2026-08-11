@@ -38,9 +38,9 @@
 
 ## Current State
 
-- Re-take the gate and open-issue counts; do not inherit them from this file.
-  `check-changed-line-mutation-coverage` reads UNPROVEN on a dirty worktree — expected. The
-  `charness-publish-state-claim` block below is a frozen snapshot, NOT current state.
+- Re-take gate and open-issue counts, do not inherit them:
+  [quality posture](../charness-artifacts/quality/latest.md), `gh issue list --state open`.
+  `check-changed-line-mutation-coverage` UNPROVEN on a dirty tree is expected; the block below is frozen.
 - **Ruling 1 (`#598`) is EXECUTED, both halves**; the rulings artifact now carries a status
   line per ruling. **`#598` is not closable yet** — it needs the `issue` closeout floor, and it
   still sits inside the `#593`-`#599` range in `## Next Session` item 6. Ruling 4's deletion
@@ -69,13 +69,13 @@
 1. **Rulings 2, 3, 5, 6** — [six-operator-rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md),
    status per section. Do not re-litigate; four overturned the framing handed up. Ruling 1's
    execution corrected its own sizing, so treat the others' measurements as estimates too.
-2. **Ruling 6 is the largest** and the only schema change: `inventory_boundary_bypass_lib`
-   records no call-site line info, so the payload, its public validator, and both baselines
-   move together.
-3. **Redesign the recent-lessons SELECTION policy — operator has the design.** Do not add a
-   filter; that stacks a heuristic on a heuristic. Of 884 `next_improvement` candidates the top
-   two by weight are content-free bookkeeping, because every retro emits that line and
-   recurrence boost rewards it — outranking the improvement naming the digest's own defect.
+2. **Ruling 6 is the largest** and the only schema change:
+   [inventory_boundary_bypass_lib](../scripts/inventory_boundary_bypass_lib.py) records no
+   call-site line info, so the payload, its public validator, and both baselines move together.
+3. **Redesign the recent-lessons SELECTION policy — operator has the design**
+   ([thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md)). Do not add a
+   filter; that stacks a heuristic on a heuristic. The top `next_improvement` candidates by weight
+   are content-free bookkeeping — every retro emits that line and recurrence boost rewards it.
 4. **`#587` — edit, do not close.** Mapper is `tests_referencing_paths` in
    [suggest_mutation_coverage_command.py](../scripts/suggest_mutation_coverage_command.py). Read
    the issue body first; the only in-repo mention of `#587` describes different work.

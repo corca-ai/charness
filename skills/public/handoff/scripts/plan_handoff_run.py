@@ -77,6 +77,10 @@ ENVELOPE = SimpleNamespace(
 _budget = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_content_budget")
 content_lines = _budget.content_lines
 REQUIRED_SECTIONS, OPTIONAL_SECTIONS = _budget.REQUIRED_SECTIONS, _budget.OPTIONAL_SECTIONS
+# Same single-sourcing reason as the budget: the author should see unowned
+# entries while drafting, not learn about them from the gate afterwards.
+_ownership = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_bullet_ownership")
+unowned_entries = _ownership.unowned_entries
 try:
     _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
     MAX_CONTENT_LINES = int(_handoff_validator.MAX_CONTENT_LINES)
@@ -134,6 +138,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
     dated_sessions = sum(1 for line in h2_sections if line.startswith("## This Session ("))
     # Budget counts content, not file length (see handoff_content_budget).
     content_line_count = len(content_lines(lines))
+    unowned = unowned_entries(lines)
     if content_line_count > MAX_CONTENT_LINES:
         status = "over_limit"
     elif dated_sessions:
@@ -149,6 +154,11 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         "exists": True,
         "line_count": len(lines),
         "content_line_count": content_line_count,
+        # Diagnosis, not a new blocking floor: the gate owns the verdict. Line
+        # numbers so a refresh can go straight to the entry that needs a pointer.
+        "unowned_entries": [
+            {"section": section, "line": lineno, "text": text} for section, lineno, text in unowned
+        ],
         "status": status,
         "dated_session_sections": dated_sessions,
         "missing_sections": missing,

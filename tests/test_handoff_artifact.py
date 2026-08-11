@@ -17,6 +17,13 @@ _BUDGET = importlib.util.module_from_spec(_BUDGET_SPEC)
 _BUDGET_SPEC.loader.exec_module(_BUDGET)
 MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
 
+# Scaffolding bullets for `## Current State` / `## Next Session`. They exist to
+# make the section non-empty for a test about some OTHER rule, so they carry a
+# cheap owner: the ownership rule reads those two sections, and a bare `- state`
+# would make every one of these fixtures fail for a reason it is not testing.
+OWNED_STATE = "- state; recheck with `git status --short`"
+OWNED_NEXT = "- next: [guide](docs/guide.md)"
+
 
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
@@ -59,11 +66,11 @@ def test_validate_handoff_artifact_rejects_extra_top_level_section(tmp_path: Pat
                 "",
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## History",
                 "",
@@ -100,11 +107,11 @@ def test_validate_handoff_artifact_rejects_missing_reference_link(tmp_path: Path
                 "",
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -136,11 +143,11 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
                 "",
                 "## Current State",
                 "",
-                *[f"- stale detail {index}" for index in range(MAX_CONTENT_LINES + 7)],
+                *[f"- stale detail {index} in `git status --short`" for index in range(MAX_CONTENT_LINES + 7)],
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -176,7 +183,7 @@ def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -198,7 +205,7 @@ def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Pa
     # operator has to read: the body sits 4 content lines under the ceiling.
     state = []
     for index in range(MAX_CONTENT_LINES - 8):
-        state.append(f"- state detail {index}")
+        state.append(f"- state detail {index} in `git status --short`")
         state.append("")
     references = [f"- [guide {index}](docs/guide.md)" for index in range(12)]
     repo = seed_repo(tmp_path, _handoff_with(state, references))
@@ -212,7 +219,7 @@ def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Pa
 def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
     # The other half: padding `## References` buys no room for content. 56 state
     # bullets + 4 fixed content lines put the body 2 over the ceiling.
-    state = [f"- state detail {index}" for index in range(MAX_CONTENT_LINES - 2)]
+    state = [f"- state detail {index} in `git status --short`" for index in range(MAX_CONTENT_LINES - 2)]
     repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md)"]))
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
@@ -237,7 +244,7 @@ def seed_with_current_state(tmp_path: Path, *state_lines: str) -> Path:
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -299,14 +306,16 @@ def test_validate_handoff_artifact_allows_a_quoted_version_for_baton_reconcile(t
     # reconcile asks the baton to stop claiming the previous version, and its
     # scan counts a backticked version as a claim. Closing this escape would make
     # the two public skills contradict each other.
-    result = run_on_state(tmp_path, "- Published `2.8.0`; scope in the release artifact.")
+    result = run_on_state(tmp_path, "- Published `2.8.0`; scope in the [release artifact](docs/guide.md).")
     assert result.returncode == 0, result.stderr
 
 
 def test_validate_handoff_artifact_does_not_read_a_date_as_a_count(tmp_path: Path) -> None:
     # `25 docs` from an ISO date: the lookbehind excluded `#` and word chars but
     # not `-`, and a dated reference is the commonest shape in handoff prose.
-    result = run_on_state(tmp_path, "- The 2026-07-25 docs sweep is signed off; nothing pending.")
+    result = run_on_state(
+        tmp_path, "- The 2026-07-25 docs sweep is signed off; nothing pending — [guide](docs/guide.md)."
+    )
     assert result.returncode == 0, result.stderr
 
 
@@ -389,11 +398,11 @@ def test_validate_handoff_artifact_accepts_the_optional_continuation_capability(
                 "",
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -427,11 +436,11 @@ def test_validate_handoff_artifact_rejects_an_empty_continuation_capability(tmp_
                 "",
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -468,7 +477,7 @@ def test_validate_handoff_artifact_rejects_explicit_allowance_as_subagent_blocke
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -504,11 +513,11 @@ def _triple_violating_body() -> str:
                 "",  # empty section
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -569,11 +578,11 @@ def test_validate_handoff_artifact_path_argument_bypasses_the_adapter(tmp_path: 
                 "",
                 "## Current State",
                 "",
-                "- state",
+                OWNED_STATE,
                 "",
                 "## Next Session",
                 "",
-                "- next",
+                OWNED_NEXT,
                 "",
                 "## Discuss",
                 "",
@@ -612,3 +621,149 @@ def test_validate_handoff_artifact_path_argument_reports_a_missing_file(tmp_path
     )
     assert result.returncode == 1
     assert "No handoff artifact at" in result.stderr
+
+
+def test_validate_handoff_artifact_rejects_an_unowned_state_bullet(tmp_path: Path) -> None:
+    result = run_on_state(tmp_path, "- The umbrella class still holds and nothing is closable yet.")
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+
+
+def test_validate_handoff_artifact_rejects_an_unowned_numbered_next_item(tmp_path: Path) -> None:
+    # `## Next Session` is a NUMBERED queue in practice. A rule that only saw `-`
+    # would have exempted the section it most needed to read.
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                OWNED_STATE,
+                "",
+                "## Next Session",
+                "",
+                "1. Redesign the selection policy — the operator has the design.",
+                "",
+                "## Discuss",
+                "",
+                "- discuss",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+    assert "Redesign the selection policy" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_each_owner_form(tmp_path: Path) -> None:
+    result = run_on_state(
+        tmp_path,
+        "- Ruling status lives in [the rulings artifact](docs/guide.md).",
+        "- Re-take the count with `git log --oneline origin/main..HEAD | wc -l`.",
+        "- #604 is open and blocks the bump.",
+        "- Compare https://github.com/corca-ai/charness/issues/605 before closing.",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_reads_two_bare_identifiers_as_unowned(tmp_path: Path) -> None:
+    """Regression: the command test must not match the PROSE BETWEEN two spans.
+
+    A regex of the form `` `[^`]*\\s[^`]*` `` finds its leftmost match starting
+    at the CLOSING backtick of the first span, so a bullet holding two bare
+    identifiers and no pointer read as carrying a command. Measured on a live
+    handoff bullet, which the gate passed.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- `check-changed-line-mutation-coverage` reads UNPROVEN and the "
+        "`charness-publish-state-claim` block is a frozen snapshot.",
+    )
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_fenced_command_block_as_the_owner(tmp_path: Path) -> None:
+    result = run_on_state(
+        tmp_path,
+        "- Reproduce with:",
+        "",
+        "```bash",
+        "python3 -m pytest -q tests/test_handoff_artifact.py",
+        "```",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_does_not_require_an_owner_in_discuss(tmp_path: Path) -> None:
+    # An open question legitimately has no owner yet; that is what makes it open.
+    repo = seed_repo(
+        tmp_path,
+        "\n".join(
+            [
+                "# Demo Handoff",
+                "",
+                "## Workflow Trigger",
+                "",
+                "- do the thing",
+                "",
+                "## Current State",
+                "",
+                OWNED_STATE,
+                "",
+                "## Next Session",
+                "",
+                OWNED_NEXT,
+                "",
+                "## Discuss",
+                "",
+                "- Should a capability be deletable without a portable replacement?",
+                "",
+                "## References",
+                "",
+                "- [guide](docs/guide.md)",
+                "",
+            ]
+        )
+        + "\n",
+    )
+    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
+    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_lets_a_sub_bullet_inherit_its_parent_owner(tmp_path: Path) -> None:
+    # Charging an indented elaboration separately would push authors to repeat
+    # the same link on every child.
+    result = run_on_state(
+        tmp_path,
+        "- Ruling status lives in [the rulings artifact](docs/guide.md).",
+        "  - Ruling 4's deletion half predates its ruling.",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tmp_path: Path) -> None:
+    result = run_on_state(
+        tmp_path,
+        "- first unowned claim about current state",
+        "- second unowned claim about current state",
+    )
+    assert result.returncode == 1
+    assert "2 entry(s)" in result.stderr
+    assert "first unowned claim" in result.stderr
+    assert "second unowned claim" in result.stderr

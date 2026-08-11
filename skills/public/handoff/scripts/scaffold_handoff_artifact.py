@@ -44,51 +44,27 @@ def _heading_title(title: str) -> str:
     return title if "handoff" in title.lower() else f"{title} Handoff"
 
 
+# One body per section, as DATA. The if-chain this replaces said the same four
+# lines five times, which read as five decisions and was one. `## Current State`
+# and `## Next Session` carry an owner because the stub itself has to VALIDATE:
+# the failure hint points authors at this scaffold, and a scaffold whose output
+# fails the gate teaches that the gate is noise.
+SECTION_BODIES = {
+    "## Workflow Trigger": "- TODO name the pickup workflow the next session invokes"
+    " (e.g. `charness:handoff`) and the one-line condition that triggers it.",
+    "## Current State": "- TODO one state fact that changes the next action, with the"
+    " [artifact](docs/handoff.md) or command that owns it.",
+    "## Next Session": "- TODO the smallest next action, carrying its owner:"
+    " [target file](docs/handoff.md), a command, or an issue id.",
+    "## Discuss": "- TODO open decisions for the next operator, or `none` when there are none.",
+    "## References": "- [TODO pickup doc](docs/handoff.md)",
+}
+
+
 def render_template(*, title: str, date_text: str) -> str:
     lines = [f"# {_heading_title(title)}", f"Date: {date_text}", ""]
     for heading in SECTIONS:
-        if heading == "## Workflow Trigger":
-            lines.extend(
-                [
-                    heading,
-                    "",
-                    "- TODO name the pickup workflow the next session invokes (e.g. `charness:handoff`)"
-                    " and the one-line condition that triggers it.",
-                    "",
-                ]
-            )
-            continue
-        if heading == "## Next Session":
-            lines.extend(
-                [
-                    heading,
-                    "",
-                    "- TODO the smallest next action, with its target file or command.",
-                    "",
-                ]
-            )
-            continue
-        if heading == "## Discuss":
-            lines.extend(
-                [
-                    heading,
-                    "",
-                    "- TODO open decisions for the next operator, or `none` when there are none.",
-                    "",
-                ]
-            )
-            continue
-        if heading == "## References":
-            lines.extend(
-                [
-                    heading,
-                    "",
-                    "- [TODO pickup doc](docs/handoff.md)",
-                    "",
-                ]
-            )
-            continue
-        lines.extend([heading, "", "- TODO", ""])
+        lines.extend([heading, "", SECTION_BODIES.get(heading, "- TODO"), ""])
     return "\n".join(lines).rstrip() + "\n"
 
 

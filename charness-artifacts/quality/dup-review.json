@@ -3005,6 +3005,13 @@
       "note": "The two-line `if <x> is None: return []` empty-input guard, shared by check_command_docs.py, quality_bootstrap_lifecycle.py, chunked_routing_agentic.py, and three call sites in setup_adapter.py. Idiom-sized and below any extractable unit: a helper for `None -> []` would be longer at every call site than the branch it replaces, and each guard names a different absent input (a missing contract key, an absent adapter file, an unset routing chunk). All six members are untouched by this diff; it surfaced as new because deleting inventory_ubiquitous_language.py from the corpus re-formed the family. Same class already accepted here as 003780cc89f2ccfd and 349f5d577fe2588b. I could NOT identify a named predecessor entry for this family; what is established is that no member changed and that the only code deletion in the diff is the ubiquitous-language script.",
       "reviewed_at": "2026-08-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "654d828e79ee8ffe",
+      "note": "sibling-module-by-path loading inside skills/public/achieve: achieve_adapter_policy.py:61-68 (goal_artifact_scaffold) and goal_artifact_pursue.py:46-53 (goal_artifact_backlog). The importlib spec_from_file_location -> None-guard -> exec_module shape is the portability boilerplate every skill package repeats so a package works in both the source tree and an exported plugin layout; goal_artifact_pursue.py declares it in prose ('loaded by path like every other sibling here'). Extracting a shared loader would need a module that is itself importable without this shape, which is the problem it solves. Surfaced as new by scan REGROUPING, not new duplication: both members are untouched by this slice (handoff bullet ownership), and the same scan is clean on a HEAD worktree.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
