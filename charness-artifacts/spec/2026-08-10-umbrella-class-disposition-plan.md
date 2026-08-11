@@ -1,10 +1,28 @@
 # Umbrella class disposition plan — #582, #583, #584, #585
 
-Date: 2026-08-10. **REVISED 2026-08-11 after critique; still not executed.** This
+Date: 2026-08-10. **PARTIALLY EXECUTED — see `## Execution status` below before
+reading any section as pending.** Originally revised 2026-08-11 after critique. This
 document existed to be attacked before any deletion happened, and it was: five of the six
 proposed deletions were refuted or mis-scoped. Read `## Dispositions — REVISED` as the
 live plan; the sections above it are kept because the corrections are only legible
 against what they correct.
+
+## Execution status
+
+A blanket "still not executed" line sat at the top of this file for two commits after
+part of it shipped, and on 2026-08-11 it cost a session a wrong claim to the operator:
+the agent reported the pickup ruling as pending, having confirmed it against the
+INSTALLED plugin copy (`~/.agents/src/charness`, release 4.2.0) instead of this repo's
+source. Per-section status, not one banner:
+
+| Section | Status |
+| --- | --- |
+| `# Operator ruling 2026-08-11: delete the pickup ambiguity heuristic and its evals` | **EXECUTED at `a24b0155`.** The planner heuristic, `next_session_entry_count`, `--pickup-target`, the `continuation-sequence.md` literal, both pickup eval specs, their registry entries, and the test-fixture re-key are all gone from source. The `workflow-trigger.md` classTag move landed with them. |
+| `# Deletable-surfaces sweep`, `## Deletions that survive` items 1 and 3 | **EXECUTED at `c9b9e243`, `322664d5`, `50975458`** — the dead-code wrapper and the `candidate_key_count` enforcement drop. The second went through two bounded review rounds; round 1 found the subsumption proof rested on a generator property rather than the field's own definition. |
+| `## Deletions that survive` item 2 | **HALF EXECUTED at `c9b9e243`.** The dead `refused_citation_count` branch is gone. The NARROW is deliberately NOT done: `#596` reserves it for the operator, and landing it here would execute an operator-reserved call under cover of a dead-code removal. |
+| `## Candidates that died on inspection` | Re-verified 2026-08-11 by a nine-agent triage. All still dead, and now with the consumer greps that establish it rather than the reasons that were merely asserted. |
+| `## Teeth without a cliff` | **NOT executed, and two of its premises were false.** It describes three candidates as `review-needed` rows in the 2026-07-04 gate-reclassification audit; all three are disposition **keep** there. That audit has exactly two `review-needed` rows: `check-links-external` and `inventory-ubiquitous-language` (the latter is `#598`). |
+| Everything under `## Dispositions — REVISED` | Unchanged; still the live plan for what it covers. |
 
 ## What this decides
 
@@ -375,7 +393,11 @@ one was the first.
    fields via `_source_roles.source_role_locations` at `:167`, never through this. Only
    consumer is `tests/quality_gates/test_quality_dead_code_advisory.py:762-764`, whose
    three assertions repoint at `source_role_evidence.dataclass_field_locations` without
-   loss. Mirror sync required.
+   loss. **CORRECTED 2026-08-11:** that repoint target was itself a pass-through with no
+   production caller, so following this instruction would have moved the same defect down
+   one module. As executed, BOTH pass-throughs are deleted and the assertions repoint at
+   `source_role_locations`, where production reads it, checking the whole returned dict
+   instead of one of its three keys. Mirror sync required.
 
 ## Candidates that died on inspection (do not re-propose)
 

@@ -140,6 +140,27 @@ def test_a_consistent_baseline_still_loads(tmp_path: Path) -> None:
     assert baseline["summary"]["candidate_key_count"] == len(baseline["candidate_keys"])
 
 
+@pytest.mark.parametrize("bad_test_file", ["", None, 0, ["tests/test_foo.py"]])
+def test_a_row_without_a_usable_test_file_is_refused_rather_than_skipped(bad_test_file: object) -> None:
+    """Refusing, not skipping, because skipping can only MASK the enforced arms.
+
+    `check_payload` fires on `current > baseline`, so anything that drops rows can only lower
+    `current` -- it can never trip the ratchet, only hide a row from `candidate_count` and its
+    three row-shaped siblings. The old `candidate_keys` skipped these rows and the old
+    `filtered_summary` did not; unifying the two walks had to pick one, and skipping was the
+    direction that loses a verdict. The published payload contract already rejects the shape
+    (`validate_boundary_bypass_payload.py:48-49`), so refusing here agrees with it.
+    """
+    payload = {
+        "schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+        "candidates": [{"test_file": bad_test_file, "import_safe_targets": ["scripts/foo.py"]}],
+    }
+    with pytest.raises(RATCHET.RatchetError, match="must be a non-empty string"):
+        RATCHET.filtered_summary(payload, {})
+    with pytest.raises(RATCHET.RatchetError, match="must be a non-empty string"):
+        RATCHET.candidate_keys(payload)
+
+
 def test_candidate_key_count_is_the_size_of_the_key_set_not_a_sum_of_row_targets() -> None:
     """The property COUNT_FIELDS relies on, pinned so it cannot regress silently.
 

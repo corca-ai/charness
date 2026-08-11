@@ -17,7 +17,7 @@ COUNT_FIELDS = (
     "keep_boundary_count",
 )
 # `candidate_key_count` is deliberately NOT enforced here, and the reason is a proof, not a
-# preference. `filtered_summary` derives it as the SIZE OF THE NON-EXEMPT KEY SET -- the same set
+# preference. `filtered_summary` derives it by filtering exemptions out of exactly what
 # `candidate_keys` returns and `build_baseline` writes. So `current > baseline` on that field means
 # the current key set is larger than the baseline's, which means it cannot be a subset of it, which
 # means `new_candidate_keys` is non-empty. The arm cannot fire without `new_candidate_keys` firing
@@ -56,11 +56,21 @@ def _rows_with_targets(payload: dict[str, Any]) -> Iterator[tuple[dict[str, Any]
     own `test_file`/`isinstance` conditions. Two walks that must agree is what let
     `candidate_key_count` drift into a per-row sum while every published definition of it stayed
     set-shaped -- and that agreement is the precondition COUNT_FIELDS now relies on.
+
+    An empty `test_file` RAISES rather than being skipped. Skipping is what the old
+    `candidate_keys` did, and unifying on it would have silently lowered all four still-enforced
+    counts for such a payload -- and `check_payload` fires only on `current > baseline`, so a
+    change that can only lower `current` can only ever MASK the arm. Refusing instead means the
+    two walks agree without either of them being able to hide a row, and it matches the published
+    payload contract, which already rejects the shape outright
+    (`skills/public/quality/scripts/validate_boundary_bypass_payload.py:48-49`).
     """
-    for row in payload.get("candidates", []):
-        test_file = str(row.get("test_file", ""))
-        if not test_file:
-            continue
+    for index, row in enumerate(payload.get("candidates", [])):
+        test_file = row.get("test_file")
+        if not isinstance(test_file, str) or not test_file:
+            raise RatchetError(
+                f"candidates[{index}].test_file must be a non-empty string, got {test_file!r}"
+            )
         targets = [target for target in row.get("import_safe_targets", []) if isinstance(target, str)]
         yield row, test_file, targets
 

@@ -384,17 +384,21 @@ def test_quality_run_plan_lists_all_on_demand_reference_triggers(tmp_path: Path)
     plan = _run_plan(repo)
 
     triggers = plan["on_demand_trigger_map"]
-    # `>=`, not `==`: the equality red on every catalog ADDITION, which is the churn this pin
-    # was costing, while the thing worth catching is a REMOVAL -- an on-demand reference
-    # silently leaving the catalog, or being dropped by the planner's role filter. A lower
-    # bound keeps the removal detection and drops the addition tax.
+    # `>=`, not `==`: the equality red on every catalog ADDITION, which is the churn this pin was
+    # costing, while the thing worth catching is a REMOVAL. Be honest about what that trades --
+    # this is a RATCHET FLOOR and it goes slack the moment the catalog grows to 36, because the
+    # first addition silently buys one free removal. Bump the floor with any addition, or it
+    # decays into the thing it replaced.
     #
-    # It is deliberately NOT replaced by a "every on-demand read has a trigger" relation. That
-    # relation cannot fail here: validate_quality_reference_catalog.py:65-66 already raises on
-    # an on-demand reference without a `trigger`, and it is queued at run-quality.sh:721, so a
-    # catalog that could break the relation never reaches this test. Asserting it would have
-    # looked like coverage and been redundancy.
+    # Deliberately NOT "every on-demand read has a trigger": that cannot fail here, because
+    # scripts/validate_quality_reference_catalog.py:65-66 already raises on an on-demand
+    # reference without a `trigger`, and it is queued at run-quality.sh:721.
     assert len(triggers) >= 35
+    # This one CAN fail, and nothing else holds it. The map is keyed by path
+    # (plan_quality_run.py:304-308) while the catalog validator assigns `paths[path] = role`
+    # (scripts/validate_quality_reference_catalog.py:67) with no duplicate check -- so two entries
+    # sharing a path pass validation and then collapse into one key here. Exact under additions.
+    assert len(triggers) == len(plan["on_demand_reads"])
     assert "references/adapter-contract.md" in triggers
     assert "references/dup-ratchet.md" in triggers
     assert "references/security-npm.md" in triggers

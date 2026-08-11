@@ -86,5 +86,3 @@ def source_role_locations(path: Path) -> dict[str, set[tuple[int, str]]]:
         "pytest_fixtures": pytest_fixtures,
         "visitor_methods": visitor_methods,
     }
-
-
