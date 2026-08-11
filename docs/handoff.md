@@ -20,9 +20,11 @@
   enforced counts in the masking direction. Both were verified-then-wrong, not sloppy.
 - **A removal proposal without its consumer grep is malformed.** Nine verifiers under this rule
   refuted 8 of 13 candidates on real consumers.
-- **An exhaustiveness gate cannot tell you a row is TRUE.** `check-timing-layer-completeness`
-  proves every gate has a timing row; `check-markdown`'s row said "unchanged" for two months
-  while the gate violated three of four criteria and cost 5s per commit.
+- **Before writing a list, a pin, or a key: does a surface here already know the answer?**
+  Shipped five times, fixed four without noticing it was one class —
+  [Declared Where Derivable](./conventions/implementation-discipline.md#declared-where-derivable).
+- **An exhaustiveness gate cannot tell you a row is TRUE** — stated where it bites, under the
+  [classification table](./conventions/validator-timing-layers.md#classification-table).
 
 ## Current State
 
@@ -31,9 +33,12 @@
   committed. Re-take the baseline; do not inherit this line.
 - **The pickup-deletion ruling SHIPPED at `a24b0155`.** Not pending. The plan artifact now
   carries `## Execution status` per section.
-- Landed: `c9b9e243` `322664d5` `50975458` `85fc6770` `5c680650` — dead-code deletions, pin
-  repairs, an enforcement-tuple narrow, and the commit-gate scoping. **Nothing deleted a gate,
-  validator, baseline, or reference doc.**
+- Landed: `c9b9e243` `322664d5` `50975458` `85fc6770` `5c680650` `eae29aad` — dead-code
+  deletions, pin repairs, an enforcement-tuple narrow, the commit-gate scoping, and the six
+  rulings. **Nothing deleted a gate, validator, baseline, or reference doc.**
+- **`check_title_slug_drift` is DELETED** (4 paths + its compatibility test) under ruling 4.
+  It owes a release-note line naming the removal at the next bump, which is a MAJOR: it was a
+  shipped entrypoint. The `title-slug coherence` critique lens stays and is its replacement.
 - **`#582`-`#585` CARRY their own status. CLASS REMAINS, 4/4.** Do not close them.
 - **D53's reopen trigger is NOT in-repo observable** ([deferred](./deferred-decisions.md)).
 

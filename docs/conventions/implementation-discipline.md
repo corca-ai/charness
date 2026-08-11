@@ -244,6 +244,52 @@ shapes may escape it — a missed nudge beats a false one that trains token-thea
 A *blocking* enforcement gate for this rule is deliberately rejected: it would be
 the exact reflex the rule names.
 
+## Declared Where Derivable
+
+A recurring defect class, named because this repo has now shipped it **five times** and
+fixed it four times without noticing it was one thing: **an identifier hand-transcribed
+from a source that could have produced it.**
+
+The tell is always the same — the surface acquires a maintenance ritual whose remedy is
+never a finding, only "update the copy."
+
+| Surface | Hand-written copy | Authority that already knew |
+| --- | --- | --- |
+| `should_fire_chunker` (deleted) | a regex over invocation text | the caller's declared `--intent` |
+| dup ratchet, pre-D30 | `<path>` family ids | the members' own content (`nose_fingerprint_lib.py`) |
+| `domain_language_contract` | retired CLI names in `deprecated_aliases` | `charness --help` (argparse) |
+| D47's entry | published measurement figures | the probe JSON |
+| boundary-bypass ratchet | `<test_file>::<target>` pairs | the call site's own content |
+
+Three failure modes, and the third is the one that keeps this alive:
+
+1. **It cannot catch what nobody declared.** The list enforces decisions you already
+   recorded, so the rename you *forgot* to record is exactly the one that escapes — and
+   that is the only one that reaches a consumer.
+2. **The copy rots in place,** and a stale copy is worse than an absent one because the
+   next reader acts on it instead of checking.
+3. **The reflex fix is a second hand-maintained thing** — a detector for the rot. Measured
+   2026-08-11: pointing this repo's own `regenerable-facts` rule at D47 fires on 4 of ~19
+   figures and misses every headline number the pin exists to protect, because a closed
+   noun list cannot decide whether a number is a live claim. Widening it trades false
+   negatives for false positives on ordinary prose.
+
+**Before writing a list, a pin, or a key, ask: is there a surface in this tree that already
+knows the answer?** If yes, derive from it. `check_documented_command_flags.py` states the
+rule in its own docstring — *"an argparse contract rather than another literal"* — and
+`plan_handoff_run.py`'s `_resolve_intent` states the other half: *"resolve routing from what
+the caller DECLARED, never from the invocation text."*
+
+**This does NOT condemn every literal.** Form validators (`validate_skills.py`,
+`check_doc_links.py`) legitimately match shape, and a declared *policy* — an exemption with
+a written reason, a waiver — is a human judgment no source can derive. The discriminator is
+narrow: **does a source in this tree already contain the fact being copied?** A derivation
+also inherits a duty the copy did not have — preserve multiplicity, or a content key
+collides where a path key did not (`nose_fingerprint_lib.py`: do not `set()`-dedup).
+
+Full lineage and the two feasibility measurements:
+[six operator rulings](../../charness-artifacts/spec/2026-08-11-six-operator-rulings.md).
+
 ## Repair Discipline
 
 - **State the intended delta; prove the complement is unchanged.** A bounded
