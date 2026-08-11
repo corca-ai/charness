@@ -35,6 +35,10 @@ HELP_COLUMN_GAP_RE = re.compile(r"\s{2,}")
 # `[--flag METAVAR]` / `[--flag=METAVAR]` in a usage line: the rendering that says
 # this option consumes the following word.
 USAGE_METAVAR_RE = re.compile(r"(--[A-Za-z0-9][A-Za-z0-9-]*)[ =]([^\s\]|]+)")
+# argparse renders any choice set -- a subparsers action or a `choices=`
+# positional -- as `{a,b,c}`. See `subcommand_choices` for why WHERE it is read
+# from decides whether the read is right.
+CHOICES_RE = re.compile(r"\{([a-z0-9-]+(?:,[a-z0-9-]+)*)\}")
 # A documented pipeline's later stage is a different command; its flags are not
 # this script's to accept. Matched against whole shell tokens, never against raw
 # text -- `--test-pressure "... 23.2% vs 22% gate; +2 tests"` carries a literal
@@ -72,6 +76,44 @@ def accepted_options(help_text: str) -> set[str]:
     return {
         flag for _source, text in iter_option_declarations(help_text) for flag in FLAG_RE.findall(text)
     }
+
+
+def subcommand_choices(help_text: str) -> set[str]:
+    """The word choices this parser accepts in its next positional slot.
+
+    Read from lines whose first non-space character is `{`, which is where
+    argparse renders a choice set that OCCUPIES a positional slot -- the
+    subparsers row, the usage line's own wrapped rendering of it, and a plain
+    `choices=` positional. The last is deliberately included: argparse rejects an
+    unlisted value with the same `invalid choice` error, so it is the same claim.
+
+    What the leading `{` excludes is an OPTION's choices. `charness tool install
+    --help` renders `[--recommendation-role {runtime,validation}]` in usage and
+    `--recommendation-role {runtime,validation}` as an option row; a scan that
+    reads either as a subcommand set gives `charness tool install` subcommands it
+    does not have, and every documented `charness tool install <tool_id>` reports
+    its tool id as invalid. Measured: three false positives on a clean tree. An
+    option always renders its own name first, so its metavar can never be the
+    first thing on the line.
+
+    Anchoring on `{` rather than on the `positional arguments:` HEADER is what
+    makes this correct for two shapes the header rule got wrong. `add_subparsers`
+    only lands in `_positionals` when neither `title` nor `description` is
+    passed; with either, argparse moves it to its own argument group under a
+    different heading, and a header-keyed reader returns nothing for that parser
+    -- silently unproven, no signal. And every argparse section title goes
+    through `gettext`, so under a locale with a catalog installed a header-keyed
+    reader returns nothing for EVERY parser at once. A brace is not translated.
+    """
+    choices: set[str] = set()
+    for line in help_text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("{"):
+            continue
+        group = CHOICES_RE.match(stripped)
+        if group:
+            choices.update(group.group(1).split(","))
+    return choices
 
 
 def options_with_values(help_text: str) -> set[str]:
@@ -152,6 +194,22 @@ def split_arguments(tail: str) -> tuple[tuple[tuple[str, str], ...], list[str]]:
     return tuple(ordered), list(dict.fromkeys(flags))
 
 
+def iter_invocation_tails(carrier: str, invocation_re) -> Iterator[tuple[re.Match[str], tuple[tuple[str, str], ...], list[str]]]:
+    """Yield ``(match, ordered_tokens, flags)`` for each invocation in one carrier.
+
+    One carrier can name two commands (`verify: python3 a.py --x, python3 b.py
+    --y`). Reading each match to the END of the carrier hands the second
+    command's arguments to the first -- a blocking false red on a correct doc,
+    since `,` is not a shell operator for `split_arguments` to cut on. Cutting at
+    the next match instead is the fix, and both documented-command gates need it.
+    """
+    matches = list(invocation_re.finditer(carrier))
+    for index, match in enumerate(matches):
+        end = matches[index + 1].start() if index + 1 < len(matches) else len(carrier)
+        tokens, flags = split_arguments(carrier[match.end() : end])
+        yield match, tokens, flags
+
+
 def _tokenize(tail: str) -> list[str]:
     """`shlex` tokens, degrading to a whitespace split rather than crashing.
 
@@ -186,31 +244,95 @@ def resolve_subcommands(tokens, choices_for, values_for=None) -> tuple[str, ...]
     ``values_for(path)`` names the options that take a value at that depth; when
     omitted no value consumption is assumed.
     """
+    return _descend(tokens, choices_for, values_for, _select_tolerant)[0]
+
+
+def walk_subcommands(tokens, choices_for, values_for=None) -> tuple[tuple[str, ...], str | None]:
+    """Return ``(path, invalid)`` -- the same walk, read for what argparse REJECTS.
+
+    `resolve_subcommands` answers "which parser owns this flag", so it is
+    deliberately tolerant: it scans forward for a word that IS a choice and stops
+    quietly when none is. That tolerance is exactly wrong for a caller asking
+    whether a documented subcommand exists, because the token argparse would
+    reject is the one it skips.
+
+    This walk is strict in the one place argparse is: where a parser declares
+    subcommands, the FIRST word not already spoken for as an option value is the
+    subcommand slot, and argparse exits 2 on `invalid choice` if it is not one of
+    them. ``invalid`` is that word, or None when the documented path is clean.
+
+    Depth stops at a parser with no choices, which is what keeps a positional
+    argument out of the verdict: `tool install cautilus` walks to `install`, sees
+    no subparsers under it, and never judges `cautilus`.
+    """
+    return _descend(tokens, choices_for, values_for, _select_strict)
+
+
+def _descend(tokens, choices_for, values_for, select) -> tuple[tuple[str, ...], str | None]:
+    """Walk down the subparser tree, one depth per round, under a selection policy.
+
+    The two public walks differ ONLY in `select`: which free word at this depth is
+    the subcommand, and whether a word that is not a choice is a stop or a
+    verdict. Everything else -- where the walk stops, how an option value is kept
+    out of the candidate set, how the next depth's `choices_for` key is built --
+    has to agree between them, or a flag gets attributed to a parser the
+    subcommand gate says does not exist.
+
+    `select(choices, free_words)` returns ``(index, invalid)``: an index to
+    descend on, or ``(None, token)`` to end the walk with a verdict, or
+    ``(None, None)`` to end it quietly.
+    """
     path: list[str] = []
     start = 0
     for _ in range(MAX_SUBCOMMAND_DEPTH):
         choices = choices_for(tuple(path))
         if not choices:
             break
-        takes_value = values_for(tuple(path)) if values_for is not None else frozenset()
-        found: int | None = None
-        awaiting_value = False
-        for index in range(start, len(tokens)):
-            kind, token = tokens[index]
-            if kind == "flag":
-                awaiting_value = token in takes_value
-                continue
-            if awaiting_value:
-                awaiting_value = False
-                continue
-            if token in choices:
-                found = index
-                break
-        if found is None:
-            break
-        path.append(tokens[found][1])
-        start = found + 1
-    return tuple(path)
+        free_words = iter_free_words(tokens, start, _takes_value(values_for, path))
+        index, invalid = select(choices, free_words)
+        if index is None:
+            return tuple(path), invalid
+        path.append(tokens[index][1])
+        start = index + 1
+    return tuple(path), None
+
+
+def _select_tolerant(choices, free_words) -> tuple[int | None, None]:
+    """First free word that IS a choice; a documented order this walk tolerates."""
+    return next((index for index, token in free_words if token in choices), None), None
+
+
+def _select_strict(choices, free_words) -> tuple[int | None, str | None]:
+    """The subcommand SLOT: the first free word, which argparse requires be a choice."""
+    head = next(free_words, None)
+    if head is None:
+        return None, None
+    index, token = head
+    return (index, None) if token in choices else (None, token)
+
+
+def _takes_value(values_for, path: list[str]) -> frozenset[str] | set[str]:
+    return values_for(tuple(path)) if values_for is not None else frozenset()
+
+
+def iter_free_words(tokens, start: int, takes_value) -> Iterator[tuple[int, str]]:
+    """Yield ``(index, token)`` for words not consumed as the value of a flag.
+
+    The shared half of both walks above. A documented `--accept-family record`
+    must not offer `record` as a subcommand candidate: latent only while no
+    option value happens to equal a subcommand name, and a blocking false red on
+    a correct doc once one does.
+    """
+    awaiting_value = False
+    for index in range(start, len(tokens)):
+        kind, token = tokens[index]
+        if kind == "flag":
+            awaiting_value = token in takes_value
+            continue
+        if awaiting_value:
+            awaiting_value = False
+            continue
+        yield index, token
 
 
 def subcommand_positions(tokens, path: tuple[str, ...]) -> list[int]:

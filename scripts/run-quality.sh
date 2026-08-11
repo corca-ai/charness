@@ -839,6 +839,11 @@ queue_selected "check-plugin-doc-links" python3 scripts/check_plugin_doc_links.p
 queue_selected "check-plugin-dir-references" python3 scripts/check_plugin_dir_references.py --repo-root "$REPO_ROOT"
 queue_selected "check-plugin-asset-command-carriers" python3 scripts/check_plugin_asset_command_carriers.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-documented-command-flags" python3 scripts/check_documented_command_flags.py --repo-root "$REPO_ROOT" --require-git-file-listing
+# position: the rung above the flags gate. That one proves a documented flag against
+# the named script's argparse; this one proves a documented `charness <subcommand>`
+# against the CLI's. It replaces `domain-language-contract`'s hand-declared alias
+# list, which could only catch a rename someone remembered to declare.
+queue_selected "check-documented-subcommands" python3 scripts/check_documented_subcommands.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-spec-evidence-durability" python3 scripts/check_spec_evidence_durability.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-references-link-inventory" python3 scripts/check_references_link_inventory.py --repo-root "$REPO_ROOT" --require-git-file-listing
 queue_selected "check-markdown" ./scripts/check-markdown.sh

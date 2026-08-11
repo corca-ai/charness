@@ -1,12 +1,21 @@
 from __future__ import annotations
 
 import json
+import os
+import re
+import subprocess
+import sys
 from pathlib import Path
+
+from runtime_bootstrap import import_repo_module
 
 from .support import run_script
 
 SCRIPT = "skills/public/quality/scripts/inventory_ci_local_gate_parity.py"
 REPO_ROOT = Path(__file__).resolve().parents[2]
+_argparse_surface = import_repo_module(
+    REPO_ROOT / "scripts/argparse_surface_lib.py", "scripts.argparse_surface_lib"
+)
 
 
 def _write_workflow(tmp_path: Path, body: str) -> Path:
@@ -678,3 +687,67 @@ def test_repo_does_not_reintroduce_pytest_ci_only_marker() -> None:
         if mark_literal in text or pyproject_literal in text:
             offenders.append(path.relative_to(REPO_ROOT).as_posix())
     assert offenders == []
+
+
+# The lib is loaded by PATH here, not only through the CLI above. Two reasons:
+# the default pattern tuple is a shipped surface no test read, and the dotted
+# `import_repo_module` form the CLI uses is invisible to the changed-line
+# selector, so edits to skills/public/quality/scripts/ci_local_gate_parity_lib.py
+# went unmapped locally while the remote broad mirror judged them.
+_parity_lib = import_repo_module(
+    REPO_ROOT / "skills/public/quality/scripts/ci_local_gate_parity_lib.py",
+    "skills.public.quality.scripts.ci_local_gate_parity_lib",
+)
+
+
+def _charness_subcommands_named_by(patterns) -> set[str]:
+    return {
+        match.group(1).replace("\\s+", " ").split()[0]
+        for pattern in patterns
+        for match in [re.search(r"charness((?:\\s\+|\s)+[a-z0-9-]+)", pattern)]
+        if match
+    }
+
+
+def _declared_subcommands() -> set[str]:
+    help_text = subprocess.run(
+        [sys.executable, "charness", "--help"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+        env={**os.environ, "COLUMNS": "200", "LC_ALL": "C", "LANGUAGE": ""},
+    ).stdout
+    return _argparse_surface.subcommand_choices(help_text)
+
+
+def test_the_dead_charness_pattern_that_shipped_would_now_be_refused() -> None:
+    """The tripwire, run against the list as it SHIPPED.
+
+    `\\bcharness\\s+verify\\b` sat in the default tuple naming a subcommand the
+    CLI has never declared, so it could not match any workflow -- dead teeth that
+    read as coverage. The guard below goes vacuous the moment no pattern names a
+    charness subcommand, which is true today, so it is asserted here against the
+    pre-repair list instead of only against the live one.
+    """
+    shipped = (r"\bbash\s+scripts/run-quality\.sh\b", r"\bcharness\s+verify\b")
+    named = _charness_subcommands_named_by(shipped)
+    assert named == {"verify"}
+    assert named - _declared_subcommands() == {"verify"}
+
+
+def test_no_default_canonical_gate_pattern_names_a_charness_subcommand_that_does_not_exist() -> None:
+    """Derived from `charness --help` rather than pinned to a list, so it stays
+    true through a rename instead of needing a hand edit."""
+    named = _charness_subcommands_named_by(_parity_lib.DEFAULT_CANONICAL_GATE_PATTERNS)
+    undeclared = named - _declared_subcommands() if named else set()
+    assert not undeclared, f"default canonical-gate pattern(s) name non-subcommand(s): {sorted(undeclared)}"
+
+
+def test_default_canonical_gate_patterns_match_this_repo_s_own_local_gate() -> None:
+    """A default list that matches nothing real is the failure mode above, one
+    level up. charness's own canonical gate is `bash scripts/run-quality.sh`."""
+    assert any(
+        re.search(pattern, "bash scripts/run-quality.sh")
+        for pattern in _parity_lib.DEFAULT_CANONICAL_GATE_PATTERNS
+    )

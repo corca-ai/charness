@@ -354,6 +354,7 @@ QUALITY_PYTHON_STUBS = (
     ("check-plugin-dir-references", "check_plugin_dir_references.py"),
     ("check-plugin-asset-command-carriers", "check_plugin_asset_command_carriers.py"),
     ("check-documented-command-flags", "check_documented_command_flags.py"),
+    ("check-documented-subcommands", "check_documented_subcommands.py"),
     ("check-spec-evidence-durability", "check_spec_evidence_durability.py"),
     ("check-references-link-inventory", "check_references_link_inventory.py"),
     ("check-seed-fixture-budget", "check_seed_fixture_budget.py"),

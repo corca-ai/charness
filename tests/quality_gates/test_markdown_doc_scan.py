@@ -72,3 +72,24 @@ def test_iter_doc_lines_treats_an_unclosed_comment_inside_a_fence_as_literal(tmp
         (2, "<!-- template start", True),
         (4, "after the fence", False),
     ]
+
+
+def test_iter_doc_lines_with_language_reports_the_fence_info_string(tmp_path: Path) -> None:
+    # `check_documented_subcommands.py` scans shell fences and skips the rest:
+    # `text` fences in this repo carry sample OUTPUT, and reading one as a
+    # command line makes the CLI reference argue with itself.
+    doc = _write(tmp_path, "prose", "```BASH  ", "run me", "```", "```text", "sample", "```")
+
+    assert list(_scan.iter_doc_lines_with_language(doc)) == [
+        (1, "prose", None),
+        (3, "run me", "bash"),
+        (6, "sample", "text"),
+    ]
+
+
+def test_iter_doc_lines_with_language_reports_an_undeclared_fence_as_empty(tmp_path: Path) -> None:
+    # `""` and `None` are different states: "a fence that declared no language"
+    # is not "prose", and a caller keying on truthiness would merge them.
+    doc = _write(tmp_path, "```", "body", "```")
+
+    assert list(_scan.iter_doc_lines_with_language(doc)) == [(2, "body", "")]

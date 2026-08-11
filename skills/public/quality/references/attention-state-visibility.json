@@ -129,10 +129,36 @@
     "terminal_payload"
    ],
    "evidence_terms": [
+    "skipped"
+   ],
+   "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the --json payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
+  },
+  "scripts/check_documented_subcommands.py": {
+   "states": [
+    "skipped"
+   ],
+   "visibility": [
+    "operator_summary",
+    "terminal_payload"
+   ],
+   "evidence_terms": [
+    "skipped"
+   ],
+   "rationale": "A documented `charness` invocation whose subcommand token is not a single subcommand name -- `charness tool install/update/doctor` names three of them in one prose span -- is counted by reason instead of guessed at. render_report delegates to gate_report_emit.render_findings_with_skipped, which appends the \"Not proven\" count and every reason to the PASS output as well as the fail output; the same map rides in the --json payload as skipped, so a green run states how much of the documented subcommand surface it did not prove rather than reading as full coverage."
+  },
+  "scripts/gate_report_emit.py": {
+   "states": [
+    "skipped"
+   ],
+   "visibility": [
+    "operator_summary",
+    "terminal_payload"
+   ],
+   "evidence_terms": [
     "skipped",
     "Not proven"
    ],
-   "rationale": "A documented invocation this gate cannot resolve to a runnable script -- a <placeholder> path for a consuming repo, or a path check_doc_links.py owns -- is counted by reason instead of dropped. render_report appends the \"Not proven\" count and every reason to the PASS output as well as the fail output, and the same map rides in the --json payload as skipped, so a green run states how much of the documented command surface it did not prove rather than reading as full coverage."
+   "rationale": "Not a gate: the shared renderer the findings-shaped gates emit through. render_findings_with_skipped owns the \"Not proven\" tail for every caller, and it appends that tail to the PASS output as well as the fail output -- a bare \"validated N invocations\" reads as full coverage of a surface and a gate that skipped anything has not covered it. The literal lives here rather than in each gate, which is why the callers declare the `skipped` state and this file declares the term that renders it."
   },
   "scripts/check_mutation_score.py": {
    "states": [

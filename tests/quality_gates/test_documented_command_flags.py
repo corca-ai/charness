@@ -731,3 +731,38 @@ def test_module_entrypoint_exits_with_the_gate_verdict(gate, tmp_path: Path) -> 
     )
     assert clean.returncode == 0
     assert "Validated 1 documented command invocation(s)" in clean.stdout
+
+
+CHOICES_POSITIONAL_PLUS_SUBPARSERS_SCRIPT = """
+import argparse
+
+parser = argparse.ArgumentParser()
+parser.add_argument("mode", choices=["alpha", "beta"])
+subparsers = parser.add_subparsers(dest="command")
+run = subparsers.add_parser("run")
+run.add_argument("--label")
+parser.parse_args()
+"""
+
+
+def test_a_choices_positional_value_is_judged_as_a_flag_scope_not_as_an_unrunnable_command(gate, tmp_path: Path) -> None:
+    """`subcommand_choices` deliberately still admits a plain `choices=` POSITIONAL,
+    because argparse rejects an unlisted value with the same `invalid choice`
+    error. So `alpha` is a free word in the depth-0 choice set and the walk
+    descends into it.
+
+    Verified against real argparse: `x.py alpha --label demo` exits 2
+    (`argument command: invalid choice: 'demo'`), so a finding is CORRECT here.
+    What must not happen is the OTHER finding -- "the documented command is not
+    runnable" -- which is what the trim-back loop in `_resolve_paths` exists to
+    prevent when a resolved path turns out not to be a real parser.
+    """
+    root = _repo(
+        tmp_path,
+        scripts={"scripts/x.py": CHOICES_POSITIONAL_PLUS_SUBPARSERS_SCRIPT},
+        doc="```bash\npython3 scripts/x.py alpha --label demo\n```\n",
+    )
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "does not accept documented flag(s) `--label`" in findings[0]
+    assert "not runnable" not in findings[0]

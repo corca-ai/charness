@@ -53,8 +53,8 @@
    [six-operator-rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md).
    Do not re-litigate; four overturned the framing handed up. Start with ruling 1, whose
    design is measured, not just decided: scan shell fences plus inline code, skip comment
-   lines, and the derived subcommand check finds **two live defects** (`charness verify`,
-   `charness propose` — neither exists nor ever did) at zero false positives.
+   lines, and the derived subcommand check finds two live defects — a verify and a propose
+   invocation naming subcommands that never existed — at zero false positives.
 2. **Ruling 6 is the largest slice** and the only one needing a schema change:
    `inventory_boundary_bypass_lib` records no call-site line info, so the payload, its
    public validator, and both baselines move together.

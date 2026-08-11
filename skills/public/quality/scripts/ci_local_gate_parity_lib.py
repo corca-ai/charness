@@ -29,7 +29,6 @@ DEFAULT_CANONICAL_GATE_PATTERNS = (
     r"\bbash\s+scripts/run-quality\.sh\b",
     r"\bbash\s+scripts/run-verify\.(?:mjs|sh)\b",
     r"\bnode\s+scripts/run-verify\.mjs\b",
-    r"\bcharness\s+verify\b",
 )
 DEFAULT_CI_ONLY_MARKER = "CI-only"
 GATE_POLICY_MARKER_PREFIX = "# charness:gate-policy "

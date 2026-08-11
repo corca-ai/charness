@@ -424,29 +424,30 @@ def test_charness_version_skips_unreadable_and_non_dict_manifests(tmp_path) -> N
         assert lib.charness_version(root) == "9.9.9"
 
 
-def test_probed_options_with_values_is_empty_when_the_probe_failed() -> None:
-    """A depth that never probed clean contributes no options, rather than raising."""
+def test_help_probe_readers_are_empty_when_the_probe_did_not_run_clean() -> None:
+    """A depth that never probed clean contributes nothing, rather than raising.
+
+    Moved here from `check_documented_command_flags._probed_options_with_values`
+    when the probe was extracted into `argparse_help_probe`: both
+    documented-command gates now inherit this branch from one owner, and the
+    branch is what makes the walk descend exactly one level per round.
+    """
+    import subprocess as _sp
     import sys as _sys
 
     _sys.path.insert(0, str(ROOT / "scripts"))
-    import check_documented_command_flags as gate
+    import argparse_help_probe as probe_module
 
-    class _Probe:
-        def result_or_none(self, _script, _path):
-            return None
+    probe = probe_module.HelpProbe(ROOT)
+    unprimed = ("demo",)
+    assert probe.options_with_values(unprimed) == set()
+    assert probe.accepted_options(unprimed) == set()
+    assert probe.subcommand_choices(unprimed) == set()
 
-        def text(self, _script, _path):  # pragma: no cover - must not be reached
-            raise AssertionError("text() must not be called when the probe is absent")
-
-    assert gate._probed_options_with_values(_Probe(), "demo", ()) == set()
-
-    class _Failed(_Probe):
-        def result_or_none(self, _script, _path):
-            import subprocess as _sp
-
-            return _sp.CompletedProcess(args=["x"], returncode=2, stdout="", stderr="")
-
-    assert gate._probed_options_with_values(_Failed(), "demo", ()) == set()
+    probe._results[unprimed] = _sp.CompletedProcess(args=["x"], returncode=2, stdout="", stderr="")
+    assert probe.options_with_values(unprimed) == set()
+    assert probe.accepted_options(unprimed) == set()
+    assert probe.subcommand_choices(unprimed) == set()
 
 
 def test_attention_scan_roots_include_skills_shared_when_present(tmp_path) -> None:

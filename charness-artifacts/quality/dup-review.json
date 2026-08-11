@@ -2956,6 +2956,41 @@
       "note": "canonical run_plan_envelope.v1 build_plan + bootstrap boilerplate repeated across portable skill-local planners (debug/handoff/quality/release/retro/issue); shared builders live in run_plan_envelope.py, but each planner stays skill-local-portable by design (planner-uniformity item 2), so the per-planner envelope call + adapter-dict marshaling is intentional, not extractable",
       "reviewed_at": "2026-06-30",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "abb0e04f7b36563e",
+      "note": "ROTATED from 119fa9bcafbd3048 by membership REDUCTION, not new duplication: the gate CLI convention (declare this gate's own flags, resolve --repo-root, call build_report, return 1 on findings) shared by six validators after check_documented_command_flags left the family. It left because this slice moved its render_report body into gate_report_emit.render_findings_with_skipped, which changed the window content around its main(); it now pairs with the new check_documented_subcommands under 45564df3e643de55. All six remaining members are untouched by this diff. Reasoning is unchanged from the original entry: the flags differ per gate, so a common main() would take them as data and every script would still spell the same list out through an indirection.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "45564df3e643de55",
+      "note": "The same gate CLI convention as abb0e04f7b36563e / 119fa9bcafbd3048, now between the two documented-command gates: check_documented_command_flags and the new check_documented_subcommands both declare --repo-root/--require-git-file-listing/--json, resolve the root, call build_report, emit through gate_report_emit, and return 1 on findings. The shared BEHAVIOR in this pair was extracted twice in this slice -- gate_report_emit.render_findings_with_skipped for the skipped-tail rendering, argparse_help_probe.HelpProbe for the --help probing -- and this is the residue after both. A common main() would take each gate's own flag list as data, which spells the same list out through an indirection while making the argparse surface unreadable to check_documented_command_flags itself, which reads option declarations back off each script's own parser.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0190e3e0f4206b43",
+      "note": "The `import_repo_module` binding block shared by the two documented-command gates: this repo's scripts cannot use ordinary imports (runtime_bootstrap resolves a module by repo-relative name so the same file works in the source tree and in the exported plugin), so every gate spells `_mod = import_repo_module(__file__, 'scripts.x')` followed by one line per bound name. check_documented_command_flags and check_documented_subcommands bind an overlapping set because they are siblings by design. Not extractable: a shared binder would have to return an object whose attribute names are the very thing this block declares, so the indirection would hide each gate's dependency surface without removing a line.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c455ba9db0de246c",
+      "note": "Second half of the same `import_repo_module` binding block as 0190e3e0f4206b43, split into its own family by the clone scanner's window boundary. Same two members (check_documented_command_flags, check_documented_subcommands), same reasoning.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "e44ea83ce8db9523",
+      "note": "The stdlib idiom for reading string literals out of a parsed module -- `ast.walk` plus `isinstance(node, ast.Constant) and isinstance(node.value, str)` -- shared by inventory_boundary_bypass_lib._iter_string_constants and check_documented_subcommands._iter_runtime_strings. Not extractable, because the two ask different questions of the same walk. The boundary-bypass reader wants every string anywhere under a spawn call node, unlocated and undifferentiated, to match a command shape. The subcommand reader wants operator-facing runtime text WITH its line number, with module/class/function docstrings excluded (a docstring is prose about the code, and including them reports every design note that quotes a retired command) and with f-strings reassembled from their literal parts (the backtick span is routinely split by a `{...}`, so the parts read separately never close it). A shared helper would have to yield the union of those shapes and let each caller discard most of it, and it would make the portable boundary-bypass lib depend on a repo-level helper for four lines of stdlib.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

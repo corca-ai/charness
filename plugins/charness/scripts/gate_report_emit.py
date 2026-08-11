@@ -23,6 +23,32 @@ def findings_stream(report: dict[str, object]) -> TextIO:
     return sys.stderr if report["findings"] else sys.stdout
 
 
+def render_findings_with_skipped(
+    report: dict[str, object],
+    *,
+    headline: str,
+    fix_hint: str,
+    validated: str,
+    skipped_noun: str = "invocation(s)",
+) -> str:
+    """Findings or a validated count -- and, on BOTH, the surface NOT proven.
+
+    The skipped tail rides on the pass output too, which is the part a gate
+    author leaves out: a bare "validated N invocations" reads as full coverage of
+    a surface, and a gate that skips anything has not covered it. Counting each
+    skip by reason on a green run is what keeps the pass honest.
+    """
+    if report["findings"]:
+        lines = [headline, *(f"- {finding}" for finding in report["findings"]), fix_hint]
+    else:
+        lines = [validated]
+    skipped: dict[str, int] = report["skipped"]  # type: ignore[assignment]
+    if skipped:
+        detail = ", ".join(f"{reason}: {count}" for reason, count in skipped.items())
+        lines.append(f"Not proven ({sum(skipped.values())} {skipped_noun} skipped) — {detail}.")
+    return "\n".join(lines)
+
+
 def emit_findings_report(
     report: dict[str, object],
     *,

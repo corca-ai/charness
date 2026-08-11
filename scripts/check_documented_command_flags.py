@@ -51,12 +51,12 @@ REPO_ROOT = repo_root_from_script(__file__)
 # The argparse side of this check -- what a parser declares, which options consume a
 # value, and which parser a flag written at a given position would reach.
 _argparse_surface = import_repo_module(__file__, "scripts.argparse_surface_lib")
-accepted_options = _argparse_surface.accepted_options
-options_with_values = _argparse_surface.options_with_values
-split_arguments = _argparse_surface.split_arguments
+iter_invocation_tails = _argparse_surface.iter_invocation_tails
 resolve_subcommands = _argparse_surface.resolve_subcommands
 active_depth = _argparse_surface.active_depth
 MAX_SUBCOMMAND_DEPTH = _argparse_surface.MAX_SUBCOMMAND_DEPTH
+_argparse_help_probe = import_repo_module(__file__, "scripts.argparse_help_probe")
+HelpProbe = _argparse_help_probe.HelpProbe
 _check_doc_links = import_repo_module(__file__, "scripts.check_doc_links")
 iter_docs = _check_doc_links.iter_docs
 iter_known_repo_paths = _check_doc_links.iter_known_repo_paths
@@ -66,10 +66,9 @@ portable_skill_package_root = _check_doc_links.portable_skill_package_root
 BACKTICK_CONTENT_RE = _check_doc_links.BACKTICK_CONTENT_RE
 _markdown_doc_scan = import_repo_module(__file__, "scripts.markdown_doc_scan")
 iter_doc_lines = _markdown_doc_scan.iter_doc_lines
-_subprocess_guard = import_repo_module(__file__, "scripts.subprocess_guard")
-run_processes_in_order = _subprocess_guard.run_processes_in_order
 _gate_report_emit = import_repo_module(__file__, "scripts.gate_report_emit")
 emit_findings_report = _gate_report_emit.emit_findings_report
+render_findings_with_skipped = _gate_report_emit.render_findings_with_skipped
 
 # Three documented shapes, all live. The leading boundary class matters: without
 # it `sh\s+` matches the tail of any word ending in "sh" (`publish scripts/x.py`).
@@ -86,10 +85,6 @@ INVOCATION_RE = re.compile(
 )
 # Generated copies of a canonical script; a doc never means these.
 MIRROR_PREFIXES = ("plugins/", "mutants/")
-# argparse renders a subparser's choices as `{a,b,c}` in its usage line. Reading
-# them back is what lets a flag be attributed to the parser that owns it.
-CHOICES_RE = re.compile(r"\{([a-z0-9-]+(?:,[a-z0-9-]+)*)\}")
-HELP_COLUMNS = "200"
 
 
 def build_canonical_basename_index(known_repo_paths: set[str]) -> dict[str, str]:
@@ -244,15 +239,8 @@ def iter_documented_invocations(
     found: list[tuple[int, str, tuple[str, ...], tuple[str, ...]]] = []
     skipped: list[str] = []
     for lineno, carrier in iter_command_carriers(doc):
-        matches = list(INVOCATION_RE.finditer(carrier))
-        for index, match in enumerate(matches):
-            # One carrier can name two commands (`verify: python3 a.py --x,
-            # python3 b.py --y`). Reading to the end of the carrier hands the
-            # second command's flags to the first -- a blocking false red on a
-            # correct doc, since `,` is not a shell operator to cut on.
-            end = matches[index + 1].start() if index + 1 < len(matches) else len(carrier)
+        for match, tokens, flags in iter_invocation_tails(carrier, INVOCATION_RE):
             script, reason = resolve_script(root, doc, match, known_repo_paths, basename_index)
-            tokens, flags = split_arguments(carrier[match.end() : end])
             if not flags:
                 continue
             if script is None:
@@ -262,87 +250,30 @@ def iter_documented_invocations(
     return found, skipped
 
 
-class HelpProbe:
-    """Cached, batched ``<script> <path> --help`` results.
-
-    A wide ``COLUMNS`` keeps argparse from wrapping an option name out of reach of
-    the scanner. Probes run one round per subparser depth, batched in parallel:
-    the whole 300-script tree costs ~1.2s wall, so the documented subset over two
-    rounds stays comfortably inside a cheap gate.
-    """
-
-    def __init__(self, root: Path) -> None:
-        self._root = root
-        self._results: dict[tuple[str, tuple[str, ...]], object] = {}
-
-    def prime(self, targets: set[tuple[str, tuple[str, ...]]]) -> None:
-        pending = sorted(targets - self._results.keys())
-        if not pending:
-            return
-        env = dict(os.environ, COLUMNS=HELP_COLUMNS)
-        commands = [["python3", script, *path, "--help"] for script, path in pending]
-        results = run_processes_in_order(commands, cwd=self._root, env=env, timeout_seconds=120)
-        self._results.update(zip(pending, results, strict=True))
-
-    def result(self, script: str, path: tuple[str, ...]):
-        return self._results[(script, path)]
-
-    def result_or_none(self, script: str, path: tuple[str, ...]):
-        """For readers that run mid-resolution, before this depth has been primed."""
-        return self._results.get((script, path))
-
-    def text(self, script: str, path: tuple[str, ...]) -> str:
-        result = self.result(script, path)
-        return result.stdout + result.stderr
-
-    def choices(self, script: str, path: tuple[str, ...]) -> set[str]:
-        # Unprobed depths report "no subcommands here", so each resolution round
-        # descends exactly one level and the next round primes what it revealed.
-        result = self._results.get((script, path))
-        if result is None or result.returncode != 0:
-            return set()
-        return {
-            choice
-            for group in CHOICES_RE.findall(self.text(script, path))
-            for choice in group.split(",")
-        }
-
-    def count(self) -> int:
-        return len(self._results)
-
-
-def _probed_options_with_values(probe: HelpProbe, script: str, path: tuple[str, ...]) -> set[str]:
-    """Value-taking options at one depth, or none when that depth has not probed clean."""
-    result = probe.result_or_none(script, path)
-    if result is None or result.returncode != 0:
-        return set()
-    return options_with_values(probe.text(script, path))
-
-
-def _resolve_paths(probe: HelpProbe, invocations: list[tuple]) -> list[tuple[str, ...]]:
+def _resolve_paths(probe, invocations: list[tuple]) -> list[tuple[str, ...]]:
     """Walk every invocation down the subparser tree, one probe round per depth."""
     paths = [() for _ in invocations]
     for _ in range(MAX_SUBCOMMAND_DEPTH):
-        probe.prime({(script, paths[index]) for index, (_, _, script, _, _) in enumerate(invocations)})
+        probe.prime({(script, *paths[index]) for index, (_, _, script, _, _) in enumerate(invocations)})
         changed = False
         for index, (_, _, script, tokens, _) in enumerate(invocations):
             resolved = resolve_subcommands(
                 tokens,
-                lambda path, s=script: probe.choices(s, path),
-                lambda path, s=script: _probed_options_with_values(probe, s, path),
+                lambda path, s=script: probe.subcommand_choices((s, *path)),
+                lambda path, s=script: probe.options_with_values((s, *path)),
             )
             if resolved != paths[index]:
                 paths[index] = resolved
                 changed = True
         if not changed:
             break
-    probe.prime({(invocations[index][2], paths[index]) for index in range(len(invocations))})
+    probe.prime({(invocations[index][2], *paths[index]) for index in range(len(invocations))})
     # `{one-choice}` in a usage line is indistinguishable from any other braced
     # token, so a resolved path is only trusted while it still reports help. Trim
     # back to the deepest path that does, instead of reporting a false
     # "not runnable" on a brace the gate misread.
     for index, (_, _, script, _, _) in enumerate(invocations):
-        while paths[index] and probe.result(script, paths[index]).returncode != 0:
+        while paths[index] and probe.result((script, *paths[index])).returncode != 0:
             paths[index] = paths[index][:-1]
     return paths
 
@@ -365,7 +296,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         path = paths[index]
         where = f"{doc.relative_to(root).as_posix()}:{lineno}"
         documented = " ".join([script, *path])
-        result = probe.result(script, path)
+        result = probe.result((script, *path))
         if result.returncode != 0:
             findings.append(f"{where}: `{documented} --help` exits {result.returncode}; the documented command is not runnable")
             continue
@@ -378,7 +309,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         # depth 0..n when the subparser was built with `parents=`, since it then
         # appears in that depth's own `--help`.
         accepted_by_depth = [
-            accepted_options(probe.text(script, path[:depth])) for depth in range(len(path) + 1)
+            probe.accepted_options((script, *path[:depth])) for depth in range(len(path) + 1)
         ]
         missing: list[str] = []
         for flag_index, (kind, token) in enumerate(tokens):
@@ -400,28 +331,16 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
 
 
 def render_report(report: dict[str, object]) -> str:
-    """Render findings and, on every run, the surface that was NOT proven.
-
-    The skipped tail rides on the pass output too: a bare "validated N
-    invocations" reads as full coverage of the documented command surface, and it
-    is not -- each skip is a documented invocation whose flags went unchecked.
-    """
-    if report["findings"]:
-        lines = ["Documented command flag drift detected:"]
-        lines.extend(f"- {finding}" for finding in report["findings"])
-        lines.append(
-            "Fix the doc or restore the flag; use a `<placeholder>` path when the command only resolves in a consuming repo."
-        )
-    else:
-        lines = [
+    return render_findings_with_skipped(
+        report,
+        headline="Documented command flag drift detected:",
+        fix_hint="Fix the doc or restore the flag; use a `<placeholder>` path when the command only resolves in a consuming repo.",
+        validated=(
             f"Validated {report['invocations']} documented command invocation(s) "
             f"against {report['probes']} argparse surface(s)."
-        ]
-    skipped = report["skipped"]
-    if skipped:
-        detail = ", ".join(f"{reason}: {count}" for reason, count in skipped.items())
-        lines.append(f"Not proven ({sum(skipped.values())} flag-bearing invocation(s) skipped) — {detail}.")
-    return "\n".join(lines)
+        ),
+        skipped_noun="flag-bearing invocation(s)",
+    )
 
 
 def main() -> int:
