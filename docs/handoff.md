@@ -81,3 +81,6 @@
 - [Deferred decisions](./deferred-decisions.md) — D53, D54, D55 landed this session.
 - [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md)
 - [Closeout floor matrix spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md)
+- [2026-08-11 session retro](../charness-artifacts/retro/2026-08-11-session-retro.md) — the traps that produced this handoff; read it before proposing any removal.
+- [Umbrella class disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md) — item 1 and 2's full scope, the verified consumer sets, and `# Observation run 2026-08-11` (the headless measurement of whether these lessons transfer).
+- **The harness-improvement thesis has NO artifact of its own.** It lives in the retro's `North Star Alignment` / `Trends` sections and the plan's observation-run section. Environment share is narrowed to two things: the lessons digest's slot policy, and the autonomy permission posture. Give it a home before acting on it, or it will be re-derived from scratch.
