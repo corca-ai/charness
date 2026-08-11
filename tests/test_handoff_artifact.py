@@ -1,8 +1,16 @@
 from __future__ import annotations
 
 import importlib.util
-import subprocess
 from pathlib import Path
+
+from tests.handoff_artifact_fixtures import (
+    OWNED_NEXT,
+    OWNED_STATE,
+    run_on_state,
+    run_script,
+    seed_repo,
+    seed_with_current_state,
+)
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,38 +29,8 @@ MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
 # make the section non-empty for a test about some OTHER rule, so they carry a
 # cheap owner: the ownership rule reads those two sections, and a bare `- state`
 # would make every one of these fixtures fail for a reason it is not testing.
-OWNED_STATE = "- state; recheck with `git status --short`"
-OWNED_NEXT = "- next: [guide](docs/guide.md)"
 
 
-def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(
-        ["python3", *args],
-        cwd=cwd or ROOT,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
-
-
-def seed_repo(tmp_path: Path, artifact_body: str) -> Path:
-    repo = tmp_path / "repo"
-    (repo / ".agents").mkdir(parents=True)
-    (repo / "docs").mkdir(parents=True)
-    (repo / ".agents" / "handoff-adapter.yaml").write_text(
-        "\n".join(
-            [
-                "version: 1",
-                "repo: demo",
-                "language: en",
-                "output_dir: docs",
-                "",
-            ]
-        ),
-        encoding="utf-8",
-    )
-    (repo / "docs" / "handoff.md").write_text(artifact_body, encoding="utf-8")
-    return repo
 def test_validate_handoff_artifact_rejects_extra_top_level_section(tmp_path: Path) -> None:
     repo = seed_repo(
         tmp_path,
@@ -227,45 +205,6 @@ def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
     assert f"{MAX_CONTENT_LINES + 2} content lines (limit {MAX_CONTENT_LINES})" in result.stderr
 
 
-def seed_with_current_state(tmp_path: Path, *state_lines: str) -> Path:
-    return seed_repo(
-        tmp_path,
-        "\n".join(
-            [
-                "# Demo Handoff",
-                "",
-                "## Workflow Trigger",
-                "",
-                "- do the thing",
-                "",
-                "## Current State",
-                "",
-                *state_lines,
-                "",
-                "## Next Session",
-                "",
-                OWNED_NEXT,
-                "",
-                "## Discuss",
-                "",
-                "- discuss",
-                "",
-                "## References",
-                "",
-                "- [guide](docs/guide.md)",
-                "",
-            ]
-        )
-        + "\n",
-    )
-
-
-def run_on_state(tmp_path: Path, *state_lines: str) -> subprocess.CompletedProcess[str]:
-    repo = seed_with_current_state(tmp_path, *state_lines)
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    return run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
-
-
 def test_validate_handoff_artifact_rejects_a_transcribed_release_version(tmp_path: Path) -> None:
     result = run_on_state(tmp_path, "- Released through v2.7.0; the backlog is clear.")
     assert result.returncode == 1
@@ -329,7 +268,7 @@ def test_validate_handoff_artifact_does_not_scan_inline_code(tmp_path: Path) -> 
 def test_validate_handoff_artifact_does_not_scan_fenced_blocks(tmp_path: Path) -> None:
     result = run_on_state(
         tmp_path,
-        "- Reproduce with:",
+        "- Reproduce per [the guide](docs/guide.md):",
         "",
         "```bash",
         "git checkout v2.7.0 && python3 -m pytest -n 16 tests/",
@@ -621,335 +560,3 @@ def test_validate_handoff_artifact_path_argument_reports_a_missing_file(tmp_path
     )
     assert result.returncode == 1
     assert "No handoff artifact at" in result.stderr
-
-
-def test_validate_handoff_artifact_rejects_an_unowned_state_bullet(tmp_path: Path) -> None:
-    result = run_on_state(tmp_path, "- The umbrella class still holds and nothing is closable yet.")
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-
-
-def test_validate_handoff_artifact_rejects_an_unowned_numbered_next_item(tmp_path: Path) -> None:
-    # `## Next Session` is a NUMBERED queue in practice. A rule that only saw `-`
-    # would have exempted the section it most needed to read.
-    repo = seed_repo(
-        tmp_path,
-        "\n".join(
-            [
-                "# Demo Handoff",
-                "",
-                "## Workflow Trigger",
-                "",
-                "- do the thing",
-                "",
-                "## Current State",
-                "",
-                OWNED_STATE,
-                "",
-                "## Next Session",
-                "",
-                "1. Redesign the selection policy — the operator has the design.",
-                "",
-                "## Discuss",
-                "",
-                "- discuss",
-                "",
-                "## References",
-                "",
-                "- [guide](docs/guide.md)",
-                "",
-            ]
-        )
-        + "\n",
-    )
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-    assert "Redesign the selection policy" in result.stderr
-
-
-def test_validate_handoff_artifact_accepts_each_owner_form(tmp_path: Path) -> None:
-    result = run_on_state(
-        tmp_path,
-        "- Ruling status lives in [the rulings artifact](docs/guide.md).",
-        "- Re-take the count with `git log --oneline origin/main..HEAD | wc -l`.",
-        "- #604 is open and blocks the bump.",
-        "- Compare https://github.com/corca-ai/charness/issues/605 before closing.",
-    )
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_reads_two_bare_identifiers_as_unowned(tmp_path: Path) -> None:
-    """Regression: the command test must not match the PROSE BETWEEN two spans.
-
-    A regex of the form `` `[^`]*\\s[^`]*` `` finds its leftmost match starting
-    at the CLOSING backtick of the first span, so a bullet holding two bare
-    identifiers and no pointer read as carrying a command. Measured on a live
-    handoff bullet, which the gate passed.
-    """
-    result = run_on_state(
-        tmp_path,
-        "- `check-changed-line-mutation-coverage` reads UNPROVEN and the "
-        "`charness-publish-state-claim` block is a frozen snapshot.",
-    )
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-
-
-def test_validate_handoff_artifact_accepts_a_fenced_command_block_as_the_owner(tmp_path: Path) -> None:
-    result = run_on_state(
-        tmp_path,
-        "- Reproduce with:",
-        "",
-        "```bash",
-        "python3 -m pytest -q tests/test_handoff_artifact.py",
-        "```",
-    )
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_does_not_require_an_owner_in_discuss(tmp_path: Path) -> None:
-    # An open question legitimately has no owner yet; that is what makes it open.
-    repo = seed_repo(
-        tmp_path,
-        "\n".join(
-            [
-                "# Demo Handoff",
-                "",
-                "## Workflow Trigger",
-                "",
-                "- do the thing",
-                "",
-                "## Current State",
-                "",
-                OWNED_STATE,
-                "",
-                "## Next Session",
-                "",
-                OWNED_NEXT,
-                "",
-                "## Discuss",
-                "",
-                "- Should a capability be deletable without a portable replacement?",
-                "",
-                "## References",
-                "",
-                "- [guide](docs/guide.md)",
-                "",
-            ]
-        )
-        + "\n",
-    )
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_lets_a_sub_bullet_inherit_its_parent_owner(tmp_path: Path) -> None:
-    # Charging an indented elaboration separately would push authors to repeat
-    # the same link on every child.
-    result = run_on_state(
-        tmp_path,
-        "- Ruling status lives in [the rulings artifact](docs/guide.md).",
-        "  - Ruling 4's deletion half predates its ruling.",
-    )
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tmp_path: Path) -> None:
-    result = run_on_state(
-        tmp_path,
-        "- first unowned claim about current state",
-        "- second unowned claim about current state",
-    )
-    assert result.returncode == 1
-    assert "2 entry(s)" in result.stderr
-    assert "first unowned claim" in result.stderr
-    assert "second unowned claim" in result.stderr
-
-
-# --- round-1 review findings: each of these passed the first implementation ---
-
-
-def test_validate_handoff_artifact_reads_an_unbalanced_backtick_as_unowned(tmp_path: Path) -> None:
-    # A dropped closing backtick turned the rest of the entry into a "command"
-    # and laundered the bullet — the same class as the two-span bug.
-    result = run_on_state(tmp_path, "- Authors keep typing ` instead of a quote when naming flags.")
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-
-
-def test_validate_handoff_artifact_accepts_a_double_backtick_command(tmp_path: Path) -> None:
-    # The form an author MUST use when the command itself contains a backtick.
-    # Rejecting it refuses the replacement the rule asks for.
-    result = run_on_state(tmp_path, "- Re-take it with ``git log --oneline`` before inheriting.")
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_requires_a_left_boundary_on_an_issue_id(tmp_path: Path) -> None:
-    result = run_on_state(tmp_path, "- See issue#5 and guide.md#42 for the background.")
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-
-
-def test_validate_handoff_artifact_ignores_a_heading_inside_a_fence(tmp_path: Path) -> None:
-    """A fenced `## Next Session` used to bind the section to the EXAMPLE.
-
-    The real section was then never scanned and reported line numbers pointed
-    into a code block — a whole-section bypass.
-    """
-    repo = seed_repo(
-        tmp_path,
-        "\n".join(
-            [
-                "# Demo Handoff",
-                "",
-                "## Workflow Trigger",
-                "",
-                "- do the thing",
-                "",
-                "## Current State",
-                "",
-                OWNED_STATE,
-                "",
-                "```markdown",
-                "## Next Session",
-                "",
-                "1. a fenced example",
-                "```",
-                "",
-                "## Next Session",
-                "",
-                "1. An unowned claim nobody checks.",
-                "",
-                "## Discuss",
-                "",
-                "- discuss",
-                "",
-                "## References",
-                "",
-                "- [guide](docs/guide.md)",
-                "",
-            ]
-        )
-        + "\n",
-    )
-    (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
-    result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
-    assert result.returncode == 1
-    assert "An unowned claim nobody checks" in result.stderr
-    assert "a fenced example" not in result.stderr
-
-
-def test_validate_handoff_artifact_does_not_let_a_tilde_line_close_a_backtick_fence(tmp_path: Path) -> None:
-    # A plain (```|~~~) toggle inverts on the inner `~~~` and leaks fence
-    # content into the document for the rest of the section.
-    result = run_on_state(
-        tmp_path,
-        "- Reproduce with:",
-        "",
-        "```",
-        "~~~",
-        "```",
-        "",
-        "- An unowned claim after the block.",
-    )
-    assert result.returncode == 1
-    assert "An unowned claim after the block" in result.stderr
-
-
-def test_validate_handoff_artifact_does_not_let_a_detached_fence_exempt_a_bullet(tmp_path: Path) -> None:
-    """The live artifact's ledger block used to exempt whatever bullet sat above it.
-
-    `docs/handoff.md` must carry the `charness-publish-state-claim` block at the
-    end of `## Current State`, so the exemption was permanent, in the gate's own
-    canonical artifact, and in the section the gate exists to police.
-    """
-    result = run_on_state(
-        tmp_path,
-        "- An unowned claim nobody checks.",
-        "",
-        "<!-- charness-publish-state-claim:demo -->",
-        "```json",
-        '{"kind":"demo"}',
-        "```",
-    )
-    assert result.returncode == 1
-    assert "An unowned claim nobody checks" in result.stderr
-
-
-def test_validate_handoff_artifact_reports_an_indented_top_level_marker(tmp_path: Path) -> None:
-    # One leading space used to make the entry vanish: not reported at all,
-    # which is worse than a false pass.
-    result = run_on_state(tmp_path, " - An unowned claim nobody checks.")
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr
-
-
-def test_validate_handoff_artifact_finds_an_owner_in_a_later_paragraph(tmp_path: Path) -> None:
-    # A list item may hold several paragraphs; the owner is often in the second.
-    result = run_on_state(
-        tmp_path,
-        "- Ruling 1 is executed, both halves.",
-        "",
-        "  Status per ruling lives in [the rulings artifact](docs/guide.md).",
-    )
-    assert result.returncode == 0, result.stderr
-
-
-# --- round-2 review findings: the repairs' own defects ---
-
-
-def test_validate_handoff_artifact_lets_a_sub_bullet_inherit_across_the_parents_fence(tmp_path: Path) -> None:
-    """The indent repair and the fence repair collided.
-
-    Closing the entry at a fence cleared the same variable the indent rule read
-    as "no parent to inherit from", so a child following its parent's own
-    command block was charged for a pointer the parent already carried.
-    """
-    result = run_on_state(
-        tmp_path,
-        "- Reproduce with [the guide](docs/guide.md):",
-        "",
-        "  ```bash",
-        "  python3 -m pytest -q",
-        "  ```",
-        "",
-        "  - Then compare against the ledger.",
-    )
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_detaches_a_fence_across_a_marker_comment(tmp_path: Path) -> None:
-    """Deleting one blank line used to restore the laundering.
-
-    With no blank, the `charness-publish-state-claim` marker read as a lazy
-    continuation, so the entry stayed open and the ledger fence re-attached to
-    the bullet above it. Nothing requires that blank line.
-    """
-    result = run_on_state(
-        tmp_path,
-        "- An unowned claim nobody checks.",
-        "<!-- charness-publish-state-claim:demo -->",
-        "```json",
-        '{"kind":"demo"}',
-        "```",
-    )
-    assert result.returncode == 1
-    assert "An unowned claim nobody checks" in result.stderr
-
-
-def test_validate_handoff_artifact_accepts_a_path_only_command(tmp_path: Path) -> None:
-    # A blocking floor in a public skill must not refuse the replacement it
-    # asks for; an argument-free path is still something to run.
-    result = run_on_state(tmp_path, "- Re-take the gate with `./scripts/run-quality.sh`.")
-    assert result.returncode == 0, result.stderr
-
-
-def test_validate_handoff_artifact_reads_a_padded_identifier_as_unowned(tmp_path: Path) -> None:
-    # CommonMark padding put spaces inside the span, so an unstripped
-    # whitespace test read a bare identifier as a command.
-    result = run_on_state(tmp_path, "- The module ` inventory_boundary_bypass_lib ` records nothing.")
-    assert result.returncode == 1
-    assert "carry no owner" in result.stderr

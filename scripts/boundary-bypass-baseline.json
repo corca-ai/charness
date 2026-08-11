@@ -1,4 +1,14 @@
 {
+  "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
+  "policy": "no_increase",
+  "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+  "summary": {
+    "candidate_count": 46,
+    "convertible_count": 0,
+    "internal_boundary_count": 33,
+    "keep_boundary_count": 25,
+    "candidate_key_count": 59
+  },
   "candidate_keys": [
     "tests/control_plane/test_lock_schema_resilience.py::scripts/doctor.py",
     "tests/quality_gates/test_adapter_key_warn_tier.py::scripts/validate_adapters.py",
@@ -53,20 +63,11 @@
     "tests/test_cautilus_proof_artifact.py::scripts/validate_cautilus_proof.py",
     "tests/test_debug_artifact.py::scripts/validate_debug_artifact.py",
     "tests/test_handoff_artifact.py::scripts/validate_handoff_artifact.py",
+    "tests/test_handoff_bullet_ownership.py::scripts/validate_handoff_artifact.py",
     "tests/test_ideation_artifact.py::scripts/validate_ideation_artifact.py",
     "tests/test_list_external_links.py::scripts/list_external_links.py",
     "tests/test_quality_artifact.py::scripts/validate_quality_artifact.py",
     "tests/test_retro_artifact.py::scripts/validate_retro_artifact.py",
     "tests/test_supply_chain_online.py::scripts/check_supply_chain_online.py"
-  ],
-  "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
-  "policy": "no_increase",
-  "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
-  "summary": {
-    "candidate_count": 45,
-    "candidate_key_count": 58,
-    "convertible_count": 0,
-    "internal_boundary_count": 32,
-    "keep_boundary_count": 24
-  }
+  ]
 }

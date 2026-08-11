@@ -63,6 +63,11 @@ those two sections must carry an OWNER (a markdown link, an inline command that
 regenerates the fact, or an issue id), and the planner reports `unowned_entries`
 with line numbers. `## Discuss` is exempt: an open question has no owner yet,
 which is what makes it open.
+These sections are a FLAT list: one entry per line-group, no nesting beyond a
+sub-bullet under an open parent, no multi-paragraph entries, and no fenced
+blocks. A bullet that needs a code block belongs in the artifact it should be
+linking. An inline command must take arguments — a bare path is a link, not a
+command, and a single-word command is indistinguishable from an identifier.
 The floor is narrower than the aim, and the gap is yours to close, not the
 gate's: `## Workflow Trigger` and `## Continuation Capability` are NOT checked,
 an entry passes on one owner while paraphrasing a second artifact beside it, and
