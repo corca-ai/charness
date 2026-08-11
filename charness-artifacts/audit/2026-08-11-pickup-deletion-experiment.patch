@@ -1,0 +1,528 @@
+diff --git a/evals/cautilus/claim-fidelity-registry.json b/evals/cautilus/claim-fidelity-registry.json
+index 64f199e1..eac5d43d 100644
+--- a/evals/cautilus/claim-fidelity-registry.json
++++ b/evals/cautilus/claim-fidelity-registry.json
+@@ -54,18 +54,6 @@
+    "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
+    "fan_out_fit": "yes — handoff branches by intent (plan_handoff_run.py _required_reads are intent-keyed and mutually exclusive); this default scenario is the chunked_routing (bare) intent whose single required read is chunked-routing.md."
+   },
+-  {
+-   "skill_id": "handoff",
+-   "scenario_id": "pickup",
+-   "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
+-   "fan_out_fit": "yes — the pickup intent's floor is the substance judge (outcome-assertions.json: start the artifact-named workflow) plus, HISTORICALLY, the conditional continuation-sequence.md read on the ambiguous arm; a chunked_routing or refresh run exercises neither, so pickup needs its own scenario. STALE since routing became declared: the planner can no longer observe a 'pinned task' (it is the caller's --pickup-target, which this scenario cannot supply at bootstrap), so this arm and pickup-ambiguous now produce the same planner output. The clear/ambiguous discrimination lives in tests/test_handoff_plan.py; re-scoping this pair is deferred, not done. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
+-  },
+-  {
+-   "skill_id": "handoff",
+-   "scenario_id": "pickup-ambiguous",
+-   "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json",
+-   "fan_out_fit": "yes — the AMBIGUOUS arm of the conditionalized pickup planner: a generic pickup with no clearly-pinned task against >=2 plausible pickups forces continuation-sequence.md, while a chunked_routing/refresh run does not — so it needs its own scenario. The 'clear-pickup scenario does not' half is STALE since routing became declared: the sibling pickup scenario now produces the same planner output. This arm's own mechanism (>=2 plausible pickups, no declared --pickup-target) is unchanged and still forces the read. workflow-trigger.md retired from the forced pickup reads (#410 Slice 9, census INLINE)."
+-  },
+   {
+    "skill_id": "handoff",
+    "scenario_id": "refresh",
+diff --git a/evals/cautilus/handoff-claim-fidelity/outcome-assertions.json b/evals/cautilus/handoff-claim-fidelity/outcome-assertions.json
+index 773eb9d2..f326660b 100644
+--- a/evals/cautilus/handoff-claim-fidelity/outcome-assertions.json
++++ b/evals/cautilus/handoff-claim-fidelity/outcome-assertions.json
+@@ -1,5 +1,5 @@
+ {
+-  "_comment": "OUTCOME assertion set for the handoff skill (companion to spec.json + pickup.spec.json + pickup-ambiguous.spec.json + refresh.spec.json). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle; ADVISORY (grades nothing, does not block), it protects the SUBSTANCE the deterministic claim-fidelity floors cannot. CONTEXT (#410 Slice 9): census.json classifies workflow-trigger.md as INLINE for handoff — its trigger-first gist is inlined in SKILL.md (step 2 authoritative-trigger rule, step 5 keep-the-trigger-explicit, the session-open guardrail), and the live trigger TEXT lives in the artifact's `## Workflow Trigger` section, which the planner forces as the FIRST required read on every run. The prior deferral reason ('a faithful pickup hands off to the invoked workflow, so its closeout RSF token is fragile') is exactly why the replacement floor is THIS substance instrument, not an emitted-token RSF: a pickup's final text belongs to the workflow it handed off to, so no closeout token is stable — but a judge reading the transcript can verify the handoff-owned behavior (trigger consulted from the artifact, named workflow actually started) regardless of who owns the final message. SCOPE: this set resolves as the sibling of the whole evals/cautilus/handoff-claim-fidelity/ dir (skill_outcome_wiring resolves spec_path.parent/outcome-assertions.json), so it applies to WHICHEVER handoff scenario is graded. Assertions are written to hold for ALL FOUR intents: a pickup PASSES by starting the artifact-named workflow/pinned task; a refresh PASSES by an honest kept/dropped accounting behind its `Refresh kept:`/`Refresh non-claims:` tokens (this judge is also the stronger backstop for the refresh RSF FORM-floor hollow-echo risk recorded in refresh.spec.json); a chunked-routing run PASSES by routing the live backlog into an explicit recommendation. COMMITTING-RUN CAVEAT (same as gather/setup): a handoff refresh writes and may commit docs/handoff.md inside the capture worktree, so deterministic output_glob checks would false-fail; the substance floors are JUDGE assertions reading the TRANSCRIPT, which a live capture MUST preserve into the bundle or the judge grades blind. Judge-kind assertions need the live judge (--judge-cmd, ask-before-run). NON-REVERSE-ENGINEERING: assertions name only the deterministic SUBJECT every run has (the artifact's own `## Workflow Trigger`/`## Next Session` state + SKILL.md's own guardrail claims), never a phrase or number from one capture — a run that reads the handoff and merely summarizes it (mention-only pickup, the guarded routing miss), echoes closeout vocabulary without the selection work, or names a workflow the artifact does not, legitimately scores low. CAPTURE-BEFORE-PIN: the pickup.spec.json deterministic floor move (RCF [workflow-trigger.md] -> [] on this substance floor; pickup-ambiguous RCF -> [continuation-sequence.md], strictly weaker, its retained floor already capture-proven genuinely opened on 2026-07-02) rides a fresh ask-before-run capture that VERIFIES this instrument grades correctly.",
++  "_comment": "OUTCOME assertion set for the handoff skill (companion to spec.json + refresh.spec.json; pickup.spec.json and pickup-ambiguous.spec.json were DELETED 2026-08-11 with the planner's pickup-ambiguity heuristic, so those two are the surviving vehicles — this set still resolves per DIRECTORY and its assertions still hold for a pickup run, which is now floored by this judge alone). Graded by scripts/grade_skill_outcome.py against a captured run's evidence bundle; ADVISORY (grades nothing, does not block), it protects the SUBSTANCE the deterministic claim-fidelity floors cannot. CONTEXT (#410 Slice 9): census.json classifies workflow-trigger.md as INLINE for handoff — its trigger-first gist is inlined in SKILL.md (step 2 authoritative-trigger rule, step 5 keep-the-trigger-explicit, the session-open guardrail), and the live trigger TEXT lives in the artifact's `## Workflow Trigger` section, which the planner forces as the FIRST required read on every run. The prior deferral reason ('a faithful pickup hands off to the invoked workflow, so its closeout RSF token is fragile') is exactly why the replacement floor is THIS substance instrument, not an emitted-token RSF: a pickup's final text belongs to the workflow it handed off to, so no closeout token is stable — but a judge reading the transcript can verify the handoff-owned behavior (trigger consulted from the artifact, named workflow actually started) regardless of who owns the final message. SCOPE: this set resolves as the sibling of the whole evals/cautilus/handoff-claim-fidelity/ dir (skill_outcome_wiring resolves spec_path.parent/outcome-assertions.json), so it applies to WHICHEVER handoff scenario is graded. Assertions are written to hold for ALL FOUR intents: a pickup PASSES by starting the artifact-named workflow/pinned task; a refresh PASSES by an honest kept/dropped accounting behind its `Refresh kept:`/`Refresh non-claims:` tokens (this judge is also the stronger backstop for the refresh RSF FORM-floor hollow-echo risk recorded in refresh.spec.json); a chunked-routing run PASSES by routing the live backlog into an explicit recommendation. COMMITTING-RUN CAVEAT (same as gather/setup): a handoff refresh writes and may commit docs/handoff.md inside the capture worktree, so deterministic output_glob checks would false-fail; the substance floors are JUDGE assertions reading the TRANSCRIPT, which a live capture MUST preserve into the bundle or the judge grades blind. Judge-kind assertions need the live judge (--judge-cmd, ask-before-run). NON-REVERSE-ENGINEERING: assertions name only the deterministic SUBJECT every run has (the artifact's own `## Workflow Trigger`/`## Next Session` state + SKILL.md's own guardrail claims), never a phrase or number from one capture — a run that reads the handoff and merely summarizes it (mention-only pickup, the guarded routing miss), echoes closeout vocabulary without the selection work, or names a workflow the artifact does not, legitimately scores low. CAPTURE-BEFORE-PIN: the pickup.spec.json deterministic floor move (RCF [workflow-trigger.md] -> [] on this substance floor; pickup-ambiguous RCF -> [continuation-sequence.md], strictly weaker, its retained floor already capture-proven genuinely opened on 2026-07-02) rides a fresh ask-before-run capture that VERIFIES this instrument grades correctly.",
+   "evalId": "handoff-claim-fidelity",
+   "assertions": [
+     {
+diff --git a/evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json b/evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json
+deleted file mode 100644
+index a255244b..00000000
+--- a/evals/cautilus/handoff-claim-fidelity/pickup-ambiguous.spec.json
++++ /dev/null
+@@ -1,54 +0,0 @@
+-{
+-  "_comment": "SLICE 9 MOVE (2026-07-09, #410) — workflow-trigger.md RETIRED from this floor too (census INLINE; gist inlined in SKILL.md; the artifact's `## Workflow Trigger` is the planner's first forced read; plan_handoff_run.py no longer forces the reference for pickup). RCF=[continuation-sequence.md] is a STRICTLY WEAKER floor than the proven Slice-4 one and its retained ref was GENUINELY opened in the 2026-07-02 capture (planner still forces it under the ambiguous condition — that code path is unchanged), so per the clean-MOVE rule (slice7-census-reconciliation.md) this flip is provable from the existing bundle at zero new capture cost; the fresh Slice-9 CLEAR-arm capture additionally proves the planner change live. Substance backstop: sibling outcome-assertions.json. --- PRIOR: SLICE 4 (2026-07-02) — the AMBIGUOUS arm of the conditionalized handoff pickup planner (#412, commit c1a66f4d). Sibling of pickup.spec.json (the CLEAR arm, RCF was [workflow-trigger.md]). This scenario's prompt is a generic pickup ('resume from the current state') carrying a task directive ('start the next workflow') to bypass the chunker into pickup intent, with NO clearly-pinned task, against a handoff with >=2 plausible Next Session pickups. plan_handoff_run.py therefore emits BOTH workflow-trigger.md AND continuation-sequence.md as required reads, so the floor requires both. FALSIFIABLE: an ambiguous pickup that skips continuation-sequence.md fails. Proven by a fresh operator-authorized ask-before-run capture (bundle charness-artifacts/cautilus/handoff-pickup-ambiguous-slice4-2026-07-02). thresholds omitted until a baseline capture sets a budget. --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. This scenario's arm is unchanged in substance: the same prompt still calls for the same declared route. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism.",
+-  "skillId": "handoff",
+-  "scenarioId": "pickup-ambiguous",
+-  "skillDisplayName": "handoff",
+-  "evaluationId": "execution-handoff-pickup-ambiguous-claim-fidelity",
+-  "targetKind": "public_skill",
+-  "targetId": "handoff",
+-  "prompt": "/charness:handoff resume from the current state and start the next workflow before doing anything else",
+-  "requiredCommandFragments": [
+-    "continuation-sequence.md"
+-  ],
+-  "requiredSummaryFragments": [],
+-  "declaredReferences": [
+-    "adapter-contract.md",
+-    "chunked-routing.md",
+-    "continuation-sequence.md",
+-    "spill-targets.md",
+-    "state-selection.md",
+-    "workflow-trigger.md"
+-  ],
+-  "referenceEngagement": {
+-    "adapter-contract.md": {
+-      "engagement": "on-demand",
+-      "rationale": "The planner reads this only when the adapter is missing, warned, or invalid; a healthy repo resolves the artifact location from the resolved adapter without opening the explainer doc.",
+-      "trigger": "adapter is missing, warned, or invalid (planner _required_reads condition)"
+-    },
+-    "chunked-routing.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A chunked_routing-intent planner read; not opened on a pickup run that carries a task directive.",
+-      "trigger": "bare/namespaced invocation with no task directive — route the backlog before pickup"
+-    },
+-    "continuation-sequence.md": {
+-      "engagement": "engage-always",
+-      "rationale": "A pickup-intent CONDITIONAL planner required read that IS forced here: this scenario is an AMBIGUOUS pickup (generic resume + a task directive to bypass the chunker, no pinned task, >=2 plausible pickups), so plan_handoff_run.py emits continuation-sequence.md to order the plausible pickups. A faithful ambiguous pickup opens it; skipping it is a genuine floor MISS."
+-    },
+-    "spill-targets.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A refresh-intent planner read; not opened on a pickup run.",
+-      "trigger": "refresh intent — spilling durable detail to its owning artifact instead of growing a diary"
+-    },
+-    "state-selection.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A refresh/judge-intent planner read; not opened on a pickup run.",
+-      "trigger": "refresh intent — keeping only state that changes the next action"
+-    },
+-    "workflow-trigger.md": {
+-      "engagement": "on-demand",
+-      "classTag": "INLINE",
+-      "rationale": "Census INLINE (#410 Slice 9): the trigger-first gist is inlined in SKILL.md (step 2, step 5, session-open guardrail) and the live trigger text is in the artifact's `## Workflow Trigger`, already the planner's first forced read. Pickup fidelity is floored by the sibling outcome-assertions.json substance judge instead of this doc-open.",
+-      "trigger": "authoring or repairing a trigger line — consulting the naming rule's WHY-prose"
+-    }
+-  }
+-}
+diff --git a/evals/cautilus/handoff-claim-fidelity/pickup.spec.json b/evals/cautilus/handoff-claim-fidelity/pickup.spec.json
+deleted file mode 100644
+index cf1378bb..00000000
+--- a/evals/cautilus/handoff-claim-fidelity/pickup.spec.json
++++ /dev/null
+@@ -1,53 +0,0 @@
+-{
+-  "_comment": "SLICE 9 MOVE (2026-07-09, #410) — workflow-trigger.md RETIRED from the pickup doc-open floor, capture-gated. Driver = census INLINE: the trigger-first gist is inlined in SKILL.md (step 2 authoritative-trigger rule, step 5 keep-the-trigger-explicit, session-open guardrail) and the live trigger TEXT lives in the artifact's `## Workflow Trigger` section, which the planner forces as the FIRST required read — the reference re-read was a redundant doc-open proxy. plan_handoff_run.py no longer forces references/workflow-trigger.md for the pickup intent (it STAYS forced for judge_from_user_request, a different load-bearing purpose). The prior deferral ('a faithful pickup hands off to the invoked workflow, so its closeout RSF token is fragile') is resolved by NOT using an RSF: the replacement floor is the sibling outcome-assertions.json SUBSTANCE judge (pickup-starts-named-workflow et al.), which grades the handoff-owned behavior from the transcript regardless of which workflow owns the final message. RCF=[] + RSF=[] is valid per claim_fidelity_lib substance-floor-only support (325909f7). classTag INLINE is safe once off the RCF. Floor verified by a fresh ask-before-run capture (see the Slice-9 bundle under charness-artifacts/cautilus/) — token/behavior OBSERVED, not assumed. --- PRIOR: SLICE 4 RESOLUTION (2026-07-02) — #412 PLANNER CONDITIONALIZED (commit c1a66f4d). plan_handoff_run.py now emits continuation-sequence.md for pickup ONLY when the pickup is ambiguous, so this CLEAR-pickup floor drops it: RCF=[workflow-trigger.md] (mirrors the planner). The existing Slice-7 pickup capture (opened workflow-trigger.md, skipped continuation-sequence.md) re-grades PASS under this floor. continuation-sequence.md is reclassified on-demand DEPTH (not the census INLINE — the planner change reveals it IS load-bearing under the ambiguous condition), and its ambiguous arm is proven falsifiably by the sibling pickup-ambiguous.spec.json + a fresh ask-before-run capture. --- PRIOR CONTEXT: SLICE-7 CENSUS RECONCILIATION (2026-07-01) — SUPERSEDES THE CAPTURE-ONLY FRAMING BELOW WHERE IT CONTRADICTS census.json. Reconciled verdicts: workflow-trigger.md=MOVE (census INLINE; trigger-first gist inlined in SKILL.md step 5 — the open was redundant, 'PROVEN' below is the method error). continuation-sequence.md=MOVE (census INLINE; the pickup run correctly SKIPPED it — this is also #412, the planner over-requiring it unconditionally). Both floors are census INLINE redundant doc-opens; replacement is an emitted-token RSF proven by a fresh capture (FORM-floor over-relaxation risk noted — no substance judge). Full adversarial (analyze→verify) resolution + capture-gated queue: charness-artifacts/reference-compaction/slice7-census-reconciliation.md. classTag/RCF are intentionally NOT flipped here: claim_fidelity_lib forbids DUP/INLINE-tagging a live RCF floor, so the tag/RCF flip rides with the capture-gated MOVE (no substance judge + no retained stream ⇒ each MOVE needs a fresh ask-before-run capture). --- ORIGINAL SPEC COMMENT: Claim-fidelity spec for the handoff skill, PICKUP scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`start the named workflow`) that bypasses the chunker plus pickup wording (`resume`), so `plan_handoff_run.py` deterministically resolves intent=pickup, whose planner _required_reads are workflow-trigger.md + continuation-sequence.md (the RCF). Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — workflow-trigger.md PROVEN load-bearing (opened), so #410's 'drop workflow-trigger.md -> RSF' is REFUTED. But continuation-sequence.md was NOT opened: the pickup was unambiguous (one clear pinned task), and continuation-sequence.md is for 'when several plausible pickups exist' (SKILL.md). plan_handoff_run.py UNCONDITIONALLY emits continuation-sequence.md for the pickup intent, so this RCF mirrors the planner and the eval correctly FLAGS the gap — a PLANNER over-requirement finding (filed follow-up), NOT a spec softening. RCF is KEPT planner-faithful (this scenario's floor legitimately fails until the planner conditionalizes continuation-sequence.md). document-seams.md removed + deleted (DUP). --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. CORRECTION to the first draft of this note, which claimed the arm was unchanged in substance: the ROUTE is unchanged, the DISCRIMINATION is not. This was the CLEAR arm because the planner read 'the pinned task' out of the invocation text; nothing reads that now, and the planner runs at bootstrap BEFORE the artifact is read, so the agent cannot yet supply `--pickup-target`. Against a handoff with >=2 `## Next Session` entries this arm and `pickup-ambiguous` now produce the SAME planner output, and neither hard-fails (this RCF is empty; the sibling's read is still forced), so the collapse is silent. The clear/ambiguous discrimination MOVED to tests/test_handoff_plan.py (`test_handoff_plan_pickup_skips_continuation_when_target_declared` and its whitespace sibling). Re-scoping this scenario pair is deferred work, not a claim that it still discriminates. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism.",
+-  "skillId": "handoff",
+-  "scenarioId": "pickup",
+-  "skillDisplayName": "handoff",
+-  "evaluationId": "execution-handoff-pickup-claim-fidelity",
+-  "targetKind": "public_skill",
+-  "targetId": "handoff",
+-  "prompt": "/charness:handoff resume the pinned task from the current state and start the named workflow before doing anything else",
+-  "requiredCommandFragments": [],
+-  "requiredSummaryFragments": [],
+-  "declaredReferences": [
+-    "adapter-contract.md",
+-    "chunked-routing.md",
+-    "continuation-sequence.md",
+-    "spill-targets.md",
+-    "state-selection.md",
+-    "workflow-trigger.md"
+-  ],
+-  "referenceEngagement": {
+-    "adapter-contract.md": {
+-      "engagement": "on-demand",
+-      "rationale": "The planner reads this only when the adapter is missing, warned, or invalid; a healthy repo resolves the artifact location from the resolved adapter without opening the explainer doc.",
+-      "trigger": "adapter is missing, warned, or invalid (planner _required_reads condition)"
+-    },
+-    "chunked-routing.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A chunked_routing-intent planner read; not opened on a pickup run that carries a task directive.",
+-      "trigger": "bare/namespaced invocation with no task directive — route the backlog before pickup"
+-    },
+-    "continuation-sequence.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A pickup-intent CONDITIONAL planner required read: plan_handoff_run.py emits it only when the pickup is AMBIGUOUS (no clearly-pinned task AND >=2 plausible pickups). This clear-pickup scenario pins one task, so the planner does not force it. It is load-bearing under the ambiguous condition — see the pickup-ambiguous scenario. STALE as of the declared-routing change: 'pins one task' is no longer something the planner can observe -- it is the caller's `--pickup-target` declaration, which this scenario cannot supply at bootstrap. Treat this rationale as history; the live discrimination is the unit test.",
+-      "trigger": "ambiguous pickup — several plausible pickups exist (no clearly-pinned next task)"
+-    },
+-    "spill-targets.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A refresh-intent planner read; not opened on a pickup run.",
+-      "trigger": "refresh intent — spilling durable detail to its owning artifact instead of growing a diary"
+-    },
+-    "state-selection.md": {
+-      "engagement": "on-demand",
+-      "rationale": "A refresh/judge-intent planner read; not opened on a pickup run.",
+-      "trigger": "refresh intent — keeping only state that changes the next action"
+-    },
+-    "workflow-trigger.md": {
+-      "engagement": "on-demand",
+-      "classTag": "INLINE",
+-      "rationale": "Census INLINE (#410 Slice 9): the trigger-first gist is inlined in SKILL.md (step 2, step 5, session-open guardrail) and the live trigger text is in the artifact's `## Workflow Trigger`, already the planner's first forced read. The reference stays as WHY-prose for trigger AUTHORING; a pickup run needs the artifact, not this doc. Pickup fidelity is floored by the sibling outcome-assertions.json substance judge instead of this doc-open.",
+-      "trigger": "authoring or repairing a trigger line — consulting the naming rule's WHY-prose"
+-    }
+-  }
+-}
+diff --git a/evals/cautilus/handoff-claim-fidelity/refresh.spec.json b/evals/cautilus/handoff-claim-fidelity/refresh.spec.json
+index b13a224c..30497109 100644
+--- a/evals/cautilus/handoff-claim-fidelity/refresh.spec.json
++++ b/evals/cautilus/handoff-claim-fidelity/refresh.spec.json
+@@ -1,5 +1,5 @@
+ {
+-  "_comment": "SLICE 8 MOVE (2026-07-05, #410) — state-selection.md RETIRED to an emitted-token RSF floor, capture-gated. CORRECTION of the Slice-7 'refresh opened BOTH RCF docs → PROVEN load-bearing' framing: that was the documented method error — a planner-forced open of an INLINE doc is a redundant re-read, not proof of depth (charness-artifacts/reference-compaction/slice7-census-reconciliation.md '## The method error'). Driver = census INLINE for state-selection.md (Compression Rule inlined at SKILL.md step 2, step 4 keep-enumeration, guardrails). Honest MOVE: plan_handoff_run.py no longer forces references/state-selection.md on a refresh; SKILL.md '## Closeout Vocabulary' makes the refresh emit `Refresh kept:` + `Refresh non-claims:`; the eval floors on those OBSERVED tokens instead of the redundant re-read. spill-targets.md STAYS the doc-open RCF floor: its exact owning-path routing table is genuine depth absent from SKILL.md (census evidence itself notes SKILL.md 'does NOT name the target paths') — the over-relaxation guard. RSF is a FORM floor (handoff has no substance judge): the gist stays inlined and the token re-pins harder if a capture shows a hollow echo. pickup/pickup-ambiguous NOT flipped (a faithful pickup hands off to the invoked workflow, so its closeout token is fragile — deferred). CAPTURE STATUS: PROVEN (2026-07-05, ask-before-run, operator-authorized). Fresh capture at 60434368 OBSERVED both tokens in the closeout with honest substance AND opened spill-targets.md; the run did NOT re-read state-selection.md (Read=0 — compaction achieved), keeping only next-action state from the inlined Compression Rule gist. Grade vs this flipped spec = passed. Bundle: charness-artifacts/cautilus/handoff-refresh-move-2026-07-05/ (observed.v1.json, finding.md, trace-digest.jsonl, transcript.txt). Footnote: the same stream also passed the OLD spec, but via a Write-content filename mention (the refresh described this refactor commit), not a genuine read — extra evidence the doc-open RCF was mention-satisfiable. --- ORIGINAL SPEC COMMENT: Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh. declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds.max_duration_ms retained from the 2026-07-01 passing baseline (273120ms, ~2x). --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. This scenario's arm is unchanged in substance: the same prompt still calls for the same declared route. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism.",
++  "_comment": "SLICE 8 MOVE (2026-07-05, #410) — state-selection.md RETIRED to an emitted-token RSF floor, capture-gated. CORRECTION of the Slice-7 'refresh opened BOTH RCF docs → PROVEN load-bearing' framing: that was the documented method error — a planner-forced open of an INLINE doc is a redundant re-read, not proof of depth (charness-artifacts/reference-compaction/slice7-census-reconciliation.md '## The method error'). Driver = census INLINE for state-selection.md (Compression Rule inlined at SKILL.md step 2, step 4 keep-enumeration, guardrails). Honest MOVE: plan_handoff_run.py no longer forces references/state-selection.md on a refresh; SKILL.md '## Closeout Vocabulary' makes the refresh emit `Refresh kept:` + `Refresh non-claims:`; the eval floors on those OBSERVED tokens instead of the redundant re-read. spill-targets.md STAYS the doc-open RCF floor: its exact owning-path routing table is genuine depth absent from SKILL.md (census evidence itself notes SKILL.md 'does NOT name the target paths') — the over-relaxation guard. RSF is a FORM floor (handoff has no substance judge): the gist stays inlined and the token re-pins harder if a capture shows a hollow echo. pickup/pickup-ambiguous NOT flipped (a faithful pickup hands off to the invoked workflow, so its closeout token is fragile — deferred). CAPTURE STATUS: PROVEN (2026-07-05, ask-before-run, operator-authorized). Fresh capture at 60434368 OBSERVED both tokens in the closeout with honest substance AND opened spill-targets.md; the run did NOT re-read state-selection.md (Read=0 — compaction achieved), keeping only next-action state from the inlined Compression Rule gist. Grade vs this flipped spec = passed. Bundle: charness-artifacts/cautilus/handoff-refresh-move-2026-07-05/ (observed.v1.json, finding.md, trace-digest.jsonl, transcript.txt). Footnote: the same stream also passed the OLD spec, but via a Write-content filename mention (the refresh described this refactor commit), not a genuine read — extra evidence the doc-open RCF was mention-satisfiable. --- ORIGINAL SPEC COMMENT: Claim-fidelity spec for the handoff skill, REFRESH scenario. See spec.json for the planner/lens-4 split rationale. The prompt carries a list-verb task directive (`run a refresh pass`) that bypasses the chunker plus refresh wording (`refresh`/`write`), so `plan_handoff_run.py` deterministically resolves intent=refresh. declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds.max_duration_ms retained from the 2026-07-01 passing baseline (273120ms, ~2x). --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. This scenario's arm is unchanged in substance: the same prompt still calls for the same declared route. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism. --- PICKUP AMBIGUITY HEURISTIC DELETED (2026-08-11 operator ruling): the planner forces no reference for the pickup intent, `--pickup-target` is gone, and continuation-sequence.md left the forceable set with the planner literal. The two pickup scenarios were deleted; this spec and spec.json are now the only vehicles for the directory-scoped outcome-assertions.json substance judge, which is what floors pickup fidelity. Any sentence above naming --pickup-target is HISTORY.",
+   "skillId": "handoff",
+   "scenarioId": "refresh",
+   "skillDisplayName": "handoff",
+@@ -50,8 +50,9 @@
+     },
+     "workflow-trigger.md": {
+       "engagement": "on-demand",
+-      "rationale": "A pickup/judge-intent planner read; not opened on a refresh run.",
+-      "trigger": "pickup intent — starting from the named workflow trigger"
++      "classTag": "INLINE",
++      "rationale": "Census INLINE (#410 Slice 9): the trigger-first gist is inlined in SKILL.md and the live trigger TEXT is in the artifact's `## Workflow Trigger`, already the planner's first forced read; not opened on a refresh run. Tag carried here as well as in spec.json from 2026-08-11, when the two pickup scenarios that used to carry it were deleted with the ambiguity heuristic — workflow-trigger.md stays planner-forceable via judge_from_user_request, so the classification must survive the scenarios.",
++      "trigger": "judge_from_user_request intent, or authoring/repairing a trigger line"
+     }
+   },
+   "thresholds": {
+diff --git a/evals/cautilus/handoff-claim-fidelity/spec.json b/evals/cautilus/handoff-claim-fidelity/spec.json
+index 55830934..ae97916b 100644
+--- a/evals/cautilus/handoff-claim-fidelity/spec.json
++++ b/evals/cautilus/handoff-claim-fidelity/spec.json
+@@ -1,5 +1,5 @@
+ {
+-  "_comment": "Claim-fidelity spec for the handoff skill, DEFAULT scenario (chunked_routing). handoff ships a deterministic planner (`plan_handoff_run.py`) whose `_required_reads` are INTENT-keyed and mutually exclusive: chunked_routing -> chunked-routing.md; pickup -> workflow-trigger.md + continuation-sequence.md; refresh -> state-selection.md + spill-targets.md; adapter-contract.md is read only when the adapter is missing/warned/invalid. The old fixture's RCF was the UNION of all intents and so false-failed every real run (no single intent opens all of them); per lens 4 the skill is split into one scenario per intent, each with its planner-derived RCF (lens 1). This default scenario is the bare `/charness:handoff`: `should_fire_chunker` fires on the plugin-namespaced invocation (a chunker fix shipped with this calibration made `/charness:handoff` register as the handoff command rather than 'another slash command', so the bare namespaced call deterministically resolves to chunked_routing), whose only required read is chunked-routing.md. Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — floor PROVEN: bare /charness:handoff fired the chunker and opened chunked-routing.md (coverage 1/7, outcome=passed), so the planner-derived chunked-routing.md floor is load-bearing and #410's RCF->RSF move does NOT apply. document-seams.md removed from declaredReferences and deleted (DUP: its 'default to docs/handoff.md, override via adapter' rule is inlined in SKILL.md Bootstrap; opened by no scenario run). thresholds.max_duration_ms set from this passing baseline (325663ms, ~2x). --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. This scenario's arm is unchanged in substance: the same prompt still calls for the same declared route. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism.",
++  "_comment": "Claim-fidelity spec for the handoff skill, DEFAULT scenario (chunked_routing). handoff ships a deterministic planner (`plan_handoff_run.py`) whose `_required_reads` are INTENT-keyed and mutually exclusive: chunked_routing -> chunked-routing.md; pickup -> workflow-trigger.md + continuation-sequence.md; refresh -> state-selection.md + spill-targets.md; adapter-contract.md is read only when the adapter is missing/warned/invalid. The old fixture's RCF was the UNION of all intents and so false-failed every real run (no single intent opens all of them); per lens 4 the skill is split into one scenario per intent, each with its planner-derived RCF (lens 1). This default scenario is the bare `/charness:handoff`: `should_fire_chunker` fires on the plugin-namespaced invocation (a chunker fix shipped with this calibration made `/charness:handoff` register as the handoff command rather than 'another slash command', so the bare namespaced call deterministically resolves to chunked_routing), whose only required read is chunked-routing.md. Every other reference is on-demand here (read under a different intent or condition). declaredReferences is the full set (coverage). referenceEngagement uses the engage-always/on-demand/gate-sufficient axis from the methodology contract (charness-artifacts/spec/2026-06-23-skill-claim-fidelity-doc-philosophy.md). thresholds omitted until a baseline capture sets a budget. SLICE 7 (2026-07-01) CAPTURE — floor PROVEN: bare /charness:handoff fired the chunker and opened chunked-routing.md (coverage 1/7, outcome=passed), so the planner-derived chunked-routing.md floor is load-bearing and #410's RCF->RSF move does NOT apply. document-seams.md removed from declaredReferences and deleted (DUP: its 'default to docs/handoff.md, override via adapter' rule is inlined in SKILL.md Bootstrap; opened by no scenario run). thresholds.max_duration_ms set from this passing baseline (325663ms, ~2x). --- ROUTING SOURCE CHANGED (slice 1 of 2026-08-09-make-proof-surfaces-report-what-they-observed): the regex classifier `should_fire_chunker` is DELETED, so nothing here is decided by matching the invocation text any more. The agent declares the route with `plan_handoff_run.py --intent <...>` (or `--invoked-directly` for a bare launch), and a settled pickup names its task with `--pickup-target`, which is what now skips continuation-sequence.md. This scenario's arm is unchanged in substance: the same prompt still calls for the same declared route. Any sentence above describing a chunker bypass by verb or token is HISTORY, not current mechanism. --- PICKUP AMBIGUITY HEURISTIC DELETED (2026-08-11 operator ruling, charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md): the planner no longer forces ANY reference for the pickup intent, `--pickup-target` and the `## Next Session` entry count are gone, and `references/continuation-sequence.md` is no longer a planner literal — so it left the forceable set entirely. pickup.spec.json and pickup-ambiguous.spec.json were deleted with it; the pickup intent's floor is now the sibling outcome-assertions.json substance judge, whose vehicles are THIS spec and refresh.spec.json. Any sentence above naming a pickup reference read or --pickup-target is HISTORY.",
+   "skillId": "handoff",
+   "skillDisplayName": "handoff",
+   "evaluationId": "execution-handoff-claim-fidelity",
+@@ -45,8 +45,9 @@
+     },
+     "workflow-trigger.md": {
+       "engagement": "on-demand",
+-      "rationale": "A pickup/judge-intent planner read; not opened on a chunked_routing run.",
+-      "trigger": "pickup intent — starting from the named workflow trigger"
++      "classTag": "INLINE",
++      "rationale": "Census INLINE (#410 Slice 9): the trigger-first gist is inlined in SKILL.md (step 2, step 5, the session-open guardrail) and the live trigger TEXT is in the artifact's `## Workflow Trigger`, already the planner's first forced read. The reference stays as WHY-prose for trigger AUTHORING. The tag moved here on 2026-08-11 when the two pickup scenarios were deleted with the ambiguity heuristic: they were the only carriers of this classTag, and workflow-trigger.md is STILL planner-forceable (judge_from_user_request), so without the move the conditional-reads cross-check would flag it — a consequence the deletion ruling did not name.",
++      "trigger": "judge_from_user_request intent, or authoring/repairing a trigger line — consulting the naming rule's WHY-prose"
+     }
+   },
+   "thresholds": {
+diff --git a/skills/public/handoff/SKILL.md b/skills/public/handoff/SKILL.md
+index a9f096b4..c4d37474 100644
+--- a/skills/public/handoff/SKILL.md
++++ b/skills/public/handoff/SKILL.md
+@@ -35,8 +35,7 @@ You are the one reading the user's request, so you DECLARE the routing —
+ otherwise `--intent pickup` or `--intent refresh`. `--intent auto` only reads
+ structural signals and will hand the decision back. For a bare direct skill
+ invocation with no task, `--invoked-directly` declares that shape and routes to
+-chunked routing. On a pickup whose one task is already settled, name it with
+-`--pickup-target` so the planner does not force the sequencing reference.
++chunked routing.
+ The planner resolves the adapter, summarizes the artifact, lists
+ `required_reads`, and names cheap `gate_packets`.
+ Open the listed reads using each entry's `base` before broader exploration; a
+diff --git a/skills/public/handoff/scripts/plan_handoff_run.py b/skills/public/handoff/scripts/plan_handoff_run.py
+index 740972a9..a86b2ac3 100644
+--- a/skills/public/handoff/scripts/plan_handoff_run.py
++++ b/skills/public/handoff/scripts/plan_handoff_run.py
+@@ -24,9 +24,17 @@ INTENT_REFERENCE_READS = {
+     # (evals/cautilus/handoff-claim-fidelity/outcome-assertions.json). It STAYS
+     # forced for judge_from_user_request (deciding pickup-vs-refresh is a
+     # different, still-load-bearing purpose).
+-    "pickup": (
+-        ("references/continuation-sequence.md", "order the next move as continuation, not history"),
+-    ),
++    # A pickup forces NO reference read. Its live state is the artifact's own
++    # `## Workflow Trigger`, already the first forced read below, and ordering
++    # several plausible pickups is skill BEHAVIOR: SKILL.md points at
++    # references/continuation-sequence.md and the agent opens it by judgment.
++    # The planner used to decide that from the `## Next Session` entry COUNT --
++    # a prose parser rendering a verdict about the OPERATOR's intent, which
++    # renumbering the handoff or splitting one item in two could flip. That is
++    # the defect `should_fire_chunker` was deleted for, one step past a regex.
++    # The key stays present and EMPTY on purpose: dropping it falls through to
++    # the judge_from_user_request default in _required_reads.
++    "pickup": (),
+     "refresh": (
+         # state-selection.md retired from the forced refresh reads (census
+         # INLINE): the Compression Rule gist is inlined in SKILL.md (step 2,
+@@ -53,9 +61,6 @@ def _load_skill_runtime_bootstrap():
+ 
+ SKILL_RUNTIME = _load_skill_runtime_bootstrap()
+ resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
+-chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(
+-    __file__, "chunked_routing_lib"
+-)
+ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
+ ENVELOPE = SimpleNamespace(
+     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
+@@ -121,14 +126,6 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
+ 
+     raw = path.read_text(encoding="utf-8")
+     lines = raw.splitlines()
+-    try:
+-        # Actionable `## Next Session` entries = plausible pickups. Used only to
+-        # decide whether a pickup is ambiguous enough to need continuation-sequence.md;
+-        # open-issue union is intentionally omitted here to keep the planner
+-        # deterministic and tracker-independent.
+-        next_session_entry_count = len(chunked_routing_lib.parse_handoff_entries(raw))
+-    except Exception:
+-        next_session_entry_count = 0
+     h2_sections = [line.strip() for line in lines if line.startswith("## ")]
+     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
+     extra = [section for section in h2_sections if section not in _budget.CANONICAL_SECTIONS]
+@@ -154,21 +151,9 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
+         "dated_session_sections": dated_sessions,
+         "missing_sections": missing,
+         "extra_h2_sections": extra,
+-        "next_session_entry_count": next_session_entry_count,
+     }
+ 
+ 
+-def _pickup_needs_continuation_sequence(artifact: dict[str, Any], pickup_target: str) -> bool:
+-    """continuation-sequence.md orders the next move among SEVERAL plausible pickups.
+-    A pickup needs it only when the pickup is ambiguous: the caller did not DECLARE
+-    which task is being picked up AND the live state offers more than one plausible
+-    pickup. This aligns the planner with the skill's own 'when several plausible
+-    pickups exist' scope."""
+-    if pickup_target.strip():
+-        return False
+-    return artifact.get("next_session_entry_count", 0) >= 2
+-
+-
+ def _resolve_intent(*, requested: str, invoked_directly: bool) -> dict[str, Any]:
+     """Resolve routing from what the caller DECLARED, never from the invocation text.
+ 
+@@ -231,7 +216,6 @@ def _required_reads(
+     artifact: dict[str, Any],
+     intent: dict[str, Any],
+     adapter: dict[str, Any],
+-    pickup_target: str,
+     action_kind: str,
+ ) -> list[dict[str, str]]:
+     reads: list[dict[str, str]] = []
+@@ -273,20 +257,10 @@ def _required_reads(
+         if rules_read is not None:
+             reads.append(rules_read)
+ 
+-    pickup_skip_continuation = (
+-        intent["resolved"] == "pickup"
+-        and not _pickup_needs_continuation_sequence(artifact, pickup_target)
+-    )
+     for path, why in INTENT_REFERENCE_READS.get(
+         intent["resolved"],
+         INTENT_REFERENCE_READS["judge_from_user_request"],
+     ):
+-        if pickup_skip_continuation and path == "references/continuation-sequence.md":
+-            # Unambiguous pickup: one clearly-pinned task or a single plausible
+-            # pickup — no sequencing among alternatives is needed, so the planner
+-            # does not force continuation-sequence.md (which scopes itself to
+-            # "when several plausible pickups exist").
+-            continue
+         reads.append(_read(path, "reference", why, base="skill"))
+     return reads
+ 
+@@ -366,7 +340,6 @@ def build_plan(
+     *,
+     intent: str,
+     invoked_directly: bool,
+-    pickup_target: str = "",
+ ) -> dict[str, Any]:
+     adapter = resolve_adapter.load_adapter(repo_root)
+     artifact = _artifact_summary(repo_root, adapter)
+@@ -380,7 +353,6 @@ def build_plan(
+             artifact=artifact,
+             intent=resolved_intent,
+             adapter=adapter,
+-            pickup_target=pickup_target,
+             action_kind=str(action["kind"]),
+         ),
+         next_action=action,
+@@ -422,8 +394,6 @@ def main() -> None:
+     )
+     parser.add_argument("--invoked-directly", action="store_true",
+                         help="Declare that the skill was launched bare with no task, which routes to chunked routing.")
+-    parser.add_argument("--pickup-target", default="",
+-                        help="Name the one task being picked up when it is already settled; leave empty when it is not.")
+     parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
+     try:
+         args = parser.parse_args()
+@@ -431,7 +401,6 @@ def main() -> None:
+             args.repo_root.resolve(),
+             intent=args.intent,
+             invoked_directly=args.invoked_directly,
+-            pickup_target=args.pickup_target,
+         )
+         if args.json:
+             print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))
+diff --git a/tests/quality_gates/test_scenario_conditional_reads.py b/tests/quality_gates/test_scenario_conditional_reads.py
+index 13051f7c..6e01fcbd 100644
+--- a/tests/quality_gates/test_scenario_conditional_reads.py
++++ b/tests/quality_gates/test_scenario_conditional_reads.py
+@@ -20,10 +20,13 @@ ROOT = Path(__file__).resolve().parents[2]
+ HANDOFF_SKILL_DIR = ROOT / "skills" / "public" / "handoff"
+ HANDOFF_FIDELITY_DIR = ROOT / "evals" / "cautilus" / "handoff-claim-fidelity"
+ 
++# continuation-sequence.md left this set on 2026-08-11: the operator ruling
++# deleted the pickup-ambiguity heuristic AND the planner literal that made it
++# forceable regardless of branch, so ordering plausible pickups is now SKILL.md
++# prose the agent opens by judgment rather than a planner-forced read.
+ HANDOFF_FORCEABLE = {
+     "chunked-routing.md",
+     "workflow-trigger.md",
+-    "continuation-sequence.md",
+     "spill-targets.md",
+     "adapter-contract.md",
+     "state-selection.md",
+@@ -122,20 +125,28 @@ def test_live_repo_conditional_reads_cross_check_is_clean() -> None:
+     assert "adapter-contract.md" in report["skills"]["handoff"]["waived_allowlist"]
+ 
+ 
+-def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path: Path) -> None:
+-    # Reconstructs the incident this validator guards against: the pickup planner
+-    # branch conditionalized continuation-sequence.md and no scenario forced the
+-    # ambiguous arm. Deleting pickup-ambiguous.spec.json from a copy of the real
+-    # handoff fixtures reproduces that gap.
++def test_incident_reconstruction_flags_an_uncovered_planner_forced_read(tmp_path: Path) -> None:
++    # Reconstructs the incident this validator guards against, against the REAL
++    # handoff fixtures rather than a synthetic skill: a planner forces a reference
++    # down a conditional branch that no eval scenario covers, so a regression on
++    # that branch escapes every eval.
++    #
++    # The subject was continuation-sequence.md (unlink pickup-ambiguous.spec.json
++    # and its engage-always coverage vanished). That reconstruction died with the
++    # 2026-08-11 ruling: the planner literal is gone, so the reference is no
++    # longer forceable and no deletion of a real fixture can reproduce the gap
++    # through it. Re-keyed onto adapter-contract.md, which is still forced only on
++    # the adapter-unhealthy branch, is covered by no scenario, and holds its
++    # cleanliness solely through the allowlist waiver -- dropping that waiver
++    # reproduces the same escape. The live-fixture value is the point; the
++    # synthetic-skill arm of this check is test_unforced_on_demand_reference_is_flagged.
+     shutil.copytree(HANDOFF_SKILL_DIR, tmp_path / "skills" / "public" / "handoff", ignore=REPO_COPY_IGNORE)
+     shutil.copytree(
+         HANDOFF_FIDELITY_DIR,
+         tmp_path / "evals" / "cautilus" / "handoff-claim-fidelity",
+         ignore=REPO_COPY_IGNORE,
+     )
+-    (tmp_path / "evals" / "cautilus" / "handoff-claim-fidelity" / "pickup-ambiguous.spec.json").unlink()
+-    (tmp_path / ALLOWLIST_PATH).parent.mkdir(parents=True, exist_ok=True)
+-    shutil.copy(ROOT / ALLOWLIST_PATH, tmp_path / ALLOWLIST_PATH)
++    _write_allowlist(tmp_path / ALLOWLIST_PATH, "# no waivers\n")
+     _write_registry(
+         tmp_path,
+         [
+@@ -144,12 +155,6 @@ def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path:
+                 "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
+                 "fan_out_fit": "incident-reconstruction fixture",
+             },
+-            {
+-                "skill_id": "handoff",
+-                "scenario_id": "pickup",
+-                "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
+-                "fan_out_fit": "incident-reconstruction fixture",
+-            },
+             {
+                 "skill_id": "handoff",
+                 "scenario_id": "refresh",
+@@ -158,7 +163,7 @@ def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path:
+             },
+         ],
+     )
+-    with pytest.raises(ValidationError, match="continuation-sequence.md"):
++    with pytest.raises(ValidationError, match="adapter-contract.md"):
+         cross_check_conditional_reads(tmp_path)
+ 
+ 
+diff --git a/tests/test_handoff_plan.py b/tests/test_handoff_plan.py
+index c612d14d..fa35902a 100644
+--- a/tests/test_handoff_plan.py
++++ b/tests/test_handoff_plan.py
+@@ -118,7 +118,6 @@ def test_handoff_plan_help_describes_all_options() -> None:
+             "--repo-root": "Repository root used to resolve handoff adapter and artifact state.",
+             "--intent": "Declare the routing decision you judged from the user request",
+             "--invoked-directly": "Declare that the skill was launched bare with no task",
+-            "--pickup-target": "Name the one task being picked up when it is already settled",
+         },
+     )
+     assert "--json" not in result.stdout
+@@ -328,7 +327,7 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
+     # import time) when scripts.validate_handoff_artifact cannot load -- e.g. a
+     # portable install without scripts/ vendored. load_repo_module_from_skill_script
+     # reaches this via `importlib.import_module`, so forcing THAT call to fail for
+-    # only this one module name (not resolve_adapter/chunked_routing_lib, which use
++    # only this one module name (not resolve_adapter, which uses
+     # a different loader) exercises the except branch on a fresh import of the
+     # real file.
+     real_import_module = importlib.import_module
+@@ -439,55 +438,33 @@ def _pickup_reads(repo: Path, *extra: str) -> set[str]:
+     return {read["path"] for read in plan["required_reads"]}
+ 
+ 
+-def test_handoff_plan_pickup_requires_continuation_when_ambiguous(tmp_path: Path) -> None:
++def test_handoff_plan_pickup_forces_no_reference_read_whatever_the_entry_count(tmp_path: Path) -> None:
++    # A pickup's forced reads are the ARTIFACT and nothing else. The planner used
++    # to decide between one and several plausible pickups by COUNTING `## Next
++    # Session` entries and forcing continuation-sequence.md on the "ambiguous"
++    # arm -- a prose parser rendering a verdict about the operator's intent, which
++    # renumbering the handoff could flip. Deleted by operator ruling; ordering
++    # plausible pickups is SKILL.md prose the agent opens by judgment.
++    # Falsifiable both ways: the count must not change the answer.
++    for entry_count in (1, 3):
++        reads = _pickup_reads(seed_repo(tmp_path / f"repo{entry_count}", _pickup_body(entry_count)))
++        assert not {read for read in reads if read.startswith("references/")}, entry_count
++        assert "handoff.md" in " ".join(reads), entry_count
++
++
++def test_handoff_plan_pickup_target_flag_is_gone(tmp_path: Path) -> None:
++    # The flag existed only to feed the deleted ambiguity predicate. Argparse must
++    # REJECT it rather than silently accept and ignore it, so a caller still
++    # passing it learns the mechanism is gone.
+     repo = seed_repo(tmp_path, _pickup_body(3))
+-    reads = _pickup_reads(repo)
+-    # Several plausible pickups + no declared target -> continuation-sequence.md orders them.
+-    assert "references/continuation-sequence.md" in reads
+-    assert "references/workflow-trigger.md" not in reads  # retired from forced pickup reads (#410 Slice 9): gist inlined, artifact carries the trigger
+-
+-
+-def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp_path: Path) -> None:
+-    repo = seed_repo(tmp_path, _pickup_body(1))
+-    reads = _pickup_reads(repo)
+-    # Only one plausible pickup -> no sequencing choice, so the planner does not force it.
+-    assert "references/continuation-sequence.md" not in reads
+-    assert "references/workflow-trigger.md" not in reads
+-
+-
+-def test_handoff_plan_pickup_skips_continuation_when_target_declared(tmp_path: Path) -> None:
+-    repo = seed_repo(tmp_path, _pickup_body(3))
+-    # A DECLARED target settles the sequencing question that continuation-sequence.md
+-    # answers. This used to be guessed from the invocation text, where "resume the
+-    # pinned task" counted and "the next pickup is unpinned" had to be negated back
+-    # out by hand -- the same keyword-guessing this planner no longer does.
+-    reads = _pickup_reads(repo, "--pickup-target", "Task 2")
+-    assert "references/continuation-sequence.md" not in reads
+-
+-
+-def test_handoff_plan_pickup_keeps_continuation_for_an_empty_target(tmp_path: Path) -> None:
+-    repo = seed_repo(tmp_path, _pickup_body(3))
+-    # Whitespace is not a declaration: several plausible pickups remain.
+-    reads = _pickup_reads(repo, "--pickup-target", "   ")
+-    assert "references/continuation-sequence.md" in reads
+-
+-
+-def test_artifact_summary_counts_zero_when_entry_parse_raises(
+-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+-) -> None:
+-    # The `## Next Session` entry count is defensive: if the shared entry parser
+-    # raises, the planner degrades to zero plausible pickups instead of crashing.
+-    module = load_plan_module()
+-    artifact = tmp_path / "handoff.md"
+-    artifact.write_text("# H\n\n## Next Session\n\n- one\n", encoding="utf-8")
+-
+-    def _raise(_raw: str):
+-        raise ValueError("unparseable handoff entries")
+-
+-    monkeypatch.setattr(module.chunked_routing_lib, "parse_handoff_entries", _raise)
+-    summary = module._artifact_summary(tmp_path, {"artifact_path": "handoff.md"})
+-    assert summary["exists"] is True
+-    assert summary["next_session_entry_count"] == 0
++    result = subprocess.run(
++        ["python3", SCRIPT, "--repo-root", str(repo), "--intent", "pickup", "--pickup-target", "Task 2"],
++        cwd=ROOT,
++        capture_output=True,
++        text=True,
++    )
++    assert result.returncode != 0
++    assert "--pickup-target" in result.stderr
+ 
+ 
+ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path: Path) -> None:

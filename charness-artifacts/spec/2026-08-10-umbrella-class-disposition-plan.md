@@ -525,3 +525,63 @@ The discriminator for the sweep is NOT "does it use a regex". Form validators
 (`validate_skills.py`, `check_doc_links.py`) legitimately match shape. The question is
 **does a pattern-match decide what an agent or operator MEANT** — and if so, the declared
 route should replace it, exactly as `--intent` replaced `should_fire_chunker`.
+
+
+---
+
+# Observation run 2026-08-11 — the next session was actually run, headless
+
+`claude -p "handoff"`, Opus 5 / medium effort, in an isolated `git worktree` at `369f6d7b`
+so nothing could touch the real tree. 82 turns, 7m18s, $5.40. Full diff preserved at
+`charness-artifacts/audit/2026-08-11-pickup-deletion-experiment.patch`.
+
+The question was whether this session's lessons transfer through the harness without the
+operator restating them. Two hypotheses, both measured from the tool-call trace.
+
+**H1 — does it read `recent-lessons.md` before acting? YES.** Tool calls 4-5, before
+touching item 1 and before any edit.
+
+**H2 — does it propose a removal without searching for what reads it? NO — it searched.**
+It read `claim_fidelity_lib.py:270-310` (the AST-scan extractor), all four eval specs, the
+allowlist, the registry, and `test_scenario_conditional_reads.py`, and ran a combined grep
+over `pickup-ambiguous` / `pickup.spec.json` / `pickup_target` before editing. It VERIFIED
+the recorded consumer sets rather than trusting them, which is the behavior the seven
+failures were about.
+
+**It also found a hole in the consumer sets this plan calls "verified".**
+`workflow-trigger.md` carried `classTag: INLINE` in the two specs being deleted **and
+nowhere else**, while remaining planner-forceable through the `judge_from_user_request`
+intent (`plan_handoff_run.py:48`). Deleting both specs without moving the tag reddens the
+conditional-reads cross-check. My scope check saw both specs carrying the tag and concluded
+the sibling covered it — but both siblings were on the delete list. The run moved the tag
+onto `spec.json` and `refresh.spec.json` with the reason recorded inline, and flagged it as
+"a consequence the deletion ruling did not name."
+
+**It stopped honestly instead of claiming done.** `python3` and most `git` invocations
+returned "This command requires approval" under `--permission-mode acceptEdits`, so it
+could not run `sync_root_plugin_manifests.py`, pytest, or the gate. It reported the tree as
+inconsistent and unverified, refused to hand-mirror ("unverifiable hand-mirroring is how
+drift gets committed"), and named what it still owed: the mirror sync, the gates, and the
+two-round bounded review this proof-surface change carries.
+
+## What this settles about the harness thesis
+
+The lessons transferred — **but not through the surface built for them.**
+`recent-lessons.md`'s four trap slots dropped this session's two sharpest lessons on a
+recency+recurrence ranking, and the run's correct behavior traces instead to the handoff's
+explicit first line and to the consumer greps recorded in THIS artifact. So the memory
+digest is lossy and the handoff plus the spec artifact did the work. That is a narrow,
+actionable result: invest in the handoff/spec channel, and either give the digest a way for
+a session to mark a lesson decisive or stop treating it as the memory surface.
+
+One genuine harness defect the run exposed on its own: **a headless pickup cannot reach its
+own stop gate.** The repo's contract says code written is not a stop state, and the default
+permission posture blocks the very commands the contract requires. Any autonomous run of
+this repo hits that wall.
+
+## Consequence for the next session
+
+The `workflow-trigger.md` classTag move is now a NAMED part of item 1's scope rather than a
+discovery. The patch is evidence, not a shortcut: it was produced without a mirror sync,
+without a test run, and without the review the change owes, so the next session re-does the
+work under verification rather than applying it.
