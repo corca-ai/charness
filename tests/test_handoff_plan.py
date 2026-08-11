@@ -26,7 +26,7 @@ def load_plan_module():
     return module
 
 
-def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated_session: bool = False) -> str:
+def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated_session: bool = False, unpaired_fence: bool = False) -> str:
     lines = [
         "# Demo Handoff",
         "",
@@ -41,6 +41,8 @@ def handoff_body(*, current_lines: int = 1, omit_references: bool = False, dated
     # `- state` bullet would make every fixture report `unowned_entries`
     # instead of the status the test is about.
     lines.extend(f"- state {index} in `git status --short`" for index in range(current_lines))
+    if unpaired_fence:
+        lines.extend(["", "```bash", "echo no closing delimiter"])
     lines.extend(
         [
             "",
@@ -362,6 +364,13 @@ def test_handoff_plan_reports_artifact_statuses_that_require_repair(tmp_path: Pa
         ("diary_smell", handoff_body(dated_session=True)),
         ("shape_issue", handoff_body(omit_references=True)),
         ("near_limit", handoff_body(current_lines=module.MAX_CONTENT_LINES - 10)),
+        # An UNPAIRED fence makes every later line read as fenced, so the
+        # ownership scan finds no sections and returns empty. Ranked above
+        # `unowned_entries` precisely because that empty result would otherwise
+        # be reported as clean. The gate refuses this artifact; a portable
+        # install without the repo validator has only the planner, so a status
+        # of `ok` here is the silence this guard exists to close.
+        ("unscannable_fence", handoff_body(unpaired_fence=True)),
     ]
     for status, body in cases:
         repo = seed_repo(tmp_path / status, body)
