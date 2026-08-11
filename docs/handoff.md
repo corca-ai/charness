@@ -5,7 +5,7 @@
 - **Invoke `charness:handoff`.** Read [recent lessons](../charness-artifacts/retro/recent-lessons.md)
   BEFORE acting, then `## Next Session`, then route each item through its owning skill.
 - No goal is running. State the unpushed count from `git log --oneline origin/main..HEAD | wc -l`
-  in your first reply. A push grant has been declined for several sessions — do not ask.
+  in your first reply. A push grant was given and used on 2026-08-12; it does not carry forward.
 
 ## Continuation Capability
 
@@ -48,18 +48,20 @@
 
 ## Next Session
 
-1. [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md)
-   — the digest's slot-policy defect and two unimplemented proposals. The operator's selection
-   design is NOT in it; that design has no artifact yet.
-2. [Ownership gate critique](../charness-artifacts/critique/2026-08-12-handoff-bullet-ownership-critique.md)
-   — round 1's fourteen findings, a summary of rounds 2-4, and the dispositions including two
-   reversals. Its last section names what is accepted-unreviewed.
-3. [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — rulings
+1. [Lesson ledger and contract register](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md)
+   — the memory design: a scored ledger, a contract register measuring citation and catch, and
+   graduation as the seam. Names its own first implementation slice and its probe questions.
+2. [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md)
+   — the digest's slot-policy defect the spec above answers, and two proposals it supersedes.
+3. [Ownership gate critique](../charness-artifacts/critique/2026-08-12-handoff-bullet-ownership-critique.md)
+   — six review rounds on the handoff ownership gate, the dispositions including two reversals,
+   and a closing section naming what is accepted-unreviewed.
+4. [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — rulings
    2, 3, 5, and 6 carry `not executed`; ruling 6 is the only schema change.
-4. [suggest_mutation_coverage_command](../scripts/suggest_mutation_coverage_command.py) — holds
+5. [suggest_mutation_coverage_command](../scripts/suggest_mutation_coverage_command.py) — holds
    `tests_referencing_paths`, the mapper [#587](https://github.com/corca-ai/charness/issues/587)
    describes; that issue's body governs over any in-repo mention.
-5. [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md) — a read of the
+6. [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md) — a read of the
    open backlog: #539 #581 #588 #528 #589 #542, then #586 #590 #593-#597 #599 #550 #527 #546.
 
 ## Discuss
@@ -77,4 +79,5 @@
 - [Design north star](./design-north-star.md)
 - [Umbrella class disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md)
 - [Validator timing layers](./conventions/validator-timing-layers.md)
+- [Lesson ledger spec](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md)
 - [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md)
