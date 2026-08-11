@@ -377,3 +377,29 @@ def test_structural_waste_helper_edges(tmp_path: Path, monkeypatch: pytest.Monke
     monkeypatch.setattr(lib, "_python_sources", lambda _repo: [bad, no_parser])
 
     assert lib._broad_scanner_candidates(repo) == []
+
+
+def test_a_test_file_deleted_but_not_yet_staged_does_not_crash_the_gate(tmp_path: Path) -> None:
+    """`_test_sources` reads `git ls-files --cached` -- the INDEX -- so a test file
+    deleted in the worktree but not yet staged is still listed and no longer
+    readable. That is an ordinary working state: it is what a `git rm` looks like
+    after anything restores changes unstaged, and it is how this was found.
+
+    Before the guard, `ast.parse(path.read_text(...))` raised FileNotFoundError,
+    which the `except (UnicodeDecodeError, SyntaxError)` did not catch, and the
+    whole blocking gate exited on a traceback instead of reporting on the files
+    it could read.
+    """
+    repo = tmp_path / "repo"
+    _write(repo / "tests" / "quality_gates" / "test_gone.py", "X = 1\n")
+    _write(repo / "tests" / "quality_gates" / "test_kept.py", "Y = 2\n")
+    for command in (
+        ["git", "init", "-q"],
+        ["git", "add", "-A"],
+        ["git", "-c", "user.email=t@t", "-c", "user.name=t", "commit", "-qm", "seed"],
+    ):
+        subprocess.run(command, cwd=repo, check=True, capture_output=True)
+    (repo / "tests" / "quality_gates" / "test_gone.py").unlink()
+
+    payload = _run_json(repo)
+    assert isinstance(payload, dict)
