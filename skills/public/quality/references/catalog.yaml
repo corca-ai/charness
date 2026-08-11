@@ -243,8 +243,8 @@ brief:
           - dup-ratchet.md
           - boundary-bypass-ratchet.md
           - quality-signal-scorecard.md
-      - area: language-adapter
-        scope: domain-language alignment or adapter/gate design is in scope
+      - area: adapter-gate-design
+        scope: adapter policy or gate design is in scope
         inventories:
           - inventory_adapter_gate_design.py
         detail_refs:

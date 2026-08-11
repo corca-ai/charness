@@ -1,12 +1,8 @@
 # Six operator rulings — 2026-08-11
 
-Date: 2026-08-11. **Rulings only; NOTHING here is executed.** Six decisions the
-2026-08-11 triage queued as operator-reserved were taken in session. Each carries the
-evidence that produced it, because four of the six overturned the framing the triage
-handed up.
-
-Implementation is next session. Read `## Feasibility already measured` before sizing
-anything — two of the six had unknown cost and the cost is now known.
+Date: 2026-08-11. Six decisions the 2026-08-11 triage queued as operator-reserved
+were taken in session. Each carries the evidence that produced it, because four of
+the six overturned the framing the triage handed up.
 
 ## The class three of them share
 
@@ -26,6 +22,10 @@ deprecation window would have added a rule to substitute for a channel (release 
 that already works.
 
 ## 1. `#598` — replace `domain_language_contract`, then delete it
+
+**Status: EXECUTED.** Derived check first, then the deletion, in that binding order.
+Executing it corrected the sizing below: one live defect and one false positive. The gate's
+module docstring carries the three limits on the word "replaces".
 
 **Ruling:** build a derived check that every documented `charness <subcommand>` resolves
 to a real subcommand, then delete `domain_language_contract` as a capability — script,
@@ -50,6 +50,8 @@ interval exists in which a retired command can ship unchallenged.
 
 ## 2. `#596` — stamp D47, do not extend the detector
 
+**Status: not executed.**
+
 **Ruling:** date-and-hash-stamp D47's measurement (headline figures keep a date, the rest
 becomes a probe link plus `sha256`), let the probe become an immutable dated snapshot, and
 convert the equality pins to invariants matching
@@ -73,6 +75,8 @@ detector for a problem the stamp removes by construction is not worth its false 
 
 ## 3. `check-timing-layer-completeness` — CI step, not a pre-push label
 
+**Status: not executed.**
+
 **Ruling:** add a step to [quality-core.yml](../../.github/workflows/quality-core.yml). Do
 not add the label to `.githooks/pre-push` `DOCS_ONLY_LABELS`.
 
@@ -90,10 +94,13 @@ step was added for it.
 
 ## 4. Deprecated shipped surfaces — no window; the release notes carry it
 
+**Status: partially executed before this ruling.** `check_title_slug_drift` was already
+deleted at `afaaef4e`; what remains owed is the release-note line at the next bump.
+
 **Ruling:** no time-based or release-count deprecation window. Remove the surface and name
 the removal in the release notes at a version bump. Delete
-`check_title_slug_drift` (four paths plus
-[its compatibility test](../../tests/quality_gates/test_title_slug_retirement_compatibility.py)) and reserve the note
+`check_title_slug_drift` (four paths plus its title-slug retirement compatibility test under
+`<authoring-repo>/tests/quality_gates/`, both since deleted at `afaaef4e`) and reserve the note
 line; the removal of a shipped entrypoint is a major bump.
 
 **Why no window.** A window substitutes for communication this repo already does. Release
@@ -110,6 +117,8 @@ window is a false comfort, and a time window is a rule invented to distrust a ch
 works. If a removal cannot be explained in the notes, that is a signal to write more notes.
 
 ## 5. Judge-intent Cautilus scenario — build it and run it once
+
+**Status: not executed.**
 
 **Ruling:** build a scenario whose prompt does not determine the route, asserting
 `engage-always` on `workflow-trigger.md` and `state-selection.md`; then run Cautilus once
@@ -128,6 +137,8 @@ prose" into "a runnable, gradable claim", not into "verified". The single run is
 it verified, which is why the ruling includes it.
 
 ## 6. `#585` — content-fingerprint re-key
+
+**Status: not executed.** The largest slice, and the only schema change.
 
 **Ruling:** re-key the boundary-bypass identity arm on normalized call-site content,
 following the [nose fingerprint](../../skills/public/quality/scripts/nose_fingerprint_lib.py)
@@ -178,7 +189,9 @@ free on every `ast.Call`; the cost is the schema change, not the extraction.
 
 ## Non-claims
 
-- Nothing here is executed. No gate was changed, no issue closed, no scenario built.
+- Execution status is per RULING, at the top of each section. This list was written when
+  none had run; ruling 1 has since executed and ruling 4's deletion half predates the
+  ruling. Everything below is still true of the rulings that have not run.
 - The `charness verify` / `charness propose` findings were established by running
   `python3 charness <name> --help` and by `git log -S` over the CLI; whether either name
   was ever valid in an installed consumer's older copy is unobservable here.

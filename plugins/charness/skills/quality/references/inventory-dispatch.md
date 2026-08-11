@@ -264,14 +264,10 @@ ratchets use `references/dup-ratchet.md` (the boy-scout duplicate ratchet
 payload/policy and exemption contract; consumer repos own stack-specific probes,
 scope, and artifacts.
 
-## Language And Adapter Policy
+## Adapter Policy
 
 - adapter/gate design:
   `$SKILL_DIR/scripts/inventory_adapter_gate_design.py --repo-root . --summary`
-
-Use domain-language alignment when user-facing docs, CLI names, code/config
-names, or artifacts may use different words for the same concept. Keep it
-advisory unless the adapter declares low-noise deprecated aliases.
 
 Use adapter/gate design review when adapter policy, recommendation queues,
 acknowledgements, migrations, or brittle gate promotion are in scope; see

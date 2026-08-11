@@ -172,12 +172,22 @@ runtime_budget_profiles:
       # 152 KiB; the sample did not move).
       #
       # This preserves the regression defence -- a seed footprint that genuinely grew
-      # would still blow 1795 -- while removing a bar that measures the runner's
+      # would still blow the bar -- while removing a bar that measures the runner's
       # fan-out. That the bar measures the wrong thing at all is the deeper defect and
       # is tracked as D54 in docs/deferred-decisions.md; relevelling does not close it.
       # D54 also names the sibling bars in the same shape (charness-version,
       # check-inventory-declaration-coverage), which were confirmed but not re-derived.
-      check-seed-fixture-budget: 1795
+      #
+      # 2026-08-11 relevel, by the SAME derivation on current samples: n=20, range
+      # 1611-2189ms, 1.4x worst = 3065. ATTRIBUTED, not tuned to green: the ruling-1
+      # slice added ~880 test lines across four files, several building real git repos,
+      # and the contended sample moved with them -- median 1636ms over the 6 samples
+      # before those tests, 1976ms over the 14 after. The CHECK'S OWN WORK did not
+      # move, re-measured the same way the 08-10 note did: 0.07s (three runs
+      # 0.07/0.07/0.09) reporting 1.28 MiB against a 10 GiB budget. So the delta is
+      # startup plus fan-out contention, which is exactly what D54 says this bar
+      # wrongly measures, and the seed-footprint regression defence is untouched.
+      check-seed-fixture-budget: 3065
       # The 2.5s limit was set in May; a 5s bar replaced it because the release
       # gate observed a 4404ms peak. That 5s bar predates the barrier removal.
       # (contended) was 5000; post-change max 6980
