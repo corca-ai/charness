@@ -38,7 +38,15 @@ USAGE_METAVAR_RE = re.compile(r"(--[A-Za-z0-9][A-Za-z0-9-]*)[ =]([^\s\]|]+)")
 # argparse renders any choice set -- a subparsers action or a `choices=`
 # positional -- as `{a,b,c}`. See `subcommand_choices` for why WHERE it is read
 # from decides whether the read is right.
-CHOICES_RE = re.compile(r"\{([a-z0-9-]+(?:,[a-z0-9-]+)*)\}")
+#
+# The member class is "anything argparse can put between the braces", not the
+# lowercase-hyphen shape this CLI happens to use. `subcommand_choices` matches
+# the WHOLE group, so one member with an underscore or a capital made the match
+# fail and blanked the entire parser -- silently, since an empty choice set reads
+# as "this parser has no subcommands". A gate widened to REPORT `charness
+# session_capture` as drift while its authority reader could not represent that
+# name is the exact defect it was widened to fix, one level down.
+CHOICES_RE = re.compile(r"\{([^\s,{}]+(?:,[^\s,{}]+)*)\}")
 # A documented pipeline's later stage is a different command; its flags are not
 # this script's to accept. Matched against whole shell tokens, never against raw
 # text -- `--test-pressure "... 23.2% vs 22% gate; +2 tests"` carries a literal

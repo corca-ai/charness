@@ -6,8 +6,8 @@
 the v0.14.2 pin masks the symptom, but a maintainer who bumps `ref` to a
 sibling release where the path moved would silently regress support sync.
 
-This is not a standing local gate. Run it from a CI nightly workflow or
-`charness update doctor`-style flow that already requires network access.
+This is not a standing local gate. Run it from a CI nightly workflow, or from
+any update/doctor-style flow that already requires network access.
 Probe-blocked outcomes (no `gh` on PATH, no token, network error) report as
 `skipped` and exit 0 — actual path-missing drift is the only fail signal.
 

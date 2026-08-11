@@ -243,3 +243,34 @@ def test_walk_subcommands_ends_quietly_when_no_free_word_reaches_the_slot() -> N
     verdict -- distinct from both "clean" and "invalid choice"."""
     tree = {(): {"init", "update"}}
     assert _lib.walk_subcommands(_tokens("--repo-root"), _choices(tree)) == ((), None)
+
+
+def test_one_underscore_choice_does_not_blank_the_whole_parser() -> None:
+    """The fix carrying the class it fixed, caught by a round-2 review.
+
+    `subcommand_choices` matches the WHOLE brace group, so with a
+    `[a-z0-9-]`-only member class one choice containing `_` or a capital made the
+    match fail and returned `set()` for that parser -- which reads as "this
+    parser has no subcommands", so every documented subcommand under it went
+    unchecked AND unskipped. The gate had just been widened to REPORT `charness
+    session_capture` as drift while its authority reader could not represent that
+    name at all.
+    """
+    hyphen = "usage: x [-h] {doctor,sync-support,install} ...\n\npositional arguments:\n  {doctor,sync-support,install}\n"
+    assert _lib.subcommand_choices(hyphen) == {"doctor", "sync-support", "install"}
+    assert _lib.subcommand_choices(hyphen.replace("sync-support", "sync_support")) == {
+        "doctor",
+        "sync_support",
+        "install",
+    }
+    assert _lib.subcommand_choices(hyphen.replace("sync-support", "syncSupport")) == {
+        "doctor",
+        "syncSupport",
+        "install",
+    }
+
+
+def test_subcommand_choices_still_ignores_a_braced_group_with_spaces() -> None:
+    # The member class widened to "anything argparse puts between braces", which
+    # must not swallow a JSON-ish line in an epilog.
+    assert _lib.subcommand_choices('epilog:\n  {"key": "value"}\n') == set()

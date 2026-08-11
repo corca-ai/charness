@@ -324,7 +324,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
     return {
         "status": "fail" if findings else "pass",
         "invocations": len(invocations),
-        "probes": probe.count(),
+        "probes": probe.clean_count(),
         "skipped": dict(sorted(skipped.items())),
         "findings": sorted(set(findings)),
     }

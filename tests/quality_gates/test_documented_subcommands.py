@@ -330,3 +330,51 @@ def test_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
     with pytest.raises(SystemExit) as exc:
         runpy.run_path(str(ROOT / "scripts" / "check_documented_subcommands.py"), run_name="__main__")
     assert exc.value.code == 0
+
+
+def test_the_receipt_counts_only_what_it_proved(gate, tmp_path: Path) -> None:
+    """A skipped invocation must not be counted as validated.
+
+    The sibling gate builds the same sentence from a count that never included
+    its skips, so rendering the total here gave two gates identical wording and
+    opposite arithmetic. Asserted on the numbers, not on the words: the earlier
+    test checked only that "Validated" and "Not proven" both appeared, which is
+    exactly what let this through.
+    """
+    root = _repo(tmp_path, "`charness tool install/update/doctor` and `charness update`.\n")
+    report = _report(gate, root)
+    assert report["invocations"] == 2
+    assert report["validated"] == 1
+    assert sum(report["skipped"].values()) == 1
+    assert "Validated 1 documented" in gate.render_report(report)
+
+
+def test_a_module_docstring_argparse_prints_is_operator_facing_text(gate, tmp_path: Path) -> None:
+    """62 scripts here pass `description=__doc__`, so for those the module
+    docstring is exactly what argparse renders on `--help` -- the same channel
+    this gate's own probe reads. Excluding it under "a docstring is prose" would
+    answer "nothing here" for the one docstring that is not."""
+    prints_it = '"""Run `charness verify` first."""\nimport argparse\nargparse.ArgumentParser(description=__doc__)\n'
+    findings = _findings(gate, _repo(tmp_path / "a", extra={"scripts/cli.py": prints_it}))
+    assert len(findings) == 1
+    assert "scripts/cli.py:1" in findings[0]
+
+
+def test_a_module_docstring_no_parser_reads_is_still_prose(gate, tmp_path: Path) -> None:
+    keeps_it_internal = '"""Run `charness verify` first."""\nX = 1\n'
+    assert _findings(gate, _repo(tmp_path / "b", extra={"scripts/note.py": keeps_it_internal})) == []
+
+
+def test_an_undecodable_source_file_is_read_rather_than_crashing_the_gate(gate, tmp_path: Path) -> None:
+    """`read_text(encoding="utf-8")` raises UnicodeDecodeError, a ValueError --
+    not the SyntaxError the parse guard catches -- so a legal latin-1 script
+    under `scripts/` turned a blocking gate into a stack trace. Decoding with
+    `errors="replace"` both survives it and keeps scanning the file, which is
+    strictly better than skipping: the undecodable byte is never in the carrier.
+    """
+    root = _repo(tmp_path, _fence("charness update"))
+    (root / "scripts").mkdir(parents=True, exist_ok=True)
+    (root / "scripts" / "latin.py").write_bytes(b'# caf\xe9\nX = "`charness verify`"\n')
+    findings = _findings(gate, root)
+    assert len(findings) == 1
+    assert "scripts/latin.py:2" in findings[0]

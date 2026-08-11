@@ -14,17 +14,27 @@ declared -- which is the only failure that actually reaches a consumer.
 Derivation catches it and needs no list. `charness --help` is the authority;
 this gate asks argparse what it would reject.
 
-Scope is a SUPERSET of what the retired contract scanned, which is what makes
-this a replacement rather than a narrowing. Markdown: the shipped doc set
-`check_doc_links.py` reads, plus `specs/**/*.md`, whose specdown fences are
-executed rather than read. Source: `charness` and `scripts/**/*.py`, the retired
-contract's own non-markdown `surface_globs`. Within a file the carrier is where
-an author writes a runnable command -- a shell fence line, a prose backtick
-span, a backtick span inside a runtime string -- never bare prose. Measured on
-this tree when the gate was written: scanning all prose gives 72 non-subcommand
-hits across 36 tokens (`charness itself`, `charness ships`, ...), code contexts
-give 27 across 10, and the carrier rule gives 3. Prose is where an author writes
-the product name; a code span is where they write an invocation.
+Scope, stated in both directions because the deletion this enables depends on
+it. The FILE set is a superset of the retired contract's: every one of its
+`surface_globs` (README, `docs/**`, `skills/public/**`, `skills/shared/**`,
+`charness`, `scripts/**/*.py`) plus `specs/**/*.md`, whose specdown fences are
+executed rather than read.
+
+The CONTENT read inside those files is NARROWER, and that is a real trade, not
+an oversight. The retired contract matched three literal strings case-insensitively
+anywhere in the raw bytes of a file. This gate reads only carriers -- a shell
+fence line, a prose backtick span, a backtick span inside a runtime string --
+because it judges any subcommand rather than three known strings, and bare prose
+is where an author writes the product name. Measured on this tree: scanning all
+prose gives 72 non-subcommand hits across 36 tokens (`charness itself`,
+`charness ships`, ...), code contexts give 27 across 10, and the carrier rule
+gives 3.
+
+What that costs, exactly: those three retired strings written in a Python
+comment, in a non-operator-facing docstring, or in unbackticked markdown prose
+are no longer caught by anything. What it buys: every OTHER rename, in every
+carrier, without anyone declaring it -- which is the failure that actually
+reaches a consumer, and the one a declared list structurally cannot see.
 
 floor-addition-restraint: blocking, not advisory, and it REPLACES a capability
 rather than adding one. The 2026-08-11 operator ruling binds the order --
@@ -179,14 +189,33 @@ def iter_source_carriers(source: Path) -> Iterator[tuple[int, str]]:
     text handed to an operator. A line scan cannot tell them apart and reports
     every design note that quotes a retired name, which teaches authors to stop
     quoting. Comments never reach the AST at all.
+
+    The MODULE docstring is the exception, and it has to be derived rather than
+    assumed: 62 scripts here pass `description=__doc__` to their parser, so for
+    those files the module docstring is exactly what argparse prints on `--help`
+    -- the same operator-facing channel this gate's own probe reads. Excluding it
+    on the flat rule "a docstring is prose" would answer "nothing here" for the
+    one docstring that is not.
     """
     try:
-        tree = ast.parse(source.read_text(encoding="utf-8"))
+        tree = ast.parse(source.read_text(encoding="utf-8", errors="replace"))
     except SyntaxError:  # a generated or templated file is not this gate's to judge
         return
     for lineno, text in _iter_runtime_strings(tree):
         for span in BACKTICK_CONTENT_RE.finditer(text):
             yield lineno, span.group(1)
+
+
+def _reads_module_docstring(tree: ast.Module) -> bool:
+    """Whether this module hands `__doc__` to something -- `description=__doc__`.
+
+    Derived, not declared: the question is whether the module docstring reaches
+    an operator, and the module itself already answers it.
+    """
+    return any(
+        isinstance(node, ast.Name) and node.id == "__doc__" and isinstance(node.ctx, ast.Load)
+        for node in ast.walk(tree)
+    )
 
 
 def _iter_runtime_strings(tree: ast.Module) -> Iterator[tuple[int, str]]:
@@ -207,6 +236,8 @@ def _iter_runtime_strings(tree: ast.Module) -> Iterator[tuple[int, str]]:
         and isinstance(node.body[0].value, ast.Constant)
         and isinstance(node.body[0].value.value, str)
     }
+    if _reads_module_docstring(tree) and isinstance(tree.body[0], ast.Expr):
+        docstrings.discard(id(tree.body[0].value))
     joined: set[int] = set()
     for node in ast.walk(tree):
         if not isinstance(node, ast.JoinedStr):
@@ -297,6 +328,7 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         return {
             "status": "error",
             "invocations": len(invocations),
+            "validated": 0,
             "probes": probe.clean_count(),
             "skipped": {},
             "findings": [f"`{CLI_NAME} --help` declares no subcommands; the derived surface is unreadable"],
@@ -325,9 +357,16 @@ def build_report(root: Path, *, require_git: bool = False) -> dict[str, object]:
         documented = " ".join([CLI_NAME, *path])
         findings.append(f"{where}: `{documented}` has no subcommand `{invalid}`")
 
+    # `validated` is what the receipt may claim: the total MINUS everything that
+    # landed in a skip bucket. The sibling gate builds the same sentence from a
+    # count that never included its skips, so rendering `invocations` here would
+    # give two gates the identical wording and opposite arithmetic -- "N proven,
+    # M also unproven" versus "N total, M of them unproven" -- with nothing
+    # saying which one a reader is holding.
     return {
         "status": "fail" if findings else "pass",
         "invocations": len(invocations),
+        "validated": len(invocations) - sum(skipped.values()),
         "probes": probe.clean_count(),
         "skipped": {key: value for key, value in sorted(skipped.items()) if value},
         "findings": sorted(set(findings)),
@@ -344,7 +383,7 @@ def render_report(report: dict[str, object]) -> str:
             "a runnable command."
         ),
         validated=(
-            f"Validated {report['invocations']} documented `{CLI_NAME}` invocation(s) "
+            f"Validated {report['validated']} documented `{CLI_NAME}` invocation(s) "
             f"against {report['probes']} argparse surface(s)."
         ),
     )

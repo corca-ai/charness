@@ -2991,6 +2991,13 @@
       "note": "The stdlib idiom for reading string literals out of a parsed module -- `ast.walk` plus `isinstance(node, ast.Constant) and isinstance(node.value, str)` -- shared by inventory_boundary_bypass_lib._iter_string_constants and check_documented_subcommands._iter_runtime_strings. Not extractable, because the two ask different questions of the same walk. The boundary-bypass reader wants every string anywhere under a spawn call node, unlocated and undifferentiated, to match a command shape. The subcommand reader wants operator-facing runtime text WITH its line number, with module/class/function docstrings excluded (a docstring is prose about the code, and including them reports every design note that quotes a retired command) and with f-strings reassembled from their literal parts (the backtick span is routinely split by a `{...}`, so the parts read separately never close it). A shared helper would have to yield the union of those shapes and let each caller discard most of it, and it would make the portable boundary-bypass lib depend on a repo-level helper for four lines of stdlib.",
       "reviewed_at": "2026-08-11",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0e29b9da3284e2ca",
+      "note": "ROTATED from e44ea83ce8db9523 -- same two members (inventory_boundary_bypass_lib._iter_string_constants and check_documented_subcommands._iter_runtime_strings), same reasoning, re-fingerprinted when a round-2 review drove the module-docstring carve-out (`_reads_module_docstring`) into the neighbouring function. The shared shape is the stdlib idiom for reading string literals out of a parsed module: `ast.walk` plus `isinstance(node, ast.Constant) and isinstance(node.value, str)`. Not extractable: the boundary-bypass reader wants every string under a spawn call node, unlocated and undifferentiated; the subcommand reader wants operator-facing runtime text WITH its line number, with docstrings excluded EXCEPT where the module feeds `__doc__` to a parser, and with f-strings reassembled across their placeholders. A shared helper would yield the union and let each caller discard most of it, while making the portable boundary-bypass lib depend on a repo-level helper for four lines of stdlib.",
+      "reviewed_at": "2026-08-11",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
