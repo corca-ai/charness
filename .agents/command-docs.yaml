@@ -54,8 +54,6 @@ commands:
       - Make sure your machine has Python 3.
       - /tmp/charness-init.sh
       - charness init
-    forbidden_doc_contains:
-      - charness setup
   doctor:
     help_command: ./charness doctor --help
     doc_paths:

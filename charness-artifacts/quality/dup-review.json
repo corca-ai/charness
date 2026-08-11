@@ -71,13 +71,6 @@
     },
     {
       "class": "intentional",
-      "id": "059c8578bee19e5a",
-      "note": "The publish-state ledger's reconciled/refused human renderer keeps the status branch explicit at its operator boundary, while the unchanged command-doc, prose-pin, and ubiquitous-language validators own parallel terminal rendering. These branches expose different verdict contracts; extracting a formatter would hide the ledger's refusal-versus-reconciliation distinction.",
-      "reviewed_at": "2026-08-06",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
       "id": "05db4f7ed67269ea",
       "note": "portable skill/repo entrypoints independently locate adapter or sibling modules before they can import shared code; this seven-line importlib fallback is the direct-execution boundary, and extracting it would require the import path it establishes",
       "reviewed_at": "2026-08-09",
@@ -2137,13 +2130,6 @@
       "id": "b84a05853c8b2d2a",
       "note": "jsonl-parse loop (split/trim/JSON.parse/skip-non-JSON) + small content-unwrap shared by two STANDALONE agent-runtime .mjs tools (build-skill-execution-observation parseEventsFromFiles, extract-skill-experiment-input parseTranscriptEvents); a trivial stdlib-shaped loop in independently-executable tools that share only schema constants — a util module would couple them for little value; intentional",
       "reviewed_at": "2026-06-30",
-      "surface": "code"
-    },
-    {
-      "class": "intentional",
-      "id": "b8998493b935c03f",
-      "note": "findings-list rendering shared by inventory_ubiquitous_language.py and check_command_docs.py: a header line plus `lines.extend(f\"- {finding}\")` plus \"\\n\".join. The wording, header, and remediation tail are each gate's own operator-facing message, and inventory_ubiquitous_language ships inside the portable quality skill package -- importing a repo-only scripts/ helper there would break package portability, which is the boundary the harness keeps deliberately",
-      "reviewed_at": "2026-07-26",
       "surface": "code"
     },
     {

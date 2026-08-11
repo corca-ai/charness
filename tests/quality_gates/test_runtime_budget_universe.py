@@ -360,8 +360,26 @@ def test_this_repo_has_no_orphaned_budget(tmp_path: Path) -> None:
     # single-profile blindness this gate reads the union to fix. Comparing
     # against the DECLARED union catches that without a number to bump.
     declared = _declared_budget_labels()
-    assert payload["checked"] >= len(declared), (payload["checked"], sorted(declared))
-    assert len(declared) > len(_ADAPTER_LIB.load_yaml_file(REPO_ROOT / ".agents" / "quality-adapter.yaml").get("runtime_budgets") or {})
+    # `==`, not `>=`. Both sides derive the same union, so they are equal by
+    # construction and `>=` only tolerated the GATE over-counting -- admitting a
+    # non-`budgets` profile key as a label would have stayed green.
+    assert payload["checked"] == len(declared), (payload["checked"], sorted(declared))
+    # The independent-derivation guard above cannot see a regression in the shared
+    # YAML reader: a parser that dropped SOME profile budgets moves both sides down
+    # together and stays green. This repo has already shipped that exact class --
+    # `test_probe_reader_handles_several_probes_and_a_flush_free_list_style` pins
+    # the parser that "decided the block had ENDED on that style and dropped every
+    # probe". So assert per-BLOCK, which a partial loss cannot satisfy: every
+    # declared block still contributes budgets, and the union still exceeds any
+    # single block.
+    adapter = _ADAPTER_LIB.load_yaml_file(REPO_ROOT / ".agents" / "quality-adapter.yaml")
+    blocks = {"runtime_budgets": set(adapter.get("runtime_budgets") or {})}
+    for name, profile in (adapter.get("runtime_budget_profiles") or {}).items():
+        blocks[f"runtime_budget_profiles.{name}"] = set((profile or {}).get("budgets") or {})
+    assert len(blocks) >= 4, sorted(blocks)
+    for name, labels in blocks.items():
+        assert labels, f"{name} contributed no budgeted label"
+        assert len(declared) > len(labels) or labels == declared, (name, len(labels))
     # `charness-version` is budgeted in all four blocks and reachable ONLY through
     # the standing-probe source; if that source empties, it orphans and the gate
     # turns red for a correct adapter.

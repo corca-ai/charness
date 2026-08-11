@@ -37,10 +37,31 @@ carrier, without anyone declaring it -- which is the failure that actually
 reaches a consumer, and the one a declared list structurally cannot see.
 
 floor-addition-restraint: blocking, not advisory, and it REPLACES a capability
-rather than adding one. The 2026-08-11 operator ruling binds the order --
-this check lands and works BEFORE `domain_language_contract` is deleted, so no
-interval exists in which a retired command can ship unchallenged. Until that
-deletion lands, both are live.
+rather than adding one. The 2026-08-11 operator ruling binds the order -- this
+check landed and worked BEFORE `domain_language_contract` was deleted, so no
+interval existed in which a retired command could ship unchallenged.
+
+Three limits on the word "replaces", all of them real:
+
+1. IN THIS REPO ONLY. The retired validator lived inside the portable quality
+   skill package (`$SKILL_DIR/scripts/`), so a consumer could run it through the
+   quality catalog. This gate lives in repo `scripts/` and is not in that
+   package. It cannot be: it derives from `charness --help`, and a consumer's CLI
+   is not charness. A consuming repo wanting this guarantee needs the same
+   derivation against its own CLI. For consumers the capability is REMOVED, not
+   replaced -- say that in the release note rather than letting "replaced" carry
+   it.
+2. ONE TERM OF THREE. The retired contract declared `external-tool-cli` (the
+   retired CLI names, which this gate subsumes), plus `support-capability-taxonomy`
+   and `repo-initialization-skill` -- pure vocabulary with no invocation in them,
+   which this gate is structurally incapable of seeing. The ruling routed those
+   to #599 deliberately; they are not lost, they are moved.
+3. NO DECLARED-SCOPE REFUSALS. The retired validator also refused a term whose
+   declared `surface_globs` matched no file, a `surface_globs: []`, and a
+   non-mapping `terms` entry -- "a clean verdict over an unread scope is not a
+   clean verdict". That whole class disappears here by construction, because this
+   gate has no operator-declared scope to get wrong. Correct for this repo; a
+   removed affordance for a consumer.
 
 On the ruling's sizing. It recorded (`charness-artifacts/spec/
 2026-08-11-six-operator-rulings.md:168`) that the check "finds two live defects

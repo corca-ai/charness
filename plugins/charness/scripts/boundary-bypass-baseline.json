@@ -63,10 +63,10 @@
   "policy": "no_increase",
   "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
   "summary": {
-    "candidate_count": 46,
+    "candidate_count": 45,
     "candidate_key_count": 58,
     "convertible_count": 0,
-    "internal_boundary_count": 33,
+    "internal_boundary_count": 32,
     "keep_boundary_count": 24
   }
 }
