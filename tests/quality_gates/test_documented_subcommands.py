@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import importlib.util
+import runpy
+import sys
 from pathlib import Path
 
 import pytest
@@ -308,3 +310,23 @@ def test_a_session_transcript_language_is_not_treated_as_a_comment_fence(gate, t
     same line. Out of scope is honest; in-scope-and-skipped is not."""
     root = _repo(tmp_path, _fence("# charness verify", language="console"))
     assert _findings(gate, root) == []
+
+
+def test_a_source_file_that_does_not_parse_is_skipped_not_crashed(gate, tmp_path: Path) -> None:
+    """A generated or templated `.py` under `scripts/` is not this gate's to judge,
+    and a doc typo must never turn a blocking gate into a stack trace."""
+    root = _repo(
+        tmp_path,
+        _fence("charness update"),
+        extra={"scripts/broken.py": 'def f(:\n    return "`charness verify`"\n'},
+    )
+    assert _findings(gate, root) == []
+
+
+def test_main_guard_executes(tmp_path: Path, monkeypatch) -> None:
+    # cover `raise SystemExit(main())` (the __main__ guard) in-process via runpy.
+    root = _repo(tmp_path, _fence("charness update"))
+    monkeypatch.setattr(sys, "argv", ["check_documented_subcommands.py", "--repo-root", str(root)])
+    with pytest.raises(SystemExit) as exc:
+        runpy.run_path(str(ROOT / "scripts" / "check_documented_subcommands.py"), run_name="__main__")
+    assert exc.value.code == 0

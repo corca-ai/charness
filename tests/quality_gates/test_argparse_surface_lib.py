@@ -235,3 +235,11 @@ def test_help_probe_pins_the_locale_it_asks_readers_to_parse() -> None:
     # gettext-translated. The probe owns the rendering, so it owns the pin.
     assert _probe_lib.HELP_LOCALE_ENV["LC_ALL"] == "C"
     assert _probe_lib.HELP_LOCALE_ENV["LANGUAGE"] == ""
+
+
+def test_walk_subcommands_ends_quietly_when_no_free_word_reaches_the_slot() -> None:
+    """A parser that declares subcommands, documented with flags only. There is
+    no word in the subcommand slot to judge, so the walk ends with no path and no
+    verdict -- distinct from both "clean" and "invalid choice"."""
+    tree = {(): {"init", "update"}}
+    assert _lib.walk_subcommands(_tokens("--repo-root"), _choices(tree)) == ((), None)
