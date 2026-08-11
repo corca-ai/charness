@@ -341,7 +341,7 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 
     monkeypatch.setattr(importlib, "import_module", fake_import_module)
     module = load_plan_module()
-    assert module.MAX_CONTENT_LINES == 58
+    assert module.MAX_CONTENT_LINES == 78
     # The local counting fallback must still be used, not left as None.
     assert module.content_lines(["# H", "", "## Discuss", "- a"]) == ["# H", "- a"]
     assert module.REQUIRED_SECTIONS == (
@@ -350,11 +350,15 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
 
 
 def test_handoff_plan_reports_artifact_statuses_that_require_repair(tmp_path: Path) -> None:
+    module = load_plan_module()
     cases = [
-        ("over_limit", handoff_body(current_lines=60)),
+        # Derived from the ceiling, not written as a literal: raising the budget from 58
+        # to 78 silently turned the old hardcoded 60 into a PASSING body, so these cases
+        # stopped testing what they name. `+2` and `-10` keep each side of the boundary.
+        ("over_limit", handoff_body(current_lines=module.MAX_CONTENT_LINES + 2)),
         ("diary_smell", handoff_body(dated_session=True)),
         ("shape_issue", handoff_body(omit_references=True)),
-        ("near_limit", handoff_body(current_lines=48)),
+        ("near_limit", handoff_body(current_lines=module.MAX_CONTENT_LINES - 10)),
     ]
     for status, body in cases:
         repo = seed_repo(tmp_path / status, body)
@@ -485,7 +489,8 @@ def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path:
     # Keying the authoring-rules read on the INTENT left one case briefed by
     # nothing: a pickup against a bloated artifact is sent to prune it, which is
     # authoring. The next action is what says whether the run writes.
-    repo = seed_repo(tmp_path, handoff_body(current_lines=60))
+    module = load_plan_module()
+    repo = seed_repo(tmp_path, handoff_body(current_lines=module.MAX_CONTENT_LINES + 2))
     (repo / "scripts").mkdir()
     # Seed BOTH files the emitted command needs. The rules mode imports
     # `doc_authoring_rules` at runtime, so a repo carrying only the entrypoint

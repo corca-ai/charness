@@ -24,7 +24,7 @@ from __future__ import annotations
 
 from typing import Sequence
 
-DEFAULT_MAX_CONTENT_LINES = 58
+DEFAULT_MAX_CONTENT_LINES = 78
 REQUIRED_SECTIONS = (
     "## Workflow Trigger",
     "## Current State",

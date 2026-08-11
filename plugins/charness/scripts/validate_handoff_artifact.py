@@ -55,14 +55,23 @@ validate_exact_h2_sections = _scripts_artifact_validator_module.validate_exact_h
 validate_nonempty_sections = _scripts_artifact_validator_module.validate_nonempty_sections
 validate_title = _scripts_artifact_validator_module.validate_title
 
-# 58 is the operator-set ~55-60 midpoint for the re-based budget. Measured
-# basis: 13 of the 14 handoffs committed before the re-base landed at 69-70
-# against a raw cap of 70 -- a distribution pinned AT the ceiling, which is what
-# a cap authors write to fill. Those same files carried ~50 CONTENT lines:
-# structure ate ~29% of the budget, so the raw count was measuring formatting,
-# not density, and it penalised long reference links while a diary of short
-# lines cost nothing. Against the ~50 the old cap actually permitted, 58 is real
-# headroom, and the structural penalty is gone rather than merely raised.
+# 78, operator-raised from 58 on 2026-08-11. The re-base that produced 58 fixed the
+# right defect -- 13 of the 14 handoffs before it landed at 69-70 against a raw cap of
+# 70, a distribution pinned AT the ceiling, while those same files carried only ~50
+# CONTENT lines, so the raw count was measuring formatting and penalising long
+# reference links while a diary of short lines cost nothing. That correction stands;
+# only the ceiling moved.
+#
+# What moved it: 58 started REFUSING content that changed the next action. The
+# 2026-08-11 handoff hit 59/58 while carrying six live operator rulings, and the cut
+# that fit it was a real lesson, not padding. A cap that forces the author to choose
+# between two load-bearing lines has stopped being a diary guard.
+#
+# The TARGET stays 25-50 in SKILL.md deliberately, so the gap between target and
+# ceiling widens rather than the goal moving. This is a failure guard, not a budget to
+# spend: the operator's stated position is that a one-line link plus well-placed
+# content should still come in far under it, and the recurring fix remains spilling
+# durable detail to its owning artifact rather than filling the new headroom.
 MAX_CONTENT_LINES = _budget.DEFAULT_MAX_CONTENT_LINES
 MARKDOWN_LINK_RE = re.compile(r"\[[^\]]+\]\([^)]+\)")
 # Addresses are not claims: an artifact path or release URL may legitimately carry

@@ -1,9 +1,21 @@
 from __future__ import annotations
 
+import importlib.util
 import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+
+# Read the ceiling from the module that OWNS it. These fixtures used to restate it as
+# literals, and raising the budget 58 -> 78 silently turned the over-limit body into a
+# passing one: the tests kept their names and stopped testing them.
+_BUDGET_SPEC = importlib.util.spec_from_file_location(
+    "handoff_content_budget_under_test",
+    ROOT / "skills" / "public" / "handoff" / "scripts" / "handoff_content_budget.py",
+)
+_BUDGET = importlib.util.module_from_spec(_BUDGET_SPEC)
+_BUDGET_SPEC.loader.exec_module(_BUDGET)
+MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
 
 
 def run_script(*args: str, cwd: Path | None = None) -> subprocess.CompletedProcess[str]:
@@ -124,7 +136,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
                 "",
                 "## Current State",
                 "",
-                *[f"- stale detail {index}" for index in range(65)],
+                *[f"- stale detail {index}" for index in range(MAX_CONTENT_LINES + 7)],
                 "",
                 "## Next Session",
                 "",
@@ -145,7 +157,7 @@ def test_validate_handoff_artifact_rejects_overlong_handoff(tmp_path: Path) -> N
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "content lines (limit 58)" in result.stderr
+    assert f"content lines (limit {MAX_CONTENT_LINES})" in result.stderr
 
 
 def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
@@ -183,9 +195,9 @@ def _handoff_with(state_lines: list[str], reference_lines: list[str]) -> str:
 def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Path) -> None:
     # The re-base: a file well OVER the old raw cap of 70 lines passes, because
     # its length is structure and reference links rather than content the next
-    # operator has to read. 50 state bullets + 4 fixed content lines = 54 <= 58.
+    # operator has to read: the body sits 4 content lines under the ceiling.
     state = []
-    for index in range(50):
+    for index in range(MAX_CONTENT_LINES - 8):
         state.append(f"- state detail {index}")
         state.append("")
     references = [f"- [guide {index}](docs/guide.md)" for index in range(12)]
@@ -199,13 +211,13 @@ def test_handoff_budget_ignores_blank_lines_headings_and_references(tmp_path: Pa
 
 def test_handoff_budget_still_charges_for_prose_density(tmp_path: Path) -> None:
     # The other half: padding `## References` buys no room for content. 56 state
-    # bullets + 4 fixed content lines = 60 > 58.
-    state = [f"- state detail {index}" for index in range(56)]
+    # bullets + 4 fixed content lines put the body 2 over the ceiling.
+    state = [f"- state detail {index}" for index in range(MAX_CONTENT_LINES - 2)]
     repo = seed_repo(tmp_path, _handoff_with(state, ["- [guide](docs/guide.md)"]))
     (repo / "docs" / "guide.md").write_text("# Guide\n", encoding="utf-8")
     result = run_script("scripts/validate_handoff_artifact.py", "--repo-root", str(repo))
     assert result.returncode == 1
-    assert "60 content lines (limit 58)" in result.stderr
+    assert f"{MAX_CONTENT_LINES + 2} content lines (limit {MAX_CONTENT_LINES})" in result.stderr
 
 
 def seed_with_current_state(tmp_path: Path, *state_lines: str) -> Path:

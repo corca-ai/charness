@@ -11,6 +11,7 @@ properties the goal requires:
 """
 from __future__ import annotations
 
+import importlib.util
 import shutil
 import subprocess
 import sys
@@ -21,6 +22,13 @@ import pytest
 from runtime_bootstrap import import_repo_module
 
 ROOT = Path(__file__).resolve().parents[1]
+_BUDGET_SPEC = importlib.util.spec_from_file_location(
+    "handoff_content_budget_for_preflight_fixture",
+    ROOT / "skills" / "public" / "handoff" / "scripts" / "handoff_content_budget.py",
+)
+_BUDGET = importlib.util.module_from_spec(_BUDGET_SPEC)
+_BUDGET_SPEC.loader.exec_module(_BUDGET)
+_MAX_CONTENT_LINES = _BUDGET.DEFAULT_MAX_CONTENT_LINES
 PREFLIGHT = "scripts/check_doc_authoring_preflight.py"
 _pf = import_repo_module(__file__, "scripts.check_doc_authoring_preflight")
 _handoff = import_repo_module(__file__, "scripts.validate_handoff_artifact")
@@ -40,7 +48,10 @@ _BROKEN_FIXTURE = (
     "A wrapped `inline code\n"
     "span` here.\n"  # wrapped inline-code span
     "\n"
-) + "".join(f"filler line {i}\n" for i in range(1, 71))  # push well past the 70-line cap
+) + "".join(f"filler line {i}\n" for i in range(1, _MAX_CONTENT_LINES + 21))
+# Derived from the ceiling the handoff budget OWNS, not a literal: the comment here used to
+# say "the 70-line cap" while the cap was 58, and the fixture stopped breaching it entirely
+# when the ceiling moved to 78. A fixture that names a breach must outlive a budget change.
 
 _CLEAN_FIXTURE = (
     "# Demo Handoff\n"

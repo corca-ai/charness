@@ -44,7 +44,7 @@ preflight is the one to run BEFORE writing, not after.
 Treat deterministic gates as evidence for shape and freshness, then use
 judgment for the actual baton pass. The repo-owned size budget counts CONTENT
 lines — blank lines, the required `##` headings, and the whole `## References`
-block are free — with a target of 25-50 and a hard stop at 58; the planner
+block are free — with a target of 25-50 and a hard stop at 78; the planner
 reports `content_line_count` and flags `near_limit`/`over_limit`. Trimming formatting
 or shortening reference links buys nothing, so cut state instead. Multiple dated
 `## This Session (<date>)` sections are a hard diary smell.

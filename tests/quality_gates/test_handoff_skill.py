@@ -17,7 +17,7 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
     # The budget counts CONTENT lines; the skill must say so, because an author
     # who thinks it is a raw line cap trims formatting and reference links and
     # gets nowhere.
-    assert "CONTENT" in skill_text and "25-50" in skill_text and "58" in skill_text
+    assert "CONTENT" in skill_text and "25-50" in skill_text and "78" in skill_text
     assert "content_line_count" in skill_text
     assert "## This Session" in skill_text and "(<date>)" in skill_text
     assert "spill-targets.md" in skill_text

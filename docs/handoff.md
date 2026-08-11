@@ -58,10 +58,16 @@
 2. **Ruling 6 is the largest slice** and the only one needing a schema change:
    `inventory_boundary_bypass_lib` records no call-site line info, so the payload, its
    public validator, and both baselines move together.
-3. **`#587` — edit, do not close.** Mapper is
+3. **Redesign the recent-lessons SELECTION policy — operator has the design.** Do not add a
+   filter; that stacks a heuristic on a heuristic. Measured this session: of 884
+   `next_improvement` candidates the top two by weight are content-free bookkeeping
+   ("This retro plus the recent-lessons digest"), because every retro emits that line and
+   recurrence boost rewards it. It is still occupying a slot in the current digest, and it
+   outranked the improvement naming the digest's own defect.
+4. **`#587` — edit, do not close.** Mapper is
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`.
-4. **`#546` phase 2 — the adapter `conditional:` marker.**
-5. **Waves 2-3.** `#539` `#581` `#588` `#528` `#589` `#542`, then `#586` `#590` `#593`-`#599`
+5. **`#546` phase 2 — the adapter `conditional:` marker.**
+6. **Waves 2-3.** `#539` `#581` `#588` `#528` `#589` `#542`, then `#586` `#590` `#593`-`#599`
    `#550` `#527`. Umbrellas wait on their own work.
 
 ## Discuss
@@ -83,4 +89,5 @@
 - [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) — the digest slot-policy finding and the autonomy precondition.
 - [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — all six with the evidence that produced them, and the two feasibility measurements.
 - [Validator timing layers](./conventions/validator-timing-layers.md) — the live registry and what its gate cannot check.
+- [This session's retro](../charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md) — six corrections, zero self-initiated, and the Engelbart lens on the class that shipped without a tool.
 - [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md)
