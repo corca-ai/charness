@@ -896,3 +896,60 @@ def test_validate_handoff_artifact_finds_an_owner_in_a_later_paragraph(tmp_path:
         "  Status per ruling lives in [the rulings artifact](docs/guide.md).",
     )
     assert result.returncode == 0, result.stderr
+
+
+# --- round-2 review findings: the repairs' own defects ---
+
+
+def test_validate_handoff_artifact_lets_a_sub_bullet_inherit_across_the_parents_fence(tmp_path: Path) -> None:
+    """The indent repair and the fence repair collided.
+
+    Closing the entry at a fence cleared the same variable the indent rule read
+    as "no parent to inherit from", so a child following its parent's own
+    command block was charged for a pointer the parent already carried.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- Reproduce with [the guide](docs/guide.md):",
+        "",
+        "  ```bash",
+        "  python3 -m pytest -q",
+        "  ```",
+        "",
+        "  - Then compare against the ledger.",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_detaches_a_fence_across_a_marker_comment(tmp_path: Path) -> None:
+    """Deleting one blank line used to restore the laundering.
+
+    With no blank, the `charness-publish-state-claim` marker read as a lazy
+    continuation, so the entry stayed open and the ledger fence re-attached to
+    the bullet above it. Nothing requires that blank line.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- An unowned claim nobody checks.",
+        "<!-- charness-publish-state-claim:demo -->",
+        "```json",
+        '{"kind":"demo"}',
+        "```",
+    )
+    assert result.returncode == 1
+    assert "An unowned claim nobody checks" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_path_only_command(tmp_path: Path) -> None:
+    # A blocking floor in a public skill must not refuse the replacement it
+    # asks for; an argument-free path is still something to run.
+    result = run_on_state(tmp_path, "- Re-take the gate with `./scripts/run-quality.sh`.")
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_reads_a_padded_identifier_as_unowned(tmp_path: Path) -> None:
+    # CommonMark padding put spaces inside the span, so an unstripped
+    # whitespace test read a bare identifier as a command.
+    result = run_on_state(tmp_path, "- The module ` inventory_boundary_bypass_lib ` records nothing.")
+    assert result.returncode == 1
+    assert "carry no owner" in result.stderr

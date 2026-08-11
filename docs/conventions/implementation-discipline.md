@@ -290,6 +290,30 @@ collides where a path key did not (`nose_fingerprint_lib.py`: do not `set()`-ded
 Full lineage and the two feasibility measurements:
 [six operator rulings](../../charness-artifacts/spec/2026-08-11-six-operator-rulings.md).
 
+## Removal And Baseline Discipline
+
+Two rules that were carried as handoff prose and are promoted here so a pointer
+can reach them. Both were measured, both recur, and neither was owned by any
+contract while the handoff paraphrased them.
+
+- **A ratchet baseline is REGENERATED, never hand-edited** — and only after
+  confirming the delta is intended, or regeneration launders a real violation
+  green. A baseline's guard typically cross-checks one pair of fields, so a
+  hand-edit satisfies the guard while leaving other counts stale. The measured
+  cost was three cycles on one file: an edit that dropped a key without its
+  count, a conclusion that the file could be left alone because the ratchet
+  passed (a second consumer of the same file then crashed), and a two-field edit
+  described as "what a rebuild would produce" that an actual rebuild refuted.
+  The correct action — run the builder — was named in this repo's own procedure
+  doc the whole time.
+- **A removal's consumer search must cover every CONSUMER and every SPELLING.**
+  An identifier grep returning clean does not clear shipped prose that names the
+  capability in English: `domain_language_contract` grepped clean while consumer
+  documentation still configured the deleted knob. Grep the identifier AND the
+  capability's name as a reader would write it, and carry the search plus what it
+  returned into the removal proposal, so a proposal without one is visibly
+  incomplete.
+
 ## Repair Discipline
 
 - **State the intended delta; prove the complement is unchanged.** A bounded

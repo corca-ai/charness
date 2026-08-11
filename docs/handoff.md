@@ -9,24 +9,26 @@
 
 ## Continuation Capability
 
-- [Rulings retro](../charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md)
-  — the record behind the bullets below; read it before changing a proof surface.
 - [Operating contract](./conventions/operating-contract.md) — Critique Discipline: a proof surface
   owes a second review round reading the REPAIRS.
-- [Implementation discipline](./conventions/implementation-discipline.md#declared-where-derivable)
-  — derive a fact before pinning it; regenerate a ratchet baseline, never hand-edit it.
-- [Fresh-eye subagent review](../skills/shared/references/fresh-eye-subagent-review.md) — this repo
-  contract IS the delegation request; a conditional "unless the user asked" is already satisfied.
+- [Removal and baseline discipline](./conventions/implementation-discipline.md#removal-and-baseline-discipline)
+  — regenerate a ratchet baseline; a removal grep must cover every consumer AND every spelling.
+- [Declared where derivable](./conventions/implementation-discipline.md#declared-where-derivable)
+  — derive a fact before pinning it. Form validators are NOT in this class.
+- [Fresh-eye subagent review](../skills/shared/references/fresh-eye-subagent-review.md) — rung 1:
+  this repo's delegation contract means spawn immediately for the named reviewer scopes.
 - Run the REPO's own script, never `~/.agents/src/charness` — a second checkout with its own
-  git, adapters, and artifacts.
+  git, adapters, and artifacts. Incident record:
+  [rulings retro](../charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md).
 
 ## Current State
 
 - [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — status per
   ruling; ruling 1 (#598) is executed, both halves.
-- #598 is not closable until the `issue` closeout floor runs; it sits inside the range in item 5.
-- Two release-note lines owed at the next bump, a MAJOR: `check_title_slug_drift`, and the
-  `domain_language_contract` removal — three parts, per [the gate](../scripts/check_documented_subcommands.py).
+- #598 is not closable until the `issue` closeout floor runs, and no item below schedules it.
+- Two release-note lines owed at the next bump, a major per ruling 4: `check_title_slug_drift`, and
+  the `domain_language_contract` removal — three parts, per
+  [the gate](../scripts/check_documented_subcommands.py).
 - New: [#604](https://github.com/corca-ai/charness/issues/604) (shipped parity defaults miss the
   bare scaffolded form) and [#605](https://github.com/corca-ai/charness/issues/605) (a trim-back
   loop whose guardian tests no longer reach it; unproven, deliberately not deleted).
@@ -34,7 +36,8 @@
 - [Deferred decisions](./deferred-decisions.md) — D53's reopen trigger has three clauses; only the
   middle one is in-repo observable, with nothing watching for it.
 - Re-take gate and issue counts, do not inherit them:
-  [quality posture](../charness-artifacts/quality/latest.md), `gh issue list --state open`.
+  [quality posture](../charness-artifacts/quality/latest.md), `gh issue list --state open`. The
+  block below is a frozen capture; its `issue_scope` contradicts the open issues named above.
 
 <!-- charness-publish-state-claim:post-push-operational-proof -->
 ```json

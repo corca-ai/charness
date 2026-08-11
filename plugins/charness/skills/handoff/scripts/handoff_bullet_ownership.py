@@ -35,6 +35,16 @@ Known non-claims -- this is a FLOOR, not a completeness proof:
   reached, because widening to prose would fire on a section's framing sentence.
 - `#\\d+` is GitHub-shaped. A repo whose tracker uses `PROJ-123` effectively has
   two owner forms, not three, until an adapter names its id shape.
+- A hash plus a small ordinal in ordinary prose ("the hash-one priority", written
+  with the symbol) and an all-digit six-hex-digit colour still read as issue ids.
+- The fence exemption never READS the fence: an empty block, or one holding
+  prose, exempts the entry above it exactly like a command block would.
+- An UNCLOSED fence leaves every later line inside it, so both owned sections
+  become unscannable and the artifact passes in silence. Nothing reports this;
+  the markdown lint gate is the surface that should notice an unclosed fence.
+- `validate_nonempty_sections` in the repo validator is still fence-blind, so a
+  handoff carrying a fenced `##` heading fails there first, naming a different
+  defect than the one the author has.
 """
 from __future__ import annotations
 
@@ -73,15 +83,31 @@ LIST_ITEM_RE = re.compile(r"^\s*(?:[-*+]|\d+[.)])\s+")
 # bug, and this module reintroduced it once already.
 FENCE_RE = re.compile(r"^\s*(`{3,}|~{3,})")
 HEADING_RE = re.compile(r"^\s*## ")
+HTML_BLOCK_RE = re.compile(r"^\s*<")
+
+
+def _is_command_span(content: str) -> bool:
+    """Is this code-span content something to RUN, not a name to go find?
+
+    Two accepted shapes: it takes arguments, or it names a path. Stripping
+    first is load-bearing -- CommonMark requires padding when the content
+    starts or ends with a backtick, and unstripped whitespace let a padded
+    bare identifier pass as a command.
+
+    A single-token command with no arguments and no path (`pytest`) is NOT
+    accepted, and that is a limit rather than an oversight: it is lexically
+    identical to an identifier, and no rule can separate them without reading
+    meaning. Write the invocation the next operator should actually paste.
+    """
+    stripped = content.strip()
+    return bool(stripped) and (any(char.isspace() for char in stripped) or "/" in stripped)
 
 
 def has_owner(text: str) -> bool:
     """Does this entry give the reader something to open, run, or look up?"""
     if MARKDOWN_LINK_RE.search(text) or URL_RE.search(text) or ISSUE_ID_RE.search(text):
         return True
-    # Whitespace inside a span is the command test: `git log --oneline` is
-    # runnable, `inventory_boundary_bypass_lib` is a name to go find.
-    return any(" " in match.group(2) or "\t" in match.group(2) for match in CODE_SPAN_RE.finditer(text))
+    return any(_is_command_span(match.group(2)) for match in CODE_SPAN_RE.finditer(text))
 
 
 def _walk(lines: Sequence[str]) -> Iterator[tuple[int, str, bool, bool]]:
@@ -141,17 +167,16 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str, bool]]:
     pending_blank = False
 
     def flush() -> None:
+        nonlocal current_offset, current, pending_blank
         if current_offset is not None and current:
             entries.append([current_offset, " ".join(current), False])
+        current_offset, current, pending_blank = None, [], False
 
     for index, raw, is_delimiter, inside in _walk(section_lines):
         if is_delimiter:
-            # Attach only to an entry that is still open, or one separated from
-            # the fence by blank lines alone.
             if current_offset is not None:
                 flush()
                 entries[-1][2] = True
-                current_offset, current, pending_blank = None, [], False
             continue
         if inside:
             continue
@@ -160,16 +185,39 @@ def _entries(section_lines: Sequence[str]) -> list[tuple[int, str, bool]]:
             pending_blank = True
             continue
         indented = raw[:1].isspace()
-        if LIST_ITEM_RE.match(raw) and (not indented or current_offset is None):
+        if HTML_BLOCK_RE.match(raw):
+            # An HTML block interrupts a paragraph in CommonMark, so it is not
+            # list content. Treating it as a lazy continuation kept the entry
+            # open across the `charness-publish-state-claim` marker comment, and
+            # the ledger fence below then re-attached to the bullet above --
+            # the laundering this rule had just been repaired to stop, restored
+            # by deleting one blank line.
             flush()
-            current_offset, current, pending_blank = index, [stripped], False
+            continue
+        if LIST_ITEM_RE.match(raw):
+            if not indented:
+                flush()
+                current_offset, current, pending_blank = index, [stripped], False
+            elif current_offset is not None:
+                current.append(stripped)
+                pending_blank = False
+            elif entries:
+                # A sub-bullet whose parent was already closed -- by that
+                # parent's own fenced block, or by a blank plus a paragraph. It
+                # still inherits the parent's owner; charging it separately
+                # would demand the same link on every child, which is the
+                # outcome the indent rule exists to avoid.
+                entries[-1][1] += " " + stripped
+            else:
+                # No preceding entry anywhere in the section: nothing to inherit
+                # from, so it must be checked rather than dropped.
+                current_offset, current, pending_blank = index, [stripped], False
             continue
         if current_offset is None:
             continue
         if pending_blank and not indented:
             # A new unindented paragraph, not a continuation of the list item.
             flush()
-            current_offset, current, pending_blank = None, [], False
             continue
         current.append(stripped)
         pending_blank = False
