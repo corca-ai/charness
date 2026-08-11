@@ -12,9 +12,109 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-11",
-  "source_artifact_count": 471,
-  "candidate_count": 1946,
+  "source_artifact_count": 473,
+  "candidate_count": 1949,
   "top_candidates": [
+    {
+      "candidate_id": "class:da0e4841a6b9",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question.",
+      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
+      "recurrence_class": "guard-adjacent-to-action",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2aa33565760a",
+      "kind": "repeat_trap",
+      "lesson": "**I hand-edited a ratchet baseline twice and was wrong both times.** First edit removed a key without the count; the guard caught it. I then concluded the file could be left alone entirely because the ratchet passed — and a second consumer of the same file crashed. The third attempt edited two fields and I described it as \"what a rebuild would produce\"; an actual rebuild showed two ENFORCED counts still stale. Three cycles for one file, and the correct action — run the builder — was named in the repo's own procedure doc the whole time.",
+      "normalized_key": "three planned items were premises not debt and one was work that already shipped",
+      "recurrence_class": "premise-not-checked-against-source",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The same class then bit a fourth time inside the resolution.** The sibling-scan audit still listed Tier 1 as \"worth fixing first\", which is what generated the phantom slice — and I only found that because a stranded reviewer's recovered transcript said so. Fixing the instance without fixing the artifact that produced it is what let it recur."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I hand-edited a ratchet baseline twice and was wrong both times.** First edit removed a key without the count; the guard caught it. I then concluded the file could be left alone entirely because the ratchet passed — and a second consumer of the same file crashed. The third attempt edited two fields and I described it as \"what a rebuild would produce\"; an actual rebuild showed two ENFORCED counts still stale. Three cycles for one file, and the correct action — run the builder — was named in the repo's own procedure doc the whole time."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        }
+      ]
+    },
     {
       "candidate_id": "class:3b52f9af8951",
       "kind": "repeat_trap",
@@ -58,44 +158,104 @@
       ]
     },
     {
-      "candidate_id": "class:da0e4841a6b9",
+      "candidate_id": "class:490052814d4a",
       "kind": "repeat_trap",
-      "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\").",
-      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
-      "recurrence_class": "guard-adjacent-to-action",
-      "source_count": 3,
-      "independent_source_count": 3,
+      "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
+      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
+      "recurrence_class": "runtime-budget-contention",
+      "source_count": 2,
+      "independent_source_count": 2,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.36,
-      "selection_weight": 1.3652,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
         },
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+          "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d16dd802152d",
+      "kind": "repeat_trap",
+      "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one.",
+      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
+      "recurrence_class": "stale-current-pointer-at-closeout",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
         },
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+          "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:299cb49409e3",
+      "kind": "repeat_trap",
+      "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later.",
+      "normalized_key": "the deletion sweep grepped the identifier and missed the english domain language contract returned",
+      "recurrence_class": "removal-consumer-grep-incomplete",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — a removal sweep greps the identifier AND the capability's name in prose. The identifier grep returned clean while shipped consumer text still configured the deleted knob."
         }
       ]
     },
@@ -220,6 +380,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a0f0ba6cdaf9",
+      "kind": "current_focus",
+      "lesson": "The third work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md` and from the rulings session that owns `2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`.",
+      "normalized_key": "the third work unit of 2026 08 11 distinct from the umbrella disposition session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The third work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md` and from the rulings session that owns `2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:a5f662a1a6dc",
       "kind": "next_improvement",
       "lesson": "`>= 35` is a ratchet floor implemented in this repo's worst available form — an inline magic number plus a prose instruction to bump it. Every other ratchet here has a baseline file and an accept command. Either give it that form or drop it.",
@@ -242,142 +428,112 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "`>= 35` is a ratchet floor implemented in this repo's worst available form — an inline magic number plus a prose instruction to bump it. Every other ratchet here has a baseline file and an accept command. Either give it that form or drop it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:951de87275a4",
-      "kind": "next_improvement",
-      "lesson": "a `consumers <symbol|path|key>` command printing every reference outside the target's own tests and mirrors. Structural pattern: a method requiring the agent to remember to search has no tool, so it degrades to memory — the sentence the digest already carries about backlog re-verification. Triggering instance(s): seven wrong removal/keep proposals in one session, each refuted by one grep. Destination: new issue.",
-      "normalized_key": "a consumers symbol path key command printing every reference outside the target s own",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a `consumers <symbol|path|key>` command printing every reference outside the target's own tests and mirrors. Structural pattern: a method requiring the agent to remember to search has no tool, so it degrades to memory — the sentence the digest already carries about backlog re-verification. Triggering instance(s): seven wrong removal/keep proposals in one session, each refuted by one grep. Destination: new issue."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:634c52d7e326",
-      "kind": "next_improvement",
-      "lesson": "a removal proposal must CARRY its consumer search — the grep and what it returned — so a proposal without one is visibly incomplete. Not \"remember to check\"; the artifact is malformed without it. This one step prevents seven of this session's errors.",
-      "normalized_key": "a removal proposal must carry its consumer search the grep and what it returned",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a removal proposal must CARRY its consumer search — the grep and what it returned — so a proposal without one is visibly incomplete. Not \"remember to check\"; the artifact is malformed without it. This one step prevents seven of this session's errors."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:87aee1802ed1",
-      "kind": "next_improvement",
-      "lesson": "a `--suspect-literals` advisory for the `Declared Where Derivable` class, seeded from the five recorded instances. Structural pattern: a rule that asks the author to notice a shape at authoring time has no tool, so it degrades to memory — the exact form issue `#562` already records. Triggering instance(s): five shipped instances, four fixed independently without recognising the class. Destination: new issue.",
-      "normalized_key": "a suspect literals advisory for the declared where derivable class seeded from the five",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "a `--suspect-literals` advisory for the `Declared Where Derivable` class, seeded from the five recorded instances. Structural pattern: a rule that asks the author to notice a shape at authoring time has no tool, so it degrades to memory — the exact form issue `#562` already records. Triggering instance(s): five shipped instances, four fixed independently without recognising the class. Destination: new issue."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:fcdb92888b3e",
-      "kind": "next_improvement",
-      "lesson": "before presenting options, name the premise all of them share. Two of six rulings were settled by the operator rejecting a shared premise I had not surfaced.",
-      "normalized_key": "before presenting options name the premise all of them share two of six rulings",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "before presenting options, name the premise all of them share. Two of six rulings were settled by the operator rejecting a shared premise I had not surfaced."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:720181e573f6",
-      "kind": "next_improvement",
-      "lesson": "run the adversarial pass before the operator asks. Every correction this session was operator-initiated; the reviewers were right each time and I only spawned them on request.",
-      "normalized_key": "run the adversarial pass before the operator asks every correction this session was operator",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-      "latest_source_date": "2026-08-11",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-11-session-retro.md",
-          "date": "2026-08-11",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run the adversarial pass before the operator asks. Every correction this session was operator-initiated; the reviewers were right each time and I only spawned them on request."
         }
       ]
     }
   ],
   "candidates": [
     {
+      "candidate_id": "class:da0e4841a6b9",
+      "kind": "next_improvement",
+      "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question.",
+      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
+      "recurrence_class": "guard-adjacent-to-action",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2aa33565760a",
+      "kind": "repeat_trap",
+      "lesson": "**I hand-edited a ratchet baseline twice and was wrong both times.** First edit removed a key without the count; the guard caught it. I then concluded the file could be left alone entirely because the ratchet passed — and a second consumer of the same file crashed. The third attempt edited two fields and I described it as \"what a rebuild would produce\"; an actual rebuild showed two ENFORCED counts still stale. Three cycles for one file, and the correct action — run the builder — was named in the repo's own procedure doc the whole time.",
+      "normalized_key": "three planned items were premises not debt and one was work that already shipped",
+      "recurrence_class": "premise-not-checked-against-source",
+      "source_count": 4,
+      "independent_source_count": 4,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.48,
+      "selection_weight": 2.44,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+          "date": "2026-07-27",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The same class then bit a fourth time inside the resolution.** The sibling-scan audit still listed Tier 1 as \"worth fixing first\", which is what generated the phantom slice — and I only found that because a stranded reviewer's recovered transcript said so. Fixing the instance without fixing the artifact that produced it is what let it recur."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I hand-edited a ratchet baseline twice and was wrong both times.** First edit removed a key without the count; the guard caught it. I then concluded the file could be left alone entirely because the ratchet passed — and a second consumer of the same file crashed. The third attempt edited two fields and I described it as \"what a rebuild would produce\"; an actual rebuild showed two ENFORCED counts still stale. Three cycles for one file, and the correct action — run the builder — was named in the repo's own procedure doc the whole time."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability** — add a regenerate/accept flag to `check_boundary_bypass_ratchet.py` so its own error message names a runnable command, matching the dup ratchet's `--write-baseline` / `--accept-rotation` shape. Structural pattern: a gate that tells the operator to regenerate an artifact while providing no command to do it trains hand-editing, and its cross-check covers only some of the fields a rebuild would write. Triggering instance(s): three hand-edit cycles on one baseline in one session, two ENFORCED counts left stale. Destination: new issue."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:3b52f9af8951",
       "kind": "repeat_trap",
       "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately.",
@@ -420,44 +576,104 @@
       ]
     },
     {
-      "candidate_id": "class:da0e4841a6b9",
+      "candidate_id": "class:490052814d4a",
       "kind": "repeat_trap",
-      "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\").",
-      "normalized_key": "two failed publish attempts 4 min of gate runtime each from invoking the installed",
-      "recurrence_class": "guard-adjacent-to-action",
-      "source_count": 3,
-      "independent_source_count": 3,
+      "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
+      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
+      "recurrence_class": "runtime-budget-contention",
+      "source_count": 2,
+      "independent_source_count": 2,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.36,
-      "selection_weight": 1.3652,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
+          "date": "2026-08-06",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**Two failed publish attempts (~4 min of gate runtime each) from invoking the INSTALLED `publish_release.py` against the source tree.** The installed copy's `recent_lessons_lib` wrote an older lesson-index schema; the source repo's own `validate-retro-lesson-index` then rejected it and the helper rolled back. The first attempt I misdiagnosed entirely — I re-ran the standalone quality suite (83/0, clean), concluded the failure was release-state-specific, and only found the real cause by reading the guard's own docstring, which names this exact lineage (\"four release publishes died to one shape\")."
+          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
         },
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**The reviewer-boundary fingerprint `verify` was run after applying fixes**, so it reported drift it could not attribute. I had to reconcile it by hand in the critique artifact rather than cite it as evidence."
+          "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d16dd802152d",
+      "kind": "repeat_trap",
+      "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one.",
+      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
+      "recurrence_class": "stale-current-pointer-at-closeout",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+          "date": "2026-08-06",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
         },
         {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-session-retro.md",
-          "date": "2026-07-27",
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**The critique packet binding staled twice**, once legitimately (fixes changed reviewed surfaces) and once spuriously (writing and staging the artifact that records the review). Cost: two regenerate-and-rebind cycles before finding `--reviewed-path`."
+          "lesson": "**A single top banner instead of per-section status.** The last session was corrected for exactly this and the correction is in the handoff I read at pickup. I wrote the banner anyway, then described it in the handoff as per-section status, which made it a false claim as well as a rotting one."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:299cb49409e3",
+      "kind": "repeat_trap",
+      "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later.",
+      "normalized_key": "the deletion sweep grepped the identifier and missed the english domain language contract returned",
+      "recurrence_class": "removal-consumer-grep-incomplete",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The deletion sweep grepped the identifier and missed the English.** `domain_language_contract` returned clean while `inventory-dispatch.md` still shipped consumers prose about \"deprecated aliases\", a knob that no longer exists. Found by a handoff critique, two commits later."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow** — a removal sweep greps the identifier AND the capability's name in prose. The identifier grep returned clean while shipped consumer text still configured the deleted knob."
         }
       ]
     },
@@ -578,6 +794,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "The second work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a0f0ba6cdaf9",
+      "kind": "current_focus",
+      "lesson": "The third work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md` and from the rulings session that owns `2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`.",
+      "normalized_key": "the third work unit of 2026 08 11 distinct from the umbrella disposition session",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The third work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md` and from the rulings session that owns `2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`."
         }
       ]
     },
@@ -708,6 +950,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "before presenting options, name the premise all of them share. Two of six rulings were settled by the operator rejecting a shared premise I had not surfaced."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:761b13580ebe",
+      "kind": "next_improvement",
+      "lesson": "**memory** — the handoff's Continuation Capability block now carries the scoped forms of the four rules most likely to be over-applied, so the next session inherits the scope rather than the slogan.",
+      "normalized_key": "memory the handoff s continuation capability block now carries the scoped forms of the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "latest_source_date": "2026-08-11",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+          "date": "2026-08-11",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory** — the handoff's Continuation Capability block now carries the scoped forms of the four rules most likely to be over-applied, so the next session inherits the scope rather than the slogan."
         }
       ]
     },
@@ -1384,40 +1652,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Two full designs built and deleted** (the prose-matching residue scanner, the `#546` budget discriminator). Not pure waste — both produced measurements that are now the record — but both were built before the cheapest disconfirming probe was run. The `#546` probe that killed it took under a minute and could have run first."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:2aa33565760a",
-      "kind": "repeat_trap",
-      "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning.",
-      "normalized_key": "three planned items were premises not debt and one was work that already shipped",
-      "recurrence_class": "premise-not-checked-against-source",
-      "source_count": 2,
-      "independent_source_count": 2,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-      "latest_source_date": "2026-07-27",
-      "age_days": 15,
-      "recency_weight": 0.7937,
-      "alpha": 0.24,
-      "selection_weight": 0.9842,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**Three planned items were premises, not debt, and one was work that already shipped.** Sibling-scan Tier 1 A/B/C were fixed by an earlier commit; #448/#451/#453 were closed; and slice 1 was planned as a family-wide build when the one-pass machinery already existed and only three validators were unwired. Cost: a slice plan written against a tree nobody had checked, caught by a reviewer rather than by planning."
-        },
-        {
-          "artifact_path": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
-          "date": "2026-07-27",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**The same class then bit a fourth time inside the resolution.** The sibling-scan audit still listed Tier 1 as \"worth fixing first\", which is what generated the phantom slice — and I only found that because a stranded reviewer's recovered transcript said so. Fixing the instance without fixing the artifact that produced it is what let it recur."
         }
       ]
     },
@@ -5608,58 +5842,6 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "proof-surface-review-binding: the first critique packet bound the wrong/incomplete reviewed input shape and required regeneration before validation. This was caught locally, but packet identity should have been frozen before drafting the critique record."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:490052814d4a",
-      "kind": "repeat_trap",
-      "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself.",
-      "normalized_key": "runtime budget contention the first diagnosis treated a noisy aggregate sample as if the",
-      "recurrence_class": "runtime-budget-contention",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-      "latest_source_date": "2026-08-06",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.12,
-      "selection_weight": 0.9259,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-session-retro.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "runtime-budget-contention: the first diagnosis treated a noisy aggregate sample as if the validator itself were slow. The standalone timing was gathered only after the broad gate had already spent two failed runs. The waste was causal uncertainty plus rerun cost, not the quality gate itself."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:d16dd802152d",
-      "kind": "repeat_trap",
-      "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written.",
-      "normalized_key": "stale current pointer at closeout the first packet was more current than docs handoff",
-      "recurrence_class": "stale-current-pointer-at-closeout",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-      "latest_source_date": "2026-08-06",
-      "age_days": 5,
-      "recency_weight": 0.9259,
-      "alpha": 0.12,
-      "selection_weight": 0.9259,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
-          "date": "2026-08-06",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "stale-current-pointer-at-closeout: the first packet was more current than `docs/handoff.md`, `quality/latest.md`, and the prior session retro. A fresh-eye reviewer caught the contradiction; the repair required a quality record, goal-bound retro, and handoff refresh. The avoidable waste was not the review; it was failing to reconcile all current pointers when the host packet was first written."
         }
       ]
     },
