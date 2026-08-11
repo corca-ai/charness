@@ -64,9 +64,12 @@ Known non-claims -- this is a FLOOR, not a completeness proof:
 - A hash plus a small ordinal in ordinary prose ("the hash-one priority", written
   with the symbol) and an all-digit six-hex-digit colour still read as issue ids.
 - An UNCLOSED fence leaves every later line inside it, so both owned sections
-  become unscannable. The repo validator now refuses that artifact outright, so
-  the silence is closed; this remains listed because the PARSER still cannot
-  distinguish it and depends on that outer guard.
+  become unscannable. The PARSER cannot distinguish that from an empty section,
+  so both consumers guard it explicitly: the repo validator refuses the artifact
+  and the run planner reports `unscannable_fence`. Neither guard lives here.
+- A wrapped continuation line that itself begins `2. ` is split into its own
+  entry, where CommonMark would keep it in the paragraph. Safe direction: an
+  extra unowned report, never a laundered pass.
 - `find_index` and `iter_h2_headings` in the repo validator are fence-blind, so a
   handoff carrying a fenced canonical `##` heading is also rejected by
   `validate_exact_h2_sections` or `validate_nonempty_sections`, naming a

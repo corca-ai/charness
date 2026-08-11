@@ -72,7 +72,9 @@ may sit in the section — a machine-read ledger block often must — but it own
 nothing, so a bullet whose only command is in a code block is refused; that
 bullet belongs in the artifact it should be linking. An inline command must take
 arguments — a bare path is a link, not a command, and a single-word command is
-indistinguishable from an identifier.
+indistinguishable from an identifier. Fences must close: an unpaired delimiter
+makes every later line read as fenced, so both sections become unscannable and
+the artifact is refused rather than passed.
 The floor is narrower than the aim, and the gap is yours to close, not the
 gate's: `## Workflow Trigger` and `## Continuation Capability` are NOT checked,
 an entry passes on one owner while paraphrasing a second artifact beside it, and

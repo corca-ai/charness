@@ -81,6 +81,7 @@ REQUIRED_SECTIONS, OPTIONAL_SECTIONS = _budget.REQUIRED_SECTIONS, _budget.OPTION
 # entries while drafting, not learn about them from the gate afterwards.
 _ownership = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_bullet_ownership")
 unowned_entries = _ownership.unowned_entries
+has_unclosed_fence = _ownership.has_unclosed_fence
 try:
     _handoff_validator = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.validate_handoff_artifact")
     MAX_CONTENT_LINES = int(_handoff_validator.MAX_CONTENT_LINES)
@@ -139,7 +140,14 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
     # Budget counts content, not file length (see handoff_content_budget).
     content_line_count = len(content_lines(lines))
     unowned = unowned_entries(lines)
-    if content_line_count > MAX_CONTENT_LINES:
+    if has_unclosed_fence(lines):
+        # Ranked ABOVE unowned_entries because with an open fence the ownership
+        # scan finds no sections at all, so `unowned` is empty by construction
+        # and reporting the artifact as clean is the misleading part. The gate
+        # refuses this outright; a portable install without the repo validator
+        # has only this surface, so the guard cannot live only there.
+        status = "unscannable_fence"
+    elif content_line_count > MAX_CONTENT_LINES:
         status = "over_limit"
     elif unowned:
         # The gate blocks on this, so a plan that reported `ok` sent the author
@@ -336,7 +344,7 @@ def _next_action(
             "run_chunked_routing",
             command='python3 "$SKILL_DIR/scripts/parse_handoff_entries.py" --repo-root . --with-issues',
             why="start the chunked-routing pipeline, then follow the reference")
-    if artifact["status"] in {"over_limit", "unowned_entries", "shape_issue", "diary_smell", "near_limit"}:
+    if artifact["status"] in {"unscannable_fence", "over_limit", "unowned_entries", "shape_issue", "diary_smell", "near_limit"}:
         return ENVELOPE.next_action(
             "repair_or_prune_handoff",
             command=f"sed -n '1,220p' {artifact_path}",

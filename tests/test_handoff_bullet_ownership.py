@@ -222,7 +222,40 @@ def test_validate_handoff_artifact_refuses_an_unclosed_fence(tmp_path: Path) -> 
         "echo no closing fence",
     )
     assert result.returncode == 1
-    assert "unclosed" in result.stderr
+    assert "could not be paired" in result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_tilde_line_inside_a_backtick_fence(tmp_path: Path) -> None:
+    """Pins the CommonMark half of the fence rule, not just the toggle's output.
+
+    The existing tilde test asserts a failure plus a substring, so a toggle
+    regression would ADD a spurious violation and leave both assertions true —
+    it cannot fail from the bug it looks like it guards. This one exits 0 only
+    if a `~~~` line inside a backtick fence is content.
+    """
+    result = run_on_state(
+        tmp_path,
+        "- [ok](docs/guide.md) — holds it.",
+        "",
+        "```",
+        "~~~",
+        "```",
+    )
+    assert result.returncode == 0, result.stderr
+
+
+def test_validate_handoff_artifact_accepts_a_longer_closing_fence_run(tmp_path: Path) -> None:
+    # `len(run) >= len(open_marker)` had no test at all: a 3-run opener closed
+    # by a 4-run is valid CommonMark and must not read as unpaired.
+    result = run_on_state(
+        tmp_path,
+        "- [ok](docs/guide.md) — holds it.",
+        "",
+        "```",
+        "content",
+        "````",
+    )
+    assert result.returncode == 0, result.stderr
 
 def test_validate_handoff_artifact_reports_every_unowned_entry_in_one_message(tmp_path: Path) -> None:
     result = run_on_state(

@@ -194,8 +194,9 @@ def validate_closed_fences(lines: list[str]) -> None:
     """
     if has_unclosed_fence(lines):
         raise ValidationError(
-            "handoff artifact leaves a code fence unclosed; every line after it reads as fenced, "
-            "so the ownership rule would scan an empty section and pass. Close the fence."
+            "handoff artifact: code fence delimiters could not be paired; every line after the "
+            "unpaired one reads as fenced, so the ownership rule would scan an empty section and "
+            "pass. Close the fence, or move a fence-delimiter line that is meant as content."
         )
 
 
