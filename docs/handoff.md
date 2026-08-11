@@ -30,20 +30,12 @@
 
 ## Next Session
 
-1. **OPERATOR RULING — delete the pickup ambiguity heuristic and both eval specs.** It
-   guesses intent by COUNTING `## Next Session` entries. Two edges, both named in the
-   [plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md):
-   `continuation-sequence.md` must leave `plan_handoff_run.py:28` (the extractor AST-scans
-   ALL branches), and `workflow-trigger.md`'s `classTag: INLINE` must MOVE — it lives only
-   in the two doomed specs while staying forceable via `judge_from_user_request`. **A
-   headless run already did this** (`# Observation run 2026-08-11`); its patch is evidence,
-   not a shortcut — re-do it under verification.
+1. **OPERATOR RULING — delete the pickup ambiguity heuristic and both eval specs.** Scope,
+   its two non-obvious edges, and a headless run's patch (evidence, not a shortcut) are in
+   the plan; re-do the work under verification.
 2. **Then the recorded sweep as a DYNAMIC WORKFLOW** (operator-directed), one agent per
-   candidate, each REQUIRED to emit its consumer grep before proposing: 3 deletions + 2
-   reworks. **No counterweight ran on the sweep — triage first.**
-   RE-key the boundary-bypass arm (never delete it); fix `#531` via the adapter
-   `artifact_path`. Both owe a second round.
-   [Critique](../charness-artifacts/critique/2026-08-11-deletable-surfaces-sweep.md).
+   candidate, each REQUIRED to emit its consumer grep before proposing. **No counterweight
+   ran on it — triage first.** Two of its five items are RE-keys, not deletions.
 3. **`#546` phase 2 — the adapter `conditional:` marker.**
 4. **`#587` — edit, do not close.** The mapper is
    `suggest_mutation_coverage_command.tests_referencing_paths:85-87`.
@@ -56,11 +48,16 @@
   `--intent` replaced `should_fire_chunker`. Suspects: `setup_skill_routing_lib`'s
   semantic-completeness regex (ships to consumers), `chunked_routing_parser`,
   `classify_push_diff_lib`. Form validators are NOT in this class.
+- **The harness-improvement thesis has no artifact.** Narrowed to two items: the lessons
+  digest's slot policy, and the autonomy permission posture. Decide whether it gets a home.
 
 ## Continuation Capability
 
 - **A removal proposal without its consumer grep is malformed.** Seven wrong proposals in
   one session, each refuted by one grep. Put the grep and its result IN the proposal.
+- **Budget hit? Rule #1: delete the unnecessary sentences, then send prose to a link.** Not
+  compress the wording. A link line says what it CONTAINS (awiki `link_only_lines`), never
+  why to open it. Never argue for an untaxed section — it becomes a dumping ground.
 - **Every correction last session was operator-initiated.** The reviewers were right every
   time and were only spawned when asked. Run the adversarial pass before being told to.
 - **Autonomy needs `--dangerously-skip-permissions`, which the operator already uses.**
@@ -81,6 +78,5 @@
 - [Deferred decisions](./deferred-decisions.md) — D53, D54, D55 landed this session.
 - [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md)
 - [Closeout floor matrix spec](../charness-artifacts/spec/2026-08-10-closeout-floor-carrier-matrix.md)
-- [2026-08-11 session retro](../charness-artifacts/retro/2026-08-11-session-retro.md) — the traps that produced this handoff; read it before proposing any removal.
-- [Umbrella class disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md) — item 1 and 2's full scope, the verified consumer sets, and `# Observation run 2026-08-11` (the headless measurement of whether these lessons transfer).
-- **The harness-improvement thesis has NO artifact of its own.** It lives in the retro's `North Star Alignment` / `Trends` sections and the plan's observation-run section. Environment share is narrowed to two things: the lessons digest's slot policy, and the autonomy permission posture. Give it a home before acting on it, or it will be re-derived from scratch.
+- [2026-08-11 session retro](../charness-artifacts/retro/2026-08-11-session-retro.md) — this session's waste, critical decisions, north-star alignment, sibling scan, and the Engelbart/Klein counterfactuals.
+- [Umbrella class disposition plan](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md) — per-member dispositions for `#582`-`#585`, the deletable-surfaces sweep with its consumer greps, the pickup-deletion ruling and its scope, and the `# Observation run 2026-08-11` measurement.
