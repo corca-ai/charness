@@ -20,10 +20,13 @@ ROOT = Path(__file__).resolve().parents[2]
 HANDOFF_SKILL_DIR = ROOT / "skills" / "public" / "handoff"
 HANDOFF_FIDELITY_DIR = ROOT / "evals" / "cautilus" / "handoff-claim-fidelity"
 
+# continuation-sequence.md left this set on 2026-08-11: the operator ruling deleted
+# the pickup-ambiguity heuristic AND the planner string literal that made the
+# reference forceable regardless of branch, so ordering plausible pickups is now
+# SKILL.md prose the agent opens by judgment rather than a planner-forced read.
 HANDOFF_FORCEABLE = {
     "chunked-routing.md",
     "workflow-trigger.md",
-    "continuation-sequence.md",
     "spill-targets.md",
     "adapter-contract.md",
     "state-selection.md",
@@ -120,36 +123,48 @@ def test_live_repo_conditional_reads_cross_check_is_clean() -> None:
     assert report["skills"]["handoff"]["flagged"] == []
     assert "state-selection.md" in report["skills"]["handoff"]["waived_class_tag"]
     assert "adapter-contract.md" in report["skills"]["handoff"]["waived_allowlist"]
+    # workflow-trigger.md is forced ONLY by judge_from_user_request, which no scenario
+    # exercises. Its INLINE classTag lived in the two pickup specs deleted on
+    # 2026-08-11; rather than re-home a CONTENT classification as a COVERAGE waiver,
+    # the waiver moved to the allowlist, which carries a written reason AND goes
+    # stale-advisory the moment coverage appears. This assertion is a record of a
+    # known GAP, not a property worth preserving: adding a judge-intent scenario is
+    # expected to red it, alongside the stale_allowlist advisory naming the same line.
+    assert "workflow-trigger.md" in report["skills"]["handoff"]["waived_allowlist"]
+    # Deliberately NOT asserting `report["stale_allowlist"] == []`: staleness is an
+    # ADVISORY signal the validator prints and never raises on, pinned as such by
+    # test_stale_allowlist_entry_is_advisory_not_error above. Blocking on it here
+    # would make pytest and validate_scenario_conditional_reads.py disagree about
+    # the same state — and a consumer repo vendoring the validator would get the
+    # opposite verdict from the one this repo enforces.
 
 
-def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path: Path) -> None:
-    # Reconstructs the incident this validator guards against: the pickup planner
-    # branch conditionalized continuation-sequence.md and no scenario forced the
-    # ambiguous arm. Deleting pickup-ambiguous.spec.json from a copy of the real
-    # handoff fixtures reproduces that gap.
+def test_incident_reconstruction_flags_a_scenario_whose_coverage_disappeared(tmp_path: Path) -> None:
+    # Reconstructs the incident this validator guards against, against the REAL handoff
+    # fixtures rather than a synthetic skill: an eval scenario stops covering a
+    # planner-forced reference, so a regression on that branch escapes every eval.
+    #
+    # The subject used to be continuation-sequence.md — unlink pickup-ambiguous.spec.json
+    # and its engage-always coverage vanished. That reconstruction died with the
+    # 2026-08-11 ruling: the planner literal is gone, so the reference is no longer
+    # forceable and no fixture deletion can reproduce the gap through it. Re-keyed onto
+    # chunked-routing.md, whose engage-always coverage lives in the DEFAULT spec.json:
+    # deregistering that scenario is the same subtraction the deleted test made, on a
+    # reference that is still forced. Deliberately NOT re-keyed onto an allowlist-waived
+    # reference — that would test the waiver channel, which already has both arms in
+    # test_waived_via_allowlist and test_unforced_on_demand_reference_is_flagged, and
+    # would lose the "a real scenario went away" class this test exists for.
     shutil.copytree(HANDOFF_SKILL_DIR, tmp_path / "skills" / "public" / "handoff", ignore=REPO_COPY_IGNORE)
     shutil.copytree(
         HANDOFF_FIDELITY_DIR,
         tmp_path / "evals" / "cautilus" / "handoff-claim-fidelity",
         ignore=REPO_COPY_IGNORE,
     )
-    (tmp_path / "evals" / "cautilus" / "handoff-claim-fidelity" / "pickup-ambiguous.spec.json").unlink()
     (tmp_path / ALLOWLIST_PATH).parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(ROOT / ALLOWLIST_PATH, tmp_path / ALLOWLIST_PATH)
     _write_registry(
         tmp_path,
         [
-            {
-                "skill_id": "handoff",
-                "spec_path": "evals/cautilus/handoff-claim-fidelity/spec.json",
-                "fan_out_fit": "incident-reconstruction fixture",
-            },
-            {
-                "skill_id": "handoff",
-                "scenario_id": "pickup",
-                "spec_path": "evals/cautilus/handoff-claim-fidelity/pickup.spec.json",
-                "fan_out_fit": "incident-reconstruction fixture",
-            },
             {
                 "skill_id": "handoff",
                 "scenario_id": "refresh",
@@ -158,7 +173,12 @@ def test_incident_reconstruction_flags_unforced_continuation_sequence(tmp_path: 
             },
         ],
     )
-    with pytest.raises(ValidationError, match="continuation-sequence.md"):
+    # Anchored on the cross-check's OWN message. A bare `match="chunked-routing.md"`
+    # would also be satisfied by a validate_registry/validate_spec error that merely
+    # names the file — e.g. renaming references/chunked-routing.md makes
+    # `declaredReferences not present under references/` match, and this test would
+    # pass green having never reached the cross-check at all.
+    with pytest.raises(ValidationError, match=r"conditional-reads cross-check:.*chunked-routing\.md"):
         cross_check_conditional_reads(tmp_path)
 
 

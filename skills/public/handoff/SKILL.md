@@ -35,8 +35,7 @@ You are the one reading the user's request, so you DECLARE the routing —
 otherwise `--intent pickup` or `--intent refresh`. `--intent auto` only reads
 structural signals and will hand the decision back. For a bare direct skill
 invocation with no task, `--invoked-directly` declares that shape and routes to
-chunked routing. On a pickup whose one task is already settled, name it with
-`--pickup-target` so the planner does not force the sequencing reference.
+chunked routing.
 The planner resolves the adapter, summarizes the artifact, lists
 `required_reads`, and names cheap `gate_packets`.
 Open the listed reads using each entry's `base` before broader exploration; a

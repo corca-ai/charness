@@ -582,6 +582,25 @@
       ]
     },
     {
+      "surface_id": "audit-evidence-attachments",
+      "description": "Preserved diffs (*.patch) committed under charness-artifacts/audit/ alongside the audit or spec artifact that cites them. The audit's own *.md prose is covered by repo-markdown; this surface owns only the .patch extension repo-markdown cannot match. Scoped to .patch on purpose: another attachment extension under the same directory should get its own content check rather than inherit a diff parser, so it still trips unmatched_surface_path until someone decides what verifies it.",
+      "source_paths": [
+        "charness-artifacts/audit/*.patch"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for path in charness-artifacts/audit/*.patch; do [ -e \"$path\" ] || continue; git apply --stat \"$path\" >/dev/null || exit $?; done",
+        "./scripts/check-secrets.sh"
+      ],
+      "notes": [
+        "Added 2026-08-11 after charness-artifacts/audit/2026-08-11-pickup-deletion-experiment.patch landed with no owning surface and blocked both bundle-readiness gates on `unmatched_surface_path` for four commits.",
+        "A preserved diff is a READING, not a patch to apply: the verify command parses it as a unified diff (git apply --stat) and never checks it against the current tree, which has moved on by design. An empty or truncated .patch still fails (git apply exits 128 on unrecognized input), so the check is not vacuous.",
+        "check-secrets is listed because a preserved raw worktree diff is the highest secret-carrying artifact class here (compare the scrub concern named on claim-fidelity-capture-bundles). Without it a commit touching ONLY a .patch would select this surface alone and plan no secret scan, which is the question `unmatched_surface_path` used to force.",
+        "The glob guard uses `|| continue`, not `[ -e ] && {...}`: the latter makes the loop's exit status 1 when the glob matches nothing, so pruning the last .patch would fail the verify with no diagnostic."
+      ]
+    },
+    {
       "surface_id": "issue-source-freeze-bundle",
       "description": "Frozen GitHub issue source capture, owner inspection, and freeze receipt kept as the historical source record for #514/#515/#518. Paths are pinned per bundle, not globbed: a NEW bundle must be added here and to the verify command together. The closeout-authorization crosswalk instance that once bound to this bundle was retired on 2026-08-10; see charness-artifacts/spec/2026-08-10-evidence-boundary-crosswalk-retirement.md.",
       "source_paths": [

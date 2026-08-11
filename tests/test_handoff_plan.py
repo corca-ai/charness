@@ -118,7 +118,6 @@ def test_handoff_plan_help_describes_all_options() -> None:
             "--repo-root": "Repository root used to resolve handoff adapter and artifact state.",
             "--intent": "Declare the routing decision you judged from the user request",
             "--invoked-directly": "Declare that the skill was launched bare with no task",
-            "--pickup-target": "Name the one task being picked up when it is already settled",
         },
     )
     assert "--json" not in result.stdout
@@ -126,6 +125,8 @@ def test_handoff_plan_help_describes_all_options() -> None:
     # existed, the model retyped the user's message into it and a regex classified
     # the paraphrase.
     assert "--invocation-text" not in result.stdout
+    # Deleted with the pickup-ambiguity heuristic it fed (operator ruling 2026-08-11).
+    assert "--pickup-target" not in result.stdout
 
 
 def test_handoff_plan_bootstrap_reports_missing_runtime(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -328,7 +329,7 @@ def test_handoff_plan_degrades_to_default_constants_when_validator_import_fails(
     # import time) when scripts.validate_handoff_artifact cannot load -- e.g. a
     # portable install without scripts/ vendored. load_repo_module_from_skill_script
     # reaches this via `importlib.import_module`, so forcing THAT call to fail for
-    # only this one module name (not resolve_adapter/chunked_routing_lib, which use
+    # only this one module name (not resolve_adapter, which uses
     # a different loader) exercises the except branch on a fresh import of the
     # real file.
     real_import_module = importlib.import_module
@@ -439,55 +440,45 @@ def _pickup_reads(repo: Path, *extra: str) -> set[str]:
     return {read["path"] for read in plan["required_reads"]}
 
 
-def test_handoff_plan_pickup_requires_continuation_when_ambiguous(tmp_path: Path) -> None:
+def test_handoff_plan_pickup_forces_no_reference_read_whatever_the_entry_count(tmp_path: Path) -> None:
+    # A pickup's forced reads are the ARTIFACT and nothing else. The planner used to
+    # decide between one and several plausible pickups by COUNTING `## Next Session`
+    # entries and forcing continuation-sequence.md on the "ambiguous" arm -- a prose
+    # parser rendering a verdict about the operator's intent, which renumbering the
+    # handoff or splitting one item in two could flip. Deleted by operator ruling
+    # 2026-08-11; ordering plausible pickups is SKILL.md prose the agent opens by
+    # judgment. Falsifiable both ways: the entry count must not change the answer.
+    for entry_count in (1, 3):
+        reads = _pickup_reads(seed_repo(tmp_path / f"repo{entry_count}", _pickup_body(entry_count)))
+        assert not {read for read in reads if read.startswith("references/")}, entry_count
+        assert "docs/handoff.md" in reads, entry_count
+
+
+def test_handoff_plan_pickup_target_flag_is_gone(tmp_path: Path) -> None:
+    # The flag existed only to feed the deleted ambiguity predicate. Argparse must
+    # REJECT it rather than silently accept and ignore it, so a caller still passing
+    # it learns the mechanism is gone instead of getting the same plan either way.
     repo = seed_repo(tmp_path, _pickup_body(3))
-    reads = _pickup_reads(repo)
-    # Several plausible pickups + no declared target -> continuation-sequence.md orders them.
-    assert "references/continuation-sequence.md" in reads
-    assert "references/workflow-trigger.md" not in reads  # retired from forced pickup reads (#410 Slice 9): gist inlined, artifact carries the trigger
+    result = subprocess.run(
+        ["python3", SCRIPT, "--repo-root", str(repo), "--intent", "pickup", "--pickup-target", "Task 2"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+    )
+    assert result.returncode != 0
+    assert "--pickup-target" in result.stderr
 
 
-def test_handoff_plan_pickup_skips_continuation_when_single_plausible_pickup(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _pickup_body(1))
-    reads = _pickup_reads(repo)
-    # Only one plausible pickup -> no sequencing choice, so the planner does not force it.
-    assert "references/continuation-sequence.md" not in reads
-    assert "references/workflow-trigger.md" not in reads
-
-
-def test_handoff_plan_pickup_skips_continuation_when_target_declared(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _pickup_body(3))
-    # A DECLARED target settles the sequencing question that continuation-sequence.md
-    # answers. This used to be guessed from the invocation text, where "resume the
-    # pinned task" counted and "the next pickup is unpinned" had to be negated back
-    # out by hand -- the same keyword-guessing this planner no longer does.
-    reads = _pickup_reads(repo, "--pickup-target", "Task 2")
-    assert "references/continuation-sequence.md" not in reads
-
-
-def test_handoff_plan_pickup_keeps_continuation_for_an_empty_target(tmp_path: Path) -> None:
-    repo = seed_repo(tmp_path, _pickup_body(3))
-    # Whitespace is not a declaration: several plausible pickups remain.
-    reads = _pickup_reads(repo, "--pickup-target", "   ")
-    assert "references/continuation-sequence.md" in reads
-
-
-def test_artifact_summary_counts_zero_when_entry_parse_raises(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    # The `## Next Session` entry count is defensive: if the shared entry parser
-    # raises, the planner degrades to zero plausible pickups instead of crashing.
+def test_artifact_summary_carries_no_next_session_entry_count(tmp_path: Path) -> None:
+    # The count was computed for one consumer -- the deleted ambiguity predicate --
+    # and reported in the plan envelope, where a reader could mistake it for a fact
+    # the planner acts on. It is gone from the summary, not merely unread.
     module = load_plan_module()
     artifact = tmp_path / "handoff.md"
-    artifact.write_text("# H\n\n## Next Session\n\n- one\n", encoding="utf-8")
-
-    def _raise(_raw: str):
-        raise ValueError("unparseable handoff entries")
-
-    monkeypatch.setattr(module.chunked_routing_lib, "parse_handoff_entries", _raise)
+    artifact.write_text("# H\n\n## Next Session\n\n- one\n- two\n", encoding="utf-8")
     summary = module._artifact_summary(tmp_path, {"artifact_path": "handoff.md"})
     assert summary["exists"] is True
-    assert summary["next_session_entry_count"] == 0
+    assert "next_session_entry_count" not in summary
 
 
 def test_handoff_plan_briefs_the_rules_whenever_the_next_action_writes(tmp_path: Path) -> None:

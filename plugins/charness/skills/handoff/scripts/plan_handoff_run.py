@@ -24,9 +24,19 @@ INTENT_REFERENCE_READS = {
     # (evals/cautilus/handoff-claim-fidelity/outcome-assertions.json). It STAYS
     # forced for judge_from_user_request (deciding pickup-vs-refresh is a
     # different, still-load-bearing purpose).
-    "pickup": (
-        ("references/continuation-sequence.md", "order the next move as continuation, not history"),
-    ),
+    # A pickup forces NO reference read. Its live state is the artifact's own
+    # `## Workflow Trigger`, already the first forced read below, and ordering
+    # several plausible pickups is skill BEHAVIOR: SKILL.md points at
+    # references/continuation-sequence.md and the agent opens it by judgment.
+    # The planner used to decide that from the `## Next Session` entry COUNT --
+    # a prose parser rendering a verdict about the OPERATOR's intent, which
+    # renumbering the handoff or splitting one item in two could flip. That is
+    # the defect `should_fire_chunker` was deleted for, one step past a regex
+    # (operator ruling 2026-08-11; the umbrella-class disposition plan carries
+    # the scope and its two non-obvious edges).
+    # The key stays present and EMPTY on purpose: dropping it falls through to
+    # the judge_from_user_request default in _required_reads.
+    "pickup": (),
     "refresh": (
         # state-selection.md retired from the forced refresh reads (census
         # INLINE): the Compression Rule gist is inlined in SKILL.md (step 2,
@@ -53,9 +63,6 @@ def _load_skill_runtime_bootstrap():
 
 SKILL_RUNTIME = _load_skill_runtime_bootstrap()
 resolve_adapter = SKILL_RUNTIME.load_local_skill_module(__file__, "resolve_adapter")
-chunked_routing_lib = SKILL_RUNTIME.load_local_skill_module(
-    __file__, "chunked_routing_lib"
-)
 yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "scripts.yaml_output")
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
@@ -121,14 +128,6 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
 
     raw = path.read_text(encoding="utf-8")
     lines = raw.splitlines()
-    try:
-        # Actionable `## Next Session` entries = plausible pickups. Used only to
-        # decide whether a pickup is ambiguous enough to need continuation-sequence.md;
-        # open-issue union is intentionally omitted here to keep the planner
-        # deterministic and tracker-independent.
-        next_session_entry_count = len(chunked_routing_lib.parse_handoff_entries(raw))
-    except Exception:
-        next_session_entry_count = 0
     h2_sections = [line.strip() for line in lines if line.startswith("## ")]
     missing = [section for section in REQUIRED_SECTIONS if section not in h2_sections]
     extra = [section for section in h2_sections if section not in _budget.CANONICAL_SECTIONS]
@@ -154,19 +153,7 @@ def _artifact_summary(repo_root: Path, adapter: dict[str, Any]) -> dict[str, Any
         "dated_session_sections": dated_sessions,
         "missing_sections": missing,
         "extra_h2_sections": extra,
-        "next_session_entry_count": next_session_entry_count,
     }
-
-
-def _pickup_needs_continuation_sequence(artifact: dict[str, Any], pickup_target: str) -> bool:
-    """continuation-sequence.md orders the next move among SEVERAL plausible pickups.
-    A pickup needs it only when the pickup is ambiguous: the caller did not DECLARE
-    which task is being picked up AND the live state offers more than one plausible
-    pickup. This aligns the planner with the skill's own 'when several plausible
-    pickups exist' scope."""
-    if pickup_target.strip():
-        return False
-    return artifact.get("next_session_entry_count", 0) >= 2
 
 
 def _resolve_intent(*, requested: str, invoked_directly: bool) -> dict[str, Any]:
@@ -231,7 +218,6 @@ def _required_reads(
     artifact: dict[str, Any],
     intent: dict[str, Any],
     adapter: dict[str, Any],
-    pickup_target: str,
     action_kind: str,
 ) -> list[dict[str, str]]:
     reads: list[dict[str, str]] = []
@@ -273,20 +259,10 @@ def _required_reads(
         if rules_read is not None:
             reads.append(rules_read)
 
-    pickup_skip_continuation = (
-        intent["resolved"] == "pickup"
-        and not _pickup_needs_continuation_sequence(artifact, pickup_target)
-    )
     for path, why in INTENT_REFERENCE_READS.get(
         intent["resolved"],
         INTENT_REFERENCE_READS["judge_from_user_request"],
     ):
-        if pickup_skip_continuation and path == "references/continuation-sequence.md":
-            # Unambiguous pickup: one clearly-pinned task or a single plausible
-            # pickup — no sequencing among alternatives is needed, so the planner
-            # does not force continuation-sequence.md (which scopes itself to
-            # "when several plausible pickups exist").
-            continue
         reads.append(_read(path, "reference", why, base="skill"))
     return reads
 
@@ -366,7 +342,6 @@ def build_plan(
     *,
     intent: str,
     invoked_directly: bool,
-    pickup_target: str = "",
 ) -> dict[str, Any]:
     adapter = resolve_adapter.load_adapter(repo_root)
     artifact = _artifact_summary(repo_root, adapter)
@@ -380,7 +355,6 @@ def build_plan(
             artifact=artifact,
             intent=resolved_intent,
             adapter=adapter,
-            pickup_target=pickup_target,
             action_kind=str(action["kind"]),
         ),
         next_action=action,
@@ -422,8 +396,6 @@ def main() -> None:
     )
     parser.add_argument("--invoked-directly", action="store_true",
                         help="Declare that the skill was launched bare with no task, which routes to chunked routing.")
-    parser.add_argument("--pickup-target", default="",
-                        help="Name the one task being picked up when it is already settled; leave empty when it is not.")
     parser.add_argument("--json", action="store_true", help=argparse.SUPPRESS)
     try:
         args = parser.parse_args()
@@ -431,7 +403,6 @@ def main() -> None:
             args.repo_root.resolve(),
             intent=args.intent,
             invoked_directly=args.invoked_directly,
-            pickup_target=args.pickup_target,
         )
         if args.json:
             print(json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True))

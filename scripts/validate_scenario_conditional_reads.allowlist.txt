@@ -7,3 +7,4 @@
 # advisory, never silently dropped.
 
 handoff:adapter-contract.md:adapter-health branch (adapter missing/warned/invalid) is genuinely hard to fixture healthy -- decided waiver+reason 2026-07-08, not a new scenario (goal 5pack Slice V)
+handoff:workflow-trigger.md:forced ONLY by the judge_from_user_request intent, which no registered scenario exercises -- the undeclared-route branch cannot be fixtured from a spec prompt because the planner resolves it before any --intent is declared. Waived here rather than by the INLINE classTag it carried until 2026-08-11: the census tag says the DOC is redundant with SKILL.md, which is not an answer to the COVERAGE question, and a classTag waiver gets no stale advisory. Recorded 2026-08-11 when the two pickup specs carrying that tag were deleted with the pickup-ambiguity heuristic. Discharge by adding a judge-intent scenario that engage-always forces this reference; this line then goes stale-advisory.
