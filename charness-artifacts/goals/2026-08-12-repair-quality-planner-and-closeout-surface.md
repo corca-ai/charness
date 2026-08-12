@@ -10,9 +10,9 @@ Done-early policy: continue_next_improvement
 
 ## Active Operating Frame
 
-- Current slice: #604 — decide canonical-gate recognition before changing shipped default matching.
-- Current slice intent: obtain the queued operator policy choice, then bound any recognition repair to that decision.
-- Next action: choose whether default canonical patterns may widen for consumer repos or must remain override-only; do not mutate #604 defaults before this answer.
+- Current slice: #581 — repair and validate the shipped issue adapter example.
+- Current slice intent: validate every documented adapter operation against its real grammar before changing the example.
+- Next action: read #581's current GitHub record, inspect the source and plugin projections, then write the pre-mutation implementation brief.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger proof at each quality or closeout verdict slice; final lock only after the five slices are frozen.
 - Gate cadence: obtain `quality` recommendations before slow gates or any change to a gate, validator, or generated quality packet; do not run Cautilus unless newly approved.
 - Slice review packet: state the issue JTBD, changed/generated surfaces, preserved consumer boundary, expected invariants, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -66,7 +66,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 1 | #603: resolve adapter-owned quality packets or report typed unavailability. | Restores an operator's ability to begin quality work. | Adapter-present/runner-absent regression fixture, planner result, focused tests, and critique. | completed 2026-08-12 (`470aae9a`) |
-| 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | pending decision |
+| 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | completed 2026-08-12 (`09aac7e0`) |
 | 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | pending |
 | 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | pending |
 | 5 | #593: bind HOTL disposition parsing to the issue numbers being closed. | Quoted unrelated discussion must not block a close. | Target/non-target and quote-form tests plus fresh-eye verdict-surface review. | pending |
@@ -114,6 +114,20 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Off-goal findings: No adapter command execution, consumer runtime or hosted proof, publication, or GitHub issue closure; #604 policy choice remains queued.
 - Lessons carried forward: A direct module loader needs an import-isolated test; planner tests can accidentally preload dependencies.
 - Metrics: Focused suite: 87 passed in 5.29s; pre-commit completed with one non-blocking RCA-ledger advisory.
+
+### Slice 2: #604 canonical gate recognition
+
+- Objective: Recognize Charness-owned direct run-quality runner invocations without making the runner mandatory.
+- Why this approach: The prior default silently left scaffolded CI commands unanchored, while consumers that do not use the runner must retain their advisory state.
+- Commits: 09aac7e0 Recognize direct quality runner gates
+- What changed: Expanded exact command-position default patterns, documented the non-requirement and release-note obligation, synchronized the plugin projection, and added positive plus non-invocation CLI fixtures.
+- Alternatives rejected: Rejected override-only and generic path matching; defaults recognize only Charness runner invocations, while custom gates remain explicit overrides.
+- Targeted verification: 99 focused tests passed; packaging, artifact validators, rolling-pointer freshness, and full pre-commit passed. Two fresh-eye rounds caught and repaired mention and dotted-suffix overmatching; the capped round-2 repair is accepted-unreviewed.
+- Test duplication pressure: CLI fixtures prove three supported forms, no-runner advisory behavior, and echo/test/assignment/comment/.bak/.shx counterexamples without duplicating parser assertions.
+- Critique: full charness-artifacts/critique/2026-08-12-issue-604-canonical-gate-critique.md; reviewer boundaries verified parent-attributed only after parent repairs.
+- Off-goal findings: No consumer CI or hosted proof, release, publication, or issue closure ran; next release notes must disclose the floor expansion.
+- Lessons carried forward: Regex proof surfaces need command-position and token-termination counterexamples; matching a path is not proof of invocation.
+- Metrics: Focused suite: 99 passed in 9.06s; pre-commit completed with one non-blocking RCA-ledger advisory.
 
 ## Context Sources
 
