@@ -667,6 +667,7 @@ def test_post_publication_resume_without_original_closeout_inputs_fails_actionab
     resumed = _run_publish(
         repo, env, "--resume", "--publish-current", "--execute",
         "--critique-blocked", CRITIQUE_BLOCKED,
+        "--claims-review-artifact", "charness-artifacts/release-review/fixture-claims.json",
     )
 
     assert resumed.returncode != 0
