@@ -376,6 +376,10 @@ always-loaded surface must name enough displacement candidates, while acceptance
 remains an external contract-change process outside this goal. This schema is
 validated only before a contract mutation; preservation of retired/renamed unit
 history after a separately reviewed contract change is deliberately not claimed.
+Accordingly, schema v1's checker is an explicit pre-mutation probe, not an
+always-on `run-quality.sh` gate: wiring it there would make an approved future
+contract mutation impossible before this contract defines an applied membership
+transition.
 
 ## References
 
