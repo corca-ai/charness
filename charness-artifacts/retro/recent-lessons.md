@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout. (source: `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`)
 - This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`)
-- The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support. (source: `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`)
 
 ## Repeat Traps
 
@@ -40,5 +40,5 @@
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
-- `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`
+- `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`

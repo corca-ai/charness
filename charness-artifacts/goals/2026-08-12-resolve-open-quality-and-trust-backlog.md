@@ -9,15 +9,16 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: final publication is blocked by #608 — all 22 ledger rows
+- Current slice: final publication is blocked by an `origin/main` changed-line
+  coverage refusal spanning 11 unreleased source files; all 22 ledger rows still
   reconcile to one live OPEN tracker issue and one carrier; #527 is an
   operator-owned OPEN defer and #528 remains a separately owned OPEN split.
-- Current slice intent: repair the supported release-flow boundary so a distinct
-  claims review can inspect the versioned final record before publication,
-  without laundering an OPEN carrier into a closure or publication claim.
-- Next action: resolve and review #608, then restart the locked final quality
-  bundle and release sequence to decide whether the user's conditional
-  push/release grant becomes available.
+- Current slice intent: restore the missing changed-line proof, including the
+  new #608 claims-review modules, without letting focused release tests or a
+  clean duplicate gate substitute for the locked full-range verification.
+- Next action: restore and prove the 11-file coverage set, then rerun locked
+  final quality and release critique before deciding whether the user's
+  conditional push/release grant becomes available.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -132,7 +133,7 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | completed — #527 has an operator-owned tracker-visible defer; #528 remains separately owned OPEN split |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | completed (`1570ba32`; local proof carrier OPEN) |
 | 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | completed — all 22 rows reconcile to OPEN tracker/carrier evidence; no row earned a closure claim before final bundle proof |
-| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | blocked — retro and pre-mutation release critique are persisted; #608 must provide a supported pre-publication claims-review pause before final quality or publication can restart |
+| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | blocked — #608's local claims-review pause is repaired and focused-tested, but `origin/main` changed-line coverage refuses 11 unreleased source files; restore that proof, rerun locked verification and release critique, then reconsider publication |
 
 ## Backlog Recount
 
@@ -282,18 +283,17 @@ premise, owner, evidence channel, and tracker-visible outcome.
 
 ## Off-Goal Findings
 
-- [#608](https://github.com/corca-ai/charness/issues/608) — release helper lacks
-  a supported stage between the versioned final release record and publication,
-  where the release contract requires an independent claims review. It is a late
-  arrival outside the fixed 22-row cohort, but blocks Slice 7; its repair must
-  retain the existing rollback, quality, synchronization, and no-issue-close
-  boundaries before publication can be reconsidered.
+- [#608](https://github.com/corca-ai/charness/issues/608) — its local repair now
+  supplies the supported marked-record and bound-claims-review stage; it remains
+  a late arrival outside the fixed 22-row cohort. Slice 7 is instead blocked by
+  the accumulated-range coverage refusal, and any later publication still retains
+  rollback, quality, synchronization, and no-issue-close boundaries.
 
 ## Final Verification
 
-- Blocked pending #608's supported pre-publication claims-review stage and a
-  reviewed repair. No release, push, issue closure, hosted CI, or installed
-  behavior is claimed by this draft.
+- Blocked pending restoration of the 11-file `origin/main` changed-line coverage
+  refusal, a fresh locked verification, and release critique. No release, push,
+  issue closure, hosted CI, or installed behavior is claimed by this draft.
 
 ## User Verification Instructions
 

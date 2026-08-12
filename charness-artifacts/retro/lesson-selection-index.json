@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 486,
-  "candidate_count": 1989,
+  "source_artifact_count": 488,
+  "candidate_count": 1993,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -362,6 +362,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d1cbbb340863",
+      "kind": "current_focus",
+      "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout.",
+      "normalized_key": "the final release attempt repaired 608 s missing pre publication claims review stage reconciled",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f3003b19e76",
       "kind": "current_focus",
       "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim.",
@@ -388,15 +414,15 @@
       ]
     },
     {
-      "candidate_id": "class:d277d984eaae",
+      "candidate_id": "next_improvement:336b53cf8060",
       "kind": "next_improvement",
-      "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them.",
-      "normalized_key": "capability for conservative static inventories write the known unknown signal matrix before implementation and",
-      "recurrence_class": "conservative-static-verdicts",
+      "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate.",
+      "normalized_key": "capability evaluate a bounded closeout report that summarizes uncovered changed files at pre lock",
+      "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
       "latest_source_date": "2026-08-13",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -404,38 +430,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
           "date": "2026-08-13",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:979421ac09ff",
-      "kind": "next_improvement",
-      "lesson": "**memory**: Keep the goal, execution ledger, handoff, this retro, and #527's decision brief as the release-boundary record; #503 remains the owner of the historical runtime-cost question.",
-      "normalized_key": "memory keep the goal execution ledger handoff this retro and 527 s decision brief",
-      "recurrence_class": "premises-not-debt",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**memory**: Keep the goal, execution ledger, handoff, this retro, and #527's decision brief as the release-boundary record; #503 remains the owner of the historical runtime-cost question."
+          "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate."
         }
       ]
     }
@@ -788,6 +788,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d1cbbb340863",
+      "kind": "current_focus",
+      "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout.",
+      "normalized_key": "the final release attempt repaired 608 s missing pre publication claims review stage reconciled",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f3003b19e76",
       "kind": "current_focus",
       "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim.",
@@ -810,6 +836,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:336b53cf8060",
+      "kind": "next_improvement",
+      "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate.",
+      "normalized_key": "capability evaluate a bounded closeout report that summarizes uncovered changed files at pre lock",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate."
         }
       ]
     },
@@ -866,6 +918,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:3ae20814eca2",
+      "kind": "next_improvement",
+      "lesson": "**memory**: Keep this retro and `docs/handoff.md` explicit that the next action is coverage restoration, not push/release.",
+      "normalized_key": "memory keep this retro and docs handoff md explicit that the next action is",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: Keep this retro and `docs/handoff.md` explicit that the next action is coverage restoration, not push/release."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:baa8779fc929",
       "kind": "next_improvement",
       "lesson": "**workflow**: Before interpreting an external-read failure, check that the supplied identifier belongs to that API/read channel. Keep a failed probe as method evidence, never as absence evidence.",
@@ -888,6 +966,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: Before interpreting an external-read failure, check that the supplied identifier belongs to that API/read channel. Keep a failed probe as method evidence, never as absence evidence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:672ed802a983",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation.",
+      "normalized_key": "workflow run the changed line self check immediately after the first mutation coverage producer",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation."
         }
       ]
     },

@@ -1,0 +1,22 @@
+{
+  "kind": "charness.retro_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T19:56:46Z",
+  "prepared_for": "working tree",
+  "changed_ref": null,
+  "adapter_path": ".agents/retro-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/retro/2026-08-13-release-preflight-retro.md\n\nOwning surfaces:\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/retro/2026-08-13-release-preflight-retro.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-13-release-preflight-retro.md\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n\nPlanned sync commands before validators:\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 1,
+  "ok": true
+}
