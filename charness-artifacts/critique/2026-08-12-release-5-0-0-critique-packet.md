@@ -1,12 +1,12 @@
 # Critique Prepare Packet — charness
 
 - **Kind**: `charness.critique_prepare_packet` (v1)
-- **Generated**: 2026-08-12T08:15:37Z
+- **Generated**: 2026-08-12T08:22:19Z
 - **Prepared for**: release 5.0.0 current committed scope
 - **Changed ref**: `v4.2.0..HEAD`
 - **Adapter**: `.agents/critique-adapter.yaml`
-- **Reviewed input identity**: `d587a94eead9030a3e8df9e02c32111fbd3652752e848fd59d7a935d1d84b9e8`
-- **Reviewed paths**: 293
+- **Reviewed input identity**: `e3116788bfc37811591afa3a298fc71010625351056d575b55fa24b3a43b6a1a`
+- **Reviewed paths**: 294
 - **Sections**: 3
 - **Overall ok**: True
 
@@ -110,6 +110,7 @@ Changed paths for ref `v4.2.0..HEAD`:
 - charness-artifacts/critique/operator-rulings-goal-activation-active-packet.md
 - charness-artifacts/debug/2026-08-12-release-quality-record-contract-drift.md
 - charness-artifacts/debug/latest.md
+- charness-artifacts/debug/seam-risk-index.json
 - charness-artifacts/gather/2026-08-10-wiki-g15e-com-pages-tasteful-software-md-536ebc23.md
 - charness-artifacts/gather/latest.md
 - charness-artifacts/goals/2026-08-10-re-verify-the-backlog-and-retire-the-unchosen-constraint.md
@@ -460,6 +461,7 @@ Owning surfaces:
   verify: python3 -m pytest -q tests/test_evidence_boundary_crosswalk.py::test_this_repo_checks_in_no_crosswalk_instance tests/test_evidence_boundary_crosswalk.py::test_absent_instance_is_reported_as_inapplicable_not_as_a_pass tests/test_evidence_boundary_crosswalk.py::test_the_installed_plugin_projection_exposes_the_same_authorization_entrypoint
 - debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.
   source matches: charness-artifacts/debug/2026-08-12-release-quality-record-contract-drift.md, charness-artifacts/debug/latest.md
+  derived matches: charness-artifacts/debug/seam-risk-index.json
   sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write
   verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check
 - retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.
