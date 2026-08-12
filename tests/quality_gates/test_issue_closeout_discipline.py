@@ -94,10 +94,16 @@ def _create_payload_keys() -> set[str]:
     source = (
         ROOT / "skills" / "public" / "issue" / "scripts" / "issue_create.py"
     ).read_text(encoding="utf-8")
-    literal = re.search(r"payload: dict\[str, Any\] = \{(.*?)\n    \}", source, re.DOTALL)
+    create_function = re.search(
+        r"^def create_issue\(.*?(?=^def _emit\()",
+        source,
+        re.DOTALL | re.MULTILINE,
+    )
+    assert create_function is not None, "could not find create_issue; this guard is looking at the wrong function"
+    literal = re.search(r"payload: dict\[str, Any\] = \{(.*?)\n    \}", create_function.group(0), re.DOTALL)
     assert literal is not None, "could not find the create payload literal; this guard is looking at the wrong shape"
     keys = set(re.findall(r'^\s*"([a-z_]+)":', literal.group(1), re.MULTILINE))
-    keys.update(re.findall(r'payload\["([a-z_]+)"\]\s*=', source))
+    keys.update(re.findall(r'payload\["([a-z_]+)"\]\s*=', create_function.group(0)))
     return keys
 
 

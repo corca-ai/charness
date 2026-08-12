@@ -23,8 +23,11 @@ from urllib.parse import urlparse
 _load_local = runpy.run_path(str(Path(__file__).resolve().parent / "issue_local_import.py"))["sibling_loader"](__file__)
 _BACKEND = _load_local("issue_backend", "issue_create_backend")
 _ADAPTER = _load_local("resolve_adapter", "issue_create_adapter")
+_VERIFY = _load_local("issue_create_verify", "issue_create_verify")
 run_backend = _BACKEND.run_backend
 resolve_op = _BACKEND.resolve_op
+verify_created_issue = _VERIFY.verify_created_issue
+_http_url = _VERIFY._http_url
 
 GH_CREATE_DEFAULT = [
     "issue",
@@ -36,22 +39,11 @@ GH_CREATE_DEFAULT = [
     "--body-file",
     "{body_file}",
 ]
-# View the just-created issue to read its stored body back for verification.
-GH_VIEW_BODY_DEFAULT = [
-    "issue",
-    "view",
-    "--repo",
-    "{repo}",
-    "{number}",
-    "--json",
-    "{json_fields}",
-]
 BODY_PREVIEW_CHARS = 1200
 PLACEHOLDER_TITLES: frozenset[str] = frozenset({"x", "test"})
 # Labels and milestone are appended as flags after the rendered base command,
 # so they are not template placeholders — only repo/title/body_file are.
 CREATE_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "title", "body_file"})
-VIEW_PLACEHOLDERS: frozenset[str] = frozenset({"repo", "number", "json_fields"})
 
 _ISSUE_NUMBER_RE = re.compile(r"/issues/(\d+)\b")
 _MARKDOWN_IMAGE_RE = re.compile(r"(?<!\\)!\[[^\]]*\]\(\s*<?(https?://[^\s)>]+)>?", re.IGNORECASE)
@@ -133,30 +125,24 @@ def _parse_created_number(stdout: str) -> int | None:
     """
     match = _ISSUE_NUMBER_RE.search(stdout)
     if match:
-        return int(match.group(1))
+        number = int(match.group(1))
+        return number if number > 0 else None
     for line in reversed(stdout.splitlines()):
         token = line.strip().rstrip("/").rsplit("/", 1)[-1]
         if token.isdigit():
-            return int(token)
+            number = int(token)
+            return number if number > 0 else None
     return None
 
 
-def _http_url(value: object) -> str | None:
-    """Return a complete HTTP(S) URL, never backend diagnostic text."""
-    if not isinstance(value, str):
-        return None
-    candidate = value.strip()
-    if not candidate or "\\" in candidate or any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in candidate):
-        return None
+def _positive_issue_number(value: str) -> int:
     try:
-        parsed = urlparse(candidate)
-        hostname = parsed.hostname
-        _ = parsed.port
-    except ValueError:
-        return None
-    if parsed.scheme in {"http", "https"} and hostname:
-        return candidate
-    return None
+        number = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("issue number must be a positive integer") from exc
+    if number <= 0:
+        raise argparse.ArgumentTypeError("issue number must be a positive integer")
+    return number
 
 
 def create_issue(
@@ -234,10 +220,17 @@ def create_issue(
         "url": created_url,
         "created_url": created_url,
         "created_number": created_number,
-        "create_argv": create_argv,
         "body_verified": None,
-        "view_argv": None,
+        "verification": None,
     }
+
+    if created_number is not None:
+        payload["verification"] = {
+            "command": "verify-create",
+            "repo": repo,
+            "number": created_number,
+            "body_file": str(body_file),
+        }
 
     if skip_readback:
         payload["readback_skipped"] = True
@@ -251,36 +244,18 @@ def create_issue(
         )
         return payload
 
-    view_argv = resolve_op(
-        backend,
-        "view",
-        GH_VIEW_BODY_DEFAULT,
-        VIEW_PLACEHOLDERS,
-        repo=repo,
-        number=str(created_number),
-        json_fields="body,url",
-    )
-    payload["view_argv"] = view_argv
-    view_result = run_backend(view_argv)
-    if view_result.returncode != 0:
-        payload["verify_error"] = (
-            f"created {repo}#{created_number} but read-back failed: "
-            f"exit={view_result.returncode} stderr={view_result.stderr.strip()!r}"
-        )
-        return payload
     try:
-        stored = json.loads(view_result.stdout)
-    except Exception as exc:  # noqa: BLE001 - surface any decode failure as unverified
-        payload["verify_error"] = f"read-back returned invalid JSON: {exc}"
+        verified = verify_created_issue(repo, created_number, body_file=body_file, backend=backend)
+    except RuntimeError as exc:
+        payload["verify_error"] = str(exc)
         return payload
-    stored_body = stored.get("body", "")
     if payload["url"] is None:
-        readback_url = _http_url(stored.get("url"))
+        readback_url = verified["url"]
         payload["url"] = readback_url
         payload["created_url"] = readback_url
-    payload["body_verified"] = stored_body == body_text
+    payload["body_verified"] = verified["body_verified"]
     if not payload["body_verified"]:
-        payload["stored_body_bytes"] = len(str(stored_body).encode("utf-8"))
+        payload["stored_body_bytes"] = verified["stored_body_bytes"]
     return payload
 
 
@@ -330,6 +305,26 @@ def command_create(args: argparse.Namespace) -> int:
     return 0
 
 
+def command_verify_create(args: argparse.Namespace) -> int:
+    resolved = _resolve_backend(args.repo_root.resolve())
+    if not resolved["adapter_ok"]:
+        _emit({"ok": False, "adapter": resolved["adapter"]})
+        return 1
+    try:
+        result = verify_created_issue(
+            args.repo,
+            args.number,
+            body_file=args.body_file.resolve() if args.body_file else None,
+            backend=resolved["backend"],
+        )
+    except RuntimeError as exc:
+        _emit({"ok": False, "error": str(exc), "selected_backend": resolved["backend"]})
+        return 2
+    result["selected_backend"] = resolved["backend"]
+    _emit(result)
+    return 0
+
+
 def register_create_subparser(subparsers: Any, cwd_default: Path) -> None:
     create = subparsers.add_parser(
         "create",
@@ -348,7 +343,17 @@ def register_create_subparser(subparsers: Any, cwd_default: Path) -> None:
     create.add_argument(
         "--allow-placeholder-title",
         action="store_true",
-        help="Allow exact placeholder titles `x` or `test` (case-insensitive)",
+        help="Allow a known placeholder title intentionally",
     )
     create.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
     create.set_defaults(func=command_create)
+
+    verify = subparsers.add_parser(
+        "verify-create",
+        help="Read back a created issue through this tool; add --body-file for byte verification",
+    )
+    verify.add_argument("--repo", required=True, help="Target repository in owner/repo form")
+    verify.add_argument("--number", type=_positive_issue_number, required=True, help="Created issue number to read back")
+    verify.add_argument("--body-file", type=Path, help="Original issue body file for byte-for-byte verification")
+    verify.add_argument("--repo-root", type=Path, default=cwd_default, help="Repo root used to resolve the issue adapter")
+    verify.set_defaults(func=command_verify_create)

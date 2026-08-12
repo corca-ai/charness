@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import os
 import runpy
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -49,7 +50,8 @@ def _write_capture_backend(
     *,
     echo_body: str | None = None,
     create_stdout: str = "https://github.com/corca-ai/charness/issues/777",
-    view_url: str | None = None,
+    view_url: str | None = "https://github.com/corca-ai/charness/issues/777",
+    view_number: int = 777,
 ) -> None:
     """Write a fake `gh` that stores the --body-file content on create and
     returns it (or `echo_body`) as JSON on view."""
@@ -64,6 +66,8 @@ def _write_capture_backend(
                 "from pathlib import Path",
                 "argv = sys.argv[1:]",
                 "store = Path(os.environ['GH_BODY_STORE'])",
+                "argv_store = os.environ.get('GH_ARGV_STORE')",
+                "if argv_store and 'create' in argv: Path(argv_store).write_text(json.dumps(argv), encoding='utf-8')",
                 f"override = {override}",
                 "if 'create' in argv:",
                 "    i = argv.index('--body-file')",
@@ -71,7 +75,7 @@ def _write_capture_backend(
                 f"    print({create_stdout!r})",
                 "elif 'view' in argv:",
                 "    body = override if override is not None else (store.read_text(encoding='utf-8') if store.exists() else '')",
-                f"    print(json.dumps({{'body': body, 'url': {view_url!r}}}))",
+                f"    print(json.dumps({{'number': {view_number}, 'body': body, 'url': {view_url!r}}}))",
                 "",
             ]
         ),
@@ -97,7 +101,7 @@ def _write_counting_backend(bin_dir: Path, count_file: Path) -> None:
                 "if 'create' in sys.argv:",
                 "    print('https://github.com/corca-ai/charness/issues/778')",
                 "elif 'view' in sys.argv:",
-                "    print(json.dumps({'body': 'body\\n'}))",
+                "    print(json.dumps({'number': 778, 'body': 'body\\n', 'url': 'https://github.com/corca-ai/charness/issues/778'}))",
                 "",
             ]
         ),
@@ -142,9 +146,9 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     assert payload["body_preview"] == HOSTILE_BODY
     # The backend received the body via file, byte-identical to the input.
     assert store.read_text(encoding="utf-8") == HOSTILE_BODY
-    # And the argv carried --body-file, never an inline --body string.
-    assert "--body-file" in payload["create_argv"]
-    assert "--body" not in payload["create_argv"]
+    # The fake backend stores only the file content; no inline body argument can
+    # recreate the hostile input as a second transport channel.
+    assert "create_argv" not in payload
 
 
 def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp_path: Path) -> None:
@@ -157,6 +161,7 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
         store,
         create_stdout="538",
         view_url="https://tracker.example/acme/demo/issues/538",
+        view_number=538,
     )
 
     verified = run_script(
@@ -168,7 +173,12 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
     assert verified_payload["number"] == 538
     assert verified_payload["url"] == "https://tracker.example/acme/demo/issues/538"
     assert verified_payload["created_url"] == verified_payload["url"]
-    assert "body,url" in verified_payload["view_argv"]
+    assert verified_payload["verification"] == {
+        "command": "verify-create",
+        "repo": "acme/demo",
+        "number": 538,
+        "body_file": str(body_file),
+    }
 
     skipped = run_script(
         SCRIPT, "create", "--repo", "acme/demo", "--title", "bare skipped", "--body-file", str(body_file),
@@ -180,6 +190,66 @@ def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp
     assert skipped_payload["number"] == 538
     assert skipped_payload["url"] is None
     assert skipped_payload["created_url"] is None
+    assert skipped_payload["verification"]["command"] == "verify-create"
+
+
+def test_create_with_an_unparseable_backend_result_does_not_advertise_verify_create(tmp_path: Path) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    store = tmp_path / "body-store.md"
+    _write_capture_backend(bin_dir, store, create_stdout="created successfully")
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "acme/demo",
+        "--title",
+        "unparseable backend",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["number"] is None
+    assert payload["verification"] is None
+    assert "could not parse" in payload["verify_error"]
+
+
+@pytest.mark.parametrize("create_stdout", ["0", "https://github.com/corca-ai/charness/issues/0"])
+def test_create_with_a_nonpositive_backend_number_does_not_advertise_verify_create(
+    tmp_path: Path, create_stdout: str
+) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    store = tmp_path / "body-store.md"
+    _write_capture_backend(bin_dir, store, create_stdout=create_stdout)
+
+    result = run_script(
+        SCRIPT,
+        "create",
+        "--repo",
+        "corca-ai/charness",
+        "--title",
+        "nonpositive backend number",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["number"] is None
+    assert payload["verification"] is None
+    assert "could not parse" in payload["verify_error"]
 
 
 @pytest.mark.parametrize(
@@ -209,6 +279,7 @@ def test_create_url_identity_accepts_complete_http_urls() -> None:
 def test_create_applies_labels_and_milestone_as_flags(tmp_path: Path) -> None:
     bin_dir = tmp_path / "bin"
     store = tmp_path / "captured-body.md"
+    argv_store = tmp_path / "create-argv.json"
     _write_capture_backend(bin_dir, store)
     body_file = tmp_path / "body.md"
     body_file.write_text("body\n", encoding="utf-8")
@@ -230,11 +301,19 @@ def test_create_applies_labels_and_milestone_as_flags(tmp_path: Path) -> None:
         "v0.13.0",
         "--repo-root",
         str(tmp_path),
-        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+        env={
+            **os.environ,
+            "PATH": f"{bin_dir}:/usr/bin:/bin",
+            "GH_BODY_STORE": str(store),
+            "GH_ARGV_STORE": str(argv_store),
+        },
     )
 
     assert result.returncode == 0, result.stderr
-    argv = json.loads(result.stdout)["create_argv"]
+    payload = json.loads(result.stdout)
+    assert payload["ok"] is True
+    assert "create_argv" not in payload
+    argv = json.loads(argv_store.read_text(encoding="utf-8"))
     assert argv.count("--label") == 2
     assert "bug" in argv and "triage" in argv
     assert argv[argv.index("--milestone") + 1] == "v0.13.0"
@@ -589,3 +668,170 @@ def test_no_verify_is_rejected_and_skip_readback_still_creates(tmp_path: Path) -
     assert payload["readback_skipped"] is True
     assert "issue created" in payload["verify_skipped"]
     assert count_file.read_text().splitlines() == ["create"]
+
+
+def test_verify_create_keeps_deferred_readback_inside_the_issue_tool_grammar(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+
+    result = run_script(
+        SCRIPT,
+        "verify-create",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "778",
+        "--body-file",
+        str(body_file),
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["readback_verified"] is True
+    assert payload["body_verified"] is True
+    assert payload["body_verification"] == "byte-identical"
+    assert count_file.read_text().splitlines() == ["view"]
+
+
+def test_verify_create_without_a_body_file_does_not_claim_body_fidelity(tmp_path: Path) -> None:
+    bin_dir = tmp_path / "bin"
+    count_file = tmp_path / "calls.log"
+    _write_counting_backend(bin_dir, count_file)
+
+    result = run_script(
+        SCRIPT,
+        "verify-create",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        "778",
+        "--repo-root",
+        str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_CALL_COUNT": str(count_file)},
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["readback_verified"] is True
+    assert payload["body_verified"] is None
+    assert payload["body_verification"] == "not-requested"
+    assert "view_argv" not in payload
+    assert "create_argv" not in payload
+
+
+@pytest.mark.parametrize("missing", ["repo", "number", "json_fields"])
+def test_verify_create_refuses_a_custom_view_template_missing_identity_before_backend(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, missing: str
+) -> None:
+    template = ["view", "{repo}", "{number}", "--json", "{json_fields}"]
+    template = [part for part in template if "{" + missing + "}" not in part]
+    called = False
+
+    def no_backend_call(_argv: list[str]) -> subprocess.CompletedProcess[str]:
+        nonlocal called
+        called = True
+        return subprocess.CompletedProcess(_argv, 0, "{}", "")
+
+    monkeypatch.setitem(CREATE["verify_created_issue"].__globals__, "run_backend", no_backend_call)
+    with pytest.raises(RuntimeError, match="missing required placeholders"):
+        CREATE["verify_created_issue"](
+            "acme/demo",
+            7,
+            backend={"id": "acme", "binary": "acme", "commands": {"view": template}},
+        )
+    assert called is False
+
+
+@pytest.mark.parametrize("returned", [{}, {"number": 778, "body": None, "url": "https://github.com/corca-ai/charness/issues/778"}])
+def test_verify_create_refuses_missing_or_non_string_body_for_byte_verification(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, returned: dict[str, object]
+) -> None:
+    body_file = tmp_path / "empty.md"
+    body_file.write_text("", encoding="utf-8")
+
+    monkeypatch.setitem(
+        CREATE["verify_created_issue"].__globals__,
+        "run_backend",
+        lambda argv: subprocess.CompletedProcess(argv, 0, json.dumps(returned), ""),
+    )
+    with pytest.raises(RuntimeError, match="did not return a string body|unidentifiable issue"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 778, body_file=body_file)
+
+
+def test_verify_create_refuses_a_returned_number_or_repository_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+    responses = iter(
+        [
+            {"number": 779, "body": "body\n"},
+            {"number": 778, "body": "body\n", "url": "https://github.com/other/repo/issues/778"},
+        ]
+    )
+    monkeypatch.setitem(
+        CREATE["verify_created_issue"].__globals__,
+        "run_backend",
+        lambda argv: subprocess.CompletedProcess(argv, 0, json.dumps(next(responses)), ""),
+    )
+
+    with pytest.raises(RuntimeError, match="different or unidentifiable issue"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 778, body_file=body_file)
+    with pytest.raises(RuntimeError, match="different repository"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 778, body_file=body_file)
+
+
+def test_verify_create_refuses_repository_silence_and_boolean_or_nonpositive_numbers(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+    responses = iter(
+        [
+            {"number": 778, "body": "body\n"},
+            {"number": True, "body": "body\n", "url": "https://github.com/corca-ai/charness/issues/1"},
+        ]
+    )
+    monkeypatch.setitem(
+        CREATE["verify_created_issue"].__globals__,
+        "run_backend",
+        lambda argv: subprocess.CompletedProcess(argv, 0, json.dumps(next(responses)), ""),
+    )
+
+    with pytest.raises(RuntimeError, match="did not identify its repository"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 778, body_file=body_file)
+    with pytest.raises(RuntimeError, match="different or unidentifiable issue"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 1, body_file=body_file)
+    with pytest.raises(RuntimeError, match="positive integer"):
+        CREATE["verify_created_issue"]("corca-ai/charness", 0, body_file=body_file)
+
+
+@pytest.mark.parametrize("number", ["0", "-1"])
+def test_verify_create_cli_refuses_nonpositive_numbers_before_backend(tmp_path: Path, number: str) -> None:
+    result = run_script(
+        SCRIPT,
+        "verify-create",
+        "--repo",
+        "corca-ai/charness",
+        "--number",
+        number,
+        "--repo-root",
+        str(tmp_path),
+    )
+
+    assert result.returncode == 2
+    assert "positive integer" in result.stderr
+
+
+def test_create_help_never_primes_exact_placeholder_title_values() -> None:
+    result = run_script(SCRIPT, "create", "--help")
+
+    assert result.returncode == 0, result.stderr
+    assert "Allow a known placeholder title intentionally" in result.stdout
+    assert "titles `x` or `test`" not in result.stdout

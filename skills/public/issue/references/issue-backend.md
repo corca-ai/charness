@@ -326,24 +326,25 @@ python3 "$SKILL_DIR/scripts/issue_tool.py" create \
 
 - The body file is read in UTF-8 and delivered verbatim; title/labels/milestone
   ride as argv values (also no shell), so none of them can be corrupted.
-- The helper refuses the exact placeholder titles `x` and `test` after trimming
-  and case-folding, before invoking the backend. Use
-  `--allow-placeholder-title` only when that title is intentional; no broad
-  minimum-length rule is applied.
+- The helper refuses known placeholder titles after trimming and case-folding,
+  before invoking the backend. Use `--allow-placeholder-title` only when that
+  title is intentional; no broad minimum-length rule is applied.
 - The helper also refuses Markdown or HTML image references to private Slack
   file URLs before invoking the backend. Publish the media at a durable URL the
   target audience can read, or replace the image syntax with an explicit
   `Media evidence unavailable:` disposition. Plain private source-identity URLs
   remain allowed as provenance; the helper does not mistake them for images.
 - Use `--skip-readback` only when the caller accepts an unverified result:
-  creation still occurs, and this flag skips only the post-create `view`
-  readback. The returned `view_argv` (when readback runs) or a separate
-  `issue_tool.py read` command is the readback path; never issue a second
-  `create` command to verify the first one.
+  creation still occurs, and this flag skips only the post-create readback.
+  Run `issue_tool.py verify-create --repo <org/repo> --number <n> --body-file
+  <path>` to perform the later byte-for-byte readback through the same tool
+  grammar; omit `--body-file` only when identity readback is sufficient. Never
+  issue a second `create` command to verify the first one.
 - Never construct `gh issue create --body "<multi-line>"` (or the equivalent on
   another backend) from a raw body string — that is the body-corruption path.
-- After creating, the helper reads the issue back (`view --json body`) and
-  reports `body_verified`: `true` = stored body byte-identical; `false` =
+- After creating, the helper reads the issue back (`view --json number,body,url`),
+  confirms the returned issue number and repository identity, and reports
+  `body_verified`: `true` = stored body byte-identical; `false` =
   mismatch (with a `stored_body_bytes` count); `null` = read-back not feasible
   (number unparseable or view failed) and carries a `verify_error`. Treat
   anything other than `true` as an unconfirmed write and re-check before

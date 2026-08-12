@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 129,
-  "indexed_artifact_count": 117,
+  "source_artifact_count": 141,
+  "indexed_artifact_count": 129,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
     "host-disproves-local": 2,
-    "none": 46,
+    "none": 56,
     "operator-visible-recovery": 23,
-    "repeated-symptom": 3
+    "repeated-symptom": 5
   },
   "generalization_pressure_counts": {
-    "factor-now": 5,
-    "monitor": 100,
-    "none": 12
+    "factor-now": 6,
+    "monitor": 107,
+    "none": 16
   },
   "entries": [
     {
@@ -1576,6 +1576,34 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-584-read-cost-contract",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "planner-specific path bases to shared envelope to agent read workload.",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/planner-required-read-cost-contract.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "host payload cwd to installed resolver to contextual directive.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1597,6 +1625,34 @@
         "none"
       ],
       "seam": "author-facing draft renderer to irreversible closeout validator.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "runtime signal to budget verdict and quality-summary review output.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "checked-in fixture corpus to verifier to quality runner.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
@@ -1646,17 +1702,129 @@
       "forced": false
     },
     {
-      "artifact_path": "charness-artifacts/debug/latest.md",
-      "is_current_pointer": true,
-      "interrupt_id": "retained-failure-log-attribution",
+      "artifact_path": "charness-artifacts/debug/2026-08-13-debug-review-followup.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
       "risk_classes": [
         "none"
       ],
-      "seam": "final-lock receipt to per-check failure log",
+      "seam": "builder → stored JSON → quality gate and inventory reader.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-debug-review.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "proof helper to operator entry point.",
       "generalization_pressure": "monitor",
       "critique_required": false,
+      "next_step": "spec",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-539-create-url-shape",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "backend create stdout to canonical payload to closeout reader.",
+      "generalization_pressure": "none",
+      "critique_required": true,
       "next_step": "impl",
       "handoff_artifact": "none",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-542-closeout-target-disagreement",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "CLI target and manual declaration through crosswalk authorization to",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-584-read-cost-contract",
+      "risk_classes": [
+        "repeated-symptom"
+      ],
+      "seam": "planner-owned base resolution to shared envelope to agent consumer.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/planner-required-read-cost-contract.md",
+      "forced": true
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "preset front matter to lifecycle report to quality planner.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-602-create-verification-grammar",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "create payload to deferred operator readback through selected backend.",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "ledger Markdown -> Specdown executable fence -> quality verdict.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/latest.md",
+      "is_current_pointer": true,
+      "interrupt_id": "issue-602-create-verification-grammar",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "create payload to deferred operator readback through selected backend.",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md",
       "forced": false
     }
   ],

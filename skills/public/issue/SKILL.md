@@ -51,10 +51,10 @@ closing anything.
 5. Create through `issue_tool.py create --body-file <path>`, then report only
    from the verified `{repo, number, url}` ledger plus the helper-returned title
    and `body_preview` summary. Warn explicitly when `body_verified` is not true.
-   Exact placeholder titles `x` and `test` (case-insensitive after trimming) are
-   refused before backend mutation unless `--allow-placeholder-title` is
-   supplied intentionally. If `--skip-readback` is used, creation still occurs;
-   only the post-create readback is skipped, so the result is unverified.
+   Known placeholder titles are refused before backend mutation unless
+   `--allow-placeholder-title` is supplied intentionally. If `--skip-readback`
+   is used, creation still occurs; only the post-create readback is skipped, so
+   the result is unverified. Use `verify-create` for a later in-grammar readback.
    Do not ask for approval unless the user explicitly asks to review first.
 
 `issue resolve [repo] [number|start-end]` resolves one or more issues.
