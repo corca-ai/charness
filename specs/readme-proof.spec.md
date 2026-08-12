@@ -38,20 +38,23 @@ docs or Cautilus discovery alone prove every claim.
 ```run:shell
 python3 - <<'PY'
 from pathlib import Path
+from scripts.readme_proof_ledger_lib import LedgerEvidenceError, claim_ledger_rows, validate_ledger_rows
 
-text = Path("docs/readme-proof.md").read_text(encoding="utf-8")
+source = Path("docs/readme-proof.md")
+text = source.read_text(encoding="utf-8")
 for owner in ("deterministic", "Cautilus", "HITL/operator", "deferred"):
     assert owner in text, owner
 
-rows = [line for line in text.splitlines() if line.startswith("| README-")]
+try:
+    rows = claim_ledger_rows(text)
+except LedgerEvidenceError as exc:
+    raise AssertionError(str(exc)) from exc
 assert rows, "expected ledger rows"
-for row in rows:
-    cells = [cell.strip() for cell in row.strip().strip("|").split("|")]
-    assert len(cells) == 8, row
+for cells in rows:
     proof_owner = cells[3]
-    assert proof_owner, row
-    assert "claim discover" not in proof_owner.lower(), row
-    assert "proof plan" not in proof_owner.lower(), row
+    assert proof_owner, cells
+    assert "claim discover" not in proof_owner.lower(), cells
+    assert "proof plan" not in proof_owner.lower(), cells
     assert any(
         marker in proof_owner
         for marker in (
@@ -62,7 +65,12 @@ for row in rows:
             "delegated review",
             "human-auditable",
         )
-    ), row
+    ), cells
 assert "proof plan, not a verdict" in text
+try:
+    evidence_rows = validate_ledger_rows(text, source_path=source, repo_root=Path("."))
+except LedgerEvidenceError as exc:
+    raise AssertionError(str(exc)) from exc
+assert len(evidence_rows) == len(rows)
 PY
 ```

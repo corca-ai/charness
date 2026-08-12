@@ -1,1 +1,1 @@
-2026-08-13-debug-review-followup.md
+2026-08-13-readme-proof-evidence-binding-debug.md

@@ -11,11 +11,12 @@ in this session after the pre-implementation critique passes.
 
 - Current slice: Slice 1 and Slice 2 in parallel — premise decomposition remains
   incomplete while low-coupling quality repairs proceed.
-- Current slice intent: record #606's local proof without laundering the
-  unfinished #582/#583/#584 umbrella or #528/#539/#542 premise work into a
-  completion claim.
-- Next action: re-read and enumerate #582's cited producer/reader claims before
-  selecting its first owned repair or tracker-visible non-closure disposition.
+- Current slice intent: record #582's narrow README-proof repair and #583's
+  re-read disposition without laundering unfinished umbrella residue or
+  #528/#539/#542 premise work into a completion claim.
+- Next action: re-read #584's remaining planner-read-cost successor boundary,
+  then either select its owned implementation or record its tracker-visible
+  non-closure disposition.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -195,8 +196,14 @@ premise, owner, evidence channel, and tracker-visible outcome.
   baseline; malformed JSON, non-object JSON, and non-file targets retain
   structured refusal. GitHub remains OPEN pending final direct-to-default
   carrier and readback.
-- Next: re-read and enumerate #582's cited producer/reader claims before
-  selecting its first owned repair or explicit tracker-visible non-closure.
+- #582: the #525 README-proof Evidence-cell residual is locally proven by the
+  existing Specdown reader; #524 taxonomy and #535 generic rebind remain
+  separate deliberate non-implementations, so the umbrella remains OPEN.
+- #583: cited pickup specs are deleted and #597 repaired its empty-fixture
+  fail-open; no bounded generic premise gate is justified, so it remains OPEN
+  with a re-read disposition.
+- Next: re-read #584's remaining planner-read-cost successor boundary, then
+  select an owned implementation or explicit tracker-visible non-closure.
 
 ## Context Sources
 

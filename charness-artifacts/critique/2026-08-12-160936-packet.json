@@ -1,0 +1,151 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T16:09:37Z",
+  "prepared_for": "Issue #582 final README proof-ledger evidence binding closeout",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/debug/latest.md\n- charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md\n- charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- docs/handoff.md\n- docs/readme-proof.md\n- specs/readme-proof.spec.md\n- charness-artifacts/critique/2026-08-12-160206-packet.json\n- charness-artifacts/critique/2026-08-12-160206-packet.md\n- charness-artifacts/critique/2026-08-12-160548-packet.json\n- charness-artifacts/critique/2026-08-12-160548-packet.md\n- charness-artifacts/critique/2026-08-12-160812-packet.json\n- charness-artifacts/critique/2026-08-12-160812-packet.md\n- charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md\n- charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md\n- plugins/charness/scripts/readme_proof_ledger_lib.py\n- scripts/readme_proof_ledger_lib.py\n- tests/test_readme_proof_ledger.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/readme_proof_ledger_lib.py\n  derived matches: plugins/charness/scripts/readme_proof_ledger_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root . --json\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md, charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md, docs/handoff.md, docs/readme-proof.md, charness-artifacts/critique/2026-08-12-160206-packet.md, charness-artifacts/critique/2026-08-12-160548-packet.md, charness-artifacts/critique/2026-08-12-160812-packet.md, charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md, charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the publish-state ledger declares it as a source locator, and the retro-memory gate requires its recent-lessons reference.\n  source matches: docs/handoff.md\n  verify: python3 scripts/publish_state_ledger.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-12-160206-packet.json, charness-artifacts/critique/2026-08-12-160206-packet.md, charness-artifacts/critique/2026-08-12-160548-packet.json, charness-artifacts/critique/2026-08-12-160548-packet.md, charness-artifacts/critique/2026-08-12-160812-packet.json, charness-artifacts/critique/2026-08-12-160812-packet.md, charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- executable-specs: Repo-owned specdown executable acceptance specs and their config.\n  source matches: specs/readme-proof.spec.md\n  verify: specdown_report_dir=$(mktemp -d); specdown_config=$(python3 scripts/specdown_ephemeral_config.py --repo-root . --out-dir \"$specdown_report_dir\") || exit 1; trap 'rm -rf \"$specdown_report_dir\" \"$specdown_config\"' EXIT; specdown run -config \"$specdown_config\" -jobs 4 -out \"$specdown_report_dir\"\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/readme_proof_ledger_lib.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/readme_proof_ledger_lib.py, tests/test_readme_proof_ledger.py\n  derived matches: plugins/charness/scripts/readme_proof_ledger_lib.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/readme_proof_ledger_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "cb7bddbb26fec07d29172605c1c408979bf3717b",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+      "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "docs/handoff.md",
+      "docs/readme-proof.md",
+      "plugins/charness/scripts/readme_proof_ledger_lib.py",
+      "scripts/readme_proof_ledger_lib.py",
+      "specs/readme-proof.spec.md",
+      "tests/test_readme_proof_ledger.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+        "content_sha256": "98d0cb7165e34f89a6e9701423ccfab1c2acc7b536b5f8fb27a8f7fa70bce50c"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "0abd647f8f1a31690e4fdce70a3b79f16521e913dbafcff1bda13778a7238ef6"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+        "content_sha256": "4a6d4c3a28a0de31847964146dabcae941a92e8084b6ce06c4f254e48d3f69ef"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+        "content_sha256": "08d0813015671421410e77a12f15d1e9f645409bc9e7058521ffaec9a7c9b886"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "c432437d4b53916075ef3800789d50cd8ee094b9543b8e66baf55116e59c7b79"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "24645462bf6d0014b8531d9ad60b464e07a7fee29c259e6aae74772871d2d90d"
+      },
+      {
+        "path": "docs/readme-proof.md",
+        "content_sha256": "133f5b11f09c17f03ab52dce2977bc51771b2a6786133c468ba188e144577aaf"
+      },
+      {
+        "path": "plugins/charness/scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "17a66490c8fc23f8f6c20e25db219bf60fc2b169d6fc84d812a3572120f0a14b"
+      },
+      {
+        "path": "scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "17a66490c8fc23f8f6c20e25db219bf60fc2b169d6fc84d812a3572120f0a14b"
+      },
+      {
+        "path": "specs/readme-proof.spec.md",
+        "content_sha256": "12a662d3b41195eb1a18b7caeccd77cb8a7d144bec7316494643bcb0c0cad21d"
+      },
+      {
+        "path": "tests/test_readme_proof_ledger.py",
+        "content_sha256": "78fc9fb1d02c460fd3c4557a3d0578e7e809084fb5a451527e8a79a8c6b3a8ab"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "2c31bd3e2b1e92b93abdcfc7cc54420b922181c71e2b4b1f76e5e7b0d054129e",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+        "content_sha256": "98d0cb7165e34f89a6e9701423ccfab1c2acc7b536b5f8fb27a8f7fa70bce50c"
+      },
+      {
+        "path": "plugins/charness/scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "17a66490c8fc23f8f6c20e25db219bf60fc2b169d6fc84d812a3572120f0a14b"
+      },
+      {
+        "path": "scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "17a66490c8fc23f8f6c20e25db219bf60fc2b169d6fc84d812a3572120f0a14b"
+      },
+      {
+        "path": "tests/test_readme_proof_ledger.py",
+        "content_sha256": "78fc9fb1d02c460fd3c4557a3d0578e7e809084fb5a451527e8a79a8c6b3a8ab"
+      }
+    ],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-12-160206-packet.json",
+      "charness-artifacts/critique/2026-08-12-160206-packet.md",
+      "charness-artifacts/critique/2026-08-12-160548-packet.json",
+      "charness-artifacts/critique/2026-08-12-160548-packet.md",
+      "charness-artifacts/critique/2026-08-12-160812-packet.json",
+      "charness-artifacts/critique/2026-08-12-160812-packet.md",
+      "charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md"
+    ],
+    "identity_sha256": "1033e972e64ff102634840e6f8c0b6397d2bfb6cd178574aaa3ff634220cc5cc"
+  }
+}
