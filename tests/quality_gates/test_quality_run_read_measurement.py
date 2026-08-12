@@ -14,7 +14,7 @@ def _load_plan(path: Path, name: str):
     return module
 
 
-def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zero_for_missing(tmp_path: Path) -> None:
+def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zero_for_missing(tmp_path: Path, monkeypatch) -> None:
     repo = tmp_path / "app"
     repo.mkdir()
     source = _load_plan(ROOT / "skills/public/quality/scripts/plan_quality_run.py", "quality_plan_source")
@@ -32,10 +32,10 @@ def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zer
     assert missing["unavailable_reason"] == "missing"
     assert "size_bytes" not in missing
 
-    loop = ROOT / "skills/public/quality/loop"
+    isolated_skill_root = tmp_path / "isolated-quality-skill"
+    isolated_skill_root.mkdir()
+    loop = isolated_skill_root / "loop"
     loop.symlink_to("loop")
-    try:
-        failed = source._measure_required_read({"path": "loop", "why": "test", "role": "required-primer"})
-        assert failed["unavailable_reason"] == "stat-failed"
-    finally:
-        loop.unlink()
+    monkeypatch.setattr(source, "SKILL_ROOT", isolated_skill_root)
+    failed = source._measure_required_read({"path": "loop", "why": "test", "role": "required-primer"})
+    assert failed["unavailable_reason"] == "stat-failed"
