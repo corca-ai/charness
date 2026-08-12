@@ -1,6 +1,6 @@
 # Achieve Goal: Repair the quality-planning and closeout-surface backlog
 
-Status: active
+Status: complete
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md`
 Activation time: 2026-08-12T08:58:29Z
@@ -85,7 +85,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Routing: `issue` owns GitHub source-of-truth reads and eventual closeout; `quality` owns verdict-surface and gate cadence; `impl` owns bounded code/config slices; `critique` owns fresh-eye review; `prove` owns slice/final lock; `retro` owns closeout learning.
 - Gather: n/a — GitHub issue data is read through the selected issue backend; no separate public source is being adopted as working context.
 - Release: deferred — no release phase is authorized by this activation.
-- Issue closeout: n/a — #603/#604/#581/#594/#593 remain open because their implementation commits are ten local commits ahead of `origin/main`; a close carrier cannot honestly claim unpublished work is available.
+- Issue closeout: n/a — at frozen final-lock head `833494302b67ddeb5bb4cc3b2cbf222a6dba03cd`, this branch was fourteen local commits ahead of `origin/main`; a close carrier cannot honestly claim unpublished work is available.
 - Successor goal: n/a — the selected five-issue bundle is exhausted, while selecting another goal from the remaining tracker backlog requires a fresh user priority decision rather than silently extending this completed scope.
 
 ## Discuss Before Activation
@@ -199,12 +199,14 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 ## Final Verification
 
-Verification lock: the first local attempt at `41a73c4dd48be8c2047f52d1ae80ba3692078804` was blocked, not passed, because public-skill dogfood/scenario review was still unrecorded. That review is now recorded in `docs/public-skill-dogfood.json`: `issue` scenarios remain routing/sibling-search coverage rather than closeout-carrier grammar, and `quality` remains HITL-recommended with no maintained registry target for adapter-packet/command-position behavior. The acknowledged rerun then failed two lesson-preview tests because an installed retro helper wrote an index not matching this checkout; `charness-artifacts/debug/2026-08-12-debug-review.md` records the root cause, and the repository-root builder plus six focused preview tests repaired the producer/consumer pair. Rerun the lock before making any passed claim.
+Verification lock: `python3 scripts/run_slice_closeout.py --repo-root . --base origin/main --verification-lock --refresh-broad-pytest --ack-cautilus-skill-review --json` completed with effective exit 0 at `833494302b67ddeb5bb4cc3b2cbf222a6dba03cd`. Its own fresh standing-pytest receipt passed 8,659 tests in 59.78s (60.96s wrapper elapsed); the lock reported no runtime-budget overage, no undispositioned new proof surface, and Cautilus `not-required`/ask-before-run. Earlier blocked and failed attempts are diagnostic history only, not passed proof. The public-skill dogfood/scenario decision remains recorded in `docs/public-skill-dogfood.json`. The later live-probe correction derives corpus values through the measurement scripts; its provenance now names `field_mentions_presence_only` rather than copying the live count, with a two-round bounded review approving the regression.
 Fresh-eye pass: skills/public/quality/scripts/quality_catalog_gate_applicability.py — #603's final bounded reviewer re-read the adapter-present/runner-absent and direct-loader behavior after repair; no remaining blocker was found.
-Tracker closeability: reread #603, #604, #581, #594, and #593 with comments; each remains `OPEN`. The code is ten commits ahead of `origin/main`, so no close/comment carrier or `CLOSED` claim was published.
+Tracker closeability: reread #603, #604, #581, #594, and #593 with comments; each remains `OPEN`. At frozen final-lock head `833494302b67ddeb5bb4cc3b2cbf222a6dba03cd`, the code was fourteen commits ahead of `origin/main`, so no close/comment carrier or `CLOSED` claim was published.
 Retro: charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md
 Host log probe: charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json
-Disposition review: pending final frozen-claims review.
+Disposition review: charness-artifacts/critique/2026-08-12-repair-quality-planning-and-closeout-surface-backlog-disposition.md
+
+- Fresh-eye review approved the local-only claim set after correcting the ahead count and lock-owned duration.
 Host metric window: started_at=2026-08-12T08:58:29Z completed_at=2026-08-12T11:22:18Z codex_session_file=/home/hwidong/.codex/sessions/2026/08/12/rollout-2026-08-12T17-51-17-019ff52b-3612-7791-9907-81eccc1efcce.jsonl
 
 ## User Verification Instructions
