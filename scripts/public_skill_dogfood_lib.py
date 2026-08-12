@@ -8,6 +8,7 @@ from pathlib import Path
 
 from runtime_bootstrap import load_path_module
 from scripts.public_skill_validation_lib import (
+    POLICY_PATH,
     load_policy,
     validate_policy,
 )
@@ -208,7 +209,25 @@ def _acceptance_evidence(
     return evidence
 
 
+def policy_applicability_report(repo_root: Path) -> dict[str, object] | None:
+    """Return a typed consumer-boundary stop when this policy is not owned here."""
+    if (repo_root / POLICY_PATH).exists():
+        return None
+    return {
+        "schema_version": 1,
+        "repo_root": str(repo_root),
+        "applicability": "not-applicable-missing-public-skill-validation-policy",
+        "policy_path": str(POLICY_PATH),
+        "matrix": [],
+        "notes": [
+            f"missing `{POLICY_PATH}`; public-skill dogfood policy is owned by the producing repository",
+        ],
+    }
+
+
 def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
+    if report := policy_applicability_report(repo_root):
+        return report
     policy = validate_policy(load_policy(repo_root), repo_root)
     tier_by_skill = _index_partition(policy["tiers"])
     adapter_by_skill = _index_partition(policy["adapter_requirements"])
@@ -249,11 +268,16 @@ def build_matrix(repo_root: Path, skill_ids: list[str]) -> dict[str, object]:
     return {
         "schema_version": 1,
         "repo_root": str(repo_root),
+        "applicability": "applicable",
         "matrix": matrix,
     }
 
 
 def format_human(report: dict[str, object]) -> str:
+    if report.get("applicability") != "applicable":
+        notes = report.get("notes", [])
+        detail = notes[0] if isinstance(notes, list) and notes else "no public-skill dogfood policy is available"
+        return f"Public skill consumer dogfood: {report.get('applicability')} — {detail}"
     lines = ["Public skill consumer dogfood matrix:"]
     for row in report["matrix"]:
         assert isinstance(row, dict)

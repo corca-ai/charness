@@ -3,7 +3,7 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 141,
+  "source_artifact_count": 142,
   "indexed_artifact_count": 129,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
@@ -1867,6 +1867,10 @@
     },
     {
       "artifact_path": "charness-artifacts/debug/2026-06-05-issue-305-release-publish-resilience.md",
+      "reason": "debug artifact has no risk interrupt sections yet"
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md",
       "reason": "debug artifact has no risk interrupt sections yet"
     },
     {

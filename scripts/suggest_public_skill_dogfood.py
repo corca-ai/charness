@@ -17,6 +17,7 @@ _scripts_public_skill_dogfood_lib_module = import_repo_module(__file__, "scripts
 build_matrix = _scripts_public_skill_dogfood_lib_module.build_matrix
 format_human = _scripts_public_skill_dogfood_lib_module.format_human
 prompt_fallback_warnings = _scripts_public_skill_dogfood_lib_module.prompt_fallback_warnings
+policy_applicability_report = _scripts_public_skill_dogfood_lib_module.policy_applicability_report
 _scripts_public_skill_validation_lib_module = import_repo_module(__file__, "scripts.public_skill_validation_lib")
 public_skill_ids = _scripts_public_skill_validation_lib_module.public_skill_ids
 
@@ -33,6 +34,14 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     repo_root = args.repo_root.resolve()
+    if report := policy_applicability_report(repo_root):
+        if args.json:
+            print(json.dumps(report, ensure_ascii=False, indent=2))
+        elif args.detail:
+            emit_yaml(report)
+        else:
+            print(format_human(report))
+        return 0
     all_skill_ids = public_skill_ids(repo_root)
     requested = args.skill_id or all_skill_ids
     unknown = sorted(set(requested) - set(all_skill_ids))

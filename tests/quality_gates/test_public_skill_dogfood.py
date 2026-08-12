@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import yaml
 
@@ -51,6 +52,24 @@ def test_public_skill_dogfood_wrappers_match_root_script() -> None:
 
     assert payloads[1] == payloads[0]
     assert payloads[2] == payloads[0]
+
+
+def test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback(tmp_path: Path) -> None:
+    consumer = tmp_path / "consumer"
+    (consumer / "skills" / "support" / "x").mkdir(parents=True)
+    commands = [
+        "scripts/suggest_public_skill_dogfood.py",
+        "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
+        "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
+    ]
+
+    for command in commands:
+        result = run_script(command, "--repo-root", str(consumer), "--detail")
+        assert result.returncode == 0, result.stderr
+        assert "Traceback" not in result.stderr
+        payload = yaml.safe_load(result.stdout)
+        assert payload["applicability"] == "not-applicable-missing-public-skill-validation-policy"
+        assert payload["matrix"] == []
 
 
 def test_dogfood_markdown_required_list_mirrors_json() -> None:

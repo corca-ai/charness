@@ -16,6 +16,7 @@ from scripts.public_skill_dogfood_validation_lib import (
     load_registry,
     validate_registry,
 )
+from scripts.public_skill_validation_lib import ValidationError as PolicyValidationError
 
 ROOT = Path(__file__).resolve().parents[1]
 _suggest_public_skill_dogfood = import_repo_module(
@@ -175,6 +176,40 @@ def test_suggest_public_skill_dogfood_cli_emits_requested_matrix(tmp_path: Path,
     assert result.returncode == 0, result.stderr
     payload = yaml.safe_load(result.stdout)
     assert payload["matrix"][0]["skill_id"] == "demo"
+
+
+def test_suggest_public_skill_dogfood_reports_policy_absence_as_not_applicable(
+    tmp_path: Path, monkeypatch, capsys
+) -> None:
+    repo = tmp_path / "consumer"
+    (repo / "skills" / "support" / "x").mkdir(parents=True)
+
+    result = run_suggest_public_skill_dogfood(
+        monkeypatch, capsys, "--repo-root", str(repo), "--detail"
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = yaml.safe_load(result.stdout)
+    assert payload["applicability"] == "not-applicable-missing-public-skill-validation-policy"
+    assert payload["policy_path"] == "docs/public-skill-validation.json"
+    assert payload["matrix"] == []
+
+
+def test_build_matrix_rejects_a_policy_path_that_is_not_a_regular_file(tmp_path: Path) -> None:
+    repo = tmp_path / "consumer"
+    (repo / "docs" / "public-skill-validation.json").mkdir(parents=True)
+
+    with pytest.raises(PolicyValidationError, match="missing `docs/public-skill-validation.json`"):
+        build_matrix(repo, [])
+
+
+def test_policy_absence_is_typed_in_root_human_output(tmp_path: Path, monkeypatch, capsys) -> None:
+    repo = tmp_path / "consumer"
+    (repo / "skills" / "support" / "x").mkdir(parents=True)
+
+    root_result = run_suggest_public_skill_dogfood(monkeypatch, capsys, "--repo-root", str(repo))
+    assert root_result.returncode == 0, root_result.stderr
+    assert "not-applicable-missing-public-skill-validation-policy" in root_result.stdout
 
 
 def test_suggest_public_skill_dogfood_cli_covers_json_human_and_unknown_paths(
