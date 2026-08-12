@@ -8,6 +8,8 @@ from pathlib import Path
 
 import pytest
 
+from tests.script_loader import load_script_module
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 
@@ -69,6 +71,18 @@ def test_ledger_replays_a_cited_transition_and_zero_score(tmp_path: Path) -> Non
         "score_event_count": 1,
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
+
+
+def test_ledger_checker_cli_reports_the_replayed_count(tmp_path: Path, monkeypatch, capsys) -> None:
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+    checker = load_script_module(
+        "check_lesson_ledger_for_test",
+        ROOT / "scripts/check_lesson_ledger.py",
+    )
+    monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
+    assert checker.main() == 0
+    assert capsys.readouterr().out == "Validated lesson ledger: 1 lessons, 1 transitions.\n"
 
 
 def test_ledger_rejects_projection_or_citation_rewrite(tmp_path: Path) -> None:
