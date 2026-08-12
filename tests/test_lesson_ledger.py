@@ -10,6 +10,7 @@ from pathlib import Path
 import pytest
 
 from scripts import lesson_ledger_lib as ledger
+from scripts import record_lesson_score as scorer
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -115,6 +116,8 @@ def test_score_events_reject_invalid_shapes_and_deferred_fields(tmp_path: Path) 
         (_score_event(score=1.0), "integer"),
         (_score_event(score=2), "needs an anchor"),
         (_score_event(score=-3, anchor=""), "anchor"),
+        (_score_event(event_id=" "), "non-whitespace"),
+        (_score_event(anchor=" "), "non-whitespace"),
         (_score_event(score=1, shown_set="fake"), "unexpected or missing"),
         ({**_score_event(), "lesson_id": "other"}, "unseeded"),
     ]
@@ -260,6 +263,136 @@ def _commit_v1_ledger(repo: Path) -> Path:
     _git(repo, "add", ".")
     _git(repo, "commit", "-m", "seed v1 ledger")
     return path
+
+
+def test_score_authoring_appends_a_replayed_cited_event_and_refusals_do_not_write(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    event = scorer.append_score(
+        repo_root=tmp_path,
+        output_dir=path.parent,
+        summary_path=path.parent / "recent-lessons.md",
+        event_id="event-a",
+        lesson_id="a",
+        source_retro="charness-artifacts/retro/source.md",
+        score=2,
+        anchor="decision evidence",
+    )
+    assert event["event_id"] == "event-a"
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["lessons"]["a"]["score_total"] == 2
+    assert payload["lessons"]["a"]["score_count"] == 1
+    assert _validate(tmp_path)["score_event_count"] == 1
+    before = path.read_bytes()
+    for kwargs, message in (
+        ({"event_id": "event-a", "score": 0, "anchor": None}, "duplicate score event_id"),
+        ({"event_id": "event-b", "score": 1, "anchor": None}, "duplicate score"),
+        ({"event_id": "event-c", "lesson_id": "other", "score": 1, "anchor": None}, "unseeded"),
+        ({"event_id": "event-d", "score": 3, "anchor": None}, "needs an anchor"),
+        ({"event_id": " ", "score": 0, "anchor": None}, "non-whitespace"),
+    ):
+        with pytest.raises(ValueError, match=message):
+            scorer.append_score(
+                repo_root=tmp_path,
+                output_dir=path.parent,
+                summary_path=path.parent / "recent-lessons.md",
+                lesson_id=kwargs.pop("lesson_id", "a"),
+                source_retro="charness-artifacts/retro/source.md",
+                **kwargs,
+            )
+        assert path.read_bytes() == before
+    with pytest.raises(ValueError, match="citation does not declare"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="wrong-source",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/not-a-source.md",
+            score=0,
+            anchor=None,
+        )
+    assert path.read_bytes() == before
+
+
+def test_score_authoring_uses_windows_lock_fallback_and_fails_closed_without_a_lock(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    class FakeMsvcrt:
+        LK_LOCK = 1
+        LK_UNLCK = 2
+
+        def __init__(self) -> None:
+            self.operations: list[int] = []
+
+        def locking(self, _fd: int, operation: int, _length: int) -> None:
+            self.operations.append(operation)
+
+    path = tmp_path / "ledger.json"
+    path.write_text("{}", encoding="utf-8")
+    fake_msvcrt = FakeMsvcrt()
+    monkeypatch.setattr(scorer, "fcntl", None)
+    monkeypatch.setattr(scorer, "msvcrt", fake_msvcrt)
+    with scorer._ledger_lock(path):
+        pass
+    assert fake_msvcrt.operations == [fake_msvcrt.LK_LOCK, fake_msvcrt.LK_UNLCK]
+    assert not list(tmp_path.glob(".ledger.json.lock"))
+
+    monkeypatch.setattr(scorer, "msvcrt", None)
+    with pytest.raises(ValueError, match="no supported platform"):
+        with scorer._ledger_lock(path):
+            pass
+
+
+def test_score_authoring_removes_an_unreplaced_temporary_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    monkeypatch.setattr(scorer.os, "replace", lambda *_args: (_ for _ in ()).throw(OSError("replace failed")))
+    with pytest.raises(OSError, match="replace failed"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="replace-failure",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            score=0,
+            anchor=None,
+        )
+    assert not list(path.parent.glob(".lesson-ledger.json.*"))
+
+
+def test_score_authoring_cli_emits_the_appended_event(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    _retro(tmp_path, "source.md", "a")
+    _ledger(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "record_lesson_score.py",
+            "--repo-root",
+            str(tmp_path),
+            "--event-id",
+            "cli-event",
+            "--lesson-id",
+            "a",
+            "--source-retro",
+            "charness-artifacts/retro/source.md",
+            "--score",
+            "-1",
+        ],
+    )
+    assert scorer.main() == 0
+    assert json.loads(capsys.readouterr().out) == {
+        "event_id": "cli-event",
+        "lesson_id": "a",
+        "score": -1,
+        "source_retro": "charness-artifacts/retro/source.md",
+    }
 
 
 def test_v1_migration_and_v2_score_event_prefix_are_append_only(tmp_path: Path) -> None:

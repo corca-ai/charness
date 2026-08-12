@@ -381,6 +381,26 @@ always-on `run-quality.sh` gate: wiring it there would make an approved future
 contract mutation impossible before this contract defines an applied membership
 transition.
 
+## Fifth Implementation Slice
+
+Add a local `record_lesson_score.py` authoring command. It accepts one seeded
+`lesson_id`, one existing repository-relative session-retro path, integer score,
+and optional non-empty anchor; it first validates the current ledger, then
+appends exactly one event with a caller-supplied non-empty `event_id`, deterministically
+replays the materialized lesson view, validates the candidate state, and writes
+only the ledger JSON as durable ledger data (plus a stable OS-temporary lock
+sidecar used solely for local writer coordination). The command never renders or records a selection,
+presentation, shown set, archive, contract citation, or graduation. It is a
+convenient atomic authoring path for the score-event contract already owned by
+the ledger validator, not evidence that the cited retro actually presented a
+lesson. Existing source recurrence-class, one-source-per-lesson, anchor, and
+committed-prefix refusals remain the validator's single source of truth.
+Candidate validation is pure and happens before any replace; every rejected
+request leaves the ledger bytes unchanged. A repository-local exclusive lock
+spans read, validation, replay, same-directory temporary write, and atomic
+replace, so two concurrent local invocations cannot silently discard one
+another's appended event. Whitespace-only identifiers and anchors are refused.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the

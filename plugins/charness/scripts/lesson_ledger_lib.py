@@ -104,12 +104,12 @@ def _replay_scores(score_events: list[Any], replayed: dict[str, dict[str, Any]],
         lesson_id = event.get("lesson_id")
         score = event.get("score")
         anchor = event.get("anchor")
-        if not all(isinstance(value, str) and value for value in (event_id, source_retro, lesson_id)):
-            _fail(f"score event {position} needs non-empty event_id, source_retro, and lesson_id")
+        if not all(isinstance(value, str) and value.strip() for value in (event_id, source_retro, lesson_id)):
+            _fail(f"score event {position} needs non-empty non-whitespace event_id, source_retro, and lesson_id")
         if type(score) is not int or not -3 <= score <= 3:
             _fail(f"score event `{event_id}` score must be an integer in -3..3")
-        if "anchor" in event and (not isinstance(anchor, str) or not anchor):
-            _fail(f"score event `{event_id}` anchor must be a non-empty string when present")
+        if "anchor" in event and (not isinstance(anchor, str) or not anchor.strip()):
+            _fail(f"score event `{event_id}` anchor must be a non-empty non-whitespace string when present")
         if abs(score) >= 2 and "anchor" not in event:
             _fail(f"score event `{event_id}` with magnitude at least two needs an anchor")
         if event_id in event_ids:
@@ -127,14 +127,8 @@ def _replay_scores(score_events: list[Any], replayed: dict[str, dict[str, Any]],
         replayed[lesson_id]["score_count"] += 1
 
 
-def validate_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: Path) -> dict[str, Any]:
-    path = lesson_ledger_path(output_dir)
-    if not path.is_file():
-        raise FileNotFoundError(f"missing lesson ledger `{path.relative_to(repo_root)}`")
-    try:
-        payload = json.loads(path.read_text(encoding="utf-8"))
-    except json.JSONDecodeError as exc:
-        _fail(f"invalid JSON: {exc.msg}")
+def replay_validated_ledger_payload(*, repo_root: Path, output_dir: Path, summary_path: Path, path: Path, payload: Any) -> dict[str, dict[str, Any]]:
+    """Validate one in-memory ledger payload and return its deterministic view."""
     if not isinstance(payload, dict) or payload.get("kind") != KIND or payload.get("schema_version") != SCHEMA_VERSION:
         _fail(f"expected kind `{KIND}` at schema version {SCHEMA_VERSION}")
     if set(payload) != TOP_LEVEL_KEYS:
@@ -162,9 +156,27 @@ def validate_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: P
             _fail("committed score events were rewritten or removed; append new events instead")
     if lessons != replayed:
         _fail("materialized lessons do not equal the deterministic transition and score-event replay")
+    return replayed
+
+
+def validate_lesson_ledger(*, repo_root: Path, output_dir: Path, summary_path: Path) -> dict[str, Any]:
+    path = lesson_ledger_path(output_dir)
+    if not path.is_file():
+        raise FileNotFoundError(f"missing lesson ledger `{path.relative_to(repo_root)}")
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        _fail(f"invalid JSON: {exc.msg}")
+    replayed = replay_validated_ledger_payload(
+        repo_root=repo_root,
+        output_dir=output_dir,
+        summary_path=summary_path,
+        path=path,
+        payload=payload,
+    )
     return {
         "lesson_count": len(replayed),
-        "transition_count": len(transitions),
-        "score_event_count": len(score_events),
+        "transition_count": len(payload["transitions"]),
+        "score_event_count": len(payload["score_events"]),
         "path": str(path.relative_to(repo_root)),
     }

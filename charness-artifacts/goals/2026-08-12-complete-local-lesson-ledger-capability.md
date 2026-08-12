@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-complete-local-lesson-le
 
 ## Active Operating Frame
 
-- Current slice: implement the proposal-only contract register over the proved ledger and preview seams.
-- Current slice intent: make active contract units, citations, and bounded graduation proposals inspectable without writing any contract surface or claiming catch attribution.
-- Next action: implement the strict register state/replay validator from the fourth-slice contract, then prove its pre-mutation boundaries.
+- Current slice: decide the remaining graduation seam from proved ledger, preview, register, and authoring evidence.
+- Current slice intent: keep applied contract membership and score-policy effects explicit rather than inferring them from currently unconsumed state.
+- Next action: record the smallest locally decidable graduation decision, then implement only an honest probe or boundary that the decision requires.
 - Verification cadence: cheap deterministic checks at commit boundaries; fresh-eye review and broad proof at meaningful slice boundaries; final proof is locked at goal closeout.
 - Gate cadence: use the repo's slice closeout and broad quality paths when their trigger is reached; do not repeat expensive proof merely per commit.
 - History boundary: completed slice detail belongs in `## Slice Log`; this frame only states current intent.
@@ -54,9 +54,9 @@ Complete the local lesson-ledger capability from replayed score state through se
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Add cited, append-only score events and replayed totals/counts (schema v2). | Score state is prerequisite data for later selection and retains the current ledger's integrity boundary. | Checker, focused tests including real Git prefix fixtures, review packet, quality receipt, commit. | in progress |
-| 2 | Record and implement the minimally deterministic selection/render seam. | It consumes proven score state and is where UCB/shown-set decisions become concrete. | Decision record, selection tests, output example, fresh-eye proof. | pending |
-| 3 | Define retro scoring/write workflow and proposal-only register state. | Citation/state exists first; no register behavior is invented before a consumer needs it. | Cited events, validator tests, proposal/register artifact and critique. | pending |
+| 1 | Add cited, append-only score events and replayed totals/counts (schema v2). | Score state is prerequisite data for later selection and retains the current ledger's integrity boundary. | Checker, focused tests including real Git prefix fixtures, review packet, quality receipt, commit. | completed |
+| 2 | Record and implement the minimally deterministic selection/render seam. | It consumes proven score state and is where UCB/shown-set decisions become concrete. | Decision record, selection tests, output example, fresh-eye proof. | completed |
+| 3 | Define retro scoring/write workflow and proposal-only register state. | Citation/state exists first; no register behavior is invented before a consumer needs it. | Cited events, validator tests, proposal/register artifact and critique. | completed |
 | 4 | Decide and implement any remaining local graduation seam, then final integration proof. | The threshold and contract consequences require evidence from prior slices. | Locked validation, final retro, goal closeout evidence. | pending |
 
 ## Backlog Recount
@@ -114,6 +114,29 @@ Complete the local lesson-ledger capability from replayed score state through se
 - Off-goal findings: The slice closeout surface manifest does not classify `charness-artifacts/retro/lesson-ledger.json`; it was explicitly allowed for local proof rather than broadening the manifest during this ledger slice. The full `run_slice_closeout.py` attempt reached the tool-inventory command without emitting a final receipt; its completed subchecks are not claimed as a full closeout proof.
 - Lessons carried forward: For append-only validators, test one successful append after the prefix has itself been committed as well as every forbidden mutation. Python JSON projection validators need exact primitive type checks, not equality alone.
 - Metrics: Focused test count: 10. Seeded lessons: 16. Current score events: 0.
+
+### Slice 3: Proposal-only contract register
+
+- Objective: Make the active always-loaded contract-unit universe, citations, and bounded graduation proposals inspectable without writing or approving a contract change.
+- Why this approach: The ledger needed a narrow upward seam, but a full applied retirement/membership model would invent an irreversible workflow before evidence or approval exists.
+- Commits: 119dee62 (register), 8bda286e (guard coverage), 17ff70de (quality-surface repair), 1f04ed4c (duplicate disposition).
+- What changed: Added schema-v1 contract-register state, canonical unfenced-H2 unit rebuild, strict citation/proposal validation, fixed-capacity conservation, committed-prefix checks, explicit checker, plugin mirror, and a surface manifest binding. The checker is intentionally an explicit pre-contract-mutation invocation, not an always-on quality gate.
+- Alternatives rejected: Rejected automatic contract edits, anchor-text interpretation, catch attribution without a declared mapping, global proposal reservations, and applied unit-retirement history. A later reviewed schema owns actual membership transitions.
+- Targeted verification: pytest -q tests/test_contract_register.py tests/test_lesson_selection_preview.py; checker smoke; real Git prefix fixtures; pre-commit; focused changed-line coverage (mapped lines covered, partial scope); and ./scripts/run-quality.sh --read-only: 89 passed, 0 failed, 1 UNPROVEN partial changed-line coverage.
+- Test duplication pressure: The duplicate ratchet found one repeated uncertainty sort, which was factored once. Seven residual families are classified intentional with per-family ownership notes in dup-review.json; the ratchet then passed.
+- Critique: Pre-implementation review fixed heading identity, fixed budget, canonical target, and pre-mutation scope. Proof review fixed catch-prefix, fence parsing, and retro-source identity. Standalone critique fixed duplicate proposal identity, underscore slug normalization, empty-register ledger coupling, and removed premature always-on enforcement. Reviewer boundaries verified clean; repaired-surface changes after the two-round cap are accepted-unreviewed and recorded in the critique artifact.
+- Off-goal findings: Schema v1 deliberately refuses a post-commit contract membership rewrite; it does not preserve retired/renamed unit history or authorize graduation. Plugin standalone execution against consumer artifact state is not established.
+- Lessons carried forward: A validator scoped to pre-mutation state must not be placed in a universal gate before its applied-transition protocol exists. Treat direct-execution CLI boilerplate as an explicit duplicate-review decision, not a silent baseline expansion.
+- Metrics: Active units: 26. Citation events: 0. Catch events: 0. Graduation proposals: 0. Focused register tests: 12.
+
+### Slice 3: Cited score authoring
+
+- Objective: Provide one safe local command for appending a score event already defined by the replayed ledger contract.
+- Why this approach: It makes the completed-retro workflow practical without pretending a cited source proves that a lesson was selected, shown, or presented.
+- What changed: Added `record_lesson_score.py`, pure in-memory candidate replay validation, a stable OS-temporary cooperative lock, same-directory atomic replacement with temporary-file cleanup, CLI output, source/plugin mirror sync, and ledger-surface ownership.
+- Critique: Initial reviewer repairs added repository-local helper provenance and Windows locking. The repaired-surface proof review found no blocker. Standalone critique then fixed validator whitespace parity, worktree-clean lock placement, and temporary-file cleanup; those post-round-two repairs are accepted-unreviewed under the two-round cap and recorded in `2026-08-12-lesson-score-authoring-proof-critique.md`.
+- Targeted verification: focused ledger/register/selection tests (30 passed), both validators, command-doc check, plugin byte equality, critique artifact validation, and duplicate ratchet.
+- Non-claims: The command does not create presentation evidence, selection history, archive state, score budgets, contract changes, or crash-durability guarantees; cooperative local writer serialization is not proof against direct file editing or arbitrary process failure.
 
 ## Context Sources
 

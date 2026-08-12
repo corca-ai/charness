@@ -159,6 +159,18 @@ in-process branch tests and prove the same lane passes.
 
 ## Follow-up Slice Carry-Forward
 
+### 2026-08-12 continuation review
+
+The local repair remains resolved: the current changed-line consumer maps and
+covers every eligible changed file it can identify. The active lesson-ledger
+slice ran that consumer twice; its final broad gate reported `blocking: []` and
+`changed_line_proof: partial` solely because
+`scripts/render_lesson_selection_preview.py` still has no standing-test mapping.
+That is an explicit local coverage-scope gap, not evidence of a remote CI
+regression. No push has been authorized, so this review neither refreshes nor
+claims hosted CI readback. The next ordinary local slice may proceed while
+preserving the remote-readback non-claim.
+
 - User-directed follow-up: resolve `#577`, `#578`, and `#579`, which were found while
   measuring the repaired quality runner's code and test economics.
 - Preserved interrupt: the remote changed-line seam remains locally resolved

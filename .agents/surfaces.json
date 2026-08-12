@@ -787,12 +787,14 @@
         "charness-artifacts/retro/contract-register.json",
         "scripts/lesson_ledger_lib.py",
         "scripts/check_lesson_ledger.py",
+        "scripts/record_lesson_score.py",
         "scripts/contract_register_lib.py",
         "scripts/check_contract_register.py"
       ],
       "derived_paths": [
         "plugins/charness/scripts/lesson_ledger_lib.py",
         "plugins/charness/scripts/check_lesson_ledger.py",
+        "plugins/charness/scripts/record_lesson_score.py",
         "plugins/charness/scripts/contract_register_lib.py",
         "plugins/charness/scripts/check_contract_register.py"
       ],

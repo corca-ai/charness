@@ -3061,6 +3061,27 @@
       "note": "Validator-local _fail helpers deliberately prefix errors with their own state domain. Centralizing a two-line raise would retain the per-validator message contract but hide the ownership of each refusal behind an otherwise behaviorless helper.",
       "reviewed_at": "2026-08-12",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "52f9b0fd7d206378",
+      "note": "Directly executable command entrypoints keep their exception-to-stderr-and-exit boundary local. record_lesson_score.py joins otherwise unrelated CLIs, but its exception set includes ledger write failures and its output is the caller-supplied score event; a shared wrapper would obscure each command's refusal contract without removing any domain behavior.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a9029cb09e69c0c4",
+      "note": "The ledger and contract-register validators independently form a small result projection from their own replay state. They expose different schema versions, source semantics, and counts; extracting this return-dict outline would couple two proof-surface verdict contracts while leaving the real validation local.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d9cee12a7ea21510",
+      "note": "Domain-local _fail helpers prefix user-visible refusals with their owning state surface. The shared two-line raise idiom across ledger, selection preview, register, and score authoring has no independent behavior to centralize; a generic helper would hide the owner of a verdict rather than remove real duplication.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
