@@ -9,13 +9,12 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 and Slice 2 in parallel — premise decomposition remains
-  incomplete while low-coupling quality repairs proceed.
-- Current slice intent: record #584's representative planner read-cost repair
-  without laundering unfinished umbrella residue or #528/#539/#542 premise
-  work into a completion claim.
-- Next action: resume the ledger's #528/#539/#542 trust-path premises after
-  recording #584's tracker-visible local-proof carrier.
+- Current slice: issue-create trust-path completion — #539 and #542 now have
+  local-proof carriers; #602 is the remaining premise before consumer ergonomics.
+- Current slice intent: re-read and classify #602 without laundering the OPEN
+  #528 split, #539/#542 local proof, or any remaining consumer work into closure.
+- Next action: read #602 and comments, record its falsifiable premise and owner,
+  then resume #550/#588/#599/#601 only after #602 is dispositioned.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -201,8 +200,9 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - #583: cited pickup specs are deleted and #597 repaired its empty-fixture
   fail-open; no bounded generic premise gate is justified, so it remains OPEN
   with a re-read disposition.
-- Next: record #584's local-proof carrier, then re-read the #528/#539/#542
-  trust-path premises in ledger order.
+- Historical next at this Slice Log point: record #584's local-proof carrier,
+  then re-read the #528/#539/#542 trust-path premises in ledger order. The
+  current route is owned by the Active Operating Frame above.
 
 ## Context Sources
 
