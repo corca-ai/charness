@@ -123,11 +123,12 @@ So a resolved adapter carries the default value alongside the declaration, plus:
   authorization.
 
 **`deliberately_absent` names whole fields or known dotted mapping leaves.** A
-whole-field declaration keeps the field out of the adapter file and resolution
-data. A dotted declaration such as `coverage.minimums.patch` removes only that
-leaf after defaults are merged, while its siblings remain available to consumers.
-Dropping either shape without the declaration is worse than doing nothing: the
-next bootstrap treats it as non-explicit and refills the default.
+whole-field declaration keeps the field out of the adapter file, but resolution
+retains a compatibility default alongside the declaration and an unasserted-path
+warning. A dotted declaration such as `coverage.minimums.patch` removes only
+that leaf after defaults are merged, while its siblings remain available to
+consumers. Dropping either shape without the declaration is worse than doing
+nothing: the next bootstrap treats it as non-explicit and refills the default.
 
 - `deliberately_absent_unasserted_paths` — the resolved path values the repo does
   **not** claim exist. Keys are `<field>.<key>` for a mapping (dotted for nesting) and
