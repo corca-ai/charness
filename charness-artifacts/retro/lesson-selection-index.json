@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 476,
-  "candidate_count": 1960,
+  "source_artifact_count": 477,
+  "candidate_count": 1965,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -354,6 +354,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d6e17108f677",
+      "kind": "current_focus",
+      "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson.",
+      "normalized_key": "this goal made cited lesson scoring locally eligible only after an operator has recorded",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -380,15 +406,15 @@
       ]
     },
     {
-      "candidate_id": "next_improvement:469d32314585",
+      "candidate_id": "next_improvement:b47739beda79",
       "kind": "next_improvement",
-      "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index.",
-      "normalized_key": "disposition accepted risk prepare packets remain visible to the retro corpus when markdown output",
+      "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations.",
+      "normalized_key": "defer any presentation receipt or score budget design until a separately authorized workflow supplies",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
       "latest_source_date": "2026-08-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -396,38 +422,12 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
           "date": "2026-08-12",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:39ac79664170",
-      "kind": "next_improvement",
-      "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence.",
-      "normalized_key": "disposition applied record the score budget decision as deferred until a scored cohort provides",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence."
+          "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations."
         }
       ]
     }
@@ -772,6 +772,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d6e17108f677",
+      "kind": "current_focus",
+      "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson.",
+      "normalized_key": "this goal made cited lesson scoring locally eligible only after an operator has recorded",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -794,6 +820,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b47739beda79",
+      "kind": "next_improvement",
+      "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations.",
+      "normalized_key": "defer any presentation receipt or score budget design until a separately authorized workflow supplies",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations."
         }
       ]
     },
@@ -954,6 +1006,58 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:642d37ca9293",
+      "kind": "next_improvement",
+      "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed.",
+      "normalized_key": "retain the local declaration non claim in the ledger specification goal and this retro",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "next_improvement",
+      "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:0b9222db0c48",
       "kind": "repeat_trap",
       "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption.",
@@ -1028,6 +1132,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**strong**: The telemetry stream reports 16 over-budget full-pytest observations (mean 391.07s against 120s) and 64 recurring over-slice runs. These are recurring cost signals, not permission to weaken proof. The runtime work already has a durable owner in closed issue #505 / D51; the over-slice signal needs a later, separately scoped owner rather than being added to this implementation slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:568a58870a49",
+      "kind": "repeat_trap",
+      "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file.",
+      "normalized_key": "the final changed line proof initially left the renderer entrypoint unmapped adding a real",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file."
         }
       ]
     },
