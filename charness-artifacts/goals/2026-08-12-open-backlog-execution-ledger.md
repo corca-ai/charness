@@ -13,22 +13,22 @@ trigger.
 | #528 | 4, consumer adapter | a coverage policy sub-key can be deliberately absent without silent refill | quality adapter resolution / consumer operator | yes | consumer reproduction plus resolver and warning behavior | premise-needed |
 | #539 | 3, issue create | create payload always supplies a usable issue URL identity | issue create backend parser / issue reporter | yes | backend-shaped fixture and ledger readback behavior | premise-needed |
 | #542 | 3, closeout evidence | a CLI/body target disagreement has a distinct refusal | evidence crosswalk / closeout author | yes | carrier-source cases and refusal payload | premise-needed |
-| #546 | 2, runtime verdict | a budget with no selected sample cannot read as protective | runtime budget verdict / quality operator | yes | selected-profile fixtures and exit/result assertions | premise-needed |
+| #546 | 2, runtime verdict | a budget with no selected sample cannot read as protective | runtime budget verdict / quality operator | yes | selected-profile fixtures and exit/result assertions | unproven-defer — runner membership is proven; conditional-label and consumer-runner intent remain |
 | #550 | 4, adapter refactor | duplicated adapter resolver bodies can share behavior without losing distinctions | adapter resolver consumers | no | bounded equivalence map and focused regression suite | premise-needed |
 | #582 | 1, umbrella disposition | proof/evidence infrastructure lacks machine-owned state where claimed | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
 | #583 | 1, umbrella disposition | named verification surfaces can become inert while green | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
-| #584 | 1, umbrella disposition | named surfaces discard decidable state into prose | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
+| #584 | 1, umbrella disposition | named surfaces discard decidable state into prose | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | split — SessionStart routing locally proven; planner read-cost successor remains unimplemented. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/584#issuecomment-5268493705; revisit after #532 successor implementation and its tracker-visible disposition |
 | #586 | 2, wired-proof path | a check runs through its actual caller path | check caller and consumer | yes | end-to-end wired-path regression proof | premise-needed |
-| #587 | 1, premise disposition | the original mutation-coverage blocker framing remains refuted or has live residue | mutation coverage lane / release operator | unknown | re-read retargeted issue and measurement; tracker-visible defer, close, or split decision | premise-needed |
+| #587 | 1, premise disposition | the original mutation-coverage blocker framing remains refuted or has live residue | mutation coverage lane / release operator | unknown | re-read retargeted issue and measurement; tracker-visible defer, close, or split decision | unproven-defer — tracker carrier https://github.com/corca-ai/charness/issues/587#issuecomment-5268526904; revisit on original-session recovery or a reproducible false blocker |
 | #588 | 4, public helper | public dogfood invocation fails gracefully without internal policy files | consumer helper / skill author | no | clean consumer-shaped invocation and error contract | premise-needed |
 | #589 | 2, quality verdict | a fully applied preset lineage has a reachable clean state | declaration lifecycle verdict / quality operator | yes | applied and missing lineage fixtures with expected result | premise-needed |
 | #590 | 2, CI mutation report | a skipped JS mutation stage is distinguished from a missing report | scheduled workflow diagnostics / CI reader | yes | workflow fixture or CI-shaped parser proof | premise-needed |
-| #595 | 2, runtime verdict | computed runtime signals affect an exit or typed disposition | runtime budget result / quality operator | yes | signal-to-exit behavior tests | premise-needed |
-| #597 | 2, fixture proof | an empty tool-fixture set cannot pass as exercised verification | fixture checker and quality gate caller | yes | empty/nonempty fixtures and gate wiring proof | premise-needed |
+| #595 | 2, runtime verdict | computed runtime signals affect an exit or typed disposition | runtime budget result / quality operator | yes | signal-to-exit behavior tests | local-proven — explicit advisory disposition and focused proof. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/595#issuecomment-5268493969; final direct-to-default carrier and readback are the revisit boundary |
+| #597 | 2, fixture proof | an empty tool-fixture set cannot pass as exercised verification | fixture checker and quality gate caller | yes | empty/nonempty fixtures and gate wiring proof | local-proven — empty refusal, record shape, and runner wiring proven. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/597#issuecomment-5268494170; final direct-to-default carrier and readback are the revisit boundary |
 | #599 | 4, operator discovery | an operator can discover readers of a symbol/path/key before removal | code-change author | no | query contract and representative consumer search | premise-needed |
 | #601 | 4, quality capability | quality identifies avoidable CLI test-harness subprocess and comment-only invariant pathologies | quality reviewer | unknown | selected detection boundary or tracker-visible defer with rationale | premise-needed |
 | #602 | 3, issue create | creation has an in-grammar verification path and avoids placeholder priming | issue creator | yes | create verification command, help text, and substantive-title behavior | premise-needed |
-| #605 | 1, premise disposition | trim-back loop is reachable or provably redundant under the narrowed parser | documented-command checker / docs author | unknown | construct a trigger or record a bounded impossibility argument and tracker disposition | premise-needed |
+| #605 | 1, premise disposition | trim-back loop is reachable or provably redundant under the narrowed parser | documented-command checker / docs author | unknown | construct a trigger or record a bounded impossibility argument and tracker disposition | unproven-defer — tracker carrier https://github.com/corca-ai/charness/issues/605#issuecomment-5268527170; revisit on a live trigger or a bounded impossibility proof |
 | #606 | 2, ratchet verdict | baseline regeneration and all enforced counts agree | boundary-bypass ratchet / quality operator | yes | canonical rebuild, full count cross-check, and safe regeneration path | premise-needed |
 | #607 | 5, settlement capability | subprocess inventory classifies conservative settlement risk | standing-test economics inventory / quality reviewer | unknown | decide add versus defer after Slice 2 inventory model; implementation requires machine-readable fixture distinction | premise-needed |
 
@@ -81,3 +81,21 @@ the umbrella tracker text.
 - #605 — premise re-read. Neither a live trim-back trigger nor an impossibility
   proof exists. State: `unproven-defer`; it remains open until one evidence path
   is established, rather than being deleted or declared fixed.
+- #546 — 2026-08-12 re-read and current probe: the repository-only membership
+  reader is armed, reconciles 37 budget labels against 102 runner labels, and
+  finds none unknown; the selected profile has no missing samples. The issue's
+  remaining named-but-never-run conditional and consumer-runner cases require
+  an adapter-declared expectation. GitHub disposition:
+  https://github.com/corca-ai/charness/issues/546#issuecomment-5268428686.
+- #584 — split: SessionStart configured-artifact routing is locally proven by
+  `e3822458`; GitHub #584 is OPEN with a tracker carrier at
+  https://github.com/corca-ai/charness/issues/584#issuecomment-5268493705. GitHub #532 is closed, but
+  its successor implementation contract remains at
+  `charness-artifacts/spec/planner-required-read-cost-contract.md`; revisit #584
+  only after that contract is implemented and independently dispositioned.
+- #595 — `c9d25da4` measured a live latest-only spike and made its advisory
+  contract explicit in human and structured output while retaining median-red
+  enforcement; tracker closure waits for the final direct-to-default carrier.
+- #597 — `08b01ddc` makes empty fixture evidence refuse and wires the checker
+  into the quality runner; tracker closure waits for the final direct-to-default
+  carrier.

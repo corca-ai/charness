@@ -9,11 +9,13 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: Slice 1 premise rechecks and umbrella decomposition.
-- Current slice intent: establish dependency order and a falsifiable premise for
-  each open issue before changing any proof surface.
-- Next action: map the live umbrella residuals to their owning source surfaces,
-  then replan the first implementation bundle from that evidence.
+- Current slice: Slice 1 and Slice 2 in parallel — premise decomposition remains
+  incomplete while low-coupling quality repairs proceed.
+- Current slice intent: repair the runtime and fixture truth paths without
+  laundering the unfinished #582/#583/#584 umbrella, #528/#539/#542, or
+  #589/#590/#606 premise work into a completion claim.
+- Next action: re-read and classify #589's preset-lineage verdict, then either
+  select its specification boundary or resume the named Slice-1 residuals.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -121,9 +123,9 @@ premise, owner, evidence channel, and tracker-visible outcome.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 0 | Activation critique and readiness binding | Do not execute from an unreviewed broad plan | critique record, clean reviewer fingerprints, reviewed-input identity, completed ledger | in-progress |
-| 1 | Re-read every premise; decompose #582, #583, #584; disposition #587 and #605; re-plan dependencies | Prevent umbrella prose or unassigned rows from laundering distinct defects | 22-row ledger updates, ownership map, replan record, tracker-visible dispositions | planned |
-| 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | planned |
+| 0 | Activation critique and readiness binding | Do not execute from an unreviewed broad plan | critique record, clean reviewer fingerprints, reviewed-input identity, completed ledger | completed |
+| 1 | Re-read every premise; decompose #582, #583, #584; disposition #587 and #605; re-plan dependencies | Prevent umbrella prose or unassigned rows from laundering distinct defects | 22-row ledger updates, ownership map, replan record, tracker-visible dispositions | in-progress |
+| 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | in-progress |
 | 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | planned |
 | 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | planned |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | planned |
@@ -162,8 +164,23 @@ premise, owner, evidence channel, and tracker-visible outcome.
 
 ## Slice Log
 
-- No implementation slice has started. The plan is awaiting the required
-  pre-implementation critique and activation readiness check.
+### Runtime, SessionStart, and Fixture Evidence (2026-08-12)
+
+- Objective: turn three locally decidable proof gaps into tested behavior or an
+  explicit non-closure disposition.
+- Commits: `e3822458` (SessionStart routing), `a9b9c4d3` (planner-read-cost
+  contract), `08b01ddc` (fixture evidence), `c9d25da4` (runtime advisories).
+- Evidence: #595 focused runtime tests (50 passed), selected runtime-budget
+  quality lane, debug/critique artifacts, and a fresh-eye repair review; #597
+  focused fixture tests (27 passed), selected fixture lane, and its required
+  two review rounds; #546 current membership check and selected lane passed.
+- Boundary: no issue is represented as closed locally. #546 has a GitHub
+  `unproven-defer` carrier; #595 and #597 await final direct-to-default closeout
+  and independent GitHub readback. #584 remains OPEN with a split carrier:
+  SessionStart is locally proven, while the closed #532's successor contract is
+  only specified, not implemented.
+- Next: revalidate the goal binding, then choose #589 or the next low-coupling
+  ledger row.
 
 ## Context Sources
 
