@@ -10,9 +10,9 @@ Done-early policy: continue_next_improvement
 
 ## Active Operating Frame
 
-- Current slice: #594 — align the consolidated closeout-draft shape with the live enforced rules.
-- Current slice intent: demonstrate the carrier's actual permitted scope before changing prose or draft validation.
-- Next action: read #594's current GitHub record and comments, inspect the draft-shape producer and its consumer validators, then write the pre-mutation implementation brief.
+- Current slice: #593 — bind HOTL disposition parsing to the issue numbers being closed.
+- Current slice intent: distinguish target-bearing closeout evidence from quoted or unrelated issue discussion without weakening legitimate HOTL refusals.
+- Next action: read #593's current GitHub record and comments, inspect the HOTL parser and carrier consumers, then write the pre-mutation implementation brief.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger proof at each quality or closeout verdict slice; final lock only after the five slices are frozen.
 - Gate cadence: obtain `quality` recommendations before slow gates or any change to a gate, validator, or generated quality packet; do not run Cautilus unless newly approved.
 - Slice review packet: state the issue JTBD, changed/generated surfaces, preserved consumer boundary, expected invariants, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -68,7 +68,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 | 1 | #603: resolve adapter-owned quality packets or report typed unavailability. | Restores an operator's ability to begin quality work. | Adapter-present/runner-absent regression fixture, planner result, focused tests, and critique. | completed 2026-08-12 (`470aae9a`) |
 | 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | completed 2026-08-12 (`09aac7e0`) |
 | 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | completed 2026-08-12 (`b5ed4b5b`) |
-| 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | pending |
+| 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | completed 2026-08-12 (`b4e0ea69`) |
 | 5 | #593: bind HOTL disposition parsing to the issue numbers being closed. | Quoted unrelated discussion must not block a close. | Target/non-target and quote-form tests plus fresh-eye verdict-surface review. | pending |
 
 ## Backlog Recount
@@ -79,11 +79,11 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 ## Operator Decision Queue
 
-- Decision: none for #594 yet; inspect its live closeout-draft floor before deciding whether any prose scope is genuinely inconsistent.
+- Decision: none for #593 yet; inspect its live HOTL parser and carrier ownership before deciding whether target identity belongs in the parser or caller.
 - Owner: agent under the active goal.
-- Why deferred: #594 has not yet been classified from its current GitHub record and enforced producer/consumer path.
-- Unblock action: complete #594's read-before-design and causal or resolution-brief route.
-- Revisit trigger: before changing a closeout-draft template, validator, or carrier scope.
+- Why deferred: #593 has not yet been classified from its current GitHub record and enforced producer/consumer path.
+- Unblock action: complete #593's read-before-design and causal or resolution-brief route.
+- Revisit trigger: before changing a HOTL parser, validator, or carrier scope.
 
 ## Coordination Cues
 
@@ -142,6 +142,20 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Off-goal findings: No external acme provider run, consumer-repository execution, publication, push, or GitHub issue closure; automatic future call-site metadata remains valid-but-defer.
 - Lessons carried forward: A worked adapter is executable consumer input: test the complete artifact against the owner grammar, not only the reported token.
 - Metrics: Focused issue suite: 35 passed in 4.72s; complete pre-commit passed with one non-blocking RCA-ledger advisory.
+
+### Slice 4: #594 consolidated closeout-draft scope
+
+- Objective: Give an author selecting `consolidated` only the carrier/body route the live closeout floor permits.
+- Why this approach: The generic catalog offered auto-closing and repair-keyword guidance that the consolidated disposition must refuse; the required manual route also lacked a keyword-free self-reference identity.
+- Commits: b4e0ea69 Align consolidated closeout guidance
+- What changed: Added `--classification consolidated` selected guidance, threaded invoked manual-close numbers into the consolidated ledger, aligned colon and whitespace GitHub-keyword recognition, synchronized plugin projections, and added renderer/carrier regressions.
+- Alternatives rejected: Did not widen every manual-close classification to the full ledger or assert backend readback facts in body prose; destination readback remains in the pre-mutation close carrier.
+- Targeted verification: 107 focused tests passed; packaging, debug/critique artifact validators, seam-risk index, rolling-pointer freshness, and complete pre-commit passed.
+- Test duplication pressure: Tests cover selected-guide absence of generic conflict, colon/space semantic equivalence, helper-level identity, and the actual close-comment floor rather than duplicating each field parser.
+- Critique: `charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md`; round 1 repairs and clean-boundary round-2 approval occurred before the standalone critique. Post-critique repairs are accepted-unreviewed under the proof-surface two-round cap.
+- Off-goal findings: No GitHub close, live destination readback, provider mutation, hosted CI, release, or publication occurred.
+- Lessons carried forward: A human-facing catalog is not a selected workflow; representation-equivalent provider grammar needs counterexamples.
+- Metrics: Focused suite: 107 passed in 4.25s; complete pre-commit passed with one non-blocking RCA-ledger advisory.
 
 ## Context Sources
 
