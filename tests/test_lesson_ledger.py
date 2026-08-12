@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -83,6 +84,18 @@ def test_ledger_checker_cli_reports_the_replayed_count(tmp_path: Path, monkeypat
     assert capsys.readouterr().out == "Validated lesson ledger: 1 lessons, 1 transitions.\n"
 
 
+def test_ledger_checker_cli_reports_an_invalid_ledger(tmp_path: Path, monkeypatch, capsys) -> None:
+    def fail_validation(**_kwargs: object) -> dict:
+        raise ValueError("broken ledger")
+
+    monkeypatch.setattr(ledger, "validate_lesson_ledger", fail_validation)
+    monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
+    with pytest.raises(SystemExit) as exit_result:
+        runpy.run_path(str(ROOT / "scripts/check_lesson_ledger.py"), run_name="__main__")
+    assert exit_result.value.code == 1
+    assert capsys.readouterr().err == "broken ledger\n"
+
+
 def test_ledger_rejects_projection_or_citation_rewrite(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     path = _ledger(tmp_path, source="charness-artifacts/retro/other.md")
@@ -156,6 +169,75 @@ def test_score_replay_and_closed_v2_shapes(tmp_path: Path) -> None:
         path.write_text(json.dumps(invalid), encoding="utf-8")
         with pytest.raises(ValueError, match=message):
             _validate(tmp_path)
+
+
+def test_ledger_rejects_all_closed_transition_and_payload_shapes(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    cases = []
+    non_object = _payload()
+    non_object["transitions"] = [None]
+    cases.append((non_object, "must be an object"))
+    unexpected_transition = _payload()
+    unexpected_transition["transitions"][0]["contract_target"] = "AGENTS.md"
+    cases.append((unexpected_transition, "deferred graduation"))
+    missing_transition_value = _payload()
+    missing_transition_value["transitions"][0]["transition_id"] = ""
+    cases.append((missing_transition_value, "non-empty"))
+    duplicate_transition = _payload()
+    duplicate_transition["transitions"].append(
+        {"sequence": 2, "transition_id": "seed-a", "lesson_id": "b", "source_retro": "source.md"}
+    )
+    cases.append((duplicate_transition, "duplicate transition_id"))
+    duplicate_lesson = _payload()
+    duplicate_lesson["transitions"].append(
+        {"sequence": 2, "transition_id": "seed-b", "lesson_id": "a", "source_retro": "source.md"}
+    )
+    cases.append((duplicate_lesson, "duplicate lesson_id"))
+    missing_event_value = _payload(score_events=[_score_event(event_id="")])
+    cases.append((missing_event_value, "non-empty"))
+    wrong_container = _payload()
+    wrong_container["score_events"] = {}
+    cases.append((wrong_container, "must be lists"))
+    wrong_lesson_shape = _payload()
+    del wrong_lesson_shape["lessons"]["a"]["score_count"]
+    cases.append((wrong_lesson_shape, "materialized lessons"))
+    wrong_schema = _payload()
+    wrong_schema["schema_version"] = 3
+    cases.append((wrong_schema, "expected kind"))
+    for payload, message in cases:
+        path.write_text(json.dumps(payload), encoding="utf-8")
+        with pytest.raises(ValueError, match=message):
+            _validate(tmp_path)
+    with pytest.raises(FileNotFoundError, match="missing lesson ledger"):
+        ledger.validate_lesson_ledger(
+            repo_root=tmp_path,
+            output_dir=tmp_path / "missing",
+            summary_path=tmp_path / "charness-artifacts/retro/recent-lessons.md",
+        )
+    path.write_text("{", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid JSON"):
+        _validate(tmp_path)
+
+
+def test_committed_ledger_must_have_a_supported_shape(tmp_path: Path, monkeypatch) -> None:
+    path = tmp_path / "charness-artifacts/retro/lesson-ledger.json"
+    path.parent.mkdir(parents=True)
+    path.write_text("{}", encoding="utf-8")
+    malformed_states = [
+        ("{", "invalid JSON"),
+        (json.dumps({"kind": "other", "transitions": []}), "unrecognized shape"),
+        (json.dumps({"kind": ledger.KIND}), "no transition list"),
+        (json.dumps({"kind": ledger.KIND, "schema_version": 2, "transitions": []}), "unsupported score-event"),
+    ]
+    for stdout, message in malformed_states:
+        monkeypatch.setattr(
+            ledger.subprocess,
+            "run",
+            lambda *_args, _stdout=stdout, **_kwargs: subprocess.CompletedProcess([], 0, _stdout, ""),
+        )
+        with pytest.raises(ValueError, match=message):
+            ledger._committed_state(tmp_path, path)
 
 
 def _git(repo: Path, *args: str) -> None:
