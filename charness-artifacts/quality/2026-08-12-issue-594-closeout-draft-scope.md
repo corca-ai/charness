@@ -33,6 +33,16 @@ scope for this local proof-surface repair.
 - `close-with-comment` refuses a consolidated body that violates its own
   ledger before comment or close mutation.
 
+## Runtime Signals
+
+- runtime source: focused pytest receipt; timing capture is missing because this
+  bounded renderer/carrier path has no configured timing capture. <!-- reproduction-source -->
+- runtime hot spots: none observed; this slice does not run a broad quality gate.
+- coverage gate: draft-shape, consolidated-body, and close-comment regressions
+  passed (107 tests).
+- evaluator depth: deterministic-gates-only; Cautilus is not approved and would
+  not establish tracker destination state.
+
 ## Healthy
 
 - Generic draft guidance still serves classifications without a carrier-specific
@@ -44,16 +54,34 @@ scope for this local proof-surface repair.
 - Tracker destination readback is necessarily external and is not established by
   these local tests.
 
+## Missing
+
+- No GitHub mutation, destination readback, or provider-backed comment delivery
+  is claimed.
+
+## Deferred
+
+- The destination's live open/body/chain state is checked only during a future
+  separately authorized closeout.
+
+## Advisory
+
+- structural review result: evidence: the direct carrier regression proves the
+  invoked number reaches the self-reference check without a `Closes` keyword.
+- prose review result: artifact: neutral `Closes` is non-operative in a comment;
+  only reparative keyword claims are prohibited for consolidated closeout.
+
 ## Delegated Review
 
-- Delegated Review: round 1 caught misleading readback timing, an overbroad
+- status: executed — round 1 caught misleading readback timing, an overbroad
   keyword claim, and a keyword-free self-reference escape; a clean-boundary
   round-2 retry approved the repair. The later critique found selected-guide
   conflict and colon-form keyword equivalence; those repairs are accepted-
   unreviewed under the two-round proof-surface cap and are recorded in the
   #594 critique artifact.
-- Slow-gate lenses: not applicable; this is a bounded deterministic validator
-  seam. Cautilus is not approved and would not improve carrier grammar proof.
+- Slow-gate lenses: fixture-economics=n/a; parallel-critical-path=n/a;
+  duplicated-proof=n/a. This is a bounded deterministic validator seam;
+  Cautilus is not approved and would not improve carrier grammar proof.
 
 ## Commands Run
 
@@ -66,7 +94,11 @@ scope for this local proof-surface repair.
   next_center=consolidated manual carrier; transformation=derive special-case
   prose from live body/carrier owners; proof_boundary=renderer and carrier-floor
   regression; enforcement_posture=existing-gate-reuse.
-- passive tracker proof — capability_needed=remote destination state; next_center=
+- passive tracker proof — because local rendering cannot establish live tracker state; capability_needed=remote destination state; next_center=
   actual issue closeout; transformation=use the existing readback before a
   separately authorized close; proof_boundary=provider readback; enforcement_posture=
   external-boundary-only.
+
+## History
+
+- [Portable proof-path learning review](./history/2026-07-19-portable-proof-path-learning-review.md)
