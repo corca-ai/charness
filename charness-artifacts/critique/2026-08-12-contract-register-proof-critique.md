@@ -20,10 +20,10 @@ parent-delegated
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-12-012152-packet.md`
-- Packet path: `charness-artifacts/critique/2026-08-12-012152-packet.json`
-- Packet SHA256: `78d8143877a830a51e1f023038c3c8a4d057117d07b85dd4db210eda76f6908d`
-- Identity SHA256: `65389bb8f9619eda23b64c25ea070772ecae0099dc2bdcc4826cd60a75d1fab6`
+- Packet consumed: `charness-artifacts/critique/2026-08-12-012525-packet.md`
+- Packet path: `charness-artifacts/critique/2026-08-12-012525-packet.json`
+- Packet SHA256: `513dbaf6006e89c3824923559f02164ee461a2a2dcb56b7514517430dcdd62ca`
+- Identity SHA256: `10e231662506ad49c4cfed133f504d764e5f4b4daf7d4fa7d40571e878ed0e5a`
 
 ## Target
 

@@ -3012,6 +3012,55 @@
       "note": "sibling-module-by-path loading inside skills/public/achieve: achieve_adapter_policy.py:61-68 (goal_artifact_scaffold) and goal_artifact_pursue.py:46-53 (goal_artifact_backlog). The importlib spec_from_file_location -> None-guard -> exec_module shape is the portability boilerplate every skill package repeats so a package works in both the source tree and an exported plugin layout; goal_artifact_pursue.py declares it in prose ('loaded by path like every other sibling here'). Extracting a shared loader would need a module that is itself importable without this shape, which is the problem it solves. Surfaced as new by scan REGROUPING, not new duplication: both members are untouched by this slice (handoff bullet ownership), and the same scan is clean on a HEAD worktree.",
       "reviewed_at": "2026-08-12",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "029af5ead119d068",
+      "note": "The two direct-execution import headers in check_lesson_ledger.py and check_contract_register.py each locate the same repository runtime bootstrap before importing their validator. A shared entrypoint would hide the command-specific module binding and give two independently executable checks a coupled CLI surface; the import preamble is the direct-run contract.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "26d50f9643d7284e",
+      "note": "Ledger and contract-register committed-state readers both decode HEAD JSON, but own different schema migrations, stream meanings, and refusal messages. Extracting only their tiny git/JSON shell would couple two independent proof-surface verdict contracts without sharing their actual validation.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "848ed86ea661441b",
+      "note": "The CLI exception-to-stderr-and-exit idiom is intentionally local to directly executable validators. Each command owns its accepted exception set and output wording; a generic wrapper would make its behavior less visible while retaining every call-site decision.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b11ff4a796c94b97",
+      "note": "Top-level direct-script bootstrap/import headers are portability plumbing. They cannot be factored before the import path they establish exists, and keeping them local makes each standalone executable's dependencies readable.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "b17f8d8b4cf700e0",
+      "note": "The two ledger/register check CLIs share a compact argparse-and-print outline but bind distinct validators, artifact directories, and result fields. A shared runner would obscure each command's contract for no material behavior reduction.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "c5351f3d95c22d52",
+      "note": "Each validator owns its own artifact JSON load and strict top-level schema refusal. The superficial decoder shape is boundary plumbing; sharing it would blur ledger-v2 versus register-v1 error semantics and has no reusable domain rule.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cadcd988ac605b86",
+      "note": "Validator-local _fail helpers deliberately prefix errors with their own state domain. Centralizing a two-line raise would retain the per-validator message contract but hide the ownership of each refusal behind an otherwise behaviorless helper.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

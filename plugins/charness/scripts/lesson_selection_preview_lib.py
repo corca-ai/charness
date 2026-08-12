@@ -125,12 +125,9 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
     total_score_count = sum(row["score_count"] for row in rows)
     recent = _take(sorted(rows, key=_recent_key), selected_ids, 3)
     value = _take(sorted(rows, key=lambda row: (-_value(row), row["lesson_id"])), selected_ids, 3)
-    uncertainty = _take(
-        sorted(rows, key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"])), selected_ids, 3
-    )
-    archive_fallback = _take(
-        sorted(rows, key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"])), selected_ids, 1
-    )
+    uncertainty_rows = sorted(rows, key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]))
+    uncertainty = _take(uncertainty_rows, selected_ids, 3)
+    archive_fallback = _take(uncertainty_rows, selected_ids, 1)
     selected = recent + value + uncertainty + archive_fallback
     return {
         "kind": KIND,
