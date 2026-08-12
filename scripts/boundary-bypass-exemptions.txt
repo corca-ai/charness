@@ -6,6 +6,8 @@
 # Add exemptions only for intentional boundary tests that should not count
 # against the no-increase policy.
 
+tests/test_lesson_ledger.py::scripts/record_lesson_score.py # why: one real CLI refusal smoke proves the new score authoring command's __main__ dispatch, process exit status, and stderr contract when its ledger is absent; replay and authoring behavior stay covered in-process in the same focused suite. Owner: lesson ledger. Revisit if a shared script-entrypoint smoke harness proves this boundary elsewhere.
+
 tests/quality_gates/test_slice_manifest.py::scripts/validate_slice_manifest.py # why: the plugin-layout and directory-path cases intentionally prove the mirrored CLI's subprocess exit/stdout contract at the operator boundary; validator behavior stays covered in-process through validate_manifest(). Owner: quality. Revisit if a shared script-entrypoint smoke harness proves the source-checkout-only boundary.
 
 tests/quality_gates/test_final_bundle_preflight.py::scripts/final_bundle_preflight.py # why: one real CLI smoke intentionally proves final-bundle preflight startup, JSON output, refusal exit status, and the operator-facing command-plan boundary; planner and evidence behavior remain covered in-process in the same focused suite. Owner: quality. Revisit if a shared script-entrypoint smoke harness proves this boundary elsewhere.

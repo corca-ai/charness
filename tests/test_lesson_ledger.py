@@ -5,6 +5,7 @@ import json
 import runpy
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import pytest
@@ -344,6 +345,66 @@ def test_score_authoring_uses_windows_lock_fallback_and_fails_closed_without_a_l
             pass
 
 
+def test_score_authoring_reports_lock_open_acquire_and_release_failures(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = tmp_path / "ledger.json"
+    path.write_text("{}", encoding="utf-8")
+    system_tempdir = tempfile.gettempdir()
+    blocked_temp = tmp_path / "not-a-directory"
+    blocked_temp.write_text("x", encoding="utf-8")
+    monkeypatch.setattr(scorer.tempfile, "gettempdir", lambda: str(blocked_temp))
+    with pytest.raises(ValueError, match="unable to open lesson-ledger lock"):
+        with scorer._ledger_lock(path):
+            pass
+
+    class FailingFcntl:
+        LOCK_EX = 1
+        LOCK_UN = 2
+
+        def __init__(self, failed_operation: int) -> None:
+            self.failed_operation = failed_operation
+
+        def flock(self, _fd: int, operation: int) -> None:
+            if operation == self.failed_operation:
+                raise OSError("lock failure")
+
+    monkeypatch.setattr(scorer.tempfile, "gettempdir", lambda: system_tempdir)
+    monkeypatch.setattr(scorer, "msvcrt", None)
+    monkeypatch.setattr(scorer, "fcntl", FailingFcntl(FailingFcntl.LOCK_EX))
+    with pytest.raises(ValueError, match="unable to acquire lesson-ledger lock"):
+        with scorer._ledger_lock(path):
+            pass
+
+    failing_release = FailingFcntl(FailingFcntl.LOCK_UN)
+    monkeypatch.setattr(scorer, "fcntl", failing_release)
+    with pytest.raises(ValueError, match="unable to release lesson-ledger lock"):
+        with scorer._ledger_lock(path):
+            pass
+
+    class FailingMsvcrt:
+        LK_LOCK = 1
+        LK_UNLCK = 2
+
+        def __init__(self, failed_operation: int) -> None:
+            self.failed_operation = failed_operation
+
+        def locking(self, _fd: int, operation: int, _length: int) -> None:
+            if operation == self.failed_operation:
+                raise OSError("windows lock failure")
+
+    monkeypatch.setattr(scorer, "fcntl", None)
+    monkeypatch.setattr(scorer, "msvcrt", FailingMsvcrt(FailingMsvcrt.LK_LOCK))
+    with pytest.raises(ValueError, match="unable to acquire lesson-ledger lock"):
+        with scorer._ledger_lock(path):
+            pass
+
+    monkeypatch.setattr(scorer, "msvcrt", FailingMsvcrt(FailingMsvcrt.LK_UNLCK))
+    with pytest.raises(ValueError, match="unable to release lesson-ledger lock"):
+        with scorer._ledger_lock(path):
+            pass
+
+
 def test_score_authoring_removes_an_unreplaced_temporary_file(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -393,6 +454,57 @@ def test_score_authoring_cli_emits_the_appended_event(
         "score": -1,
         "source_retro": "charness-artifacts/retro/source.md",
     }
+
+
+def test_score_authoring_refuses_non_integer_scores_and_missing_ledger(tmp_path: Path) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path)
+    with pytest.raises(ValueError, match="score must be an integer"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="not-int",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            score=True,
+            anchor=None,
+        )
+    with pytest.raises(FileNotFoundError, match="missing lesson ledger"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=tmp_path / "missing",
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="missing-ledger",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            score=0,
+            anchor=None,
+        )
+
+
+def test_score_authoring_script_prints_a_refusal(tmp_path: Path) -> None:
+    result = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/record_lesson_score.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--event-id",
+            "missing-ledger",
+            "--lesson-id",
+            "a",
+            "--source-retro",
+            "charness-artifacts/retro/source.md",
+            "--score",
+            "0",
+        ],
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert result.returncode == 1
+    assert "missing lesson ledger" in result.stderr
 
 
 def test_v1_migration_and_v2_score_event_prefix_are_append_only(tmp_path: Path) -> None:
