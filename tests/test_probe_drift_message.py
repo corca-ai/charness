@@ -255,8 +255,14 @@ def test_the_message_names_the_prose_fields_that_hide_corpus_counts() -> None:
         "the marker probe's `_provenance.why` no longer names the measured field that owns the "
         "live presence-only count"
     )
+    assert str(payload["field_mentions_presence_only"]) not in provenance["why"], (
+        "the marker probe's `_provenance.why` copied the live presence-only count instead of "
+        "leaving that value in its measured field"
+    )
     message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
     assert "`_provenance.why`" in message
+    assert "rewrite `current_corpus` totals" in message
+    assert "retain the symbolic field reference in `why`" in message
 
     # Round 2's blocker: the first repair claimed the floor probe's `_provenance` was figure-free.
     # Three of its keys quote counts. Assert the CORRECTED claim over EVERY key, so the next
