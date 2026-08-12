@@ -7,6 +7,7 @@ import json
 import os
 import subprocess
 import sys
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -110,7 +111,9 @@ def test_release_artifact_does_not_follow_symlinked_latest(tmp_path: Path) -> No
 
     assert relpath == "charness-artifacts/release/latest.md"
     assert not pointer.is_symlink()
-    assert "target version: `0.2.0`" in pointer.read_text(encoding="utf-8")
+    text = pointer.read_text(encoding="utf-8")
+    assert f"Date: {datetime.now().astimezone().date().isoformat()}" in text
+    assert "target version: `0.2.0`" in text
     assert _sha(prior) == prior_sha
 
 

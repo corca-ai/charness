@@ -49,7 +49,12 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     if not claims_lane:
         artifact = cli.write_current_artifact(repo_root, adapter_data, payload, host, fresh_checkout_payload=fresh, release_url=expected_url)
         cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
-        commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
+    # The claims record stays the exact P -> R direct child.  Revalidation can
+    # still refresh generated quality inventory beneath charness-artifacts;
+    # commit that follow-on evidence before the pre-push hook observes a dirty
+    # worktree.  The tag remains anchored at P and the state retains R as the
+    # bound review identity.
+    commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
 
     def publish() -> tuple[str, Any]:
         if not state["tag_local"]:

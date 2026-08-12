@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import runpy
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -72,7 +72,7 @@ def write_release_artifact(
     lines = [
         "# Release Surface Check",
         *([f"<!-- {release_stage} -->"] if release_stage else []),
-        f"Date: {datetime.now(timezone.utc).date().isoformat()}",
+        f"Date: {datetime.now().astimezone().date().isoformat()}",
         "",
         "## Scope",
         "",

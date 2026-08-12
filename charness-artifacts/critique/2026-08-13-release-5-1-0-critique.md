@@ -10,6 +10,11 @@ the reconciled 22-issue opening cohort remains OPEN. The publish helper alone
 will bump, sync, run final release quality, create the tag/release, and record
 post-publication evidence.
 
+The later `3a350e9c` commit only bound this already-reviewed critique and its
+packet; it added no product or release-helper behavior. The marked prepared
+record is deliberately outside this pre-mutation candidate range and is audited
+by the subsequent, distinct claims-review record.
+
 ## Release Scope
 
 - Current version: `5.0.1`; target/tag: `5.1.0` / `v5.1.0`.

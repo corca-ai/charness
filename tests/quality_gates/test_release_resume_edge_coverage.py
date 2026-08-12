@@ -25,6 +25,96 @@ RESUME_CLOSEOUT = _load("publish_release_resume_closeout")
 ISSUE_CLOSEOUT = _load("release_issue_closeout")
 ISSUE_CLOSEOUT_ARTIFACT = _load("release_issue_closeout_artifact")
 MESSAGE = _load("release_issue_closeout_message")
+RESUME_PUBLISH = _load("publish_release_resume_publish")
+
+
+class _ClaimsResumeCli:
+    def __init__(self, commands: list[list[str]]):
+        self.commands = commands
+
+    def run(self, command, *, cwd, check=True):
+        self.commands.append(command)
+        return SimpleNamespace(returncode=0, stdout="https://example.test/v1.2.3")
+
+    @staticmethod
+    def backend_command(_backend, _operation, fallback):
+        return fallback
+
+    @staticmethod
+    def release_content_close_keyword_refs(_text):
+        return []
+
+    @staticmethod
+    def run_fresh_checkout_probes(_root):
+        return {"status": "passed"}
+
+    @staticmethod
+    def expected_github_release_url(_root, _backend, _tag):
+        return "https://example.test/v1.2.3"
+
+    @staticmethod
+    def safe_real_host_payload(_root, _paths, *, build_payload):
+        return build_payload()
+
+    @staticmethod
+    def build_real_host_payload():
+        return {"required": False}
+
+    @staticmethod
+    def build_retro_trigger_evaluation(*_args, **_kwargs):
+        return {"required": False}
+
+    @staticmethod
+    def verify_release_visible(*_args, **_kwargs):
+        return SimpleNamespace(returncode=0)
+
+    @staticmethod
+    def finalize_release_payload(*_args, **_kwargs):
+        return None
+
+    @staticmethod
+    def create_release(*_args, **_kwargs):
+        raise AssertionError("existing release should not be created again")
+
+
+class _ClaimsResumeCommon:
+    @staticmethod
+    def preflight_close_issue_carrier(*_args, **_kwargs):
+        return None
+
+    @staticmethod
+    def run_pre_push_quality_gates(*_args, **_kwargs):
+        return None
+
+    @staticmethod
+    def timed(_payload, _label, action):
+        return action()
+
+    @staticmethod
+    def run_release_closeout_tail(*_args, **_kwargs):
+        return None
+
+
+def _resume_claims_publication_leg(*, remote_branch_sha: str, tag_remote: bool) -> tuple[list[list[str]], list[str]]:
+    commands: list[list[str]] = []
+    committed: list[str] = []
+    state = {
+        "phase": "prepared-claims-review", "tag_local": True, "tag_remote": tag_remote,
+        "remote_branch_sha": remote_branch_sha, "claims_evidence_commit": "claims-evidence",
+        "head_sha": "claims-evidence", "prepared": {"commit": "prepared"}, "release_exists": True,
+    }
+    plan = {
+        "payload": {"commit_message": "Release v1.2.3"}, "tag_name": "v1.2.3", "branch": "main",
+        "backend": "github", "issue_repo": "example/demo", "release_content_paths": [], "title": "v1.2.3",
+    }
+    args = SimpleNamespace(execute=True, remote="origin", notes_file=None, close_issue=[])
+    RESUME_PUBLISH.resume_publish(
+        Path("."), args=args, plan=plan, adapter_data={}, cli=_ClaimsResumeCli(commands), state=state,
+        resumable_state=lambda *_args, **_kwargs: state, assert_resumable=lambda *_args, **_kwargs: None,
+        common=_ClaimsResumeCommon(), resume_closeout=SimpleNamespace(),
+        commit_artifact_before_push=lambda *_args, **_kwargs: committed.append("artifact"),
+    )
+    return commands, committed
 
 
 def test_resume_closeout_requires_original_irreversible_inputs() -> None:
@@ -138,6 +228,27 @@ def test_resume_refuses_ambiguous_push_when_remote_identity_differs() -> None:
             Path("."), state={"remote_branch_sha": "old-sha", "head_sha": "carrier-sha"},
             remote="origin", branch="main", payload={}, cli=cli,
         )
+
+
+@pytest.mark.parametrize(
+    ("remote_branch_sha", "tag_remote", "expected_push"),
+    [
+        ("old-branch", True, ["git", "push", "origin", "main"]),
+        ("claims-evidence", False, ["git", "push", "origin", "v1.2.3"]),
+    ],
+)
+def test_claims_resume_repairs_exactly_the_missing_publication_leg(
+    remote_branch_sha: str, tag_remote: bool, expected_push: list[str]
+) -> None:
+    """Exercise source-owned branch-only and tag-only recovery, not a copied fixture."""
+    commands, committed = _resume_claims_publication_leg(
+        remote_branch_sha=remote_branch_sha, tag_remote=tag_remote
+    )
+
+    pushes = [command for command in commands if command[:2] == ["git", "push"]]
+    assert pushes == [expected_push]
+    assert not any(command[:2] == ["git", "tag"] for command in commands)
+    assert committed == ["artifact"]
 
 
 def test_resume_dry_run_validates_carrier_without_reconciling(capsys) -> None:

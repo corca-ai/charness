@@ -438,6 +438,22 @@
       ]
     },
     {
+      "surface_id": "release-claims-review-evidence",
+      "description": "Committed, machine-readable claims-review evidence that binds a prepared local release record before publication may resume.",
+      "source_paths": [
+        "charness-artifacts/release-review/*.json"
+      ],
+      "derived_paths": [],
+      "sync_commands": [],
+      "verify_commands": [
+        "for review_record in charness-artifacts/release-review/*.json; do [ -e \"$review_record\" ] && python3 -m json.tool \"$review_record\" >/dev/null || exit $?; done"
+      ],
+      "notes": [
+        "The release resume helper validates the record's exact prepared-commit, path, blob, version, tag, direct-child topology, and reviewer-context binding before auth, tag, push, or GitHub release creation.",
+        "This surface owns checked-in JSON syntax and changed-surface routing; it does not treat an arbitrary record as approved publication evidence outside the helper's prepared-claims-review state."
+      ]
+    },
+    {
       "surface_id": "surface-obligations",
       "description": "Repo-owned changed-surface manifest that drives slice closeout obligations.",
       "source_paths": [

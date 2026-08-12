@@ -324,7 +324,15 @@ runtime_budget_profiles:
       # so it is owed a re-derive on its next release-path run, not a number invented
       # now from a regime that no longer exists.
       run-quality-read-only-release: 110000
-      run-quality-full-release: 125000
+      # 2026-08-13 relevel: the release queue's current 20-sample window is
+      # 87.0--261.1s (median 124.0s), rather than the short pre-closeout window
+      # that supplied 125000.  The whole release bundle now includes the locked
+      # closeout and claims-review topology tests, so that older bar was repeatedly
+      # red against the documented release workload, not a signal from a narrowed
+      # or skipped check.  365500 is the checked-in sizing rule's 1.4x current
+      # worst sample, rounded to 500ms.  It remains below 3x median, so the slack
+      # advisory can still flag a future non-tripping bar.
+      run-quality-full-release: 365500
       # 9 samples, not 20 -- looser evidence than the labels above, tight enough to
       # trip 2x (median 67172).
       #
@@ -361,27 +369,19 @@ runtime_budget_profiles:
       # NOT flag it: BUDGET_SLACK_FACTOR is 3.0 and 90000/41826 is 2.15, so this
       # retune is owed a deliberate revisit, not an automatic one.
       #
-      # `pytest-release` has no samples under its own label yet. Sized from the only
-      # evidence that exists -- the conflated window's 62483ms max, which the release
-      # mode dominates -- at the same 1.4x. A first pass at 125000 was rejected in
-      # release critique: that is 1.4x the max of the whole `run-quality-full-release`
-      # bundle CONTAINING this gate, so no possible run could trip it. A bar that
-      # cannot fail is the exact anti-pattern the retune above was written to fix.
+      # 2026-07-26 (b): `pytest-release` then had its own 10-sample window
+      # (55.4--74.8s), and 105000 was 1.4x its worst observation.  That is no
+      # longer the workload this profile runs: its current 20-sample window is
+      # 81.1--214.3s, median 112.9s, after the closeout/topology lifecycle suite
+      # entered the release path.  The median now correctly trips the old bar, so
+      # retaining it would turn known standing work into a permanent false refusal.
       #
-      # 2026-07-26 (b): RAISED, against this block's usual direction, because the
-      # substitute evidence above turned out to under-size it. `pytest-release` now
-      # has its own 10-sample window (55.4-74.8s) and 87000 is 1.16x its worst
-      # observed run — the `check-coverage` failure mode two entries down, not the
-      # loose-bar one: it would have gone red on variance with nothing regressed.
-      # 105000 is 1.4x that 74828ms max and still 1.63x median, under the 129062ms
-      # 2x-median line. Unlike its read-only siblings this label did NOT move with
-      # `--maxschedchunk 1` (median 64531 -> 66745 on an n=3 post-change slice, which
-      # also contains the window maximum): the release-only lifecycle tests are the
-      # longest single chains in the suite, so removing scheduler imbalance cannot
-      # shorten them. Sized from the whole window rather than a post-change slice for
-      # exactly that reason — and n=3 is stated because a slice that thin and a
-      # 20-sample window read identically once committed.
-      pytest-release: 105000
+      # 300000 is the same 1.4x-worst-current-sample derivation emitted by
+      # `check_runtime_budget.py --suggest-budgets` (rounded to 500ms).  It is
+      # 2.66x the current median and 1.4x the current worst sample, so the runtime
+      # gate still detects a material regression without its max-based slack
+      # advisory classifying this relevel as non-tripping.
+      pytest-release: 300000
       # (contended) was 12000, which sat 259ms above an already-observed contended
       # run (11741) — it would have gone red on its own, weeks later, with nothing
       # regressed. This gate is queued conditionally, so its window turns over
