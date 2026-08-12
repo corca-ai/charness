@@ -718,7 +718,11 @@ def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Pa
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode != 0
-    assert "prepared release record" in resumed.stderr
+    # The release-record marker belongs only to its introducing commit.  This
+    # amended carrier therefore stays in post-publication recovery and rejects
+    # its missing observer tree directly instead of being misclassified as a
+    # fresh prepared record.
+    assert "carrier evidence tree" in resumed.stderr
     remote_main = subprocess.run(
         ["git", "ls-remote", "origin", "refs/heads/main"],
         cwd=repo, check=True, capture_output=True, text=True,
