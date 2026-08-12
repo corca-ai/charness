@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-complete-local-lesson-le
 
 ## Active Operating Frame
 
-- Current slice: decide the remaining graduation seam from proved ledger, preview, register, and authoring evidence.
-- Current slice intent: keep applied contract membership and score-policy effects explicit rather than inferring them from currently unconsumed state.
-- Next action: record the smallest locally decidable graduation decision, then implement only an honest probe or boundary that the decision requires.
+- Current slice: final integration and closeout proof for the local ledger, preview, score-authoring, and proposal-only register seams.
+- Current slice intent: prove the completed local capability while keeping actual contract membership changes and data-free score policy outside its boundary.
+- Next action: bind final local evidence, classify remaining non-claims, and close the goal without applying a contract mutation.
 - Verification cadence: cheap deterministic checks at commit boundaries; fresh-eye review and broad proof at meaningful slice boundaries; final proof is locked at goal closeout.
 - Gate cadence: use the repo's slice closeout and broad quality paths when their trigger is reached; do not repeat expensive proof merely per commit.
 - History boundary: completed slice detail belongs in `## Slice Log`; this frame only states current intent.
@@ -57,7 +57,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 | 1 | Add cited, append-only score events and replayed totals/counts (schema v2). | Score state is prerequisite data for later selection and retains the current ledger's integrity boundary. | Checker, focused tests including real Git prefix fixtures, review packet, quality receipt, commit. | completed |
 | 2 | Record and implement the minimally deterministic selection/render seam. | It consumes proven score state and is where UCB/shown-set decisions become concrete. | Decision record, selection tests, output example, fresh-eye proof. | completed |
 | 3 | Define retro scoring/write workflow and proposal-only register state. | Citation/state exists first; no register behavior is invented before a consumer needs it. | Cited events, validator tests, proposal/register artifact and critique. | completed |
-| 4 | Decide and implement any remaining local graduation seam, then final integration proof. | The threshold and contract consequences require evidence from prior slices. | Locked validation, final retro, goal closeout evidence. | pending |
+| 4 | Decide and implement any remaining local graduation seam, then final integration proof. | The threshold and contract consequences require evidence from prior slices. | Locked validation, final retro, goal closeout evidence. | in progress |
 
 ## Backlog Recount
 

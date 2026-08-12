@@ -201,8 +201,8 @@ would be the same mistake in a new place.
    content.
 3. The contract register can name at least one standing rule that has neither been
    cited nor caught anything, with the evidence for that claim.
-4. Graduation cannot increase the always-loaded contract surface without naming
-   what it displaces.
+4. A schema-v1 graduation proposal that would exceed the fixed active-unit
+   capacity cannot validate without naming existing active displacement units.
 5. The digest becomes the only channel carrying a given lesson, so the channel
    comparison the thesis called impossible becomes possible.
 
@@ -400,6 +400,24 @@ request leaves the ledger bytes unchanged. A repository-local exclusive lock
 spans read, validation, replay, same-directory temporary write, and atomic
 replace, so two concurrent local invocations cannot silently discard one
 another's appended event. Whitespace-only identifiers and anchors are refused.
+
+## Sixth Decision Slice: Graduation Boundary Completion
+
+For this local goal, the graduation seam is complete at **proposal validation**:
+a proposal proves seeded-lesson/source provenance, a canonical allowlisted
+target identity, and fixed-capacity conservation through active displacement
+IDs. It does not approve, apply, or record an H2 membership change. Existing
+tests prove an over-capacity proposal without displacement is refused and a
+proposal with a valid active displacement is accepted; the empty live state
+remains inspectable as 26 active units with zero citations, catches, and
+proposals.
+
+Do not add a score threshold, citation/catch count, proposal reservation, target
+heading creation, retirement, rename history, or an always-on register gate in
+this goal. The evidence cohort is still zero and schema v1 deliberately has no
+applied membership transition. A later, separately reviewed contract-change
+workflow owns approval, its pre-mutation checker invocation, applied
+add/remove/rename history, and any evidence-based eligibility policy.
 
 ## References
 

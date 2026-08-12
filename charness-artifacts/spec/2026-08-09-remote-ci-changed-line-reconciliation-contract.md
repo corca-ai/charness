@@ -255,6 +255,12 @@ policy, CI topology, or the remote non-claim.
   is allowed to proceed because it does not touch the selector, its readers,
   regenerable-facts coverage, or CI topology. The hosted-CI readback remains a
   pending external proof and is not claimed by that local slice.
+- Interrupt Source: remote-ci-changed-line-reconciliation
+- Seam Summary: local focused test selection and coverage -> local aggregate -> GitHub broad changed-line mirror.
+- Chosen Next Step: impl
+- Impl Status: allowed
+- Impl Status Reason: the current local slice now has mapped changed-line coverage and changes neither selector logic nor CI topology; the only partial scope is the separately recorded preview mapper gap.
+- What Disproving Observation Is Resolved: a local partial result with no blocking mapped files is not hosted-CI readback and must not be represented as such.
 
 ## Canonical Artifact
 
