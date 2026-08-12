@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-complete-local-lesson-le
 
 ## Active Operating Frame
 
-- Current slice: decide and implement the minimally deterministic selection/render seam over the proved schema-v2 ledger.
-- Current slice intent: choose only the local policy needed to render a reproducible candidate set; do not imply exposure, scoring completion, archive, register, or graduation behavior.
-- Next action: write the selection decision record, critique its observable invariants, then implement the smallest consumer of replayed score state.
+- Current slice: implement the proposal-only contract register over the proved ledger and preview seams.
+- Current slice intent: make active contract units, citations, and bounded graduation proposals inspectable without writing any contract surface or claiming catch attribution.
+- Next action: implement the strict register state/replay validator from the fourth-slice contract, then prove its pre-mutation boundaries.
 - Verification cadence: cheap deterministic checks at commit boundaries; fresh-eye review and broad proof at meaningful slice boundaries; final proof is locked at goal closeout.
 - Gate cadence: use the repo's slice closeout and broad quality paths when their trigger is reached; do not repeat expensive proof merely per commit.
 - History boundary: completed slice detail belongs in `## Slice Log`; this frame only states current intent.
@@ -137,6 +137,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 
 - Fresh-eye reviewers `score_event_state_review`, `score_event_boundary_review`, and `score_event_counterweight` reviewed the v2 schema before implementation; reviewer boundary snapshot `score-schema-critique-20260812` verified clean.
 - Fresh-eye reviewers `selection_preview_policy_review` and `selection_preview_boundary_review` tightened the preview contract before implementation; `selection_preview_proof_review` found no blocker in the implemented code or mirrors, and both reviewer-boundary snapshots verified clean.
+- Fresh-eye reviewer `contract_register_critique` required fixed H2 identity normalization, a non-rebaselined unit capacity, canonical proposal targets, and an explicit pre-contract-mutation scope; reviewer boundary `contract-register-critique-20260812` verified clean.
 - Floor-Addition Restraint: `scripts/check_lesson_ledger.py` is retained as a blocking local gate because the existing release-quality path already needs a deterministic refusal when the checked-in derived ledger diverges from its cited replay. An advisory would let an invalid state ship to every consuming repository; the unchanged candidate/digest rebuild remains a separate check, so this adds no duplicate replacement floor.
 - Folded blockers: v1-to-v2 prefix migration, strict v2 key sets, all-seed zero initialization, integer-not-boolean scores, materialized replay equality, source-retro recurrence-class citation, and `(source_retro, lesson_id)` uniqueness.
 - Deferred: shown-set proof, selection/session policy, archive state, positive budget, register, and graduation behavior. The current slice owns a narrow UCB-style preview only; it neither records a session nor establishes selection exposure.

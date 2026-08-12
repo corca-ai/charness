@@ -341,6 +341,42 @@ slice a reproducible candidate seam without inventing evidence it cannot observe
 UCB tuning, score budgets, archive writes, shown-set validation, and register or
 graduation state remain out of scope.
 
+## Fourth Implementation Slice
+
+Add an independent `charness.contract-register` schema-v1 state file and
+validator. Its active unit universe is deterministically rebuilt from every
+unfenced ATX H2 heading in `AGENTS.md`,
+`docs/conventions/implementation-discipline.md`, and
+`docs/conventions/operating-contract.md`; a unit ID is the canonical
+`path#heading-slug`, where heading text is Unicode-normalized, trimmed,
+lower-cased, punctuation-separated, and rejected if empty or colliding within a
+path. The materialized, lexically sorted `units` list must equal that rebuild.
+This does not edit those surfaces or infer rule identity from prose: the authored
+heading is the probe-level unit boundary.
+
+The register has append-only `citation_events`, `catch_events`, and
+`graduation_proposals`; their strict event shapes, non-empty IDs, repo-relative
+paths, duplicate rules, and committed-prefix checks fail closed. A citation event
+names an active unit, an existing repository-relative retro, and a non-empty
+anchor; `(source_retro, unit_id)` and event IDs are unique. Catch events remain an
+explicitly empty, strict field until a declared gate-to-unit mapping exists, so a
+handwritten “catch” is not mistaken for mechanical attribution. The initial
+register is enough to make the zero citation/zero catch state inspectable, not to
+claim that citation is a proven signal.
+
+The initial unit budget is seeded once to the active-unit count and then remains a
+fixed capacity; re-baselining it is a new-schema, reviewed decision, not a rebuild
+side effect. A graduation proposal is proposal-only: it names an existing seeded
+lesson and cited recurrence-class source retro, an allowlisted target path and
+heading whose canonical derived ID equals its non-colliding proposed unit ID,
+rationale, and unique existing displacement unit IDs. The validator checks
+`current_unit_count + 1 - displacement_count <= unit_budget`. It neither removes a
+unit nor writes the proposed target. Thus a proposal that would grow the
+always-loaded surface must name enough displacement candidates, while acceptance
+remains an external contract-change process outside this goal. This schema is
+validated only before a contract mutation; preservation of retired/renamed unit
+history after a separately reviewed contract change is deliberately not claimed.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the
