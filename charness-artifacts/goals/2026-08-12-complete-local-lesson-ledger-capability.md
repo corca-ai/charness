@@ -1,6 +1,6 @@
 # Achieve Goal: Complete the local lesson-ledger capability
 
-Status: active
+Status: complete
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-complete-local-lesson-ledger-capability.md` — activated by the user's explicit 2026-08-12 request.
 
@@ -57,7 +57,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 | 1 | Add cited, append-only score events and replayed totals/counts (schema v2). | Score state is prerequisite data for later selection and retains the current ledger's integrity boundary. | Checker, focused tests including real Git prefix fixtures, review packet, quality receipt, commit. | completed |
 | 2 | Record and implement the minimally deterministic selection/render seam. | It consumes proven score state and is where UCB/shown-set decisions become concrete. | Decision record, selection tests, output example, fresh-eye proof. | completed |
 | 3 | Define retro scoring/write workflow and proposal-only register state. | Citation/state exists first; no register behavior is invented before a consumer needs it. | Cited events, validator tests, proposal/register artifact and critique. | completed |
-| 4 | Decide and implement any remaining local graduation seam, then final integration proof. | The threshold and contract consequences require evidence from prior slices. | Locked validation, final retro, goal closeout evidence. | in progress |
+| 4 | Decide and implement any remaining local graduation seam, then final integration proof. | The threshold and contract consequences require evidence from prior slices. | Locked validation, final retro, goal closeout evidence. | completed |
 
 ## Backlog Recount
 
@@ -80,6 +80,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 - Gather: n/a — all context sources are checked-in local artifacts.
 - Release: n/a — no release surface is in scope.
 - Issue closeout: n/a — this goal does not resolve a tracked GitHub issue.
+- Successor goal: n/a — within this goal; a separate reviewed contract-change workflow begins only after an explicit grant and real score/citation evidence exist.
 
 ## Discuss Before Activation
 
@@ -138,6 +139,13 @@ Complete the local lesson-ledger capability from replayed score state through se
 - Targeted verification: focused ledger/register/selection tests (30 passed), both validators, command-doc check, plugin byte equality, critique artifact validation, and duplicate ratchet.
 - Non-claims: The command does not create presentation evidence, selection history, archive state, score budgets, contract changes, or crash-durability guarantees; cooperative local writer serialization is not proof against direct file editing or arbitrary process failure.
 
+### Slice 4: Proposal-only graduation decision and final integration
+
+- Decision: schema-v1 graduation stops at an append-only proposal seam. A proposal exceeding fixed capacity needs an active displacement, but it neither edits nor approves an always-loaded contract.
+- Why: the observed state has 16 seeded lessons with zero score events and 26 active units with zero citations, catches, and proposals. An applied membership transition or eligibility threshold would be structurally valid but evidentially invented.
+- Evidence: final fresh-eye review and disposition review; rebuilt retro index; ledger checker; deterministic preview; register checker; focused integration tests; and final repository quality lane.
+- Non-claim: no graduation occurred, no target heading was created or retired, and no pre-mutation register probe was promoted to an always-on gate.
+
 ## Context Sources
 
 1. `docs/design-north-star.md` — puts review teeth at proof/irreversible boundaries; this goal changes validator verdict logic and therefore needs distinct observation.
@@ -180,9 +188,12 @@ Complete the local lesson-ledger capability from replayed score state through se
 
 ## Final Verification
 
-Retro: pending — create a goal closeout retro only after the final slice.
-Host log probe: skipped: local-only goal — no external host behavior is in scope.
-Disposition review: pending — perform at goal closeout after the final retro.
+Retro: charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md
+Host log probe: skipped: host-log-not-exposed: this local-only goal has no host runtime, connector, or retained host log to probe.
+Disposition review: charness-artifacts/critique/2026-08-12-complete-local-lesson-ledger-capability-disposition-review.md
+- Final local integration: `python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check`; `python3 scripts/check_lesson_ledger.py --repo-root .`; `python3 scripts/render_lesson_selection_preview.py --repo-root . --seed goal-final-proof`; `python3 scripts/check_contract_register.py --repo-root .`; and `pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py tests/test_contract_register.py` — 33 passed; current states are 16 ledger lessons/16 transitions and 26 register units/0 citations/0 proposals.
+- Broad local proof: `./scripts/run-quality.sh --read-only` — 89 passed, 0 failed, 1 UNPROVEN (partial changed-line coverage for the pre-existing unmapped `scripts/render_lesson_selection_preview.py`); its retained result is the independent repository-wide observer.
+- Outcome: impl-local — replayed cited score state, deterministic preview, safe score authoring, and proposal-only register validation are complete; contract mutation, hosted behavior, and release remain excluded.
 
 ## User Verification Instructions
 
@@ -190,5 +201,8 @@ At each committed slice, run the recorded ledger checker and focused test comman
 
 ## Auto-Retro
 
-Retro dispositions: pending — the final goal retro will disposition every surfaced improvement.
-Structural follow-up: pending — determine from the final retro whether a transferable guard is needed.
+- Disposition: accepted-risk: Markdown prepare packets remain retro-corpus-visible; use disposable JSON preparation and persist the final retro before checking derived state.
+- Disposition: applied: The score-budget deferral is recorded in the specification and goal until a scored cohort supports calibration.
+- Disposition: out-of-scope: Applied contract membership requires a separate reviewed contract-change workflow with explicit authority and real evidence.
+- Retro dispositions: applied: The goal-bound retro and independent disposition review recorded and judged every surfaced improvement.
+- Structural follow-up: none — the retro names a closeout-local procedure risk, and the existing JSON preparation path plus index regeneration are the bounded response.

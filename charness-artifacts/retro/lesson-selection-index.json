@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 475,
-  "candidate_count": 1955,
+  "source_artifact_count": 476,
+  "candidate_count": 1960,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -328,6 +328,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d0123fdae8c4",
+      "kind": "current_focus",
+      "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
+      "normalized_key": "this goal completed the local lesson ledger capability without claiming contract mutation selection presentation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -354,67 +380,15 @@
       ]
     },
     {
-      "candidate_id": "class:e13430490ca2",
+      "candidate_id": "next_improvement:469d32314585",
       "kind": "next_improvement",
-      "lesson": "establish the graduation proposal's evidence and displacement before any contract-surface mutation.",
-      "normalized_key": "establish the graduation proposal s evidence and displacement before any contract surface mutation",
-      "recurrence_class": "graduation-is-proposal",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "establish the graduation proposal's evidence and displacement before any contract-surface mutation."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:9d8719cab2e0",
-      "kind": "next_improvement",
-      "lesson": "implement the ledger state file, append-only cited transitions, seed migration, and focused gate before selection or scoring reads it.",
-      "normalized_key": "implement the ledger state file append only cited transitions seed migration and focused gate",
-      "recurrence_class": "durable-lesson-ledger-first",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "implement the ledger state file, append-only cited transitions, seed migration, and focused gate before selection or scoring reads it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ab6aa7cc1e42",
-      "kind": "next_improvement",
-      "lesson": "keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule.",
-      "normalized_key": "keep the current slice and register probes in the canonical ledger register spec do",
+      "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index.",
+      "normalized_key": "disposition accepted risk prepare packets remain visible to the retro corpus when markdown output",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
       "latest_source_date": "2026-08-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -422,12 +396,38 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
           "date": "2026-08-12",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule."
+          "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:39ac79664170",
+      "kind": "next_improvement",
+      "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence.",
+      "normalized_key": "disposition applied record the score budget decision as deferred until a scored cohort provides",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence."
         }
       ]
     }
@@ -746,6 +746,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:d0123fdae8c4",
+      "kind": "current_focus",
+      "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
+      "normalized_key": "this goal completed the local lesson ledger capability without claiming contract mutation selection presentation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -768,6 +794,84 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:469d32314585",
+      "kind": "next_improvement",
+      "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index.",
+      "normalized_key": "disposition accepted risk prepare packets remain visible to the retro corpus when markdown output",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:39ac79664170",
+      "kind": "next_improvement",
+      "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence.",
+      "normalized_key": "disposition applied record the score budget decision as deferred until a scored cohort provides",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:38443acb7e30",
+      "kind": "next_improvement",
+      "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist.",
+      "normalized_key": "disposition out of scope design applied contract membership transitions only after an explicit contract",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist."
         }
       ]
     },
@@ -846,6 +950,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0b9222db0c48",
+      "kind": "repeat_trap",
+      "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption.",
+      "normalized_key": "closeout preparation temporarily placed a retro packet in the retro corpus making the checked",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption."
         }
       ]
     },
