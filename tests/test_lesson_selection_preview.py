@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import math
+import runpy
 import sys
 from pathlib import Path
 
@@ -82,6 +83,26 @@ def test_preview_renderer_cli_emits_json_and_flat_text(monkeypatch, capsys) -> N
     assert (
         capsys.readouterr().out == "Lesson selection preview (1/1 eligible):\n- a — useful lesson\n"
     )
+
+
+def test_preview_renderer_script_entrypoint_exits_successfully(monkeypatch, capsys) -> None:
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "render_lesson_selection_preview.py",
+            "--repo-root",
+            str(ROOT),
+            "--seed",
+            "stable-preview-seed",
+            "--json",
+        ],
+    )
+    with pytest.raises(SystemExit, match="0"):
+        runpy.run_path(
+            str(ROOT / "scripts" / "render_lesson_selection_preview.py"), run_name="__main__"
+        )
+    assert json.loads(capsys.readouterr().out)["kind"] == preview.KIND
 
 
 def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(
