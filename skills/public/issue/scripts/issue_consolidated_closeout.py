@@ -108,10 +108,13 @@ _TARGETED_CLAIM_RES = tuple(
 )
 # A public repair claim: GitHub renders `Fixes #N` / `Resolves #N` on the issue
 # timeline. `Closes` is the neutral keyword a consolidation must use.
-_FIX_KEYWORD_RE = re.compile(r"\b(?:fix(?:e[sd])?|resolve[sd]?)\s+#\d+", re.IGNORECASE)
+_FIX_KEYWORD_RE = re.compile(
+    r"\b(?:fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)#\d+", re.IGNORECASE
+)
 # Every close keyword GitHub honours, including the neutral `Closes`.
 _ANY_CLOSE_KEYWORD_RE = re.compile(
-    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)\s+#(\d+)(?!\d)", re.IGNORECASE
+    r"\b(?:close[sd]?|fix(?:e[sd])?|resolve[sd]?)(?:\s*:\s*|\s+)#(\d+)(?!\d)",
+    re.IGNORECASE,
 )
 
 

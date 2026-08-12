@@ -1,0 +1,177 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T11:05:35Z",
+  "prepared_for": "issue-594-closeout-draft-scope-frozen-binding-final3",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md\n- charness-artifacts/critique/2026-08-12-105645-packet.json\n- charness-artifacts/critique/2026-08-12-105645-packet.md\n- charness-artifacts/critique/2026-08-12-110444-packet.json\n- charness-artifacts/critique/2026-08-12-110444-packet.md\n- charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md\n- charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/quality/latest.md\n- plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py\n- plugins/charness/skills/issue/scripts/issue_close_comment_floor.py\n- plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py\n- plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py\n- plugins/charness/skills/issue/scripts/issue_verify_closeout.py\n- plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py\n- skills/public/issue/scripts/describe_closeout_draft_shape.py\n- skills/public/issue/scripts/issue_close_comment_floor.py\n- skills/public/issue/scripts/issue_closeout_classification_ledger.py\n- skills/public/issue/scripts/issue_consolidated_closeout.py\n- skills/public/issue/scripts/issue_verify_closeout.py\n- skills/public/issue/scripts/issue_verify_closeout_body.py\n- tests/quality_gates/test_check_artifact_surface_preflight.py\n- tests/quality_gates/test_issue_close_comment_floor.py\n- tests/quality_gates/test_issue_consolidated_closeout.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  derived matches: plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py, plugins/charness/skills/issue/scripts/issue_close_comment_floor.py, plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py, plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md, charness-artifacts/critique/2026-08-12-105645-packet.md, charness-artifacts/critique/2026-08-12-110444-packet.md, charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md, charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md, charness-artifacts/debug/latest.md, charness-artifacts/quality/latest.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  derived matches: plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py, plugins/charness/skills/issue/scripts/issue_close_comment_floor.py, plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py, plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-12-105645-packet.json, charness-artifacts/critique/2026-08-12-105645-packet.md, charness-artifacts/critique/2026-08-12-110444-packet.json, charness-artifacts/critique/2026-08-12-110444-packet.md, charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_check_artifact_surface_preflight.py, tests/quality_gates/test_issue_close_comment_floor.py, tests/quality_gates/test_issue_consolidated_closeout.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n- closeout-floor-matrix: Declared floor x classification x carrier matrix for issue closeout, and the behavioral probe that re-derives it from the real carriers.\n  source matches: skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/check_closeout_floor_matrix.py --repo-root .\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "2a811cee760ba15370b007da2a05bfd4aea09194",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
+      "charness-artifacts/quality/latest.md",
+      "plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py",
+      "plugins/charness/skills/issue/scripts/issue_close_comment_floor.py",
+      "plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py",
+      "plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+      "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+      "skills/public/issue/scripts/issue_close_comment_floor.py",
+      "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+      "skills/public/issue/scripts/issue_consolidated_closeout.py",
+      "skills/public/issue/scripts/issue_verify_closeout.py",
+      "skills/public/issue/scripts/issue_verify_closeout_body.py",
+      "tests/quality_gates/test_check_artifact_surface_preflight.py",
+      "tests/quality_gates/test_issue_close_comment_floor.py",
+      "tests/quality_gates/test_issue_consolidated_closeout.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md",
+        "content_sha256": "561ccc863ed6f38b1175f1a358bd85320360e27415df3efa9e194fcbdbae9be5"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "5c10e2b5994b8752d9833722cb3192baefb7b74cf42f7c0e13f7fed254f9fb54"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "04d71b2c90baf7a73f31e41f6ecf47e2094cdf57d210f5279d0dd91cc22c6ce2"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
+        "content_sha256": "68d1555228bd5edb995076aa68c4a063dd48b0ce6b6bb6593cad72887d00fa71"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "4de01b5b0d7c46f7c95a2952fbcaeb39f9e122525e8c63fea36e88956c72b9ab"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py",
+        "content_sha256": "4b8610a8a7e7276413bb988764eca13768822ac735f6e21b226a4c54f08b31e5"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_close_comment_floor.py",
+        "content_sha256": "9c3d25f29c2ee7a6963a83201eac70ad1ac67e3cd8d5f72d73e87329288ef352"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py",
+        "content_sha256": "e357cf7f8c6a0f359952a710c9b786fa638121e1c413af62c28acf8590d9f468"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py",
+        "content_sha256": "bda1c890e4d928e8c111c0e7991ec4c4b8f3e0ec9d123ee142caa2e473af9b68"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "ccb38289082dd0cd9eaa2a4b91839936d6d732b636002178e09e60e8e511661f"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "06f37789f009ad1d9cf44725315c44f36a4c2e76d95409a572d2bc85b571c520"
+      },
+      {
+        "path": "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+        "content_sha256": "4b8610a8a7e7276413bb988764eca13768822ac735f6e21b226a4c54f08b31e5"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_close_comment_floor.py",
+        "content_sha256": "9c3d25f29c2ee7a6963a83201eac70ad1ac67e3cd8d5f72d73e87329288ef352"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+        "content_sha256": "e357cf7f8c6a0f359952a710c9b786fa638121e1c413af62c28acf8590d9f468"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_consolidated_closeout.py",
+        "content_sha256": "bda1c890e4d928e8c111c0e7991ec4c4b8f3e0ec9d123ee142caa2e473af9b68"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "ccb38289082dd0cd9eaa2a4b91839936d6d732b636002178e09e60e8e511661f"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "06f37789f009ad1d9cf44725315c44f36a4c2e76d95409a572d2bc85b571c520"
+      },
+      {
+        "path": "tests/quality_gates/test_check_artifact_surface_preflight.py",
+        "content_sha256": "fc5ebe7663dfc495eace26f065ebd1e8fae63f8645f997fcda157f127faf9af9"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_close_comment_floor.py",
+        "content_sha256": "2b1e7d25247fad6964f4b568090cc77b1dfee5d94118ba801f5fa07217d84c47"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_consolidated_closeout.py",
+        "content_sha256": "506beb33715de5f27fea93d1880e1f54b3bcf8c9896cafb8ce4f7ccbeb6d8bb4"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "27646084b323e5c9f4727aa0a0d0901e630ef6f9e3bd045a10c7fcbad473050e",
+    "unstaged_patch_sha256": "ff21557912de5e6464b7ba6f53c56b2f381303eca7ea7521d4a36a5f1c764ca6",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-12-105645-packet.json",
+      "charness-artifacts/critique/2026-08-12-105645-packet.md",
+      "charness-artifacts/critique/2026-08-12-110444-packet.json",
+      "charness-artifacts/critique/2026-08-12-110444-packet.md",
+      "charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md"
+    ],
+    "identity_sha256": "7ae4fd61e4e0093a755aa9d56f50ba091f48fc1bf35a3ffbd8f781b74bda5f26"
+  }
+}

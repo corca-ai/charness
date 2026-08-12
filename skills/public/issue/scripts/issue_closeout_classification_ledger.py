@@ -93,7 +93,9 @@ def build_extra_checks(
             )
         )
 
-    def consolidated_problems(text: str, fields: dict, carrier=None) -> list[str]:
+    def consolidated_problems(
+        text: str, fields: dict, carrier=None, invoked_numbers: tuple[int, ...] = ()
+    ) -> list[str]:
         """Destination arity, self-reference, and the repair-claim contradiction.
 
         `self_numbers` is threaded because without it the self-reference check
@@ -105,7 +107,10 @@ def build_extra_checks(
         # Without it a fenced authoring template satisfied the destination field,
         # and a pasted log containing `Implementation:` triggered a FALSE refusal.
         body = strip_fences(text) if strip_fences is not None else text
-        numbers = self_numbers(body) if self_numbers is not None else []
+        # A direct API close has an invoked number even when its body deliberately
+        # contains no GitHub close keyword. Prefer that caller-owned identity; the
+        # body scan remains the source for commit/PR carriers and direct helper use.
+        numbers = list(invoked_numbers) or (self_numbers(body) if self_numbers is not None else [])
         return [
             f"consolidated:{problem}"
             for problem in consolidated.evaluate(

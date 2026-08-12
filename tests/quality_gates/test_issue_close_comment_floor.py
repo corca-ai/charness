@@ -466,3 +466,25 @@ def test_a_consolidated_repair_claim_refusal_is_rendered_not_silent(tmp_path: Pa
     rendered = floor.format_close_comment_floor_failure(report)
     assert "asserts a repair via" in rendered
     assert len(rendered.splitlines()) > 1, "a refusal that prints only its header is unreadable"
+
+
+def test_manual_consolidation_refuses_destination_equal_to_invoked_issue(tmp_path: Path) -> None:
+    """The manual carrier knows its target even when the comment has no keyword.
+
+    A `Closes #N` line in a comment does not close anything, so the consolidated
+    authoring shape correctly tells users to omit it.  That must not remove the
+    only identity the self-reference rule can use.
+    """
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body=(
+            "Jtbd: move this work to its owner.\n"
+            "Consolidated into: #42\n"
+            "AI-provenance: authored by an agent session.\n"
+        ),
+        classification="consolidated",
+        number=42,
+    )
+    assert report["ok"] is False
+    assert any("same carrier is closing" in problem for problem in report["missing_ledger_fields"])

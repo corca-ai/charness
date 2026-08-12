@@ -556,6 +556,39 @@ def test_closeout_draft_shape_pins_live_verifier_constants() -> None:
             assert field_id in shape or f"{field_id.title()}:" in shape, field_id
 
 
+def test_closeout_draft_shape_observes_consolidated_carrier_and_readback_boundaries() -> None:
+    """A describe-first surface must not prescribe a body its own gate refuses."""
+    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated")
+    shape = desc.required_shape("consolidated")
+    classification = desc._CONSOLIDATED.CLASSIFICATION
+    probe = "Closes #5\nJtbd: move the work\nConsolidated into: #6\n"
+    refused = [
+        carrier
+        for carrier in desc._VERIFY.CARRIERS
+        if desc._BODY._missing_ledger_fields(probe, classification, carrier=carrier)
+    ]
+
+    assert "Consolidated disposition (consolidated)" in shape
+    assert f"Do not use draft carriers {', '.join(refused)}" in shape
+    assert f"--reason {desc._CONSOLIDATED.REQUIRED_CLOSE_REASON!r}" in shape
+    for fact in desc._CONSOLIDATED.evaluate("Jtbd: move the work\nConsolidated into: #6\n")["not_checked_here"]:
+        assert fact in shape
+    assert "claim Implementation, Prevention, Resolution brief" in shape
+    assert "before comment/close mutation" in shape
+    assert "neutral `Closes #N` is non-operative" in shape
+    assert any("auto-closes" in problem for problem in desc._BODY._missing_ledger_fields(probe, classification, carrier="direct-commit"))
+    assert "Carrier (--carrier" not in shape
+    assert "Close keyword (not required" not in shape
+
+
+def test_closeout_draft_shape_can_render_the_selected_consolidated_guide(capsys) -> None:
+    desc = _load_describe("skills/public/issue/scripts/describe_closeout_draft_shape.py", "dccs_consolidated_cli")
+    assert desc.main(["--classification", "consolidated"]) == 0
+    shape = capsys.readouterr().out
+    assert "required shape for classification `consolidated`" in shape
+    assert "Carrier (--carrier" not in shape
+
+
 def test_closeout_draft_stub_body_satisfies_the_real_validator_helpers() -> None:
     # round-trip drift guard: a body built from the SURFACED headers passes the
     # validator's own ledger/keyword helpers for every classification, proving the

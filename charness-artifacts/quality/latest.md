@@ -1,1 +1,1 @@
-2026-08-12-issue-604-canonical-gate-recognition.md
+2026-08-12-issue-594-closeout-draft-scope.md

@@ -238,6 +238,16 @@ def test_a_public_fix_keyword_is_a_repair_claim() -> None:
     assert missing_ledger_fields(neutral, "consolidated") == []
 
 
+def test_colon_form_repair_keywords_are_claims_too() -> None:
+    """GitHub's colon spelling must have the same consolidated verdict."""
+    for keyword in ("Fixes: #555", "Resolves: #555"):
+        body = f"{keyword}\n\nJtbd: x\nConsolidated into: #600\n"
+        assert any("claims nothing about the defect" in p for p in missing_ledger_fields(body, "consolidated")), keyword
+
+    neutral = "Closes: #555\n\nJtbd: x\nConsolidated into: #600\n"
+    assert missing_ledger_fields(neutral, "consolidated") == []
+
+
 def test_a_multi_anchor_behavior_line_cannot_evade_the_refusal() -> None:
     """The first grammar required `#\\d+` immediately before the colon, so
     `Behavior #600, #601:` slipped past it while matching the real floor's grammar."""
@@ -310,6 +320,12 @@ def test_an_auto_closing_carrier_is_refused_because_github_renders_completed() -
     assert missing_ledger_fields(body, "consolidated", carrier="manual-fallback") == []
 
 
+def test_colon_form_neutral_keyword_is_still_an_auto_close() -> None:
+    body = "Closes: #555\n\nJtbd: x\nConsolidated into: #600\n"
+    problems = missing_ledger_fields(body, "consolidated", carrier="direct-commit")
+    assert any("auto-closes" in problem for problem in problems)
+
+
 def test_a_present_field_naming_no_anchor_is_refused() -> None:
     """The seam between the two owners: the row checks a substantive STRING and the
     module was told to stay silent about absence, so `Consolidated into: the umbrella
@@ -323,6 +339,15 @@ def test_the_self_reference_check_covers_every_issue_the_carrier_closes() -> Non
     comparing only the first number let the destination be one of the other nineteen."""
     body = "Closes #100, #119\n\nJtbd: x\nConsolidated into: #119\n"
     assert any("same carrier is closing" in p for p in missing_ledger_fields(body, "consolidated"))
+
+
+def test_manual_carrier_uses_its_invoked_number_for_self_reference() -> None:
+    """Manual close comments have no useful close keyword to infer this identity."""
+    body = "Jtbd: x\nConsolidated into: #119\n"
+    problems = missing_ledger_fields(
+        body, "consolidated", carrier="manual-fallback", invoked_numbers=(119,)
+    )
+    assert any("same carrier is closing" in problem for problem in problems)
 
 
 def test_a_fenced_fix_keyword_is_still_a_claim() -> None:

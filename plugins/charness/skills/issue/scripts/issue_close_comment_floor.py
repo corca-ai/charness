@@ -20,16 +20,15 @@ exemption — both are presence checks like the ones above:
   body, never in an issue comment, and ``close-with-comment`` closes through the
   API regardless. Composing it here would demand a line that does nothing and
   would diverge from the sibling verifier.
-- **Ledger fields** (`_missing_ledger_fields`). ``verify-closeout`` *does* apply
-  these to this same body, and they are presence-only — the repo's archetype for
-  that shape, which ``evaluate_source_preservation`` describes itself as
-  mirroring. Left out as scope restraint, not on principle: wiring them would
-  tighten the manual-close path well past the named provenance residual, newly
-  refusing short close comments whose ledger lives in the commit carrier.
-  ``verify-closeout`` still enforces them when run. Revisit as a deliberate
-  tightening with its own before/after, not as a gap. (The leading underscore is
-  not the obstacle — ``issue_verify_closeout.py`` already aliases the same private
-  name across the module boundary.)
+- **Ledger fields** (`_missing_ledger_fields`). ``consolidated`` is the narrow
+  exception: its required `close-with-comment` carrier composes that
+  classification's own fields so it cannot close an issue into itself or invent a
+  repair claim. Other classifications remain out of scope: applying their full
+  resolution ledger here would newly refuse short close comments whose ledger
+  lives in a commit carrier. ``verify-closeout`` still enforces those fields when
+  run. Revisit that broader tightening with its own before/after, not as a gap.
+  (The leading underscore is not the obstacle — ``issue_verify_closeout.py``
+  already aliases the same private name across the module boundary.)
 """
 from __future__ import annotations
 
@@ -94,7 +93,9 @@ def evaluate_close_comment_floor(
     # (this carrier checks fewer ledger fields than `verify-closeout` does) is real and
     # is left where it was, not silently widened under cover of this fix.
     consolidated_ledger = (
-        _BODY._missing_ledger_fields(body, classification, carrier="manual-fallback")
+        _BODY._missing_ledger_fields(
+            body, classification, carrier="manual-fallback", invoked_numbers=tuple(numbers)
+        )
         if classification == _CONSOLIDATED_CLASSIFICATION
         else []
     )

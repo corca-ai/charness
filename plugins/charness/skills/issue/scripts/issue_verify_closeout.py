@@ -251,7 +251,9 @@ def verify_closeout(
     # The carrier is threaded because `consolidated` must refuse the AUTO-CLOSE
     # carriers: GitHub renders a keyword close as `completed`, with no reason argv
     # to intercept, which asserts the repair a consolidated close refuses.
-    missing_fields = _missing_ledger_fields(body, classification, carrier=carrier)
+    missing_fields = _missing_ledger_fields(
+        body, classification, carrier=carrier, invoked_numbers=tuple(numbers)
+    )
     source_preservation = evaluate_source_preservation(body)
     behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
     hotl_dispositions = evaluate_hotl_dispositions(body, classification)

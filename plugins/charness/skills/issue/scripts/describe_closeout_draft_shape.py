@@ -24,6 +24,7 @@ _BODY = _load_local("issue_verify_closeout_body")
 _FLOORS = _load_local("issue_closeout_rung1_floors")
 _CRITIQUE = _load_local("issue_resolution_critique")
 _ledger_counts = _load_local("issue_closeout_ledger_counts")
+_CONSOLIDATED = _load_local("issue_consolidated_closeout")
 
 
 def _min_signal_clause() -> str:
@@ -59,6 +60,65 @@ def _ledger_block() -> list[str]:
     for finding_id, description in _ledger_counts.SIBLING_RULE_DESCRIPTIONS.items():
         out.append(f"  - {description} (`{finding_id}` fails otherwise).")
     return out
+
+
+def _consolidated_block() -> list[str]:
+    """Render the exceptional disposition by querying its live body owner.
+
+    `consolidated` moves work and must not use a GitHub auto-close carrier: the
+    tracker would render that close as completed.  This belongs beside the
+    generic shape, not in a prose-only reference, because this is the surface
+    an author consults before making the irreversible carrier choice.
+    """
+    classification = _CONSOLIDATED.CLASSIFICATION
+    probe = "Closes #5\nJtbd: move the work\nConsolidated into: #6\n"
+    refused = [
+        carrier
+        for carrier in _VERIFY.CARRIERS
+        if _BODY._missing_ledger_fields(probe, classification, carrier=carrier)
+    ]
+    allowed = [carrier for carrier in _VERIFY.CARRIERS if carrier not in refused]
+    observed = _CONSOLIDATED.evaluate("Jtbd: move the work\nConsolidated into: #6\n")
+    return [
+        "",
+        f"Consolidated disposition ({classification}) — this is a MOVE, not a repair:",
+        f"  - Do not use draft carriers {', '.join(refused)}; GitHub auto-closes those carriers",
+        "    as completed. Use `issue_tool.py close-with-comment` with",
+        f"    `--reason {_CONSOLIDATED.REQUIRED_CLOSE_REASON!r}` instead.",
+        "    Omit a close keyword from that comment: a neutral `Closes #N` is non-operative there,",
+        "    while `Fixes` / `Resolves` remains a refused repair claim.",
+        "  - The body requires `Jtbd:` and exactly one `Consolidated into: #N`; it must not",
+        "    name an issue this carrier closes or claim Implementation, Prevention, Resolution brief,",
+        "    Behavior, HOTL, Critique, Fixes, or Resolves.",
+        "  - The body grammar deliberately does NOT assert these backend facts; the required",
+        "    close-with-comment carrier reads them before comment/close mutation:",
+        *[f"    - {fact}." for fact in observed["not_checked_here"]],
+        f"  - `{', '.join(allowed)}` is only the generic verifier carrier that does not auto-close;",
+        "    it is not the consolidated close path above.",
+    ]
+
+
+def _consolidated_required_shape() -> str:
+    """The executable guide for an author who has already selected consolidation.
+
+    The unqualified shape is a catalog for every classification.  Reusing that
+    catalog after `consolidated` is selected made an author reconcile a generic
+    carrier menu with a late exception at the irreversible choice, so this route
+    deliberately contains only obligations that apply to consolidation.
+    """
+    return "\n".join(
+        [
+            "closeout-draft required shape for classification `consolidated`",
+            "(enforced by `issue_tool.py validate-closeout-draft` before mutation):",
+            *_consolidated_block(),
+            "",
+            "AI-provenance: add a substantive `AI-provenance: <…>` line; this applies",
+            "to every classification so the eventual external close is legible as agent-authored.",
+            "",
+            "Externally-sourced body: if it carries substantive `Source origin:`, also add at",
+            "least one of `Source text:` / `Re-read obligation:` / `Source degraded reason:`.",
+        ]
+    ).rstrip() + "\n"
 
 
 def _hotl_vocabulary() -> str:
@@ -101,7 +161,10 @@ def _split_top_level(pattern_body: str) -> list[str]:
     return [part for part in parts if part]
 
 
-def required_shape() -> str:
+def required_shape(classification: str | None = None) -> str:
+    """Render either the full catalog or a classification-specific author guide."""
+    if classification == _CONSOLIDATED.CLASSIFICATION:
+        return _consolidated_required_shape()
     crit = ", ".join(_CRITIQUE.CRITIQUE_REQUIRED_CLASSIFICATIONS)
     behavioral = ", ".join(_FLOORS.BEHAVIORAL_VERDICT_CLASSIFICATIONS)
     # OBSERVED, not restated. Round 1 caught this line rendering the behavioral
@@ -127,6 +190,8 @@ def required_shape() -> str:
     lines = [
         "closeout-draft required shape (enforced by `issue_tool.py validate-closeout-draft`,",
         "which reuses `verify_closeout` — same checks before anything mutates GitHub):",
+        "This is the all-classifications catalog; after selecting `consolidated`, rerun with",
+        "`--classification consolidated` for its non-conflicting carrier guide.",
         "",
         f"Carrier (--carrier, one of: {carriers}) decides the carrier-body SOURCE:",
         "  - direct-commit: the body is the COMMIT MESSAGE — pass `--commit-message-file`",
@@ -155,6 +220,7 @@ def required_shape() -> str:
         "",
     ]
     lines += _ledger_block()
+    lines += _consolidated_block()
     lines += [
         "",
         f"manual-fallback carrier also requires --manual-fallback-reason one of: {reasons}.",
@@ -203,8 +269,13 @@ def main(argv: list[str] | None = None) -> int:
         help="Repository root accepted by artifact-surface preflight (default: current directory)",
     )
     parser.add_argument("--stub", action="store_true", help="Emit a starter closeout body")
+    parser.add_argument(
+        "--classification",
+        choices=_VERIFY.CLASSIFICATIONS,
+        help="Render the selected classification's guide instead of the full catalog",
+    )
     args = parser.parse_args(argv)
-    sys.stdout.write(stub() if args.stub else required_shape())
+    sys.stdout.write(stub() if args.stub else required_shape(args.classification))
     return 0
 
 

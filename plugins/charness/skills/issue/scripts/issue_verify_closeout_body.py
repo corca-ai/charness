@@ -172,7 +172,13 @@ _CLASSIFICATION_EXTRA_CHECKS = _classification_ledger.build_extra_checks(
 )
 
 
-def _missing_ledger_fields(text: str, classification: str, *, carrier: str | None = None) -> list[str]:
+def _missing_ledger_fields(
+    text: str,
+    classification: str,
+    *,
+    carrier: str | None = None,
+    invoked_numbers: tuple[int, ...] = (),
+) -> list[str]:
     fields = _body_fields(text)
     missing = [
         field_id
@@ -181,7 +187,10 @@ def _missing_ledger_fields(text: str, classification: str, *, carrier: str | Non
     ]
     extra = _CLASSIFICATION_EXTRA_CHECKS.get(classification)
     if extra is not None:
-        missing.extend(extra(text, fields, carrier))
+        if classification == _consolidated.CLASSIFICATION:
+            missing.extend(extra(text, fields, carrier, invoked_numbers))
+        else:
+            missing.extend(extra(text, fields, carrier))
     return missing
 
 
@@ -194,5 +203,4 @@ def _missing_close_keywords(text: str, numbers: list[int], repo: str) -> list[in
             continue
         found.add(number)
     return [number for number in numbers if number not in found]
-
 
