@@ -1,0 +1,760 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T18:15:50Z",
+  "prepared_for": "5.1.0 release decision",
+  "changed_ref": "v5.0.1..HEAD",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `v5.0.1..HEAD`:\n- charness-artifacts/critique/2026-08-12-140743-packet.json\n- charness-artifacts/critique/2026-08-12-140743-packet.md\n- charness-artifacts/critique/2026-08-12-141010-packet.json\n- charness-artifacts/critique/2026-08-12-141010-packet.md\n- charness-artifacts/critique/2026-08-12-142919-packet.json\n- charness-artifacts/critique/2026-08-12-142919-packet.md\n- charness-artifacts/critique/2026-08-12-143920-packet.json\n- charness-artifacts/critique/2026-08-12-143920-packet.md\n- charness-artifacts/critique/2026-08-12-144548-packet.json\n- charness-artifacts/critique/2026-08-12-144548-packet.md\n- charness-artifacts/critique/2026-08-12-145810-packet.json\n- charness-artifacts/critique/2026-08-12-145810-packet.md\n- charness-artifacts/critique/2026-08-12-151434-packet.json\n- charness-artifacts/critique/2026-08-12-151434-packet.md\n- charness-artifacts/critique/2026-08-12-152909-packet.json\n- charness-artifacts/critique/2026-08-12-152909-packet.md\n- charness-artifacts/critique/2026-08-12-154616-packet.json\n- charness-artifacts/critique/2026-08-12-154616-packet.md\n- charness-artifacts/critique/2026-08-12-154946-packet.json\n- charness-artifacts/critique/2026-08-12-154946-packet.md\n- charness-artifacts/critique/2026-08-12-155204-packet.json\n- charness-artifacts/critique/2026-08-12-155204-packet.md\n- charness-artifacts/critique/2026-08-12-160206-packet.json\n- charness-artifacts/critique/2026-08-12-160206-packet.md\n- charness-artifacts/critique/2026-08-12-160548-packet.json\n- charness-artifacts/critique/2026-08-12-160548-packet.md\n- charness-artifacts/critique/2026-08-12-160812-packet.json\n- charness-artifacts/critique/2026-08-12-160812-packet.md\n- charness-artifacts/critique/2026-08-12-160936-packet.json\n- charness-artifacts/critique/2026-08-12-160936-packet.md\n- charness-artifacts/critique/2026-08-12-161938-packet.json\n- charness-artifacts/critique/2026-08-12-161938-packet.md\n- charness-artifacts/critique/2026-08-12-162230-packet.json\n- charness-artifacts/critique/2026-08-12-162230-packet.md\n- charness-artifacts/critique/2026-08-12-162942-packet.json\n- charness-artifacts/critique/2026-08-12-162942-packet.md\n- charness-artifacts/critique/2026-08-12-163119-packet.json\n- charness-artifacts/critique/2026-08-12-163119-packet.md\n- charness-artifacts/critique/2026-08-12-163518-packet.json\n- charness-artifacts/critique/2026-08-12-163518-packet.md\n- charness-artifacts/critique/2026-08-12-163704-packet.json\n- charness-artifacts/critique/2026-08-12-163704-packet.md\n- charness-artifacts/critique/2026-08-12-163923-packet.json\n- charness-artifacts/critique/2026-08-12-163923-packet.md\n- charness-artifacts/critique/2026-08-12-163952-packet.json\n- charness-artifacts/critique/2026-08-12-163952-packet.md\n- charness-artifacts/critique/2026-08-12-164727-packet.json\n- charness-artifacts/critique/2026-08-12-164727-packet.md\n- charness-artifacts/critique/2026-08-12-164956-packet.json\n- charness-artifacts/critique/2026-08-12-164956-packet.md\n- charness-artifacts/critique/2026-08-12-165549-packet.json\n- charness-artifacts/critique/2026-08-12-165549-packet.md\n- charness-artifacts/critique/2026-08-12-165836-packet.json\n- charness-artifacts/critique/2026-08-12-165836-packet.md\n- charness-artifacts/critique/2026-08-12-170112-packet.json\n- charness-artifacts/critique/2026-08-12-170112-packet.md\n- charness-artifacts/critique/2026-08-12-170646-packet.json\n- charness-artifacts/critique/2026-08-12-170646-packet.md\n- charness-artifacts/critique/2026-08-12-171322-packet.json\n- charness-artifacts/critique/2026-08-12-171322-packet.md\n- charness-artifacts/critique/2026-08-12-171855-packet.json\n- charness-artifacts/critique/2026-08-12-171855-packet.md\n- charness-artifacts/critique/2026-08-12-172306-packet.json\n- charness-artifacts/critique/2026-08-12-172306-packet.md\n- charness-artifacts/critique/2026-08-12-173729-packet.json\n- charness-artifacts/critique/2026-08-12-173729-packet.md\n- charness-artifacts/critique/2026-08-12-173751-packet.json\n- charness-artifacts/critique/2026-08-12-173751-packet.md\n- charness-artifacts/critique/2026-08-12-173947-packet.json\n- charness-artifacts/critique/2026-08-12-173947-packet.md\n- charness-artifacts/critique/2026-08-12-174749-packet.json\n- charness-artifacts/critique/2026-08-12-174749-packet.md\n- charness-artifacts/critique/2026-08-12-175129-packet.json\n- charness-artifacts/critique/2026-08-12-175129-packet.md\n- charness-artifacts/critique/2026-08-12-175516-packet.json\n- charness-artifacts/critique/2026-08-12-175516-packet.md\n- charness-artifacts/critique/2026-08-12-175707-packet.json\n- charness-artifacts/critique/2026-08-12-175707-packet.md\n- charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md\n- charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.json\n- charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.md\n- charness-artifacts/critique/2026-08-12-issue-584-sessionstart-routing-repair-critique.md\n- charness-artifacts/critique/2026-08-12-issue-595-runtime-advisory-contract-critique.md\n- charness-artifacts/critique/2026-08-12-issue-597-quality-fixture-gate-repair-critique.md\n- charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.json\n- charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.md\n- charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.json\n- charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.md\n- charness-artifacts/critique/2026-08-12-open-backlog-goal-final-activation.md\n- charness-artifacts/critique/2026-08-12-post-publication-issue-closeout-carriers.md\n- charness-artifacts/critique/2026-08-13-issue-539-create-url-shape-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-588-policy-absent-dogfood-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-589-preset-reconciliation-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-606-boundary-baseline-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md\n- charness-artifacts/critique/2026-08-13-open-backlog-handoff-528-542-refresh.md\n- charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md\n- charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md\n- charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md\n- charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md\n- charness-artifacts/debug/2026-08-13-debug-review-followup.md\n- charness-artifacts/debug/2026-08-13-debug-review.md\n- charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md\n- charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md\n- charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md\n- charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md\n- charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md\n- charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md\n- charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md\n- charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md\n- charness-artifacts/issue/2026-08-13-issue-527-brief.md\n- charness-artifacts/metrics/rca-ledger.jsonl\n- charness-artifacts/probe/2026-08-12-v5.0.1-release-observer.json\n- charness-artifacts/release/latest.md\n- charness-artifacts/retro/2026-08-12-180732-packet.json\n- charness-artifacts/retro/2026-08-12-180732-packet.md\n- charness-artifacts/retro/2026-08-12-session-release-closeout-packet.json\n- charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md\n- charness-artifacts/retro/2026-08-12-session-retro.md\n- charness-artifacts/retro/2026-08-13-session-retro.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/recent-lessons.md\n- charness-artifacts/spec/2026-08-13-preset-lineage-reconciliation-contract.md\n- charness-artifacts/spec/planner-required-read-cost-contract.md\n- docs/conventions/validator-timing-layers.md\n- docs/handoff.md\n- docs/readme-proof.md\n- docs/testability-dsl-initiative.md\n- plugins/charness/scripts/boundary-bypass-baseline.json\n- plugins/charness/scripts/boundary_bypass_ratchet_lib.py\n- plugins/charness/scripts/check_boundary_bypass_ratchet.py\n- plugins/charness/scripts/check_quality_tool_fixtures.py\n- plugins/charness/scripts/evidence_boundary_crosswalk.py\n- plugins/charness/scripts/public_skill_dogfood_lib.py\n- plugins/charness/scripts/readme_proof_ledger_lib.py\n- plugins/charness/scripts/run-quality.sh\n- plugins/charness/scripts/session_start_routing.py\n- plugins/charness/scripts/suggest_public_skill_dogfood.py\n- plugins/charness/scripts/validate_presets.py\n- plugins/charness/shared/references/run-plan-envelope.md\n- plugins/charness/shared/scripts/run_plan_envelope.py\n- plugins/charness/skills/handoff/scripts/plan_handoff_run.py\n- plugins/charness/skills/issue/SKILL.md\n- plugins/charness/skills/issue/references/issue-backend.md\n- plugins/charness/skills/issue/scripts/issue_create.py\n- plugins/charness/skills/issue/scripts/issue_create_verify.py\n- plugins/charness/skills/quality/references/bootstrap-posture.md\n- plugins/charness/skills/quality/references/inventory-consumer-fields.json\n- plugins/charness/skills/quality/scripts/check_runtime_budget.py\n- plugins/charness/skills/quality/scripts/inventory_standing_test_economics.py\n- plugins/charness/skills/quality/scripts/plan_quality_run.py\n- plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py\n- plugins/charness/skills/quality/scripts/quality_preset_reconciliation.py\n- plugins/charness/skills/quality/scripts/quality_run_plan_render.py\n- plugins/charness/skills/quality/scripts/runtime_budget_lib.py\n- plugins/charness/skills/quality/scripts/runtime_visibility_lib.py\n- plugins/charness/skills/quality/scripts/standing_test_economics_lib.py\n- plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py\n- plugins/charness/skills/quality/scripts/surface_marker_lib.py\n- scripts/boundary-bypass-baseline.json\n- scripts/boundary_bypass_ratchet_lib.py\n- scripts/check_boundary_bypass_ratchet.py\n- scripts/check_quality_tool_fixtures.py\n- scripts/evidence_boundary_crosswalk.py\n- scripts/public_skill_dogfood_lib.py\n- scripts/readme_proof_ledger_lib.py\n- scripts/run-quality.sh\n- scripts/session_start_routing.py\n- scripts/suggest_public_skill_dogfood.py\n- scripts/validate_presets.py\n- skills/public/handoff/scripts/plan_handoff_run.py\n- skills/public/issue/SKILL.md\n- skills/public/issue/references/issue-backend.md\n- skills/public/issue/scripts/issue_create.py\n- skills/public/issue/scripts/issue_create_verify.py\n- skills/public/quality/references/bootstrap-posture.md\n- skills/public/quality/references/inventory-consumer-fields.json\n- skills/public/quality/scripts/check_runtime_budget.py\n- skills/public/quality/scripts/inventory_standing_test_economics.py\n- skills/public/quality/scripts/plan_quality_run.py\n- skills/public/quality/scripts/quality_declaration_lifecycle.py\n- skills/public/quality/scripts/quality_preset_reconciliation.py\n- skills/public/quality/scripts/quality_run_plan_render.py\n- skills/public/quality/scripts/runtime_budget_lib.py\n- skills/public/quality/scripts/runtime_visibility_lib.py\n- skills/public/quality/scripts/standing_test_economics_lib.py\n- skills/public/quality/scripts/suggest_public_skill_dogfood.py\n- skills/public/quality/scripts/surface_marker_lib.py\n- skills/shared/references/run-plan-envelope.md\n- skills/shared/scripts/run_plan_envelope.py\n- specs/readme-proof.spec.md\n- tests/quality_gates/test_closeout_authorization_ingress.py\n- tests/quality_gates/test_issue_closeout_discipline.py\n- tests/quality_gates/test_issue_create.py\n- tests/quality_gates/test_profile_and_preset_validation.py\n- tests/quality_gates/test_public_skill_dogfood.py\n- tests/quality_gates/test_quality_declaration_path_resolution.py\n- tests/quality_gates/test_quality_run_gate_packets.py\n- tests/quality_gates/test_quality_run_planner.py\n- tests/quality_gates/test_quality_run_read_measurement.py\n- tests/quality_gates/test_quality_tool_fixtures.py\n- tests/quality_gates/test_runtime_budget_gate.py\n- tests/quality_gates/test_subprocess_settlement_inventory.py\n- tests/test_boundary_bypass_ratchet.py\n- tests/test_evidence_boundary_crosswalk.py\n- tests/test_handoff_plan.py\n- tests/test_public_skill_dogfood.py\n- tests/test_readme_proof_ledger.py\n- tests/test_run_plan_envelope.py\n- tests/test_session_start_routing.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/boundary-bypass-baseline.json, scripts/boundary_bypass_ratchet_lib.py, scripts/check_boundary_bypass_ratchet.py, scripts/check_quality_tool_fixtures.py, scripts/evidence_boundary_crosswalk.py, scripts/public_skill_dogfood_lib.py, scripts/readme_proof_ledger_lib.py, scripts/run-quality.sh, scripts/session_start_routing.py, scripts/suggest_public_skill_dogfood.py, scripts/validate_presets.py, skills/public/handoff/scripts/plan_handoff_run.py, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_create.py, skills/public/issue/scripts/issue_create_verify.py, skills/public/quality/references/bootstrap-posture.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/check_runtime_budget.py, skills/public/quality/scripts/inventory_standing_test_economics.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_preset_reconciliation.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/public/quality/scripts/runtime_budget_lib.py, skills/public/quality/scripts/runtime_visibility_lib.py, skills/public/quality/scripts/standing_test_economics_lib.py, skills/public/quality/scripts/suggest_public_skill_dogfood.py, skills/public/quality/scripts/surface_marker_lib.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  derived matches: plugins/charness/scripts/boundary-bypass-baseline.json, plugins/charness/scripts/boundary_bypass_ratchet_lib.py, plugins/charness/scripts/check_boundary_bypass_ratchet.py, plugins/charness/scripts/check_quality_tool_fixtures.py, plugins/charness/scripts/evidence_boundary_crosswalk.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/readme_proof_ledger_lib.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/session_start_routing.py, plugins/charness/scripts/suggest_public_skill_dogfood.py, plugins/charness/scripts/validate_presets.py, plugins/charness/shared/references/run-plan-envelope.md, plugins/charness/shared/scripts/run_plan_envelope.py, plugins/charness/skills/handoff/scripts/plan_handoff_run.py, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/references/issue-backend.md, plugins/charness/skills/issue/scripts/issue_create.py, plugins/charness/skills/issue/scripts/issue_create_verify.py, plugins/charness/skills/quality/references/bootstrap-posture.md, plugins/charness/skills/quality/references/inventory-consumer-fields.json, plugins/charness/skills/quality/scripts/check_runtime_budget.py, plugins/charness/skills/quality/scripts/inventory_standing_test_economics.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py, plugins/charness/skills/quality/scripts/quality_preset_reconciliation.py, plugins/charness/skills/quality/scripts/quality_run_plan_render.py, plugins/charness/skills/quality/scripts/runtime_budget_lib.py, plugins/charness/skills/quality/scripts/runtime_visibility_lib.py, plugins/charness/skills/quality/scripts/standing_test_economics_lib.py, plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py, plugins/charness/skills/quality/scripts/surface_marker_lib.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- rca-ledger-metrics: Committed RCA conversion ledger events and the validator/aggregator that keep the JSONL metric well-formed.\n  source matches: charness-artifacts/metrics/rca-ledger.jsonl\n  verify: python3 scripts/validate_rca_ledger.py --repo-root ., python3 scripts/aggregate_rca_ledger.py --repo-root . --json\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-12-140743-packet.md, charness-artifacts/critique/2026-08-12-141010-packet.md, charness-artifacts/critique/2026-08-12-142919-packet.md, charness-artifacts/critique/2026-08-12-143920-packet.md, charness-artifacts/critique/2026-08-12-144548-packet.md, charness-artifacts/critique/2026-08-12-145810-packet.md, charness-artifacts/critique/2026-08-12-151434-packet.md, charness-artifacts/critique/2026-08-12-152909-packet.md, charness-artifacts/critique/2026-08-12-154616-packet.md, charness-artifacts/critique/2026-08-12-154946-packet.md, charness-artifacts/critique/2026-08-12-155204-packet.md, charness-artifacts/critique/2026-08-12-160206-packet.md, charness-artifacts/critique/2026-08-12-160548-packet.md, charness-artifacts/critique/2026-08-12-160812-packet.md, charness-artifacts/critique/2026-08-12-160936-packet.md, charness-artifacts/critique/2026-08-12-161938-packet.md, charness-artifacts/critique/2026-08-12-162230-packet.md, charness-artifacts/critique/2026-08-12-162942-packet.md, charness-artifacts/critique/2026-08-12-163119-packet.md, charness-artifacts/critique/2026-08-12-163518-packet.md, charness-artifacts/critique/2026-08-12-163704-packet.md, charness-artifacts/critique/2026-08-12-163923-packet.md, charness-artifacts/critique/2026-08-12-163952-packet.md, charness-artifacts/critique/2026-08-12-164727-packet.md, charness-artifacts/critique/2026-08-12-164956-packet.md, charness-artifacts/critique/2026-08-12-165549-packet.md, charness-artifacts/critique/2026-08-12-165836-packet.md, charness-artifacts/critique/2026-08-12-170112-packet.md, charness-artifacts/critique/2026-08-12-170646-packet.md, charness-artifacts/critique/2026-08-12-171322-packet.md, charness-artifacts/critique/2026-08-12-171855-packet.md, charness-artifacts/critique/2026-08-12-172306-packet.md, charness-artifacts/critique/2026-08-12-173729-packet.md, charness-artifacts/critique/2026-08-12-173751-packet.md, charness-artifacts/critique/2026-08-12-173947-packet.md, charness-artifacts/critique/2026-08-12-174749-packet.md, charness-artifacts/critique/2026-08-12-175129-packet.md, charness-artifacts/critique/2026-08-12-175516-packet.md, charness-artifacts/critique/2026-08-12-175707-packet.md, charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md, charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.md, charness-artifacts/critique/2026-08-12-issue-584-sessionstart-routing-repair-critique.md, charness-artifacts/critique/2026-08-12-issue-595-runtime-advisory-contract-critique.md, charness-artifacts/critique/2026-08-12-issue-597-quality-fixture-gate-repair-critique.md, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.md, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.md, charness-artifacts/critique/2026-08-12-open-backlog-goal-final-activation.md, charness-artifacts/critique/2026-08-12-post-publication-issue-closeout-carriers.md, charness-artifacts/critique/2026-08-13-issue-539-create-url-shape-resolution.md, charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement-resolution.md, charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md, charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md, charness-artifacts/critique/2026-08-13-issue-588-policy-absent-dogfood-resolution.md, charness-artifacts/critique/2026-08-13-issue-589-preset-reconciliation-resolution.md, charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md, charness-artifacts/critique/2026-08-13-issue-606-boundary-baseline-resolution.md, charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md, charness-artifacts/critique/2026-08-13-open-backlog-handoff-528-542-refresh.md, charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md, charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md, charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md, charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md, charness-artifacts/debug/2026-08-13-debug-review-followup.md, charness-artifacts/debug/2026-08-13-debug-review.md, charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md, charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md, charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md, charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md, charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md, charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md, charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md, charness-artifacts/debug/latest.md, charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md, charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md, charness-artifacts/issue/2026-08-13-issue-527-brief.md, charness-artifacts/release/latest.md, charness-artifacts/retro/2026-08-12-180732-packet.md, charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md, charness-artifacts/retro/2026-08-12-session-retro.md, charness-artifacts/retro/2026-08-13-session-retro.md, charness-artifacts/retro/recent-lessons.md, charness-artifacts/spec/2026-08-13-preset-lineage-reconciliation-contract.md, charness-artifacts/spec/planner-required-read-cost-contract.md, docs/conventions/validator-timing-layers.md, docs/handoff.md, docs/readme-proof.md, docs/testability-dsl-initiative.md, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/quality/references/bootstrap-posture.md, skills/shared/references/run-plan-envelope.md\n  derived matches: plugins/charness/shared/references/run-plan-envelope.md, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/references/issue-backend.md, plugins/charness/skills/quality/references/bootstrap-posture.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the publish-state ledger declares it as a source locator, and the retro-memory gate requires its recent-lessons reference.\n  source matches: docs/handoff.md\n  verify: python3 scripts/publish_state_ledger.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/quality/references/bootstrap-posture.md, skills/public/quality/references/inventory-consumer-fields.json, skills/shared/references/run-plan-envelope.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_create.py, skills/public/issue/scripts/issue_create_verify.py, skills/public/quality/references/bootstrap-posture.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/check_runtime_budget.py, skills/public/quality/scripts/inventory_standing_test_economics.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_preset_reconciliation.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/public/quality/scripts/runtime_budget_lib.py, skills/public/quality/scripts/runtime_visibility_lib.py, skills/public/quality/scripts/standing_test_economics_lib.py, skills/public/quality/scripts/suggest_public_skill_dogfood.py, skills/public/quality/scripts/surface_marker_lib.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  derived matches: plugins/charness/shared/references/run-plan-envelope.md, plugins/charness/shared/scripts/run_plan_envelope.py, plugins/charness/skills/handoff/scripts/plan_handoff_run.py, plugins/charness/skills/issue/SKILL.md, plugins/charness/skills/issue/references/issue-backend.md, plugins/charness/skills/issue/scripts/issue_create.py, plugins/charness/skills/issue/scripts/issue_create_verify.py, plugins/charness/skills/quality/references/bootstrap-posture.md, plugins/charness/skills/quality/references/inventory-consumer-fields.json, plugins/charness/skills/quality/scripts/check_runtime_budget.py, plugins/charness/skills/quality/scripts/inventory_standing_test_economics.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py, plugins/charness/skills/quality/scripts/quality_preset_reconciliation.py, plugins/charness/skills/quality/scripts/quality_run_plan_render.py, plugins/charness/skills/quality/scripts/runtime_budget_lib.py, plugins/charness/skills/quality/scripts/runtime_visibility_lib.py, plugins/charness/skills/quality/scripts/standing_test_economics_lib.py, plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py, plugins/charness/skills/quality/scripts/surface_marker_lib.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_create.py, skills/public/issue/scripts/issue_create_verify.py, skills/public/quality/references/bootstrap-posture.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/check_runtime_budget.py, skills/public/quality/scripts/inventory_standing_test_economics.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_preset_reconciliation.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/public/quality/scripts/runtime_budget_lib.py, skills/public/quality/scripts/runtime_visibility_lib.py, skills/public/quality/scripts/standing_test_economics_lib.py, skills/public/quality/scripts/suggest_public_skill_dogfood.py, skills/public/quality/scripts/surface_marker_lib.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: scripts/public_skill_dogfood_lib.py, scripts/suggest_public_skill_dogfood.py, skills/public/handoff/scripts/plan_handoff_run.py, skills/public/issue/SKILL.md, skills/public/issue/references/issue-backend.md, skills/public/issue/scripts/issue_create.py, skills/public/issue/scripts/issue_create_verify.py, skills/public/quality/references/bootstrap-posture.md, skills/public/quality/references/inventory-consumer-fields.json, skills/public/quality/scripts/check_runtime_budget.py, skills/public/quality/scripts/inventory_standing_test_economics.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_preset_reconciliation.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/public/quality/scripts/runtime_budget_lib.py, skills/public/quality/scripts/runtime_visibility_lib.py, skills/public/quality/scripts/standing_test_economics_lib.py, skills/public/quality/scripts/suggest_public_skill_dogfood.py, skills/public/quality/scripts/surface_marker_lib.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-12-140743-packet.json, charness-artifacts/critique/2026-08-12-140743-packet.md, charness-artifacts/critique/2026-08-12-141010-packet.json, charness-artifacts/critique/2026-08-12-141010-packet.md, charness-artifacts/critique/2026-08-12-142919-packet.json, charness-artifacts/critique/2026-08-12-142919-packet.md, charness-artifacts/critique/2026-08-12-143920-packet.json, charness-artifacts/critique/2026-08-12-143920-packet.md, charness-artifacts/critique/2026-08-12-144548-packet.json, charness-artifacts/critique/2026-08-12-144548-packet.md, charness-artifacts/critique/2026-08-12-145810-packet.json, charness-artifacts/critique/2026-08-12-145810-packet.md, charness-artifacts/critique/2026-08-12-151434-packet.json, charness-artifacts/critique/2026-08-12-151434-packet.md, charness-artifacts/critique/2026-08-12-152909-packet.json, charness-artifacts/critique/2026-08-12-152909-packet.md, charness-artifacts/critique/2026-08-12-154616-packet.json, charness-artifacts/critique/2026-08-12-154616-packet.md, charness-artifacts/critique/2026-08-12-154946-packet.json, charness-artifacts/critique/2026-08-12-154946-packet.md, charness-artifacts/critique/2026-08-12-155204-packet.json, charness-artifacts/critique/2026-08-12-155204-packet.md, charness-artifacts/critique/2026-08-12-160206-packet.json, charness-artifacts/critique/2026-08-12-160206-packet.md, charness-artifacts/critique/2026-08-12-160548-packet.json, charness-artifacts/critique/2026-08-12-160548-packet.md, charness-artifacts/critique/2026-08-12-160812-packet.json, charness-artifacts/critique/2026-08-12-160812-packet.md, charness-artifacts/critique/2026-08-12-160936-packet.json, charness-artifacts/critique/2026-08-12-160936-packet.md, charness-artifacts/critique/2026-08-12-161938-packet.json, charness-artifacts/critique/2026-08-12-161938-packet.md, charness-artifacts/critique/2026-08-12-162230-packet.json, charness-artifacts/critique/2026-08-12-162230-packet.md, charness-artifacts/critique/2026-08-12-162942-packet.json, charness-artifacts/critique/2026-08-12-162942-packet.md, charness-artifacts/critique/2026-08-12-163119-packet.json, charness-artifacts/critique/2026-08-12-163119-packet.md, charness-artifacts/critique/2026-08-12-163518-packet.json, charness-artifacts/critique/2026-08-12-163518-packet.md, charness-artifacts/critique/2026-08-12-163704-packet.json, charness-artifacts/critique/2026-08-12-163704-packet.md, charness-artifacts/critique/2026-08-12-163923-packet.json, charness-artifacts/critique/2026-08-12-163923-packet.md, charness-artifacts/critique/2026-08-12-163952-packet.json, charness-artifacts/critique/2026-08-12-163952-packet.md, charness-artifacts/critique/2026-08-12-164727-packet.json, charness-artifacts/critique/2026-08-12-164727-packet.md, charness-artifacts/critique/2026-08-12-164956-packet.json, charness-artifacts/critique/2026-08-12-164956-packet.md, charness-artifacts/critique/2026-08-12-165549-packet.json, charness-artifacts/critique/2026-08-12-165549-packet.md, charness-artifacts/critique/2026-08-12-165836-packet.json, charness-artifacts/critique/2026-08-12-165836-packet.md, charness-artifacts/critique/2026-08-12-170112-packet.json, charness-artifacts/critique/2026-08-12-170112-packet.md, charness-artifacts/critique/2026-08-12-170646-packet.json, charness-artifacts/critique/2026-08-12-170646-packet.md, charness-artifacts/critique/2026-08-12-171322-packet.json, charness-artifacts/critique/2026-08-12-171322-packet.md, charness-artifacts/critique/2026-08-12-171855-packet.json, charness-artifacts/critique/2026-08-12-171855-packet.md, charness-artifacts/critique/2026-08-12-172306-packet.json, charness-artifacts/critique/2026-08-12-172306-packet.md, charness-artifacts/critique/2026-08-12-173729-packet.json, charness-artifacts/critique/2026-08-12-173729-packet.md, charness-artifacts/critique/2026-08-12-173751-packet.json, charness-artifacts/critique/2026-08-12-173751-packet.md, charness-artifacts/critique/2026-08-12-173947-packet.json, charness-artifacts/critique/2026-08-12-173947-packet.md, charness-artifacts/critique/2026-08-12-174749-packet.json, charness-artifacts/critique/2026-08-12-174749-packet.md, charness-artifacts/critique/2026-08-12-175129-packet.json, charness-artifacts/critique/2026-08-12-175129-packet.md, charness-artifacts/critique/2026-08-12-175516-packet.json, charness-artifacts/critique/2026-08-12-175516-packet.md, charness-artifacts/critique/2026-08-12-175707-packet.json, charness-artifacts/critique/2026-08-12-175707-packet.md, charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md, charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.json, charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.md, charness-artifacts/critique/2026-08-12-issue-584-sessionstart-routing-repair-critique.md, charness-artifacts/critique/2026-08-12-issue-595-runtime-advisory-contract-critique.md, charness-artifacts/critique/2026-08-12-issue-597-quality-fixture-gate-repair-critique.md, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.json, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.md, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.json, charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.md, charness-artifacts/critique/2026-08-12-open-backlog-goal-final-activation.md, charness-artifacts/critique/2026-08-12-post-publication-issue-closeout-carriers.md, charness-artifacts/critique/2026-08-13-issue-539-create-url-shape-resolution.md, charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement-resolution.md, charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md, charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md, charness-artifacts/critique/2026-08-13-issue-588-policy-absent-dogfood-resolution.md, charness-artifacts/critique/2026-08-13-issue-589-preset-reconciliation-resolution.md, charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md, charness-artifacts/critique/2026-08-13-issue-606-boundary-baseline-resolution.md, charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md, charness-artifacts/critique/2026-08-13-open-backlog-handoff-528-542-refresh.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-12-v5.0.1-release-observer.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md, charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md, charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md, charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md, charness-artifacts/debug/2026-08-13-debug-review-followup.md, charness-artifacts/debug/2026-08-13-debug-review.md, charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md, charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md, charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md, charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md, charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md, charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md, charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-12-180732-packet.json, charness-artifacts/retro/2026-08-12-180732-packet.md, charness-artifacts/retro/2026-08-12-session-release-closeout-packet.json, charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md, charness-artifacts/retro/2026-08-12-session-retro.md, charness-artifacts/retro/2026-08-13-session-retro.md, charness-artifacts/retro/recent-lessons.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- executable-specs: Repo-owned specdown executable acceptance specs and their config.\n  source matches: specs/readme-proof.spec.md\n  verify: specdown_report_dir=$(mktemp -d); specdown_config=$(python3 scripts/specdown_ephemeral_config.py --repo-root . --out-dir \"$specdown_report_dir\") || exit 1; trap 'rm -rf \"$specdown_report_dir\" \"$specdown_config\"' EXIT; specdown run -config \"$specdown_config\" -jobs 4 -out \"$specdown_report_dir\"\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/boundary-bypass-baseline.json, plugins/charness/scripts/boundary_bypass_ratchet_lib.py, plugins/charness/scripts/check_boundary_bypass_ratchet.py, plugins/charness/scripts/check_quality_tool_fixtures.py, plugins/charness/scripts/evidence_boundary_crosswalk.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/readme_proof_ledger_lib.py, plugins/charness/scripts/run-quality.sh, plugins/charness/scripts/session_start_routing.py, plugins/charness/scripts/suggest_public_skill_dogfood.py, plugins/charness/scripts/validate_presets.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/boundary_bypass_ratchet_lib.py, scripts/check_boundary_bypass_ratchet.py, scripts/check_quality_tool_fixtures.py, scripts/evidence_boundary_crosswalk.py, scripts/public_skill_dogfood_lib.py, scripts/readme_proof_ledger_lib.py, scripts/session_start_routing.py, scripts/suggest_public_skill_dogfood.py, scripts/validate_presets.py, tests/quality_gates/test_closeout_authorization_ingress.py, tests/quality_gates/test_issue_closeout_discipline.py, tests/quality_gates/test_issue_create.py, tests/quality_gates/test_profile_and_preset_validation.py, tests/quality_gates/test_public_skill_dogfood.py, tests/quality_gates/test_quality_declaration_path_resolution.py, tests/quality_gates/test_quality_run_gate_packets.py, tests/quality_gates/test_quality_run_planner.py, tests/quality_gates/test_quality_run_read_measurement.py, tests/quality_gates/test_quality_tool_fixtures.py, tests/quality_gates/test_runtime_budget_gate.py, tests/quality_gates/test_subprocess_settlement_inventory.py, tests/test_boundary_bypass_ratchet.py, tests/test_evidence_boundary_crosswalk.py, tests/test_handoff_plan.py, tests/test_public_skill_dogfood.py, tests/test_readme_proof_ledger.py, tests/test_run_plan_envelope.py, tests/test_session_start_routing.py\n  derived matches: plugins/charness/scripts/boundary_bypass_ratchet_lib.py, plugins/charness/scripts/check_boundary_bypass_ratchet.py, plugins/charness/scripts/check_quality_tool_fixtures.py, plugins/charness/scripts/evidence_boundary_crosswalk.py, plugins/charness/scripts/public_skill_dogfood_lib.py, plugins/charness/scripts/readme_proof_ledger_lib.py, plugins/charness/scripts/session_start_routing.py, plugins/charness/scripts/suggest_public_skill_dogfood.py, plugins/charness/scripts/validate_presets.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- inference-interpretation-contract: Advisory-interpretation contract meta-validator (#330): the inference-layer surface registry plus every registered Python/prose declaration and its paired consumer reference.\n  source matches: skills/public/quality/scripts/inventory_standing_test_economics.py\n  verify: python3 scripts/validate_inference_interpretation.py --repo-root . --require-git-file-listing\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/boundary_bypass_ratchet_lib.py, scripts/check_boundary_bypass_ratchet.py, scripts/check_quality_tool_fixtures.py, scripts/evidence_boundary_crosswalk.py, scripts/public_skill_dogfood_lib.py, scripts/readme_proof_ledger_lib.py, scripts/session_start_routing.py, scripts/suggest_public_skill_dogfood.py, scripts/validate_presets.py, skills/public/handoff/scripts/plan_handoff_run.py, skills/public/issue/scripts/issue_create.py, skills/public/issue/scripts/issue_create_verify.py, skills/public/quality/scripts/check_runtime_budget.py, skills/public/quality/scripts/inventory_standing_test_economics.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_declaration_lifecycle.py, skills/public/quality/scripts/quality_preset_reconciliation.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/public/quality/scripts/runtime_budget_lib.py, skills/public/quality/scripts/runtime_visibility_lib.py, skills/public/quality/scripts/standing_test_economics_lib.py, skills/public/quality/scripts/suggest_public_skill_dogfood.py, skills/public/quality/scripts/surface_marker_lib.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "v5.0.1..HEAD",
+    "resolved_changed_ref": [
+      "ae47da3bde8e98719343861560f88726d3a80759",
+      "^fe5c3cd98d21d5a06cc0160c800d42c08090b5ae"
+    ],
+    "base_head": "ae47da3bde8e98719343861560f88726d3a80759",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md",
+      "charness-artifacts/debug/2026-08-13-debug-review-followup.md",
+      "charness-artifacts/debug/2026-08-13-debug-review.md",
+      "charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md",
+      "charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md",
+      "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+      "charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md",
+      "charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md",
+      "charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md",
+      "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+      "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+      "charness-artifacts/issue/2026-08-13-issue-527-brief.md",
+      "charness-artifacts/metrics/rca-ledger.jsonl",
+      "charness-artifacts/probe/2026-08-12-v5.0.1-release-observer.json",
+      "charness-artifacts/release/latest.md",
+      "charness-artifacts/retro/2026-08-12-180732-packet.json",
+      "charness-artifacts/retro/2026-08-12-180732-packet.md",
+      "charness-artifacts/retro/2026-08-12-session-release-closeout-packet.json",
+      "charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md",
+      "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/recent-lessons.md",
+      "charness-artifacts/spec/2026-08-13-preset-lineage-reconciliation-contract.md",
+      "charness-artifacts/spec/planner-required-read-cost-contract.md",
+      "docs/conventions/validator-timing-layers.md",
+      "docs/handoff.md",
+      "docs/readme-proof.md",
+      "docs/testability-dsl-initiative.md",
+      "plugins/charness/scripts/boundary-bypass-baseline.json",
+      "plugins/charness/scripts/boundary_bypass_ratchet_lib.py",
+      "plugins/charness/scripts/check_boundary_bypass_ratchet.py",
+      "plugins/charness/scripts/check_quality_tool_fixtures.py",
+      "plugins/charness/scripts/evidence_boundary_crosswalk.py",
+      "plugins/charness/scripts/public_skill_dogfood_lib.py",
+      "plugins/charness/scripts/readme_proof_ledger_lib.py",
+      "plugins/charness/scripts/run-quality.sh",
+      "plugins/charness/scripts/session_start_routing.py",
+      "plugins/charness/scripts/suggest_public_skill_dogfood.py",
+      "plugins/charness/scripts/validate_presets.py",
+      "plugins/charness/shared/references/run-plan-envelope.md",
+      "plugins/charness/shared/scripts/run_plan_envelope.py",
+      "plugins/charness/skills/handoff/scripts/plan_handoff_run.py",
+      "plugins/charness/skills/issue/SKILL.md",
+      "plugins/charness/skills/issue/references/issue-backend.md",
+      "plugins/charness/skills/issue/scripts/issue_create.py",
+      "plugins/charness/skills/issue/scripts/issue_create_verify.py",
+      "plugins/charness/skills/quality/references/bootstrap-posture.md",
+      "plugins/charness/skills/quality/references/inventory-consumer-fields.json",
+      "plugins/charness/skills/quality/scripts/check_runtime_budget.py",
+      "plugins/charness/skills/quality/scripts/inventory_standing_test_economics.py",
+      "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+      "plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py",
+      "plugins/charness/skills/quality/scripts/quality_preset_reconciliation.py",
+      "plugins/charness/skills/quality/scripts/quality_run_plan_render.py",
+      "plugins/charness/skills/quality/scripts/runtime_budget_lib.py",
+      "plugins/charness/skills/quality/scripts/runtime_visibility_lib.py",
+      "plugins/charness/skills/quality/scripts/standing_test_economics_lib.py",
+      "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
+      "plugins/charness/skills/quality/scripts/surface_marker_lib.py",
+      "scripts/boundary-bypass-baseline.json",
+      "scripts/boundary_bypass_ratchet_lib.py",
+      "scripts/check_boundary_bypass_ratchet.py",
+      "scripts/check_quality_tool_fixtures.py",
+      "scripts/evidence_boundary_crosswalk.py",
+      "scripts/public_skill_dogfood_lib.py",
+      "scripts/readme_proof_ledger_lib.py",
+      "scripts/run-quality.sh",
+      "scripts/session_start_routing.py",
+      "scripts/suggest_public_skill_dogfood.py",
+      "scripts/validate_presets.py",
+      "skills/public/handoff/scripts/plan_handoff_run.py",
+      "skills/public/issue/SKILL.md",
+      "skills/public/issue/references/issue-backend.md",
+      "skills/public/issue/scripts/issue_create.py",
+      "skills/public/issue/scripts/issue_create_verify.py",
+      "skills/public/quality/references/bootstrap-posture.md",
+      "skills/public/quality/references/inventory-consumer-fields.json",
+      "skills/public/quality/scripts/check_runtime_budget.py",
+      "skills/public/quality/scripts/inventory_standing_test_economics.py",
+      "skills/public/quality/scripts/plan_quality_run.py",
+      "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+      "skills/public/quality/scripts/quality_preset_reconciliation.py",
+      "skills/public/quality/scripts/quality_run_plan_render.py",
+      "skills/public/quality/scripts/runtime_budget_lib.py",
+      "skills/public/quality/scripts/runtime_visibility_lib.py",
+      "skills/public/quality/scripts/standing_test_economics_lib.py",
+      "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
+      "skills/public/quality/scripts/surface_marker_lib.py",
+      "skills/shared/references/run-plan-envelope.md",
+      "skills/shared/scripts/run_plan_envelope.py",
+      "specs/readme-proof.spec.md",
+      "tests/quality_gates/test_closeout_authorization_ingress.py",
+      "tests/quality_gates/test_issue_closeout_discipline.py",
+      "tests/quality_gates/test_issue_create.py",
+      "tests/quality_gates/test_profile_and_preset_validation.py",
+      "tests/quality_gates/test_public_skill_dogfood.py",
+      "tests/quality_gates/test_quality_declaration_path_resolution.py",
+      "tests/quality_gates/test_quality_run_gate_packets.py",
+      "tests/quality_gates/test_quality_run_planner.py",
+      "tests/quality_gates/test_quality_run_read_measurement.py",
+      "tests/quality_gates/test_quality_tool_fixtures.py",
+      "tests/quality_gates/test_runtime_budget_gate.py",
+      "tests/quality_gates/test_subprocess_settlement_inventory.py",
+      "tests/test_boundary_bypass_ratchet.py",
+      "tests/test_evidence_boundary_crosswalk.py",
+      "tests/test_handoff_plan.py",
+      "tests/test_public_skill_dogfood.py",
+      "tests/test_readme_proof_ledger.py",
+      "tests/test_run_plan_envelope.py",
+      "tests/test_session_start_routing.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-584-planner-read-cost-debug.md",
+        "content_sha256": "b869db788dba355ffdef5d4ace39dcb0d2d06c04d56bd4f41d8dbf92e38a0894"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-584-sessionstart-routing-debug.md",
+        "content_sha256": "eb35d661409265af2cf1f7eeb3e8c35a02bfa28d10103baad9ef449594bf03d9"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-595-runtime-advisory-contract-debug.md",
+        "content_sha256": "546d11640d4aa4aac3a5bb01039e1a88b47da21b5a54bed9995e1d13341f6141"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-597-quality-fixture-gate-debug.md",
+        "content_sha256": "f267bd6524cc0286d8434f7479ec768e2fd395ad4a8571643c728028a29b105f"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-debug-review-followup.md",
+        "content_sha256": "0ebe39dd3bd9040a9c247c68ec0a9d50b339d9bd2a769c559e2e1b0b6c9f242a"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-debug-review.md",
+        "content_sha256": "b8490633930f3e56d50e19cb456b10cb83e640d86b2d653501f53950884b7335"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-539-create-url-shape.md",
+        "content_sha256": "ca1fbe41dfdd4ecfb7645a2f7728597ab2637afc2124f75ceeb3037196b0364c"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-542-closeout-target-disagreement.md",
+        "content_sha256": "d0fa7838ca1d72d79a6c3fd85784720a8ef25edf4393614cf25586623fd364a8"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+        "content_sha256": "74c4c89f7580997be69eb05eeb9c61af767451ee454ca4380980d8ce866039df"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-588-policy-absent-dogfood.md",
+        "content_sha256": "7a9dae30b83ff1c805cfcc8b7cf2690a46fe93bb89d08ff6cbc5d779816df303"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-589-preset-reconciliation-debug.md",
+        "content_sha256": "3c3c1d26ec42739405bfe59a5c12c18dcf0b45c58aa1ccd070504d69971cbe16"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-602-create-verification-grammar.md",
+        "content_sha256": "7f284fed48057dcf63d9ed1a79b3d7e3641f6363e96e053c5c74e31537015c7a"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
+        "content_sha256": "06a1f0cfbc0533b6e6e6ce9795a135d2f26c15b4a9df01c4c3175a276694a68d"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "cfad37f003aba7ba9dc05cc122deda8e67e34c7587cd7e3a2d4ea01d4bce9890"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "763774168f8c3fc38ae6aeaf9bd2e7c8f495544884d266660b6f3b106ecb0ff8"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+        "content_sha256": "a980b5a765b5454092db8975075c5a73b42d763a510bcb4f7ccc92b6fd1e4fa4"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+        "content_sha256": "0303e7d4760e9be6db03664e267cfb19978670d3f027688f306578b6c6831ba6"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-13-issue-527-brief.md",
+        "content_sha256": "da07d0521c6fc4a0ad056d12f28510f085583f4d9467d89ba4ce4c7d89598c0c"
+      },
+      {
+        "path": "charness-artifacts/metrics/rca-ledger.jsonl",
+        "content_sha256": "d0772e53ed1254d3ca316e38d6c2169809e4b2c1f2e457fc8ba47d40c691203d"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-12-v5.0.1-release-observer.json",
+        "content_sha256": "d8f1e78d20680dffbd03c68b0bb14785ce1856fef6a20d3d099ea75480d9cc5f"
+      },
+      {
+        "path": "charness-artifacts/release/latest.md",
+        "content_sha256": "df27bab7d36821dfcb5a58d2b38cd7bcac37a3883f089e2aab3b31a75ae64bf4"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-180732-packet.json",
+        "content_sha256": "25e2f6b475d8d1de5f15092587f1990e7b54681af7256301c2945fbb96ddc8b3"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-180732-packet.md",
+        "content_sha256": "2208f63ddd79ae397fffacf1b2cff0cb1f8871636fe2e4fa3b3d6725ad3de709"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-session-release-closeout-packet.json",
+        "content_sha256": "0e0dda282fbcf604fdb24986b3a96fda20a97f4f5940944d2364fd09047ae051"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md",
+        "content_sha256": "db8f88bd7e02cf9ca7a499f1948727fb0e53885ec24795b539098d7f52588977"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+        "content_sha256": "1d874c5b656dc322b7f383e29ad667b13f0eff10dae0b25d7a7dcfbbf4183309"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+        "content_sha256": "c350a1cbce3acdccea5b51dc70a6b6f11ac9b7a7ceb665e2f7403156110c9187"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "76a20cf3a1c27c9d79bc2b95c11612db9d6512104f9d9f1bfa065211f2675832"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "3cabfaa32b2b8d37329da148890cd4b8beab8790589540fdea8e9ecbff91cb52"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-13-preset-lineage-reconciliation-contract.md",
+        "content_sha256": "947103c3b583df024c99e8d0ff747ed726e66d4d6b6ddd9d0a69f248f9ca8d6b"
+      },
+      {
+        "path": "charness-artifacts/spec/planner-required-read-cost-contract.md",
+        "content_sha256": "b337b12ac320820ce95e35c93d73add3020473b643f33e65d40bd53226f5faba"
+      },
+      {
+        "path": "docs/conventions/validator-timing-layers.md",
+        "content_sha256": "73eb215d7c8b11812a6eec1000b323bead4881fe7a1559d33481e10c51e9223f"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "3b4e6d4677c9da64855be8399386218590882339275d76a3083383132a11985a"
+      },
+      {
+        "path": "docs/readme-proof.md",
+        "content_sha256": "d85e0f27d78a2bfcfcf8b540c86381e4c2dc290782c36f1bffe31aca902c223a"
+      },
+      {
+        "path": "docs/testability-dsl-initiative.md",
+        "content_sha256": "6b1b20b799c7ce7a6f279b94970b9981e2689e989a2478e1500508f961e2d085"
+      },
+      {
+        "path": "plugins/charness/scripts/boundary-bypass-baseline.json",
+        "content_sha256": "8d24598027c99944e9e895a66f3d80ff5dd6902e2565a04193121098899c4cf4"
+      },
+      {
+        "path": "plugins/charness/scripts/boundary_bypass_ratchet_lib.py",
+        "content_sha256": "a0357c1ec5a3a3add24ad7477ad615cb6b6cb21ae485f0651b10419ffa8e13e7"
+      },
+      {
+        "path": "plugins/charness/scripts/check_boundary_bypass_ratchet.py",
+        "content_sha256": "a71eb11bf3230e6b6816bd24e297b32751743e93b37476a3f3f40e9fac48ef61"
+      },
+      {
+        "path": "plugins/charness/scripts/check_quality_tool_fixtures.py",
+        "content_sha256": "ba30d66848ca6e002eef09af565aeedf277e2b920a7ee6b176628cad5e69aec6"
+      },
+      {
+        "path": "plugins/charness/scripts/evidence_boundary_crosswalk.py",
+        "content_sha256": "cd5a4e34a91a720b652f4db7291d4f4dc4ed7176b1d092b2f4e72575cf4a050e"
+      },
+      {
+        "path": "plugins/charness/scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "70f984d95c6f4f7507383398bcec8154d7d87761f6ee40258b7ace09799578e8"
+      },
+      {
+        "path": "plugins/charness/scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "2beeb4a028132ad733efe12723d2755fef4354ee69050b535614a4b14137fa72"
+      },
+      {
+        "path": "plugins/charness/scripts/run-quality.sh",
+        "content_sha256": "c85236f370f1bd15dbb029a63860f0f433e3ff269e2039fca5986462c73571eb"
+      },
+      {
+        "path": "plugins/charness/scripts/session_start_routing.py",
+        "content_sha256": "cd358b09b1ba248cee5a32cbd50cf03544ddd8a67e789f85b8a28dc5af006905"
+      },
+      {
+        "path": "plugins/charness/scripts/suggest_public_skill_dogfood.py",
+        "content_sha256": "01b21f5554f24332102736d5d403a6f26b275ab8c669767c500d7bedf9334fd8"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_presets.py",
+        "content_sha256": "4a0363a3f056062c82210750e072e881df99b127814f1da8cacf135c4c993624"
+      },
+      {
+        "path": "plugins/charness/shared/references/run-plan-envelope.md",
+        "content_sha256": "40f7bb46bbae445bd25963d60d1d3336698f31cd610a34b51679470a925ac23e"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/run_plan_envelope.py",
+        "content_sha256": "488609ccbc1701c11c9ca588c6ed801931f46093a51f00d2fbb663c9734d8756"
+      },
+      {
+        "path": "plugins/charness/skills/handoff/scripts/plan_handoff_run.py",
+        "content_sha256": "df8437797bcab60c0e3f73d8366ba2ed6113d95cf8ab28f1ce37fd9e7356d30f"
+      },
+      {
+        "path": "plugins/charness/skills/issue/SKILL.md",
+        "content_sha256": "ddf2c6aacd1ce20d72f083dfeed1b3f0691eea5f816c41510c2cdfae29bc8140"
+      },
+      {
+        "path": "plugins/charness/skills/issue/references/issue-backend.md",
+        "content_sha256": "9e4e1f11b8d6d1acaeca7395ecb93c9740746b9331092eb1a0b3be44f89f45ef"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_create.py",
+        "content_sha256": "1678f453755b6b4074c85bda6eb0d0a024fb0450b3f7c02dd9d5e120d50d8958"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_create_verify.py",
+        "content_sha256": "9a37e8a2ccc434cfdea309dbc3c0dfeaa9e806470f2ea4baa5697895a033807b"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/bootstrap-posture.md",
+        "content_sha256": "3f126b7023aaa3a59f48ab28dbb746dee2e4dc23fae4b1090310a88a64e4f391"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/inventory-consumer-fields.json",
+        "content_sha256": "9bb403dfa5a4b128a9a7d57a6494ebf8dd69d786d640fdf592990cc606c1c0d2"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/check_runtime_budget.py",
+        "content_sha256": "6f5dfaffb0246b943a5e1437451a07edd669e2553811d43c81c4142745c09dd3"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/inventory_standing_test_economics.py",
+        "content_sha256": "73b05e847fc0de56803fe0f5173ea66c3f7955c0f9074633a29c5f5f929596f0"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+        "content_sha256": "e88e62c02de0bcf27a9f2ad31a70cac85042b423baf137c136c590b595f04a5a"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py",
+        "content_sha256": "e5e750b1024672adbc07732e6c9800cf5c9c53a0beb761bd9dc1a7ad3009ad24"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_preset_reconciliation.py",
+        "content_sha256": "a140a0e2bf15f21501101ccc6d52cbf68e2d2810c2037807eb4797a2c736c0a1"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_run_plan_render.py",
+        "content_sha256": "9cbeb2aba2d79cab7aba9343ffbd764e719bd52ce2e8242de501348dd6bef4cb"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/runtime_budget_lib.py",
+        "content_sha256": "d54ffd7334cc1ab43da83c252e319a012bb00ad68c1fd3afd7056b444d7692a4"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/runtime_visibility_lib.py",
+        "content_sha256": "6bf8e0b32d860890b3b796caa0b45f81c18925ddb59a5eeb720d30285c992eb5"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/standing_test_economics_lib.py",
+        "content_sha256": "3b738ec131fb29c1712887c1dbc344ffd7df1ec28db211753fd678d91661f9a4"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/suggest_public_skill_dogfood.py",
+        "content_sha256": "024d0eddec0aaf62023ea797fb6a9a55a51cfcef9048873ee4efbb0b38199125"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/surface_marker_lib.py",
+        "content_sha256": "fde647044ccc54ccd326223e54bd15bb9383fb69b961c0c24a2b08556d5ca6bd"
+      },
+      {
+        "path": "scripts/boundary-bypass-baseline.json",
+        "content_sha256": "8d24598027c99944e9e895a66f3d80ff5dd6902e2565a04193121098899c4cf4"
+      },
+      {
+        "path": "scripts/boundary_bypass_ratchet_lib.py",
+        "content_sha256": "a0357c1ec5a3a3add24ad7477ad615cb6b6cb21ae485f0651b10419ffa8e13e7"
+      },
+      {
+        "path": "scripts/check_boundary_bypass_ratchet.py",
+        "content_sha256": "a71eb11bf3230e6b6816bd24e297b32751743e93b37476a3f3f40e9fac48ef61"
+      },
+      {
+        "path": "scripts/check_quality_tool_fixtures.py",
+        "content_sha256": "ba30d66848ca6e002eef09af565aeedf277e2b920a7ee6b176628cad5e69aec6"
+      },
+      {
+        "path": "scripts/evidence_boundary_crosswalk.py",
+        "content_sha256": "cd5a4e34a91a720b652f4db7291d4f4dc4ed7176b1d092b2f4e72575cf4a050e"
+      },
+      {
+        "path": "scripts/public_skill_dogfood_lib.py",
+        "content_sha256": "70f984d95c6f4f7507383398bcec8154d7d87761f6ee40258b7ace09799578e8"
+      },
+      {
+        "path": "scripts/readme_proof_ledger_lib.py",
+        "content_sha256": "2beeb4a028132ad733efe12723d2755fef4354ee69050b535614a4b14137fa72"
+      },
+      {
+        "path": "scripts/run-quality.sh",
+        "content_sha256": "c85236f370f1bd15dbb029a63860f0f433e3ff269e2039fca5986462c73571eb"
+      },
+      {
+        "path": "scripts/session_start_routing.py",
+        "content_sha256": "cd358b09b1ba248cee5a32cbd50cf03544ddd8a67e789f85b8a28dc5af006905"
+      },
+      {
+        "path": "scripts/suggest_public_skill_dogfood.py",
+        "content_sha256": "01b21f5554f24332102736d5d403a6f26b275ab8c669767c500d7bedf9334fd8"
+      },
+      {
+        "path": "scripts/validate_presets.py",
+        "content_sha256": "4a0363a3f056062c82210750e072e881df99b127814f1da8cacf135c4c993624"
+      },
+      {
+        "path": "skills/public/handoff/scripts/plan_handoff_run.py",
+        "content_sha256": "df8437797bcab60c0e3f73d8366ba2ed6113d95cf8ab28f1ce37fd9e7356d30f"
+      },
+      {
+        "path": "skills/public/issue/SKILL.md",
+        "content_sha256": "ddf2c6aacd1ce20d72f083dfeed1b3f0691eea5f816c41510c2cdfae29bc8140"
+      },
+      {
+        "path": "skills/public/issue/references/issue-backend.md",
+        "content_sha256": "9e4e1f11b8d6d1acaeca7395ecb93c9740746b9331092eb1a0b3be44f89f45ef"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_create.py",
+        "content_sha256": "1678f453755b6b4074c85bda6eb0d0a024fb0450b3f7c02dd9d5e120d50d8958"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_create_verify.py",
+        "content_sha256": "9a37e8a2ccc434cfdea309dbc3c0dfeaa9e806470f2ea4baa5697895a033807b"
+      },
+      {
+        "path": "skills/public/quality/references/bootstrap-posture.md",
+        "content_sha256": "3f126b7023aaa3a59f48ab28dbb746dee2e4dc23fae4b1090310a88a64e4f391"
+      },
+      {
+        "path": "skills/public/quality/references/inventory-consumer-fields.json",
+        "content_sha256": "9bb403dfa5a4b128a9a7d57a6494ebf8dd69d786d640fdf592990cc606c1c0d2"
+      },
+      {
+        "path": "skills/public/quality/scripts/check_runtime_budget.py",
+        "content_sha256": "6f5dfaffb0246b943a5e1437451a07edd669e2553811d43c81c4142745c09dd3"
+      },
+      {
+        "path": "skills/public/quality/scripts/inventory_standing_test_economics.py",
+        "content_sha256": "73b05e847fc0de56803fe0f5173ea66c3f7955c0f9074633a29c5f5f929596f0"
+      },
+      {
+        "path": "skills/public/quality/scripts/plan_quality_run.py",
+        "content_sha256": "e88e62c02de0bcf27a9f2ad31a70cac85042b423baf137c136c590b595f04a5a"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+        "content_sha256": "e5e750b1024672adbc07732e6c9800cf5c9c53a0beb761bd9dc1a7ad3009ad24"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_preset_reconciliation.py",
+        "content_sha256": "a140a0e2bf15f21501101ccc6d52cbf68e2d2810c2037807eb4797a2c736c0a1"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_run_plan_render.py",
+        "content_sha256": "9cbeb2aba2d79cab7aba9343ffbd764e719bd52ce2e8242de501348dd6bef4cb"
+      },
+      {
+        "path": "skills/public/quality/scripts/runtime_budget_lib.py",
+        "content_sha256": "d54ffd7334cc1ab43da83c252e319a012bb00ad68c1fd3afd7056b444d7692a4"
+      },
+      {
+        "path": "skills/public/quality/scripts/runtime_visibility_lib.py",
+        "content_sha256": "6bf8e0b32d860890b3b796caa0b45f81c18925ddb59a5eeb720d30285c992eb5"
+      },
+      {
+        "path": "skills/public/quality/scripts/standing_test_economics_lib.py",
+        "content_sha256": "3b738ec131fb29c1712887c1dbc344ffd7df1ec28db211753fd678d91661f9a4"
+      },
+      {
+        "path": "skills/public/quality/scripts/suggest_public_skill_dogfood.py",
+        "content_sha256": "024d0eddec0aaf62023ea797fb6a9a55a51cfcef9048873ee4efbb0b38199125"
+      },
+      {
+        "path": "skills/public/quality/scripts/surface_marker_lib.py",
+        "content_sha256": "fde647044ccc54ccd326223e54bd15bb9383fb69b961c0c24a2b08556d5ca6bd"
+      },
+      {
+        "path": "skills/shared/references/run-plan-envelope.md",
+        "content_sha256": "40f7bb46bbae445bd25963d60d1d3336698f31cd610a34b51679470a925ac23e"
+      },
+      {
+        "path": "skills/shared/scripts/run_plan_envelope.py",
+        "content_sha256": "488609ccbc1701c11c9ca588c6ed801931f46093a51f00d2fbb663c9734d8756"
+      },
+      {
+        "path": "specs/readme-proof.spec.md",
+        "content_sha256": "aa9551a2aee4fd0f33df970bd3adf5f6eb8549a28d0e943c109e37f678f12ec3"
+      },
+      {
+        "path": "tests/quality_gates/test_closeout_authorization_ingress.py",
+        "content_sha256": "6643e42d7040e062ae176338b2f1aa466a5125cc55119fc260bc6c76c48650d8"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_closeout_discipline.py",
+        "content_sha256": "bebfa3a23c10131f068ea649862cf4db4ebb9e8d8fa24a01787cefaf399363d2"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_create.py",
+        "content_sha256": "a3a8f0d448d4400f95587c10434764d44342684909a32c8a4d3f309a1d425054"
+      },
+      {
+        "path": "tests/quality_gates/test_profile_and_preset_validation.py",
+        "content_sha256": "12e1bf363a251d845da7dac2a5afedaacf934d92f8b139c1be850936dfd3cea9"
+      },
+      {
+        "path": "tests/quality_gates/test_public_skill_dogfood.py",
+        "content_sha256": "59ec72c317c9c5dfde3b61e5b06575945a99717a4d59f7a780a820a2cdeb88ab"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_declaration_path_resolution.py",
+        "content_sha256": "34bbbfcab1f226e36b6b7fe942b181240d6dd4fed722eff2b8118a5305a613ac"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_gate_packets.py",
+        "content_sha256": "081c5b01a96c306d03b12c0e9fbc8c1cb02bab037da3e31a46a473ebfad2d333"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_planner.py",
+        "content_sha256": "76d98bb60f9742404dbb5a05d1a4b48ac7202e70af592aaf8fbc4deb8fcdba7a"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_read_measurement.py",
+        "content_sha256": "35c4b2c27bb21888345b0f391e2eb3bc3d162ef8676248a80e1868373ac2e9ec"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_tool_fixtures.py",
+        "content_sha256": "de82cf6e01a0531eda3fc0226907c323eb18fffba6f07bfd5170d46318dc4b08"
+      },
+      {
+        "path": "tests/quality_gates/test_runtime_budget_gate.py",
+        "content_sha256": "f96e688025ce8a49734b0e775eb0d089b03f13c54ebe60a6c5f99770d576e6f4"
+      },
+      {
+        "path": "tests/quality_gates/test_subprocess_settlement_inventory.py",
+        "content_sha256": "913dcef4ebd1663f8e3d0f2f962c34008aa9442eda936e5b123866754bf7327f"
+      },
+      {
+        "path": "tests/test_boundary_bypass_ratchet.py",
+        "content_sha256": "51f2868e66fbf72f0b9bcf9a31281b31ce228a839c566b08a28b6bd8ddf829a8"
+      },
+      {
+        "path": "tests/test_evidence_boundary_crosswalk.py",
+        "content_sha256": "dcedad644038746d6097d35df511c1fe4a076265fff62571c4b6875d01488920"
+      },
+      {
+        "path": "tests/test_handoff_plan.py",
+        "content_sha256": "62d2c90c1ac05c65e3d6d97a21d3a00af9ef87ace3f70ed70319985b9336c660"
+      },
+      {
+        "path": "tests/test_public_skill_dogfood.py",
+        "content_sha256": "a9047dd4e38e18dd5babcad29fe4d07c7ea20da26d25785d3476e7b5ea5b5401"
+      },
+      {
+        "path": "tests/test_readme_proof_ledger.py",
+        "content_sha256": "d2aa508091d03e8f75207d2dfcecbb7833755bfac2f6115bc5db31a552bc85b8"
+      },
+      {
+        "path": "tests/test_run_plan_envelope.py",
+        "content_sha256": "92de07447364b5ff45a9d074e4b5f058ac2bdba3ab38d18bf1adc51f270c85ca"
+      },
+      {
+        "path": "tests/test_session_start_routing.py",
+        "content_sha256": "a87a9c94032ea0a56ee176fa0807902e2d9d2d5d25e95991106c50826ea7fc71"
+      }
+    ],
+    "reviewed_patch_sha256": "0fd179847ab59c04199ec1c7be2d99d899602d8ce3408c330ce124ce16281b22",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-12-140743-packet.json",
+      "charness-artifacts/critique/2026-08-12-140743-packet.md",
+      "charness-artifacts/critique/2026-08-12-141010-packet.json",
+      "charness-artifacts/critique/2026-08-12-141010-packet.md",
+      "charness-artifacts/critique/2026-08-12-142919-packet.json",
+      "charness-artifacts/critique/2026-08-12-142919-packet.md",
+      "charness-artifacts/critique/2026-08-12-143920-packet.json",
+      "charness-artifacts/critique/2026-08-12-143920-packet.md",
+      "charness-artifacts/critique/2026-08-12-144548-packet.json",
+      "charness-artifacts/critique/2026-08-12-144548-packet.md",
+      "charness-artifacts/critique/2026-08-12-145810-packet.json",
+      "charness-artifacts/critique/2026-08-12-145810-packet.md",
+      "charness-artifacts/critique/2026-08-12-151434-packet.json",
+      "charness-artifacts/critique/2026-08-12-151434-packet.md",
+      "charness-artifacts/critique/2026-08-12-152909-packet.json",
+      "charness-artifacts/critique/2026-08-12-152909-packet.md",
+      "charness-artifacts/critique/2026-08-12-154616-packet.json",
+      "charness-artifacts/critique/2026-08-12-154616-packet.md",
+      "charness-artifacts/critique/2026-08-12-154946-packet.json",
+      "charness-artifacts/critique/2026-08-12-154946-packet.md",
+      "charness-artifacts/critique/2026-08-12-155204-packet.json",
+      "charness-artifacts/critique/2026-08-12-155204-packet.md",
+      "charness-artifacts/critique/2026-08-12-160206-packet.json",
+      "charness-artifacts/critique/2026-08-12-160206-packet.md",
+      "charness-artifacts/critique/2026-08-12-160548-packet.json",
+      "charness-artifacts/critique/2026-08-12-160548-packet.md",
+      "charness-artifacts/critique/2026-08-12-160812-packet.json",
+      "charness-artifacts/critique/2026-08-12-160812-packet.md",
+      "charness-artifacts/critique/2026-08-12-160936-packet.json",
+      "charness-artifacts/critique/2026-08-12-160936-packet.md",
+      "charness-artifacts/critique/2026-08-12-161938-packet.json",
+      "charness-artifacts/critique/2026-08-12-161938-packet.md",
+      "charness-artifacts/critique/2026-08-12-162230-packet.json",
+      "charness-artifacts/critique/2026-08-12-162230-packet.md",
+      "charness-artifacts/critique/2026-08-12-162942-packet.json",
+      "charness-artifacts/critique/2026-08-12-162942-packet.md",
+      "charness-artifacts/critique/2026-08-12-163119-packet.json",
+      "charness-artifacts/critique/2026-08-12-163119-packet.md",
+      "charness-artifacts/critique/2026-08-12-163518-packet.json",
+      "charness-artifacts/critique/2026-08-12-163518-packet.md",
+      "charness-artifacts/critique/2026-08-12-163704-packet.json",
+      "charness-artifacts/critique/2026-08-12-163704-packet.md",
+      "charness-artifacts/critique/2026-08-12-163923-packet.json",
+      "charness-artifacts/critique/2026-08-12-163923-packet.md",
+      "charness-artifacts/critique/2026-08-12-163952-packet.json",
+      "charness-artifacts/critique/2026-08-12-163952-packet.md",
+      "charness-artifacts/critique/2026-08-12-164727-packet.json",
+      "charness-artifacts/critique/2026-08-12-164727-packet.md",
+      "charness-artifacts/critique/2026-08-12-164956-packet.json",
+      "charness-artifacts/critique/2026-08-12-164956-packet.md",
+      "charness-artifacts/critique/2026-08-12-165549-packet.json",
+      "charness-artifacts/critique/2026-08-12-165549-packet.md",
+      "charness-artifacts/critique/2026-08-12-165836-packet.json",
+      "charness-artifacts/critique/2026-08-12-165836-packet.md",
+      "charness-artifacts/critique/2026-08-12-170112-packet.json",
+      "charness-artifacts/critique/2026-08-12-170112-packet.md",
+      "charness-artifacts/critique/2026-08-12-170646-packet.json",
+      "charness-artifacts/critique/2026-08-12-170646-packet.md",
+      "charness-artifacts/critique/2026-08-12-171322-packet.json",
+      "charness-artifacts/critique/2026-08-12-171322-packet.md",
+      "charness-artifacts/critique/2026-08-12-171855-packet.json",
+      "charness-artifacts/critique/2026-08-12-171855-packet.md",
+      "charness-artifacts/critique/2026-08-12-172306-packet.json",
+      "charness-artifacts/critique/2026-08-12-172306-packet.md",
+      "charness-artifacts/critique/2026-08-12-173729-packet.json",
+      "charness-artifacts/critique/2026-08-12-173729-packet.md",
+      "charness-artifacts/critique/2026-08-12-173751-packet.json",
+      "charness-artifacts/critique/2026-08-12-173751-packet.md",
+      "charness-artifacts/critique/2026-08-12-173947-packet.json",
+      "charness-artifacts/critique/2026-08-12-173947-packet.md",
+      "charness-artifacts/critique/2026-08-12-174749-packet.json",
+      "charness-artifacts/critique/2026-08-12-174749-packet.md",
+      "charness-artifacts/critique/2026-08-12-175129-packet.json",
+      "charness-artifacts/critique/2026-08-12-175129-packet.md",
+      "charness-artifacts/critique/2026-08-12-175516-packet.json",
+      "charness-artifacts/critique/2026-08-12-175516-packet.md",
+      "charness-artifacts/critique/2026-08-12-175707-packet.json",
+      "charness-artifacts/critique/2026-08-12-175707-packet.md",
+      "charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md",
+      "charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.json",
+      "charness-artifacts/critique/2026-08-12-handoff-post-release-refresh-packet.md",
+      "charness-artifacts/critique/2026-08-12-issue-584-sessionstart-routing-repair-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-595-runtime-advisory-contract-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-597-quality-fixture-gate-repair-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.json",
+      "charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-final-packet.md",
+      "charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.json",
+      "charness-artifacts/critique/2026-08-12-issue-post-publication-closeout-packet.md",
+      "charness-artifacts/critique/2026-08-12-open-backlog-goal-final-activation.md",
+      "charness-artifacts/critique/2026-08-12-post-publication-issue-closeout-carriers.md",
+      "charness-artifacts/critique/2026-08-13-issue-539-create-url-shape-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-588-policy-absent-dogfood-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-589-preset-reconciliation-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-606-boundary-baseline-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md",
+      "charness-artifacts/critique/2026-08-13-open-backlog-handoff-528-542-refresh.md"
+    ],
+    "identity_sha256": "930572e8050ac582daac1d0ae40b8c2c55429e7d3395eb698728409ed5cb78a2"
+  }
+}
