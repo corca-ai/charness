@@ -14,7 +14,7 @@ in this session after the pre-implementation critique passes.
 - Current slice intent: repair the runtime and fixture truth paths without
   laundering the unfinished #582/#583/#584 umbrella, #528/#539/#542, or
   #589/#590/#606 premise work into a completion claim.
-- Next action: re-read and classify #590's CI mutation-report premise before
+- Next action: re-read and classify #606's quality-ownership premise before
   selecting a repair or a tracker-visible non-closure disposition.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
@@ -187,7 +187,10 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - #586: inspected candidate is a superseded helper, while both real closeout
   consumers invoke the equivalent guarded loop. GitHub remains OPEN with an
   `unproven-defer` carrier until a reproducible operator-path bypass exists.
-- Next: re-read #590's CI mutation-report premise, then choose a repair or
+- #590: the reporting repair has an independent successful scheduled-CI
+  descendant with all three mutation stages recorded; GitHub remains OPEN with
+  a local/hosted proof carrier pending final cohort closeout.
+- Next: re-read #606's quality-ownership premise, then choose a repair or
   explicit tracker-visible non-closure disposition.
 
 ## Context Sources
