@@ -8,12 +8,10 @@ from pathlib import Path
 
 import pytest
 
+from scripts import lesson_ledger_lib as ledger
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "scripts"))
-
-import lesson_ledger_lib as ledger  # noqa: E402
 
 
 def _retro(repo: Path, name: str, lesson_class: str) -> None:
