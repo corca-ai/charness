@@ -3082,6 +3082,62 @@
       "note": "Domain-local _fail helpers prefix user-visible refusals with their owning state surface. The shared two-line raise idiom across ledger, selection preview, register, and score authoring has no independent behavior to centralize; a generic helper would hide the owner of a verdict rather than remove real duplication.",
       "reviewed_at": "2026-08-12",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "14eafb8978a82d63",
+      "note": "Canonical JSON serialization is domain-owned identity plumbing: the lesson snapshot hash deliberately uses deterministic UTF-8 JSON while issue normalization preserves its own payload contract. A shared serializer would obscure which artifact defines the canonical bytes.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1a7af8a4fd3cd328",
+      "note": "Ledger and register validators each unpack their independently-versioned top-level schemas. The superficial generator/container guard has different fields and downstream replay meaning, so centralizing it would couple independent verdict owners.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2f48a435c2bc5382",
+      "note": "The session and score commands deliberately share lock and atomic-replace primitives, but each keeps its own in-lock preview/replay-to-candidate transformation. A generic callback writer would hide the distinct declared-session versus cited-score semantics without removing the shared safety primitive already extracted to lesson_ledger_writer_lib.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5e86a2028e5c7283",
+      "note": "Domain-local refusal helpers keep a user-facing prefix tied to the validator, writer, preview, or command that owns the verdict. A generic two-line exception factory would remove no policy while making refusal ownership less visible.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a5cd181e1dd9846f",
+      "note": "Ledger transition replay and contract-unit reconstruction both iterate an append-only domain stream, but their identity, source-citation, and materialized-state invariants differ. The shared loop silhouette is not a reusable behavior contract.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a88306d0d9c48525",
+      "note": "Direct script main functions keep their parser, repository path, payload, and exception boundary local. The new session and score commands follow the existing direct-execution convention; a common runner would hide command-specific write semantics.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cb50df23cdbec755",
+      "note": "Ledger and register validators independently load their artifact then derive a result projection. Their schemas and replay contracts are different; extracting the small file/JSON shell would couple proof surfaces without centralizing a shared rule.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "eb626a1775c6bc79",
+      "note": "The score and session entrypoints retain local direct-script bootstrap/import headers so each executable clearly declares its runtime dependencies. This portability preamble cannot be extracted before the import path it establishes exists.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

@@ -1,41 +1,234 @@
 {
   "kind": "charness.lesson-ledger",
-  "schema_version": 2,
+  "schema_version": 3,
   "transitions": [
-    {"sequence": 1, "transition_id": "seed-guard-adjacent-to-action", "lesson_id": "guard-adjacent-to-action", "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"},
-    {"sequence": 2, "transition_id": "seed-premise-not-checked-against-source", "lesson_id": "premise-not-checked-against-source", "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"},
-    {"sequence": 3, "transition_id": "seed-release-proof-identity-churn", "lesson_id": "release-proof-identity-churn", "source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md"},
-    {"sequence": 4, "transition_id": "seed-runtime-budget-contention", "lesson_id": "runtime-budget-contention", "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"},
-    {"sequence": 5, "transition_id": "seed-stale-current-pointer-at-closeout", "lesson_id": "stale-current-pointer-at-closeout", "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"},
-    {"sequence": 6, "transition_id": "seed-removal-consumer-grep-incomplete", "lesson_id": "removal-consumer-grep-incomplete", "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"},
-    {"sequence": 7, "transition_id": "seed-graduation-is-proposal", "lesson_id": "graduation-is-proposal", "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md"},
-    {"sequence": 8, "transition_id": "seed-durable-lesson-ledger-first", "lesson_id": "durable-lesson-ledger-first", "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md"},
-    {"sequence": 9, "transition_id": "seed-goal-closeout-evidence-binding", "lesson_id": "goal-closeout-evidence-binding", "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md"},
-    {"sequence": 10, "transition_id": "seed-closeout-diagnostic-visibility", "lesson_id": "closeout-diagnostic-visibility", "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md"},
-    {"sequence": 11, "transition_id": "seed-closeout-authoring-rework", "lesson_id": "closeout-authoring-rework", "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md"},
-    {"sequence": 12, "transition_id": "seed-mutation-producer-selection", "lesson_id": "mutation-producer-selection", "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md"},
-    {"sequence": 13, "transition_id": "seed-proof-surface-review-binding", "lesson_id": "proof-surface-review-binding", "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md"},
-    {"sequence": 14, "transition_id": "seed-rule-exists-but-does-not-bind", "lesson_id": "rule-exists-but-does-not-bind", "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"},
-    {"sequence": 15, "transition_id": "seed-counted-limit-retry-loop", "lesson_id": "counted-limit-retry-loop", "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"},
-    {"sequence": 16, "transition_id": "seed-structured-edit-by-line-pattern", "lesson_id": "structured-edit-by-line-pattern", "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"}
+    {
+      "sequence": 1,
+      "transition_id": "seed-guard-adjacent-to-action",
+      "lesson_id": "guard-adjacent-to-action",
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+    },
+    {
+      "sequence": 2,
+      "transition_id": "seed-premise-not-checked-against-source",
+      "lesson_id": "premise-not-checked-against-source",
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+    },
+    {
+      "sequence": 3,
+      "transition_id": "seed-release-proof-identity-churn",
+      "lesson_id": "release-proof-identity-churn",
+      "source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md"
+    },
+    {
+      "sequence": 4,
+      "transition_id": "seed-runtime-budget-contention",
+      "lesson_id": "runtime-budget-contention",
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+    },
+    {
+      "sequence": 5,
+      "transition_id": "seed-stale-current-pointer-at-closeout",
+      "lesson_id": "stale-current-pointer-at-closeout",
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+    },
+    {
+      "sequence": 6,
+      "transition_id": "seed-removal-consumer-grep-incomplete",
+      "lesson_id": "removal-consumer-grep-incomplete",
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md"
+    },
+    {
+      "sequence": 7,
+      "transition_id": "seed-graduation-is-proposal",
+      "lesson_id": "graduation-is-proposal",
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md"
+    },
+    {
+      "sequence": 8,
+      "transition_id": "seed-durable-lesson-ledger-first",
+      "lesson_id": "durable-lesson-ledger-first",
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md"
+    },
+    {
+      "sequence": 9,
+      "transition_id": "seed-goal-closeout-evidence-binding",
+      "lesson_id": "goal-closeout-evidence-binding",
+      "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md"
+    },
+    {
+      "sequence": 10,
+      "transition_id": "seed-closeout-diagnostic-visibility",
+      "lesson_id": "closeout-diagnostic-visibility",
+      "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md"
+    },
+    {
+      "sequence": 11,
+      "transition_id": "seed-closeout-authoring-rework",
+      "lesson_id": "closeout-authoring-rework",
+      "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md"
+    },
+    {
+      "sequence": 12,
+      "transition_id": "seed-mutation-producer-selection",
+      "lesson_id": "mutation-producer-selection",
+      "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md"
+    },
+    {
+      "sequence": 13,
+      "transition_id": "seed-proof-surface-review-binding",
+      "lesson_id": "proof-surface-review-binding",
+      "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md"
+    },
+    {
+      "sequence": 14,
+      "transition_id": "seed-rule-exists-but-does-not-bind",
+      "lesson_id": "rule-exists-but-does-not-bind",
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"
+    },
+    {
+      "sequence": 15,
+      "transition_id": "seed-counted-limit-retry-loop",
+      "lesson_id": "counted-limit-retry-loop",
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"
+    },
+    {
+      "sequence": 16,
+      "transition_id": "seed-structured-edit-by-line-pattern",
+      "lesson_id": "structured-edit-by-line-pattern",
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md"
+    }
+  ],
+  "legacy_score_event_count": 0,
+  "session_events": [
+    {
+      "session_id": "current-goal-session",
+      "snapshot": {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 1,
+        "seed": "session-goal-seed",
+        "eligible_count": 16,
+        "bucket_counts": {
+          "recent": 3,
+          "value": 3,
+          "uncertainty": 3,
+          "archive": 0,
+          "archive_fallback_uncertainty": 1
+        },
+        "lesson_ids": [
+          "premise-not-checked-against-source",
+          "durable-lesson-ledger-first",
+          "counted-limit-retry-loop",
+          "graduation-is-proposal",
+          "guard-adjacent-to-action",
+          "closeout-diagnostic-visibility",
+          "goal-closeout-evidence-binding",
+          "mutation-producer-selection",
+          "closeout-authoring-rework",
+          "proof-surface-review-binding"
+        ]
+      },
+      "snapshot_sha256": "0668a533e5e50e6b154813a9b7b9948a80dddfa8fe22d9b12c580d264c910f6d"
+    }
   ],
   "score_events": [],
   "lessons": {
-    "guard-adjacent-to-action": {"source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md", "transition_id": "seed-guard-adjacent-to-action", "score_total": 0, "score_count": 0},
-    "premise-not-checked-against-source": {"source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md", "transition_id": "seed-premise-not-checked-against-source", "score_total": 0, "score_count": 0},
-    "release-proof-identity-churn": {"source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md", "transition_id": "seed-release-proof-identity-churn", "score_total": 0, "score_count": 0},
-    "runtime-budget-contention": {"source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md", "transition_id": "seed-runtime-budget-contention", "score_total": 0, "score_count": 0},
-    "stale-current-pointer-at-closeout": {"source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md", "transition_id": "seed-stale-current-pointer-at-closeout", "score_total": 0, "score_count": 0},
-    "removal-consumer-grep-incomplete": {"source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md", "transition_id": "seed-removal-consumer-grep-incomplete", "score_total": 0, "score_count": 0},
-    "graduation-is-proposal": {"source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md", "transition_id": "seed-graduation-is-proposal", "score_total": 0, "score_count": 0},
-    "durable-lesson-ledger-first": {"source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md", "transition_id": "seed-durable-lesson-ledger-first", "score_total": 0, "score_count": 0},
-    "goal-closeout-evidence-binding": {"source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md", "transition_id": "seed-goal-closeout-evidence-binding", "score_total": 0, "score_count": 0},
-    "closeout-diagnostic-visibility": {"source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md", "transition_id": "seed-closeout-diagnostic-visibility", "score_total": 0, "score_count": 0},
-    "closeout-authoring-rework": {"source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md", "transition_id": "seed-closeout-authoring-rework", "score_total": 0, "score_count": 0},
-    "mutation-producer-selection": {"source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md", "transition_id": "seed-mutation-producer-selection", "score_total": 0, "score_count": 0},
-    "proof-surface-review-binding": {"source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md", "transition_id": "seed-proof-surface-review-binding", "score_total": 0, "score_count": 0},
-    "rule-exists-but-does-not-bind": {"source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md", "transition_id": "seed-rule-exists-but-does-not-bind", "score_total": 0, "score_count": 0},
-    "counted-limit-retry-loop": {"source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md", "transition_id": "seed-counted-limit-retry-loop", "score_total": 0, "score_count": 0},
-    "structured-edit-by-line-pattern": {"source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md", "transition_id": "seed-structured-edit-by-line-pattern", "score_total": 0, "score_count": 0}
+    "guard-adjacent-to-action": {
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "transition_id": "seed-guard-adjacent-to-action",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "premise-not-checked-against-source": {
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "transition_id": "seed-premise-not-checked-against-source",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "release-proof-identity-churn": {
+      "source_retro": "charness-artifacts/retro/2026-08-07-session-retro.md",
+      "transition_id": "seed-release-proof-identity-churn",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "runtime-budget-contention": {
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "transition_id": "seed-runtime-budget-contention",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "stale-current-pointer-at-closeout": {
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "transition_id": "seed-stale-current-pointer-at-closeout",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "removal-consumer-grep-incomplete": {
+      "source_retro": "charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md",
+      "transition_id": "seed-removal-consumer-grep-incomplete",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "graduation-is-proposal": {
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "transition_id": "seed-graduation-is-proposal",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "durable-lesson-ledger-first": {
+      "source_retro": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "transition_id": "seed-durable-lesson-ledger-first",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "goal-closeout-evidence-binding": {
+      "source_retro": "charness-artifacts/retro/2026-08-08-decide-where-a-recurring-lesson-lives-retro.md",
+      "transition_id": "seed-goal-closeout-evidence-binding",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "closeout-diagnostic-visibility": {
+      "source_retro": "charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md",
+      "transition_id": "seed-closeout-diagnostic-visibility",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "closeout-authoring-rework": {
+      "source_retro": "charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md",
+      "transition_id": "seed-closeout-authoring-rework",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "mutation-producer-selection": {
+      "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "transition_id": "seed-mutation-producer-selection",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "proof-surface-review-binding": {
+      "source_retro": "charness-artifacts/retro/2026-08-06-session-retro.md",
+      "transition_id": "seed-proof-surface-review-binding",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "rule-exists-but-does-not-bind": {
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "transition_id": "seed-rule-exists-but-does-not-bind",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "counted-limit-retry-loop": {
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "transition_id": "seed-counted-limit-retry-loop",
+      "score_total": 0,
+      "score_count": 0
+    },
+    "structured-edit-by-line-pattern": {
+      "source_retro": "charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md",
+      "transition_id": "seed-structured-edit-by-line-pattern",
+      "score_total": 0,
+      "score_count": 0
+    }
   }
 }

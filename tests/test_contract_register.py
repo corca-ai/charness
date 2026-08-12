@@ -43,7 +43,7 @@ def _ledger(repo: Path) -> None:
     path = repo / "charness-artifacts/retro/lesson-ledger.json"
     payload = {
         "kind": "charness.lesson-ledger",
-        "schema_version": 2,
+        "schema_version": 3,
         "transitions": [
             {
                 "sequence": 1,
@@ -53,6 +53,8 @@ def _ledger(repo: Path) -> None:
             }
         ],
         "score_events": [],
+        "legacy_score_event_count": 0,
+        "session_events": [],
         "lessons": {
             "a": {
                 "source_retro": "charness-artifacts/retro/source.md",

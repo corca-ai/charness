@@ -83,6 +83,26 @@ This validator checks path identity, the handoff's retro citation, and exact
 recurrence markers. It does not judge prose disposition quality or establish
 fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
 
+## Local Lesson-Ledger Authoring
+
+The lesson ledger has a deliberately local eligibility path. Record a frozen
+preview declaration before adding a cited score, then validate the replayed
+state:
+
+```bash
+python3 scripts/record_lesson_session.py --repo-root . \
+  --session-id <unique-session-id> --seed <deterministic-seed>
+python3 scripts/record_lesson_score.py --repo-root . \
+  --event-id <unique-event-id> --session-id <unique-session-id> \
+  --lesson-id <listed-lesson-id> --source-retro <cited-retro-path> --score <integer>
+python3 scripts/check_lesson_ledger.py --repo-root .
+```
+
+The session is a local declaration of the deterministic snapshot at record
+time. A valid cited score proves only that its lesson occurred in that declared
+list; it does not prove that a person saw, read, used, or benefited from it, and
+does not authorize contract graduation.
+
 ## Proof-Only Non-Managed Checkout
 
 If you deliberately want to prove install behavior from a non-managed checkout,

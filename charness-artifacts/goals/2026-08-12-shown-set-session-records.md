@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-shown-set-session-record
 
 ## Active Operating Frame
 
-- Current slice: shaped implementation-continuation goal awaiting explicit pursuit registration.
-- Current slice intent: add the smallest durable session declaration needed to connect score events to a deterministic rendered list, then prove it without treating a record as proof of human reception.
-- Next action: activate, critique the schema boundary, and implement the append-only session/score coupling.
+- Current slice: integrated implementation proof for the schema-v3 session/score boundary.
+- Current slice intent: prove the recorder and score authoring path together without treating a local declaration as proof of human reception.
+- Next action: bind the repaired validator/authoring surface to its second fresh-eye review, then run final quality and closeout.
 - Verification cadence: focused validator and command tests at each mutation; fresh-eye review before the proof-surface change and again after repairs; broad quality at final closeout.
 - Gate cadence: the existing ledger checker remains the only ledger verdict surface; it will compose session replay rather than create a parallel quality gate.
 - History boundary: completed details move to `## Slice Log`; this frame only names the active intent.
@@ -56,9 +56,9 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Lock schema-v3 session identity, preview snapshot inputs, and score coupling. | The score boundary must be decided before a state migration creates permanent records. | Updated specification, pre-implementation critique, focused design tests. | pending |
-| 2 | Implement replayed session events and safe session-recording command. | Existing ledger/preview state can supply deterministic inputs without inventing a presentation system. | Checker, command, mirror sync, real-Git prefix tests. | pending |
-| 3 | Require score authoring to name a valid containing session and prove the integrated workflow. | This closes the current authoring escape without adding unmeasured policy. | Negative integration tests, fresh-eye repaired-surface review, quality receipt. | pending |
+| 1 | Lock schema-v3 session identity, preview snapshot inputs, and score coupling. | The score boundary must be decided before a state migration creates permanent records. | Updated specification and pre-implementation critique. | complete |
+| 2 | Implement replayed session events and safe session-recording command. | Existing ledger/preview state can supply deterministic inputs without inventing a presentation system. | Checker, command, mirror sync, real-Git prefix tests. | complete |
+| 3 | Require score authoring to name a valid containing session and prove the integrated workflow. | This closes the current authoring escape without adding unmeasured policy. | Negative integration tests, fresh-eye repaired-surface review, quality receipt. | in progress |
 
 ## Backlog Recount
 
@@ -89,6 +89,8 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 ## Slice Log
 
 - Shaping: selected implementation-continuation mode from the user's explicit “새 goal 로 잡고 진행” request; no implementation has started before activation.
+- Slices 1–2: schema v3 now retains the v2 score prefix through immutable `legacy_score_event_count`, records a canonical frozen preview snapshot under an append-only session event, and shares a worktree-clean lock with score authoring. The root ledger records one zero-score local declaration (`current-goal-session`) as the operator-path smoke; it makes no presentation or usefulness claim.
+- Slice 3: focused tests cover frozen-session score eligibility, v2 migration, real-Git rewrite/delete/reorder refusal, and two cooperative writers. Repaired-surface critique and final quality remain open.
 
 ## Context Sources
 
@@ -109,6 +111,7 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 ## Plan Critique Findings
 
 - Fresh-eye reviewers `shown_set_schema_boundary`, `shown_set_authoring_review`, and `shown_set_counterweight` consumed packet `2026-08-12-023240`. They required an immutable legacy-score cutoff, record-time-only snapshot validation, shared writer locking, and a recorder that accepts only seed/session ID; all are folded into the boundaries and seventh spec slice.
+- Repaired-surface reviewers consumed `2026-08-12-025103-packet.md` (input identity `018aa0c1602c5aca5ef847b822423b368bd6abc0605a04073a59f551e9bab184`). They found and the implementation closed: uncommitted-v3 legacy-cutoff bypass, boolean snapshot schema version acceptance, and missing direct coverage for a listed-session mismatch. Recorder CLI proof was added as a low-cost bundle item. These were second-round repairs on a verdict surface, so the two-round cap records them as accepted-unreviewed; no third fresh-eye pass is claimed. The reviewer-boundary verifier correctly reports post-review parent repair drift on the three repaired paths.
 - Expected over-worry rejected: cryptographic presentation receipts, timestamps, actor/device identity, archive behavior, score budget, and applied contract membership add claims beyond local eligibility.
 
 ## Closeout Binding Plan

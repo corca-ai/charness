@@ -14,6 +14,7 @@ from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesso
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1
+SELECTION_POLICY_VERSION = 1
 BUCKETS = ("recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty")
 
 
