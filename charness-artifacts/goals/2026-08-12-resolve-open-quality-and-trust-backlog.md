@@ -9,15 +9,14 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: cohort reconciliation preparation — #539, #542, #588, #602,
-  and #607 now have local-proof carriers; #550, #599, and #601 have bounded
-  OPEN deferrals; #528 remains a separately owned OPEN split.
-- Current slice intent: obtain the operator decision required to classify #527
-  without converting the user-facing skill-documentation and invocation-mode
-  choice into an unreviewed implementation assumption.
-- Next action: discuss #527's minimum viable public-skill surface with the
-  operator, or explicitly defer it in its tracker before the cohort can enter
-  final reconciliation.
+- Current slice: frozen cohort reconciliation — every fixed row now has a
+  local-proof, split, or tracker-visible defer disposition; #527 is an
+  operator-owned OPEN defer and #528 remains a separately owned OPEN split.
+- Current slice intent: compare every ledger row with live tracker state and
+  its required evidence, then enter retro and final verification without
+  laundering an OPEN carrier into a closure or publication claim.
+- Next action: run the frozen 22-row reconciliation, record any missing carrier
+  or proof channel, then run the required retrospective before release work.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -126,12 +125,12 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
 | 0 | Activation critique and readiness binding | Do not execute from an unreviewed broad plan | critique record, clean reviewer fingerprints, reviewed-input identity, completed ledger | completed |
-| 1 | Re-read every premise; decompose #582, #583, #584; disposition #587 and #605; re-plan dependencies | Prevent umbrella prose or unassigned rows from laundering distinct defects | 22-row ledger updates, ownership map, replan record, tracker-visible dispositions | in-progress |
-| 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | in-progress |
+| 1 | Re-read every premise; decompose #582, #583, #584; disposition #587 and #605; re-plan dependencies | Prevent umbrella prose or unassigned rows from laundering distinct defects | 22-row ledger updates, ownership map, replan record, tracker-visible dispositions | completed — per-row proof/split/defer recorded; final tracker reconciliation remains Slice 6 |
+| 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | completed — local proof or tracker-visible defer recorded; final bundle verification remains separate |
 | 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | completed |
-| 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | in-progress |
+| 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | completed — #527 has an operator-owned tracker-visible defer; #528 remains separately owned OPEN split |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | completed (`1570ba32`; local proof carrier OPEN) |
-| 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | planned |
+| 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | in-progress |
 | 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | planned |
 
 ## Backlog Recount
