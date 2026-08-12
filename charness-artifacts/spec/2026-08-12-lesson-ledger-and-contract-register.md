@@ -286,6 +286,22 @@ Selection, scoring, and presentation come second, because a ranking function
 without durable state to rank is untestable, and the gate transition is the piece
 that can break the release path if it is done late.
 
+## Second Implementation Slice
+
+Add replayed scoring state without implementing selection or presentation. A
+schema-v2 ledger keeps the cited seed transitions unchanged and adds append-only
+`score_events` with `event_id`, a repository-relative `source_retro`,
+`lesson_id`, `score`, and optional `anchor`. Each score citation must declare the
+same recurrence class, and a `(source_retro, lesson_id)` pair occurs once. Scores
+are integers in `-3..+3`; an event with magnitude at least two requires a
+non-empty anchor. The materialized score view is derived solely from events as
+`score_total` and `score_count` per seeded lesson (including a count for a zero
+score), and the validator rejects duplicate event IDs, unknown lesson IDs,
+invalid score/anchor shapes, rewritten committed transition or event prefixes,
+or a materialized-view mismatch. There is no positive-score budget in this
+slice. The shown-set restriction, UCB ranking, archive state, shuffle seed,
+selection output, register state, and graduation proposal remain out of scope.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the
