@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support. (source: `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`)
 - This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior. (source: `charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md`)
-- This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson. (source: `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`)
 
 ## Repeat Traps
 
@@ -41,4 +41,4 @@
 - `charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md`
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
-- `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`
+- `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`

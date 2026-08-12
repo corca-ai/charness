@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "goal": "charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md",
+  "probe": "skills/public/retro/scripts/probe_host_logs.py --repo-root . --goal-path charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md",
+  "goal_metric_window": {
+    "status": "parsed",
+    "session_host": "codex",
+    "started_at": "2026-08-12T08:58:29Z",
+    "completed_at": "2026-08-12T11:22:18Z",
+    "codex_session_file": "/home/hwidong/.codex/sessions/2026/08/12/rollout-2026-08-12T17-51-17-019ff52b-3612-7791-9907-81eccc1efcce.jsonl"
+  },
+  "goal_window_audit": {
+    "window_filter": {
+      "status": "applied",
+      "included_records": 3028,
+      "excluded_before": 180,
+      "excluded_after": 56,
+      "undated_records": 0
+    },
+    "measured": {
+      "context_compactions": 4,
+      "custom_tool_calls": 404,
+      "function_calls": 73,
+      "subagent": {"spawn": 25, "wait": 40, "close": 0}
+    },
+    "note": "Function/custom-call and patch counters overlap where documented by the probe; they are activity signals, not additive cost totals."
+  }
+}

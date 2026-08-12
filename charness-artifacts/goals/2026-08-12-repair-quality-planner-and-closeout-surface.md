@@ -3,16 +3,14 @@
 Status: active
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md`
-Timebox: no user-supplied limit; stop only at a real decision or external-proof boundary
 Activation time: 2026-08-12T08:58:29Z
-Closeout reserve: reserve the final slice for frozen-state proof, critique, and lifecycle records
 Done-early policy: continue_next_improvement
 
 ## Active Operating Frame
 
-- Current slice: #593 — bind HOTL disposition parsing to the issue numbers being closed.
-- Current slice intent: distinguish target-bearing closeout evidence from quoted or unrelated issue discussion without weakening legitimate HOTL refusals.
-- Next action: read #593's current GitHub record and comments, inspect the HOTL parser and carrier consumers, then write the pre-mutation implementation brief.
+- Current slice: final audit — prove the five frozen local slices against their stated acceptance conditions.
+- Current slice intent: distinguish locally verified implementation from unperformed external issue closure, hosted CI, and consumer-runtime proof.
+- Next action: run the final quality lock on the frozen five-slice state, bind a final fresh-eye disposition, then complete or retain the goal according to the evidence.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger proof at each quality or closeout verdict slice; final lock only after the five slices are frozen.
 - Gate cadence: obtain `quality` recommendations before slow gates or any change to a gate, validator, or generated quality packet; do not run Cautilus unless newly approved.
 - Slice review packet: state the issue JTBD, changed/generated surfaces, preserved consumer boundary, expected invariants, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -69,7 +67,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 | 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | completed 2026-08-12 (`09aac7e0`) |
 | 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | completed 2026-08-12 (`b5ed4b5b`) |
 | 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | completed 2026-08-12 (`b4e0ea69`) |
-| 5 | #593: bind HOTL disposition parsing to the issue numbers being closed. | Quoted unrelated discussion must not block a close. | Target/non-target and quote-form tests plus fresh-eye verdict-surface review. | pending |
+| 5 | #593: bind HOTL disposition parsing to the issue numbers being closed. | Quoted unrelated discussion must not block a close. | Target/non-target and quote-form tests plus fresh-eye verdict-surface review. | completed 2026-08-12 (`41a73c4d`) |
 
 ## Backlog Recount
 
@@ -79,11 +77,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 ## Operator Decision Queue
 
-- Decision: none for #593 yet; inspect its live HOTL parser and carrier ownership before deciding whether target identity belongs in the parser or caller.
-- Owner: agent under the active goal.
-- Why deferred: #593 has not yet been classified from its current GitHub record and enforced producer/consumer path.
-- Unblock action: complete #593's read-before-design and causal or resolution-brief route.
-- Revisit trigger: before changing a HOTL parser, validator, or carrier scope.
+- none — all five local implementation decisions are recorded in their slice logs. The remaining publish and GitHub-close phase needs a distinct explicit push grant because the fixes are still local-only.
 
 ## Coordination Cues
 
@@ -91,7 +85,8 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Routing: `issue` owns GitHub source-of-truth reads and eventual closeout; `quality` owns verdict-surface and gate cadence; `impl` owns bounded code/config slices; `critique` owns fresh-eye review; `prove` owns slice/final lock; `retro` owns closeout learning.
 - Gather: n/a — GitHub issue data is read through the selected issue backend; no separate public source is being adopted as working context.
 - Release: deferred — no release phase is authorized by this activation.
-- Issue closeout: deferred — #603/#604/#581/#594/#593 remain open until their own carrier and distinct behavior evidence exist.
+- Issue closeout: n/a — #603/#604/#581/#594/#593 remain open because their implementation commits are ten local commits ahead of `origin/main`; a close carrier cannot honestly claim unpublished work is available.
+- Successor goal: n/a — the selected five-issue bundle is exhausted, while selecting another goal from the remaining tracker backlog requires a fresh user priority decision rather than silently extending this completed scope.
 
 ## Discuss Before Activation
 
@@ -157,6 +152,20 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Lessons carried forward: A human-facing catalog is not a selected workflow; representation-equivalent provider grammar needs counterexamples.
 - Metrics: Focused suite: 107 passed in 4.25s; complete pre-commit passed with one non-blocking RCA-ledger advisory.
 
+### Slice 5: #593 HOTL target binding
+
+- Objective: Stop a closeout carrier from treating quoted HOTL discussion for another issue as its own unresolved disposition.
+- Why this approach: HOTL grammar was the outlier beside behavioral verdict—its parser had no carrier-target identity although both carrier consumers already knew it.
+- Commits: 41a73c4d Bind HOTL dispositions to close targets
+- What changed: Threaded invoked numbers into the shared HOTL floor from verify and manual close carriers; targeted HOTL entries now intersect carrier numbers, while bare shorthand stays single-issue only; synchronized plugin projections.
+- Alternatives rejected: Did not weaken typed status vocabulary, turn HOTL into a per-issue completeness ledger, or require exact target-set equality for a line that names a closed issue.
+- Targeted verification: 35 focused tests passed; source/plugin mirror, debug/critique artifacts, debug index, package validation, and complete pre-commit passed.
+- Test duplication pressure: Helper tests cover target grammar; bundle verifier and actual pre-mutation manual carrier cover each caller boundary without live GitHub mutation.
+- Critique: `charness-artifacts/critique/2026-08-12-issue-593-hotl-target-binding-critique.md`; round 1 drove carrier proofs, round 2 approved, and critique-driven direct-carrier/multi-target tests are accepted-unreviewed under the proof-surface two-round cap.
+- Off-goal findings: No GitHub close, hosted readback, provider mutation, release, or publication occurred.
+- Lessons carried forward: A shared parser with per-issue syntax needs caller-owned target identity and direct-consumer proof.
+- Metrics: Focused suite: 35 passed in 4.02s; complete pre-commit passed with one non-blocking RCA-ledger advisory.
+
 ## Context Sources
 
 1. [Design north star](../../docs/design-north-star.md) — #604, #594, and #593 are proof/closeout surfaces, so a wrong pass or refusal at their public boundary needs distinct review rather than a terminal gate claim.
@@ -190,9 +199,13 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 ## Final Verification
 
-Retro: pending until the five-slice goal reaches closeout.
-Host log probe: unavailable until a goal-window record can be honestly captured.
-Disposition review: pending until final semantic inputs are frozen.
+Verification lock: the first local attempt at `41a73c4dd48be8c2047f52d1ae80ba3692078804` was blocked, not passed, because public-skill dogfood/scenario review was still unrecorded. That review is now recorded in `docs/public-skill-dogfood.json`: `issue` scenarios remain routing/sibling-search coverage rather than closeout-carrier grammar, and `quality` remains HITL-recommended with no maintained registry target for adapter-packet/command-position behavior. The acknowledged rerun then failed two lesson-preview tests because an installed retro helper wrote an index not matching this checkout; `charness-artifacts/debug/2026-08-12-debug-review.md` records the root cause, and the repository-root builder plus six focused preview tests repaired the producer/consumer pair. Rerun the lock before making any passed claim.
+Fresh-eye pass: skills/public/quality/scripts/quality_catalog_gate_applicability.py — #603's final bounded reviewer re-read the adapter-present/runner-absent and direct-loader behavior after repair; no remaining blocker was found.
+Tracker closeability: reread #603, #604, #581, #594, and #593 with comments; each remains `OPEN`. The code is ten commits ahead of `origin/main`, so no close/comment carrier or `CLOSED` claim was published.
+Retro: charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md
+Host log probe: charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json
+Disposition review: pending final frozen-claims review.
+Host metric window: started_at=2026-08-12T08:58:29Z completed_at=2026-08-12T11:22:18Z codex_session_file=/home/hwidong/.codex/sessions/2026/08/12/rollout-2026-08-12T17-51-17-019ff52b-3612-7791-9907-81eccc1efcce.jsonl
 
 ## User Verification Instructions
 
@@ -200,5 +213,4 @@ Disposition review: pending until final semantic inputs are frozen.
 
 ## Auto-Retro
 
-Retro dispositions: pending until closeout; no improvement is claimed before the run has produced evidence.
-Structural follow-up: pending until the retro determines whether any transferable pattern survives the five slices.
+Retro dispositions: applied: the final claims ledger, direct-carrier regressions, and slice logs make each measured improvement available to the next issue-selection run.

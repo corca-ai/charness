@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 481,
-  "candidate_count": 1980,
+  "source_artifact_count": 482,
+  "candidate_count": 1984,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -362,6 +362,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a1a3a4f4b7e1",
+      "kind": "current_focus",
+      "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support.",
+      "normalized_key": "the user grouped issues 603 604 581 594 and 593 into one ordered active",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d0123fdae8c4",
       "kind": "current_focus",
       "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
@@ -410,32 +436,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0ae516f50149",
-      "kind": "current_focus",
-      "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy.",
-      "normalized_key": "this goal recorded the first three cited session contained agent score records and decided",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
         }
       ]
     }
@@ -788,6 +788,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:a1a3a4f4b7e1",
+      "kind": "current_focus",
+      "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support.",
+      "normalized_key": "the user grouped issues 603 604 581 594 and 593 into one ordered active",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d0123fdae8c4",
       "kind": "current_focus",
       "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
@@ -940,6 +966,84 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:25e7603a30c9",
+      "kind": "next_improvement",
+      "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases.",
+      "normalized_key": "applied final goal claims now distinguish a frozen local verification lock from the separately",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5932f16ef0f8",
+      "kind": "next_improvement",
+      "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity.",
+      "normalized_key": "applied proof surface repairs now include direct consumer regressions when the shared helper depends",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b99e1c8dd20d",
+      "kind": "next_improvement",
+      "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection.",
+      "normalized_key": "applied the slice logs and this retro preserve the direct loader command position and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection."
         }
       ]
     },

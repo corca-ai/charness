@@ -1,1 +1,1 @@
-2026-08-12-issue-593-hotl-target-binding-debug.md
+2026-08-12-debug-review.md
