@@ -82,9 +82,10 @@ UPDATE_SURFACES: tuple[tuple[str, str | None], ...] = (
         None,
     ),
     (
-        f"{MARKER_PROBE} `_provenance.current_corpus` AND `_provenance.why` — each quotes the"
-        " counts in prose, and `why` is the one that hides: it ENDS on the presence-only total,"
-        " so updating only `current_corpus` leaves a stale figure one key away. The floor probe"
+        f"{MARKER_PROBE} `_provenance.current_corpus` AND `_provenance.why` — `current_corpus`"
+        " quotes counts in prose, while `why` names the measured `field_mentions_presence_only`"
+        " field so a reader does not copy a second count into prose. Refresh both fields'"
+        " meaning when the corpus changes. The floor probe"
         " has NO such field, but do NOT read that as a figure-free block: its `_provenance`"
         " quotes counts in THREE other keys (`why`, `synchronized_after`, and"
         " `counterfactual_floor_20`), and `why` is the one that says the headline figures are not"

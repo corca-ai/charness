@@ -87,7 +87,7 @@ def test_the_message_names_every_surface_that_carries_the_same_numbers() -> None
     assert "nests HERE, not at top level" in message
     assert "_provenance.current_corpus" in message
     assert "_provenance` bookkeeping" in message
-    assert "quotes the counts in prose" in message
+    assert "names the measured `field_mentions_presence_only`" in message
 
 
 def test_the_message_does_not_tell_a_reader_to_overwrite_provenance() -> None:
@@ -245,19 +245,15 @@ def test_every_file_a_rule_cause_names_is_a_path_the_reader_is_told_to_diff() ->
 def test_the_message_names_the_prose_fields_that_hide_corpus_counts() -> None:
     """The surface list claimed `current_corpus` was THE prose field. `why` carries one too.
 
-    Found by the resolution critique: the marker probe's `_provenance.why` ends on the
-    presence-only total, so a reader following the list literally refreshes `current_corpus` and
-    leaves a stale figure one key away — an exclusive claim about where numbers live, made without
-    opening the file, which is the exact class this whole message exists to repair.
+    The provenance used to repeat the presence-only total in `why`, so a reader following the
+    list could refresh `current_corpus` and leave a stale figure one key away. The repair keeps
+    the value in the measured field and makes `why` name that field instead.
     """
     payload = json.loads((ROOT / MARKER_PROBE).read_text(encoding="utf-8"))
     provenance = payload["_provenance"]
-    # `any digit` was too weak: a date satisfies it. The CLAIM is that `why` ENDS on the
-    # presence-only total, so that is what is asserted.
-    total = str(payload["field_mentions_presence_only"])
-    assert provenance["why"].rstrip().rstrip(".").endswith(total), (
-        "the marker probe's `_provenance.why` no longer ends on the presence-only total; the "
-        "message tells the reader that is the figure hiding there"
+    assert "field_mentions_presence_only" in provenance["why"], (
+        "the marker probe's `_provenance.why` no longer names the measured field that owns the "
+        "live presence-only count"
     )
     message = probe_drift_message("artifacts_scanned", probe=MARKER_PROBE)
     assert "`_provenance.why`" in message

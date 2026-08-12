@@ -2102,7 +2102,7 @@
     "synchronized_after": "Refreshed both marker variants after #593/#594/#603/#604 added four top-level quality artifacts and advanced `quality/latest.md`: shallow artifacts 134 -> 138 and presence-only mentions 206 -> 201; recursive artifacts 152 -> 156 and presence-only mentions 279 -> 274. The shallow toll remains 4 citations across 3 artifacts and the recursive toll remains 6 across 4.",
     "synchronized_reason": "Refresh the historical live probe when the checked-in quality corpus changes; D47 itself remains deferred and its decision evidence is the immutable 2026-08-12 snapshot.",
     "units_matter": "The script's units are CITATIONS (an artifact-inventory pair) and ARTIFACTS, while the 2026-08-01 hand count's unit was REVIEWS. That distinction is the point of this field; the counts themselves live in the measured fields of this file and in `_provenance.current_corpus`, not here, because a number transcribed into narrative goes stale where no reader cross-checks it. On 2026-08-01 this field carried 5-across-4 shallow and 7-across-5 recursive; both were superseded by the 2026-08-07 refresh while this sentence still asserted them.",
-    "why": "The current live corpus measurement is 201 presence-only mentions. The immutable 2026-08-12 snapshot, rather than this rolling probe, supplies D47 decision evidence.",
+    "why": "The immutable 2026-08-12 snapshot, rather than this rolling probe, supplies D47 decision evidence; read the current live count from the measured `field_mentions_presence_only` field.",
     "worktree": "dirty: the 2026-08-12 issue quality reviews and synchronized probes are present; the marker rule and measurement script are unchanged"
   }
 }
