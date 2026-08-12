@@ -6,12 +6,11 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-prepare-session-score-ob
 
 ## Active Operating Frame
 
-- Current slice: declare this session's deterministic preview and collect only
-  real, cited, session-bound score observations.
-- Current slice intent: establish the first nonzero score cohort without
-  inventing a budget, a delivery receipt, or a policy conclusion.
-- Next action: record `2026-08-12-score-observation-1`, then present its IDs
-  for the operator's actual score judgment.
+- Current slice: first score cohort recorded and evaluated.
+- Current slice intent: preserve three cited, session-bound agent judgments and
+  determine whether their distribution supports a score-policy decision.
+- Next action: close this evidence-only goal with an explicit no-policy result;
+  a future cohort must broaden score signs, sessions, and lesson coverage.
 - Verification cadence: validate any proposed evidence schema against the
   ledger checker and test an append/refusal path before policy is changed.
 - Gate cadence: ledger validation after every append; focused authoring tests
@@ -77,14 +76,9 @@ session record as proof of human receipt or contract-graduation evidence.
 
 ## Operator Decision Queue
 
-- Decision: whether and when to supply real session-bound cited scores for the
-  first policy cohort.
-- Owner: operator.
-- Why deferred: current ledger state has zero score events, so a score budget
-  would be invented rather than inferred.
-- Unblock action: record actual cited score events through the existing session
-  and score commands, then activate this goal.
-- Revisit trigger: ledger checker reports a nonzero score-event count.
+- none — the user clarified that the agent authors operational lesson scores;
+  the first cited cohort is now recorded, while a score-policy decision remains
+  deferred for insufficient evidence rather than awaiting user input.
 
 ## Coordination Cues
 
@@ -111,15 +105,26 @@ session record as proof of human receipt or contract-graduation evidence.
   same value. Its frozen snapshot has 16 eligible lessons and 10 ordered IDs;
   ledger validation remains green at 16 lessons/16 transitions and zero scores.
   The next action is operator judgment for one or more cited listed lessons.
+- Slice 2: recorded three agent-authored, cited, session-contained +2 scores:
+  `durable-lesson-ledger-first` for ledger-first sequencing,
+  `proof-surface-review-binding` for claims-review repair, and
+  `goal-closeout-evidence-binding` for bound closeout evidence. Each has an
+  anchor naming this session's observed action. The replayed ledger now has 3
+  score events across 3 lessons, all from one declared session.
+- Evaluation: insufficient for a score budget or selection-policy change. The
+  cohort has one session, only positive scores, no zero/negative comparison,
+  and 3 of 16 seeded lessons observed. It proves the authoring/containment path
+  can collect agent judgments; it does not calibrate a threshold, score budget,
+  presentation effect, usefulness, or contract-graduation eligibility.
 
 ## Interview Decisions
 
 - Observation now versus defer until a later session. Chosen: record the
   deterministic session now because the user authorized it; rejected defer
   because it would preserve a zero-score premise without need.
-- Author an arbitrary score versus request actual operator judgment. Chosen:
-  request judgment after the session list is declared; rejected fabrication
-  because a cited score is durable local evidence.
+- Author an arbitrary score versus agent-authored operational judgment. Chosen:
+  score only observed actions with a cited source and concrete anchor; rejected
+  unsupported scoring because a cited score is durable local evidence.
 
 ## Plan Critique Findings
 
@@ -144,6 +149,8 @@ session record as proof of human receipt or contract-graduation evidence.
 
 - No score budget or graduation action is justified by the current zero-score
   state; this is an evidence-collection goal, not an implementation shortcut.
+- The first cohort supersedes the zero-score premise but is still too narrow to
+  justify score policy; this is an evidence result, not a defect in the ledger.
 
 ## Final Verification
 
@@ -152,8 +159,9 @@ session record as proof of human receipt or contract-graduation evidence.
 
 ## User Verification Instructions
 
-- After a session is declared, inspect its lesson IDs in the ledger and provide
-  only actual cited score judgments through the documented score command.
+- Inspect the session ID, score-event anchors, and replayed totals in the ledger;
+  the agent may append an operational score only for an observed action tied to
+  a cited listed lesson.
 
 ## Auto-Retro
 
