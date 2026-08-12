@@ -1,0 +1,60 @@
+# Open Backlog Execution Ledger
+
+Opening cohort: the 22 issues listed in the 2026-08-12 goal's Backlog Recount.
+This ledger turns that fixed scope into per-issue execution state. A row moves
+from `premise-needed` only after the issue and comments are re-read and a
+falsifiable premise is recorded. `unproven-defer` is an honest disposition, not
+a closure claim: it requires a tracker-visible explanation, owner, and revisit
+trigger.
+
+| Issue | Initial owner/slice | Reported invariant to recheck | Owning boundary / first reader | Verdict logic | Required evidence / disposition criterion | State |
+| --- | --- | --- | --- | --- | --- | --- |
+| #527 | 4, decision preparation | users can choose destructive skills safely and evaluate public skills | public skill metadata and first-reader docs | no | operator decision or tracker-visible deferral before implementation | premise-needed |
+| #528 | 4, consumer adapter | a coverage policy sub-key can be deliberately absent without silent refill | quality adapter resolution / consumer operator | yes | consumer reproduction plus resolver and warning behavior | premise-needed |
+| #539 | 3, issue create | create payload always supplies a usable issue URL identity | issue create backend parser / issue reporter | yes | backend-shaped fixture and ledger readback behavior | premise-needed |
+| #542 | 3, closeout evidence | a CLI/body target disagreement has a distinct refusal | evidence crosswalk / closeout author | yes | carrier-source cases and refusal payload | premise-needed |
+| #546 | 2, runtime verdict | a budget with no selected sample cannot read as protective | runtime budget verdict / quality operator | yes | selected-profile fixtures and exit/result assertions | premise-needed |
+| #550 | 4, adapter refactor | duplicated adapter resolver bodies can share behavior without losing distinctions | adapter resolver consumers | no | bounded equivalence map and focused regression suite | premise-needed |
+| #582 | 1, umbrella disposition | proof/evidence infrastructure lacks machine-owned state where claimed | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
+| #583 | 1, umbrella disposition | named verification surfaces can become inert while green | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
+| #584 | 1, umbrella disposition | named surfaces discard decidable state into prose | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | premise-needed |
+| #586 | 2, wired-proof path | a check runs through its actual caller path | check caller and consumer | yes | end-to-end wired-path regression proof | premise-needed |
+| #587 | 1, premise disposition | the original mutation-coverage blocker framing remains refuted or has live residue | mutation coverage lane / release operator | unknown | re-read retargeted issue and measurement; tracker-visible defer, close, or split decision | premise-needed |
+| #588 | 4, public helper | public dogfood invocation fails gracefully without internal policy files | consumer helper / skill author | no | clean consumer-shaped invocation and error contract | premise-needed |
+| #589 | 2, quality verdict | a fully applied preset lineage has a reachable clean state | declaration lifecycle verdict / quality operator | yes | applied and missing lineage fixtures with expected result | premise-needed |
+| #590 | 2, CI mutation report | a skipped JS mutation stage is distinguished from a missing report | scheduled workflow diagnostics / CI reader | yes | workflow fixture or CI-shaped parser proof | premise-needed |
+| #595 | 2, runtime verdict | computed runtime signals affect an exit or typed disposition | runtime budget result / quality operator | yes | signal-to-exit behavior tests | premise-needed |
+| #597 | 2, fixture proof | an empty tool-fixture set cannot pass as exercised verification | fixture checker and quality gate caller | yes | empty/nonempty fixtures and gate wiring proof | premise-needed |
+| #599 | 4, operator discovery | an operator can discover readers of a symbol/path/key before removal | code-change author | no | query contract and representative consumer search | premise-needed |
+| #601 | 4, quality capability | quality identifies avoidable CLI test-harness subprocess and comment-only invariant pathologies | quality reviewer | unknown | selected detection boundary or tracker-visible defer with rationale | premise-needed |
+| #602 | 3, issue create | creation has an in-grammar verification path and avoids placeholder priming | issue creator | yes | create verification command, help text, and substantive-title behavior | premise-needed |
+| #605 | 1, premise disposition | trim-back loop is reachable or provably redundant under the narrowed parser | documented-command checker / docs author | unknown | construct a trigger or record a bounded impossibility argument and tracker disposition | premise-needed |
+| #606 | 2, ratchet verdict | baseline regeneration and all enforced counts agree | boundary-bypass ratchet / quality operator | yes | canonical rebuild, full count cross-check, and safe regeneration path | premise-needed |
+| #607 | 5, settlement capability | subprocess inventory classifies conservative settlement risk | standing-test economics inventory / quality reviewer | unknown | decide add versus defer after Slice 2 inventory model; implementation requires machine-readable fixture distinction | premise-needed |
+
+## Row Update Contract
+
+For any selected row, record in the goal Slice Log or its owning durable record:
+
+- current falsifiable premise and its source re-read;
+- reproduction or bounded search, including the candidate scope and first reader;
+- proof channel distinct from tracker state when resolving behavior;
+- `verdict logic: yes/no/unknown` final classification and named deciding surface;
+- disposition: `proven`, `unproven-defer`, `split`, or `not-applicable`, plus
+  a tracker-visible carrier/comment and revisit trigger for every non-closure.
+
+New tracker issues after the opening recount are late arrivals. They stay outside
+this cohort unless the goal is explicitly amended; they are recorded as an
+off-goal dependency and prevent only the affected claimed row or umbrella from
+closing when their behavior is required for that row's stated invariant.
+
+## Umbrella Closure Contract
+
+Before #582, #583, or #584 can close, Slice 1 records an enumerated cited-claim
+list for that umbrella: claim, actual producer, first reader, owned child row or
+independent work item, durable carrier or evidence location, and current state.
+The umbrella stays open while any cited child or required late-arrival dependency
+is `premise-needed`, `unproven-defer`, or `split`; a tracker-visible explanation
+names the remaining owner and revisit trigger. An umbrella may close only after
+every enumerated item is `proven` or `not-applicable` on evidence independent of
+the umbrella tracker text.
