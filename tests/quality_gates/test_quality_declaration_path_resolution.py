@@ -242,6 +242,26 @@ def test_preset_reconciliation_reports_unavailable_contract_shapes(
     assert gaps == [{"kind": "preset_reconciliation_unavailable", "detail": "strict: forced unavailable"}]
 
 
+def test_preset_contract_reports_a_resolve_oserror(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "app"
+    preset = repo / "presets" / "strict.md"
+    preset.parent.mkdir(parents=True)
+    preset.write_text("fixture", encoding="utf-8")
+    validator = SimpleNamespace(re=__import__("re"), PRESET_NAME_RE=r"[a-z]+", ValidationError=ValueError)
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda _name: validator)
+    original = Path.resolve
+
+    def fail_preset(path: Path, *args, **kwargs):
+        if path == preset:
+            raise OSError("forced resolve failure")
+        return original(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "resolve", fail_preset)
+    assert LIFECYCLE._preset_contract(repo, "strict") == {
+        "state": "unavailable", "reason": "could not resolve presets/strict.md"
+    }
+
+
 def test_declaration_helpers_skip_non_values_without_creating_routes(
     tmp_path: Path,
 ) -> None:

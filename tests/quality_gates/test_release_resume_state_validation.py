@@ -134,3 +134,26 @@ def test_claims_evidence_classifier_rejects_a_non_direct_descendant() -> None:
     assert not RESUME._is_claims_evidence_commit(
         Cli(), Path("."), prepared_commit="prepared-sha", evidence_commit="evidence-sha"
     )
+
+
+def test_claims_child_and_prepared_state_refuse_missing_or_wrong_tag_bindings() -> None:
+    class Cli:
+        def run(self, command: list[str], *, cwd: Path, check: bool = True):
+            if command == ["git", "rev-list", "--all", "--parents"]:
+                return SimpleNamespace(returncode=0, stdout="other parent\n")
+            raise AssertionError(f"unexpected command: {command}")
+
+    assert RESUME._claims_evidence_child(Cli(), Path("."), prepared_commit="prepared") == ""
+    with pytest.raises(SystemExit, match="lacks its release-record binding"):
+        RESUME.assert_resumable({"phase": "prepared-claims-review", "prepared": None, "tag_local": False, "tag_remote": False}, tag_name="v1.2.3")
+    state = {
+        "phase": "prepared-claims-review", "prepared": {"commit": "prepared"},
+        "tag_local": True, "tag_remote": True, "tag_sha": "wrong", "remote_tag_sha": "wrong",
+        "remote_branch_sha": "", "prepared_parent_sha": "", "claims_evidence_commit": "", "head_sha": "prepared",
+    }
+    with pytest.raises(SystemExit, match="local tag.*prepared release record"):
+        RESUME.assert_resumable(state, tag_name="v1.2.3")
+    state["tag_local"] = False
+    state["tag_sha"] = ""
+    with pytest.raises(SystemExit, match="remote tag.*prepared release record"):
+        RESUME.assert_resumable(state, tag_name="v1.2.3")

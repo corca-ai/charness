@@ -286,6 +286,17 @@ def test_writer_requires_confirmation_before_replacing_an_existing_baseline(tmp_
     assert RATCHET.load_baseline(baseline_path)[RATCHET.INTEGRITY_FIELD]
 
 
+def test_cli_evaluates_a_matching_existing_baseline(tmp_path: Path) -> None:
+    repo = _repo_with_candidate(tmp_path / "repo")
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text(json.dumps(RATCHET.build_baseline(INVENTORY.find_boundary_bypass_candidates(repo))), encoding="utf-8")
+
+    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path), "--json")
+
+    assert result.returncode == 0
+    assert json.loads(result.stdout)["ok"] is True
+
+
 def test_writer_refuses_malformed_existing_baseline_without_a_traceback(tmp_path: Path) -> None:
     repo = _repo_with_candidate(tmp_path / "repo")
     baseline_path = tmp_path / "baseline.json"

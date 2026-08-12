@@ -117,6 +117,7 @@ def test_subprocess_settlement_marks_unknown_syntax_and_unreadable_inputs_conser
 
     assert lib._literal_truth(ast.parse("value").body[0].value) is None
     assert lib._literal_deadline_state(ast.parse("timeout=dynamic").body[0].value) == "unknown"
+    assert lib._call_parts(ast.parse("42").body[0].value) == []
     assert lib.subprocess_settlement_seams(repo, [malformed, system, js]) == [
         {"path": "tests/stream.js", "line": 1, "call": "execSync", "deadline": "absent", "lifecycle": "unknown", "process_tree_termination": "unknown", "output_bounding": "unbounded"},
     ]

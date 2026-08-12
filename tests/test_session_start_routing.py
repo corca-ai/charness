@@ -324,3 +324,9 @@ def test_repo_root_discovery_and_configured_state_fail_closed_at_each_boundary(
 
     monkeypatch.setattr(hook.subprocess, "run", escaped_payload)
     assert hook._configured_handoff_state(str(repo)) is None
+
+    def blank_payload(*_args, **_kwargs):
+        return subprocess.CompletedProcess([], 0, stdout=json.dumps({"artifact_path": "  "}))
+
+    monkeypatch.setattr(hook.subprocess, "run", blank_payload)
+    assert hook._configured_handoff_state(str(repo)) is None

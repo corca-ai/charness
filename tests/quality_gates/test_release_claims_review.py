@@ -29,6 +29,24 @@ def _run(command: list[str], *, cwd: Path, check: bool = True):
     return subprocess.run(command, cwd=cwd, check=check, capture_output=True, text=True)
 
 
+def _source_bound_evidence(tmp_path: Path):
+    repo, remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    payload = json.loads(prepared.stdout)
+    commit = payload["prepared_release_commit"]
+    record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
+    path = "charness-artifacts/release-review/source-claims.json"
+    review = repo / path
+    review.parent.mkdir(parents=True, exist_ok=True)
+    review.write_text(_record(payload, commit, record), encoding="utf-8")
+    _run(["git", "add", path], cwd=repo)
+    _run(["git", "commit", "-m", "Record source claims review"], cwd=repo)
+    return repo, remote, bin_dir, env, payload, path
+
+
 @pytest.mark.release_only
 def test_claims_review_rejects_non_direct_and_merge_evidence(tmp_path: Path) -> None:
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
@@ -113,3 +131,77 @@ def test_resume_refuses_inherited_prepared_marker_before_auth_or_publish(tmp_pat
     new_git = json.loads(git_log.read_text(encoding="utf-8"))[len(prior_git):]
     assert ["push", "origin", "main", "v0.0.1"] not in new_git
     assert ["tag", "v0.0.1"] not in new_git
+
+
+def test_claims_review_refuses_invalid_paths_tree_and_bindings(tmp_path: Path) -> None:
+    prepared = {"commit": "prepared", "path": "charness-artifacts/release/latest.md", "sha256": "record-sha"}
+
+    def invoke(path: str | None, responses: dict[tuple[str, ...], tuple[int, str]]):
+        def run(command: list[str], *, cwd: Path, check: bool = True):
+            code, stdout = responses.get(tuple(command), (0, ""))
+            return subprocess.CompletedProcess(command, code, stdout=stdout)
+        return CLAIMS_REVIEW.validate_claims_review(
+            tmp_path, prepared=prepared, evidence_commit="evidence", artifact_path=path,
+            target_version="1.2.3", tag_name="v1.2.3", run=run,
+        )
+
+    with pytest.raises(SystemExit, match="normalized repo-relative"):
+        invoke("../review.json", {})
+    with pytest.raises(SystemExit, match="JSON record under"):
+        invoke("charness-artifacts/other/review.txt", {})
+
+    parents = ("git", "show", "-s", "--format=%P", "evidence")
+    diff = ("git", "diff-tree", "--no-commit-id", "--name-only", "-r", "prepared", "evidence")
+    path = "charness-artifacts/release-review/review.json"
+    with pytest.raises(SystemExit, match="must change only"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, "README.md\n")})
+    with pytest.raises(SystemExit, match="not committed"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (1, "")})
+    with pytest.raises(SystemExit, match="not valid JSON"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "{")})
+    with pytest.raises(SystemExit, match="does not bind"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "{}")})
+    bound = {
+        "schema_version": "charness.release.claims-review.v1", "prepared_commit": "prepared",
+        "release_record_path": "charness-artifacts/release/latest.md", "release_record_sha256": "record-sha",
+        "target_version": "1.2.3", "tag_name": "v1.2.3", "verdict": "pass",
+        "preparer_context": "same", "reviewer_context": "same",
+    }
+    with pytest.raises(SystemExit, match="distinct nonempty"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, json.dumps(bound))})
+
+
+@pytest.mark.release_only
+def test_publish_cli_refuses_claims_artifact_without_resume(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+
+    result = _run_publish(
+        repo, _release_env(tmp_path, bin_dir), "--part", "patch",
+        "--claims-review-artifact", "charness-artifacts/release-review/review.json",
+    )
+
+    assert result.returncode != 0
+    assert "only valid with --resume --publish-current" in result.stderr
+
+
+@pytest.mark.release_only
+@pytest.mark.parametrize("remote_leg", ["tag", "branch"])
+def test_source_resume_repairs_only_the_missing_claims_publication_leg(tmp_path: Path, remote_leg: str) -> None:
+    repo, _remote, _bin_dir, env, payload, path = _source_bound_evidence(tmp_path)
+    if remote_leg == "tag":
+        _run(["git", "tag", payload["tag_name"], payload["prepared_release_commit"]], cwd=repo)
+        _run(["git", "push", "origin", payload["tag_name"]], cwd=repo)
+    else:
+        _run(["git", "push", "origin", "main"], cwd=repo)
+    git_log = tmp_path / "git-log.json"
+    before = json.loads(git_log.read_text(encoding="utf-8"))
+
+    resumed = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute", "--claims-review-artifact", path,
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    )
+
+    assert resumed.returncode == 0, resumed.stderr
+    new = json.loads(git_log.read_text(encoding="utf-8"))[len(before):]
+    expected = ["push", "origin", "main"] if remote_leg == "tag" else ["push", "origin", payload["tag_name"]]
+    assert expected in new
