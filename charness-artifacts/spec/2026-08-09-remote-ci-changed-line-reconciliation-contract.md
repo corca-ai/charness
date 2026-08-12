@@ -171,6 +171,17 @@ regression. No push has been authorized, so this review neither refreshes nor
 claims hosted CI readback. The next ordinary local slice may proceed while
 preserving the remote-readback non-claim.
 
+### 2026-08-12 score-authoring continuation review
+
+The latest local changed-line run now covers every **mapped** changed
+mutation-pool file through `621db7dd`, including `record_lesson_score.py`'s
+portable lock and CLI-refusal branches; its result remains `partial` only
+because the pre-existing `scripts/render_lesson_selection_preview.py` has no
+standing-test mapping. This is local evidence, not a hosted-CI result: no push
+or remote readback is authorized or claimed. The forced interrupt is therefore
+consumed for the next local contract-decision slice without changing mapper
+policy, CI topology, or the remote non-claim.
+
 - User-directed follow-up: resolve `#577`, `#578`, and `#579`, which were found while
   measuring the repaired quality runner's code and test economics.
 - Preserved interrupt: the remote changed-line seam remains locally resolved
