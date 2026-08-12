@@ -10,9 +10,9 @@ Done-early policy: continue_next_improvement
 
 ## Active Operating Frame
 
-- Current slice: #603 — make quality packets executable for adapter-owned consumer repositories.
-- Current slice intent: establish the narrow planner contract before any shipped default-pattern or closeout-verdict change.
-- Next action: read #603's current GitHub record, route its consumer-planner behavior through `quality`, then write the pre-mutation implementation brief.
+- Current slice: #604 — decide canonical-gate recognition before changing shipped default matching.
+- Current slice intent: obtain the queued operator policy choice, then bound any recognition repair to that decision.
+- Next action: choose whether default canonical patterns may widen for consumer repos or must remain override-only; do not mutate #604 defaults before this answer.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger proof at each quality or closeout verdict slice; final lock only after the five slices are frozen.
 - Gate cadence: obtain `quality` recommendations before slow gates or any change to a gate, validator, or generated quality packet; do not run Cautilus unless newly approved.
 - Slice review packet: state the issue JTBD, changed/generated surfaces, preserved consumer boundary, expected invariants, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -65,7 +65,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | #603: resolve adapter-owned quality packets or report typed unavailability. | Restores an operator's ability to begin quality work. | Adapter-present/runner-absent regression fixture, planner result, focused tests, and critique. | pending |
+| 1 | #603: resolve adapter-owned quality packets or report typed unavailability. | Restores an operator's ability to begin quality work. | Adapter-present/runner-absent regression fixture, planner result, focused tests, and critique. | completed 2026-08-12 (`470aae9a`) |
 | 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | pending decision |
 | 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | pending |
 | 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | pending |
@@ -100,6 +100,20 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 ## Slice Log
 
 - Activated 2026-08-12 with no implementation slices yet completed.
+
+### Slice 1: #603 adapter-owned quality packet routing
+
+- Objective: Stop advertising a missing generic runner to a valid adapter-owned consumer repository.
+- Why this approach: A planner packet must be executable from declared consumer evidence, not a Charness-local assumption.
+- Commits: 470aae9a Repair adapter-owned quality packet routing
+- What changed: Added native catalog-gate applicability filtering, a typed catalog_gate_unavailable lifecycle gap, adapter-present/runner-absent and clean-interpreter loader regressions, plugin projection sync, and debug/quality/critique records.
+- Alternatives rejected: Did not infer a read-only substitute from arbitrary adapter commands; non-native catalog run_when prose remains advisory.
+- Targeted verification: 87 focused tests passed; packaging and all pre-commit checks passed; plugin planner ran; fresh-eye rounds 1 and 3 approved, while round 2's import finding was repaired and re-reviewed.
+- Test duplication pressure: One behavior-level fixture covers the consumer-visible missing-runner route; existing unconfigured coverage preserves the default catalog packet.
+- Critique: full charness-artifacts/critique/2026-08-12-issue-603-quality-packet-critique.md; final reviewer approved and boundary fingerprints were clean.
+- Off-goal findings: No adapter command execution, consumer runtime or hosted proof, publication, or GitHub issue closure; #604 policy choice remains queued.
+- Lessons carried forward: A direct module loader needs an import-isolated test; planner tests can accidentally preload dependencies.
+- Metrics: Focused suite: 87 passed in 5.29s; pre-commit completed with one non-blocking RCA-ledger advisory.
 
 ## Context Sources
 
