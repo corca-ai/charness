@@ -8,6 +8,9 @@ from typing import Any
 NESTED_CLI_RE = re.compile(
     r"\b(subprocess\.(?:run|check_call|check_output|Popen)|spawnSync|execFileSync|execSync|spawn\(|execa\()"
 )
+_PYTHON_SUBPROCESS_CALLS = {"run", "check_call", "check_output", "Popen"}
+_JS_SYNC_CALLS = {"spawnSync", "execFileSync", "execSync"}
+_JS_CALL_RE = re.compile(r"\b(spawnSync|execFileSync|execSync|spawn|execa)\s*\(")
 
 
 def nested_cli_files(repo_root: Path, test_files: list[Path]) -> list[str]:
@@ -20,6 +23,134 @@ def nested_cli_files(repo_root: Path, test_files: list[Path]) -> list[str]:
         if NESTED_CLI_RE.search(text):
             matches.append(path.relative_to(repo_root).as_posix())
     return matches
+
+
+def _call_parts(node: ast.AST) -> list[str]:
+    if isinstance(node, ast.Name):
+        return [node.id]
+    if isinstance(node, ast.Attribute):
+        return [*_call_parts(node.value), node.attr]
+    return []
+
+
+def _literal_truth(node: ast.AST | None) -> bool | None:
+    if node is None:
+        return None
+    if isinstance(node, ast.Constant) and isinstance(node.value, bool):
+        return node.value
+    return None
+
+
+def _literal_deadline_state(node: ast.AST | None) -> str:
+    if node is None or (isinstance(node, ast.Constant) and node.value is None):
+        return "absent"
+    if (
+        isinstance(node, ast.Constant)
+        and isinstance(node.value, (int, float))
+        and not isinstance(node.value, bool)
+    ):
+        return "present"
+    return "unknown"
+
+
+def _python_output_bounding(keywords: dict[str, ast.AST]) -> str:
+    values = [keywords.get(name) for name in ("stdout", "stderr")]
+    rendered = [ast.unparse(value) for value in values if value is not None]
+    if _literal_truth(keywords.get("capture_output")) is True or any("PIPE" in value for value in rendered):
+        return "unbounded"
+    if len(rendered) == 2 and all("DEVNULL" in value for value in rendered):
+        return "bounded"
+    return "unknown"
+
+
+def _python_settlement_seams(repo_root: Path, path: Path, text: str) -> list[dict[str, Any]]:
+    try:
+        tree = ast.parse(text, filename=str(path))
+    except SyntaxError:
+        return []
+    seams: list[dict[str, Any]] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        parts = _call_parts(node.func)
+        if len(parts) != 2 or parts[0] != "subprocess" or parts[1] not in _PYTHON_SUBPROCESS_CALLS:
+            continue
+        keywords = {keyword.arg: keyword.value for keyword in node.keywords if keyword.arg is not None}
+        deadline = _literal_deadline_state(keywords.get("timeout"))
+        seams.append(
+            {
+                "path": path.relative_to(repo_root).as_posix(),
+                "line": node.lineno,
+                "call": ".".join(parts),
+                "deadline": deadline,
+                # A synchronous helper only waits; without a deadline it can wait forever.
+                "lifecycle": "finite"
+                if parts[1] != "Popen" and deadline == "present"
+                else "unknown",
+                # Process-group creation alone is not termination ownership; only a runtime protocol can prove it.
+                "process_tree_termination": "unknown",
+                "output_bounding": _python_output_bounding(keywords),
+            }
+        )
+    return seams
+
+
+def _js_settlement_seams(repo_root: Path, path: Path, text: str) -> list[dict[str, Any]]:
+    seams: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        for match in _JS_CALL_RE.finditer(line):
+            call = match.group(1)
+            timeout_match = re.search(r"\btimeout\s*:\s*([^,}\s]+)", line)
+            timeout_value = timeout_match.group(1) if timeout_match else None
+            deadline = (
+                "absent"
+                if timeout_value is None
+                else "present"
+                if re.fullmatch(r"\d+(?:\.\d+)?", timeout_value)
+                else "unknown"
+            )
+            if re.search(r"\bstdio\s*:\s*['\"]ignore['\"]", line):
+                output_bounding = "bounded"
+            elif re.search(r"\bstdio\s*:\s*['\"]pipe['\"]", line):
+                output_bounding = "unbounded"
+            else:
+                output_bounding = "unknown"
+            seams.append(
+                {
+                    "path": path.relative_to(repo_root).as_posix(),
+                    "line": line_number,
+                    "call": call,
+                    "deadline": deadline,
+                    "lifecycle": "finite"
+                    if call in _JS_SYNC_CALLS and deadline == "present"
+                    else "unknown",
+                    "process_tree_termination": "unknown",
+                    "output_bounding": output_bounding,
+                }
+            )
+    return seams
+
+
+def subprocess_settlement_seams(repo_root: Path, test_files: list[Path]) -> list[dict[str, Any]]:
+    """Return conservative static settlement signals for nested subprocess call sites.
+
+    The fields describe visible syntax only; ``unknown`` is intentional when
+    process lifecycle or tree ownership needs runtime evidence.
+    """
+    seams: list[dict[str, Any]] = []
+    for path in test_files:
+        try:
+            text = path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if path.suffix == ".py":
+            seams.extend(_python_settlement_seams(repo_root, path, text))
+        elif path.suffix in {".js", ".mjs", ".cjs", ".ts", ".tsx"}:
+            seams.extend(_js_settlement_seams(repo_root, path, text))
+    return sorted(
+        seams,
+        key=lambda item: (str(item["path"]), int(item["line"]), str(item["call"])),
+    )
 
 
 def _name_parts(node: ast.AST) -> list[str]:

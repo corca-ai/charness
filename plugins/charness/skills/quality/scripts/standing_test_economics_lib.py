@@ -20,6 +20,7 @@ discover_surfaces = _DISCOVERY.discover_surfaces
 iter_snippets = _DISCOVERY.iter_snippets
 find_nested_cli_files = _MARKERS.nested_cli_files
 find_pytest_file_test_counts = _MARKERS.pytest_file_test_counts
+find_subprocess_settlement_seams = _MARKERS.subprocess_settlement_seams
 resolve_test_files = _TEST_DISCOVERY.resolve_test_files
 
 TRANSPILE_EXTENSIONS = {".ts", ".tsx"}
@@ -179,6 +180,7 @@ def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[
     node_test_snippets = [item for item in snippets if NODE_TEST_RE.search(item["snippet"])]
     ts_loader_snippets = [item for item in snippets if TS_LOADER_RE.search(item["snippet"])]
     nested_cli_files = find_nested_cli_files(repo_root, test_files)
+    settlement_seams = find_subprocess_settlement_seams(repo_root, test_files)
     nested_cli_test_counts = find_pytest_file_test_counts(repo_root, nested_cli_files)
     nested_cli_release_only_files: list[str] = []
     nested_cli_mixed_release_only_files: list[str] = []
@@ -280,6 +282,14 @@ def inventory(repo_root: Path, discovery: dict[str, Any] | None = None) -> dict[
         "nested_cli_release_only_files": nested_cli_release_only_files,
         "nested_cli_standing_or_mixed_file_count": len(nested_cli_standing_or_mixed_files),
         "nested_cli_standing_or_mixed_files": nested_cli_standing_or_mixed_files,
+        "subprocess_settlement": {
+            "seam_count": len(settlement_seams),
+            "deadline_counts": {state: sum(item["deadline"] == state for item in settlement_seams) for state in ("present", "absent", "unknown")},
+            "lifecycle_counts": {state: sum(item["lifecycle"] == state for item in settlement_seams) for state in ("finite", "until_interrupted", "unknown")},
+            "process_tree_termination_counts": {state: sum(item["process_tree_termination"] == state for item in settlement_seams) for state in ("owned", "not_owned", "unknown")},
+            "output_bounding_counts": {state: sum(item["output_bounding"] == state for item in settlement_seams) for state in ("bounded", "unbounded", "unknown")},
+            "seams": settlement_seams,
+        },
         "pytest_temp_footprint": pytest_temp,
         "proof_path_review": (
             {

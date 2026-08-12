@@ -41,9 +41,9 @@ def _load_quality_adapter_permissive(repo_root: Path) -> dict[str, object]:
 # inference-layer proxy, so the inventory self-declares blind spots and the
 # question the `quality` consumer must answer before acting on the growth.
 INTERPRETATION = {
-    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into standing-only, mixed release_only/standing, and all-release-only buckets, transpiler/loader and node-isolation snippets, the pytest temp footprint, and a proof-preserving comparison card when acceleration candidates exist",
+    "measures": "the test surface relevant to standing economics — test-file count, nested-CLI fan-out split into standing-only, mixed release_only/standing, and all-release-only buckets, conservative static subprocess-settlement signals, transpiler/loader and node-isolation snippets, the pytest temp footprint, and a proof-preserving comparison card when acceleration candidates exist",
     "proxy_for": "standing suite cost dominated by per-file runner startup, isolation, and fixture materialization rather than by test value",
-    "blind_spots": "counts files and process-spawn call sites, not coverage or value — a high test-file count can be honest behavior coverage, and an intentional real-binary smoke that spawns a subprocess counts as nested-CLI fan-out; the release_only split is structural and only sees pytest markers, so the file buckets still cannot tell whether a given test earns its isolation cost",
+    "blind_spots": "counts files and process-spawn call sites, not coverage or value — a high test-file count can be honest behavior coverage, and an intentional real-binary smoke that spawns a subprocess counts as nested-CLI fan-out; settlement fields only classify visible literal syntax and never prove child lifecycle or process-tree ownership; the release_only split is structural and only sees pytest markers, so the file buckets still cannot tell whether a given test earns its isolation cost",
     "interpretation_question": "is this test-file / nested-CLI growth paying for real isolation and coverage value, or is it startup-cost waste THIS repo should consolidate?",
 }
 
@@ -66,6 +66,7 @@ SUMMARY_FIELDS = (
     "nested_cli_release_only_files_sample",
     "nested_cli_standing_or_mixed_file_count",
     "nested_cli_standing_or_mixed_files_sample",
+    "subprocess_settlement",
     "pytest_temp_footprint",
     "proof_path_review",
     "findings",
@@ -77,7 +78,7 @@ SUMMARY_FIELDS = (
     "adapter_load_mode",
 )
 SUMMARY_NESTED_CLI_SAMPLE_SIZE = 10
-SUMMARY_NOTE = "summary is triage output; use --detail for full nested_cli_files attribution"
+SUMMARY_NOTE = "summary is triage output; use --detail for full nested-CLI and subprocess-settlement callsite attribution"
 
 
 def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
@@ -94,6 +95,11 @@ def summarize_payload(payload: dict[str, object]) -> dict[str, object]:
         value = payload.get(key, [])
         sample = value[:SUMMARY_NESTED_CLI_SAMPLE_SIZE] if isinstance(value, list) else []
         payload_with_sample[f"{key}_sample"] = sample
+    settlement = payload.get("subprocess_settlement")
+    if isinstance(settlement, dict):
+        payload_with_sample["subprocess_settlement"] = {
+            key: value for key, value in settlement.items() if key != "seams"
+        }
     return {field: payload_with_sample.get(field) for field in SUMMARY_FIELDS}
 
 

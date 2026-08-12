@@ -41,6 +41,7 @@
         "nested_cli_standing_files",
         "nested_cli_release_only_file_count",
         "nested_cli_standing_or_mixed_file_count",
+        "subprocess_settlement",
         "runner_snippets"
       ]
     },
