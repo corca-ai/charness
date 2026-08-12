@@ -71,7 +71,7 @@ def evaluate_close_comment_floor(
     # undispositioned HOTL entry could not be refused. Presence-gated like the rest:
     # a body with no HOTL entry is inert, so this adds no obligation to bodies that
     # never had a live loop.
-    hotl_dispositions = _FLOORS.evaluate_hotl_dispositions(body, classification)
+    hotl_dispositions = _FLOORS.evaluate_hotl_dispositions(body, classification, numbers)
     # Same asymmetry as the HOTL floor above: `verify-closeout` and the commit-msg
     # carrier both check the AI-provenance marker, and this carrier — the only one
     # that writes to GitHub itself — did not. The marker is what makes the

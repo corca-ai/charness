@@ -278,7 +278,7 @@ def _hotl_lines(text: str) -> list[dict]:
     ]
 
 
-def evaluate_hotl_dispositions(text: str, classification: str) -> dict:
+def evaluate_hotl_dispositions(text: str, classification: str, numbers: list[int]) -> dict:
     """Rung-1 refuse-on-undispositioned-HOTL-entry presence floor (WS-2 / Direction-3).
 
     **Presence-gated.** A carrier that presents NO ``HOTL`` entry is inert (no live
@@ -303,21 +303,33 @@ def evaluate_hotl_dispositions(text: str, classification: str) -> dict:
     tuple that used to gate this imported a reason that does not transfer. The
     PRESENCE gate below is the real one and always was: a body with no ``HOTL`` entry
     stays inert, so a close that never had a live loop gains no obligation.
-    ``classification`` is reported, never gating.
+    ``classification`` is reported, never gating. `HOTL #N:` is bound to an
+    issue the carrier closes, just like `Behavior #N:`; quoted or copied entries
+    for other issues are not this carrier's disposition. `HOTL:` stays the
+    single-issue shorthand and is judged only when exactly one number is closed.
     """
     lines = _hotl_lines(text)
-    if not lines:
+    bound_lines: list[dict] = []
+    for line in lines:
+        targets = [int(raw) for raw in _ISSUE_REF_RE.findall(line["target"] or "")]
+        if targets:
+            if not any(number in numbers for number in targets):
+                continue
+        elif len(numbers) != 1:
+            continue
+        bound_lines.append(line)
+    if not bound_lines:
         return {"applies": False, "ok": True, "undispositioned": [], "lines": []}
     undispositioned: list[dict] = []
     parsed: list[dict] = []
-    for line in lines:
+    for line in bound_lines:
         dispositioned = _has_substantive_value(line["value"]) and _hotl_status_typed(line["value"])
         parsed.append({"target": line["target"], "value": line["value"], "dispositioned": dispositioned})
         if not dispositioned:
             undispositioned.append({"target": line["target"], "value": line["value"]})
     return {
         "applies": True, "ok": not undispositioned, "undispositioned": undispositioned,
-        "lines": parsed, "classification": classification,
+        "lines": parsed, "classification": classification, "numbers": numbers,
     }
 
 

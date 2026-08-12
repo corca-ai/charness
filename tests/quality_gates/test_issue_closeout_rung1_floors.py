@@ -131,25 +131,58 @@ def test_evaluate_hotl_dispositions_unit() -> None:
     fn = load_verify_module().evaluate_hotl_dispositions
     # a presented entry is judged on EVERY classification, light ones included
     for classification in ("question", "decision-needed", "consolidated", "bug"):
-        verdict = fn("HOTL #1: nonsense", classification)
+        verdict = fn("HOTL #1: nonsense", classification, [1])
         assert verdict["applies"] is True, classification
         assert verdict["ok"] is False, classification
     # no entry -> inert
-    assert fn("Close #1.\nBehavior: verified via X", "bug")["applies"] is False
+    assert fn("Close #1.\nBehavior: verified via X", "bug", [1])["applies"] is False
     # local-only-by-contract disposes; every typed status disposes
     for status in (
         "local-only-by-contract — no live surface", "verified: roundtrip <ts>",
         "blocked-needs-capability: no repo command", "deferred-by-operator: next window",
         "accepted-risk: owner ok", "out-of-scope: not this loop", "issue #77 tracks it",
     ):
-        verdict = fn(f"HOTL: {status}", "feature")
+        verdict = fn(f"HOTL: {status}", "feature", [1])
         assert verdict["applies"] is True and verdict["ok"] is True, status
     # multi-entry: one typed, one untyped -> refuse only the untyped
-    multi = fn("HOTL #1: verified: roundtrip\nHOTL #2: probably fine", "bug")
+    multi = fn("HOTL #1: verified: roundtrip\nHOTL #2: probably fine", "bug", [1, 2])
     assert multi["ok"] is False
     assert [u["target"] for u in multi["undispositioned"]] == ["#2"]
     # placeholder value is undispositioned
-    assert fn("HOTL #1: TODO", "bug")["ok"] is False
+    assert fn("HOTL #1: TODO", "bug", [1])["ok"] is False
+
+
+def test_evaluate_hotl_dispositions_binds_targeted_lines_to_closed_issues() -> None:
+    fn = load_verify_module().evaluate_hotl_dispositions
+    quoted_other = "- HOTL #77: not verified, see prior discussion"
+    assert fn(quoted_other, "question", [800])["applies"] is False
+    assert fn(quoted_other, "question", [77])["ok"] is False
+    assert fn("HOTL: not verified", "question", [800])["ok"] is False
+    assert fn("HOTL: not verified", "question", [800, 801])["applies"] is False
+    combined = fn("HOTL #800, #801: not verified", "question", [800, 801])
+    assert combined["ok"] is False
+    assert combined["undispositioned"][0]["target"] == "#800, #801"
+
+
+def test_issue_verify_closeout_bundle_binds_hotl_entries_to_its_numbers(tmp_path: Path) -> None:
+    """The carrier, not only the parser helper, supplies bundle target identity."""
+    seed_commit(
+        tmp_path,
+        "Closes #800, #801\n"
+        "Jtbd: answer both tracker questions\n"
+        "Answer: recorded in the linked discussion\n"
+        "HOTL #77: not verified, quoted prior discussion\n"
+        "HOTL: not verified, ambiguous shorthand\n"
+        "AI-provenance: authored by an agent session\n",
+    )
+    result = run_script(
+        SCRIPT, "verify-closeout", "--repo-root", str(tmp_path),
+        "--repo", "corca-ai/charness", "--number", "800", "--number", "801",
+        "--classification", "question", "--carrier", "direct-commit", "--commit-ref", "HEAD",
+    )
+    assert result.returncode == 0, result.stdout
+    payload = json.loads(result.stdout)
+    assert payload["hotl_dispositions"]["applies"] is False
 
 
 def test_evaluate_hotl_dispositions_refuses_a_status_negation() -> None:
@@ -167,7 +200,7 @@ def test_evaluate_hotl_dispositions_refuses_a_status_negation() -> None:
         "see issue tracker",
         "unverified so far",
     ):
-        verdict = fn(f"HOTL #1: {undispositioned}", "bug")
+        verdict = fn(f"HOTL #1: {undispositioned}", "bug", [1])
         assert verdict["applies"] is True, undispositioned
         assert verdict["ok"] is False, undispositioned
     # A leading typed status still disposes, including through markdown emphasis
@@ -183,7 +216,7 @@ def test_evaluate_hotl_dispositions_refuses_a_status_negation() -> None:
         "blocked-needs-operator — awaiting prod approval",
         "#77 tracks the residual defect",
     ):
-        assert fn(f"HOTL #1: {dispositioned}", "bug")["ok"] is True, dispositioned
+        assert fn(f"HOTL #1: {dispositioned}", "bug", [1])["ok"] is True, dispositioned
 
 
 def test_issue_verify_closeout_rejects_missing_ai_provenance_marker(tmp_path: Path) -> None:
@@ -386,7 +419,7 @@ def test_wrapped_prose_continuation_still_belongs_to_its_field(tmp_path: Path) -
         "to the preceding field, so a placeholder absorbed the next section."
     )
     assert module.evaluate_behavioral_verdict(wrapped, "bug", [42])["ok"] is True
-    assert module.evaluate_hotl_dispositions(wrapped, "bug")["ok"] is True
+    assert module.evaluate_hotl_dispositions(wrapped, "bug", [42])["ok"] is True
     assert module.evaluate_ai_provenance(wrapped, "bug")["ok"] is True
     # The standard shipped carrier stays green too.
     assert module._missing_ledger_fields(bug_closeout_body(), "bug") == []

@@ -1,1 +1,1 @@
-2026-08-12-issue-594-closeout-draft-scope-debug.md
+2026-08-12-issue-593-hotl-target-binding-debug.md

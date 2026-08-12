@@ -256,7 +256,7 @@ def verify_closeout(
     )
     source_preservation = evaluate_source_preservation(body)
     behavioral_verdict = evaluate_behavioral_verdict(body, classification, numbers)
-    hotl_dispositions = evaluate_hotl_dispositions(body, classification)
+    hotl_dispositions = evaluate_hotl_dispositions(body, classification, numbers)
     ai_provenance = evaluate_ai_provenance(body, classification)
     if carrier == "manual-fallback":
         reason_value = _first_field(_body_fields(body), ("manual close reason", "manual fallback reason"))

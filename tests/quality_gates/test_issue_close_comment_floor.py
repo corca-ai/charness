@@ -163,6 +163,43 @@ def test_close_with_comment_refuses_undispositioned_hotl_entry(tmp_path: Path) -
     assert not log.exists(), "no gh call should have run before the floor refused"
 
 
+def test_manual_floor_ignores_untyped_hotl_for_another_issue(tmp_path: Path) -> None:
+    """A copied bullet about #77 is not a disposition for the close of #800."""
+    floor = _load_close_comment_floor()
+    report = floor.evaluate_close_comment_floor(
+        repo_root=tmp_path,
+        body=(
+            "Jtbd: answer the tracked question.\n"
+            "Answer: recorded in the issue.\n"
+            "- HOTL #77: not verified, quoted prior discussion\n"
+            "AI-provenance: authored by an agent session.\n"
+        ),
+        classification="question",
+        number=800,
+    )
+    assert report["ok"] is True
+    assert report["hotl_dispositions"]["applies"] is False
+
+
+def test_manual_carrier_binds_its_actual_target_for_hotl_dispositions(tmp_path: Path) -> None:
+    """The pre-mutation carrier, not merely its floor, passes #800 downstream."""
+    closer = _load_issue_close()
+    common = "Jtbd: answer the tracked question.\nAnswer: recorded in the issue.\nAI-provenance: agent.\n"
+    unrelated = closer.evaluate_close_comment_carrier(
+        "corca-ai/charness", 800, common + "- HOTL #77: not verified\n",
+        repo_root=tmp_path, classification="question", backend={"id": "gh", "binary": "gh", "commands": None},
+    )
+    assert unrelated["ok"] is True
+    assert unrelated["hotl_dispositions"]["applies"] is False
+
+    matching = closer.evaluate_close_comment_carrier(
+        "corca-ai/charness", 800, common + "HOTL #800: not verified\n",
+        repo_root=tmp_path, classification="question", backend={"id": "gh", "binary": "gh", "commands": None},
+    )
+    assert matching["ok"] is False
+    assert matching["hotl_dispositions"]["undispositioned"][0]["target"] == "#800"
+
+
 def test_close_with_comment_accepts_typed_hotl_entry(tmp_path: Path) -> None:
     """The same carrier with a *led* typed status passes: the floor refuses
     malformation, never the disposition's honesty (that is rung-2)."""

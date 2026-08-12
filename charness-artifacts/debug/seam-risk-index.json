@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 127,
-  "indexed_artifact_count": 115,
+  "source_artifact_count": 128,
+  "indexed_artifact_count": 116,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
     "host-disproves-local": 2,
-    "none": 44,
+    "none": 45,
     "operator-visible-recovery": 23,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 98,
+    "monitor": 99,
     "none": 12
   },
   "entries": [
@@ -1562,6 +1562,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "carrier target identity to HOTL disposition parser.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1624,7 +1638,7 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "author-facing draft renderer to irreversible closeout validator.",
+      "seam": "carrier target identity to HOTL disposition parser.",
       "generalization_pressure": "monitor",
       "critique_required": true,
       "next_step": "impl",
