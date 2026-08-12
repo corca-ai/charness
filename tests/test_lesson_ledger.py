@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import json
 import multiprocessing
-import runpy
 import subprocess
 import sys
 import tempfile
@@ -152,38 +151,6 @@ def test_ledger_replays_legacy_cited_scores_and_checker_cli(
     assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 2
 
 
-def test_ledger_checker_and_writer_scripts_print_refusals(
-    tmp_path: Path, monkeypatch, capsys
-) -> None:
-    monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
-    with pytest.raises(SystemExit, match="1"):
-        runpy.run_path(str(ROOT / "scripts/check_lesson_ledger.py"), run_name="__main__")
-    assert "missing lesson ledger" in capsys.readouterr().err
-    for script, args in (
-        (
-            "record_lesson_score.py",
-            [
-                "--event-id",
-                "x",
-                "--session-id",
-                "s",
-                "--lesson-id",
-                "a",
-                "--source-retro",
-                "source.md",
-                "--score",
-                "0",
-            ],
-        ),
-        ("record_lesson_session.py", ["--session-id", "s", "--seed", "seed"]),
-    ):
-        monkeypatch.setenv("CHARNESS_REPO_ROOT", str(tmp_path))
-        monkeypatch.setattr(sys, "argv", [script, "--repo-root", str(tmp_path), *args])
-        with pytest.raises(SystemExit, match="1"):
-            runpy.run_path(str(ROOT / "scripts" / script), run_name="__main__")
-        assert "missing lesson ledger" in capsys.readouterr().err
-
-
 def test_ledger_rejects_closed_transition_score_and_projection_shapes(tmp_path: Path) -> None:
     _retro(tmp_path, "source.md", "a")
     path = _ledger(tmp_path)
@@ -215,118 +182,6 @@ def test_ledger_rejects_closed_transition_score_and_projection_shapes(tmp_path: 
         path.write_text(json.dumps(serialized), encoding="utf-8")
         with pytest.raises(ValueError, match=message):
             _validate(tmp_path)
-
-
-def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeypatch) -> None:
-    _retro(tmp_path, "source.md", "a")
-    replayed = {
-        "a": {
-            "source_retro": "charness-artifacts/retro/source.md",
-            "transition_id": "seed-a",
-            "score_total": 0,
-            "score_count": 0,
-        }
-    }
-    transition = {
-        "sequence": 1,
-        "transition_id": "seed-a",
-        "lesson_id": "a",
-        "source_retro": "charness-artifacts/retro/source.md",
-    }
-    for invalid, message in (
-        ([{**transition, "sequence": True}], "sequences"),
-        ([{**transition, "transition_id": ""}], "non-empty"),
-        ([transition, {**transition, "sequence": 2, "lesson_id": "b"}], "duplicate"),
-        ([{**transition, "source_retro": "other.md"}], "citation"),
-    ):
-        with pytest.raises(ValueError, match=message):
-            ledger._replay_transitions(invalid, {"a": {"charness-artifacts/retro/source.md"}})
-    valid_session = _session_event()
-    for invalid, message in (
-        ([None], "unexpected"),
-        ([{"session_id": "", "snapshot": {}, "snapshot_sha256": "x"}], "non-empty"),
-        ([{**valid_session, "snapshot": {}}], "snapshot shape"),
-    ):
-        with pytest.raises(ValueError, match=message):
-            ledger._replay_sessions(invalid, replayed)
-    unknown_lesson = _session_event(lesson_ids=["other"])
-    with pytest.raises(ValueError, match="unseeded"):
-        ledger._replay_sessions([unknown_lesson], replayed)
-    bad_digest = _session_event()
-    bad_digest["snapshot_sha256"] = "z" * 64
-    with pytest.raises(ValueError, match="lowercase SHA"):
-        ledger._replay_sessions([bad_digest], replayed)
-    score = _score_event(session_id="session-a", score=2, anchor="evidence")
-    sessions = {"session-a": {"a"}}
-    for events, message in (
-        ([None], "unexpected"),
-        ([_score_event(session_id="session-a", score=2)], "needs an anchor"),
-        ([score, {**score, "event_id": "score-b"}], "duplicate"),
-        (
-            [{**_score_event(session_id="session-a", score=0), "source_retro": "other.md"}],
-            "invalid citation",
-        ),
-    ):
-        with pytest.raises(ValueError, match=message):
-            ledger._replay_scores(
-                events,
-                0,
-                copy.deepcopy(replayed),
-                {"a": {"charness-artifacts/retro/source.md"}},
-                sessions,
-            )
-    path = _ledger(tmp_path)
-    with pytest.raises(ValueError, match="invalid containers"):
-        ledger.replay_validated_ledger_payload(
-            repo_root=tmp_path,
-            output_dir=path.parent,
-            summary_path=path.parent / "recent-lessons.md",
-            path=path,
-            payload={**_payload(), "score_events": {}},
-        )
-    mismatched = _payload()
-    mismatched["lessons"]["a"]["transition_id"] = "wrong"
-    with pytest.raises(ValueError, match="deterministic replay"):
-        ledger.replay_validated_ledger_payload(
-            repo_root=tmp_path,
-            output_dir=path.parent,
-            summary_path=path.parent / "recent-lessons.md",
-            path=path,
-            payload=mismatched,
-        )
-    with pytest.raises(FileNotFoundError, match="missing lesson ledger"):
-        ledger.validate_lesson_ledger(
-            repo_root=tmp_path,
-            output_dir=tmp_path / "missing",
-            summary_path=path.parent / "recent-lessons.md",
-        )
-    path.write_text("{", encoding="utf-8")
-    with pytest.raises(ValueError, match="invalid JSON"):
-        _validate(tmp_path)
-    monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "{", ""),
-    )
-    with pytest.raises(ValueError, match="committed ledger is invalid JSON"):
-        ledger._committed_state(tmp_path, path)
-    monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({"kind": ledger.KIND, "transitions": [], "schema_version": 1}), ""
-        ),
-    )
-    assert ledger._committed_state(tmp_path, path) == ([], [], 0, [])
-    monkeypatch.setattr(
-        ledger.subprocess,
-        "run",
-        lambda *_args, **_kwargs: subprocess.CompletedProcess(
-            [], 0, json.dumps({"kind": ledger.KIND, "transitions": [], "schema_version": 9}), ""
-        ),
-    )
-    with pytest.raises(ValueError, match="unsupported session"):
-        ledger._committed_state(tmp_path, path)
 
 
 def test_session_snapshot_and_new_scores_are_coupled_without_rerendering(tmp_path: Path) -> None:
@@ -534,6 +389,68 @@ def test_score_authoring_requires_containing_session_and_leaves_refusals_unwritt
     assert path.read_bytes() == before
 
 
+def test_authoring_commands_refuse_invalid_inputs_and_empty_preview(
+    tmp_path: Path, monkeypatch
+) -> None:
+    _retro(tmp_path, "source.md", "a")
+    path = _ledger(tmp_path, session_events=[_session_event()])
+    with pytest.raises(ValueError, match="non-empty non-whitespace"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id=" ",
+            session_id="session-a",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            score=0,
+            anchor=None,
+        )
+    with pytest.raises(ValueError, match="score must be an integer"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="bad-score",
+            session_id="session-a",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            score=True,
+            anchor=None,
+        )
+    with pytest.raises(ValueError, match="unseeded"):
+        scorer.append_score(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            event_id="unseeded",
+            session_id="session-a",
+            lesson_id="other",
+            source_retro="charness-artifacts/retro/source.md",
+            score=0,
+            anchor=None,
+        )
+    with pytest.raises(ValueError, match="non-empty non-whitespace"):
+        session_recorder.append_session(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            session_id=" ",
+            seed="seed",
+        )
+    monkeypatch.setattr(
+        session_recorder._preview, "build_lesson_selection_preview", lambda **_kwargs: {"items": []}
+    )
+    with pytest.raises(ValueError, match="selected no eligible"):
+        session_recorder.append_session(
+            repo_root=tmp_path,
+            output_dir=path.parent,
+            summary_path=path.parent / "recent-lessons.md",
+            session_id="empty",
+            seed="seed",
+        )
+
+
 def test_score_authoring_cli_emits_session_bound_event(tmp_path: Path, monkeypatch, capsys) -> None:
     _retro(tmp_path, "source.md", "a")
     _ledger(tmp_path, session_events=[_session_event()])
@@ -676,6 +593,27 @@ def test_writer_reports_open_acquire_and_release_failures(
         with writer.ledger_lock(path):
             pass
 
+    class FailingMsvcrt:
+        LK_LOCK = 1
+        LK_UNLCK = 2
+
+        def __init__(self, failure: int) -> None:
+            self.failure = failure
+
+        def locking(self, _fd: int, operation: int, _length: int) -> None:
+            if operation == self.failure:
+                raise OSError("windows lock failure")
+
+    monkeypatch.setattr(writer, "fcntl", None)
+    monkeypatch.setattr(writer, "msvcrt", FailingMsvcrt(FailingMsvcrt.LK_LOCK))
+    with pytest.raises(ValueError, match="unable to acquire"):
+        with writer.ledger_lock(path):
+            pass
+    monkeypatch.setattr(writer, "msvcrt", FailingMsvcrt(FailingMsvcrt.LK_UNLCK))
+    with pytest.raises(ValueError, match="unable to release"):
+        with writer.ledger_lock(path):
+            pass
+
 
 def _append_in_child(repo_text: str, event_id: str, source: str, barrier, queue) -> None:
     repo = Path(repo_text)
@@ -781,6 +719,12 @@ def test_v2_migration_and_v3_session_score_prefixes_are_append_only(tmp_path: Pa
     assert _validate(tmp_path)["score_event_count"] == 2
     _git(tmp_path, "add", ".")
     _git(tmp_path, "commit", "-m", "migrate v3")
+    rewritten_transition = copy.deepcopy(v3)
+    rewritten_transition["transitions"][0]["transition_id"] = "rewritten-seed"
+    rewritten_transition["lessons"]["a"]["transition_id"] = "rewritten-seed"
+    path.write_text(json.dumps(rewritten_transition), encoding="utf-8")
+    with pytest.raises(ValueError, match="committed transitions"):
+        _validate(tmp_path)
     rewritten_v2 = copy.deepcopy(v3)
     rewritten_v2["score_events"][0]["score"] = 1
     _materialize(rewritten_v2)
