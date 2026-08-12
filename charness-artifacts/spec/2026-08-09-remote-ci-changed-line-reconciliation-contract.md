@@ -259,6 +259,12 @@ policy, CI topology, or the remote non-claim.
 - Seam Summary: local focused test selection and coverage -> local aggregate -> GitHub broad changed-line mirror.
 - Chosen Next Step: impl
 - Impl Status: allowed
+- Impl Status Reason: ruling 2 / #596 changes the D47 decision record, its immutable probe snapshot, and focused invariant tests only; it changes no selector, selector reader, regenerable-facts coverage, changed-line consumer, or CI mirror topology.
+- What Disproving Observation Is Resolved: a local D47 measurement and invariant pass cannot be represented as hosted CI or remote changed-line proof; the existing remote-readback non-claim remains unchanged.
+- Interrupt Source: remote-ci-changed-line-reconciliation
+- Seam Summary: local focused test selection and coverage -> local aggregate -> GitHub broad changed-line mirror.
+- Chosen Next Step: impl
+- Impl Status: allowed
 - Impl Status Reason: the current local slice now has mapped changed-line coverage and changes neither selector logic nor CI topology; the only partial scope is the separately recorded preview mapper gap.
 - What Disproving Observation Is Resolved: a local partial result with no blocking mapped files is not hosted-CI readback and must not be represented as such.
 

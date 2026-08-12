@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-execute-operator-rulings
 
 ## Active Operating Frame
 
-- Current slice: activation-ready after bounded plan critique; ruling 2 (`#596`) is first.
-- Current slice intent: stamp D47 as an immutable measurement and replace only its stale equality pins with source invariants; do not broaden `regenerable-facts`.
-- Next action: activate, read the ruling source and D47's owning probe/decision surfaces, then route the slice through its owning workflow.
+- Current slice: ruling 2 (`#596`) completed locally; ruling 3 is next.
+- Current slice intent: add the existing timing-layer completeness check to Quality Core CI only; preserve commit-time ownership and the fast pre-push lane.
+- Next action: map the existing timing check, its commit trigger, and Quality Core workflow before changing the CI surface.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger slice proof at each irreversible proof-surface or exported-contract boundary; final bundle proof only after all four slices.
 - Gate cadence: obtain `quality` recommendations before slow-gate or verdict-surface work; do not run Cautilus without a later explicit approval.
 - Slice review packet: state the ruling, changed and generated surfaces, preserved boundaries, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -61,7 +61,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Execute ruling 2 / `#596`: stamp D47 and replace equality pins with invariants. | Removes a stale-measurement failure without widening a weak detector. | Slice contract names the exact D47 document, immutable probe, hash authority, invariant tests, and critique. | pending |
+| 1 | Execute ruling 2 / `#596`: stamp D47 and replace equality pins with invariants. | Removes a stale-measurement failure without widening a weak detector. | Dated SHA-256 snapshot, focused provenance/headline/invariant proof, and two bounded review rounds. | completed 2026-08-12 |
 | 2 | Execute ruling 3: add `check-timing-layer-completeness` to Quality Core CI. | Commit hooks do not cover web edits or unhooked contributors. | CI workflow invokes the existing check; focused proof preserves the two commit-trigger files and omits a `DOCS_ONLY_LABELS` addition. | pending |
 | 3 | Execute ruling 5: add the route-undetermined judge-intent scenario and request Cautilus approval for its one evaluation. | The planner's least-certain branch lacks a scenario. | Registered scenario, waiver dispositions, deterministic checks, then either approved Cautilus evidence or `scenario ready / evaluation pending` with ruling 5 still not executed. | pending |
 | 4 | Execute ruling 6 / `#585`: re-key boundary-bypass identity on normalized call-site content. | Its path-pair key is the largest remaining schema defect and the ruling fixes its known descendant class. | Schema/baseline reader coverage: identical content moved by path preserves identity; changed content or membership changes identity; duplicate member hashes remain multiplicity-sensitive; and algorithm version is stamped and validated. | pending |
@@ -94,7 +94,8 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Slice Log
 
-- Shaping: the user selected the four not-executed operator rulings as one ordered goal. No implementation slice has started.
+- Shaping: the user selected the four not-executed operator rulings as one ordered goal.
+- Slice 1 / ruling 2 (`#596`): replaced D47's mutable live-corpus equality pin with `2026-08-12-inventory-marker-rule-snapshot.json`, bound it by SHA-256, retained four dated headlines, and changed focused proof to provenance/document/invariant checks. `pytest -q tests/test_inventory_marker_rule_measurement.py tests/test_probe_drift_message.py` passed (39); `check_regenerable_facts.py` passed. The document preflight remains blocked only by pre-existing inline-code findings at D47-unrelated lines 1078 and 1082. Two bounded review rounds found and repaired stale live wording, headline-to-payload binding, provenance checks, and new-snapshot instructions; round-2 repairs are accepted-unreviewed under the two-round cap. The initial full gate exposed an accidentally omitted historical handoff publish-state claim; restoring its exact captured block made its 27 focused ledger tests pass, and the rerun of `./scripts/run-quality.sh --read-only` passed 90 checks (0 failed). Critique: [r596 D47 snapshot](../critique/2026-08-12-r596-d47-snapshot-critique.md). Non-claims: no live corpus proof, CI, push, release, consumer, or issue-closeout claim.
 
 ## Context Sources
 

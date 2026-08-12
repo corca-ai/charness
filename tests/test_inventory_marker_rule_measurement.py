@@ -1,13 +1,16 @@
-"""The D47 value-marker counterfactual must be re-runnable, not hand-counted.
+"""The D47 value-marker counterfactual is hash-bound evidence, not a live corpus pin.
 
 D47 recorded "51 of 169 field mentions carry no value marker" and "arming would refuse
 5 checked-in reviews" and said plainly that both were measured by hand and that
-`measure_inventory_consumption_floor.py` does not produce them. This module pins the
-script that does.
+`measure_inventory_consumption_floor.py` does not produce them. This module verifies the
+dated snapshot's hash, provenance, rendered headlines, and measurement invariants without
+recomputing a later corpus.
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -15,7 +18,6 @@ from pathlib import Path
 import pytest
 
 from runtime_bootstrap import import_repo_module
-from tests.probe_drift_support import MARKER_PROBE, probe_drift_message
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 SCRIPT = REPO_ROOT / "scripts" / "measure_inventory_marker_rule.py"
@@ -128,82 +130,78 @@ def test_an_empty_corpus_exits_2_rather_than_reporting_a_clean_measurement(tmp_p
     assert "not a measurement" in result.stderr
 
 
-PROBE = REPO_ROOT / "charness-artifacts" / "probe" / "2026-08-01-inventory-marker-rule.json"
+PROBE = REPO_ROOT / "charness-artifacts" / "probe" / "2026-08-12-inventory-marker-rule-snapshot.json"
+PROBE_SHA256 = "ac63f8a54a558217cebde320f02d4915d10e6bab538c3df22ff6e1397083f62d"
+DECISION_RECORD = REPO_ROOT / "docs" / "deferred-decisions.md"
+HEADLINE_PATTERN = re.compile(
+    r"dated: \*\*(?P<presence>\d+)\*\* presence-only field mentions; "
+    r"\*\*(?P<clearing>\d+)\*\* clear the then-current residual\n"
+    r"  floor; \*\*(?P<marked>\d+)\*\* carry a value marker; and \*\*(?P<unmarked>\d+)\*\* do not\."
+)
 
 
-def test_the_recorded_probe_still_matches_todays_tree():
-    """D47 now cites these numbers, so they must not drift silently.
+def _assert_measurement_invariants(measurement: dict[str, object]) -> None:
+    """Validate what a dated D47 snapshot means without pinning a live corpus."""
+    clearing = measurement["field_mentions_clearing_todays_floor"]
+    marked = measurement["field_mentions_carrying_a_value_marker"]
+    unmarked = measurement["field_mentions_without_a_marker"]
+    refused_artifacts = measurement["artifacts_refused_by_the_marker_rule"]
+    refused_citations = measurement["citations_refused_by_the_marker_rule"]
 
-    The first version of this test asserted only `total == marked + unmarked`, which is
-    how `unmarked` is COMPUTED -- it could not fail for any implementation, including a
-    marker test stubbed to always-true. Pinning the recorded probe is what the sibling
-    measurement already does, and it is what forces D47 to be updated when the corpus or
-    the rule moves.
-    """
-    recorded = json.loads(PROBE.read_text(encoding="utf-8"))
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(REPO_ROOT), "--json"],
-        capture_output=True, text=True, check=False,
+    assert isinstance(clearing, int)
+    assert isinstance(marked, int)
+    assert isinstance(unmarked, int)
+    assert clearing == marked + unmarked
+    assert measurement["field_mentions_presence_only"] >= clearing
+    assert measurement["artifacts_scanned"] >= measurement["artifacts_citing_a_declared_inventory"]
+    assert set(refused_artifacts) == {citation["path"] for citation in refused_citations}
+    assert all(count >= 0 for count in measurement["marker_kinds"].values())
+
+
+def test_d47_uses_a_hash_bound_dated_measurement_snapshot():
+    """The snapshot stays immutable; ordinary quality-corpus growth is not test drift."""
+    snapshot_bytes = PROBE.read_bytes()
+    snapshot = json.loads(snapshot_bytes)
+
+    assert hashlib.sha256(snapshot_bytes).hexdigest() == PROBE_SHA256
+    assert snapshot["schema_version"] == "charness.inventory_marker_rule_snapshot.v1"
+    assert snapshot["captured_at"] == "2026-08-12"
+    assert "immutable historical evidence" in snapshot["scope"]
+    assert snapshot["measurement_command"] == (
+        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json"
     )
-    assert result.returncode == 0, result.stderr
-    live = json.loads(result.stdout)
-
-    # `probe_field`, not `key`: see the note on the recursive loop below — the secret scanner's
-    # generic-api-key rule matches the literal text `key, `, and both call sites had that shape.
-    for probe_field in (
-        "artifacts_scanned",
-        "field_mentions_presence_only",
-        "field_mentions_clearing_todays_floor",
-        "field_mentions_carrying_a_value_marker",
-        "field_mentions_without_a_marker",
-        "marker_kinds",
-        "artifacts_refused_by_the_marker_rule",
-        "artifacts_citing_a_declared_inventory",
-    ):
-        assert live[probe_field] == recorded[probe_field], probe_drift_message(
-            probe_field, probe=MARKER_PROBE
-        )
-    # D47's headline figure is the CITATION count, not the artifact list, and pinning only
-    # the list would let a merge or split of two citations inside one artifact go green
-    # while the entry's stated number went stale.
-    assert len(live["citations_refused_by_the_marker_rule"]) == len(
-        recorded["citations_refused_by_the_marker_rule"]
+    assert snapshot["recursive_measurement_command"] == (
+        "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json"
     )
+    source_commit = snapshot["source_commit"]
+    assert re.fullmatch(r"[0-9a-f]{40}", source_commit)
+    assert subprocess.run(
+        ["git", "cat-file", "-e", f"{source_commit}^{{commit}}"],
+        cwd=REPO_ROOT, capture_output=True, text=True, check=False,
+    ).returncode == 0
+    decision = DECISION_RECORD.read_text(encoding="utf-8")
+    assert "2026-08-12-inventory-marker-rule-snapshot.json" in decision
+    assert PROBE_SHA256 in decision
+    headline = HEADLINE_PATTERN.search(decision)
+    assert headline is not None
+    assert {name: int(value) for name, value in headline.groupdict().items()} == {
+        "presence": snapshot["shallow"]["field_mentions_presence_only"],
+        "clearing": snapshot["shallow"]["field_mentions_clearing_todays_floor"],
+        "marked": snapshot["shallow"]["field_mentions_carrying_a_value_marker"],
+        "unmarked": snapshot["shallow"]["field_mentions_without_a_marker"],
+    }
 
 
-def test_the_recursive_variant_recorded_in_the_probe_is_reproducible():
-    """D47 publishes the recursive numbers too; an unrecorded number reads as proven."""
-    recorded = json.loads(PROBE.read_text(encoding="utf-8"))["_provenance"]["recursive_variant"]
-    result = subprocess.run(
-        [sys.executable, str(SCRIPT), "--repo-root", str(REPO_ROOT), "--recursive", "--json"],
-        capture_output=True, text=True, check=False,
-    )
-    assert result.returncode == 0, result.stderr
-    live = json.loads(result.stdout)
+def test_the_d47_snapshot_payload_obeys_its_measurement_invariants():
+    snapshot = json.loads(PROBE.read_text(encoding="utf-8"))
+    shallow = snapshot["shallow"]
+    recursive = snapshot["recursive"]
 
-    # `probe_field`, not `key`: the secret scanner's generic-api-key rule matches the literal
-    # text `key, ` and my first version of these call sites put a variable named `key` right
-    # before a comma, so the repo's own secret gate flagged a test as a leak. Renaming is the
-    # fix rather than an allowlist entry, which would have weakened a real scanner to accommodate
-    # a variable name.
-    for probe_field, expected in recorded.items():
-        assert live[probe_field] == expected, probe_drift_message(
-            probe_field, probe=MARKER_PROBE, variant="recursive variant"
-        )
-
-
-def test_the_presence_only_count_reproduces_the_denominator_d47_cited():
-    """169 was NOT a hand count -- the sibling script produced it as its loose-mention
-    total, and D47's 51-of-169 used that population. Reproducing it here is what makes
-    the marker numbers comparable on one denominator instead of across two."""
-    sibling_probe = json.loads(
-        (REPO_ROOT / "charness-artifacts" / "probe" / "2026-08-01-inventory-consumption-floor.json")
-        .read_text(encoding="utf-8")
-    )
-    recorded = json.loads(PROBE.read_text(encoding="utf-8"))
-
-    assert recorded["field_mentions_presence_only"] == (
-        sibling_probe["field_mention_residuals"]["count"]
+    _assert_measurement_invariants(shallow)
+    _assert_measurement_invariants(recursive)
+    assert recursive["artifacts_scanned"] >= shallow["artifacts_scanned"]
+    assert set(shallow["artifacts_refused_by_the_marker_rule"]).issubset(
+        recursive["artifacts_refused_by_the_marker_rule"]
     )
 
 

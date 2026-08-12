@@ -50,7 +50,10 @@ interval exists in which a retired command can ship unchallenged.
 
 ## 2. `#596` — stamp D47, do not extend the detector
 
-**Status: not executed.**
+**Status: EXECUTED 2026-08-12.** D47 now has a dated, SHA-256-bound immutable
+snapshot; its focused proof checks snapshot provenance, rendered headlines, and
+source invariants without remeasuring the live corpus. `regenerable-facts` was
+not extended to decision documents.
 
 **Ruling:** date-and-hash-stamp D47's measurement (headline figures keep a date, the rest
 becomes a probe link plus `sha256`), let the probe become an immutable dated snapshot, and

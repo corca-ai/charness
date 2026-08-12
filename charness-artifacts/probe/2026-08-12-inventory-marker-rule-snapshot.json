@@ -1,0 +1,2042 @@
+{
+  "captured_at": "2026-08-12",
+  "measurement_command": "python3 scripts/measure_inventory_marker_rule.py --repo-root . --json",
+  "recursive": {
+    "artifacts_citing_a_declared_inventory": 42,
+    "artifacts_refused_by_the_marker_rule": [
+      "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+      "charness-artifacts/quality/2026-07-13-quality-review.md",
+      "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+      "charness-artifacts/quality/history/2026-06-11-quality-review.md"
+    ],
+    "artifacts_scanned": 151,
+    "citations_refused_by_the_marker_rule": [
+      {
+        "engaged_today": [
+          "advisory",
+          "baseline",
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_doc_duplicates.py",
+        "lost_to_the_marker_rule": [
+          "advisory",
+          "baseline",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket",
+          "codes"
+        ],
+        "engaged_with_a_marker": [
+          "blanket"
+        ],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [
+          "codes"
+        ],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "families",
+          "family_count",
+          "ranking"
+        ],
+        "engaged_with_a_marker": [
+          "family_count"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families",
+          "ranking"
+        ],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      }
+    ],
+    "corpus": "charness-artifacts/quality",
+    "field_mentions_carrying_a_value_marker": 217,
+    "field_mentions_clearing_todays_floor": 261,
+    "field_mentions_presence_only": 269,
+    "field_mentions_without_a_marker": 44,
+    "marker_kinds": {
+      "assign": 99,
+      "backtick": 187,
+      "colon": 36
+    },
+    "pre_contract_citations_skipped": [],
+    "recursive": true,
+    "rows": [
+      {
+        "engaged_today": [
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_release_only_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_release_only_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-nested-cli-release-only-yaml-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "ranking",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "command",
+          "scope_status"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "ranking"
+        ],
+        "path": "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-spec-impl-skill-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_files",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_files",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-economics-summary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-boundary-bypass-test-speed-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "advisory",
+          "baseline",
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_doc_duplicates.py",
+        "lost_to_the_marker_rule": [
+          "advisory",
+          "baseline",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-gather-slack-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-output-schema-test-speed-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-public-skill-validation-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-retro-handoff-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-create-cli-capability-move-pilot.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "finding_status"
+        ],
+        "engaged_with_a_marker": [
+          "finding_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-09-debug-planner-help-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-09-markdown-preview-help-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-12-round3-v0664-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "engaged_with_a_marker": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "inventory": "inventory_structural_waste.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-14-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "family_count"
+        ],
+        "engaged_with_a_marker": [
+          "command",
+          "family_count"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_all_release_only_file_count",
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_all_release_only_file_count",
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "interpretation",
+          "python_source_count"
+        ],
+        "engaged_with_a_marker": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "inventory": "inventory_structural_waste.py",
+        "lost_to_the_marker_rule": [
+          "interpretation"
+        ],
+        "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "unlisted_reference_count"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "unlisted_reference_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-04-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-491-semantic-reference.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "cli_exit_code",
+          "command",
+          "missing_paths",
+          "requested_paths",
+          "scanned_paths",
+          "scope_status",
+          "stderr"
+        ],
+        "engaged_with_a_marker": [
+          "cli_exit_code",
+          "command",
+          "missing_paths",
+          "requested_paths",
+          "scanned_paths",
+          "scope_status",
+          "stderr"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_entrypoint_docs_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-05-12-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [
+          "blanket"
+        ],
+        "path": "charness-artifacts/quality/history/2026-05-12-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-05-12-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "core_nonempty_lines"
+        ],
+        "engaged_with_a_marker": [
+          "core_nonempty_lines"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-05-12-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-05-12-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "engaged_with_a_marker": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-03-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "executable_block_count",
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "executable_block_count",
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-03-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-03-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-03-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "engaged_with_a_marker": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-05-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "executable_block_count",
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "executable_block_count",
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-05-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-05-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-05-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "engaged_with_a_marker": [
+          "blanket",
+          "codes",
+          "scope"
+        ],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-06-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "families",
+          "family_count",
+          "notes"
+        ],
+        "engaged_with_a_marker": [
+          "family_count",
+          "notes"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families"
+        ],
+        "path": "charness-artifacts/quality/history/2026-06-06-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "executable_block_count",
+          "pointer_proof_marker_count",
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "executable_block_count",
+          "pointer_proof_marker_count",
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-06-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-06-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-06-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "blanket",
+          "codes"
+        ],
+        "engaged_with_a_marker": [
+          "blanket"
+        ],
+        "inventory": "inventory_lint_ignores.py",
+        "lost_to_the_marker_rule": [
+          "codes"
+        ],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "families",
+          "family_count",
+          "ranking"
+        ],
+        "engaged_with_a_marker": [
+          "family_count"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families",
+          "ranking"
+        ],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "executable_block_count",
+          "pointer_proof_marker_count",
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "executable_block_count",
+          "pointer_proof_marker_count",
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-25-critique-skill-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "family_count",
+          "ranking"
+        ],
+        "engaged_with_a_marker": [
+          "command",
+          "family_count",
+          "ranking"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-25-retro-skill-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-06-25-retro-skill-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/history/2026-07-19-portable-proof-path-learning-review.md",
+        "required": 2
+      }
+    ]
+  },
+  "recursive_measurement_command": "python3 scripts/measure_inventory_marker_rule.py --repo-root . --recursive --json",
+  "schema_version": "charness.inventory_marker_rule_snapshot.v1",
+  "scope": "checked-in charness-artifacts/quality corpus at capture; immutable historical evidence, not a live corpus pin",
+  "shallow": {
+    "artifacts_citing_a_declared_inventory": 34,
+    "artifacts_refused_by_the_marker_rule": [
+      "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+      "charness-artifacts/quality/2026-07-13-quality-review.md",
+      "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md"
+    ],
+    "artifacts_scanned": 133,
+    "citations_refused_by_the_marker_rule": [
+      {
+        "engaged_today": [
+          "advisory",
+          "baseline",
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_doc_duplicates.py",
+        "lost_to_the_marker_rule": [
+          "advisory",
+          "baseline",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+        "required": 2
+      }
+    ],
+    "corpus": "charness-artifacts/quality",
+    "field_mentions_carrying_a_value_marker": 153,
+    "field_mentions_clearing_todays_floor": 188,
+    "field_mentions_presence_only": 196,
+    "field_mentions_without_a_marker": 35,
+    "marker_kinds": {
+      "assign": 87,
+      "backtick": 129,
+      "colon": 31
+    },
+    "pre_contract_citations_skipped": [],
+    "recursive": false,
+    "rows": [
+      {
+        "engaged_today": [
+          "source_guard_row_count"
+        ],
+        "engaged_with_a_marker": [
+          "source_guard_row_count"
+        ],
+        "inventory": "inventory_public_spec_quality.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-02-workflow-review-sibling-pattern-audit.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_release_only_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_release_only_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-nested-cli-release-only-yaml-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "ranking",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "command",
+          "scope_status"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "ranking"
+        ],
+        "path": "charness-artifacts/quality/2026-06-25-skill-ergonomics-yaml-summary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "core_nonempty_lines",
+          "prose_review_status",
+          "reference_file_count",
+          "script_file_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-spec-impl-skill-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_files",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_files",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-economics-summary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-25-test-speed-token-efficiency-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-boundary-bypass-test-speed-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "advisory",
+          "baseline",
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_doc_duplicates.py",
+        "lost_to_the_marker_rule": [
+          "advisory",
+          "baseline",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [
+          "command"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-five-pass-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-gather-slack-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-output-schema-test-speed-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-public-skill-validation-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-26-retro-handoff-boundary-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-create-cli-capability-move-pilot.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "finding_status"
+        ],
+        "engaged_with_a_marker": [
+          "finding_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-public-skill-capability-rollout.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-27-round-four-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-06-28-round-five-quality-speed-token-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-09-debug-planner-help-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "prose_review_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-09-markdown-preview-help-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-11-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "prose_review_status",
+          "scope_status",
+          "subcheck_counts"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-12-round3-v0664-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-07-13-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "engaged_with_a_marker": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "inventory": "inventory_structural_waste.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-13-round4-v1-0-2-release-readiness.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-14-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "family_count"
+        ],
+        "engaged_with_a_marker": [
+          "command",
+          "family_count"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-15-compact-yaml-response-release.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "heuristic_finding_count",
+          "prose_review_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_standing_or_mixed_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-18-inventory-yaml-quality.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_file_count",
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_file_count",
+          "nested_cli_standing_file_count",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-22-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "nested_cli_all_release_only_file_count",
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "engaged_with_a_marker": [
+          "nested_cli_all_release_only_file_count",
+          "nested_cli_file_count",
+          "runner_snippets",
+          "test_file_count"
+        ],
+        "inventory": "inventory_standing_test_economics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "interpretation",
+          "python_source_count"
+        ],
+        "engaged_with_a_marker": [
+          "broad_scanner_candidates",
+          "command_snippet_count",
+          "duplicate_discovery_candidates",
+          "python_source_count"
+        ],
+        "inventory": "inventory_structural_waste.py",
+        "lost_to_the_marker_rule": [
+          "interpretation"
+        ],
+        "path": "charness-artifacts/quality/2026-07-25-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "unlisted_reference_count"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status",
+          "unlisted_reference_count"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-04-quality-review.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-491-semantic-reference.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-508-gather-classifier.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "cli_exit_code",
+          "command",
+          "missing_paths",
+          "requested_paths",
+          "scanned_paths",
+          "scope_status",
+          "stderr"
+        ],
+        "engaged_with_a_marker": [
+          "cli_exit_code",
+          "command",
+          "missing_paths",
+          "requested_paths",
+          "scanned_paths",
+          "scope_status",
+          "stderr"
+        ],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-issue-511-nose-inventory.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "engaged_with_a_marker": [
+          "checked_skill_count",
+          "finding_status",
+          "heuristic_finding_count",
+          "host_surface_reference_count",
+          "prose_review_status",
+          "scope_status"
+        ],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-05-proof-claims.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_skill_ergonomics.py",
+        "lost_to_the_marker_rule": [],
+        "path": "charness-artifacts/quality/2026-08-06-issue-505-focused-mutation-export.md",
+        "required": 2
+      },
+      {
+        "engaged_today": [
+          "command",
+          "families"
+        ],
+        "engaged_with_a_marker": [],
+        "inventory": "inventory_nose_clones.py",
+        "lost_to_the_marker_rule": [
+          "command",
+          "families"
+        ],
+        "path": "charness-artifacts/quality/2026-08-06-runtime-evidence-and-nose.md",
+        "required": 2
+      }
+    ]
+  },
+  "source_commit": "8369b801c39d7978953d20fedd02f5b522c5ebc4"
+}
