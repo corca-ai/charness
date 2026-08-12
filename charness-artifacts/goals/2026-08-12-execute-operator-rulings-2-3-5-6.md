@@ -68,7 +68,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Backlog Recount
 
-- Counted: four ordered, not-executed ruling items from the dated ruling record; `#596` and `#585` are tracked identifiers within that fixed scope.
+- Activation count: four ordered ruling items were not executed in the dated ruling record when this goal began; `#596` and `#585` are tracked identifiers within that fixed scope. Two remain unexecuted: rulings 5 and 6.
 - Claims: this goal plans local execution and proof only; it does not claim the live issue backlog, a release, or hosted success.
 - Not claimed: issue closure, Cautilus evaluation result, and every ruling outside 2, 3, 5, and 6.
 
@@ -97,6 +97,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 - Shaping: the user selected the four not-executed operator rulings as one ordered goal.
 - Slice 1 / ruling 2 (`#596`): replaced D47's mutable live-corpus equality pin with `2026-08-12-inventory-marker-rule-snapshot.json`, bound it by SHA-256, retained four dated headlines, and changed focused proof to provenance/document/invariant checks. `pytest -q tests/test_inventory_marker_rule_measurement.py tests/test_probe_drift_message.py` passed (39); `check_regenerable_facts.py` passed. The document preflight remains blocked only by pre-existing inline-code findings at D47-unrelated lines 1078 and 1082. Two bounded review rounds found and repaired stale live wording, headline-to-payload binding, provenance checks, and new-snapshot instructions; round-2 repairs are accepted-unreviewed under the two-round cap. The initial full gate exposed an accidentally omitted historical handoff publish-state claim; restoring its exact captured block made its 27 focused ledger tests pass, and the rerun of `./scripts/run-quality.sh --read-only` passed 90 checks (0 failed). Critique: [r596 D47 snapshot](../critique/2026-08-12-r596-d47-snapshot-critique.md). Non-claims: no live corpus proof, CI, push, release, consumer, or issue-closeout claim.
 - Slice 2 / ruling 3: added `python3 scripts/check_timing_layer_completeness.py --repo-root .` as a Quality Core step. Focused timing, staged-commit, and CI/local-parity tests passed (99); `check_github_actions.py` and the timing checker passed. Round 1 repaired a substring-only test into an actual YAML-step and exact 14-label docs-only-list proof; round 2 found no further issue. Critique: [r3 timing-layer CI](../critique/2026-08-12-r3-timing-layer-ci-critique.md). Non-claims: static local CI configuration proof only; no push or hosted CI readback.
+- Midpoint claims review: a bounded read-only reviewer compared the completed ruling-2 and ruling-3 claims against their owning records and commits. It found two stale progress statements in this goal (the activation-time `not-executed` count and the final-verification statement); both were repaired. The completed evidence claims otherwise matched their sources, and ruling 5 remains explicitly evaluation-pending. Critique: [operator-rulings midpoint claims](../critique/2026-08-12-operator-rulings-midpoint-claims-critique.md). Non-claim: this review is not final bundle proof.
 
 ## Context Sources
 
@@ -117,6 +118,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 - [Activation critique](../critique/2026-08-12-operator-rulings-goal-activation-critique.md) received two independent angle reviews and a counterweight pass; all three reviewer windows verified clean before parent edits.
 - Folded before activation: no unapproved Cautilus run may advance ruling 5 to executed; round 2 is conditional on a round-1 repair; slice 4 covers path, content, membership, multiplicity, and algorithm-version semantics; slices 1 and 2 name their exact proof obligations; and the goal-claims midpoint review follows slice 2.
+- [Midpoint claims critique](../critique/2026-08-12-operator-rulings-midpoint-claims-critique.md) found and repaired two stale progress statements; it confirmed the remaining completed-slice claims and preserved the ruling-5 approval boundary.
 - Over-worry rejected: predeclaring every implementation owner and adding a pre-push timing label would reopen or broaden decisions already fixed by the ruling record.
 
 ## Closeout Binding Plan
@@ -133,7 +135,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Final Verification
 
-- Not started — this active goal has no completed slice or final bundle proof yet.
+- Not started — slices 1 and 2 have completed locally, but final bundle proof has not started.
 
 ## User Verification Instructions
 
@@ -141,4 +143,4 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Auto-Retro
 
-- Deferred until closeout — no implementation slice has yet produced an efficiency or structural finding to disposition.
+- Deferred until closeout — per-slice findings are captured in their critique records; cross-slice efficiency and structural dispositions wait for the final bundle.
