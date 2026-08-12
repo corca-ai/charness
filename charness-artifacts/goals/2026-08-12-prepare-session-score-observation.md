@@ -107,6 +107,10 @@ session record as proof of human receipt or contract-graduation evidence.
 - Shaping: successor was activated after the completed shown-set goal left a
   zero-score ledger and the user authorized beginning observation in this
   session. No policy threshold or score budget is selected.
+- Slice 1: declared session `2026-08-12-score-observation-1` with seed of the
+  same value. Its frozen snapshot has 16 eligible lessons and 10 ordered IDs;
+  ledger validation remains green at 16 lessons/16 transitions and zero scores.
+  The next action is operator judgment for one or more cited listed lessons.
 
 ## Interview Decisions
 
