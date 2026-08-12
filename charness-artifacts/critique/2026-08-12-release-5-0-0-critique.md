@@ -63,8 +63,9 @@ closeout.
 
 - Update with `charness update`, then restart Codex or Claude Code as directed
   by the updater.
-- For issue closeout automation, add a truthful `AI-provenance:` line to the
-  carrier body before `close-with-comment`.
+- For issue closeout automation, add a nonempty `AI-provenance:` line to the
+  carrier body before `close-with-comment`; its truth remains subject to the
+  later closeout review.
 - For handoff automation, remove `--pickup-target` and repair any unowned entry
   the planner reports before continuing.
 
@@ -86,7 +87,7 @@ closeout.
 
 ## Structured Findings
 
-- F1 | bin: act-before-ship | evidence: strong | ref: skills/public/issue/scripts/issue_closeout_rung1_floors.py:324 | action: document | note: publish as major and document the required AI-provenance carrier line.
+- F1 | bin: act-before-ship | evidence: strong | ref: skills/public/issue/scripts/issue_closeout_rung1_floors.py:324 | action: document | note: publish as major and document the required nonempty AI-provenance carrier line plus its later truth review.
 - F2 | bin: act-before-ship | evidence: strong | ref: skills/public/handoff/scripts/plan_handoff_run.py:347 | action: document | note: publish as major and document removal of --pickup-target plus ownership repair.
 - F3 | bin: bundle-anyway | evidence: strong | ref: charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/finding.md | action: document | note: include local-only evaluator and static-CI non-claims in release notes.
 - F4 | bin: bundle-anyway | evidence: moderate | ref: skills/public/release/references/publication-boundary.md | action: document | note: state the supported recovery boundary in release notes.
@@ -109,8 +110,8 @@ counterweight reviews were received through the host reviewer channel.
 
 - Packet consumed: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
 - Packet path: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
-- Packet SHA256: cbbb30ea52dd4b1365c1d4051402a08fba06b8eba6cd749b003f4ac16bcafaae
-- Identity SHA256: 4b2b52ae97a8b8747b611821f8ebede706cfd0aa55666de15578084c2a5f1142
+- Packet SHA256: 961014d846d5484c5d992108200798fba23b0cf0b836fb8fe256919bd73b0a05
+- Identity SHA256: 1c9d8b2e4833e5a47eeff74a4a276289f2194c2b9b0c4a5da7b925f89d448b8b
 
 ## Boundary Ownership
 
