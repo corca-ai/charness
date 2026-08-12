@@ -3,7 +3,7 @@ Date: 2026-08-13
 
 ## Decision Under Review
 
-Publish the frozen `origin/main..0ac9260d51bd0890d1fec6fb3c5ca411698623da`
+Publish the frozen `origin/main..e4da7be0c3b236067767b8f866d4e2ee79ebebde`
 capability and truth-surface bundle as compatible minor release `v5.1.0`. The
 release contains no issue-close carrier:
 the reconciled 22-issue opening cohort remains OPEN. The publish helper alone
@@ -99,15 +99,16 @@ parent-delegated — Gawande and Minto angle reviews plus a separate counterweig
 read the candidate. Their two concrete blockers (prepared-marker merge topology
 and stale routing/unsupported CI sequencing) were repaired; the counterweight
 then required this refreshed packet identity. A final fresh reader verified the
-exact JSON/Markdown packet binding and found no remaining release blocker.
+exact committed-candidate JSON/Markdown packet binding and found no remaining
+release blocker.
 
 ## Reviewed Input Identity
 
 - Packet consumed: `charness-artifacts/critique/release-5-1-0-final-packet.json`
 - Packet path: `charness-artifacts/critique/release-5-1-0-final-packet.json`
-- Packet SHA256: `a4dd837003b36bfd0f77661b3f130ac2ceae37cd4e8368e861f8f1a684ef3b54`
-- Identity SHA256: `343194daed30e5ce39845f564a55e0789211cb6f2aa0056939e225c0bb41d830`
-- Markdown render reviewed by bounded readers: `charness-artifacts/critique/release-5-1-0-final-packet.md` (SHA256 `948cf90da821b3971931d33b3c54e9e549108c0a8e5b77ba19249bdbc5518818`).
+- Packet SHA256: `a51fdee23916cb7d6a77fb5150c6ba74c2bfc93445da444447bc59912014ad9f`
+- Identity SHA256: `f5869d47887789022748549034980d7397d973bad728b66683cf65a6f24a84b1`
+- Markdown render reviewed by bounded readers: `charness-artifacts/critique/release-5-1-0-final-packet.md` (SHA256 `5504c588c7f42cde4ee91ef6832d44103b10fe09be5bde3697c411573dec2177`).
 - The final release claims review remains a separate, post-version boundary.
 
 ## Boundary Ownership
