@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-complete-local-lesson-le
 
 ## Active Operating Frame
 
-- Current slice: replayed score-event state (schema v2) for the cited lesson ledger.
-- Current slice intent: make score state mechanically trustworthy without starting selection, presentation, archive, register, or graduation behavior.
-- Next action: incorporate the recorded pre-implementation critique, implement the smallest v2 migration, then prove and commit the slice.
+- Current slice: decide and implement the minimally deterministic selection/render seam over the proved schema-v2 ledger.
+- Current slice intent: choose only the local policy needed to render a reproducible candidate set; do not imply exposure, scoring completion, archive, register, or graduation behavior.
+- Next action: write the selection decision record, critique its observable invariants, then implement the smallest consumer of replayed score state.
 - Verification cadence: cheap deterministic checks at commit boundaries; fresh-eye review and broad proof at meaningful slice boundaries; final proof is locked at goal closeout.
 - Gate cadence: use the repo's slice closeout and broad quality paths when their trigger is reached; do not repeat expensive proof merely per commit.
 - History boundary: completed slice detail belongs in `## Slice Log`; this frame only states current intent.
@@ -97,15 +97,15 @@ Complete the local lesson-ledger capability from replayed score state through se
 
 - Objective: Migrate the cited lesson ledger to schema v2 and make its replayed score state append-only without adding selection or register behavior.
 - Why this approach: A selection policy cannot be honestly tested before score totals and sample counts have a cited, replayable source of truth.
-- Commits: Pending commit at the time of this record; the next commit contains this complete local slice.
+- Commits: `da5359d8` (schema-v2 score state), `df9ea33a` (CLI coverage), `fd24d132` (coverage mapping), and `1c33633f` (failure-path coverage).
 - What changed: Added `score_events`, integer score totals/counts, source-retro recurrence-class validation, strict v2 shapes, v1-to-v2 compatibility, and committed transition/event prefix checks. Updated the ledger projection, contract slice, focused tests, plugin mirror, and active goal artifact.
 - Alternatives rejected: Rejected opaque session IDs, positive-score budgets, selection/shown-set predicates, UCB, archive, register, and graduation fields because none has a consumer in this slice.
-- Targeted verification: `pytest -q tests/test_lesson_ledger.py` (6 passed); `python3 scripts/check_lesson_ledger.py --repo-root .`; mirror sync/check; `run_slice_closeout.py --allow-unmatched --verification-lock --produce-mutation-coverage --mutation-coverage-command 'pytest -q tests/test_lesson_ledger.py'`. The direct changed-line checker correctly refused a final verdict before this worktree is committed, because its base..HEAD rule cannot see uncommitted mutation-pool code.
+- Targeted verification: `pytest -q tests/test_lesson_ledger.py` (10 passed); `python3 scripts/check_lesson_ledger.py --repo-root .`; mirror sync/check; all four commit-time gate runs; and `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root . --base-sha origin/main --refuse-unestablished` (clean for both changed validator files). The direct changed-line checker correctly refused before commit, then identified missing failure branches, which the focused coverage run drove into tests.
 - Test duplication pressure: `python3 scripts/dup_ratchet_edit_advisory.py --repo-root . --path tests/test_lesson_ledger.py --json` reported the new test file is outside the duplicate-ratchet scope.
-- Critique: Pre-implementation review required cited score provenance and v1-to-v2 replay. Proof round 1 found Python numeric-equality and real-Git prefix coverage gaps; repairs added exact integer checks plus rewrite/delete/reorder coverage. Proof round 2 found the missing permitted v2 append case; it was added after the two-round cap and is recorded as accepted-unreviewed.
-- Off-goal findings: The slice closeout surface manifest does not classify `charness-artifacts/retro/lesson-ledger.json`; it was explicitly allowed for local proof rather than broadening the manifest during this ledger slice.
+- Critique: Pre-implementation review required cited score provenance and v1-to-v2 replay. Proof round 1 found Python numeric-equality and real-Git prefix coverage gaps; repairs added exact integer checks plus rewrite/delete/reorder coverage. Proof round 2 found the missing permitted v2 append case; it was added after the two-round cap and is recorded as accepted-unreviewed. Fresh-eye pass: `scripts/lesson_ledger_lib.py` — reviews found and repaired the replay/type/prefix gaps. Fresh-eye pass: `scripts/check_lesson_ledger.py` — CLI delegates to the reviewed validator and is covered in-process; no separate logic branch beyond argument/error reporting.
+- Off-goal findings: The slice closeout surface manifest does not classify `charness-artifacts/retro/lesson-ledger.json`; it was explicitly allowed for local proof rather than broadening the manifest during this ledger slice. The full `run_slice_closeout.py` attempt reached the tool-inventory command without emitting a final receipt; its completed subchecks are not claimed as a full closeout proof.
 - Lessons carried forward: For append-only validators, test one successful append after the prefix has itself been committed as well as every forbidden mutation. Python JSON projection validators need exact primitive type checks, not equality alone.
-- Metrics: Focused test count: 6. Seeded lessons: 16. Current score events: 0.
+- Metrics: Focused test count: 10. Seeded lessons: 16. Current score events: 0.
 
 ## Context Sources
 
@@ -125,6 +125,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 ## Plan Critique Findings
 
 - Fresh-eye reviewers `score_event_state_review`, `score_event_boundary_review`, and `score_event_counterweight` reviewed the v2 schema before implementation; reviewer boundary snapshot `score-schema-critique-20260812` verified clean.
+- Floor-Addition Restraint: `scripts/check_lesson_ledger.py` is retained as a blocking local gate because the existing release-quality path already needs a deterministic refusal when the checked-in derived ledger diverges from its cited replay. An advisory would let an invalid state ship to every consuming repository; the unchanged candidate/digest rebuild remains a separate check, so this adds no duplicate replacement floor.
 - Folded blockers: v1-to-v2 prefix migration, strict v2 key sets, all-seed zero initialization, integer-not-boolean scores, materialized replay equality, source-retro recurrence-class citation, and `(source_retro, lesson_id)` uniqueness.
 - Deferred: shown-set proof, selection/session policy, UCB, archive, positive budget, register, and graduation behavior.
 - Over-worry rejected: event sequence/timestamp, score-retraction model, anchor DSL, and cryptographic history anchoring.
