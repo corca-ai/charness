@@ -1,19 +1,23 @@
 # Achieve Goal: Prepare evidence for session-score policy
 
-Status: draft
+Status: active
 Created: 2026-08-12
-Activation: draft successor to `2026-08-12-shown-set-session-records.md`; activate only when an operator provides real local session/score observations.
+Activation: `/goal @charness-artifacts/goals/2026-08-12-prepare-session-score-observation.md` — user explicitly authorized starting score observation from this session on 2026-08-12.
 
 ## Active Operating Frame
 
-- Current slice: draft — no score-policy implementation has begun.
-- Current slice intent: define the smallest evidence intake and decision record
-  needed to judge a score budget without inventing presentation or usefulness
-  claims.
-- Next action: activate after at least one real cited, session-bound score
-  event is available for inspection.
+- Current slice: declare this session's deterministic preview and collect only
+  real, cited, session-bound score observations.
+- Current slice intent: establish the first nonzero score cohort without
+  inventing a budget, a delivery receipt, or a policy conclusion.
+- Next action: record `2026-08-12-score-observation-1`, then present its IDs
+  for the operator's actual score judgment.
 - Verification cadence: validate any proposed evidence schema against the
   ledger checker and test an append/refusal path before policy is changed.
+- Gate cadence: ledger validation after every append; focused authoring tests
+  before any policy decision; broad quality only if code or a verdict surface changes.
+- History boundary: recorded observations and future policy evidence move to
+  `## Slice Log`; this frame names only the live collection intent.
 
 ## Goal
 
@@ -90,6 +94,66 @@ session record as proof of human receipt or contract-graduation evidence.
 - Gather: n/a — the needed first evidence is local ledger state.
 - Release: n/a — no release surface is planned.
 - Issue closeout: n/a — no issue is claimed.
+
+## Discuss Before Activation
+
+- Discuss before activation: resolved — the user explicitly asked to start
+  scores in this session. The authorized action is local declaration and cited
+  observation only; score values remain operator judgment, and no receipt,
+  budget, graduation, release, or external proof is implied.
+
+## Slice Log
+
+- Shaping: successor was activated after the completed shown-set goal left a
+  zero-score ledger and the user authorized beginning observation in this
+  session. No policy threshold or score budget is selected.
+
+## Interview Decisions
+
+- Observation now versus defer until a later session. Chosen: record the
+  deterministic session now because the user authorized it; rejected defer
+  because it would preserve a zero-score premise without need.
+- Author an arbitrary score versus request actual operator judgment. Chosen:
+  request judgment after the session list is declared; rejected fabrication
+  because a cited score is durable local evidence.
+
+## Plan Critique Findings
+
+- The completed predecessor goal established that a local session record proves
+  containment only, never human receipt or usefulness. This goal retains that
+  non-claim and does not alter any verdict logic while collecting observations.
+
+## Closeout Binding Plan
+
+- Reviewed inputs: this goal, the schema-v3 ledger, declared session events,
+  and cited score events.
+- Frozen target: commit each durable observation before any score-policy
+  proposal; a later policy slice receives a fresh packet and review.
+- Fresh-eye channel: required only for a policy threshold, budget, or verdict
+  surface change; collection-only appends use the existing ledger checker.
+- Verification lock: cite checker output and score-event count before a policy
+  conclusion.
+- Terminal record: close only after a real cohort either supports a bounded
+  policy decision or demonstrates that the decision remains premature.
+
+## Off-Goal Findings
+
+- No score budget or graduation action is justified by the current zero-score
+  state; this is an evidence-collection goal, not an implementation shortcut.
+
+## Final Verification
+
+- Pending — activated collection has not yet recorded its first declared
+  session or cited score.
+
+## User Verification Instructions
+
+- After a session is declared, inspect its lesson IDs in the ledger and provide
+  only actual cited score judgments through the documented score command.
+
+## Auto-Retro
+
+- Pending — no completed slice yet.
 
 ## Context Sources
 
