@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 478,
-  "candidate_count": 1970,
+  "source_artifact_count": 479,
+  "candidate_count": 1975,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -154,6 +154,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2e1ea6641487",
+      "kind": "next_improvement",
+      "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score.",
+      "normalized_key": "state at first score prompt that the agent not the user records observed operational",
+      "recurrence_class": "agent-authored-score-role",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "state at first score prompt that the agent, not the user, records observed operational impact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score."
         }
       ]
     },
@@ -402,32 +436,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:93ec0ec7b4a0",
-      "kind": "current_focus",
-      "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
-      "normalized_key": "this retrospective reviews the completed handoff ownership gate work that led to the current",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
         }
       ]
     }
@@ -576,6 +584,40 @@
       ]
     },
     {
+      "candidate_id": "class:2e1ea6641487",
+      "kind": "next_improvement",
+      "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score.",
+      "normalized_key": "state at first score prompt that the agent not the user records observed operational",
+      "recurrence_class": "agent-authored-score-role",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "state at first score prompt that the agent, not the user, records observed operational impact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:490052814d4a",
       "kind": "repeat_trap",
       "lesson": "Two full gate runs (~140s each) spent establishing that a runtime-budget failure was real rather than flake. Not waste — the first run alone could not distinguish them — but it is the cost of a bar that measures contention.",
@@ -846,6 +888,58 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e871839575fa",
+      "kind": "current_focus",
+      "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort.",
+      "normalized_key": "this session completed the local cited lesson ledger through deterministic shown set declarations and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9398c6f5069b",
+      "kind": "next_improvement",
+      "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy.",
+      "normalized_key": "collect naturally varied cross session observations and compare preview effects before proposing score policy",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy."
         }
       ]
     },
@@ -1136,15 +1230,15 @@
       ]
     },
     {
-      "candidate_id": "class:2e1ea6641487",
+      "candidate_id": "next_improvement:10db573bd7ed",
       "kind": "next_improvement",
-      "lesson": "state at first score prompt that the agent, not the user, records observed operational impact.",
-      "normalized_key": "state at first score prompt that the agent not the user records observed operational",
-      "recurrence_class": "agent-authored-score-role",
+      "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item.",
+      "normalized_key": "start the next session from the harness improvement thesis retaining comparative score policy as",
+      "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
       "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
       "latest_source_date": "2026-08-12",
       "age_days": 0,
       "recency_weight": 1.0,
@@ -1152,12 +1246,38 @@
       "selection_weight": 1.0,
       "sources": [
         {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
           "date": "2026-08-12",
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "state at first score prompt that the agent, not the user, records observed operational impact."
+          "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4d5654a4b237",
+      "kind": "repeat_trap",
+      "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary.",
+      "normalized_key": "closeout mechanics remain substantial but the independent claims review caught two overstatements before the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary."
         }
       ]
     },
@@ -1184,6 +1304,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d4500aeb858f",
+      "kind": "repeat_trap",
+      "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey.",
+      "normalized_key": "i initially asked the user to supply scores for what are agent operational judgments",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey."
         }
       ]
     },

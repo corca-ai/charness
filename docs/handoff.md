@@ -23,6 +23,15 @@
 
 ## Current State
 
+- [First score observation goal](../charness-artifacts/goals/2026-08-12-prepare-session-score-observation.md)
+  completed the local lesson ledger, shown-set session declarations, and first
+  agent-authored score cohort: 16 seeded lessons, two declared sessions, and
+  three `+2` score events. No score budget or selection retuning was added
+  because one correlated positive cohort identifies no policy problem.
+- [Comparative score-policy evidence](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md)
+  is a dormant draft, to activate only after naturally varied cross-session
+  observations exist.
+
 - [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — six rulings
   with an execution status line each; ruling 1 is #598 and reads executed.
 - [Issue #598](https://github.com/corca-ai/charness/issues/598) — ruling 1's issue, still open;
@@ -48,20 +57,17 @@
 
 ## Next Session
 
-1. [Lesson ledger and contract register](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md)
-   — the memory design: a scored ledger, a contract register measuring citation and catch, and
-   graduation as the seam. Names its own first implementation slice and its probe questions.
-2. [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md)
+1. [Harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md)
    — the digest's slot-policy defect the spec above answers, and two proposals it supersedes.
-3. [Ownership gate critique](../charness-artifacts/critique/2026-08-12-handoff-bullet-ownership-critique.md)
+2. [Ownership gate critique](../charness-artifacts/critique/2026-08-12-handoff-bullet-ownership-critique.md)
    — six review rounds on the handoff ownership gate, the dispositions including two reversals,
    and a closing section naming what is accepted-unreviewed.
-4. [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — rulings
+3. [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md) — rulings
    2, 3, 5, and 6 carry `not executed`; ruling 6 is the only schema change.
-5. [suggest_mutation_coverage_command](../scripts/suggest_mutation_coverage_command.py) — holds
+4. [suggest_mutation_coverage_command](../scripts/suggest_mutation_coverage_command.py) — holds
    `tests_referencing_paths`, the mapper [#587](https://github.com/corca-ai/charness/issues/587)
    describes; that issue's body governs over any in-repo mention.
-6. [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md) — a read of the
+5. [Open-issue opinion](../charness-artifacts/audit/2026-08-08-open-issue-opinion.md) — a read of the
    open backlog: #539 #581 #588 #528 #589 #542, then #586 #590 #593-#597 #599 #550 #527 #546.
 
 ## Discuss
