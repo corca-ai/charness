@@ -78,7 +78,9 @@ detector for a problem the stamp removes by construction is not worth its false 
 
 ## 3. `check-timing-layer-completeness` — CI step, not a pre-push label
 
-**Status: not executed.**
+**Status: EXECUTED 2026-08-12.** Quality Core now runs the existing
+`check_timing_layer_completeness.py` command. The commit-time trigger and the
+docs-only pre-push label list are unchanged; no hosted run is claimed.
 
 **Ruling:** add a step to [quality-core.yml](../../.github/workflows/quality-core.yml). Do
 not add the label to `.githooks/pre-push` `DOCS_ONLY_LABELS`.

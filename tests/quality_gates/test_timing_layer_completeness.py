@@ -9,6 +9,7 @@ The negative guard proves an unclassified label turns the gate red.
 from __future__ import annotations
 
 import importlib
+import re
 import sys
 from pathlib import Path
 
@@ -21,6 +22,37 @@ def test_real_repo_table_is_complete() -> None:
     missing, checked = META.unclassified_labels(ROOT)
     assert checked, "no run-quality labels parsed — parser or run-quality.sh drift"
     assert missing == [], f"run-quality validators with no timing verdict: {missing}"
+
+
+def test_quality_core_runs_the_timing_completeness_gate_but_docs_pre_push_does_not() -> None:
+    """Ruling 3 closes the hook-bypass gap in CI without widening the fast hook."""
+    workflow = (ROOT / ".github" / "workflows" / "quality-core.yml").read_text(encoding="utf-8")
+    pre_push = (ROOT / ".githooks" / "pre-push").read_text(encoding="utf-8")
+
+    assert re.search(
+        r"^\s*- name: Validate timing-layer completeness\n"
+        r"\s+run: python3 scripts/check_timing_layer_completeness\.py --repo-root \.$",
+        workflow,
+        re.MULTILINE,
+    )
+    labels = re.search(r'^DOCS_ONLY_LABELS="([^"]*)"$', pre_push, re.MULTILINE)
+    assert labels is not None
+    assert labels.group(1).split(",") == [
+        "check-doc-links",
+        "check-markdown",
+        "check-links-internal",
+        "check-references-link-inventory",
+        "check-spec-evidence-durability",
+        "validate-handoff-artifact",
+        "validate-debug-artifact",
+        "validate-quality-artifact",
+        "validate-retro-artifact",
+        "validate-ideation-artifact",
+        "validate-critique-artifacts",
+        "inventory-quality-handoff",
+        "validate-current-pointer-freshness",
+        "docs-graph",
+    ]
 
 
 def test_run_quality_labels_dedupes_in_first_seen_order() -> None:
