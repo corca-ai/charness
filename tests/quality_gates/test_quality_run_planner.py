@@ -275,6 +275,38 @@ def test_quality_run_plan_surface_reuses_reconciled_catalog_packet_id(
     assert surfaces[0]["packet_ids"] == ["existing"]
 
 
+def test_quality_run_plan_uses_adapter_packets_when_generic_runner_is_absent(
+    tmp_path: Path,
+) -> None:
+    repo = tmp_path / "consumer"
+    adapter = repo / ".agents" / "quality-adapter.yaml"
+    adapter.parent.mkdir(parents=True)
+    adapter.write_text(
+        "version: 1\nrepo: consumer\noutput_dir: charness-artifacts/quality\n"
+        "gate_commands:\n- npm run check\n"
+        "security_commands:\n- npm audit --omit=dev\n",
+        encoding="utf-8",
+    )
+
+    plan = _run_plan(repo)
+
+    packets = {packet["id"]: packet for packet in plan["gate_packets"]}
+    assert "read-only-quality" not in packets
+    assert packets["adapter-gate-1"]["command"] == "npm run check"
+    assert packets["adapter-security-1"]["command"] == "npm audit --omit=dev"
+    assert plan["declaration_lifecycle"]["unavailable_catalog_gates"] == [
+        {
+            "id": "read-only-quality",
+            "command": "./scripts/run-quality.sh --read-only",
+            "reason": "missing repo-native command scripts/run-quality.sh",
+        }
+    ]
+    assert {
+        "kind": "catalog_gate_unavailable",
+        "detail": "read-only-quality: missing repo-native command scripts/run-quality.sh",
+    } in plan["declaration_lifecycle"]["gaps"]
+
+
 def test_quality_run_plan_names_unreachable_declared_surface(tmp_path: Path) -> None:
     repo = tmp_path / "app"
     adapter = repo / ".agents" / "quality-adapter.yaml"
@@ -291,7 +323,10 @@ def test_quality_run_plan_names_unreachable_declared_surface(tmp_path: Path) -> 
     cli = next(row for row in lifecycle["surfaces"] if row["surface"] == "installable_cli")
     assert cli["routing_state"] == "unreachable"
     assert lifecycle["declared_skill_paths"][0]["target_state"] == "unreachable"
-    assert {gap["kind"] for gap in lifecycle["gaps"]} == {"declared_surface_unreachable"}
+    assert {gap["kind"] for gap in lifecycle["gaps"]} == {
+        "catalog_gate_unavailable",
+        "declared_surface_unreachable",
+    }
 
 
 def test_quality_run_plan_does_not_route_commands_from_invalid_adapter(tmp_path: Path) -> None:

@@ -13,6 +13,7 @@ LIFECYCLE = _load_script_module(
     "quality_declaration_path_resolution_under_test",
     ROOT / "skills/public/quality/scripts/quality_declaration_lifecycle.py",
 )
+LIFECYCLE_PATH = ROOT / "skills/public/quality/scripts/quality_declaration_lifecycle.py"
 
 
 def _declared_paths(repo: Path, *declarations: str) -> list[dict[str, object]]:
@@ -35,6 +36,27 @@ def test_repo_module_bootstraps_repo_import_path_and_fails_loudly(
     assert LIFECYCLE.sys.path[0] == root_text
     with pytest.raises(ImportError, match="not found from quality skill runtime"):
         LIFECYCLE._repo_module("scripts.quality_module_that_does_not_exist")
+
+
+def test_declaration_lifecycle_loads_when_importlib_util_was_not_preloaded() -> None:
+    source = LIFECYCLE_PATH.read_text(encoding="utf-8")
+    program = "\n".join(
+        [
+            "import importlib",
+            "assert not hasattr(importlib, 'util')",
+            f"namespace = {{'__file__': {str(LIFECYCLE_PATH)!r}, '__name__': 'isolated_lifecycle'}}",
+            f"exec(compile({source!r}, {str(LIFECYCLE_PATH)!r}, 'exec'), namespace)",
+        ]
+    )
+
+    result = subprocess.run(
+        [sys.executable, "-S", "-c", program],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0, result.stderr
 
 
 def test_declaration_helpers_skip_non_values_without_creating_routes(

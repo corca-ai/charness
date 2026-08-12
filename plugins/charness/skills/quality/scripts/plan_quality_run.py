@@ -292,6 +292,10 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
     declaration_lifecycle, adapter_packets = _load_declaration_lifecycle().build_declaration_lifecycle(
         repo_root, skills=skills, catalog_gates=gates
     )
+    adapter = declaration_lifecycle.get("adapter") or {}
+    applicable_gate_ids = declaration_lifecycle.get("applicable_catalog_gate_ids")
+    if adapter.get("found") and adapter.get("valid") and isinstance(applicable_gate_ids, list):
+        gates = [gate for gate in gates if gate.get("id") in applicable_gate_ids]
     gates = [*gates, *adapter_packets]
     required_reads = [
         ref

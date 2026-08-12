@@ -1,1 +1,1 @@
-2026-08-12-release-quality-record-contract-drift.md
+2026-08-12-issue-603-quality-packet-debug.md

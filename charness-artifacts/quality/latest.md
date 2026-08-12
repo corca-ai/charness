@@ -1,1 +1,1 @@
-2026-08-12-quality-review.md
+2026-08-12-issue-603-quality-packet-routing.md

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import importlib
+import importlib.util
 import shlex
 import sys
 from pathlib import Path
@@ -25,7 +26,18 @@ def _repo_module(name: str):
     raise ImportError(f"{name} not found from quality skill runtime")
 
 
+def _load_catalog_applicability():
+    path = Path(__file__).resolve().parent / "quality_catalog_gate_applicability.py"
+    spec = importlib.util.spec_from_file_location("quality_catalog_gate_applicability", path)
+    if spec is None or spec.loader is None:
+        raise ImportError("quality_catalog_gate_applicability.py not loadable beside quality_declaration_lifecycle.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 _REPO_FILE_LISTING = _repo_module("scripts.repo_file_listing")
+_CATALOG_APPLICABILITY = _load_catalog_applicability()
 
 
 def _packet(
@@ -285,6 +297,7 @@ def build_declaration_lifecycle(
             for path in skills
         ],
         "declared_skill_paths": [],
+        "unavailable_catalog_gates": [],
         "gaps": [],
     }
     if adapter.get("valid") is not True:
@@ -314,7 +327,22 @@ def build_declaration_lifecycle(
             }
         )
 
-    command_rows, command_packets = _declared_commands(raw, catalog_gates)
+    if adapter.get("found"):
+        applicable_catalog_gates, unavailable_catalog_gates = _CATALOG_APPLICABILITY.applicable_catalog_gates(
+            repo_root, raw, catalog_gates
+        )
+    else:
+        applicable_catalog_gates, unavailable_catalog_gates = catalog_gates, []
+    report["unavailable_catalog_gates"] = unavailable_catalog_gates
+    for unavailable in unavailable_catalog_gates:
+        report["gaps"].append(
+            {
+                "kind": "catalog_gate_unavailable",
+                "detail": f"{unavailable['id']}: {unavailable['reason']}",
+            }
+        )
+
+    command_rows, command_packets = _declared_commands(raw, applicable_catalog_gates)
     surface_rows, surface_packets = _surface_rows(
         repo_root, raw, skills, command_rows
     )
@@ -336,4 +364,9 @@ def build_declaration_lifecycle(
             )
     if report["gaps"]:
         report["status"] = "action-required"
+    report["applicable_catalog_gate_ids"] = [
+        str(gate["id"])
+        for gate in applicable_catalog_gates
+        if isinstance(gate.get("id"), str)
+    ]
     return report, [*command_packets, *surface_packets]
