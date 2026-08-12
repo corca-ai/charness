@@ -93,6 +93,14 @@ Complete the local lesson-ledger capability from replayed score state through se
 - Current uncommitted contract refinement introduces the schema-v2 score-event slice; it is not yet implementation evidence.
 - Status: completed as goal setup; Slice 1 is active.
 
+### Slice 2: Deterministic selection preview
+
+- Commit: `8661d7b6`.
+- Decision: validate the rebuilt index and v2 ledger, intersect seeded recurrence-class IDs, fill recent/value/uncertainty buckets sequentially without duplicates, then use an explicit uncertainty fallback because archive state does not yet exist.
+- Evidence: `pytest -q tests/test_lesson_ledger.py tests/test_lesson_selection_preview.py` (13 passed), ledger checker, preview CLI smoke test, pre-implementation policy/boundary review, and a clean proof review with verified reviewer boundaries.
+- Non-claim: the rendered flat list is not evidence of presentation, a shown session, an archive resurrection, or authorization to score lessons.
+- Next: define how a retro records score events against an actual completed presentation without weakening the cited-retro boundary; keep register/graduation proposal-only.
+
 ### Slice 1: Replayed score-event state
 
 - Objective: Migrate the cited lesson ledger to schema v2 and make its replayed score state append-only without adding selection or register behavior.
