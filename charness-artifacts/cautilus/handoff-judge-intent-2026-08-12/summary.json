@@ -1,0 +1,142 @@
+{
+  "comparisonSummary": {
+    "betterThanBaseline": 0,
+    "evaluationsWithBaseline": 0,
+    "sameAsBaseline": 0,
+    "worseThanBaseline": 0
+  },
+  "evaluatedAt": "2026-08-12T05:52:11.416535519Z",
+  "evaluationCounts": {
+    "blocked": 0,
+    "degraded": 0,
+    "execution": 1,
+    "failed": 0,
+    "passed": 1,
+    "total": 1,
+    "trigger": 0,
+    "unstable": 0
+  },
+  "evaluationRuns": [
+    {
+      "displayName": "handoff",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-handoff-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "handoff should complete the intended task cleanly once the skill is invoked."
+      },
+      "metrics": {
+        "duration_ms": 177666,
+        "total_tokens": 1505113
+      },
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-08-12T05:48:59.402Z",
+      "status": "passed",
+      "summary": "Execution of /handoff: 1505113 total tokens (38337 output, 1293508 cache-read), 177666ms wall. Tool profile: Bash=12 Read=8. All declared claims met. Reference coverage: 4/6 declared references opened (missing: adapter-contract.md, spill-targets.md).",
+      "surface": "execution_quality",
+      "targetId": "handoff",
+      "targetKind": "public_skill"
+    }
+  ],
+  "evaluations": [
+    {
+      "displayName": "handoff",
+      "evaluationId": "execution-handoff-judge-intent-claim-fidelity",
+      "evaluationKind": "execution",
+      "intentProfile": {
+        "behaviorSurface": "skill_execution_quality",
+        "guardrailDimensions": [],
+        "intentId": "intent-handoff-should-complete-the-intended-task-cleanly-once-the-skill-is-invoked",
+        "schemaVersion": "cautilus.behavior_intent.v1",
+        "successDimensions": [
+          {
+            "id": "skill_task_fidelity",
+            "summary": "Complete the intended task cleanly once the skill is invoked."
+          },
+          {
+            "id": "runtime_budget_respect",
+            "summary": "Stay within the declared runtime or token budget when one is provided."
+          }
+        ],
+        "summary": "handoff should complete the intended task cleanly once the skill is invoked."
+      },
+      "invoked": true,
+      "metrics": {
+        "duration_ms": 177666,
+        "total_tokens": 1505113
+      },
+      "prompt": "/charness:handoff The correct route is not specified. Before deciding or declaring pickup, refresh, or chunked routing, run the handoff planner with --intent auto and use its safety-net reads to judge the next action.",
+      "sampling": {
+        "consensusCount": 1,
+        "consensusRate": 1,
+        "derivedStatus": "passed",
+        "invocationRate": 1,
+        "invokedCount": 1,
+        "passCount": 1,
+        "passRate": 1,
+        "sampleCount": 1,
+        "stable": true,
+        "statusCounts": {
+          "blocked": 0,
+          "degraded": 0,
+          "failed": 0,
+          "passed": 1
+        },
+        "unstable": false
+      },
+      "startedAt": "2026-08-12T05:48:59.402Z",
+      "status": "passed",
+      "summary": "Execution of /handoff: 1505113 total tokens (38337 output, 1293508 cache-read), 177666ms wall. Tool profile: Bash=12 Read=8. All declared claims met. Reference coverage: 4/6 declared references opened (missing: adapter-contract.md, spill-targets.md).",
+      "surface": "execution_quality",
+      "targetId": "handoff",
+      "targetKind": "public_skill",
+      "thresholds": {
+        "max_duration_ms": 660000
+      }
+    }
+  ],
+  "recommendation": "accept-now",
+  "samplingSummary": {
+    "evaluationsWithSampling": 1,
+    "overallConsensusRate": 1,
+    "overallInvocationRate": 1,
+    "overallPassRate": 1,
+    "totalConsensusSamples": 1,
+    "totalInvocations": 1,
+    "totalPassingSamples": 1,
+    "totalSamples": 1,
+    "unstableEvaluations": 0
+  },
+  "schemaVersion": "cautilus.skill_evaluation_summary.v1",
+  "skillDisplayName": "handoff",
+  "skillId": "handoff"
+}

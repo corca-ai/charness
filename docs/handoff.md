@@ -14,7 +14,7 @@
 ## Current State
 
 - The [harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) led to completed local ledger/session evidence; [comparative policy](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) remains dormant pending naturally varied sessions.
-- The active [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2 and 3 locally. Ruling 5's `judge-intent` scenario is ready, but remains not executed: Cautilus requires both a qualifying log-backed behavior source and an explicit one-run grant before evaluation. Ruling 6 waits for that boundary.
+- The active [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, and 5 locally. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only. Ruling 6 is next.
 - [Remote CI reconciliation](../charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md) remains locally resolved; hosted readback is not claimed.
 Refresh kept: [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md), its ordered first slice, the Cautilus approval boundary, and the remote-proof non-claim because each changes the next action.
 
@@ -27,13 +27,12 @@ Refresh non-claims: prior handoff backlog history, issue snapshots, quality numb
 
 ## Next Session
 
-1. Ask the operator to name a qualifying failing-prompt, transcript, operator-log, issue-log, or regression-log file and to grant one Cautilus evaluation for [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md)'s ready `handoff/judge-intent` scenario; without both, the planner returns `next_action: none` and no invocation is permitted.
-2. Continue [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) with ruling 6 only after the ruling-5 boundary is recorded.
-3. Keep all running context in [the goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md); refresh this handoff only for a real interruption or user-requested baton pass.
+1. Continue [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) with ruling 6 / `#585`: normalized call-site content identity must remain path-invariant while preserving content, membership, multiplicity, and an algorithm version.
+2. Keep all running context in [the goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md); refresh this handoff only for a real interruption or user-requested baton pass.
 
 ## Discuss
 
-- Cautilus evaluation requires a later, scenario-specific approval and qualifying behavior-source log. Push, release, issue close, and hosted readback also require new phase-scoped grants.
+- Ruling 5's one approved Cautilus evaluation is consumed. Push, release, issue close, and hosted readback still require new phase-scoped grants.
 
 ## References
 

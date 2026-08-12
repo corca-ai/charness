@@ -130,7 +130,11 @@ works. If a removal cannot be explained in the notes, that is a signal to write 
 
 ## 5. Judge-intent Cautilus scenario — build it and run it once
 
-**Status: not executed.**
+**Status: EXECUTED 2026-08-12.** The route-undetermined `handoff/judge-intent`
+scenario was captured from isolated `056afc75` and evaluated once through the
+repo-owned Cautilus observation wrapper. Its deterministic packet and Cautilus
+summary both passed (1/1, 0 failed); durable local evidence is
+[`handoff-judge-intent-2026-08-12`](../cautilus/handoff-judge-intent-2026-08-12/).
 
 **Ruling:** build a scenario whose prompt does not determine the route, asserting
 `engage-always` on `workflow-trigger.md` and `state-selection.md`; then run Cautilus once
@@ -207,9 +211,9 @@ free on every `ast.Call`; the cost is the schema change, not the extraction.
 - The `charness verify` / `charness propose` findings were established by running
   `python3 charness <name> --help` and by `git log -S` over the CLI; whether either name
   was ever valid in an installed consumer's older copy is unobservable here.
-- Ruling 5's scenario has not been drafted, so its assertions are unproven and the claim
-  that it discharges exactly two waivers rests on the waivers' own stated discharge
-  condition, not on a run.
+- Ruling 5's scenario was evaluated once locally. Its result does not establish
+  hosted, release, or consumer behavior, and the unhealthy-adapter waiver remains
+  outside this healthy-run scenario.
 - No consumer repo was observed for any ruling. Ruling 1's deletion and ruling 4's removal
   both change a shipped surface with no way to see who uses it.
 
