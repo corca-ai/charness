@@ -11,11 +11,11 @@ in this session after the pre-implementation critique passes.
 
 - Current slice: consumer-ergonomics completion — #539, #542, and #602 now
   have local-proof carriers; #528 remains a separately owned OPEN split.
-- Current slice intent: re-read #550's duplicate-resolver premise without
-  laundering any local proof, split disposition, or remaining consumer work
-  into closure.
-- Next action: read #550 and comments, record its falsifiable premise and owner,
-  then continue #588/#599/#601 in evidence-backed dependency order.
+- Current slice intent: repair or honestly disposition #588's public-helper
+  consumer boundary without laundering local proof, split disposition, or
+  remaining consumer work into closure.
+- Next action: re-run #588's policy-absent consumer fixture, then choose the
+  smallest typed applicability result and proof surface before #599/#601.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
