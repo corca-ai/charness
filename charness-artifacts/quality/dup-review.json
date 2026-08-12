@@ -3152,6 +3152,69 @@
       "note": "The score and session entrypoints retain local direct-script bootstrap/import headers so each executable clearly declares its runtime dependencies. This portability preamble cannot be extracted before the import path it establishes exists.",
       "reviewed_at": "2026-08-12",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "16031fc80728cd01",
+      "note": "The standalone validation and worktree commands each keep a direct-execution import bootstrap. This repeated preamble is the portable entrypoint boundary; extracting it would add an import dependency before the import path exists.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "30d8eb403aa57e12",
+      "note": "Issue creation and readback verification independently locate their executable module boundary. The five-line import path shim has separate runtime ownership and cannot be shared without hiding the direct-script contract.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "3dbe01fd711be4f4",
+      "note": "This is a one-line early-return idiom in two unrelated validators. A shared helper would add coupling without centralizing any policy or behavior.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "4ddb93099cc5f8fb",
+      "note": "Independent executable validators have similarly shaped error-exit tails, but each owns distinct parsing, evidence, and user-facing failure semantics. A common tail would obscure the verdict owner rather than reduce a shared rule.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "56b292c02680b8e1",
+      "note": "The standard SHA-256 one-liner appears in independent identity contracts. Release-record blob identity must remain locally explicit rather than couple its proof boundary to unrelated hash helpers.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "858dfd6c7ff4dd3c",
+      "note": "Two SessionStart implementations independently surface routing failure states. Their small conditional shape is shared plumbing, while their adapter and artifact behavior remains deliberately separate.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a936c856473995c9",
+      "note": "Adapter validators repeat a two-line optional-value idiom while keeping each adapter's schema and diagnostic owner visible. A generic helper would not centralize policy and would obscure the relevant boundary.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "a9c46f642aadee2a",
+      "note": "The prepared-record branches intentionally distinguish release phases with different topology and side-effect rules. They share no reusable behavior; merging them would weaken an auditable state classifier.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fb13dedbafbf87d2",
+      "note": "Legacy and claims-aware release-resume branches keep different recovery topology tests explicit. Their small conditional overlap is not a common behavior contract.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,
