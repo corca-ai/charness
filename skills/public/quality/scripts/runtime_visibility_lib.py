@@ -4,6 +4,13 @@ from typing import Any
 
 
 def runtime_visibility_findings(adapter_data: dict[str, Any], budgets: dict[str, int]) -> list[dict[str, str]]:
+    """Return review-visible gaps, not runtime-budget verdict inputs.
+
+    These findings describe absent observability configuration.  A correct command
+    run cannot repair that configuration, so failing this command would turn an
+    advisory review gap into a false execution failure.  The quality-summary
+    renderer is the final consumer and preserves the `weak` severity plus action.
+    """
     findings: list[dict[str, str]] = []
     if not budgets:
         findings.append(

@@ -1,1 +1,1 @@
-2026-08-12-issue-597-quality-fixture-gate-debug.md
+2026-08-12-issue-595-runtime-advisory-contract-debug.md

@@ -296,6 +296,30 @@ def test_runtime_budget_gate_reports_latest_spike_without_failing(tmp_path: Path
     ]
     assert payload["checked"][0]["status"] == "latest-spike"
     assert payload["checked"][0]["ewma_advisory_elapsed_ms"] == 18000.0
+    assert payload["advisory_contracts"]["latest_spikes"] == {
+        "severity": "advisory",
+        "reason": "latest-only wall-clock spike; recent median remains the enforcement basis",
+        "enforcement_basis": "recent median",
+    }
+
+    plain_result = run_script(SCRIPT, "--repo-root", str(repo), "--runtime-profile", "default")
+    assert plain_result.returncode == 0, plain_result.stderr
+    assert "LATEST-SPIKE" in plain_result.stdout
+    assert "advisory: latest-only wall-clock spike; recent median remains the enforcement basis" in plain_result.stdout
+
+
+def test_runtime_budget_gate_summary_carries_visibility_advisory_contract(tmp_path: Path) -> None:
+    repo = seed_runtime_budget_repo(tmp_path, budgets=None, signals=None)
+
+    result = run_script(SCRIPT, "--repo-root", str(repo), "--json", "--runtime-profile", "default", "--summary")
+
+    assert result.returncode == 0, result.stderr
+    contract = json.loads(result.stdout)["advisory_contracts"]["runtime_visibility_findings"]
+    assert contract == {
+        "severity": "weak",
+        "reason": "configuration review gap; render_runtime_summary.py is the final consumer for the recommended action",
+        "final_consumer": "render_runtime_summary.py",
+    }
 
 
 def test_runtime_budget_gate_reports_advisory_ewma_without_enforcing_it(tmp_path: Path) -> None:
@@ -913,4 +937,3 @@ def test_the_pre_push_aggregate_bar_covers_the_armed_lane_it_now_contains() -> N
             "the aggregate wall is lane-dominated, so a bar below it fails on the gate's "
             "own documented cost with nothing regressed"
         )
-

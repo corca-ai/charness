@@ -48,6 +48,7 @@ def summarize(report: dict) -> dict:
         "runtime_visibility_findings",
     ):
         summary.update(bounded_list(report, key))
+    summary["advisory_contracts"] = report.get("advisory_contracts", {})
     return summary
 
 

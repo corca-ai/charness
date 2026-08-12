@@ -24,6 +24,15 @@ STALE_HOTSPOT_SAMPLE_DAYS = 14
 BUDGET_SLACK_FACTOR = 3.0
 # Below this, ordinary scheduling jitter dominates and a slack ratio is noise.
 MIN_SLACK_ADVISORY_BUDGET_MS = 1000
+# A single wall-clock sample can be slow because the parallel quality runner is
+# contended (D54).  The recent median is therefore the enforcement basis; a latest
+# spike remains an explicit advisory for the operator to inspect, never an
+# unarmed would-be violation.  The command renderer repeats this contract where
+# the observation is consumed.
+LATEST_SPIKE_ADVISORY_REASON = "latest-only wall-clock spike; recent median remains the enforcement basis"
+RUNTIME_VISIBILITY_ADVISORY_REASON = (
+    "configuration review gap; render_runtime_summary.py is the final consumer for the recommended action"
+)
 # How a bar is sized lives in one place (`runtime_budget_sizing_lib`); the slack
 # advisory below proposes a retune, so it calls that sizing rather than re-deriving a
 # number that could drift from the one `--suggest-budgets` emits.
@@ -292,6 +301,18 @@ def evaluate(
         "violations": violations,
         "budget_slack_findings": budget_slack_findings(checked),
         "latest_spikes": latest_spikes,
+        "advisory_contracts": {
+            "latest_spikes": {
+                "severity": "advisory",
+                "reason": LATEST_SPIKE_ADVISORY_REASON,
+                "enforcement_basis": "recent median",
+            },
+            "runtime_visibility_findings": {
+                "severity": "weak",
+                "reason": RUNTIME_VISIBILITY_ADVISORY_REASON,
+                "final_consumer": "render_runtime_summary.py",
+            },
+        },
         "missing_samples": missing_samples,
         "runtime_hotspots": runtime_hotspots,
         "stale_runtime_hotspots": stale_runtime_hotspots,
@@ -353,7 +374,10 @@ def format_human(report: dict[str, Any]) -> str:
     for error in report.get("profile_config_errors", []):
         lines.append(f"ERROR {error}")
     for finding in report.get("runtime_visibility_findings", []):
-        lines.append(f"WEAK  {finding['type']}: {finding['message']}")
+        lines.append(
+            f"WEAK  {finding['type']}: {finding['message']}; advisory: "
+            f"{RUNTIME_VISIBILITY_ADVISORY_REASON}"
+        )
     if not report["budgets_configured"]:
         lines.append("No runtime_budgets configured in adapter; nothing to check.")
     for entry in report["checked"]:
@@ -365,7 +389,9 @@ def format_human(report: dict[str, Any]) -> str:
             detail += f", max {entry['max_recent_elapsed_ms']}ms"
         if entry["ewma_advisory_elapsed_ms"] is not None:
             detail += f", ewma {entry['ewma_advisory_elapsed_ms']:.1f}ms advisory"
-        lines.append(f"{entry['status'].upper():<12} {entry['label']}: {detail} (budget {entry['budget_ms']}ms)")
+        status = str(entry["status"]).upper()
+        advisory = f"; advisory: {LATEST_SPIKE_ADVISORY_REASON}" if entry["status"] == "latest-spike" else ""
+        lines.append(f"{status:<12} {entry['label']}: {detail} (budget {entry['budget_ms']}ms){advisory}")
     for key, header, render in (
         ("runtime_hotspots", "Runtime hot spots:", _render_hotspot),
         ("budget_slack_findings", "Budget slack (advisory: these budgets can no longer fail):", _render_slack),
