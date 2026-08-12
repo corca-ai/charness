@@ -780,6 +780,36 @@
       ]
     },
     {
+      "surface_id": "lesson-ledger-and-contract-register",
+      "description": "Local cited lesson state and the explicit pre-contract-mutation register probe.",
+      "source_paths": [
+        "charness-artifacts/retro/lesson-ledger.json",
+        "charness-artifacts/retro/contract-register.json",
+        "scripts/lesson_ledger_lib.py",
+        "scripts/check_lesson_ledger.py",
+        "scripts/contract_register_lib.py",
+        "scripts/check_contract_register.py"
+      ],
+      "derived_paths": [
+        "plugins/charness/scripts/lesson_ledger_lib.py",
+        "plugins/charness/scripts/check_lesson_ledger.py",
+        "plugins/charness/scripts/contract_register_lib.py",
+        "plugins/charness/scripts/check_contract_register.py"
+      ],
+      "sync_commands": [
+        "python3 scripts/sync_root_plugin_manifests.py --repo-root ."
+      ],
+      "verify_commands": [
+        "python3 scripts/check_lesson_ledger.py --repo-root .",
+        "python3 scripts/check_contract_register.py --repo-root .",
+        "python3 -m pytest -q tests/test_lesson_ledger.py tests/test_contract_register.py"
+      ],
+      "notes": [
+        "The ledger checker remains a broad quality gate because every score and seed reconstructs against the retro corpus.",
+        "The contract-register checker is intentionally explicit rather than always-on: schema v1 is only a pre-mutation probe and has no applied membership-transition protocol."
+      ]
+    },
+    {
       "surface_id": "executable-specs",
       "description": "Repo-owned specdown executable acceptance specs and their config.",
       "source_paths": [

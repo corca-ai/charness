@@ -321,6 +321,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-debug-artifact", "validate_debug_artifact.py"),
     ("validate-debug-seam-index", "build_debug_seam_risk_index.py"),
     ("validate-retro-lesson-index", "build_retro_lesson_selection_index.py"),
+    ("validate-lesson-ledger", "check_lesson_ledger.py"),
     ("validate-quality-artifact", "validate_quality_artifact.py"),
     ("validate-attention-state-visibility", "validate_attention_state_visibility.py"),
     ("validate-inventory-consumption", "validate_inventory_consumption.py"),
