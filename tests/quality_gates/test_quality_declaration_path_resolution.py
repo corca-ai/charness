@@ -59,6 +59,130 @@ def test_declaration_lifecycle_loads_when_importlib_util_was_not_preloaded() -> 
     assert result.returncode == 0, result.stderr
 
 
+def test_preset_reconciliation_distinguishes_applied_missing_and_metadata_only(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "app"
+    presets = repo / "presets"
+    presets.mkdir(parents=True)
+    (presets / "strict.md").write_text(
+        "---\nname: strict\ndescription: \"Strict reconciliation fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - python3 -m pytest\n    - ruff check .\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n",
+        encoding="utf-8",
+    )
+    (presets / "metadata.md").write_text(
+        "---\nname: metadata\ndescription: \"Metadata fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n---\n# metadata\n\n## Intended Use\n\nTest fixture.\n",
+        encoding="utf-8",
+    )
+    modules = {
+        "scripts.validate_presets": LIFECYCLE._repo_module("scripts.validate_presets"),
+        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: ["strict"]),
+    }
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
+
+    rows, gaps = LIFECYCLE._preset_rows(
+        repo,
+        {
+            "preset_lineage": ["strict", "metadata", "missing"],
+            "gate_commands": ["python3 -m pytest", "ruff check ."],
+        },
+    )
+
+    assert rows == [
+        {
+            "preset": "strict",
+            "declaration_state": "declared",
+            "repo_signal_detected": True,
+            "required_adapter_commands": ["python3 -m pytest", "ruff check ."],
+            "missing_adapter_commands": [],
+            "reconciliation_state": "reconciled",
+        },
+        {
+            "preset": "metadata",
+            "declaration_state": "declared",
+            "repo_signal_detected": False,
+            "reconciliation_state": "metadata-only",
+            "reconciliation_reason": "preset declares no reconciliation prescription",
+        },
+        {
+            "preset": "missing",
+            "declaration_state": "declared",
+            "repo_signal_detected": False,
+            "reconciliation_state": "metadata-only",
+            "reconciliation_reason": "no local machine-readable preset prescription",
+        },
+    ]
+    assert gaps == []
+
+    rows, gaps = LIFECYCLE._preset_rows(repo, {"preset_lineage": ["strict"], "gate_commands": []})
+
+    assert rows[0]["reconciliation_state"] == "missing"
+    assert rows[0]["missing_adapter_commands"] == ["python3 -m pytest", "ruff check ."]
+    assert gaps == [
+        {
+            "kind": "preset_requirement_missing",
+            "detail": "strict: declare adapter command: python3 -m pytest",
+        },
+        {"kind": "preset_requirement_missing", "detail": "strict: declare adapter command: ruff check ."},
+    ]
+
+
+@pytest.mark.parametrize("frontmatter", ["---not-a-fence", "---not-a-fence\nname: malformed\n"])
+def test_preset_contract_refuses_malformed_frontmatter(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, frontmatter: str) -> None:
+    repo = tmp_path / "app"
+    presets = repo / "presets"
+    presets.mkdir(parents=True)
+    (presets / "strict.md").write_text(
+        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n" + frontmatter,
+        encoding="utf-8",
+    )
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
+    monkeypatch.setattr(
+        LIFECYCLE,
+        "_repo_module",
+        lambda name: validator
+        if name == "scripts.validate_presets"
+        else SimpleNamespace(detect_preset_lineage=lambda _repo: []),
+    )
+
+    contract = LIFECYCLE._preset_contract(repo, "strict")
+
+    assert contract["state"] == "unavailable"
+
+
+def test_preset_contract_accepts_crlf_and_refuses_external_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "app"
+    presets = repo / "presets"
+    presets.mkdir(parents=True)
+    (presets / "crlf.md").write_bytes(b"---\r\nname: crlf\r\ndescription: \"CRLF fixture.\"\r\npreset_kind: sample-vocabulary\r\ninstall_scope: maintainer\r\nreconciliation:\r\n  required_adapter_commands:\r\n    - pytest\r\n---\r\n# crlf\r\n\r\n## Intended Use\r\n\r\nTest fixture.\r\n")
+    outside = tmp_path / "outside.md"
+    outside.write_text("---\nname: external\ndescription: \"External fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# external\n\n## Intended Use\n\nTest fixture.\n", encoding="utf-8")
+    (presets / "external.md").symlink_to(outside)
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda name: validator if name == "scripts.validate_presets" else SimpleNamespace(detect_preset_lineage=lambda _repo: []))
+
+    assert LIFECYCLE._preset_contract(repo, "crlf")["state"] == "prescribed"
+    assert LIFECYCLE._preset_contract(repo, "external")["state"] == "unavailable"
+    assert LIFECYCLE._preset_contract(repo, "../external")["state"] == "unavailable"
+
+
+def test_preset_contract_refuses_a_presets_directory_symlink(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    repo = tmp_path / "app"
+    outside_presets = tmp_path / "outside-presets"
+    outside_presets.mkdir()
+    (outside_presets / "strict.md").write_text(
+        "---\nname: strict\ndescription: \"Strict fixture.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\nreconciliation:\n  required_adapter_commands:\n    - pytest\n---\n# strict\n\n## Intended Use\n\nTest fixture.\n",
+        encoding="utf-8",
+    )
+    repo.mkdir()
+    (repo / "presets").symlink_to(outside_presets, target_is_directory=True)
+    validator = LIFECYCLE._repo_module("scripts.validate_presets")
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", lambda name: validator if name == "scripts.validate_presets" else SimpleNamespace(detect_preset_lineage=lambda _repo: []))
+
+    contract = LIFECYCLE._preset_contract(repo, "strict")
+
+    assert contract == {"state": "unavailable", "reason": "presets/strict.md must resolve inside presets/"}
+
+
 def test_declaration_lifecycle_refuses_when_adjacent_catalog_is_not_loadable(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

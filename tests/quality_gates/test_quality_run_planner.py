@@ -213,8 +213,9 @@ def test_quality_run_plan_routes_declared_commands_and_surfaces_without_claiming
         {
             "preset": "typescript-quality",
             "declaration_state": "declared",
-            "reconciliation_state": "declared-only",
             "repo_signal_detected": True,
+            "reconciliation_state": "metadata-only",
+            "reconciliation_reason": "no local machine-readable preset prescription",
         }
     ]
     assert {row["command"] for row in lifecycle["commands"]} == {
@@ -540,7 +541,11 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                 "status": "action-required",
                 "adapter": {"found": True, "valid": True},
                 "presets": [
-                    {"preset": "typescript-quality", "reconciliation_state": "declared-only"}
+                    {
+                        "preset": "typescript-quality",
+                        "reconciliation_state": "metadata-only",
+                        "reconciliation_reason": "no local machine-readable preset prescription",
+                    }
                 ],
                 "commands": [
                     {
@@ -565,7 +570,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                     }
                 ],
                 "gaps": [
-                    {"kind": "preset_not_reconciled", "detail": "typescript-quality"}
+                    {"kind": "preset_requirement_missing", "detail": "typescript-quality"}
                 ],
             },
             "required_reads": [
@@ -620,14 +625,17 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
     assert "target_vs_ambient: Separate target and ambient findings." in text
     assert "- gate_packets:" in text
     assert "read-only-quality: broad / advisory-plus-deterministic" in text
-    assert "preset typescript-quality: declared-only" in text
+    assert (
+        "preset typescript-quality: metadata-only — advisory: "
+        "no local machine-readable preset prescription"
+    ) in text
     assert "command review_commands: routed / not-run / npm run ui" in text
     assert "surface web_app: partial / adapter-review-1" in text
     assert (
         "skill path skills/public/quality/SKILL.md: resolved / skill-ergonomics"
         in text
     )
-    assert "GAP preset_not_reconciled: typescript-quality" in text
+    assert "GAP preset_requirement_missing: typescript-quality" in text
     assert "gate states: healthy, weak, missing, deferred" in text
     assert "weak also = costly or redundant" in text
     assert "automation: AUTO_EXISTING, NON_AUTOMATABLE" in text

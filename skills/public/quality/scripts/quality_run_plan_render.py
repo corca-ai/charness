@@ -12,9 +12,9 @@ def _append_lifecycle(lines: list[str], lifecycle: dict[str, Any]) -> None:
         f"{'valid' if adapter.get('valid') else 'not-valid'}"
     )
     for row in lifecycle.get("presets", []):
-        lines.append(
-            f"  - preset {row.get('preset')}: {row.get('reconciliation_state')}"
-        )
+        detail = row.get("reconciliation_reason")
+        suffix = f" — advisory: {detail}" if isinstance(detail, str) and detail else ""
+        lines.append(f"  - preset {row.get('preset')}: {row.get('reconciliation_state')}{suffix}")
     for row in lifecycle.get("commands", []):
         lines.append(
             f"  - command {row.get('field')}: {row.get('routing_state')} / "

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import re
 import sys
 from pathlib import Path
 
@@ -25,12 +26,12 @@ class ValidationError(Exception):
 
 def extract_frontmatter(contents: str) -> list[str]:
     lines = contents.splitlines()
-    if len(lines) < 3 or lines[0].strip() != "---":
+    if len(lines) < 3 or lines[0] != "---":
         raise ValidationError("missing YAML frontmatter delimited by ---")
 
     frontmatter: list[str] = []
     for line in lines[1:]:
-        if line.strip() == "---":
+        if line == "---":
             if not frontmatter:
                 raise ValidationError("frontmatter is empty")
             return frontmatter
@@ -44,6 +45,8 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
     for index, raw in enumerate(extract_frontmatter(contents), start=2):
         if not raw.strip():
             continue
+        if raw[0].isspace():
+            continue
         if ":" not in raw:
             raise ValidationError(f"invalid YAML-like frontmatter line {index}: missing ':'")
         key, value = raw.split(":", 1)
@@ -51,13 +54,36 @@ def parse_frontmatter(path: Path) -> dict[str, str]:
         value = value.strip()
         if not key:
             raise ValidationError(f"invalid YAML-like frontmatter line {index}: empty key")
-        if not value:
+        if not value and key != "reconciliation":
             raise ValidationError(f"invalid YAML-like frontmatter line {index}: empty value")
         data[key] = value
     for field in REQUIRED_FIELDS:
         if field not in data:
             raise ValidationError(f"missing field `{field}`")
     return data
+
+
+def parse_frontmatter_data(path: Path) -> dict[str, object]:
+    """Return the same strict-delimited front matter as structured YAML."""
+    from scripts.adapter_lib import load_yaml
+
+    try:
+        data = load_yaml("\n".join(extract_frontmatter(path.read_text(encoding="utf-8"))))
+    except (OSError, ValueError, TypeError) as exc:
+        raise ValidationError(f"invalid YAML frontmatter: {exc}") from exc
+    if not isinstance(data, dict):
+        raise ValidationError("frontmatter must be a mapping")
+    return data
+
+
+def validate_reconciliation_frontmatter(data: dict[str, object]) -> None:
+    """Accept only the lifecycle's typed, nested prescription vocabulary."""
+    if "reconciliation" not in data:
+        return
+    reconciliation = data.get("reconciliation")
+    required = reconciliation.get("required_adapter_commands") if isinstance(reconciliation, dict) else None
+    if not isinstance(required, list) or not required or not all(isinstance(item, str) and item.strip() for item in required):
+        raise ValidationError("reconciliation.required_adapter_commands must be a non-empty string list")
 
 
 def validate_quoted_string(field: str, value: str) -> None:
@@ -67,10 +93,9 @@ def validate_quoted_string(field: str, value: str) -> None:
         )
 
 
-def validate_preset(path: Path) -> None:
-    import re
-
+def validate_preset(path: Path) -> dict[str, object]:
     data = parse_frontmatter(path)
+    structured_data = parse_frontmatter_data(path)
     name = data["name"]
     if not re.fullmatch(PRESET_NAME_RE, name):
         raise ValidationError("`name` must be a lowercase slug")
@@ -78,6 +103,7 @@ def validate_preset(path: Path) -> None:
         raise ValidationError(f"`name` must match file name `{path.stem}`")
 
     validate_quoted_string("description", data["description"])
+    validate_reconciliation_frontmatter(structured_data)
 
     preset_kind = data["preset_kind"]
     if preset_kind not in ALLOWED_PRESET_KINDS:
@@ -97,6 +123,7 @@ def validate_preset(path: Path) -> None:
         raise ValidationError("organization-scope presets must use `preset_kind: product-slice`")
     if preset_kind == "product-slice" and "## Exposure Contract" not in contents:
         raise ValidationError("product-slice presets must include an `## Exposure Contract` section")
+    return structured_data
 
 
 def iter_presets(root: Path, *, require_git: bool = False) -> list[Path]:

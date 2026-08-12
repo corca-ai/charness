@@ -14,8 +14,6 @@ COMMAND_FIELDS = (
     "review_commands",
     "security_commands",
 )
-
-
 def _repo_module(name: str):
     for ancestor in Path(__file__).resolve().parents:
         if (ancestor / "scripts" / f"{name.rsplit('.', 1)[-1]}.py").is_file():
@@ -24,6 +22,27 @@ def _repo_module(name: str):
                 sys.path.insert(0, root)
             return importlib.import_module(name)
     raise ImportError(f"{name} not found from quality skill runtime")
+
+
+def _load_preset_reconciliation():
+    path = Path(__file__).resolve().parent / "quality_preset_reconciliation.py"
+    spec = importlib.util.spec_from_file_location("quality_preset_reconciliation", path)
+    if spec is None or spec.loader is None:
+        raise ImportError("quality_preset_reconciliation.py not loadable beside lifecycle")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+_PRESET_RECONCILIATION = _load_preset_reconciliation()
+
+
+def _preset_contract(repo_root: Path, preset: object) -> dict[str, Any]:
+    return _PRESET_RECONCILIATION.preset_contract(repo_root, preset, _repo_module)
+
+
+def _preset_rows(repo_root: Path, raw: dict[str, Any]) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    return _PRESET_RECONCILIATION.preset_rows(repo_root, raw, _repo_module)
 
 
 def _load_catalog_applicability():
@@ -273,7 +292,6 @@ def build_declaration_lifecycle(
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     adapter_lib = _repo_module("scripts.quality_adapter_lib")
     yaml_lib = _repo_module("scripts.adapter_lib")
-    detect_lib = _repo_module("scripts.quality_bootstrap_detect")
     adapter = adapter_lib.load_quality_adapter_permissive(repo_root)
     report: dict[str, Any] = {
         "status": "not-configured" if not adapter.get("found") else "configured",
@@ -311,21 +329,9 @@ def build_declaration_lifecycle(
     if not isinstance(raw, dict):
         raw = {}
 
-    detected = set(detect_lib.detect_preset_lineage(repo_root))
-    for preset in raw.get("preset_lineage", []) if isinstance(raw.get("preset_lineage"), list) else []:
-        row = {
-            "preset": preset,
-            "declaration_state": "declared",
-            "reconciliation_state": "declared-only",
-            "repo_signal_detected": preset in detected,
-        }
-        report["presets"].append(row)
-        report["gaps"].append(
-            {
-                "kind": "preset_not_reconciled",
-                "detail": f"{preset} is metadata; no prescribed gate is claimed applied",
-            }
-        )
+    preset_rows, preset_gaps = _preset_rows(repo_root, raw)
+    report["presets"] = preset_rows
+    report["gaps"].extend(preset_gaps)
 
     if adapter.get("found"):
         applicable_catalog_gates, unavailable_catalog_gates = _CATALOG_APPLICABILITY.applicable_catalog_gates(

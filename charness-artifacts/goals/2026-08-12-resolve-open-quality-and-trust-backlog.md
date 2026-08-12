@@ -14,8 +14,8 @@ in this session after the pre-implementation critique passes.
 - Current slice intent: repair the runtime and fixture truth paths without
   laundering the unfinished #582/#583/#584 umbrella, #528/#539/#542, or
   #589/#590/#606 premise work into a completion claim.
-- Next action: re-read and classify #589's preset-lineage verdict, then either
-  select its specification boundary or resume the named Slice-1 residuals.
+- Next action: publish #589's local-proof carrier after its commit, then re-read
+  and classify #586's wired-proof premise before selecting the next repair.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -179,8 +179,12 @@ premise, owner, evidence channel, and tracker-visible outcome.
   and independent GitHub readback. #584 remains OPEN with a split carrier:
   SessionStart is locally proven, while the closed #532's successor contract is
   only specified, not implemented.
-- Next: revalidate the goal binding, then choose #589 or the next low-coupling
-  ledger row.
+- #589: local proof is complete: a validator-accepted local prescription has a
+  reachable reconciled state only when every exact adapter command is declared;
+  legacy/sample lineage remains advisory metadata. GitHub remains OPEN pending a
+  post-commit carrier, final direct-to-default action, and hosted readback.
+- Next: publish #589's carrier after commit, then choose #586 or the next
+  low-coupling ledger row.
 
 ## Context Sources
 

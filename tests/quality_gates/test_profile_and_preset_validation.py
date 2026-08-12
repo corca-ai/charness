@@ -104,6 +104,17 @@ def test_validate_presets_rejects_product_slice_without_exposure_contract(tmp_pa
         raise AssertionError("validate_preset did not reject product slice without exposure contract")
 
 
+def test_validate_presets_accepts_nested_reconciliation_contract(tmp_path: Path) -> None:
+    preset = tmp_path / "strict.md"
+    preset.write_text(
+        "---\nname: strict\ndescription: \"Strict.\"\npreset_kind: sample-vocabulary\ninstall_scope: maintainer\n"
+        "reconciliation:\n  required_adapter_commands:\n    - python3 -m pytest\n---\n# strict\n\n## Intended Use\n\nTest.\n",
+        encoding="utf-8",
+    )
+
+    VALIDATE_PRESETS.validate_preset(preset)
+
+
 def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     presets_dir = repo / "presets"
