@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 477,
-  "candidate_count": 1965,
+  "source_artifact_count": 478,
+  "candidate_count": 1970,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -380,6 +380,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0ae516f50149",
+      "kind": "current_focus",
+      "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy.",
+      "normalized_key": "this goal recorded the first three cited session contained agent score records and decided",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -402,32 +428,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b47739beda79",
-      "kind": "next_improvement",
-      "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations.",
-      "normalized_key": "defer any presentation receipt or score budget design until a separately authorized workflow supplies",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations."
         }
       ]
     }
@@ -798,6 +798,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:0ae516f50149",
+      "kind": "current_focus",
+      "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy.",
+      "normalized_key": "this goal recorded the first three cited session contained agent score records and decided",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -820,6 +846,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:49e1dc9a75db",
+      "kind": "next_improvement",
+      "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula.",
+      "normalized_key": "compare naturally varied scores across sessions before proposing a budget or score formula",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula."
         }
       ]
     },
@@ -1032,6 +1084,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:913a03dc700a",
+      "kind": "next_improvement",
+      "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact.",
+      "normalized_key": "retain the no policy rationale and required comparative inputs in the successor goal and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:c62a2a11117a",
       "kind": "next_improvement",
       "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local.",
@@ -1054,6 +1132,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2e1ea6641487",
+      "kind": "next_improvement",
+      "lesson": "state at first score prompt that the agent, not the user, records observed operational impact.",
+      "normalized_key": "state at first score prompt that the agent not the user records observed operational",
+      "recurrence_class": "agent-authored-score-role",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "state at first score prompt that the agent, not the user, records observed operational impact."
         }
       ]
     },
@@ -1158,6 +1262,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:580346862077",
+      "kind": "repeat_trap",
+      "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded.",
+      "normalized_key": "the run initially asked the user to score agent operational lessons that confused the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded."
         }
       ]
     },

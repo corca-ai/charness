@@ -17,7 +17,7 @@
 - **workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 4)
 - issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
-- defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations. (source: `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`)
+- compare naturally varied scores across sessions before proposing a budget or score formula. (source: `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`)
 
 ## Selection Policy
 
@@ -39,4 +39,5 @@
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md`
+- `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md`

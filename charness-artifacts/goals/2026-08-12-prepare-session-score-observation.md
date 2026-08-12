@@ -1,15 +1,15 @@
 # Achieve Goal: Prepare evidence for session-score policy
 
-Status: active
+Status: complete
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-prepare-session-score-observation.md` — user explicitly authorized starting score observation from this session on 2026-08-12.
 
 ## Active Operating Frame
 
-- Current slice: first score cohort recorded, evaluated, and awaiting evidence-only closeout.
+- Current slice: complete — first score cohort recorded and evaluated without policy retuning.
 - Current slice intent: preserve three cited, session-bound agent judgments and
   record why they do not identify a score-policy problem.
-- Next action: close with no new threshold, budget, formula, bucket, or policy-version change; reopen only with comparative observations.
+- Next action: none in this goal; successor comparison remains inactive until naturally varied observations exist.
 - Verification cadence: validate any proposed evidence schema against the
   ledger checker and test an append/refusal path before policy is changed.
 - Gate cadence: ledger validation after every append; focused authoring tests
@@ -87,6 +87,7 @@ session record as proof of human receipt or contract-graduation evidence.
 - Gather: n/a — the needed first evidence is local ledger state.
 - Release: n/a — no release surface is planned.
 - Issue closeout: n/a — no issue is claimed.
+- Successor goal: `charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md` — compare naturally varied, cross-session observations before proposing score policy.
 
 ## Discuss Before Activation
 
@@ -161,9 +162,23 @@ session record as proof of human receipt or contract-graduation evidence.
 
 ## Final Verification
 
-- Pending closeout: checker and focused tests will confirm replayed counts,
-  containment, and unchanged authoring behavior. They cannot validate score
-  anchor truth, usefulness, or a policy conclusion.
+- Ledger proof: `python3 scripts/check_lesson_ledger.py --repo-root .` passed
+  after the three score appends and replays 16 lessons/16 transitions. The
+  ledger contains two declared sessions, three score events, three scored
+  lessons, and only `+2` event values.
+- Focused behavior proof: `pytest -q tests/test_lesson_ledger.py tests/test_lesson_ledger_refusals.py tests/test_lesson_selection_preview.py` passed 23 tests after recording the cohort.
+- Decision review: `charness-artifacts/critique/2026-08-12-first-score-cohort-policy-defer.md` confirms no score-policy problem is identified by one correlated positive cohort.
+- No broad quality run: no code, validator, preview policy, plugin export, or
+  quality surface changed in this goal; the executed focused verifier matches
+  the ledger state boundary.
+- Residual non-claims: replay proves record shape, citations, session containment,
+  and materialized totals only. It does not prove anchor truth, command-path
+  execution, human receipt, usefulness, calibration, a policy effect, contract
+  graduation, release, or external behavior.
+
+Retro: charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md
+Host log probe: skipped: host-log-not-exposed: no goal-scoped host session file or activation-time window is available; thread-wide signals would not measure this short cohort accurately.
+Disposition review: charness-artifacts/critique/2026-08-12-prepare-session-score-observation-disposition-review.md
 
 ## User Verification Instructions
 
@@ -173,7 +188,10 @@ session record as proof of human receipt or contract-graduation evidence.
 
 ## Auto-Retro
 
-- Pending — no completed slice yet.
+- Triggered and persisted: `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md` refreshed the generated lesson index.
+- Retro dispositions: applied: agent-authored score records now use cited source, declared containing session, and concrete action anchor.
+- Disposition: applied: the first cohort is explicitly evaluated against comparative evidence inputs, not an arbitrary minimum score count.
+- Structural follow-up: repo-local guard: `charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md` retains the scorer-role prompt correction and comparative evidence requirement.
 
 ## Context Sources
 
