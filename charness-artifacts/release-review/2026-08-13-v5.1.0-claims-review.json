@@ -1,0 +1,11 @@
+{
+  "schema_version": "charness.release.claims-review.v1",
+  "prepared_commit": "1024e50038adc5c027c64cf6b750a556bf679693",
+  "release_record_path": "charness-artifacts/release/latest.md",
+  "release_record_sha256": "1fda06ca06966d31fd80f9766aa8ef62a1fd78fb9a1ebfc8e6c0801ed6ab5eb3",
+  "target_version": "5.1.0",
+  "tag_name": "v5.1.0",
+  "verdict": "pass",
+  "preparer_context": "release-helper:prepared-1024e500",
+  "reviewer_context": "/root/release_claims_1024"
+}
