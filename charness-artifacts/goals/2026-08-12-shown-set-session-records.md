@@ -1,17 +1,17 @@
 # Achieve Goal: Establish shown-set records for cited lesson scoring
 
-Status: active
+Status: complete
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-shown-set-session-records.md` — the user explicitly requested a new goal and implementation continuation on 2026-08-12.
 
 ## Active Operating Frame
 
-- Current slice: integrated implementation proof for the schema-v3 session/score boundary.
-- Current slice intent: prove the recorder and score authoring path together without treating a local declaration as proof of human reception.
-- Next action: bind the repaired validator/authoring surface to its second fresh-eye review, then run final quality and closeout.
+- Current slice: complete — schema-v3 session/score boundary is committed and locally proven.
+- Capability delivered: the session recorder freezes deterministic selection identity, and a new cited score must name a declared session containing its lesson.
+- Next action: none within this goal; presentation evidence and contract graduation need separate authorization.
 - Verification cadence: focused validator and command tests at each mutation; fresh-eye review before the proof-surface change and again after repairs; broad quality at final closeout.
-- Gate cadence: the existing ledger checker remains the only ledger verdict surface; it will compose session replay rather than create a parallel quality gate.
-- History boundary: completed details move to `## Slice Log`; this frame only names the active intent.
+- Gate cadence: the existing ledger checker remains the only ledger verdict surface and composes session replay.
+- History boundary: terminal evidence and non-claims are recorded below; no active implementation remains in this goal.
 
 ## Goal
 
@@ -58,7 +58,7 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 | --- | --- | --- | --- | --- |
 | 1 | Lock schema-v3 session identity, preview snapshot inputs, and score coupling. | The score boundary must be decided before a state migration creates permanent records. | Updated specification and pre-implementation critique. | complete |
 | 2 | Implement replayed session events and safe session-recording command. | Existing ledger/preview state can supply deterministic inputs without inventing a presentation system. | Checker, command, mirror sync, real-Git prefix tests. | complete |
-| 3 | Require score authoring to name a valid containing session and prove the integrated workflow. | This closes the current authoring escape without adding unmeasured policy. | Negative integration tests, fresh-eye repaired-surface review, quality receipt. | in progress |
+| 3 | Require score authoring to name a valid containing session and prove the integrated workflow. | This closes the current authoring escape without adding unmeasured policy. | Negative integration tests, fresh-eye repaired-surface review, quality receipt. | complete |
 
 ## Backlog Recount
 
@@ -81,6 +81,7 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 - Gather: n/a — all inputs are checked-in local artifacts.
 - Release: n/a — no release surface is in scope.
 - Issue closeout: n/a — no tracked issue is claimed.
+- Successor goal: `charness-artifacts/goals/2026-08-12-prepare-session-score-observation.md` — make the next evidence-gathering boundary explicit before score policy or contract graduation is considered.
 
 ## Discuss Before Activation
 
@@ -90,7 +91,7 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 
 - Shaping: selected implementation-continuation mode from the user's explicit “새 goal 로 잡고 진행” request; no implementation has started before activation.
 - Slices 1–2: schema v3 now retains the v2 score prefix through immutable `legacy_score_event_count`, records a canonical frozen preview snapshot under an append-only session event, and shares a worktree-clean lock with score authoring. The root ledger records one zero-score local declaration (`current-goal-session`) as the operator-path smoke; it makes no presentation or usefulness claim.
-- Slice 3: focused tests cover frozen-session score eligibility, v2 migration, real-Git rewrite/delete/reorder refusal, and two cooperative writers. Repaired-surface critique and final quality remain open.
+- Slice 3: focused tests cover frozen-session score eligibility, v2 migration, real-Git rewrite/delete/reorder refusal, two cooperative writers, strict snapshot types, and session/lesson mismatch refusal. The repaired-surface critique is bound in `2026-08-12-025103-packet.md`; its round-two repairs are accepted-unreviewed under the repository cap. Final repository quality passed with 90 checks and no failure or unproven subject.
 
 ## Context Sources
 
@@ -111,7 +112,7 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 ## Plan Critique Findings
 
 - Fresh-eye reviewers `shown_set_schema_boundary`, `shown_set_authoring_review`, and `shown_set_counterweight` consumed packet `2026-08-12-023240`. They required an immutable legacy-score cutoff, record-time-only snapshot validation, shared writer locking, and a recorder that accepts only seed/session ID; all are folded into the boundaries and seventh spec slice.
-- Repaired-surface reviewers consumed `2026-08-12-025103-packet.md` (input identity `018aa0c1602c5aca5ef847b822423b368bd6abc0605a04073a59f551e9bab184`). They found and the implementation closed: uncommitted-v3 legacy-cutoff bypass, boolean snapshot schema version acceptance, and missing direct coverage for a listed-session mismatch. Recorder CLI proof was added as a low-cost bundle item. These were second-round repairs on a verdict surface, so the two-round cap records them as accepted-unreviewed; no third fresh-eye pass is claimed. The reviewer-boundary verifier correctly reports post-review parent repair drift on the three repaired paths.
+- Repaired-surface review was executed in delegated contexts after packet `2026-08-12-025103-packet.md` (input identity `018aa0c1602c5aca5ef847b822423b368bd6abc0605a04073a59f551e9bab184`), and the implementation closed the uncommitted-v3 legacy-cutoff bypass, boolean snapshot schema-version acceptance, and missing listed-session mismatch coverage. The packet itself is preparation-only and does not preserve a durable reviewer result, so that code-review execution is not independently auditable from this repository artifact set. The round-two repair cap remains an operational record, not a claim of a third review.
 - Expected over-worry rejected: cryptographic presentation receipts, timestamps, actor/device identity, archive behavior, score budget, and applied contract membership add claims beyond local eligibility.
 
 ## Closeout Binding Plan
@@ -128,12 +129,25 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 
 ## Final Verification
 
-- Not started — final evidence is recorded only after the schema, implementation, and repaired-surface reviews complete.
+- Focused proof: `pytest -q tests/test_contract_register.py tests/test_lesson_ledger.py tests/test_lesson_ledger_refusals.py tests/test_lesson_selection_preview.py` passed after the refusal and renderer-entrypoint coverage repairs.
+- Changed-line proof: the final quality receipt records a passing changed-line gate. The separately executed focused coverage output established the renderer entrypoint repair; its file-count detail is not retained in the closeout receipt. The exact `render_lesson_selection_preview.py:40` exit mutation failed its new `__main__` test and was restored.
+- State proof: `python3 scripts/check_lesson_ledger.py --repo-root .` validated 16 lessons/16 transitions; `python3 scripts/check_contract_register.py --repo-root .` validated 26 units/0 citations/0 proposals; index and goal-retro validation passed.
+- Broad distinct observer: `./scripts/run-quality.sh --read-only --receipt-json=.charness/quality/shown-set-session-records-closeout-receipt.json` reported 90 checks passed, 0 failed, 0 unproven in 86.9s. The local receipt is not Git-tracked or SHA-bound; terminal artifact-only edits were subsequently checked by focused artifact validation.
+- Critique: claims review completed at `charness-artifacts/critique/2026-08-12-shown-set-session-records-disposition-review.md`. The earlier code-review result was not preserved durably; no repository artifact claims that preparation packet alone proves code review completion.
+Retro: charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md
+Host log probe: charness-artifacts/audit/2026-08-12-shown-set-session-records-host-log-probe.md
+Disposition review: charness-artifacts/critique/2026-08-12-shown-set-session-records-disposition-review.md
+- Residual risk: this proves only local replayed session containment. It does not prove immutable Git history, a human presentation or receipt, useful/calibrated scores, or contract-graduation eligibility.
 
 ## User Verification Instructions
 
-- At closeout, run the ledger checker, session-recording command, score-authoring command, focused integration tests, and the retained repository quality command listed in the final verification section.
+- At closeout, run the ledger checker, session-recording command, score-authoring command, focused integration tests, and the retained repository quality command listed in the final verification section. These local commands do not supply presentation or contract-change evidence.
 
 ## Auto-Retro
 
-- Not started — final retro dispositions are recorded only at closeout.
+- Triggered and persisted: `charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md` is goal-bound and refreshed the selection index.
+- Retro dispositions: applied: `tests/test_lesson_selection_preview.py` executes the renderer's real `__main__` exit path before broad quality.
+- Disposition: out-of-scope: presentation receipts, score budgets, calibration, and contract graduation require separately authorized observed evidence beyond this local ledger.
+- Disposition: accepted-risk: no durable reviewer-result artifact exists for the prepared repaired-surface packet; this closeout states that gap instead of treating packet preparation as review proof.
+- Structural follow-up: applied: `tests/test_lesson_selection_preview.py` now covers the renderer's real script entrypoint, the sibling proof-mapping gap surfaced by this run.
+- Packet procedure: used disposable JSON preparation at closeout, so no temporary Markdown packet entered the retro corpus.

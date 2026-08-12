@@ -25,11 +25,13 @@ claim that a person received, read, used, or benefited from the list.
   passed.
 - `pytest -q tests/test_contract_register.py tests/test_lesson_ledger.py
   tests/test_lesson_ledger_refusals.py tests/test_lesson_selection_preview.py`
-  and `./scripts/run-quality.sh --read-only` passed. Changed-line coverage
-  covered all nine changed mutation-pool files.
-- Fresh-eye packet `2026-08-12-025103-packet.md` found strict-type, migration,
-  and containment gaps. Their repairs are explicitly accepted-unreviewed under
-  the validator proof-surface two-round cap.
+  and `./scripts/run-quality.sh --read-only` passed. The retained broad-quality
+  receipt records that its changed-line gate passed; it does not retain focused
+  mutation file-count detail.
+- Delegated repaired-surface review reported strict-type, migration, and
+  containment gaps after preparation packet `2026-08-12-025103-packet.md`.
+  The packet itself preserves preparation inputs, not the reviewer result; the
+  repairs remain operationally accepted-unreviewed under the two-round cap.
 - Packet Consumed: disposable JSON preparation for `58e48ea5..662b632c`,
   prepared as `shown-set session records closeout`; no Markdown packet was
   placed in the retro corpus for this closeout.
