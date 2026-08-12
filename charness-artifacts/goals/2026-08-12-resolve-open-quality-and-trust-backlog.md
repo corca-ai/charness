@@ -9,14 +9,15 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: frozen cohort reconciliation — every fixed row now has a
-  local-proof, split, or tracker-visible defer disposition; #527 is an
-  operator-owned OPEN defer and #528 remains a separately owned OPEN split.
-- Current slice intent: compare every ledger row with live tracker state and
-  its required evidence, then enter retro and final verification without
-  laundering an OPEN carrier into a closure or publication claim.
-- Next action: run the frozen 22-row reconciliation, record any missing carrier
-  or proof channel, then run the required retrospective before release work.
+- Current slice: frozen final verification — all 22 ledger rows reconcile to
+  one live OPEN tracker issue and one carrier; #527 is an operator-owned OPEN
+  defer and #528 remains a separately owned OPEN split.
+- Current slice intent: bind the committed retro and reconciliation to final
+  quality and release critique without laundering an OPEN carrier into a
+  closure or publication claim.
+- Next action: run the locked final quality bundle, bind and review the release
+  packet, then decide whether the user's conditional push/release grant remains
+  available.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -130,8 +131,8 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | completed |
 | 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | completed — #527 has an operator-owned tracker-visible defer; #528 remains separately owned OPEN split |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | completed (`1570ba32`; local proof carrier OPEN) |
-| 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | in-progress |
-| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | planned |
+| 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | completed — all 22 rows reconcile to OPEN tracker/carrier evidence; no row earned a closure claim before final bundle proof |
+| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | in-progress — retro persisted; frozen verification and release critique remain |
 
 ## Backlog Recount
 
@@ -205,6 +206,18 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - Historical next at this Slice Log point: record #584's local-proof carrier,
   then re-read the #528/#539/#542 trust-path premises in ledger order. The
   current route is owned by the Active Operating Frame above.
+
+### Frozen Cohort Reconciliation and Retro (2026-08-13)
+
+- Reconciliation: the execution ledger's 22 carrier issue numbers exactly match
+  the live `gh issue list --state open` set; each exact carrier URL appears in
+  its issue-reader comment list. There are no ledger-only or tracker-only rows.
+- Retro: `charness-artifacts/retro/2026-08-13-session-retro.md` records #607's
+  conservative proof review, #527's operator defer, the corrected carrier-read
+  method, and #503's existing ownership of historical runtime telemetry.
+- Boundary: this is reconciliation and learning evidence, not a push, release,
+  close, remote-CI, public-observer, or installed-consumer claim. Slice 7 owns
+  those separate channels.
 
 ## Context Sources
 
@@ -284,5 +297,10 @@ premise, owner, evidence channel, and tracker-visible outcome.
 
 ## Auto-Retro
 
-- Pending active-run retro. Any transferable finding will receive an applied
-  repository change or a tracked issue before completion.
+- Retro: `charness-artifacts/retro/2026-08-13-session-retro.md`
+- Retro dispositions: applied: #607 focused conservative-classification
+  regressions and the exact carrier-URL reconciliation method are committed;
+  #503 already owns the historical telemetry remeasurement boundary.
+- Structural follow-up: applied: #607 focused tests and the frozen
+  reconciliation method; the #503 telemetry boundary remains intentionally
+  owned by its existing record.

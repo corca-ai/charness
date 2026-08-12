@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`)
 - The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support. (source: `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`)
-- This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior. (source: `charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md`)
 
 ## Repeat Traps
 
@@ -38,7 +38,7 @@
 - `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md`
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
 - `charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md`
+- `charness-artifacts/retro/2026-08-13-session-retro.md`

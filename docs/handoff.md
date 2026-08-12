@@ -2,8 +2,9 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal: reconcile the frozen 22-row cohort,
-  then run retro and final verification before any push or release decision.
+- Continue the active `achieve` goal: the frozen 22-row cohort and required
+  retro are complete; run final locked verification and release critique before
+  any push or release decision.
 
 ## Continuation Capability
 
@@ -26,6 +27,7 @@
 - [Issue #588 local proof](../charness-artifacts/critique/2026-08-13-issue-588-policy-absent-dogfood-resolution.md) — policy-absent consumer repos receive typed applicability rather than a traceback while present invalid policy remains an error; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/588#issuecomment-5270306863) awaits cohort closeout.
 - [Issue #607 local proof](../charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md) — standing-test economics detail now exposes conservative, callsite-attributed settlement signals without claiming runtime child semantics; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/607#issuecomment-5270588693) awaits cohort closeout.
 - [Issue #527 decision brief](../charness-artifacts/issue/2026-08-13-issue-527-brief.md) — its documentation and invocation-policy choices remain operator-owned; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/527#issuecomment-5270654051) records the bounded deferral rather than an assumed implementation.
+- [Session retro](../charness-artifacts/retro/2026-08-13-session-retro.md) — records #607's conservative static-proof lessons, #527's decision boundary, the verified 22-row reconciliation, and #503's unchanged ownership of historical runtime telemetry; it makes no publication claim.
 - [Issue #528 split disposition](https://github.com/corca-ai/charness/issues/528#issuecomment-5269713927) — the core dotted-absence capability is already proven; consumer migration and hook discovery remain separately owned.
 - [Issue #550](https://github.com/corca-ai/charness/issues/550), [#599](https://github.com/corca-ai/charness/issues/599), and [#601](https://github.com/corca-ai/charness/issues/601) — hold bounded OPEN deferrals for absent resolver-family, reader-taxonomy, and CLI-harness premises; the execution ledger owns their revisit triggers.
 - [Issue #546](https://github.com/corca-ai/charness/issues/546), [#584](https://github.com/corca-ai/charness/issues/584), [#587](https://github.com/corca-ai/charness/issues/587), [#595](https://github.com/corca-ai/charness/issues/595), [#597](https://github.com/corca-ai/charness/issues/597), and [#605](https://github.com/corca-ai/charness/issues/605) — hold the remaining tracker-visible local-proof, split, or defer carriers recorded in the execution ledger.
@@ -40,12 +42,14 @@ issue closure, push, or release.
 
 Refresh kept: the active-goal ledger and its complete disposition map because they determine the frozen reconciliation and forbid premature publication.
 
-Refresh non-claims: no final push, release, issue closure, hosted CI, public-release, or installed-tool readback has occurred for this backlog goal.
+Refresh non-claims: no final push, release, issue closure, final
+direct-to-default hosted CI, public-release, or installed-tool readback has
+occurred for this backlog goal.
 
 ## Next Session
 
-1. Reconcile the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) against live GitHub state: every row needs a distinct evidence/disposition channel and an OPEN/split/defer carrier until final closeout conditions actually hold.
-2. Run the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): retro first, then frozen final verification and release critique; do not push or release on a local green alone.
+1. Run the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): freeze the final candidate, run final verification and release critique, and do not push or release on a local green alone.
+2. If the [release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md) reports a blocker or verification changes the candidate, preserve every OPEN carrier and return to the owning slice; no final publication is implied by the completed reconciliation or retro.
 3. Revisit [#528](https://github.com/corca-ai/charness/issues/528) only with its two owners: cmanki consumer declaration migration and the Charness quality-policy hook-discovery decision.
 4. Use the [release contract](../docs/conventions/operating-contract.md) — final push/release remains conditional on every cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 
