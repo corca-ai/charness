@@ -189,21 +189,19 @@ Scope, and what a green here does not say:
 
 The default canonical-gate patterns cover `npm run verify`,
 `npm run lint && npm run test`, `make verify`, `bash scripts/run-quality.sh`,
-`bash scripts/run-verify.{mjs,sh}`, and `node scripts/run-verify.mjs`. Repos with
+`bash <repo-root>/scripts/run-quality.sh`, and `<repo-root>/scripts/run-quality.sh` invoked
+through its shell-relative form (including an
+environment prefix such as `CHARNESS_PRE_PUSH=1`), plus
+`bash scripts/run-verify.{mjs,sh}` and `node scripts/run-verify.mjs`. Repos with
 custom local-gate names should pass `--canonical-gate-pattern` to surface their
 own shape.
 
-**Known gap — pass `--canonical-gate-pattern` if this is you.** The defaults
-match only the `bash scripts/run-quality.sh` spelling. They do NOT match the
-bare `<repo-root>/scripts/run-quality.sh` form invoked through a leading `./`,
-which is the invocation charness itself scaffolds (the release adapter's
-`quality_command`, and the quality catalog's read-only entry), nor that form
-behind a `CHARNESS_PRE_PUSH=1` env prefix. The failure is silent and it points the wrong way: a job whose
-canonical gate matches nothing is not judged at all, so it leaves
-`parity_issues` empty and passes `--require-empty-parity-issues` without ever
-being read. Widening the shipped default would newly judge jobs in consumer
-repos, so it is a floor change with its own decision rather than a fix to fold
-into an unrelated slice.
+Recognition is not a requirement to adopt `run-quality.sh`: a repository that
+does not use that runner remains in `jobs_without_canonical_gate` and exits zero
+unless its caller deliberately adds `--require-canonical-gate-match`. The default
+expansion only makes the Charness-owned runner forms observable when they already
+appear in CI. It newly judges previously unanchored consumer jobs, so the next
+release notes must call out that parity findings may newly appear for those forms.
 
 ### CI-Only Failure Recovery
 

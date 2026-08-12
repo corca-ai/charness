@@ -408,7 +408,77 @@ jobs:
     ]
 
 
-def test_does_not_flag_when_canonical_gate_absent(tmp_path: Path) -> None:
+def test_default_patterns_anchor_each_shipped_run_quality_invocation(tmp_path: Path) -> None:
+    invocations = (
+        "bash scripts/run-quality.sh",
+        "bash ./scripts/run-quality.sh --read-only",
+        "CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only",
+    )
+    for invocation in invocations:
+        repo = _write_workflow(
+            tmp_path / invocation.replace("/", "-").replace(" ", "-"),
+            f"""name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: {invocation}
+      - run: required-after-runner
+""",
+        )
+
+        result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert [issue["run"] for issue in payload["parity_issues"]] == [
+            "required-after-runner"
+        ]
+        assert payload["jobs_without_canonical_gate"] == []
+
+
+def test_default_patterns_ignore_non_invocation_runner_mentions(tmp_path: Path) -> None:
+    mentions = (
+        "echo ./scripts/run-quality.sh",
+        "test -x ./scripts/run-quality.sh",
+        "RUNNER=./scripts/run-quality.sh",
+        "# ./scripts/run-quality.sh",
+        "./scripts/run-quality.sh.bak",
+        "./scripts/run-quality.shx",
+    )
+    for mention in mentions:
+        repo = _write_workflow(
+            tmp_path / mention.replace("/", "-").replace(" ", "-"),
+            f"""name: verify
+on: [push]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          {mention}
+          required-after-mention
+""",
+        )
+
+        result = run_script(
+            SCRIPT,
+            "--repo-root",
+            str(repo),
+            "--require-canonical-gate-match",
+            "--json",
+        )
+
+        assert result.returncode == 1, result.stderr
+        payload = json.loads(result.stdout)
+        assert payload["parity_issues"] == []
+        assert payload["jobs_without_canonical_gate"] == [
+            {"workflow": str(repo / ".github/workflows/verify.yml"), "jobs": ["verify"]}
+        ]
+
+
+def test_no_run_quality_runner_remains_advisory_without_opt_in_refusal(tmp_path: Path) -> None:
     repo = _write_workflow(
         tmp_path,
         """name: lint-only
@@ -421,7 +491,13 @@ jobs:
       - run: npm run typecheck
 """,
     )
-    result = run_script(SCRIPT, "--repo-root", str(repo), "--json")
+    result = run_script(
+        SCRIPT,
+        "--repo-root",
+        str(repo),
+        "--require-empty-parity-issues",
+        "--json",
+    )
     assert result.returncode == 0, result.stderr
     payload = json.loads(result.stdout)
     assert payload["parity_issues"] == []
@@ -751,3 +827,15 @@ def test_default_canonical_gate_patterns_match_this_repo_s_own_local_gate() -> N
         re.search(pattern, "bash scripts/run-quality.sh")
         for pattern in _parity_lib.DEFAULT_CANONICAL_GATE_PATTERNS
     )
+
+
+def test_default_canonical_gate_patterns_cover_shipped_runner_forms() -> None:
+    for invocation in (
+        "bash scripts/run-quality.sh",
+        "bash ./scripts/run-quality.sh --read-only",
+        "CHARNESS_PRE_PUSH=1 ./scripts/run-quality.sh --read-only",
+    ):
+        assert any(
+            re.search(pattern, invocation)
+            for pattern in _parity_lib.DEFAULT_CANONICAL_GATE_PATTERNS
+        ), invocation

@@ -22,11 +22,16 @@ DEFAULT_WORKFLOW_GLOBS = (".github/workflows/*.yml", ".github/workflows/*.yaml")
 #: which is exactly what round 1 found `inventory_ci_recoverable_gates.py` doing.
 #: No in-repo caller reads it now; kept only so an external import does not break.
 DEFAULT_WORKFLOW_GLOB = DEFAULT_WORKFLOW_GLOBS[0]
+_SHELL_COMMAND_PREFIX = (
+    r"(?m)(?:^|(?:&&|\|\||[;|])\s*)\s*"
+    r"(?:[A-Za-z_][A-Za-z0-9_]*=(?:\"[^\"]*\"|'[^']*'|\S+)\s+)*"
+)
 DEFAULT_CANONICAL_GATE_PATTERNS = (
     r"\bnpm\s+run\s+verify\b",
     r"\bnpm\s+run\s+lint\s*&&\s*npm\s+run\s+test\b",
     r"\bmake\s+verify\b",
-    r"\bbash\s+scripts/run-quality\.sh\b",
+    _SHELL_COMMAND_PREFIX + r"bash\s+(?:\./)?scripts/run-quality\.sh(?=$|\s|[;&|])",
+    _SHELL_COMMAND_PREFIX + r"\./scripts/run-quality\.sh(?=$|\s|[;&|])",
     r"\bbash\s+scripts/run-verify\.(?:mjs|sh)\b",
     r"\bnode\s+scripts/run-verify\.mjs\b",
 )
