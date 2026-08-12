@@ -110,8 +110,8 @@ counterweight reviews were received through the host reviewer channel.
 
 - Packet consumed: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
 - Packet path: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
-- Packet SHA256: 4e15283f1d72edf6b81dbe79b7dfcb3db0c012f4f995a109bc6777a5724ddd8f
-- Identity SHA256: aad6b1061d034b93165a05974e816281795722036868bb6dbe0d12b7a06e2c81
+- Packet SHA256: f0da9d975812d4b20031282b8b086b3ae7e100859872883231742e661eb823d4
+- Identity SHA256: 1c6397898a17b555725d022ab42a6a0b5cd72eec019a7addf3971ae4df4f999a
 
 ## Boundary Ownership
 
