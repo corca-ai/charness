@@ -10,9 +10,9 @@ Done-early policy: continue_next_improvement
 
 ## Active Operating Frame
 
-- Current slice: #581 — repair and validate the shipped issue adapter example.
-- Current slice intent: validate every documented adapter operation against its real grammar before changing the example.
-- Next action: read #581's current GitHub record, inspect the source and plugin projections, then write the pre-mutation implementation brief.
+- Current slice: #594 — align the consolidated closeout-draft shape with the live enforced rules.
+- Current slice intent: demonstrate the carrier's actual permitted scope before changing prose or draft validation.
+- Next action: read #594's current GitHub record and comments, inspect the draft-shape producer and its consumer validators, then write the pre-mutation implementation brief.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger proof at each quality or closeout verdict slice; final lock only after the five slices are frozen.
 - Gate cadence: obtain `quality` recommendations before slow gates or any change to a gate, validator, or generated quality packet; do not run Cautilus unless newly approved.
 - Slice review packet: state the issue JTBD, changed/generated surfaces, preserved consumer boundary, expected invariants, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -67,7 +67,7 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 | --- | --- | --- | --- | --- |
 | 1 | #603: resolve adapter-owned quality packets or report typed unavailability. | Restores an operator's ability to begin quality work. | Adapter-present/runner-absent regression fixture, planner result, focused tests, and critique. | completed 2026-08-12 (`470aae9a`) |
 | 2 | #604: decide then repair the scaffolded `./scripts/run-quality.sh` canonical-gate gap. | It can produce a clean parity verdict over an unanchored job. | Recorded policy choice, default-pattern tests, release-note obligation, and proof-surface review. | completed 2026-08-12 (`09aac7e0`) |
-| 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | pending |
+| 3 | #581: repair and validate the shipped issue adapter example. | It is a direct copy/paste consumer failure with a bounded repair. | Every example operation resolves against real placeholder allowlists; source/plugin projection proof. | completed 2026-08-12 (`b5ed4b5b`) |
 | 4 | #594: make the consolidated closeout draft shape reflect its live enforced rules. | Authors otherwise draft a carrier the tool refuses. | Consolidated draft-shape tests and fresh-eye verdict-surface review. | pending |
 | 5 | #593: bind HOTL disposition parsing to the issue numbers being closed. | Quoted unrelated discussion must not block a close. | Target/non-target and quote-form tests plus fresh-eye verdict-surface review. | pending |
 
@@ -79,11 +79,11 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 
 ## Operator Decision Queue
 
-- Decision: whether #604 widens the default canonical-gate patterns to newly judge scaffolded consumer jobs, or preserves the documented override-only posture.
-- Owner: operator.
-- Why deferred: slice 1 is independently actionable; #604's effect is a shipped enforcement-floor change.
-- Unblock action: choose the default-recognition policy after its pre-mutation resolution brief identifies affected consumers and release-note wording.
-- Revisit trigger: before editing #604's default patterns or tests that assert their consumer scope.
+- Decision: none for #594 yet; inspect its live closeout-draft floor before deciding whether any prose scope is genuinely inconsistent.
+- Owner: agent under the active goal.
+- Why deferred: #594 has not yet been classified from its current GitHub record and enforced producer/consumer path.
+- Unblock action: complete #594's read-before-design and causal or resolution-brief route.
+- Revisit trigger: before changing a closeout-draft template, validator, or carrier scope.
 
 ## Coordination Cues
 
@@ -128,6 +128,20 @@ Complete the ordered backlog slices [#603](https://github.com/corca-ai/charness/
 - Off-goal findings: No consumer CI or hosted proof, release, publication, or issue closure ran; next release notes must disclose the floor expansion.
 - Lessons carried forward: Regex proof surfaces need command-position and token-termination counterexamples; matching a path is not proof of invocation.
 - Metrics: Focused suite: 99 passed in 9.06s; pre-commit completed with one non-blocking RCA-ledger advisory.
+
+### Slice 3: #581 shipped issue adapter example
+
+- Objective: Restore a copied host-mediated issue adapter's create operation and prove every declared example operation matches its production placeholder grammar.
+- Why this approach: The shipped create template contained close/comment-only {reason}, causing production resolve_op to refuse before a host command could run.
+- Commits: b5ed4b5b Repair shipped issue adapter example
+- What changed: Removed create's invalid --reason/{reason} pair, regenerated the plugin projection, added an exact-source YAML test covering create/view/close/comment/search_newest_open through the production resolver, and recorded debug/critique evidence.
+- Alternatives rejected: Did not validate hypothetical host CLI flag grammar or add a generic operation registry; provider semantics are backend-owned and call-site required-placeholder metadata is not centrally owned.
+- Targeted verification: 35 focused issue tests passed; source and plugin examples are byte-identical; debug index, debug/critique artifacts, packaging, and complete pre-commit passed.
+- Test duplication pressure: One artifact-level behavior regression covers all five declared operations through the shared owner; no duplicate per-placeholder unit tests were added.
+- Critique: Full charness-artifacts/critique/2026-08-12-issue-581-adapter-example-resolution.md; causal review, implementation review, three angles, counterweight, and final bound-packet review found no blocker; reviewer fingerprints were clean.
+- Off-goal findings: No external acme provider run, consumer-repository execution, publication, push, or GitHub issue closure; automatic future call-site metadata remains valid-but-defer.
+- Lessons carried forward: A worked adapter is executable consumer input: test the complete artifact against the owner grammar, not only the reported token.
+- Metrics: Focused issue suite: 35 passed in 4.72s; complete pre-commit passed with one non-blocking RCA-ledger advisory.
 
 ## Context Sources
 
