@@ -58,6 +58,15 @@ def test_rejects_missing_call_site_members_or_unknown_fingerprint_algorithm() ->
         raise AssertionError("expected a missing call-site member list to fail validation")
 
     payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    payload["candidates"][0]["call_site_member_hashes"] = []
+    try:
+        validator.validate_payload(payload)
+    except validator.ValidationError as exc:
+        assert "must not be empty" in str(exc)
+    else:
+        raise AssertionError("expected an empty call-site member list to fail validation")
+
+    payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
     payload["call_site_fingerprint_algo_version"] = "other"
     try:
         validator.validate_payload(payload)

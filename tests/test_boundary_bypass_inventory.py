@@ -149,6 +149,17 @@ def test_call_site_fingerprint_excludes_non_candidate_spawn_calls(tmp_path: Path
     assert mixed_candidate["call_site_member_hashes"] == clean_candidate["call_site_member_hashes"]
 
 
+def test_syntax_invalid_spawn_source_yields_no_ast_backed_candidate(tmp_path: Path) -> None:
+    repo = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/test_foo.py", "from support import run_script\nrun_script('scripts/foo.py'\n")
+        .build(tmp_path)
+    )
+
+    assert LIB.find_boundary_bypass_candidates(repo)["candidates"] == []
+
+
 def test_yaml_stdout_parse_counts_as_behavior_assertion(tmp_path: Path) -> None:
     test_body = _subprocess_test(returncode=0, behavior=False).replace(
         'assert "boom" in result.stderr',

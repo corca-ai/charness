@@ -245,6 +245,20 @@
     },
     {
       "class": "intentional",
+      "id": "07626524bfde07f1",
+      "note": "The claim-fidelity conditional-read allowlist and boundary-bypass exemption file each parse a small rationale-bearing text grammar, but they own different identity domains, separator rules, and failure contracts. A generic reason-list parser would conceal the format that each proof surface intentionally exposes; focused reader tests cover both owners.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1c91dcfb98ee878e",
+      "note": "The inventory producer and ratchet consumer independently render the version-1 normalized call-site-content digest so each remains directly executable and owns its own input boundary. Their equality is pinned by the real-inventory moved-path ratchet test; importing the producer into the consumer would couple a generic verdict to the Python scanner it must be able to consume independently.",
+      "reviewed_at": "2026-08-12",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "13d608e6f6664a09",
       "note": "one-line json.loads(path.read_text(...)) readers across nine unrelated repo and portable skill modules; extracting this stdlib idiom would couple independent command surfaces without centralizing a domain invariant",
       "reviewed_at": "2026-07-10",

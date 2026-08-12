@@ -209,6 +209,13 @@ def test_a_consistent_baseline_still_loads(tmp_path: Path) -> None:
     assert baseline["summary"]["candidate_key_count"] == len(baseline["candidate_keys"])
 
 
+def test_baseline_requires_advisory_candidate_pairs(tmp_path: Path) -> None:
+    path = _written_baseline(tmp_path, lambda baseline: baseline.pop("candidate_pairs"))
+
+    with pytest.raises(RATCHET.RatchetError, match="candidate_pairs"):
+        RATCHET.load_baseline(path)
+
+
 @pytest.mark.parametrize("bad_test_file", ["", None, 0, ["tests/test_foo.py"]])
 def test_a_row_without_a_usable_test_file_is_refused_rather_than_skipped(bad_test_file: object) -> None:
     """Refusing, not skipping, because skipping can only MASK the enforced arms.
@@ -227,6 +234,20 @@ def test_a_row_without_a_usable_test_file_is_refused_rather_than_skipped(bad_tes
     with pytest.raises(RATCHET.RatchetError, match="must be a non-empty string"):
         RATCHET.filtered_summary(payload, {})
     with pytest.raises(RATCHET.RatchetError, match="must be a non-empty string"):
+        RATCHET.candidate_keys(payload)
+
+
+def test_empty_call_site_members_are_refused_rather_than_dropped() -> None:
+    payload = {
+        "schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
+        "candidates": [{
+            "test_file": "tests/test_foo.py",
+            "import_safe_targets": ["scripts/foo.py"],
+            "call_site_member_hashes": [],
+        }],
+    }
+
+    with pytest.raises(RATCHET.RatchetError, match="call_site_member_hashes"):
         RATCHET.candidate_keys(payload)
 
 
