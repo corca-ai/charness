@@ -141,6 +141,24 @@ def _parse_created_number(stdout: str) -> int | None:
     return None
 
 
+def _http_url(value: object) -> str | None:
+    """Return a complete HTTP(S) URL, never backend diagnostic text."""
+    if not isinstance(value, str):
+        return None
+    candidate = value.strip()
+    if not candidate or "\\" in candidate or any(char.isspace() or ord(char) < 32 or ord(char) == 127 for char in candidate):
+        return None
+    try:
+        parsed = urlparse(candidate)
+        hostname = parsed.hostname
+        _ = parsed.port
+    except ValueError:
+        return None
+    if parsed.scheme in {"http", "https"} and hostname:
+        return candidate
+    return None
+
+
 def create_issue(
     repo: str,
     title: str,
@@ -193,6 +211,7 @@ def create_issue(
         )
     created_stdout = create_result.stdout.strip()
     created_number = _parse_created_number(created_stdout)
+    created_url = _http_url(created_stdout)
 
     payload: dict[str, Any] = {
         "ok": True,
@@ -212,8 +231,8 @@ def create_issue(
         # helper's vocabulary. An agent following them read nulls on a create that had
         # SUCCEEDED, and a retry would have filed a duplicate.
         "number": created_number,
-        "url": created_stdout or None,
-        "created_url": created_stdout or None,
+        "url": created_url,
+        "created_url": created_url,
         "created_number": created_number,
         "create_argv": create_argv,
         "body_verified": None,
@@ -239,7 +258,7 @@ def create_issue(
         VIEW_PLACEHOLDERS,
         repo=repo,
         number=str(created_number),
-        json_fields="body",
+        json_fields="body,url",
     )
     payload["view_argv"] = view_argv
     view_result = run_backend(view_argv)
@@ -255,6 +274,10 @@ def create_issue(
         payload["verify_error"] = f"read-back returned invalid JSON: {exc}"
         return payload
     stored_body = stored.get("body", "")
+    if payload["url"] is None:
+        readback_url = _http_url(stored.get("url"))
+        payload["url"] = readback_url
+        payload["created_url"] = readback_url
     payload["body_verified"] = stored_body == body_text
     if not payload["body_verified"]:
         payload["stored_body_bytes"] = len(str(stored_body).encode("utf-8"))

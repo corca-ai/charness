@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import os
+import runpy
 from pathlib import Path
 
 import pytest
@@ -17,6 +18,7 @@ import pytest
 from tests.quality_gates.support import run_script
 
 SCRIPT = "skills/public/issue/scripts/issue_tool.py"
+CREATE = runpy.run_path(str(Path(__file__).resolve().parents[2] / "skills/public/issue/scripts/issue_create.py"))
 
 # A body that exercises every corruption-prone category #232 names: Korean text,
 # Markdown headings/bullets, backticks, a fenced code block, single/double
@@ -41,7 +43,14 @@ HOSTILE_BODY = "\n".join(
 )
 
 
-def _write_capture_backend(bin_dir: Path, store: Path, *, echo_body: str | None = None) -> None:
+def _write_capture_backend(
+    bin_dir: Path,
+    store: Path,
+    *,
+    echo_body: str | None = None,
+    create_stdout: str = "https://github.com/corca-ai/charness/issues/777",
+    view_url: str | None = None,
+) -> None:
     """Write a fake `gh` that stores the --body-file content on create and
     returns it (or `echo_body`) as JSON on view."""
     bin_dir.mkdir(parents=True, exist_ok=True)
@@ -59,10 +68,10 @@ def _write_capture_backend(bin_dir: Path, store: Path, *, echo_body: str | None 
                 "if 'create' in argv:",
                 "    i = argv.index('--body-file')",
                 "    store.write_text(Path(argv[i + 1]).read_text(encoding='utf-8'), encoding='utf-8')",
-                "    print('https://github.com/corca-ai/charness/issues/777')",
+                f"    print({create_stdout!r})",
                 "elif 'view' in argv:",
                 "    body = override if override is not None else (store.read_text(encoding='utf-8') if store.exists() else '')",
-                "    print(json.dumps({'body': body}))",
+                f"    print(json.dumps({{'body': body, 'url': {view_url!r}}}))",
                 "",
             ]
         ),
@@ -136,6 +145,65 @@ def test_create_round_trips_hostile_body_byte_identical(tmp_path: Path) -> None:
     # And the argv carried --body-file, never an inline --body string.
     assert "--body-file" in payload["create_argv"]
     assert "--body" not in payload["create_argv"]
+
+
+def test_create_bare_number_uses_validated_readback_url_or_null_when_skipped(tmp_path: Path) -> None:
+    body_file = tmp_path / "body.md"
+    body_file.write_text("body\n", encoding="utf-8")
+    bin_dir = tmp_path / "bin"
+    store = tmp_path / "body-store.md"
+    _write_capture_backend(
+        bin_dir,
+        store,
+        create_stdout="538",
+        view_url="https://tracker.example/acme/demo/issues/538",
+    )
+
+    verified = run_script(
+        SCRIPT, "create", "--repo", "acme/demo", "--title", "bare backend", "--body-file", str(body_file),
+        "--repo-root", str(tmp_path), env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+    )
+    assert verified.returncode == 0, verified.stderr
+    verified_payload = json.loads(verified.stdout)
+    assert verified_payload["number"] == 538
+    assert verified_payload["url"] == "https://tracker.example/acme/demo/issues/538"
+    assert verified_payload["created_url"] == verified_payload["url"]
+    assert "body,url" in verified_payload["view_argv"]
+
+    skipped = run_script(
+        SCRIPT, "create", "--repo", "acme/demo", "--title", "bare skipped", "--body-file", str(body_file),
+        "--skip-readback", "--repo-root", str(tmp_path),
+        env={**os.environ, "PATH": f"{bin_dir}:/usr/bin:/bin", "GH_BODY_STORE": str(store)},
+    )
+    assert skipped.returncode == 0, skipped.stderr
+    skipped_payload = json.loads(skipped.stdout)
+    assert skipped_payload["number"] == 538
+    assert skipped_payload["url"] is None
+    assert skipped_payload["created_url"] is None
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "538",
+        "https://@/issues/538",
+        "https:// /issues/538",
+        "https://github.com/issue path",
+        "https://github.com/issues/538\nnot-a-url",
+        "https://[::1",
+        "https://[invalid]",
+        "https://github.com:99999/issues/538",
+        "https://github.com:invalid/issues/538",
+        "https://github.com\\evil/issues/538",
+    ],
+)
+def test_create_url_identity_rejects_non_navigable_backend_text(value: str) -> None:
+    assert CREATE["_http_url"](value) is None
+
+
+def test_create_url_identity_accepts_complete_http_urls() -> None:
+    assert CREATE["_http_url"]("https://tracker.example/acme/demo/issues/538") == "https://tracker.example/acme/demo/issues/538"
+    assert CREATE["_http_url"]("http://localhost:8080/issues/538") == "http://localhost:8080/issues/538"
 
 
 def test_create_applies_labels_and_milestone_as_flags(tmp_path: Path) -> None:
