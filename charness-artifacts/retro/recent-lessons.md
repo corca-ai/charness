@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice. (source: `charness-artifacts/retro/2026-08-12-session-retro.md`)
 - A discussion session that became a work session: close `#572`, verify the `#582`-`#585` umbrella premise, amend the north star, dispose of four umbrella classes under an operator-directed deletion bias. (source: `charness-artifacts/retro/2026-08-11-session-retro.md`)
-- The second work unit of 2026-08-11, distinct from the umbrella-disposition session that owns `2026-08-11-session-retro.md`. (source: `charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`)
 
 ## Repeat Traps
 
@@ -17,7 +17,7 @@
 - **workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 4)
 - issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
 - **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
-- `>= 35` is a ratchet floor implemented in this repo's worst available form — an inline magic number plus a prose instruction to bump it. Every other ratchet here has a baseline file and an accept command. Either give it that form or drop it. (source: `charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`)
+- establish the graduation proposal's evidence and displacement before any contract-surface mutation. (source: `charness-artifacts/retro/2026-08-12-session-retro.md`)
 
 ## Selection Policy
 
@@ -39,4 +39,4 @@
 - `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-11-session-retro.md`
-- `charness-artifacts/retro/2026-08-11-six-rulings-and-the-declared-where-derivable-class.md`
+- `charness-artifacts/retro/2026-08-12-session-retro.md`

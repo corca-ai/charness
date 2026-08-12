@@ -56,10 +56,13 @@ review.
 
 ## Current Slice
 
-Part 1 (ledger) and part 3 (graduation seam) are specified to build. Part 2
-(register) is specified to the point of a probe, because its feedback signal is
-the least certain thing here and building the counter before knowing it measures
-anything would be the same mistake in a new place.
+Part 1 (ledger) is the executable first slice. Part 3 (the graduation seam) is
+specified here as a boundary only: this first ledger version does not represent
+graduation, a contract target, displacement, approval, or registered status, and
+its green result is not a graduation authorization. Part 2 (register) is
+specified to the point of a probe, because its feedback signal is the least
+certain thing here and building the counter before knowing it measures anything
+would be the same mistake in a new place.
 
 ## Fixed Decisions
 
@@ -98,6 +101,11 @@ anything would be the same mistake in a new place.
 - **Graduation is the ONLY path from ledger to contract register**, and it is
   subject to a conservation rule: a graduation that would push the register past
   its budget must name a displacement or a retirement.
+- The first ledger version accepts no graduation-shaped transition or
+  contract-target field. Conservation is deferred to the later register/proposal
+  slice, which must calculate before/after membership in the register's unit
+  universe and name the displaced or retired unit; free text in a ledger record
+  is not conservation evidence.
 - **Roles split by what each surface can see.** A script computes candidates
   deterministically. `retro` scores lessons and records citations, and does not
   judge graduation, because it sees one session and graduation is a multi-session
@@ -171,10 +179,12 @@ anything would be the same mistake in a new place.
   each transition cites the retro that produced it, while the still-derived parts
   (candidate extraction from retro sections) stay rebuildable and stay checked.
   The release helper path runs through this function and must be migrated with it.
-- Cold start: ~1,900 undifferentiated candidates and no ids. Seed the ledger with
-  about 25 rather than filling 50, so the exploration machinery has somewhere to
-  go, and include this session's Continuation Capability lessons explicitly rather
-  than taking the top of the existing weight ranking.
+- Cold start: ~1,900 undifferentiated candidates and no ids. Seed every currently
+  eligible author-declared `recurrence-class` (16 at this contract's review), up
+  to the later pool target of 25; do not invent a second identity to fill the
+  difference. Include a Continuation Capability lesson only when its source
+  already declares that marker rather than taking the top of the existing weight
+  ranking.
 - Everything must survive a repo whose retro corpus is empty; a consuming repo
   with no lessons gets an empty ledger, not an error.
 
@@ -202,9 +212,11 @@ anything would be the same mistake in a new place.
   resurrection slot.
 - `unit` — a graduation proposal that would exceed the register budget fails
   unless it names a displacement.
-- `integration` — the append-only ledger gate rejects a transition with no citing
-  retro, and rejects a hand-edited score change, while the derived candidate
-  extraction stays rebuild-checked.
+- `integration` — the append-only ledger gate rejects a transition whose cited
+  retro does not contain the same single `recurrence-class`, rejects a duplicate
+  marker, transition, or seeded identity, and rejects a hand-edited materialized
+  score/state projection. Candidate extraction and digest rendering stay
+  independently rebuild-checked.
 - `manual` — after the seeding migration, the ten presented lessons are inspected
   once against operator judgment; this is the only check that can catch "the
   scores are technically consistent and the selection is useless".
@@ -256,10 +268,14 @@ this design.
 ## First Implementation Slice
 
 The ledger's state file and its append-only gate, with nothing reading from it
-yet: schema, id derivation from `recurrence-class`, the transition record with its
-citing retro, the gate that replaces the rebuild-determinism check for the scored
-half while keeping candidate extraction rebuild-checked, and the seeding migration
-for about 25 entries.
+yet: schema, id derivation directly from `recurrence-class`, the transition
+record with a canonical repo-relative retro citation, deterministic replay, and
+a gate that rejects a materialized projection that differs from replayed events.
+Keep the existing candidate/digest rebuild check intact and compose it with the
+new ledger transition check; do not replace it. Seed the currently eligible
+declared classes (16 at review time), with each seed citing the exact source
+retro and marker. This slice omits graduation, contract targets, displacement,
+approval, register membership, selection, scoring, and presentation.
 
 Selection, scoring, and presentation come second, because a ranking function
 without durable state to rank is untestable, and the gate transition is the piece

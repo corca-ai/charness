@@ -228,6 +228,10 @@ in-process branch tests and prove the same lane passes.
 - What Disproving Observation Is Resolved: a passing standing test is not proof
   that the selector can discover it or that coverage observes its subprocess.
 - Fresh-Eye Review: two bounded rounds before final coverage production.
+- Carry-forward refresh (2026-08-12): the lesson-ledger/graduation-state slice
+  is allowed to proceed because it does not touch the selector, its readers,
+  regenerable-facts coverage, or CI topology. The hosted-CI readback remains a
+  pending external proof and is not claimed by that local slice.
 
 ## Canonical Artifact
 
