@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 488,
-  "candidate_count": 1995,
+  "source_artifact_count": 490,
+  "candidate_count": 1999,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -388,6 +388,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:aa40d8da6222",
+      "kind": "current_focus",
+      "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired.",
+      "normalized_key": "this final pre publication review covers the frozen origin main 0ac9260d candidate after the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f3003b19e76",
       "kind": "current_focus",
       "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim.",
@@ -410,32 +436,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:336b53cf8060",
-      "kind": "next_improvement",
-      "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate.",
-      "normalized_key": "capability evaluate a bounded closeout report that summarizes uncovered changed files at pre lock",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: Evaluate a bounded closeout report that summarizes uncovered changed files at pre-lock time without weakening the final gate."
         }
       ]
     }
@@ -814,6 +814,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:aa40d8da6222",
+      "kind": "current_focus",
+      "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired.",
+      "normalized_key": "this final pre publication review covers the frozen origin main 0ac9260d candidate after the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:0f3003b19e76",
       "kind": "current_focus",
       "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim.",
@@ -892,6 +918,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:6b1004059d07",
+      "kind": "next_improvement",
+      "lesson": "defer a packet freshness preflight that names uncommitted reviewed paths before a release critique is declared complete.",
+      "normalized_key": "defer a packet freshness preflight that names uncommitted reviewed paths before a release critique",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "defer a packet freshness preflight that names uncommitted reviewed paths before a release critique is declared complete."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:979421ac09ff",
       "kind": "next_improvement",
       "lesson": "**memory**: Keep the goal, execution ledger, handoff, this retro, and #527's decision brief as the release-boundary record; #503 remains the owner of the historical runtime-cost question.",
@@ -940,6 +992,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: Keep this retro and `docs/handoff.md` explicit that the next action is coverage restoration, not push/release."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:09ea6ee3a96e",
+      "kind": "next_improvement",
+      "lesson": "regenerate and validate the release critique packet immediately after the final code/doc repair, before the last fresh-eye read.",
+      "normalized_key": "regenerate and validate the release critique packet immediately after the final code doc repair",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "regenerate and validate the release critique packet immediately after the final code/doc repair, before the last fresh-eye read."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:238c57404981",
+      "kind": "next_improvement",
+      "lesson": "retain this retro, the refreshed critique, and the handoff's exact prepare → claims-review → resume route; all 22 issues remain OPEN.",
+      "normalized_key": "retain this retro the refreshed critique and the handoff s exact prepare claims review",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain this retro, the refreshed critique, and the handoff's exact prepare → claims-review → resume route; all 22 issues remain OPEN."
         }
       ]
     },

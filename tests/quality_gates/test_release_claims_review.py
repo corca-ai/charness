@@ -133,6 +133,26 @@ def test_resume_refuses_inherited_prepared_marker_before_auth_or_publish(tmp_pat
     assert ["tag", "v0.0.1"] not in new_git
 
 
+@pytest.mark.release_only
+def test_prepared_record_refuses_merge_that_inherits_marker_from_second_parent(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    base = _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip()
+    prepared = _run_publish(repo, _release_env(tmp_path, bin_dir), "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    prepared_commit = json.loads(prepared.stdout)["prepared_release_commit"]
+    _run(["git", "checkout", "-B", "merge-first-parent", base], cwd=repo)
+    readme = repo / "README.md"
+    readme.write_text(readme.read_text(encoding="utf-8") + "first-parent source change\n", encoding="utf-8")
+    _run(["git", "add", "README.md"], cwd=repo)
+    _run(["git", "commit", "-m", "First parent before prepared marker"], cwd=repo)
+    _run(["git", "merge", "--no-ff", "--no-commit", prepared_commit], cwd=repo)
+    _run(["git", "commit", "-m", "Merge prepared marker from second parent"], cwd=repo)
+    merge = _run(["git", "rev-parse", "HEAD"], cwd=repo).stdout.strip()
+
+    assert CLAIMS_REVIEW.prepared_record(repo, commit=merge, run=_run) is None
+
+
 def test_claims_review_refuses_invalid_paths_tree_and_bindings(tmp_path: Path) -> None:
     prepared = {"commit": "prepared", "path": "charness-artifacts/release/latest.md", "sha256": "record-sha"}
 

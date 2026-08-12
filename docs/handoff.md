@@ -2,10 +2,10 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal: #608's supported claims-review pause is
-  locally proven, but final publication is blocked by the locked
-  changed-line-coverage refusal over the accumulated unreleased range. Restore
-  that proof before any push/release decision.
+- Continue the active `achieve` goal: the locked `origin/main..0ac9260d`
+  changed-line closeout now passes and #608's supported claims-review pause is
+  locally proven. Commit the final release critique, prepare the marked release
+  record, and stop for its distinct claims review before any push/release.
 
 ## Continuation Capability
 
@@ -30,7 +30,7 @@
 - [Issue #527 decision brief](../charness-artifacts/issue/2026-08-13-issue-527-brief.md) — its documentation and invocation-policy choices remain operator-owned; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/527#issuecomment-5270654051) records the bounded deferral rather than an assumed implementation.
 - [Session retro](../charness-artifacts/retro/2026-08-13-session-retro.md) — records #607's conservative static-proof lessons, #527's decision boundary, the verified 22-row reconciliation, and #503's unchanged ownership of historical runtime telemetry; it makes no publication claim.
 - [Issue #608 release-flow repair](../charness-artifacts/critique/2026-08-13-issue-608-claims-review-release-stage.md) — normal release preparation now stops at a marked local record and a separately committed, bound review record is required before publication; local focused tests passed, but no publication occurred.
-- [Release-preflight retro](../charness-artifacts/retro/2026-08-13-release-preflight-retro.md) — owns the 11-file changed-line coverage refusal and records why focused release tests do not discharge the full range.
+- [Release-preflight retro](../charness-artifacts/retro/2026-08-13-release-preflight-retro.md) — records the 11-file coverage recovery and why the fresh locked full-range closeout, rather than focused tests, unlocked the release sequence.
 - [Issue #528 split disposition](https://github.com/corca-ai/charness/issues/528#issuecomment-5269713927) — the core dotted-absence capability is already proven; consumer migration and hook discovery remain separately owned.
 - [Issue #550](https://github.com/corca-ai/charness/issues/550), [#599](https://github.com/corca-ai/charness/issues/599), and [#601](https://github.com/corca-ai/charness/issues/601) — hold bounded OPEN deferrals for absent resolver-family, reader-taxonomy, and CLI-harness premises; the execution ledger owns their revisit triggers.
 - [Issue #546](https://github.com/corca-ai/charness/issues/546), [#584](https://github.com/corca-ai/charness/issues/584), [#587](https://github.com/corca-ai/charness/issues/587), [#595](https://github.com/corca-ai/charness/issues/595), [#597](https://github.com/corca-ai/charness/issues/597), and [#605](https://github.com/corca-ai/charness/issues/605) — hold the remaining tracker-visible local-proof, split, or defer carriers recorded in the execution ledger.
@@ -51,8 +51,8 @@ occurred for this backlog goal.
 
 ## Next Session
 
-1. Restore the 11-file `origin/main` changed-line mutation coverage named by the [release-preflight retro](../charness-artifacts/retro/2026-08-13-release-preflight-retro.md), beginning with the new release claims-review modules; rerun the full locked closeout and its changed-line self-check.
-2. Only after the coverage refusal clears, restart the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): freeze the final candidate, run post-bump release quality and the mandated claims review, and do not push or release on a local green alone.
+1. Commit the fresh [release critique](../skills/public/release/references/critique-boundary.md), then restart the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): freeze the final candidate and let the helper run post-bump quality and fresh-checkout probes.
+2. At the helper's marked prepared-record stop, follow the [claims-review contract](../skills/public/release/references/critique-boundary.md) to obtain the mandated distinct JSON record and resume only with its exact binding. Do not push or release on a local green alone.
 3. Revisit [#528](https://github.com/corca-ai/charness/issues/528) only with its two owners: cmanki consumer declaration migration and the Charness quality-policy hook-discovery decision.
 4. Use the [release contract](../docs/conventions/operating-contract.md) — final push/release remains conditional on every cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 

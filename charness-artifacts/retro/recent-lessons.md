@@ -3,7 +3,7 @@
 ## Current Focus
 
 - The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout. (source: `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`)
-- This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`)
+- This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired. (source: `charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md`)
 
 ## Repeat Traps
 
@@ -40,5 +40,5 @@
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
+- `charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md`
 - `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`
-- `charness-artifacts/retro/2026-08-13-session-retro.md`

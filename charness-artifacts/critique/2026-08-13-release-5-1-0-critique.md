@@ -3,8 +3,9 @@ Date: 2026-08-13
 
 ## Decision Under Review
 
-Publish the committed `v5.0.1..ae47da3b` capability and truth-surface bundle as
-compatible minor release `v5.1.0`. The release contains no issue-close carrier:
+Publish the frozen `origin/main..0ac9260d51bd0890d1fec6fb3c5ca411698623da`
+capability and truth-surface bundle as compatible minor release `v5.1.0`. The
+release contains no issue-close carrier:
 the reconciled 22-issue opening cohort remains OPEN. The publish helper alone
 will bump, sync, run final release quality, create the tag/release, and record
 post-publication evidence.
@@ -41,6 +42,10 @@ post-publication evidence.
 - **Raskin / operator interface:** update instructions cannot imply a
   version-pinned rollback that `charness update` does not offer, and the cohort
   evidence link must be tag-pinned rather than mutable `main`.
+- **Weinberg / release-boundary diagnosis:** the prepared claims-review record
+  must bind an exact one-parent evidence handoff.  A descendant that merely
+  inherits the preparation marker must not be reclassified as a new prepared
+  record and unlock auth, tag, push, or release creation.
 
 ## Counterweight Pass
 
@@ -57,9 +62,10 @@ post-publication evidence.
 
 - F1 | bin: act-before-ship | evidence: strong | ref: `git status` and `skills/public/release/references/critique-boundary.md` | action: fix | note: commit each intended critique packet, this critique, and the curated notes before invoking the clean-worktree publish helper; no generated evidence may be accidentally omitted.
 - F2 | bin: act-before-ship | evidence: strong | ref: `.agents/release-adapter.yaml` `quality_command` | action: fix | note: let the release helper run `./scripts/run-quality.sh --release` only after the 5.1.0 bump and plugin-manifest sync.
-- F3 | bin: act-before-ship | evidence: strong | ref: `skills/public/release/references/publication-boundary.md` | action: fix | note: after push, observe direct-to-default CI independently before public publication, then record public visibility; same-host unauthenticated HTTP is supplemental, not machine-distinct proof.
+- F3 | bin: act-before-ship | evidence: strong | ref: `skills/public/release/references/publication-boundary.md` | action: fix | note: after publication, retain the helper's public-release observer and installed update/version/doctor readbacks as distinct recorded channels; do not claim hosted CI or machine-distinct observation when none ran.
 - F4 | bin: act-before-ship | evidence: strong | ref: `.agents/release-adapter.yaml` fresh-checkout and post-publish readbacks | action: fix | note: retain fresh-checkout and installed update/version/doctor results in the 5.1.0 release record; the 5.0.1 record is historical only.
 - F5 | bin: act-before-ship | evidence: strong | ref: `skills/public/release/references/critique-boundary.md` Claims Review | action: fix | note: run a separate closeout-claims review after the version and final release record exist, before publication.
+- F5a | bin: act-before-ship | evidence: strong | ref: `skills/public/release/scripts/publish_release_claims_review.py` | action: fix | note: retain the repaired exact-parent and first-marker-only classifier tests; a prepared record, its direct claims child, and the released tag must stay distinguishable before publication.
 - F6 | bin: bundle-anyway | evidence: strong | ref: `charness-artifacts/release/2026-08-13-v5.1.0-notes.md` | action: fix | note: notes now name the 22-issue opening cohort, pin the execution-ledger link to `v5.1.0`, and state that no issue closes.
 - F7 | bin: bundle-anyway | evidence: strong | ref: `charness-artifacts/release/2026-08-13-v5.1.0-notes.md` | action: fix | note: notes now remove the unsupported rollback direction and specify update, restart, doctor, and retry behavior.
 - F8 | bin: over-worry | evidence: moderate | ref: `.agents/release-adapter.yaml` real-host trigger paths | action: defer | note: no changed path triggers the external-tool real-host checklist; do not add a destructive host exercise to this release.
@@ -69,7 +75,7 @@ post-publication evidence.
 
 - Run the publish helper with this critique artifact and the curated notes only
   after its inputs are committed and the worktree is clean.
-- If final quality, fresh checkout, remote CI, public release observation, or
+- If final quality, fresh checkout, public release observation, or
   installed readback fails, stop publication/closeout at that boundary and
   preserve the OPEN carriers.
 
@@ -79,28 +85,30 @@ Run `charness update`, restart the active Codex or Claude Code host, and run
 `charness doctor` if update or startup remains unhealthy. There is no supported
 version-pinned rollback command in this release.
 
-## Fresh-Eye Satisfaction
-
-parent-delegated — Gawande operational and Minto communication passes plus an
-independent counterweight were received; the Raskin notes review was retried
-after the first boundary snapshot was absent and returned through the verified
-retry window.
-
 ## Reviewer Tier Evidence
 
 - Requested tier: high-leverage.
 - Requested spawn fields: `fork_turns=none`, `model=gpt-5.6-terra`, `reasoning_effort=medium`, `service_tier=priority`.
 - Host exposure state: requested_fields_sent
-- Application state: host confirmation unavailable; the spawn API accepted the requested fields but returned no applied-tier metadata.
+- Application state: host confirmation unavailable; requested reviewer fields were accepted but no applied-tier metadata was returned.
 - Delivery state: findings-received.
+
+## Fresh-Eye Satisfaction
+
+parent-delegated — Gawande and Minto angle reviews plus a separate counterweight
+read the candidate. Their two concrete blockers (prepared-marker merge topology
+and stale routing/unsupported CI sequencing) were repaired; the counterweight
+then required this refreshed packet identity. A final fresh reader verified the
+exact JSON/Markdown packet binding and found no remaining release blocker.
 
 ## Reviewed Input Identity
 
-- Packet consumed: `charness-artifacts/critique/2026-08-12-181550-packet.json`
-- Packet path: `charness-artifacts/critique/2026-08-12-181550-packet.json`
-- Packet SHA256: `884dc2a33edcdbe4fd80319b03f9f9d0a54a2952731561e4745fafd6320c4694`
-- Identity SHA256: `930572e8050ac582daac1d0ae40b8c2c55429e7d3395eb698728409ed5cb78a2`
-- Supplemental notes packet: `charness-artifacts/critique/2026-08-12-181857-packet.md`; its retry review found the now-repaired rollback and mutable-link claims. The final release claims review remains a separate, post-version boundary.
+- Packet consumed: `charness-artifacts/critique/release-5-1-0-final-packet.json`
+- Packet path: `charness-artifacts/critique/release-5-1-0-final-packet.json`
+- Packet SHA256: `a4dd837003b36bfd0f77661b3f130ac2ceae37cd4e8368e861f8f1a684ef3b54`
+- Identity SHA256: `343194daed30e5ce39845f564a55e0789211cb6f2aa0056939e225c0bb41d830`
+- Markdown render reviewed by bounded readers: `charness-artifacts/critique/release-5-1-0-final-packet.md` (SHA256 `948cf90da821b3971931d33b3c54e9e549108c0a8e5b77ba19249bdbc5518818`).
+- The final release claims review remains a separate, post-version boundary.
 
 ## Boundary Ownership
 

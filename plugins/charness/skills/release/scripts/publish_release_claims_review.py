@@ -22,7 +22,13 @@ def prepared_record(repo_root: Path, *, commit: str, run) -> dict[str, str] | No
     # is the commit that *introduced* it, not any later commit that happens to
     # retain the same file; otherwise an unreviewed P -> X -> R sequence can
     # reclassify X as the prepared record and shift the review boundary.
-    parent = run(["git", "show", f"{commit}^:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
+    # A merge can retain the marker from a non-first parent while appearing to
+    # introduce it against its first parent.  That is not the one-parent P
+    # boundary required by the claims-review topology.
+    parents = run(["git", "show", "-s", "--format=%P", commit], cwd=repo_root, check=False)
+    if parents.returncode != 0 or len(parents.stdout.split()) != 1:
+        return None
+    parent = run(["git", "show", f"{parents.stdout.split()[0]}:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
     if parent.returncode == 0 and MARKER in parent.stdout:
         return None
     return {"commit": commit, "path": RELEASE_RECORD_PATH, "sha256": blob_sha256(result.stdout)}
