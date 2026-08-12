@@ -13,7 +13,7 @@
   },
   "as_of_source_date": "2026-08-13",
   "source_artifact_count": 488,
-  "candidate_count": 1993,
+  "candidate_count": 1995,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1434,6 +1434,58 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:e13430490ca2",
+      "kind": "next_improvement",
+      "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation.",
+      "normalized_key": "governance treat graduation as a proposal only establish its evidence and displacement before any",
+      "recurrence_class": "graduation-is-proposal",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:9d8719cab2e0",
+      "kind": "next_improvement",
+      "lesson": "implement durable lesson-ledger state before selection or scoring; a session snapshot does not authorize either lifecycle step.",
+      "normalized_key": "implement durable lesson ledger state before selection or scoring a session snapshot does not",
+      "recurrence_class": "durable-lesson-ledger-first",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "implement durable lesson-ledger state before selection or scoring; a session snapshot does not authorize either lifecycle step."
         }
       ]
     },

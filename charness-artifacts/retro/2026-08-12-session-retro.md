@@ -102,6 +102,10 @@ issue closure.
 - memory: retain the five verified post-publication closeouts in the handoff;
   do not re-open consumer-runtime or provider claims that their local-only
   dispositions deliberately did not make.
+- governance: treat graduation as a proposal only; establish its evidence and
+  displacement before any contract-surface mutation. (recurrence-class: graduation-is-proposal)
+- workflow: implement durable lesson-ledger state before selection or scoring;
+  a session snapshot does not authorize either lifecycle step. (recurrence-class: durable-lesson-ledger-first)
 
 ## Persisted
 

@@ -299,6 +299,7 @@ QUALITY_PYTHON_STUBS = (
     ("validate-skill-ergonomics", "validate_skill_ergonomics.py"),
     ("validate-usage-episodes", "validate_usage_episodes.py"),
     ("report-usage-episodes", "report_usage_episodes.py"),
+    ("quality-tool-fixtures", "check_quality_tool_fixtures.py"),
     ("check-cli-skill-surface", "check_cli_skill_surface.py"),
     ("check-closeout-floor-matrix", "check_closeout_floor_matrix.py"),
     ("validate-surfaces", "validate_surfaces.py"),

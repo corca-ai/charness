@@ -1,11 +1,11 @@
 {
-  "artifacts": 138,
+  "artifacts": 139,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 138,
+    "not-claimed": 139,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
@@ -17,8 +17,8 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 394,
-    "median": 46,
+    "count": 400,
+    "median": 45,
     "min": 7
   },
   "rows": [
@@ -1561,6 +1561,15 @@
       "citations": {},
       "claims_pre_contract_exemption": false,
       "commit_state": "dated",
+      "declared_date": null,
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-13",
+      "path": "charness-artifacts/quality/2026-08-13-dup-ratchet-backlog-triage.md"
+    },
+    {
+      "citations": {},
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
       "declared_date": "2026-08-12",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-12",
@@ -1571,12 +1580,12 @@
     "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality; the artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "counterfactual_floor_20": "Re-runnable with --floor 20: 11 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-12",
+    "date": "2026-08-13",
     "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-    "repo_head_at_run": "2f28556a7ba1c9e6f273c8058535fb476d7fa4d9",
-    "synchronized_after": "Refreshed after the 2026-08-12 #593/#594/#603/#604 quality reviews added four top-level quality artifacts and advanced `quality/latest.md`: artifacts 134 -> 138, residual field mentions 206 -> 201, label values 386 -> 394, and the floor-20 citation counterfactual 12 -> 11; the label-value counterfactual remains 46.",
+    "repo_head_at_run": "7fcde72ac5f444021eb95470bf06070250727219",
+    "synchronized_after": "Refreshed after the 2026-08-13 duplicate-ratchet backlog triage added one top-level quality artifact: artifacts 138 -> 139 and label values 394 -> 400. The residual field mentions, floor, floor-20 citation counterfactual, and label-value counterfactual remain unchanged.",
     "synchronized_reason": "Refresh the pinned residual-floor measurement whenever the checked-in quality corpus changes. D47 value-marker evidence is now the immutable dated snapshot at charness-artifacts/probe/2026-08-12-inventory-marker-rule-snapshot.json, not a second live equality pin.",
     "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-    "worktree": "dirty: the 2026-08-12 issue quality reviews and synchronized residual-floor probe are present; the residual rule and floor are unchanged"
+    "worktree": "dirty: the 2026-08-13 release-preflight repairs and synchronized residual-floor probe are present; the residual rule and floor are unchanged"
   }
 }

@@ -235,13 +235,14 @@ def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) 
         if state["phase"] == "post-publication-claims-carrier"
         else state["tag_sha"] if state["phase"] == "post-publication-carrier" else state["parent_sha"]
     )
-    checks = {
-        "post-publication-carrier": (state["head_parent_is_tag"], "carrier HEAD is not directly based on its release tag."),
-        "post-publication-final": (state["head_grandparent_is_tag"], "final closeout HEAD is not based on its carrier and release tag."),
-        "post-publication-claims-carrier": (state["parent_sha"] == claims_evidence, "claims carrier is not directly based on its claims evidence."),
-        "post-publication-claims-final": (state["grandparent_sha"] == claims_evidence, "claims final HEAD is not based on its carrier and evidence."),
-    }
-    valid, message = checks[state["phase"]]
+    if state["phase"] == "post-publication-carrier":
+        valid, message = state["head_parent_is_tag"], "carrier HEAD is not directly based on its release tag."
+    elif state["phase"] == "post-publication-final":
+        valid, message = state["head_grandparent_is_tag"], "final closeout HEAD is not based on its carrier and release tag."
+    elif state["phase"] == "post-publication-claims-carrier":
+        valid, message = state["parent_sha"] == claims_evidence, "claims carrier is not directly based on its claims evidence."
+    else:
+        valid, message = state["grandparent_sha"] == claims_evidence, "claims final HEAD is not based on its carrier and evidence."
     if not valid:
         raise SystemExit(f"--resume: `{tag_name}` {message}")
     if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
