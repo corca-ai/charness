@@ -1550,11 +1550,11 @@
     {
       "artifact_path": "charness-artifacts/debug/2026-08-12-debug-review.md",
       "is_current_pointer": false,
-      "interrupt_id": "generated-artifact-provenance",
+      "interrupt_id": "retained-failure-log-attribution",
       "risk_classes": [
         "none"
       ],
-      "seam": "installed plugin helper to source-checkout generated artifact",
+      "seam": "final-lock receipt to per-check failure log",
       "generalization_pressure": "monitor",
       "critique_required": false,
       "next_step": "impl",
@@ -1648,11 +1648,11 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "generated-artifact-provenance",
+      "interrupt_id": "retained-failure-log-attribution",
       "risk_classes": [
         "none"
       ],
-      "seam": "installed plugin helper to source-checkout generated artifact",
+      "seam": "final-lock receipt to per-check failure log",
       "generalization_pressure": "monitor",
       "critique_required": false,
       "next_step": "impl",
