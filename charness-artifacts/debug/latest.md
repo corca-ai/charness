@@ -1,1 +1,1 @@
-2026-08-09-remote-ci-changed-line-reconciliation-debug.md
+2026-08-12-release-quality-record-contract-drift.md

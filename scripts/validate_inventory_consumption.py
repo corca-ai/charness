@@ -80,7 +80,7 @@ STUB_PHRASE_RE = re.compile(
 # Re-runnable with
 # `measure_inventory_consumption_floor.py --floor N`, recorded at
 # `charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json`: at floor 5
-# nothing is refused; at floor 20, 10 citations drop below their requirement and 46 label
+# nothing is refused; at floor 20, 12 citations drop below their requirement and 46 label
 # values fall under the floor. An earlier draft of this comment claimed floor 20 was also
 # free — the probe refutes it, which is this file's own class one level up.
 #

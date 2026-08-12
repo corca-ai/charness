@@ -2,26 +2,26 @@
   "_provenance": {
     "baseline_check": "Refreshed over the checked-in quality artifacts under charness-artifacts/quality; the artifact count and every residual figure live in this file's measured fields, which tests/quality_gates/test_a_declaration_is_not_its_own_corroboration.py pins against today's tree. Re-derive with: python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
     "command": "python3 scripts/measure_inventory_consumption_floor.py --repo-root . --json",
-    "counterfactual_floor_20": "Re-runnable with --floor 20: 10 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
-    "date": "2026-08-09",
+    "counterfactual_floor_20": "Re-runnable with --floor 20: 12 citations drop below their requirement and 46 label values fall under the floor. That is why the floor is 5, not a round number.",
+    "date": "2026-08-12",
     "does_not_license": "This probe measures the residual floor only. It does NOT measure the value-marker rule, which is a separate question (D47) with its own probe at charness-artifacts/probe/2026-08-01-inventory-marker-rule.json; read the marker counts there rather than from this file, which has carried a wrong copy of them since 2026-08-01. It measures this repo's corpus and licenses no claim about a consumer repo's.",
-    "repo_head_at_run": "276ffb1fefa81e5e88b816307a256a717f85c8a4",
-    "synchronized_after": "Refreshed the floor probe after the 2026-08-09 test-runtime waste slice added a quality artifact (132 -> 133) and advanced `quality/latest.md`; label values moved 378 -> 382 while the minimum and floor-20 counterfactual stayed unchanged.",
+    "repo_head_at_run": "516c90eed1b352933ef94e11b9d478dc88cf3044",
+    "synchronized_after": "Refreshed after the 2026-08-12 release-unblocking quality review added one quality artifact and advanced `quality/latest.md`: artifacts 133 -> 134, residual field mentions 196 -> 206, label values 382 -> 386, and the floor-20 citation counterfactual 10 -> 12; the label-value counterfactual remains 46.",
     "synchronized_reason": "Refresh the pinned measurement whenever the checked-in quality corpus changes; the floor remains measured rather than armed. Kept in lockstep with 2026-08-01-inventory-marker-rule.json, whose D47 denominator is this probe's `field_mention_residuals.count`.",
     "why": "The floor is measured rather than argued: it is set so that no checked-in citation drops below its requirement and no label value falls under it, which the measured `citations_lowered_below_requirement` and `label_value_residuals.below_floor` fields report directly. The headline corpus figures are the measured `artifacts` and `field_mention_residuals.count` in this file; they are deliberately NOT transcribed here, because earlier refresh prose went stale while the executable probe correctly followed the corpus.",
-    "worktree": "dirty: the test-runtime repair and new quality review are present; the residual rule and floor are unchanged"
+    "worktree": "dirty: the corrected 2026-08-12 quality review and synchronized probes are present; the residual rule and floor are unchanged"
   },
-  "artifacts": 133,
+  "artifacts": 134,
   "citations_lowered_below_requirement": [],
   "corpus": "charness-artifacts/quality",
   "exemption_counts": {
     "REFUSED-uncorroborated": 0,
     "corroborated": 0,
-    "not-claimed": 133,
+    "not-claimed": 134,
     "not-corroborated": 0
   },
   "field_mention_residuals": {
-    "count": 196,
+    "count": 206,
     "median": 30,
     "min": 0,
     "p5": 5
@@ -29,7 +29,7 @@
   "floor": 5,
   "label_value_residuals": {
     "below_floor": 0,
-    "count": 382,
+    "count": 386,
     "median": 45,
     "min": 7
   },
@@ -1511,19 +1511,42 @@
     {
       "citations": {},
       "claims_pre_contract_exemption": false,
-      "commit_state": "uncommitted",
+      "commit_state": "dated",
       "declared_date": "2026-08-09",
       "exemption": "not-claimed",
       "last_commit_date": "2026-08-09",
       "path": "charness-artifacts/quality/2026-08-09-test-runtime-waste-repair.md"
     },
     {
-      "citations": {},
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
       "claims_pre_contract_exemption": false,
       "commit_state": "dirty",
-      "declared_date": "2026-08-09",
+      "declared_date": "2026-08-12",
       "exemption": "not-claimed",
-      "last_commit_date": "2026-08-09",
+      "last_commit_date": "2026-08-12",
+      "path": "charness-artifacts/quality/2026-08-12-quality-review.md"
+    },
+    {
+      "citations": {
+        "inventory_skill_ergonomics.py": {
+          "engaged_presence_only": 5,
+          "engaged_with_a_value": 5,
+          "lost_to_the_floor": [],
+          "required": 2
+        }
+      },
+      "claims_pre_contract_exemption": false,
+      "commit_state": "dated",
+      "declared_date": "2026-08-12",
+      "exemption": "not-claimed",
+      "last_commit_date": "2026-08-12",
       "path": "charness-artifacts/quality/latest.md"
     }
   ]

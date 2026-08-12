@@ -40,7 +40,7 @@ repair.
 ## Runtime Signals
 
 - runtime source: structured local metrics in
-  `.charness/quality/runtime-signals.json`, rendered by
+  `.charness/quality/runtime-signals.json`, rendered by <!-- reproduction-source -->
   `render_runtime_summary.py`.
 - runtime hot spots: `run-quality-read-only` latest 91.2s / median 87.5s,
   budget 420.0s; `pytest` latest 72.5s / median 69.7s, budget 97.5s.
@@ -85,8 +85,10 @@ repair.
   checked the changed lesson wording against the retro source, and found no
   trigger, progressive-disclosure, or judgment-only skill change in this slice.
 - ergonomics inventory command: `inventory_skill_ergonomics.py --summary`
-  reports 16 heuristic-bearing skills, exclusively host-surface-reference hits;
-  it requires a later dedicated prose review, not a release-blocking claim here.
+  reports `scope_status=clean`, `checked_skill_count=22`,
+  `heuristic_finding_count=16`, and `host_surface_reference_count=91`;
+  `prose_review_status=required` correctly defers a dedicated skill-prose review
+  rather than turning this source/index review into that claim.
 
 ## Delegated Review
 
