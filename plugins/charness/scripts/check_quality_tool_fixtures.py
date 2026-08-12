@@ -41,6 +41,7 @@ from pathlib import Path
 FIXTURE_DIR = Path("charness-artifacts/quality/fixtures")
 SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 STREAMS = ("stdout", "stderr")
+REQUIRED_RECORD_FIELDS = ("tool", "version", "command", "exit_code", "final_consumer", "non_claim")
 
 
 def _contained(repo_root: Path, stream_rel: object) -> Path | None:
@@ -57,6 +58,21 @@ def _contained(repo_root: Path, stream_rel: object) -> Path | None:
     return candidate if candidate == root or root in candidate.parents else None
 
 
+def _record_problems(payload: dict[str, object], rel: str) -> list[str]:
+    problems: list[str] = []
+    for field in REQUIRED_RECORD_FIELDS:
+        value = payload.get(field)
+        if field == "exit_code":
+            valid = isinstance(value, int) and not isinstance(value, bool)
+        elif field == "final_consumer":
+            valid = value is None or (isinstance(value, str) and bool(value.strip()))
+        else:
+            valid = isinstance(value, str) and bool(value.strip())
+        if not valid:
+            problems.append(f"{rel}: required observation field {field!r} is missing or invalid")
+    return problems
+
+
 def _problems(repo_root: Path, fixture: Path) -> list[str]:
     found: list[str] = []
     rel = fixture.relative_to(repo_root).as_posix()
@@ -66,6 +82,7 @@ def _problems(repo_root: Path, fixture: Path) -> list[str]:
         return [f"{rel}: unreadable fixture JSON: {exc}"]
     if not isinstance(payload, dict):
         return [f"{rel}: expected a JSON object"]
+    found.extend(_record_problems(payload, rel))
 
     for stream in STREAMS:
         digest_key = f"{stream}_sha256"
@@ -111,8 +128,12 @@ def main(argv: list[str] | None = None) -> int:
 
     fixtures = sorted((repo_root / FIXTURE_DIR).rglob("*.json"))
     if not fixtures:
-        print(f"No fixtures under {FIXTURE_DIR}; nothing to verify.")
-        return 0
+        print(
+            f"FAIL check_quality_tool_fixtures: no fixtures under {FIXTURE_DIR}; "
+            "the checked-in evidence contract would otherwise be unproven.",
+            file=sys.stderr,
+        )
+        return 1
 
     problems = [problem for fixture in fixtures for problem in _problems(repo_root, fixture)]
     for problem in problems:

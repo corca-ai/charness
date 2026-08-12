@@ -722,6 +722,7 @@ queue_selected "validate-quality-reference-catalog" python3 scripts/validate_qua
 queue_selected "validate-skill-ergonomics" python3 scripts/validate_skill_ergonomics.py --repo-root "$REPO_ROOT"
 queue_selected "validate-usage-episodes" python3 scripts/validate_usage_episodes.py --repo-root "$REPO_ROOT"
 queue_selected "report-usage-episodes" python3 scripts/report_usage_episodes.py --repo-root "$REPO_ROOT"
+queue_selected "quality-tool-fixtures" python3 scripts/check_quality_tool_fixtures.py --repo-root "$REPO_ROOT"
 # Dead-code advisory (vulture-backed): DEFAULT-OFF opt-in. Two full vulture passes
 # are slow and the findings need per-item triage, so it never runs in the default
 # battery and never blocks (advisory only — the script always exits 0 and surfaces an

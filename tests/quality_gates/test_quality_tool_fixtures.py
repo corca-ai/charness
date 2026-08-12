@@ -24,6 +24,14 @@ from .support import ROOT
 
 SCRIPT = ROOT / "scripts" / "check_quality_tool_fixtures.py"
 EMPTY_SHA256 = hashlib.sha256(b"").hexdigest()
+RECORD = {
+    "tool": "awiki",
+    "version": "0.5.0",
+    "command": "awiki lint -root docs -recursive",
+    "exit_code": 1,
+    "final_consumer": "test fixture",
+    "non_claim": "fixture-only observation",
+}
 
 
 def _run(repo_root: Path) -> subprocess.CompletedProcess[str]:
@@ -40,7 +48,7 @@ def _fixture_dir(tmp_path: Path) -> Path:
 
 
 def _write(directory: Path, name: str, payload: dict[str, object]) -> None:
-    (directory / name).write_text(json.dumps(payload), encoding="utf-8")
+    (directory / name).write_text(json.dumps({**RECORD, **payload}), encoding="utf-8")
 
 
 def test_the_checked_in_corpus_passes() -> None:
@@ -49,22 +57,19 @@ def test_the_checked_in_corpus_passes() -> None:
     assert "Verified" in result.stdout
 
 
-def test_a_missing_fixture_directory_is_not_a_silent_pass() -> None:
-    """Exit 0 is right here -- there is nothing to verify -- but it must SAY so, or a
-    mis-rooted invocation reads exactly like a clean corpus."""
+def test_a_missing_fixture_directory_is_refused() -> None:
+    """The repo relies on captured fixtures, so their absence is not a clean corpus."""
     result = _run(Path(__file__).resolve().parent)
-    assert result.returncode == 0
-    assert "nothing to verify" in result.stdout
+    assert result.returncode == 1
+    assert "no fixtures" in result.stderr
 
 
-def test_an_existing_but_empty_fixture_directory_is_not_a_silent_pass(tmp_path: Path) -> None:
-    """Distinct from the missing-directory case, which shares a branch today only by
-    accident: any future existence check on the fixture dir would split them, and a single
-    test would silently keep covering one side."""
+def test_an_existing_but_empty_fixture_directory_is_refused(tmp_path: Path) -> None:
+    """A directory without a fixture is the same unproven evidence contract."""
     _fixture_dir(tmp_path)
     result = _run(tmp_path)
-    assert result.returncode == 0
-    assert "nothing to verify" in result.stdout
+    assert result.returncode == 1
+    assert "no fixtures" in result.stderr
 
 
 @pytest.mark.parametrize("stream", ["stdout", "stderr"])
@@ -218,5 +223,34 @@ def test_a_fixture_with_no_digests_is_not_invented_into_a_failure(tmp_path: Path
     """Not every recorded observation captures a stream. Refusing one would add teeth
     where nothing can escape."""
     directory = _fixture_dir(tmp_path)
-    _write(directory, "f.json", {"tool": "awiki", "exit_code": 1})
+    _write(directory, "f.json", {})
     assert _run(tmp_path).returncode == 0
+
+
+def test_a_fixture_without_a_final_consumer_can_still_be_recorded_evidence(tmp_path: Path) -> None:
+    directory = _fixture_dir(tmp_path)
+    _write(directory, "f.json", {"final_consumer": None})
+    assert _run(tmp_path).returncode == 0
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("tool", ""),
+        ("version", None),
+        ("command", 7),
+        ("exit_code", True),
+        ("final_consumer", ""),
+        ("non_claim", ""),
+    ],
+)
+def test_a_fixture_without_required_observation_provenance_is_refused(
+    tmp_path: Path, field: str, value: object
+) -> None:
+    directory = _fixture_dir(tmp_path)
+    _write(directory, "f.json", {field: value})
+
+    result = _run(tmp_path)
+
+    assert result.returncode == 1
+    assert f"required observation field {field!r}" in result.stderr
