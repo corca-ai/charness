@@ -242,7 +242,13 @@ def execute_publish_plan(
 ) -> None:
     state = _create_release_commit(args, repo_root, plan, adapter_data, cli=cli)
     payload = state["payload"]
+    host_payload = state["host_payload"]
     payload["release_stage"] = "prepared-awaiting-claims-review"
     payload["prepared_release_commit"] = cli.run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+    # A prepared release deliberately stops before publication, but its caller still
+    # needs the release-time host-proof obligation that the committed record carries.
+    # Do not make an execute-stage payload look like the adapter had no host gate.
+    payload["real_host_required"] = host_payload["required"]
+    payload["real_host_checklist"] = host_payload["checklist"]
     payload["next_action"] = "commit a bound claims-review artifact, then resume publication"
     print(json.dumps(payload, ensure_ascii=False, indent=2))
