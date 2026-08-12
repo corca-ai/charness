@@ -9,13 +9,15 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: consumer-ergonomics completion — #539, #542, #588, and #602
-  now have local-proof carriers; #528 remains a separately owned OPEN split.
-- Current slice intent: re-read #599's consumer-discovery premise and decide a
-  bounded command versus removal-proposal discipline without laundering local
-  proof, split disposition, or remaining consumer work into closure.
-- Next action: map #599's current consumers, reader classes, and existing
-  removal-proposal validators before choosing its owning implementation slice.
+- Current slice: cohort reconciliation preparation — #539, #542, #588, #602,
+  and #607 now have local-proof carriers; #550, #599, and #601 have bounded
+  OPEN deferrals; #528 remains a separately owned OPEN split.
+- Current slice intent: obtain the operator decision required to classify #527
+  without converting the user-facing skill-documentation and invocation-mode
+  choice into an unreviewed implementation assumption.
+- Next action: discuss #527's minimum viable public-skill surface with the
+  operator, or explicitly defer it in its tracker before the cohort can enter
+  final reconciliation.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -128,7 +130,7 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | in-progress |
 | 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | completed |
 | 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | in-progress |
-| 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | planned |
+| 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | completed (`1570ba32`; local proof carrier OPEN) |
 | 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | planned |
 | 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | planned |
 
@@ -137,7 +139,7 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - Counted: 22 open issues on 2026-08-12 via `gh issue list --repo corca-ai/charness --state open --limit 100`.
 - Claims: #527, #528, #539, #542, #546, #550, #582, #583, #584, #586, #587, #588, #589, #590, #595, #597, #599, #601, #602, #605, #606, and #607.
 - Not claimed: none; #587 and #605 begin as evidence/disposition work because their existing framing is explicitly refuted or unproven.
-- Premise status: all 22 are currently `unverifiable-by-machine`; the inventory is scope, not a proof that each complaint remains true. Slice selection must re-read the issue and establish a falsifiable local premise.
+- Premise status at opening inventory: all 22 were `unverifiable-by-machine`; the inventory is scope, not a proof that each complaint remains true. Later local proof and tracker-visible dispositions are recorded in the execution ledger; every newly selected row still requires a current issue re-read and falsifiable local premise.
 - Cohort rule: a new or newly discovered related issue is linked as an off-goal
   dependency unless this goal is explicitly amended. It cannot silently become a
   completion requirement, but it blocks the affected row or umbrella when needed.
