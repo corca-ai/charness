@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import ast
 import importlib.util
 import json
 from pathlib import Path
@@ -97,3 +98,37 @@ def test_standing_test_economics_hides_settlement_callsite_list_in_summary(tmp_p
     }
     assert "seams" not in summary_payload["subprocess_settlement"]
     assert detail_payload["subprocess_settlement"]["seams"][0]["path"] == "tests/test_settlement.py"
+
+
+def test_subprocess_settlement_marks_unknown_syntax_and_unreadable_inputs_conservatively(
+    tmp_path: Path, monkeypatch
+) -> None:
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    tests = repo / "tests"
+    tests.mkdir()
+    malformed = tests / "broken.py"
+    malformed.write_text("def broken(:\n", encoding="utf-8")
+    system = tests / "system.py"
+    system.write_text("import os\nos.system('probe')\n", encoding="utf-8")
+    js = tests / "stream.js"
+    js.write_text("execSync('probe', { stdio: 'pipe' });\n", encoding="utf-8")
+
+    assert lib._literal_truth(ast.parse("value").body[0].value) is None
+    assert lib._literal_deadline_state(ast.parse("timeout=dynamic").body[0].value) == "unknown"
+    assert lib.subprocess_settlement_seams(repo, [malformed, system, js]) == [
+        {"path": "tests/stream.js", "line": 1, "call": "execSync", "deadline": "absent", "lifecycle": "unknown", "process_tree_termination": "unknown", "output_bounding": "unbounded"},
+    ]
+
+    unreadable = tests / "unreadable.py"
+    unreadable.write_text("import subprocess\n", encoding="utf-8")
+    original_read_text = Path.read_text
+
+    def fail_only_target(path: Path, *args, **kwargs):
+        if path == unreadable:
+            raise UnicodeDecodeError("utf-8", b"x", 0, 1, "forced")
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", fail_only_target)
+    assert lib.subprocess_settlement_seams(repo, [unreadable]) == []

@@ -57,6 +57,9 @@ def _optional_git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
 
 
 def _is_claims_evidence_commit(cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str) -> bool:
+    parents = _optional_git_out(cli, repo_root, ["show", "-s", "--format=%P", evidence_commit]).split()
+    if parents != [prepared_commit]:
+        return False
     changed = cli.run(
         ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared_commit, evidence_commit],
         cwd=repo_root,
@@ -69,7 +72,7 @@ def _claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) -
     # inspect all reachable parent relationships so a remote-only R is found.
     for line in _git_out(cli, repo_root, ["rev-list", "--all", "--parents"]).splitlines():
         parts = line.split()
-        if len(parts) < 2 or prepared_commit not in parts[1:]:
+        if len(parts) != 2 or parts[1] != prepared_commit:
             continue
         candidate = parts[0]
         if _is_claims_evidence_commit(

@@ -39,3 +39,9 @@ def test_quality_required_read_measurement_is_source_plugin_parity_and_never_zer
     monkeypatch.setattr(source, "SKILL_ROOT", isolated_skill_root)
     failed = source._measure_required_read({"path": "loop", "why": "test", "role": "required-primer"})
     assert failed["unavailable_reason"] == "stat-failed"
+
+    directory = isolated_skill_root / "directory"
+    directory.mkdir()
+    assert source._measure_required_read({"path": "directory", "why": "test"})["unavailable_reason"] == "not-a-file"
+    assert source._measure_required_read({"path": "../outside.md", "why": "test"})["unavailable_reason"] == "outside-declared-base"
+    assert source._measure_required_read({"path": None, "why": "test"})["unavailable_reason"] == "unknown-base"

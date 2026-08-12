@@ -115,6 +115,30 @@ def test_validate_presets_accepts_nested_reconciliation_contract(tmp_path: Path)
     VALIDATE_PRESETS.validate_preset(preset)
 
 
+def test_validate_presets_refuses_invalid_reconciliation_frontmatter(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    preset = tmp_path / "invalid.md"
+    preset.write_text("---\nname: invalid\n---\n# invalid\n", encoding="utf-8")
+    from scripts import adapter_lib
+
+    def invalid_yaml(_text: str) -> object:
+        raise ValueError("bad YAML")
+
+    monkeypatch.setattr(adapter_lib, "load_yaml", invalid_yaml)
+    with pytest.raises(VALIDATE_PRESETS.ValidationError, match="invalid YAML frontmatter"):
+        VALIDATE_PRESETS.parse_frontmatter_data(preset)
+
+    monkeypatch.setattr(adapter_lib, "load_yaml", lambda _text: [])
+    with pytest.raises(VALIDATE_PRESETS.ValidationError, match="frontmatter must be a mapping"):
+        VALIDATE_PRESETS.parse_frontmatter_data(preset)
+
+    with pytest.raises(VALIDATE_PRESETS.ValidationError, match="non-empty string list"):
+        VALIDATE_PRESETS.validate_reconciliation_frontmatter(
+            {"reconciliation": {"required_adapter_commands": []}}
+        )
+
+
 def test_validate_presets_ignores_gitignored_files(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     presets_dir = repo / "presets"

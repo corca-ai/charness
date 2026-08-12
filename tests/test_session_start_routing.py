@@ -292,3 +292,35 @@ def test_read_payload_reports_oserror_in_debug_mode(monkeypatch, capsys) -> None
 
 def test_read_payload_empty_input_returns_empty_mapping() -> None:
     assert hook._read_payload(io.StringIO("  \n")) == {}
+
+
+def test_repo_root_discovery_and_configured_state_fail_closed_at_each_boundary(
+    monkeypatch, tmp_path: Path
+) -> None:
+    missing = tmp_path / "missing"
+    assert hook._discover_repo_root(str(missing)) is None
+
+    git_only = tmp_path / "git-only"
+    (git_only / ".git").mkdir(parents=True)
+    nested = git_only / "nested"
+    nested.mkdir()
+    assert hook._discover_repo_root(str(nested)) == git_only
+
+    configured = tmp_path / "configured"
+    configured.mkdir()
+    repo = _configured_handoff_repo(configured)
+    monkeypatch.setattr(hook, "_handoff_resolver", lambda: Path("resolver.py"))
+    assert hook._configured_handoff_state("") is None
+    assert hook._configured_handoff_state(str(missing)) is None
+
+    def resolved_payload(*_args, **_kwargs):
+        return subprocess.CompletedProcess([], 0, stdout=json.dumps({"artifact_path": "/tmp/absolute"}))
+
+    monkeypatch.setattr(hook.subprocess, "run", resolved_payload)
+    assert hook._configured_handoff_state(str(repo)) is None
+
+    def escaped_payload(*_args, **_kwargs):
+        return subprocess.CompletedProcess([], 0, stdout=json.dumps({"artifact_path": "../outside.md"}))
+
+    monkeypatch.setattr(hook.subprocess, "run", escaped_payload)
+    assert hook._configured_handoff_state(str(repo)) is None

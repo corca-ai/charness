@@ -413,6 +413,8 @@ def test_handoff_read_measurement_distinguishes_repo_skill_missing_and_escaped_p
     assert missing["unavailable_reason"] == "missing"
     assert escaped["unavailable_reason"] == "outside-declared-base"
     assert loop["unavailable_reason"] == "stat-failed"
+    assert module._measure_required_read(repo, {"path": "docs", "why": "x", "base": "repo"})["unavailable_reason"] == "not-a-file"
+    assert module._measure_required_read(repo, {"path": "docs/handoff.md", "why": "x", "base": "unknown"})["unavailable_reason"] == "unknown-base"
 
 
 def test_handoff_required_read_measurement_is_source_plugin_parity_for_mixed_bases(tmp_path: Path) -> None:

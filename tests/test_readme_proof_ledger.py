@@ -57,3 +57,12 @@ def test_ledger_ignores_readme_shaped_rows_outside_the_claim_ledger() -> None:
     rows = validate_ledger_rows(text, source_path=SOURCE, repo_root=ROOT)
     assert [row_id for row_id, _ in rows] == ["README-EXAMPLE"]
     assert [cells[0] for cells in claim_ledger_rows(text)] == ["README-EXAMPLE"]
+
+
+def test_ledger_refuses_an_escaped_target_a_malformed_row_and_an_empty_ledger() -> None:
+    with pytest.raises(LedgerEvidenceError, match="escapes the repository"):
+        validate_ledger_rows(_ledger("[outside](../../outside.md)"), source_path=SOURCE, repo_root=ROOT)
+    with pytest.raises(LedgerEvidenceError, match="Expected eight ledger cells"):
+        claim_ledger_rows("## Claim Ledger\n| README-BAD | only | three | cells |")
+    with pytest.raises(LedgerEvidenceError, match="Expected one or more"):
+        claim_ledger_rows("## Claim Ledger\n\n## Next")

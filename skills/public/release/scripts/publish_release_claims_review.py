@@ -18,6 +18,13 @@ def prepared_record(repo_root: Path, *, commit: str, run) -> dict[str, str] | No
     result = run(["git", "show", f"{commit}:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
     if result.returncode != 0 or MARKER not in result.stdout:
         return None
+    # The marker is intentionally inherited by descendants.  A prepared record
+    # is the commit that *introduced* it, not any later commit that happens to
+    # retain the same file; otherwise an unreviewed P -> X -> R sequence can
+    # reclassify X as the prepared record and shift the review boundary.
+    parent = run(["git", "show", f"{commit}^:{RELEASE_RECORD_PATH}"], cwd=repo_root, check=False)
+    if parent.returncode == 0 and MARKER in parent.stdout:
+        return None
     return {"commit": commit, "path": RELEASE_RECORD_PATH, "sha256": blob_sha256(result.stdout)}
 
 
@@ -31,6 +38,9 @@ def validate_claims_review(repo_root: Path, *, prepared: dict[str, str], evidenc
     normalized = path.as_posix()
     if not normalized.startswith("charness-artifacts/release-review/") or not normalized.endswith(".json"):
         raise SystemExit("--claims-review-artifact must be a JSON record under charness-artifacts/release-review/")
+    parents = run(["git", "show", "-s", "--format=%P", evidence_commit], cwd=repo_root, check=False)
+    if parents.returncode != 0 or parents.stdout.split() != [prepared["commit"]]:
+        raise SystemExit("--resume: claims-review evidence must be the direct child of the prepared release record")
     changed = [line for line in run(["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared["commit"], evidence_commit], cwd=repo_root).stdout.splitlines() if line]
     if changed != [normalized]:
         raise SystemExit(f"--resume: claims-review evidence commit must change only the supplied artifact; observed {changed!r}")

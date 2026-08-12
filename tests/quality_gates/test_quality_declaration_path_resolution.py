@@ -194,6 +194,54 @@ def test_declaration_lifecycle_refuses_when_adjacent_catalog_is_not_loadable(
         LIFECYCLE._load_catalog_applicability()
 
 
+def test_declaration_lifecycle_refuses_when_adjacent_preset_helper_is_not_loadable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        LIFECYCLE.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None
+    )
+
+    with pytest.raises(ImportError, match="quality_preset_reconciliation.py not loadable beside"):
+        LIFECYCLE._load_preset_reconciliation()
+
+
+def test_preset_reconciliation_reports_unavailable_contract_shapes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    repo = tmp_path / "app"
+    presets = repo / "presets"
+    presets.mkdir(parents=True)
+    strict = presets / "strict.md"
+    strict.write_text("fixture", encoding="utf-8")
+    validator = SimpleNamespace(
+        re=__import__("re"), PRESET_NAME_RE=r"[a-z]+",
+        ValidationError=ValueError,
+        validate_preset=lambda _path: {"reconciliation": "wrong-shape"},
+    )
+    modules = {
+        "scripts.validate_presets": validator,
+        "scripts.quality_bootstrap_detect": SimpleNamespace(detect_preset_lineage=lambda _repo: ["strict"]),
+    }
+    monkeypatch.setattr(LIFECYCLE, "_repo_module", modules.__getitem__)
+
+    contract = LIFECYCLE._preset_contract(repo, "strict")
+    assert contract == {"state": "unavailable", "reason": "reconciliation must be a mapping"}
+
+    validator.validate_preset = lambda _path: {"reconciliation": {"required_adapter_commands": []}}
+    contract = LIFECYCLE._preset_contract(repo, "strict")
+    assert contract["state"] == "unavailable"
+    assert "non-empty string list" in contract["reason"]
+
+    monkeypatch.setattr(
+        LIFECYCLE._PRESET_RECONCILIATION,
+        "preset_contract",
+        lambda *_args: {"state": "unavailable", "reason": "forced unavailable"},
+    )
+    rows, gaps = LIFECYCLE._preset_rows(repo, {"preset_lineage": ["strict"]})
+    assert rows[0]["reconciliation_state"] == "unavailable"
+    assert gaps == [{"kind": "preset_reconciliation_unavailable", "detail": "strict: forced unavailable"}]
+
+
 def test_declaration_helpers_skip_non_values_without_creating_routes(
     tmp_path: Path,
 ) -> None:

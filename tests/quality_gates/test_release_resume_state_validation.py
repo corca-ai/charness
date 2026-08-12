@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -121,3 +122,15 @@ def test_assert_resumable_rejects_ambiguous_published_state(
 
     with pytest.raises(SystemExit, match=message):
         RESUME.assert_resumable(state, tag_name="v1.2.3")
+
+
+def test_claims_evidence_classifier_rejects_a_non_direct_descendant() -> None:
+    class Cli:
+        def run(self, command: list[str], *, cwd: Path, check: bool = True):
+            if command == ["git", "show", "-s", "--format=%P", "evidence-sha"]:
+                return SimpleNamespace(returncode=0, stdout="prepared-sha intermediary-sha\n")
+            raise AssertionError(f"unexpected command: {command}")
+
+    assert not RESUME._is_claims_evidence_commit(
+        Cli(), Path("."), prepared_commit="prepared-sha", evidence_commit="evidence-sha"
+    )

@@ -17,6 +17,9 @@ from .release_publish_fixtures import (
     _seed_publish_release_repo,
     _write_exec,
 )
+from .release_script_loading import load_release_script
+
+CLAIMS_REVIEW = load_release_script("publish_release_claims_review", suffix="direct_parent")
 
 
 @pytest.mark.release_only

@@ -566,6 +566,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                     "measurement_state": "unavailable",
                     "unavailable_reason": "missing",
                 },
+                {"path": "references/legacy.md", "why": "show a legacy measurement"},
             ],
             "phase_barriers": ["Trust deterministic gates; inspect advisory gates."],
             "structural_review_packet": {
@@ -610,6 +611,7 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
             ],
         }
     )
+    assert "references/legacy.md: show a legacy measurement [unmeasured]" in text
     assert "[42 bytes]" in text
     assert "[unavailable (missing)]" in text
 

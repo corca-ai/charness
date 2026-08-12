@@ -71,6 +71,24 @@ def test_public_skill_dogfood_wrappers_report_missing_policy_without_a_traceback
         assert payload["applicability"] == "not-applicable-missing-public-skill-validation-policy"
         assert payload["matrix"] == []
 
+    root_json = run_script(commands[0], "--repo-root", str(consumer), "--json")
+    assert root_json.returncode == 0, root_json.stderr
+    assert json.loads(root_json.stdout)["applicability"] == "not-applicable-missing-public-skill-validation-policy"
+
+    human = run_script(commands[1], "--repo-root", str(consumer))
+    assert human.returncode == 0, human.stderr
+    assert "not-applicable-missing-public-skill-validation-policy" in human.stdout
+
+
+def test_build_matrix_reports_missing_policy_directly(tmp_path: Path) -> None:
+    consumer = tmp_path / "consumer"
+    consumer.mkdir()
+
+    payload = build_matrix(consumer, ["quality"])
+
+    assert payload["applicability"] == "not-applicable-missing-public-skill-validation-policy"
+    assert payload["matrix"] == []
+
 
 def test_dogfood_markdown_required_list_mirrors_json() -> None:
     # The md "Current Required Reviewed Skills" list has drifted from the json
