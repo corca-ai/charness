@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -21,6 +23,7 @@ def _load(name: str, path: Path):
 
 INVENTORY = _load("inventory_boundary_bypass_lib", ROOT / "scripts" / "inventory_boundary_bypass_lib.py")
 RATCHET = _load("boundary_bypass_ratchet_lib", ROOT / "scripts" / "boundary_bypass_ratchet_lib.py")
+CHECK_RATCHET = ROOT / "scripts" / "check_boundary_bypass_ratchet.py"
 
 IMPORT_SAFE = "\n".join(
     [
@@ -52,6 +55,16 @@ def _repo_with_candidate(tmp_path: Path) -> Path:
             ),
         )
         .build(tmp_path)
+    )
+
+
+def _run_ratchet(*args: str) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [sys.executable, str(CHECK_RATCHET), *args],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
     )
 
 
@@ -207,6 +220,111 @@ def test_a_consistent_baseline_still_loads(tmp_path: Path) -> None:
     path = _written_baseline(tmp_path, lambda baseline: None)
     baseline = RATCHET.load_baseline(path)
     assert baseline["summary"]["candidate_key_count"] == len(baseline["candidate_keys"])
+
+
+@pytest.mark.parametrize("field", RATCHET.COUNT_FIELDS)
+def test_writer_integrity_refuses_every_hand_edited_enforced_count(tmp_path: Path, field: str) -> None:
+    path = _written_baseline(
+        tmp_path,
+        lambda baseline: baseline["summary"].__setitem__(field, baseline["summary"][field] + 1),
+    )
+
+    with pytest.raises(RATCHET.RatchetError, match="writer_integrity_sha256"):
+        RATCHET.load_baseline(path)
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda baseline: baseline["candidate_keys"].__setitem__(0, "0" * 16),
+        lambda baseline: baseline.__setitem__("inventory_schemaVersion", "different.inventory.v2"),
+    ],
+)
+def test_writer_integrity_refuses_other_persisted_verdict_inputs(tmp_path: Path, mutate) -> None:
+    with pytest.raises(RATCHET.RatchetError, match="writer_integrity_sha256"):
+        RATCHET.load_baseline(_written_baseline(tmp_path, mutate))
+
+
+def test_writer_requires_confirmation_before_replacing_an_existing_baseline(tmp_path: Path) -> None:
+    repo = _repo_with_candidate(tmp_path / "repo")
+    baseline_path = tmp_path / "baseline.json"
+    common_args = ("--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json")
+
+    created = _run_ratchet(*common_args)
+    assert created.returncode == 0
+    assert json.loads(created.stdout)["status"] == "baseline-written"
+
+    baseline_path.write_text("{}\n", encoding="utf-8")
+    refused = _run_ratchet(*common_args)
+    assert refused.returncode == 1
+    refusal = json.loads(refused.stdout)
+    assert "--confirm-baseline-delta" in refusal["error"]
+    expected_payload = INVENTORY.find_boundary_bypass_candidates(repo)
+    assert refusal["baseline_delta"] == {
+        "previous_metadata": {
+            "schemaVersion": None,
+            "policy": None,
+            "inventory_schemaVersion": None,
+            "call_site_fingerprint_algo_version": None,
+        },
+        "proposed_metadata": {
+            "schemaVersion": RATCHET.RATCHET_SCHEMA_VERSION,
+            "policy": "no_increase",
+            "inventory_schemaVersion": expected_payload["schemaVersion"],
+            "call_site_fingerprint_algo_version": expected_payload["call_site_fingerprint_algo_version"],
+        },
+        "previous_summary": None,
+        "proposed_summary": RATCHET.build_baseline(expected_payload)["summary"],
+        "added_candidate_keys": RATCHET.candidate_keys(expected_payload),
+        "removed_candidate_keys": [],
+    }
+    assert json.loads(baseline_path.read_text(encoding="utf-8")) == {}
+
+    replaced = _run_ratchet(*common_args, "--confirm-baseline-delta")
+    assert replaced.returncode == 0
+    assert json.loads(replaced.stdout)["changed"] is True
+    assert RATCHET.load_baseline(baseline_path)[RATCHET.INTEGRITY_FIELD]
+
+
+def test_writer_refuses_malformed_existing_baseline_without_a_traceback(tmp_path: Path) -> None:
+    repo = _repo_with_candidate(tmp_path / "repo")
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text("{not-json", encoding="utf-8")
+
+    result = _run_ratchet(
+        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json"
+    )
+
+    assert result.returncode == 1
+    assert "invalid JSON" in json.loads(result.stdout)["error"]
+    assert "Traceback" not in result.stderr
+
+
+def test_writer_refuses_an_existing_directory_baseline_without_a_traceback(tmp_path: Path) -> None:
+    repo = _repo_with_candidate(tmp_path / "repo")
+    baseline_path = tmp_path / "baseline-directory"
+    baseline_path.mkdir()
+
+    result = _run_ratchet(
+        "--repo-root", str(repo), "--baseline", str(baseline_path), "--write-baseline", "--json"
+    )
+
+    assert result.returncode == 1
+    assert "baseline path must be a regular file" in json.loads(result.stdout)["error"]
+    assert "Traceback" not in result.stderr
+
+
+@pytest.mark.parametrize("contents", ["[]", "null", '"not an object"'])
+def test_evaluation_refuses_non_object_baseline_without_a_traceback(tmp_path: Path, contents: str) -> None:
+    repo = _repo_with_candidate(tmp_path / "repo")
+    baseline_path = tmp_path / "baseline.json"
+    baseline_path.write_text(contents, encoding="utf-8")
+
+    result = _run_ratchet("--repo-root", str(repo), "--baseline", str(baseline_path), "--json")
+
+    assert result.returncode == 1
+    assert "baseline must be a JSON object" in json.loads(result.stdout)["error"]
+    assert "Traceback" not in result.stderr
 
 
 def test_baseline_requires_advisory_candidate_pairs(tmp_path: Path) -> None:

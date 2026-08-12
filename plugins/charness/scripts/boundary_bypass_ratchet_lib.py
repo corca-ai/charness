@@ -18,6 +18,7 @@ COUNT_FIELDS = (
     "internal_boundary_count",
     "keep_boundary_count",
 )
+INTEGRITY_FIELD = "writer_integrity_sha256"
 # `candidate_key_count` is deliberately NOT enforced here, and the reason is a proof, not a
 # preference. `filtered_summary` derives it by filtering exemptions out of exactly what
 # `candidate_keys` returns and `build_baseline` writes. So `current > baseline` on that field means
@@ -145,7 +146,7 @@ def filtered_summary(payload: dict[str, Any], exemptions: dict[str, str]) -> dic
 def build_baseline(payload: dict[str, Any], exemptions: dict[str, str] | None = None) -> dict[str, Any]:
     exemptions = exemptions or {}
     keys = [key for key in candidate_keys(payload) if key not in exemptions]
-    return {
+    baseline = {
         "schemaVersion": RATCHET_SCHEMA_VERSION,
         "policy": "no_increase",
         "inventory_schemaVersion": payload.get("schemaVersion"),
@@ -157,6 +158,31 @@ def build_baseline(payload: dict[str, Any], exemptions: dict[str, str] | None = 
             for _, test_file, targets, _ in _rows_with_targets(payload)
         ],
     }
+    baseline[INTEGRITY_FIELD] = baseline_integrity(baseline)
+    return baseline
+
+
+def baseline_integrity(baseline: dict[str, Any]) -> str:
+    """Digest every writer-owned persisted input to the ratchet verdict.
+
+    This is an integrity tripwire, not a signature: a deliberate operator can
+    reproduce it, but an accidental JSON hand edit cannot silently change a
+    verdict input while retaining the canonical writer's digest.
+    """
+    state = {
+        key: baseline.get(key)
+        for key in (
+            "schemaVersion",
+            "policy",
+            "inventory_schemaVersion",
+            "call_site_fingerprint_algo_version",
+            "summary",
+            "candidate_keys",
+            "candidate_pairs",
+        )
+    }
+    encoded = json.dumps(state, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def load_baseline(path: Path) -> dict[str, Any]:
@@ -166,6 +192,8 @@ def load_baseline(path: Path) -> dict[str, Any]:
         baseline = json.loads(path.read_text(encoding="utf-8"))
     except json.JSONDecodeError as exc:
         raise RatchetError(f"{path}: invalid JSON: {exc}") from exc
+    if not isinstance(baseline, dict):
+        raise RatchetError(f"{path}: baseline must be a JSON object")
     if baseline.get("schemaVersion") != RATCHET_SCHEMA_VERSION:
         raise RatchetError(f"{path}: unexpected schemaVersion {baseline.get('schemaVersion')!r}")
     if baseline.get("policy") != "no_increase":
@@ -196,6 +224,12 @@ def load_baseline(path: Path) -> dict[str, Any]:
             f"{path}: summary.candidate_key_count {recorded_key_count} disagrees with "
             f"len(candidate_keys) {actual_key_count}; regenerate the baseline rather than "
             "hand-editing one of the two"
+        )
+    recorded_integrity = baseline.get(INTEGRITY_FIELD)
+    if not isinstance(recorded_integrity, str) or recorded_integrity != baseline_integrity(baseline):
+        raise RatchetError(
+            f"{path}: {INTEGRITY_FIELD} disagrees with writer-owned baseline state; "
+            "regenerate with `check_boundary_bypass_ratchet.py --write-baseline --confirm-baseline-delta`"
         )
     return baseline
 

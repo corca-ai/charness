@@ -11,11 +11,11 @@ in this session after the pre-implementation critique passes.
 
 - Current slice: Slice 1 and Slice 2 in parallel — premise decomposition remains
   incomplete while low-coupling quality repairs proceed.
-- Current slice intent: repair the runtime and fixture truth paths without
-  laundering the unfinished #582/#583/#584 umbrella, #528/#539/#542, or
-  #589/#590/#606 premise work into a completion claim.
-- Next action: re-read and classify #606's quality-ownership premise before
-  selecting a repair or a tracker-visible non-closure disposition.
+- Current slice intent: record #606's local proof without laundering the
+  unfinished #582/#583/#584 umbrella or #528/#539/#542 premise work into a
+  completion claim.
+- Next action: re-read and enumerate #582's cited producer/reader claims before
+  selecting its first owned repair or tracker-visible non-closure disposition.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -190,8 +190,13 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - #590: the reporting repair has an independent successful scheduled-CI
   descendant with all three mutation stages recorded; GitHub remains OPEN with
   a local/hosted proof carrier pending final cohort closeout.
-- Next: re-read #606's quality-ownership premise, then choose a repair or
-  explicit tracker-visible non-closure disposition.
+- #606: local proof is complete: the canonical writer emits an integrity-bound
+  baseline; guarded regeneration requires reviewable confirmation for a changed
+  baseline; malformed JSON, non-object JSON, and non-file targets retain
+  structured refusal. GitHub remains OPEN pending final direct-to-default
+  carrier and readback.
+- Next: re-read and enumerate #582's cited producer/reader claims before
+  selecting its first owned repair or explicit tracker-visible non-closure.
 
 ## Context Sources
 

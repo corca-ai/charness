@@ -138,9 +138,11 @@ structure — hence pairing it with a testability sensor.
    carried, so they are now genuinely in-process importable (goal A). Baseline:
    convertible 55→51, candidate 94→90, keys 157→152 — five real conversions, no
    exemptions.
-   *Per conversion:* regenerate the
+   *Per conversion:* review the structured delta, then regenerate the
    [boundary-bypass baseline](../scripts/boundary-bypass-baseline.json) to canonical
-   form (`inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →
+   form with `python3 scripts/check_boundary_bypass_ratchet.py --repo-root .
+   --write-baseline --confirm-baseline-delta --json` (the canonical writer remains
+   `inventory_boundary_bypass_lib.find_boundary_bypass_candidates` →
    `boundary_bypass_ratchet_lib.build_baseline`, as commit `0604f3d2` did) and sync the
    plugin mirror — the `no_increase` ratchet tolerates decreases silently, so skipping
    the regen leaves a stale baseline that never records the convertible-count drop.

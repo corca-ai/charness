@@ -109,3 +109,19 @@ equality with today's inventory on every read.
 Make canonical regeneration executable and make all persisted verdict inputs
 refuse drift before any reader can render a green result. Do not require a
 historical no-increase baseline to equal a reduced current inventory.
+
+## Resolution Evidence
+
+- `check_boundary_bypass_ratchet.py --write-baseline` now produces canonical
+  writer state and refuses a changed existing baseline until
+  `--confirm-baseline-delta` follows a structured metadata, summary, and key
+  delta review.
+- `load_baseline()` refuses a missing or mismatched writer-integrity digest;
+  non-object JSON, malformed JSON, and an existing directory target all retain
+  the CLI's JSON-refusal path without a traceback.
+- Focused proof: `python3 -m pytest tests/test_boundary_bypass_ratchet.py
+  tests/quality_gates/test_staged_commit_gate_plan.py
+  tests/quality_gates/test_surface_obligations.py -q` passed 120 tests;
+  `ruff check` on the touched Python surfaces and the live root ratchet passed.
+- Two bounded fresh-eye rounds ran. Round 2 repairs are accepted-unreviewed by
+  the verdict-logic two-round cap; the resolution critique records their scope.
