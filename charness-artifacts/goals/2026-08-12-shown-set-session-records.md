@@ -26,10 +26,10 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 
 ## Boundaries
 
-- A session is a schema-v3 append-only declaration containing a non-empty session id, a seed, and a canonical ordered set of seeded lesson IDs produced by the existing preview policy after current index and ledger validation.
-- A score event names one declared session id; the validator refuses an unknown session or a lesson absent from that session. Existing cited-retro, score-range, anchor, and `(source_retro, lesson_id)` constraints remain in force.
+- A session is a schema-v3 append-only declaration containing a non-empty session id and frozen canonical preview snapshot: preview kind/version, explicit policy version, seed, eligible count, audit bucket counts, ordered duplicate-free seeded lesson IDs, and a named SHA-256 over UTF-8 canonical snapshot JSON (sorted keys and `(',', ':')` separators).
+- Migration fixes an immutable `legacy_score_event_count`: pre-v3 score-event prefix entries remain exact v2 records, while every later score event names one declared session id. The validator refuses an unknown session or a lesson absent from that session; existing cited-retro, score-range, anchor, and `(source_retro, lesson_id)` constraints remain in force.
 - The session declaration is durable local state, not evidence a person saw the list. The score authoring command can assert only that its chosen lesson was in the declared session.
-- Replay derives any session projection from session events; committed seed, score-event, and session-event prefixes remain append-only against `HEAD`.
+- Replay derives session identity from frozen events without re-rendering historical previews; committed seed, score-event, and session-event prefixes plus migration cutoff remain append-only against `HEAD`.
 - The existing preview stays read-only and flat. A separate recording command owns writes, uses cooperative serialization, and validates its candidate state in memory before replacement.
 
 ## User Acceptance
@@ -103,13 +103,13 @@ Create the next local lesson-ledger slice: record deterministic rendered lesson 
 - Mode: artifact-only draft versus implementation-continuation. Chosen: implementation-continuation because the user explicitly asked to create a new goal and proceed; rejected artifact-only because it would defer the requested work without a new decision.
 - Eligibility: leave score events citation-only versus require a recorded containing session. Chosen: require containing session; rejected citation-only because it cannot distinguish an authored score for a selected lesson from one never offered by the workflow.
 - Receipt semantics: claim a session was seen versus record a local operator declaration. Chosen: declaration only; rejected human-receipt proof because no local state can observe it honestly.
-- Session inputs: persist bucket/ranking explanations versus seed and canonical rendered lesson order. Chosen: seed plus ordered lesson IDs, axis: preview-policy version is a local schema singleton; rejected bucket metadata because the flat preview deliberately hides buckets and no consumer needs them.
+- Session inputs: persist bucket/ranking explanations versus frozen preview snapshot. Chosen: kind/version, seed, eligible count, audit bucket counts, ordered lesson IDs, and canonical digest; axis: preview-policy version is a local schema singleton; rejected rendered text and source paths because eligibility needs no second presentation surface.
 - Migration: preserve schema v2 score events unchanged versus rewrite them with synthetic sessions. Chosen: preserve them and make session linkage mandatory only for newly authored v3 scores; rejected synthetic history because it would fabricate presentation evidence.
 
 ## Plan Critique Findings
 
-- Pending before implementation: fresh-eye critique must test migration compatibility, preview drift, score/session coupling, authoring concurrency, and the non-claim boundary.
-- Expected over-worry: cryptographic presentation receipts, archive behavior, score budget, and applied contract membership are deferred unless the critique finds a concrete local escape requiring them.
+- Fresh-eye reviewers `shown_set_schema_boundary`, `shown_set_authoring_review`, and `shown_set_counterweight` consumed packet `2026-08-12-023240`. They required an immutable legacy-score cutoff, record-time-only snapshot validation, shared writer locking, and a recorder that accepts only seed/session ID; all are folded into the boundaries and seventh spec slice.
+- Expected over-worry rejected: cryptographic presentation receipts, timestamps, actor/device identity, archive behavior, score budget, and applied contract membership add claims beyond local eligibility.
 
 ## Closeout Binding Plan
 

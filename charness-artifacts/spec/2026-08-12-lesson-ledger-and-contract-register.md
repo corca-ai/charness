@@ -419,6 +419,59 @@ applied membership transition. A later, separately reviewed contract-change
 workflow owns approval, its pre-mutation checker invocation, applied
 add/remove/rename history, and any evidence-based eligibility policy.
 
+## Seventh Implementation Slice: Declared Session Eligibility
+
+Schema v3 adds the smallest durable **declared preview session** boundary. It is
+not a delivery receipt: it proves only that the local recorder generated one
+deterministic preview snapshot at record time and that a later cited score names
+one lesson listed in that snapshot. It does not prove the list was displayed,
+received, read, used, causally helpful, calibrated, or eligible for contract
+graduation.
+
+The schema-v3 top-level state retains transitions, score events, and materialized
+lessons, then adds `legacy_score_event_count` and append-only `session_events`.
+Migration from schema v2 copies every existing score event byte-for-byte into
+the leading `legacy_score_event_count` prefix. Those legacy events keep their
+schema-v2 shape and are never assigned synthetic sessions. Every score event
+after that immutable prefix requires a non-empty `session_id`; a v3 event
+without it is refused by replay, not merely by the authoring CLI. A committed
+v3 ledger must retain its exact legacy count and score/session/transition
+prefixes; migration from committed v1/v2 preserves the available historical
+prefixes and fixes the new count at the former score-event length.
+
+Each session event has a globally unique non-empty `session_id` and a frozen
+preview snapshot: preview kind and schema version, explicit
+`selection_policy_version`, non-empty seed, eligible count, audit bucket counts,
+and an ordered, duplicate-free non-empty `lesson_ids` list of seeded IDs. The
+event carries a named `snapshot_sha256`: SHA-256 over exactly that snapshot
+object serialized as UTF-8 canonical JSON with recursively lexicographic key
+order and `(',', ':')` separators, never over enclosing event formatting. Any
+semantic selection-policy change must bump `selection_policy_version`. At record
+time the command acquires the shared ledger
+writer lock, validates current state, builds the current preview itself from the
+given seed, copies its item IDs and audit fields into the snapshot, validates the
+candidate ledger, and atomically replaces the JSON. It accepts neither caller
+provided lesson IDs nor a separate preview file. Later replay checks event
+shape, identity, seed, unique seeded IDs, and snapshot digest; it deliberately
+does **not** re-render a historical seed against the current score/index state,
+because accumulated scores can legitimately change that result.
+
+The same path-derived cooperative lock protects both session and score writers
+across read, preview/replay, candidate validation, temporary serialization, and
+replace. The v3 score authoring command requires `--session-id`; replay resolves
+it from `session_events` and refuses an unknown session or one whose frozen
+lesson list excludes the score's `lesson_id`. Existing source-retro citation,
+score range, anchor, duplicate event ID, and one-source-per-lesson rules remain
+independent. Empty preview results refuse without a write.
+
+Tests must pin a v2 ledger containing a real score through migration, reject a
+new session-less v3 score, reject rewritten/deleted/reordered legacy score and
+session prefixes, permit a newly appended session-linked score, and keep a
+recorded session valid after its contained score changes the current preview.
+Do not add timestamps, actor/device identity, presentation acknowledgement,
+cryptographic receipts, score budgets, archive state, or a new quality gate: the
+existing ledger checker owns this local eligibility predicate.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the
