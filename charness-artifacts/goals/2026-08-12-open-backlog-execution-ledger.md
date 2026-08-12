@@ -58,3 +58,26 @@ is `premise-needed`, `unproven-defer`, or `split`; a tracker-visible explanation
 names the remaining owner and revisit trigger. An umbrella may close only after
 every enumerated item is `proven` or `not-applicable` on evidence independent of
 the umbrella tracker text.
+
+## Slice 1 Re-read Notes
+
+- #582 — premise holds. Its closed member issues do not resolve the umbrella:
+  #525's residual is a live evidence-path validation gap, while #524 and #535
+  are recorded cost/rule dispositions and #514 is now closed. The umbrella's
+  independent work item is an evidence-path reader/validator, with this ledger
+  as the temporary carrier until its owning implementation record exists.
+- #583 — premise holds. #568 still lacks the described collapse detector and
+  #569's fixture-rule cost decision leaves the cheaper empty-fixture fail-open
+  routed to #597. The umbrella cannot close until the eval-premise residue and
+  #597 disposition are independently recorded.
+- #584 — premise holds. #531 and #532 are closed but the cited SessionStart
+  per-repo routing and planner read-cost computations remain live implementation
+  items. Their durable carrier is #584 until implementation creates an owning
+  record; no closed child is treated as proof of behavior.
+- #587 — premise re-read. Its original serial-aggregate remedy is refuted; the
+  remaining false-blocker question depends on the unavailable original session
+  record. State: `unproven-defer`; the tracker body itself carries the reason and
+  reopens when that source is recovered.
+- #605 — premise re-read. Neither a live trim-back trigger nor an impossibility
+  proof exists. State: `unproven-defer`; it remains open until one evidence path
+  is established, rather than being deleted or declared fixed.

@@ -9,11 +9,11 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: final plan critique and activation binding.
+- Current slice: Slice 1 premise rechecks and umbrella decomposition.
 - Current slice intent: establish dependency order and a falsifiable premise for
   each open issue before changing any proof surface.
-- Next action: complete the final critique packet/review binding, then activate
-  and begin the umbrella and premise-recheck slice.
+- Next action: map the live umbrella residuals to their owning source surfaces,
+  then replan the first implementation bundle from that evidence.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
