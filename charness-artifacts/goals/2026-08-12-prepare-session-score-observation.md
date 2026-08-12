@@ -6,11 +6,10 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-prepare-session-score-ob
 
 ## Active Operating Frame
 
-- Current slice: first score cohort recorded and evaluated.
+- Current slice: first score cohort recorded, evaluated, and awaiting evidence-only closeout.
 - Current slice intent: preserve three cited, session-bound agent judgments and
-  determine whether their distribution supports a score-policy decision.
-- Next action: close this evidence-only goal with an explicit no-policy result;
-  a future cohort must broaden score signs, sessions, and lesson coverage.
+  record why they do not identify a score-policy problem.
+- Next action: close with no new threshold, budget, formula, bucket, or policy-version change; reopen only with comparative observations.
 - Verification cadence: validate any proposed evidence schema against the
   ledger checker and test an append/refusal path before policy is changed.
 - Gate cadence: ledger validation after every append; focused authoring tests
@@ -65,8 +64,8 @@ session record as proof of human receipt or contract-graduation evidence.
 
 | Slice | Objective | Why Now | Expected Evidence | Status |
 | --- | --- | --- | --- | --- |
-| 1 | Inspect a nonzero local score cohort and state the policy premise. | No budget is defensible while all scores are zero. | Replayed ledger facts and reviewed decision record. | pending |
-| 2 | Implement only an approved evidence-intake or policy change. | A chosen premise must precede durable policy. | Tests, review, and broad quality receipt. | pending |
+| 1 | Inspect a nonzero local score cohort and state the policy premise. | No budget is defensible while all scores are zero. | Replayed ledger facts and reviewed decision record. | complete |
+| 2 | Implement only an approved evidence-intake or policy change. | A chosen premise must precede durable policy. | No-policy decision record; no policy change is warranted. | complete — deferred by evidence |
 
 ## Backlog Recount
 
@@ -103,19 +102,26 @@ session record as proof of human receipt or contract-graduation evidence.
   session. No policy threshold or score budget is selected.
 - Slice 1: declared session `2026-08-12-score-observation-1` with seed of the
   same value. Its frozen snapshot has 16 eligible lessons and 10 ordered IDs;
-  ledger validation remains green at 16 lessons/16 transitions and zero scores.
-  The next action is operator judgment for one or more cited listed lessons.
+  ledger validation remains green at 16 lessons/16 transitions.
 - Slice 2: recorded three agent-authored, cited, session-contained +2 scores:
   `durable-lesson-ledger-first` for ledger-first sequencing,
   `proof-surface-review-binding` for claims-review repair, and
   `goal-closeout-evidence-binding` for bound closeout evidence. Each has an
   anchor naming this session's observed action. The replayed ledger now has 3
   score events across 3 lessons, all from one declared session.
-- Evaluation: insufficient for a score budget or selection-policy change. The
-  cohort has one session, only positive scores, no zero/negative comparison,
-  and 3 of 16 seeded lessons observed. It proves the authoring/containment path
-  can collect agent judgments; it does not calibrate a threshold, score budget,
-  presentation effect, usefulness, or contract-graduation eligibility.
+- Evaluation: insufficient for a score budget or policy decision. The cohort is
+  one agent-authored session with 3/10 declared IDs scored, 3/16 eligible
+  lessons scored, and only `+2` values. It validates that these three records
+  satisfy schema/replay containment; it does not prove the command authoring
+  path, anchor fact, usefulness, calibration, presentation effect, or
+  contract-graduation eligibility. No new threshold, budget, formula, bucket,
+  or `selection_policy_version` was introduced; existing score-sensitive preview
+  behavior may still rank these records differently.
+- Reopen predicate: before a policy proposal, inspect (1) distribution across
+  independently declared sessions, (2) observed zero or negative scores as they
+  occur rather than manufactured balance, and (3) comparative preview selection
+  concentration/rank changes for no-change and any proposed policy. These are
+  required decision inputs, not arbitrary sample-size thresholds.
 
 ## Interview Decisions
 
@@ -147,15 +153,17 @@ session record as proof of human receipt or contract-graduation evidence.
 
 ## Off-Goal Findings
 
-- No score budget or graduation action is justified by the current zero-score
-  state; this is an evidence-collection goal, not an implementation shortcut.
-- The first cohort supersedes the zero-score premise but is still too narrow to
-  justify score policy; this is an evidence result, not a defect in the ledger.
+- No score budget or graduation action is justified by the first correlated
+  positive cohort; this is an evidence-collection goal, not an implementation
+  shortcut.
+- The cohort supersedes the zero-score premise but does not identify whether a
+  score-policy problem exists; this is an evidence result, not a ledger defect.
 
 ## Final Verification
 
-- Pending — activated collection has not yet recorded its first declared
-  session or cited score.
+- Pending closeout: checker and focused tests will confirm replayed counts,
+  containment, and unchanged authoring behavior. They cannot validate score
+  anchor truth, usefulness, or a policy conclusion.
 
 ## User Verification Instructions
 
