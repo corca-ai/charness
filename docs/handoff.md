@@ -3,8 +3,9 @@
 ## Workflow Trigger
 
 - Continue the active `achieve` goal: the frozen 22-row cohort and required
-  retro are complete; run final locked verification and release critique before
-  any push or release decision.
+  retro are complete, but final publication is blocked by [#608](https://github.com/corca-ai/charness/issues/608).
+  Resolve its supported pre-publication claims-review stage before restarting
+  final locked verification or any push/release decision.
 
 ## Continuation Capability
 
@@ -28,6 +29,7 @@
 - [Issue #607 local proof](../charness-artifacts/critique/2026-08-13-issue-607-subprocess-settlement-inventory-resolution.md) — standing-test economics detail now exposes conservative, callsite-attributed settlement signals without claiming runtime child semantics; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/607#issuecomment-5270588693) awaits cohort closeout.
 - [Issue #527 decision brief](../charness-artifacts/issue/2026-08-13-issue-527-brief.md) — its documentation and invocation-policy choices remain operator-owned; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/527#issuecomment-5270654051) records the bounded deferral rather than an assumed implementation.
 - [Session retro](../charness-artifacts/retro/2026-08-13-session-retro.md) — records #607's conservative static-proof lessons, #527's decision boundary, the verified 22-row reconciliation, and #503's unchanged ownership of historical runtime telemetry; it makes no publication claim.
+- [Issue #608 release-flow blocker](https://github.com/corca-ai/charness/issues/608) — the release helper has no supported pause after the final local release record exists and before tag/push/publication, so the required independent claims review cannot yet run at its mandated time.
 - [Issue #528 split disposition](https://github.com/corca-ai/charness/issues/528#issuecomment-5269713927) — the core dotted-absence capability is already proven; consumer migration and hook discovery remain separately owned.
 - [Issue #550](https://github.com/corca-ai/charness/issues/550), [#599](https://github.com/corca-ai/charness/issues/599), and [#601](https://github.com/corca-ai/charness/issues/601) — hold bounded OPEN deferrals for absent resolver-family, reader-taxonomy, and CLI-harness premises; the execution ledger owns their revisit triggers.
 - [Issue #546](https://github.com/corca-ai/charness/issues/546), [#584](https://github.com/corca-ai/charness/issues/584), [#587](https://github.com/corca-ai/charness/issues/587), [#595](https://github.com/corca-ai/charness/issues/595), [#597](https://github.com/corca-ai/charness/issues/597), and [#605](https://github.com/corca-ai/charness/issues/605) — hold the remaining tracker-visible local-proof, split, or defer carriers recorded in the execution ledger.
@@ -48,8 +50,8 @@ occurred for this backlog goal.
 
 ## Next Session
 
-1. Run the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): freeze the final candidate, run final verification and release critique, and do not push or release on a local green alone.
-2. If the [release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md) reports a blocker or verification changes the candidate, preserve every OPEN carrier and return to the owning slice; no final publication is implied by the completed reconciliation or retro.
+1. Resolve [#608](https://github.com/corca-ai/charness/issues/608): add and prove a supported pause/resume boundary that lets a distinct claims reviewer inspect the versioned final release record before tag, push, or GitHub release creation.
+2. Only after #608's repair and its review, restart the [goal's release sequence](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md): freeze the final candidate, run post-bump release quality and the mandated claims review, and do not push or release on a local green alone.
 3. Revisit [#528](https://github.com/corca-ai/charness/issues/528) only with its two owners: cmanki consumer declaration migration and the Charness quality-policy hook-discovery decision.
 4. Use the [release contract](../docs/conventions/operating-contract.md) — final push/release remains conditional on every cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 
