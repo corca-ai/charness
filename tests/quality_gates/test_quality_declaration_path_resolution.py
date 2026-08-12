@@ -59,6 +59,17 @@ def test_declaration_lifecycle_loads_when_importlib_util_was_not_preloaded() -> 
     assert result.returncode == 0, result.stderr
 
 
+def test_declaration_lifecycle_refuses_when_adjacent_catalog_is_not_loadable(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        LIFECYCLE.importlib.util, "spec_from_file_location", lambda *_args, **_kwargs: None
+    )
+
+    with pytest.raises(ImportError, match="quality_catalog_gate_applicability.py not loadable beside"):
+        LIFECYCLE._load_catalog_applicability()
+
+
 def test_declaration_helpers_skip_non_values_without_creating_routes(
     tmp_path: Path,
 ) -> None:
