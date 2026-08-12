@@ -87,9 +87,6 @@ would be the same mistake in a new place.
   magnitude is 2 or more must name an anchor: a concrete moment in the session — a
   decision, a file, a command — where the lesson changed or failed to change an
   action. Unanchored scores are capped at `±1`.
-- **Positive score is budgeted per session.** The sum of positive scores has a
-  cap, which turns absolute scoring into relative allocation. Without it every
-  lesson drifts mildly positive and the ranking loses discrimination.
 - **`-3` is asked for explicitly.** The retro prompt asks which of the ten pushed
   toward a wrong action or cost a read that returned nothing. Actively harmful is
   the most valuable and least volunteered signal.
@@ -137,6 +134,11 @@ would be the same mistake in a new place.
   items with `n_scored < 2`, use forced choice (name at most two that would have
   changed a specific action; everything else is zero), and measure whether it adds
   discrimination over the shown-set scores alone.
+- **Does positive-score drift require a budget?** Start without a per-session
+  positive cap: shrinkage toward zero, anchored large-magnitude scores, and later
+  relative ranking may already discriminate. After a small scored cohort, inspect
+  score distribution and selection concentration. Add a cap or centering rule
+  only if all-positive drift is observed; do not choose an arbitrary cap now.
 
 ## Deferred Decisions
 
@@ -169,6 +171,9 @@ would be the same mistake in a new place.
 - **Not scoring contracts on `-3..+3`.** A negative score on an advisory lesson
   means "waste of a slot". On a binding rule it would mean "this rule is wrong",
   which is a much larger claim needing a different process.
+- **Not imposing an uncalibrated positive-score budget.** A cap would force
+  relative allocation before there is evidence that the observed scores need it;
+  this stays a probe rather than a hidden scoring game.
 
 ## Constraints
 
@@ -206,8 +211,8 @@ would be the same mistake in a new place.
 - `unit` — ranking prefers a high-mean low-`n` lesson over a same-day one-off only
   after the confidence bonus is earned; pinned at the warmup boundary the way
   `tests/test_recent_lessons_recurrence.py` pins the current constants.
-- `unit` — a score of `±2` or beyond without an anchor is rejected or clamped, and
-  the positive-score budget refuses a session that exceeds it.
+- `unit` — a score of `±2` or beyond without an anchor is rejected or clamped;
+  score distribution remains inspectable so a later cap decision has evidence.
 - `unit` — an archived lesson retains its stats and is reachable through the
   resurrection slot.
 - `unit` — a graduation proposal that would exceed the register budget fails
