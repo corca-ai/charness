@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal: resume the remaining issue-create and
-  consumer-ergonomics ledger premises after #528's split and #542's local-proof carrier.
+- Continue the active `achieve` goal: resume the consumer-ergonomics ledger
+  premises after #602's local-proof carrier and #528's separately owned split.
 
 ## Continuation Capability
 
@@ -22,6 +22,7 @@
 - [Issue #584 local proof](../charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md) — representative quality/handoff planner reads disclose measured or typed-unavailable state across source/plugin layouts; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/584#issuecomment-5269582606) defers broader planner rollout and cohort closeout.
 - [Issue #539 local proof](../charness-artifacts/critique/2026-08-13-issue-539-create-url-shape-resolution.md) — create output now exposes only validated URL identity while retaining parsed alternate-backend numbers; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/539#issuecomment-5269681471) awaits cohort closeout.
 - [Issue #542 local proof](../charness-artifacts/critique/2026-08-13-issue-542-closeout-target-disagreement-resolution.md) — source-aware closeout authorization distinguishes manual declaration from CLI target before backend mutation; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/542#issuecomment-5269820465) awaits cohort closeout.
+- [Issue #602 local proof](../charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md) — deferred create readback is a typed, target-bound `verify-create` operation and body fidelity still requires the original body file; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/602#issuecomment-5270132863) awaits cohort closeout.
 - [Issue #528 split disposition](https://github.com/corca-ai/charness/issues/528#issuecomment-5269713927) — the core dotted-absence capability is already proven; consumer migration and hook discovery remain separately owned.
 - [Issue #546](https://github.com/corca-ai/charness/issues/546), [#584](https://github.com/corca-ai/charness/issues/584), [#587](https://github.com/corca-ai/charness/issues/587), [#595](https://github.com/corca-ai/charness/issues/595), [#597](https://github.com/corca-ai/charness/issues/597), and [#605](https://github.com/corca-ai/charness/issues/605) — hold the tracker-visible open/split/defer carriers recorded in the execution ledger.
 Historical immutable publish-state claim — this captures the completed
@@ -33,14 +34,14 @@ issue closure, push, or release.
 {"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
 ```
 
-Refresh kept: the active-goal ledger and #602 re-read because they determine the next bounded repair and forbid premature publication.
+Refresh kept: the active-goal ledger and #550 re-read because they determine the next bounded repair and forbid premature publication.
 
 Refresh non-claims: no final push, release, issue closure, hosted CI, public-release, or installed-tool readback has occurred for this backlog goal.
 
 ## Next Session
 
-1. Re-read [#602](https://github.com/corca-ai/charness/issues/602) and its comments with the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) to complete the remaining issue-create contract.
-2. After #602 is dispositioned, resume the [remaining execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md); #550, #588, #599, and #601 remain consumer-ergonomics premises.
+1. Re-read [#550](https://github.com/corca-ai/charness/issues/550) and its comments with the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) to establish the duplicate-resolver premise.
+2. After #550 is dispositioned, resume the [remaining execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md); #588, #599, and #601 remain consumer-ergonomics premises.
 3. Revisit [#528](https://github.com/corca-ai/charness/issues/528) only with its two owners: cmanki consumer declaration migration and the Charness quality-policy hook-discovery decision.
 4. Use the [release contract](../docs/conventions/operating-contract.md) — final push/release remains conditional on every cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 

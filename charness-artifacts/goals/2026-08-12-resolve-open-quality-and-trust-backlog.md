@@ -9,12 +9,13 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: issue-create trust-path completion — #539 and #542 now have
-  local-proof carriers; #602 is the remaining premise before consumer ergonomics.
-- Current slice intent: re-read and classify #602 without laundering the OPEN
-  #528 split, #539/#542 local proof, or any remaining consumer work into closure.
-- Next action: read #602 and comments, record its falsifiable premise and owner,
-  then resume #550/#588/#599/#601 only after #602 is dispositioned.
+- Current slice: consumer-ergonomics completion — #539, #542, and #602 now
+  have local-proof carriers; #528 remains a separately owned OPEN split.
+- Current slice intent: re-read #550's duplicate-resolver premise without
+  laundering any local proof, split disposition, or remaining consumer work
+  into closure.
+- Next action: read #550 and comments, record its falsifiable premise and owner,
+  then continue #588/#599/#601 in evidence-backed dependency order.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -125,8 +126,8 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | 0 | Activation critique and readiness binding | Do not execute from an unreviewed broad plan | critique record, clean reviewer fingerprints, reviewed-input identity, completed ledger | completed |
 | 1 | Re-read every premise; decompose #582, #583, #584; disposition #587 and #605; re-plan dependencies | Prevent umbrella prose or unassigned rows from laundering distinct defects | 22-row ledger updates, ownership map, replan record, tracker-visible dispositions | in-progress |
 | 2 | Repair quality verdict and fixture paths: #546, #589, #595, #597, #606, #586, #590 | These affect the proof used by later work | focused behavior tests, two-round review when triggered | in-progress |
-| 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | planned |
-| 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | planned |
+| 3 | Repair issue/evidence trust paths: #539, #542, #602 | Closeout and creation semantics are irreversible boundaries | debug/causal evidence, carrier tests, critique | completed |
+| 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | in-progress |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | planned |
 | 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | planned |
 | 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, CI/public/install evidence | planned |
