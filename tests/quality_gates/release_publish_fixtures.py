@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shlex
@@ -203,7 +204,42 @@ def _run_publish_patch(repo: Path, env: dict[str, str], *extra: str) -> subproce
             "--critique-blocked",
             "synthetic-test-harness does not spawn real critique subagents",
         ])
-    return _run_publish(repo, env, "--part", "patch", *extras, "--execute")
+    prepared = _run_publish(repo, env, "--part", "patch", *extras, "--execute")
+    if prepared.returncode != 0:
+        return prepared
+    payload = json.loads(prepared.stdout)
+    prepared_commit = payload["prepared_release_commit"]
+    record = subprocess.run(
+        ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout
+    review_path = "charness-artifacts/release-review/fixture-claims.json"
+    review = {
+        "schema_version": "charness.release.claims-review.v1",
+        "prepared_commit": prepared_commit,
+        "release_record_path": "charness-artifacts/release/latest.md",
+        "release_record_sha256": hashlib.sha256(record.encode("utf-8")).hexdigest(),
+        "target_version": payload["target_version"],
+        "tag_name": payload["tag_name"],
+        "verdict": "pass",
+        "preparer_context": "fixture-preparer",
+        "reviewer_context": "fixture-reviewer",
+    }
+    path = repo / review_path
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(review) + "\n", encoding="utf-8")
+    subprocess.run(["git", "add", review_path], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "Record fixture claims review"], cwd=repo, check=True, capture_output=True, text=True)
+    resumed = _run_publish(
+        repo, env, "--resume", "--publish-current", *extras,
+        "--claims-review-artifact", review_path, "--execute",
+    )
+    if resumed.returncode == 0:
+        final_payload = json.loads(resumed.stdout)
+        final_payload["previous_version"] = payload["previous_version"]
+        final_payload["target_version"] = payload["target_version"]
+        return subprocess.CompletedProcess(resumed.args, resumed.returncode, json.dumps(final_payload), resumed.stderr)
+    return resumed
 
 
 def _run_review_gate(repo: Path, *extra: str) -> subprocess.CompletedProcess[str]:

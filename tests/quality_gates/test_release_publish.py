@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import json
 import subprocess
 from pathlib import Path
@@ -8,12 +9,118 @@ import pytest
 
 from .issue_closeout_support import bug_closeout_body
 from .release_publish_fixtures import (
+    REPO_ROOT,
     _release_env,
+    _run_publish,
     _run_publish_patch,
     _run_review_gate,
     _seed_publish_release_repo,
     _write_exec,
 )
+
+
+@pytest.mark.release_only
+def test_execute_prepares_claims_review_record_without_publication(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    git_log_path = tmp_path / "git-log.json"
+    gh_log_path = tmp_path / "gh-log.json"
+    prior_git_log = json.loads(git_log_path.read_text(encoding="utf-8")) if git_log_path.exists() else []
+    prior_gh_log = json.loads(gh_log_path.read_text(encoding="utf-8")) if gh_log_path.exists() else []
+    result = _run_publish(
+        repo, _release_env(tmp_path, bin_dir), "--part", "patch", "--execute",
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    )
+
+    assert result.returncode == 0, result.stderr
+    payload = json.loads(result.stdout)
+    assert payload["release_stage"] == "prepared-awaiting-claims-review"
+    assert payload["prepared_release_commit"]
+    artifact = (repo / "charness-artifacts" / "release" / "latest.md").read_text(encoding="utf-8")
+    assert "<!-- charness-release-state:prepared-awaiting-claims-review -->" in artifact
+    assert "branch/tag push: pending independent claims review" in artifact
+    git_log = json.loads(git_log_path.read_text(encoding="utf-8"))[len(prior_git_log) :]
+    gh_log = json.loads(gh_log_path.read_text(encoding="utf-8"))[len(prior_gh_log) :]
+    assert ["push", "origin", "main", "v0.0.1"] not in git_log
+    assert ["tag", "v0.0.1"] not in git_log
+    assert not any(entry[:2] == ["release", "create"] for entry in gh_log)
+
+
+@pytest.mark.release_only
+def test_resume_refuses_missing_claims_review_before_auth_or_publish(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = _run_publish(
+        repo, env, "--part", "patch", "--execute",
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    )
+    assert prepared.returncode == 0, prepared.stderr
+    gh_log_path = tmp_path / "gh-log.json"
+    git_log_path = tmp_path / "git-log.json"
+    prior_gh = json.loads(gh_log_path.read_text(encoding="utf-8"))
+    prior_git = json.loads(git_log_path.read_text(encoding="utf-8"))
+
+    refused = _run_publish(
+        repo, env, "--resume", "--publish-current", "--execute",
+        "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents",
+    )
+
+    assert refused.returncode != 0
+    assert "requires --claims-review-artifact" in refused.stderr
+    assert ["auth", "status"] not in json.loads(gh_log_path.read_text(encoding="utf-8"))[len(prior_gh) :]
+    git_log = json.loads(git_log_path.read_text(encoding="utf-8"))[len(prior_git) :]
+    assert ["push", "origin", "main", "v0.0.1"] not in git_log
+    assert ["tag", "v0.0.1"] not in git_log
+
+
+@pytest.mark.release_only
+def test_exported_plugin_executes_claims_review_topology(tmp_path: Path) -> None:
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    plugin_publish = REPO_ROOT / "plugins" / "charness" / "skills" / "release" / "scripts" / "publish_release.py"
+    prepared = subprocess.run(
+        ["python3", str(plugin_publish), "--repo-root", str(repo), "--part", "patch", "--execute",
+         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
+        cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
+    )
+    assert prepared.returncode == 0, prepared.stderr
+    payload = json.loads(prepared.stdout)
+    prepared_commit = payload["prepared_release_commit"]
+    record = subprocess.run(
+        ["git", "show", f"{prepared_commit}:charness-artifacts/release/latest.md"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout
+    review_path = "charness-artifacts/release-review/plugin-claims.json"
+    (repo / review_path).parent.mkdir(parents=True, exist_ok=True)
+    (repo / review_path).write_text(json.dumps({
+        "schema_version": "charness.release.claims-review.v1",
+        "prepared_commit": prepared_commit,
+        "release_record_path": "charness-artifacts/release/latest.md",
+        "release_record_sha256": hashlib.sha256(record.encode("utf-8")).hexdigest(),
+        "target_version": payload["target_version"], "tag_name": payload["tag_name"], "verdict": "pass",
+        "preparer_context": "plugin-fixture-preparer", "reviewer_context": "plugin-fixture-reviewer",
+    }) + "\n", encoding="utf-8")
+    subprocess.run(["git", "add", review_path], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "commit", "-m", "Record plugin claims review"], cwd=repo, check=True, capture_output=True, text=True)
+    evidence_commit = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+    # Simulate response loss after P's tag reaches the remote but before R's
+    # branch push. Resume must push the evidence branch without retagging P.
+    subprocess.run(["git", "tag", "v0.0.1", prepared_commit], cwd=repo, check=True, capture_output=True, text=True)
+    subprocess.run(["git", "push", "origin", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True)
+
+    resumed = subprocess.run(
+        ["python3", str(plugin_publish), "--repo-root", str(repo), "--resume", "--publish-current", "--execute",
+         "--claims-review-artifact", review_path,
+         "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents"],
+        cwd=REPO_ROOT, check=False, capture_output=True, text=True, env=env,
+    )
+    assert resumed.returncode == 0, resumed.stderr
+    tag_commit = subprocess.run(["git", "rev-list", "-n", "1", "v0.0.1"], cwd=repo, check=True, capture_output=True, text=True).stdout.strip()
+    remote_head = subprocess.run(["git", "ls-remote", "origin", "refs/heads/main"], cwd=repo, check=True, capture_output=True, text=True).stdout.split()[0]
+    assert tag_commit == prepared_commit
+    assert subprocess.run(
+        ["git", "merge-base", "--is-ancestor", evidence_commit, remote_head],
+        cwd=repo, check=False, capture_output=True, text=True,
+    ).returncode == 0
 
 
 @pytest.mark.release_only

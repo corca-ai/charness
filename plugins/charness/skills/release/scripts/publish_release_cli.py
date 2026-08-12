@@ -45,7 +45,7 @@ run = _helpers.run
 run_shell = _helpers.run_shell
 git_status = _helpers.git_status
 changed_paths = _helpers.changed_paths
-write_release_artifact = _artifact.write_release_artifact
+write_current_artifact = _artifact.write_current_artifact
 backend_command = _helpers.backend_command
 create_release = _helpers.create_release
 expected_github_release_url = _helpers.expected_github_release_url
@@ -168,6 +168,9 @@ def parse_args() -> argparse.Namespace:
         "Resume a partial publish (requires --publish-current). For a post-publication issue-closeout "
         "commit, repeat the exact original issue, classification, carrier, behavior, repo, critique, and "
         "--notes-file arguments. Omitting --notes-file on resume is refused when notes for the tag are drafted."))
+    parser.add_argument("--claims-review-artifact", help=(
+        "Repo-relative JSON record for a marked prepared release; commit the distinct claims review, then use "
+        "--resume --publish-current --claims-review-artifact <path>."))
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--publish-current", action="store_true", help="Publish the current packaging manifest version without bumping")
     group.add_argument("--part", choices=("patch", "minor", "major"), help="Semver component to bump before publishing")
@@ -207,36 +210,6 @@ def ensure_release_surface(repo_root: Path, expected_version: str) -> None:
     blocker = release_surface_blocker(build_release_payload(repo_root), expected_version)
     if blocker:
         raise SystemExit(blocker)
-
-
-def write_current_artifact(
-    repo_root: Path, adapter_data: dict[str, Any], payload: dict[str, Any],
-    host_payload: dict[str, Any], *, quality_status: str = "passed before publish",
-    fresh_checkout_payload: dict[str, Any] | None = None,
-    release_url: str | None = None,
-    issue_closeout: dict[str, Any] | None = None,
-    install_refresh: dict[str, Any] | None = None,
-) -> str:
-    return write_release_artifact(
-        repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
-        previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
-        branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
-        update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
-        release_adapter_preflight_payload=payload.get("release_adapter_preflight"),
-        fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
-        install_refresh=install_refresh or payload.get("install_refresh"),
-        tag_name=payload["tag_name"],
-        public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
-        review_proof=payload.get("critique_artifact"),
-        requested_review_gate=payload.get("requested_review_gate"),
-        retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
-        distinct_channel_verification=payload.get("distinct_channel_verification"),
-        published_notes_audit=payload.get("published_notes_audit"),
-        lifecycle_capture=payload.get("lifecycle_capture"),
-        release_runtime=payload.get("release_runtime"),
-        baton_reconcile=payload.get("baton_reconcile"),
-        release_observer=payload.get("release_observer"),
-    )
 
 
 def finalize_release_payload(
@@ -361,6 +334,8 @@ def main() -> None:
         return
     if args.resume and not args.publish_current:
         raise SystemExit("--resume requires --publish-current (the manifest is already at the target version)")
+    if args.claims_review_artifact and not args.resume:
+        raise SystemExit("--claims-review-artifact is only valid with --resume --publish-current")
     adapter_data, critique_artifact, critique_gate = _load_adapter_and_gate(args, repo_root)
     status = git_status(repo_root)
     if status:

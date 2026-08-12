@@ -15,7 +15,7 @@ The resume flow reuses the CLI module's already-bound helpers (passed in as
 from __future__ import annotations
 
 import importlib.util
-import json
+import runpy
 from pathlib import Path
 from typing import Any
 
@@ -43,6 +43,8 @@ def _load_resume_closeout():
 
 
 _resume_closeout = _load_resume_closeout()
+_claims_review = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_claims_review.py")))
+_resume_publish = runpy.run_path(str(Path(__file__).resolve().with_name("publish_release_resume_publish.py")))
 
 
 def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
@@ -52,6 +54,29 @@ def _git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
 def _optional_git_out(cli: Any, repo_root: Path, args: list[str]) -> str:
     result = cli.run(["git", *args], cwd=repo_root, check=False)
     return result.stdout.strip() if result.returncode == 0 else ""
+
+
+def _is_claims_evidence_commit(cli: Any, repo_root: Path, *, prepared_commit: str, evidence_commit: str) -> bool:
+    changed = cli.run(
+        ["git", "diff-tree", "--no-commit-id", "--name-only", "-r", prepared_commit, evidence_commit],
+        cwd=repo_root,
+    ).stdout.splitlines()
+    return len(changed) == 1 and changed[0].startswith("charness-artifacts/release-review/") and changed[0].endswith(".json")
+
+
+def _claims_evidence_child(cli: Any, repo_root: Path, *, prepared_commit: str) -> str:
+    # ``rev-list --children -n 1`` selects a traversal tip, not necessarily P;
+    # inspect all reachable parent relationships so a remote-only R is found.
+    for line in _git_out(cli, repo_root, ["rev-list", "--all", "--parents"]).splitlines():
+        parts = line.split()
+        if len(parts) < 2 or prepared_commit not in parts[1:]:
+            continue
+        candidate = parts[0]
+        if _is_claims_evidence_commit(
+            cli, repo_root, prepared_commit=prepared_commit, evidence_commit=candidate
+        ):
+            return candidate
+    return ""
 
 
 def _commit_artifact_before_push(repo_root: Path, *, cli: Any, tag_name: str) -> None:
@@ -91,6 +116,9 @@ def resumable_state(
     tag_sha = ""
     if tag_state["local"]:
         tag_sha = _git_out(cli, repo_root, ["rev-list", "-n", "1", tag_name])
+    tag_is_ancestor_head = bool(tag_sha) and cli.run(
+        ["git", "merge-base", "--is-ancestor", tag_name, "HEAD"], cwd=repo_root, check=False
+    ).returncode == 0
     parent_sha = _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^"]) if head_sha != tag_sha else ""
     grandparent_sha = (
         _optional_git_out(cli, repo_root, ["rev-parse", "HEAD^^"])
@@ -107,8 +135,39 @@ def resumable_state(
     close_refs = cli.release_content_close_keyword_refs(head_message)
     parent_close_refs = cli.release_content_close_keyword_refs(parent_message)
     phase = "release-content"
+    prepared_head = _claims_review["prepared_record"](repo_root, commit=head_sha, run=cli.run)
+    prepared = _claims_review["prepared_record"](repo_root, commit=parent_sha, run=cli.run) if parent_sha else None
+    tagged_prepared = _claims_review["prepared_record"](repo_root, commit=tag_sha, run=cli.run) if tag_sha else None
+    claims_evidence_commit = ""
+    tagged_claims_evidence = (
+        _claims_evidence_child(cli, repo_root, prepared_commit=tagged_prepared["commit"])
+        if tagged_prepared
+        else ""
+    )
     if tag_sha and parent_sha == tag_sha and close_refs:
         phase = "post-publication-carrier"
+    elif prepared_head and head_subject == commit_message:
+        # A marked P is a deliberate pause, never a legacy partial-publish
+        # recovery; no claims artifact can be inferred from P alone.
+        phase = "prepared-claims-review"
+        prepared = prepared_head
+    elif tagged_prepared and parent_sha == tagged_claims_evidence and close_refs:
+        phase = "post-publication-claims-carrier"
+        prepared = tagged_prepared
+        claims_evidence_commit = tagged_claims_evidence
+    elif (
+        tagged_prepared
+        and grandparent_sha == tagged_claims_evidence
+        and parent_close_refs
+        and head_subject == f"Record release issue closeout for {tag_name}"
+    ):
+        phase = "post-publication-claims-final"
+        prepared = tagged_prepared
+        claims_evidence_commit = tagged_claims_evidence
+    elif tagged_prepared and tagged_claims_evidence == head_sha:
+        phase = "prepared-claims-review"
+        prepared = tagged_prepared
+        claims_evidence_commit = tagged_claims_evidence
     elif (
         tag_sha
         and grandparent_sha == tag_sha
@@ -116,15 +175,37 @@ def resumable_state(
         and head_subject == f"Record release issue closeout for {tag_name}"
     ):
         phase = "post-publication-final"
+    elif (
+        prepared
+        and parent_message.splitlines()[0:1] == [commit_message]
+        and _is_claims_evidence_commit(cli, repo_root, prepared_commit=prepared["commit"], evidence_commit=head_sha)
+    ):
+        phase = "prepared-claims-review"
+        claims_evidence_commit = head_sha
+    prepared_parent_sha = (
+        _optional_git_out(cli, repo_root, ["rev-parse", f"{prepared['commit']}^"])
+        if isinstance(prepared, dict)
+        else ""
+    )
+    remote_is_prepared_base = bool(remote_branch_sha and prepared_parent_sha) and cli.run(
+        ["git", "merge-base", "--is-ancestor", remote_branch_sha, prepared_parent_sha],
+        cwd=repo_root,
+        check=False,
+    ).returncode == 0
     return {
         "head_is_release_commit": head_subject == commit_message,
         "phase": phase,
+        "prepared": prepared,
+        "claims_evidence_commit": claims_evidence_commit,
+        "prepared_parent_sha": prepared_parent_sha,
+        "remote_is_prepared_base": remote_is_prepared_base,
         "head_sha": head_sha,
         "head_message": head_message,
         "head_close_refs": close_refs,
         "tag_sha": tag_sha,
         "head_parent_is_tag": bool(tag_sha) and parent_sha == tag_sha,
         "parent_sha": parent_sha,
+        "grandparent_sha": grandparent_sha,
         "parent_message": parent_message,
         "head_grandparent_is_tag": bool(tag_sha) and grandparent_sha == tag_sha,
         "remote_branch_sha": remote_branch_sha,
@@ -132,8 +213,43 @@ def resumable_state(
         "tag_remote": tag_state["remote"],
         "remote_tag_sha": tag_state["remote_tag_sha"],
         "tag_points_at_head": bool(tag_sha) and tag_sha == head_sha,
+        "tag_is_ancestor_head": tag_is_ancestor_head,
         "release_exists": cli._helpers.release_exists(repo_root, tag_name, backend),
     }
+
+
+def _assert_post_publication_resumable(state: dict[str, Any], *, tag_name: str) -> bool:
+    post_publication_phases = {
+        "post-publication-carrier",
+        "post-publication-final",
+        "post-publication-claims-carrier",
+        "post-publication-claims-final",
+    }
+    if state["phase"] not in post_publication_phases:
+        return False
+    if not (state["tag_local"] and state["tag_remote"] and state["release_exists"]):
+        raise SystemExit(f"--resume: `{tag_name}` carrier HEAD lacks confirmed tag/release publication state.")
+    claims_evidence = state.get("claims_evidence_commit", "")
+    expected_parent = (
+        claims_evidence
+        if state["phase"] == "post-publication-claims-carrier"
+        else state["tag_sha"] if state["phase"] == "post-publication-carrier" else state["parent_sha"]
+    )
+    checks = {
+        "post-publication-carrier": (state["head_parent_is_tag"], "carrier HEAD is not directly based on its release tag."),
+        "post-publication-final": (state["head_grandparent_is_tag"], "final closeout HEAD is not based on its carrier and release tag."),
+        "post-publication-claims-carrier": (state["parent_sha"] == claims_evidence, "claims carrier is not directly based on its claims evidence."),
+        "post-publication-claims-final": (state["grandparent_sha"] == claims_evidence, "claims final HEAD is not based on its carrier and evidence."),
+    }
+    valid, message = checks[state["phase"]]
+    if not valid:
+        raise SystemExit(f"--resume: `{tag_name}` {message}")
+    if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
+        raise SystemExit(
+            "--resume: remote branch is neither the release-content nor local carrier commit; "
+            "refusing ambiguous closeout recovery."
+        )
+    return True
 
 
 def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
@@ -142,20 +258,29 @@ def assert_resumable(state: dict[str, Any], *, tag_name: str) -> None:
             f"--resume: remote tag `{tag_name}` does not resolve to the local release commit; "
             "refusing ambiguous recovery."
         )
-    if state["phase"] in {"post-publication-carrier", "post-publication-final"}:
-        if not (state["tag_local"] and state["tag_remote"] and state["release_exists"]):
+    if _assert_post_publication_resumable(state, tag_name=tag_name):
+        return
+    if state["phase"] == "prepared-claims-review":
+        prepared = state.get("prepared")
+        if not isinstance(prepared, dict):
+            raise SystemExit("--resume: marked prepared state lacks its release-record binding")
+        if state["tag_local"] and state["tag_sha"] != prepared["commit"]:
+            raise SystemExit(f"--resume: local tag `{tag_name}` does not point at the prepared release record")
+        if state["tag_remote"] and state["remote_tag_sha"] != prepared["commit"]:
+            raise SystemExit(f"--resume: remote tag `{tag_name}` does not point at the prepared release record")
+        allowed_remote_heads = {
+            state.get("prepared_parent_sha", ""),
+            prepared["commit"],
+            state.get("claims_evidence_commit", "") or state["head_sha"],
+        }
+        if (
+            state["remote_branch_sha"]
+            and state["remote_branch_sha"] not in allowed_remote_heads
+            and not state.get("remote_is_prepared_base", False)
+        ):
             raise SystemExit(
-                f"--resume: `{tag_name}` carrier HEAD lacks confirmed tag/release publication state."
-            )
-        expected_parent = state["tag_sha"] if state["phase"] == "post-publication-carrier" else state["parent_sha"]
-        if state["phase"] == "post-publication-carrier" and not state["head_parent_is_tag"]:
-            raise SystemExit(f"--resume: `{tag_name}` carrier HEAD is not directly based on its release tag.")
-        if state["phase"] == "post-publication-final" and not state["head_grandparent_is_tag"]:
-            raise SystemExit(f"--resume: `{tag_name}` final closeout HEAD is not based on its carrier and release tag.")
-        if state["remote_branch_sha"] not in {expected_parent, state["head_sha"]}:
-            raise SystemExit(
-                "--resume: remote branch is neither the release-content nor local carrier commit; "
-                "refusing ambiguous closeout recovery."
+                "--resume: remote branch is not the prepared record, claims evidence, or their known base; "
+                "refusing unrelated advancement before publication."
             )
         return
     if not state["head_is_release_commit"]:
@@ -207,6 +332,15 @@ def preflight_resume_state(
         cli=cli,
     )
     assert_resumable(state, tag_name=tag_name)
+    if state["phase"] in {
+        "prepared-claims-review",
+        "post-publication-claims-carrier",
+        "post-publication-claims-final",
+    }:
+        state["claims_review"] = _claims_review["validate_claims_review"](
+            repo_root, prepared=state["prepared"], evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
+            artifact_path=args.claims_review_artifact, target_version=current_version, tag_name=tag_name, run=cli.run,
+        )
     return state
 
 
@@ -219,136 +353,8 @@ def resume_publish(
     cli: Any,
     state: dict[str, Any] | None = None,
 ) -> None:
-    payload = plan["payload"]
-    tag_name = plan["tag_name"]
-    branch = plan["branch"]
-    backend = plan["backend"]
-    issue_repo = plan["issue_repo"]
-    state = state or resumable_state(
-        repo_root, tag_name=tag_name, commit_message=payload["commit_message"],
-        remote=args.remote, branch=branch, backend=backend, cli=cli,
+    _resume_publish["resume_publish"](
+        repo_root, args=args, plan=plan, adapter_data=adapter_data, cli=cli, state=state,
+        resumable_state=resumable_state, assert_resumable=assert_resumable, common=_common,
+        resume_closeout=_resume_closeout, commit_artifact_before_push=_commit_artifact_before_push,
     )
-    assert_resumable(state, tag_name=tag_name)
-    payload["resume_state"] = state
-    if state["phase"] in {"post-publication-carrier", "post-publication-final"}:
-        _resume_closeout.resume_post_publication_closeout(
-            repo_root,
-            args=args,
-            plan=plan,
-            adapter_data=adapter_data,
-            state=state,
-            common=_common,
-            cli=cli,
-        )
-        return
-    if not args.execute:
-        payload["resume"] = (
-            "dry-run: would re-validate gates, create the missing local tag when needed, "
-            "then push/create/verify the existing release commit"
-        )
-        print(json.dumps(payload, ensure_ascii=False, indent=2))
-        return
-
-    notes_file = args.notes_file.resolve() if args.notes_file else None
-    cli.run(cli.backend_command(backend, "auth_check", ["gh", "auth", "status"]), cwd=repo_root)
-    # RN2: re-validate the pre-push gates before continuing — never push a stale
-    # local release commit unchecked. Refresh the release artifact first (mirroring
-    # the normal flow's write -> narrative-audit order) so the audit sees the
-    # current target. The original attempt already passed the file-triggered
-    # adapter/real-host preflights on this unchanged worktree, so resume re-runs the
-    # gates that can flake at push time, not those one-time file-delta checks.
-    _common.preflight_close_issue_carrier(
-        repo_root, args=args, issue_repo=issue_repo, payload=payload, cli=cli,
-        carrier_source="release-resume",
-    )
-    if args.close_issue:
-        head_commit_message = cli.run(
-            ["git", "show", "-s", "--format=%B", "HEAD"], cwd=repo_root
-        ).stdout
-        close_refs = cli.release_content_close_keyword_refs(head_commit_message)
-        payload["resume_head_release_content_close_refs"] = close_refs
-        if close_refs:
-            raise SystemExit(
-                "--resume: release-content HEAD contains issue close keywords before "
-                f"post-publication observer evidence: {close_refs}"
-            )
-    _common.run_pre_push_quality_gates(repo_root, adapter_data, payload, cli=cli)
-    fresh_checkout_payload = _common.timed(
-        payload, "fresh_checkout_probes_resume", lambda: cli.run_fresh_checkout_probes(repo_root)
-    )
-    payload["fresh_checkout_probe_status"] = fresh_checkout_payload["status"]
-    expected_release_url = cli.expected_github_release_url(repo_root, backend, tag_name)
-    payload["expected_release_url"] = expected_release_url
-    host_payload = cli.safe_real_host_payload(
-        repo_root, plan["release_content_paths"], build_payload=cli.build_real_host_payload
-    )
-    # B1: build the EXECUTED retro-trigger evaluation (written /
-    # final_release_paths), mirroring the normal flow, so the resumed artifact
-    # does not regress to the plan's dry-run (would_write / release_content_paths)
-    # payload. This also persists the retro artifact before it is committed below.
-    payload["retro_trigger_evaluation"] = cli.build_retro_trigger_evaluation(
-        repo_root, plan["release_content_paths"],
-        evaluated_at="final_release_paths", tag_name=tag_name, execute=True,
-    )
-    artifact_relpath = cli.write_current_artifact(
-        repo_root, adapter_data, payload, host_payload,
-        fresh_checkout_payload=fresh_checkout_payload, release_url=expected_release_url,
-    )
-    cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
-
-    # B1: commit the refreshed artifact before pushing so the pre-push gate
-    # does not block on a dirty charness-artifacts/ left by the resume refresh.
-    _commit_artifact_before_push(repo_root, cli=cli, tag_name=tag_name)
-
-    def push_create_verify_release() -> tuple[str, Any]:
-        if not state["tag_local"]:
-            cli.run(["git", "tag", tag_name, state["head_sha"]], cwd=repo_root)
-            state["tag_local"] = True
-            state["tag_points_at_head"] = True
-        if not state["tag_remote"]:
-            cli.run(["git", "push", args.remote, branch, tag_name], cwd=repo_root)
-        if state["release_exists"]:
-            release_stdout = expected_release_url or ""
-        else:
-            release_stdout = cli.create_release(
-                repo_root, backend, tag_name=tag_name, title=plan["title"], notes_file=notes_file
-            ).stdout
-        release_verify_result = cli.verify_release_visible(
-            repo_root, tag_name, backend, backend_command=cli.backend_command, run=cli.run
-        )
-        return release_stdout, release_verify_result
-
-    release_stdout, release_verify_result = _common.timed(
-        payload, "push_create_verify_release", push_create_verify_release
-    )
-    cli.finalize_release_payload(
-        repo_root, payload, artifact_relpath=artifact_relpath, host_payload=host_payload,
-        release_stdout=release_stdout, expected_release_url=expected_release_url,
-        release_verified=release_verify_result.returncode == 0,
-    )
-    state.update(
-        {
-            "artifact_relpath": artifact_relpath,
-            "backend": backend,
-            "branch": branch,
-            "expected_release_url": expected_release_url,
-            "fresh_checkout_payload": fresh_checkout_payload,
-            "host_payload": host_payload,
-            "tag_name": tag_name,
-        }
-    )
-    # WS-1: the resumed publish crosses the same irreversible issue-close boundary,
-    # so it gets the same rung-2 distinct-channel observer + rung-1 presence floor.
-    # A resumed publish is still a verified publish: auto-run the adapter-declared
-    # install-refresh before the final artifact commit so the result is durable.
-    _common.run_release_closeout_tail(
-        repo_root,
-        args=args,
-        adapter_data=adapter_data,
-        state=state,
-        issue_repo=issue_repo,
-        payload=payload,
-        cli=cli,
-        carrier_source="release-resume",
-    )
-    print(json.dumps(payload, ensure_ascii=False, indent=2))

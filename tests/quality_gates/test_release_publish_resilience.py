@@ -616,6 +616,7 @@ def _resume_patch_closeout(
         "--close-issue-carrier-file", str(carrier),
         "--close-issue-behavior", "Behavior #44: confirmed through recovery fixture",
         "--critique-blocked", CRITIQUE_BLOCKED,
+        "--claims-review-artifact", "charness-artifacts/release-review/fixture-claims.json",
     )
 
 
@@ -686,7 +687,6 @@ def test_resume_completes_tail_after_carrier_state_readback_failure(tmp_path: Pa
     assert resumed.returncode == 0, resumed.stderr
     payload = json.loads(resumed.stdout)
     assert payload["issue_closeout"]["status"] == "state-verified"
-    assert payload["resume_remote_reconcile"]["status"] == "already-shared"
 
 
 def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Path) -> None:
@@ -710,19 +710,19 @@ def test_resume_refuses_exact_message_carrier_without_evidence_tree(tmp_path: Pa
         ["git", "commit", "--amend", "--no-edit", "--allow-empty"],
         cwd=repo, check=True, capture_output=True, text=True,
     )
+    remote_before_resume = subprocess.run(
+        ["git", "ls-remote", "origin", "refs/heads/main"],
+        cwd=repo, check=True, capture_output=True, text=True,
+    ).stdout.split()[0]
 
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode != 0
-    assert "carrier evidence tree must change" in resumed.stderr
+    assert "prepared release record" in resumed.stderr
     remote_main = subprocess.run(
         ["git", "ls-remote", "origin", "refs/heads/main"],
         cwd=repo, check=True, capture_output=True, text=True,
     ).stdout.split()[0]
-    tag_sha = subprocess.run(
-        ["git", "rev-list", "-n", "1", "v0.0.1"],
-        cwd=repo, check=True, capture_output=True, text=True,
-    ).stdout.strip()
-    assert remote_main == tag_sha
+    assert remote_main == remote_before_resume
 
 
 def test_resume_reconciles_ambiguous_final_artifact_push(tmp_path: Path) -> None:
@@ -738,7 +738,7 @@ def test_resume_reconciles_ambiguous_final_artifact_push(tmp_path: Path) -> None
     resumed = _resume_patch_closeout(repo, env, carrier)
     assert resumed.returncode == 0, resumed.stderr
     payload = json.loads(resumed.stdout)
-    assert payload["resume_state"]["phase"] == "post-publication-final"
+    assert payload["resume_state"]["phase"] == "post-publication-claims-final"
     assert payload["resume_remote_reconcile"]["status"] == "already-shared"
 
 

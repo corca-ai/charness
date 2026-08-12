@@ -170,7 +170,8 @@ def resume_post_publication_closeout(
     )
     carrier_message = state["head_message"]
     carrier_ref = "HEAD"
-    if state["phase"] == "post-publication-final":
+    final_phase = state["phase"] in {"post-publication-final", "post-publication-claims-final"}
+    if final_phase:
         carrier_message = state["parent_message"]
         carrier_ref = "HEAD^"
     _validated_carrier_message(
@@ -184,7 +185,7 @@ def resume_post_publication_closeout(
         tag_name=plan["tag_name"],
         cli=cli,
     )
-    if state["phase"] == "post-publication-final":
+    if final_phase:
         _validate_final_evidence_tree(
             repo_root,
             commit_ref="HEAD",
@@ -206,7 +207,7 @@ def resume_post_publication_closeout(
         payload=payload,
         cli=cli,
     )
-    if state["phase"] == "post-publication-final":
+    if final_phase:
         payload["resume"] = "final closeout artifact commit reconciled"
         print(json.dumps(payload, ensure_ascii=False, indent=2))
         return

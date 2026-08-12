@@ -32,7 +32,9 @@ def issue_closeout_lines(issue_closeout: dict[str, Any] | None) -> list[str]:
     return lines
 
 
-def release_record_lines(release_url: str | None, public_release_verification: str) -> list[str]:
+def release_record_lines(release_url: str | None, public_release_verification: str, *, prepared: bool = False) -> list[str]:
+    if prepared:
+        return ["- GitHub release record: pending independent claims review before creation"]
     if release_url and public_release_verification == "verified":
         return [f"- GitHub release record: verified URL `{release_url}`"]
     if release_url and public_release_verification == "failed":

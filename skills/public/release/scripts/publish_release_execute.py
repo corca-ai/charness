@@ -58,6 +58,7 @@ def _prepare_release_attempt(
         release_url=expected_release_url,
         quality_status="is queued for this publish attempt",
         fresh_checkout_payload=fresh_checkout_plan,
+        release_stage="charness-release-state:prepared-awaiting-claims-review",
     )
     _common["run_pre_push_quality_gates"](repo_root, adapter_data, payload, cli=cli)
     return {
@@ -96,6 +97,7 @@ def _commit_release_artifact(
         host_payload,
         fresh_checkout_payload=fresh_checkout_plan,
         release_url=expected_release_url,
+        release_stage="charness-release-state:prepared-awaiting-claims-review",
     )
     cli.run_narrative_audit(repo_root, target_tag=tag_name, notes_file=notes_file)
     cli.run(["git", "add", "-A"], cwd=repo_root)
@@ -111,10 +113,15 @@ def _commit_release_artifact(
         cli.amend_fresh_checkout_artifact(
             repo_root,
             write_artifact=lambda **kwargs: cli.write_current_artifact(
-                repo_root, adapter_data, payload, host_payload, **kwargs
+                repo_root,
+                adapter_data,
+                payload,
+                host_payload,
+                release_stage="charness-release-state:prepared-awaiting-claims-review",
+                **kwargs,
             ),
-            fresh_checkout_payload=fresh_checkout_payload,
-            release_url=expected_release_url,
+                fresh_checkout_payload=fresh_checkout_payload,
+                release_url=expected_release_url,
             artifact_relpath=artifact_relpath,
             tag_name=tag_name,
             notes_file=notes_file,
@@ -234,6 +241,8 @@ def execute_publish_plan(
     cli: Any,
 ) -> None:
     state = _create_release_commit(args, repo_root, plan, adapter_data, cli=cli)
-    _publish_and_finalize(args, repo_root, state, adapter_data, cli=cli)
     payload = state["payload"]
+    payload["release_stage"] = "prepared-awaiting-claims-review"
+    payload["prepared_release_commit"] = cli.run(["git", "rev-parse", "HEAD"], cwd=repo_root).stdout.strip()
+    payload["next_action"] = "commit a bound claims-review artifact, then resume publication"
     print(json.dumps(payload, ensure_ascii=False, indent=2))

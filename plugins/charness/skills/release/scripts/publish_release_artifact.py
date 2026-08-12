@@ -61,14 +61,17 @@ def write_release_artifact(
     release_runtime: list[dict[str, Any]] | None = None,
     baton_reconcile: dict[str, Any] | None = None,
     release_observer: dict[str, Any] | None = None,
+    release_stage: str | None = None,
 ) -> str:
     artifact_dir = repo_root / output_dir
     artifact_dir.mkdir(parents=True, exist_ok=True)
     artifact_path = artifact_dir / "latest.md"
     resolved_tag = tag_name or f"v{target_version}"
     artifact_relpath = str(artifact_path.relative_to(repo_root))
+    prepared = release_stage is not None
     lines = [
         "# Release Surface Check",
+        *([f"<!-- {release_stage} -->"] if release_stage else []),
         f"Date: {datetime.now(timezone.utc).date().isoformat()}",
         "",
         "## Scope",
@@ -86,17 +89,17 @@ def write_release_artifact(
         "",
         f"- `{quality_command}` {quality_status}.",
         "- `current_release.py` reported no version drift across packaging and generated install surfaces.",
-        *release_push_lines(public_release_verification),
+        *([] if prepared else release_push_lines(public_release_verification)),
         "",
         "## Release State",
         "",
         "- local release mutation: complete",
-        "- branch/tag push: complete",
+        *( ["- branch/tag push: pending independent claims review."] if release_stage else ["- branch/tag push: complete"] ),
     ]
-    lines.extend(release_record_lines(release_url, public_release_verification))
+    lines.extend(release_record_lines(release_url, public_release_verification, prepared=prepared))
     lines.extend(
         [
-            f"- public release surface verification: {public_release_verification}",
+            f"- public release surface verification: {'pending independent claims review' if prepared else public_release_verification}",
             f"- audit narrative: durable record written to `{artifact_relpath}` and committed with this slice",
         ]
     )
@@ -119,3 +122,34 @@ def write_release_artifact(
     lines.extend(user_update_lines(update_instructions))
     write_current_pointer_text(artifact_path, "\n".join(lines))
     return str(artifact_path.relative_to(repo_root))
+
+
+def write_current_artifact(
+    repo_root: Path,
+    adapter_data: dict[str, Any],
+    payload: dict[str, Any],
+    host_payload: dict[str, Any],
+    *,
+    quality_status: str = "passed before publish",
+    fresh_checkout_payload: dict[str, Any] | None = None,
+    release_url: str | None = None,
+    issue_closeout: dict[str, Any] | None = None,
+    install_refresh: dict[str, Any] | None = None,
+    release_stage: str | None = None,
+) -> str:
+    return write_release_artifact(
+        repo_root, output_dir=adapter_data["output_dir"], package_id=adapter_data["package_id"],
+        previous_version=payload["previous_version"], target_version=payload["target_version"], remote=payload["remote"],
+        branch=payload["branch"], quality_command=adapter_data["quality_command"], release_url=release_url,
+        update_instructions=adapter_data["update_instructions"], real_host_payload=host_payload,
+        release_adapter_preflight_payload=payload.get("release_adapter_preflight"),
+        fresh_checkout_payload=fresh_checkout_payload, issue_closeout=issue_closeout, quality_status=quality_status,
+        install_refresh=install_refresh or payload.get("install_refresh"), tag_name=payload["tag_name"],
+        public_release_verification=payload.get("public_release_verification", "not checked by this helper"),
+        review_proof=payload.get("critique_artifact"), requested_review_gate=payload.get("requested_review_gate"),
+        retro_trigger_evaluation=payload.get("retro_trigger_evaluation"),
+        distinct_channel_verification=payload.get("distinct_channel_verification"),
+        published_notes_audit=payload.get("published_notes_audit"), lifecycle_capture=payload.get("lifecycle_capture"),
+        release_runtime=payload.get("release_runtime"), baton_reconcile=payload.get("baton_reconcile"),
+        release_observer=payload.get("release_observer"), release_stage=release_stage or payload.get("release_stage"),
+    )
