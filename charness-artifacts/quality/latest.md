@@ -1,1 +1,1 @@
-2026-08-09-test-runtime-waste-repair.md
+2026-08-12-quality-review.md

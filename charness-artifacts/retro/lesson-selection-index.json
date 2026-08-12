@@ -1464,10 +1464,10 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:25da58d3ba8a",
+      "candidate_id": "repeat_trap:c2e96cca6dc4",
       "kind": "repeat_trap",
-      "lesson": "**strong, verification:** the first 90.3-second broad gate found a missing Cautilus finding record, three uncovered R6 defensive lines, and two untriaged duplicate families. The second 91.2-second gate was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute.",
-      "normalized_key": "strong verification the first 90 3 second broad gate found a missing cautilus finding",
+      "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute.",
+      "normalized_key": "strong verification the first broad gate found a missing cautilus finding record uncovered r6",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1485,7 +1485,7 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**strong, verification:** the first 90.3-second broad gate found a missing Cautilus finding record, three uncovered R6 defensive lines, and two untriaged duplicate families. The second 91.2-second gate was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute."
+          "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute."
         }
       ]
     },
