@@ -13,6 +13,7 @@ from types import SimpleNamespace
 from typing import Any
 
 CATALOG_PATH = Path(__file__).resolve().parents[1] / "references" / "catalog.yaml"
+SKILL_ROOT = Path(__file__).resolve().parents[1]
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
@@ -65,6 +66,26 @@ def _emit_yaml(payload: dict[str, Any]) -> None:
 
 def _catalog() -> dict[str, Any]:
     return _load_yaml_file(CATALOG_PATH)
+
+
+def _measure_required_read(ref: dict[str, Any]) -> dict[str, Any]:
+    """Disclose a catalog read from the quality skill's explicit path base."""
+    item = dict(ref)
+    path = item.get("path")
+    if not isinstance(path, str):
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="unknown-base")
+    try:
+        candidate = (SKILL_ROOT / path).resolve()
+        candidate.relative_to(SKILL_ROOT.resolve())
+        if not candidate.exists():
+            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
+        if not candidate.is_file():
+            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="not-a-file")
+        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
+    except ValueError:
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="outside-declared-base")
+    except (OSError, RuntimeError):
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="stat-failed")
 
 
 def _skill_paths_under(repo_root: Path, parents: list[Path]) -> list[str]:
@@ -298,7 +319,7 @@ def build_plan(repo_root: Path, *, target_skill: str | None = None) -> dict[str,
         gates = [gate for gate in gates if gate.get("id") in applicable_gate_ids]
     gates = [*gates, *adapter_packets]
     required_reads = [
-        ref
+        _measure_required_read(ref)
         for ref in references
         if ref.get("role") == "required-primer"
         or (ref.get("role") == "scope-primer" and ref.get("scope") == "skill-authoring" and skills_in_scope)

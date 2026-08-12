@@ -2,9 +2,8 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal: re-read #584's remaining planner-read-cost
-  successor boundary, then select an owned implementation or record a
-  tracker-visible non-closure disposition.
+- Continue the active `achieve` goal: record #584's local-proof tracker carrier,
+  then re-read the #528/#539/#542 trust-path premises in ledger order.
 
 ## Continuation Capability
 
@@ -20,6 +19,7 @@
 - [Issue #606 local proof](../charness-artifacts/critique/2026-08-13-issue-606-boundary-baseline-resolution.md) — canonical baseline regeneration is guarded and all persisted verdict inputs are integrity-bound; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/606#issuecomment-5269188496) awaits final direct-to-default readback.
 - [Issue #582 local proof](../charness-artifacts/critique/2026-08-13-issue-582-readme-proof-evidence-binding-resolution.md) — the README Claim Ledger's Evidence cells are now path-bound at their Specdown reader; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/582#issuecomment-5269364370) records that #524/#535 remain separate deliberate non-implementations.
 - [Issue #583 re-read disposition](https://github.com/corca-ai/charness/issues/583#issuecomment-5269219339) — its cited pickup specs are deleted and #597 repaired the fixture fail-open; it remains OPEN with a bounded generic-gate deferral.
+- [Issue #584 local proof](../charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md) — representative quality/handoff planner reads disclose measured or typed-unavailable state across source/plugin layouts; the umbrella remains OPEN while broader planner rollout is deferred and cohort closeout is incomplete.
 - [Issue #546](https://github.com/corca-ai/charness/issues/546), [#584](https://github.com/corca-ai/charness/issues/584), [#587](https://github.com/corca-ai/charness/issues/587), [#595](https://github.com/corca-ai/charness/issues/595), [#597](https://github.com/corca-ai/charness/issues/597), and [#605](https://github.com/corca-ai/charness/issues/605) — hold the tracker-visible open/split/defer carriers recorded in the execution ledger.
 Refresh kept: the active-goal ledger and #589 proof because they determine the next bounded repair and forbid premature publication.
 
@@ -27,8 +27,8 @@ Refresh non-claims: no final push, release, issue closure, hosted CI, public-rel
 
 ## Next Session
 
-1. Re-read [#584](https://github.com/corca-ai/charness/issues/584) with the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md) — select its planner-read-cost successor boundary or preserve a tracker-visible non-closure.
-2. Resume the remaining ledger order after #584; it names the #528/#539/#542 trust-path premises and non-closure triggers.
+1. Record [#584](https://github.com/corca-ai/charness/issues/584)'s local-proof carrier with the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md); do not close it before full cohort closeout.
+2. Resume the remaining ledger order at #528/#539/#542 trust-path premises and non-closure triggers.
 3. Use the [release contract](../docs/conventions/operating-contract.md) — final push/release remains conditional on every cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 
 ## Discuss

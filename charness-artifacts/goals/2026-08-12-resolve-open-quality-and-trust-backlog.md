@@ -11,12 +11,11 @@ in this session after the pre-implementation critique passes.
 
 - Current slice: Slice 1 and Slice 2 in parallel — premise decomposition remains
   incomplete while low-coupling quality repairs proceed.
-- Current slice intent: record #582's narrow README-proof repair and #583's
-  re-read disposition without laundering unfinished umbrella residue or
-  #528/#539/#542 premise work into a completion claim.
-- Next action: re-read #584's remaining planner-read-cost successor boundary,
-  then either select its owned implementation or record its tracker-visible
-  non-closure disposition.
+- Current slice intent: record #584's representative planner read-cost repair
+  without laundering unfinished umbrella residue or #528/#539/#542 premise
+  work into a completion claim.
+- Next action: resume the ledger's #528/#539/#542 trust-path premises after
+  recording #584's tracker-visible local-proof carrier.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -177,9 +176,9 @@ premise, owner, evidence channel, and tracker-visible outcome.
   two review rounds; #546 current membership check and selected lane passed.
 - Boundary: no issue is represented as closed locally. #546 has a GitHub
   `unproven-defer` carrier; #595 and #597 await final direct-to-default closeout
-  and independent GitHub readback. #584 remains OPEN with a split carrier:
-  SessionStart is locally proven, while the closed #532's successor contract is
-  only specified, not implemented.
+  and independent GitHub readback. #584 remains OPEN: SessionStart and the
+  #532 representative planner-read-cost slice are locally proven, while a
+  broader planner rollout is deliberately deferred.
 - #589: local proof is complete: a validator-accepted local prescription has a
   reachable reconciled state only when every exact adapter command is declared;
   legacy/sample lineage remains advisory metadata. GitHub remains OPEN with a
@@ -202,8 +201,8 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - #583: cited pickup specs are deleted and #597 repaired its empty-fixture
   fail-open; no bounded generic premise gate is justified, so it remains OPEN
   with a re-read disposition.
-- Next: re-read #584's remaining planner-read-cost successor boundary, then
-  select an owned implementation or explicit tracker-visible non-closure.
+- Next: record #584's local-proof carrier, then re-read the #528/#539/#542
+  trust-path premises in ledger order.
 
 ## Context Sources
 

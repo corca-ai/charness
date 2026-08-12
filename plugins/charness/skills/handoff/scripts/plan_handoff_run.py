@@ -67,6 +67,7 @@ yaml_output = SKILL_RUNTIME.load_repo_module_from_skill_script(__file__, "script
 ENVELOPE = SimpleNamespace(
     **runpy.run_path(str(Path(__file__).resolve().parents[3] / "shared" / "scripts" / "run_plan_envelope.py"))
 )
+SKILL_ROOT = Path(__file__).resolve().parents[1]
 
 # The canonical sections and the content-line counting rule are single-sourced
 # from the skill-local budget module, so planner diagnosis cannot disagree with
@@ -104,6 +105,26 @@ def _relative_script_command(repo_root: Path, rel_path: str, *args: str) -> dict
 
 def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
     return ENVELOPE.read(path, why, kind=kind, base=base)
+
+
+def _measure_required_read(repo_root: Path, item: dict[str, Any]) -> dict[str, Any]:
+    """Resolve a handoff read only against the base its producer declared."""
+    bases = {"repo": repo_root, "skill": SKILL_ROOT}
+    base_root = bases.get(item.get("base"))
+    if base_root is None:
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="unknown-base")
+    try:
+        candidate = (base_root / str(item["path"])).resolve()
+        candidate.relative_to(base_root.resolve())
+        if not candidate.exists():
+            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
+        if not candidate.is_file():
+            return ENVELOPE.disclose_read_measurement(item, unavailable_reason="not-a-file")
+        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
+    except ValueError:
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="outside-declared-base")
+    except (OSError, RuntimeError):
+        return ENVELOPE.disclose_read_measurement(item, unavailable_reason="stat-failed")
 
 
 def _packet(
@@ -287,7 +308,7 @@ def _required_reads(
         INTENT_REFERENCE_READS["judge_from_user_request"],
     ):
         reads.append(_read(path, "reference", why, base="skill"))
-    return reads
+    return [_measure_required_read(repo_root, item) for item in reads]
 
 
 def _gate_packets(repo_root: Path, artifact_path: str) -> list[dict[str, Any]]:

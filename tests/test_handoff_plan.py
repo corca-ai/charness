@@ -18,8 +18,8 @@ CHUNKED_ROUTING_TEXT = (ROOT / "skills/public/handoff/references/chunked-routing
 _handoff_validator = import_repo_module(ROOT / "scripts" / "validate_handoff_artifact.py", "scripts.validate_handoff_artifact")
 
 
-def load_plan_module():
-    spec = importlib.util.spec_from_file_location("handoff_plan_test_module", SCRIPT_PATH)
+def load_plan_module(path: Path = SCRIPT_PATH):
+    spec = importlib.util.spec_from_file_location(f"handoff_plan_test_module_{path.parent.parent.parent.name}", path)
     assert spec is not None and spec.loader is not None
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
@@ -197,12 +197,14 @@ def test_handoff_plan_routes_direct_invocation_to_chunked_routing() -> None:
     assert plan["intent"]["chunked_routing"]["should_run"] is True
     assert plan["next_action"]["kind"] == "run_chunked_routing"
     assert plan["next_action"]["command"].endswith("--repo-root . --with-issues")
-    assert {
+    chunked_read = next(read for read in plan["required_reads"] if read["path"] == "references/chunked-routing.md")
+    assert {key: chunked_read[key] for key in ("path", "kind", "base", "why")} == {
         "path": "references/chunked-routing.md",
         "kind": "reference",
         "base": "skill",
         "why": "deterministic trigger says route backlog before pickup",
-    } in plan["required_reads"]
+    }
+    assert chunked_read["size_bytes"] == (ROOT / "skills/public/handoff/references/chunked-routing.md").stat().st_size
     assert [read for read in plan["required_reads"] if read.get("kind") == "preflight"] == [], (
         "chunked routing reads the handoff but must not be briefed to author it"
     )
@@ -385,12 +387,47 @@ def test_handoff_plan_marks_missing_adapter_reads_as_skill_relative(tmp_path: Pa
     plan = run_plan("--repo-root", str(repo), "--intent", "refresh")
 
     assert plan["adapter"]["found"] is False
-    assert {
+    adapter_read = next(read for read in plan["required_reads"] if read["path"] == "references/adapter-contract.md")
+    assert {key: adapter_read[key] for key in ("path", "kind", "base", "why")} == {
         "path": "references/adapter-contract.md",
         "kind": "reference",
         "base": "skill",
         "why": "adapter was missing, warned, or invalid",
-    } in plan["required_reads"]
+    }
+    assert adapter_read["size_bytes"] == (ROOT / "skills/public/handoff/references/adapter-contract.md").stat().st_size
+
+
+def test_handoff_read_measurement_distinguishes_repo_skill_missing_and_escaped_paths(tmp_path: Path) -> None:
+    module = load_plan_module()
+    repo = seed_repo(tmp_path, handoff_body())
+    (repo / "loop").symlink_to("loop")
+
+    artifact = module._measure_required_read(repo, {"path": "docs/handoff.md", "why": "x", "base": "repo"})
+    skill = module._measure_required_read(repo, {"path": "references/spill-targets.md", "why": "x", "base": "skill"})
+    missing = module._measure_required_read(repo, {"path": "docs/missing.md", "why": "x", "base": "repo"})
+    escaped = module._measure_required_read(repo, {"path": "../outside.md", "why": "x", "base": "repo"})
+    loop = module._measure_required_read(repo, {"path": "loop", "why": "x", "base": "repo"})
+
+    assert artifact["size_bytes"] == (repo / "docs/handoff.md").stat().st_size
+    assert skill["size_bytes"] == (ROOT / "skills/public/handoff/references/spill-targets.md").stat().st_size
+    assert missing["unavailable_reason"] == "missing"
+    assert escaped["unavailable_reason"] == "outside-declared-base"
+    assert loop["unavailable_reason"] == "stat-failed"
+
+
+def test_handoff_required_read_measurement_is_source_plugin_parity_for_mixed_bases(tmp_path: Path) -> None:
+    repo = seed_repo(tmp_path, handoff_body())
+    plugin_path = ROOT / "plugins/charness/skills/handoff/scripts/plan_handoff_run.py"
+
+    for module, skill_root in (
+        (load_plan_module(), ROOT / "skills/public/handoff"),
+        (load_plan_module(plugin_path), ROOT / "plugins/charness/skills/handoff"),
+    ):
+        plan = module.build_plan(repo, intent="refresh", invoked_directly=False)
+        artifact = next(read for read in plan["required_reads"] if read["base"] == "repo")
+        reference = next(read for read in plan["required_reads"] if read["base"] == "skill")
+        assert artifact["size_bytes"] == (repo / artifact["path"]).stat().st_size
+        assert reference["size_bytes"] == (skill_root / reference["path"]).stat().st_size
 
 
 def test_handoff_plan_scaffolds_missing_artifact(tmp_path: Path) -> None:

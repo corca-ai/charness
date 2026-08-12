@@ -1,0 +1,159 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T16:22:30Z",
+  "prepared_for": "issue-584 planner read-cost repair r2",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- charness-artifacts/debug/latest.md\n- charness-artifacts/spec/planner-required-read-cost-contract.md\n- plugins/charness/shared/references/run-plan-envelope.md\n- plugins/charness/shared/scripts/run_plan_envelope.py\n- plugins/charness/skills/handoff/scripts/plan_handoff_run.py\n- plugins/charness/skills/quality/scripts/plan_quality_run.py\n- plugins/charness/skills/quality/scripts/quality_run_plan_render.py\n- skills/public/handoff/scripts/plan_handoff_run.py\n- skills/public/quality/scripts/plan_quality_run.py\n- skills/public/quality/scripts/quality_run_plan_render.py\n- skills/shared/references/run-plan-envelope.md\n- skills/shared/scripts/run_plan_envelope.py\n- tests/quality_gates/test_quality_run_planner.py\n- tests/test_handoff_plan.py\n- tests/test_run_plan_envelope.py\n- charness-artifacts/critique/2026-08-12-161938-packet.json\n- charness-artifacts/critique/2026-08-12-161938-packet.md\n- charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  derived matches: plugins/charness/shared/references/run-plan-envelope.md, plugins/charness/shared/scripts/run_plan_envelope.py, plugins/charness/skills/handoff/scripts/plan_handoff_run.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_run_plan_render.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/spec/planner-required-read-cost-contract.md, skills/shared/references/run-plan-envelope.md, charness-artifacts/critique/2026-08-12-161938-packet.md, charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md\n  derived matches: plugins/charness/shared/references/run-plan-envelope.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/shared/references/run-plan-envelope.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  derived matches: plugins/charness/shared/references/run-plan-envelope.md, plugins/charness/shared/scripts/run_plan_envelope.py, plugins/charness/skills/handoff/scripts/plan_handoff_run.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_run_plan_render.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_run_plan_render.py, skills/shared/references/run-plan-envelope.md, skills/shared/scripts/run_plan_envelope.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-12-161938-packet.json, charness-artifacts/critique/2026-08-12-161938-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/latest.md, charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/quality_gates/test_quality_run_planner.py, tests/test_handoff_plan.py, tests/test_run_plan_envelope.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/handoff/scripts/plan_handoff_run.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_run_plan_render.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "bde3fe0b5ba5f12e9a28401c8badfb7ef39b7871",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/spec/planner-required-read-cost-contract.md",
+      "plugins/charness/shared/references/run-plan-envelope.md",
+      "plugins/charness/shared/scripts/run_plan_envelope.py",
+      "plugins/charness/skills/handoff/scripts/plan_handoff_run.py",
+      "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+      "plugins/charness/skills/quality/scripts/quality_run_plan_render.py",
+      "skills/public/handoff/scripts/plan_handoff_run.py",
+      "skills/public/quality/scripts/plan_quality_run.py",
+      "skills/public/quality/scripts/quality_run_plan_render.py",
+      "skills/shared/references/run-plan-envelope.md",
+      "skills/shared/scripts/run_plan_envelope.py",
+      "tests/quality_gates/test_quality_run_planner.py",
+      "tests/test_handoff_plan.py",
+      "tests/test_run_plan_envelope.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+        "content_sha256": "3fc48fc9261191c64b2b9f0cbbcd443be6e48d93a992afca2c6a512bd694ff39"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "cbf4c44625a8c5a292eca99772ec6914c503e2ab4850a5336f7692174499aa63"
+      },
+      {
+        "path": "charness-artifacts/spec/planner-required-read-cost-contract.md",
+        "content_sha256": "da8c0c54aec8fc27f3d754352b623cf4211e75f2b038d328ec4c2012b46cfa17"
+      },
+      {
+        "path": "plugins/charness/shared/references/run-plan-envelope.md",
+        "content_sha256": "0167386b04586e261530cd7f6e21758a989127a17ec7068262af2ec24fa3facf"
+      },
+      {
+        "path": "plugins/charness/shared/scripts/run_plan_envelope.py",
+        "content_sha256": "34523b9db0cce091284205c0dde443017f5c3dc299f0baf71e9d8bcf827a9b02"
+      },
+      {
+        "path": "plugins/charness/skills/handoff/scripts/plan_handoff_run.py",
+        "content_sha256": "85239a5616452b6adb0e7794575f032510e238deef04e7c58bb356b27a165f24"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+        "content_sha256": "a0ff48f128221f00ed6eb2895aaaf157e05f18a620eee5b9a5bcfb679c4a650f"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_run_plan_render.py",
+        "content_sha256": "e948ff22fd3dcd70cd89948988dac5345267da288c30d3a41e0cca421e8be1e1"
+      },
+      {
+        "path": "skills/public/handoff/scripts/plan_handoff_run.py",
+        "content_sha256": "85239a5616452b6adb0e7794575f032510e238deef04e7c58bb356b27a165f24"
+      },
+      {
+        "path": "skills/public/quality/scripts/plan_quality_run.py",
+        "content_sha256": "a0ff48f128221f00ed6eb2895aaaf157e05f18a620eee5b9a5bcfb679c4a650f"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_run_plan_render.py",
+        "content_sha256": "e948ff22fd3dcd70cd89948988dac5345267da288c30d3a41e0cca421e8be1e1"
+      },
+      {
+        "path": "skills/shared/references/run-plan-envelope.md",
+        "content_sha256": "0167386b04586e261530cd7f6e21758a989127a17ec7068262af2ec24fa3facf"
+      },
+      {
+        "path": "skills/shared/scripts/run_plan_envelope.py",
+        "content_sha256": "34523b9db0cce091284205c0dde443017f5c3dc299f0baf71e9d8bcf827a9b02"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_planner.py",
+        "content_sha256": "fe4ccec187bc80cdf23b734a33cee75fc9a5fb53c2ddbf95b8dbe01d651b22f8"
+      },
+      {
+        "path": "tests/test_handoff_plan.py",
+        "content_sha256": "bf23c0e2e2b30ae5bd7d5ab2d01f62f2ea4a85f297d2458a1ff50130ff11f2e0"
+      },
+      {
+        "path": "tests/test_run_plan_envelope.py",
+        "content_sha256": "3584932c95323ab06f2db7787eb7ed1146b1dde21bc8300d8769a98e29a98642"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "22c4a458dc7e8d8abdb354e01e2eb4c8365751991162668f32477160ebcb15b9",
+    "declared_untracked": [
+      {
+        "path": "charness-artifacts/debug/2026-08-13-issue-584-planner-read-cost-implementation-debug.md",
+        "content_sha256": "3fc48fc9261191c64b2b9f0cbbcd443be6e48d93a992afca2c6a512bd694ff39"
+      }
+    ],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-12-161938-packet.json",
+      "charness-artifacts/critique/2026-08-12-161938-packet.md"
+    ],
+    "identity_sha256": "d6cf737b91041a6dfcca1c34f8e9aa95a760ffcdc3effeac4b8633b7cd2493c2"
+  }
+}

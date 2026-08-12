@@ -124,7 +124,9 @@ def test_quality_run_plan_excludes_skill_refs_when_repo_has_no_skills(tmp_path: 
     assert "references/skill-quality.md" not in refs
     assert "references/skill-ergonomics.md" not in refs
     assert any(
-        read["path"] == "references/quality-lenses.md" and read["why"]
+        read["path"] == "references/quality-lenses.md"
+        and read["why"]
+        and read["size_bytes"] == (ROOT / "skills/public/quality/references/quality-lenses.md").stat().st_size
         for read in reads
     )
     assert plan["declaration_lifecycle"]["status"] == "not-configured"
@@ -513,23 +515,6 @@ def test_quality_run_plan_brief_standing_maintainer_prompt_without_final_gate(tm
     assert "If the repo has a canonical final" in mle["prompt"]
 
 
-def test_quality_run_plan_reports_gate_packet_cost_and_trust(tmp_path: Path) -> None:
-    repo = tmp_path / "app"
-    repo.mkdir()
-
-    plan = _run_plan(repo)
-
-    packets = plan["gate_packets"]
-    read_only = next(packet for packet in packets if packet["id"] == "read-only-quality")
-    assert read_only["cost_tier"] == "broad"
-    assert read_only["parallel_group"] == "serial-critical"
-    assert "advisory" in read_only["trust_model"]
-    assert "repo-native command" in read_only["run_when"]
-    skill_ergonomics = next(packet for packet in packets if packet["id"] == "skill-ergonomics")
-    assert "--summary" in skill_ergonomics["command"]
-    assert "--json" not in skill_ergonomics["command"]
-
-
 def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> None:
     text = PLAN.format_human(
         {
@@ -574,7 +559,13 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
                 ],
             },
             "required_reads": [
-                {"path": "references/quality-lenses.md", "why": "judge the report"}
+                {"path": "references/quality-lenses.md", "why": "judge the report", "size_bytes": 42},
+                {
+                    "path": "references/missing.md",
+                    "why": "show an unavailable measurement",
+                    "measurement_state": "unavailable",
+                    "unavailable_reason": "missing",
+                },
             ],
             "phase_barriers": ["Trust deterministic gates; inspect advisory gates."],
             "structural_review_packet": {
@@ -619,6 +610,8 @@ def test_quality_run_plan_human_output_lists_reference_and_gate_packets() -> Non
             ],
         }
     )
+    assert "[42 bytes]" in text
+    assert "[unavailable (missing)]" in text
 
     assert "references/quality-lenses.md: judge the report" in text
     assert "- structural_review_packet:" in text

@@ -48,7 +48,14 @@ def format_human(plan: dict[str, Any]) -> str:
     ]
     _append_lifecycle(lines, lifecycle)
     lines.append("- required_reads:")
-    lines.extend(f"  - {ref['path']}: {ref.get('why', 'required')}" for ref in plan["required_reads"])
+    for ref in plan["required_reads"]:
+        if "size_bytes" in ref:
+            measurement = f"{ref['size_bytes']} bytes"
+        elif ref.get("measurement_state") == "unavailable":
+            measurement = f"unavailable ({ref.get('unavailable_reason', 'unknown')})"
+        else:
+            measurement = "unmeasured"
+        lines.append(f"  - {ref['path']}: {ref.get('why', 'required')} [{measurement}]")
     lines.append("- phase_barriers:")
     lines.extend(f"  - {barrier}" for barrier in plan["phase_barriers"])
     packet = plan.get("structural_review_packet")

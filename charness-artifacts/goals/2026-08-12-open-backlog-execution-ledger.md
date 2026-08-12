@@ -17,7 +17,7 @@ trigger.
 | #550 | 4, adapter refactor | duplicated adapter resolver bodies can share behavior without losing distinctions | adapter resolver consumers | no | bounded equivalence map and focused regression suite | premise-needed |
 | #582 | 1, umbrella disposition | proof/evidence infrastructure lacks machine-owned state where claimed | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | split — #525's live README-proof residual is locally proven: Claim Ledger Evidence cells now fail closed on non-path-backed state. #514/#524/#535 are backend CLOSED and do not prove their historic class; #524 taxonomy and #535 generic rebind remain deliberate non-implementations. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/582#issuecomment-5269364370; final direct-to-default readback remains required. |
 | #583 | 1, umbrella disposition | named verification surfaces can become inert while green | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | unproven-defer — re-read found the cited pickup specs deleted and their current directory-scoped outcome judge owned by surviving handoff scenarios; #597 repaired the cited empty-fixture fail-open. No concrete producer/reader/fixture supports a generic premise gate. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/583#issuecomment-5269219339; revisit on a live stale test premise with a bounded owner. |
-| #584 | 1, umbrella disposition | named surfaces discard decidable state into prose | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | split — SessionStart routing locally proven; planner read-cost successor remains unimplemented. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/584#issuecomment-5268493705; revisit after #532 successor implementation and its tracker-visible disposition |
+| #584 | 1, umbrella disposition | named surfaces discard decidable state into prose | enumerated cited producer/reader pairs | unknown | enumerate every cited claim; close only when every child is proven or not-applicable | local proof — SessionStart routing plus #532's representative quality/handoff planner read-cost slice are proven; broader planner rollout remains a deliberate widening follow-up. GitHub OPEN pending the new tracker carrier and final cohort closeout. |
 | #586 | 2, wired-proof path | a check runs through its actual caller path | check caller and consumer | yes | end-to-end wired-path regression proof | unproven-defer — inspected candidate is a superseded helper; both production closeout consumers use the equivalent wired loop, whose failure branch is proven. GitHub OPEN; tracker carrier https://github.com/corca-ai/charness/issues/586#issuecomment-5268965258; revisit on a reproducible operator-path bypass. |
 | #587 | 1, premise disposition | the original mutation-coverage blocker framing remains refuted or has live residue | mutation coverage lane / release operator | unknown | re-read retargeted issue and measurement; tracker-visible defer, close, or split decision | unproven-defer — tracker carrier https://github.com/corca-ai/charness/issues/587#issuecomment-5268526904; revisit on original-session recovery or a reproducible false blocker |
 | #588 | 4, public helper | public dogfood invocation fails gracefully without internal policy files | consumer helper / skill author | no | clean consumer-shaped invocation and error contract | premise-needed |
@@ -87,12 +87,12 @@ the umbrella tracker text.
   remaining named-but-never-run conditional and consumer-runner cases require
   an adapter-declared expectation. GitHub disposition:
   https://github.com/corca-ai/charness/issues/546#issuecomment-5268428686.
-- #584 — split: SessionStart configured-artifact routing is locally proven by
-  `e3822458`; GitHub #584 is OPEN with a tracker carrier at
-  https://github.com/corca-ai/charness/issues/584#issuecomment-5268493705. GitHub #532 is closed, but
-  its successor implementation contract remains at
-  `charness-artifacts/spec/planner-required-read-cost-contract.md`; revisit #584
-  only after that contract is implemented and independently dispositioned.
+- #584 — local proof: SessionStart configured-artifact routing is proven by
+  `e3822458`; the #532 successor now measures representative quality/handoff
+  reads under source and plugin layouts with two review rounds recorded in
+  `charness-artifacts/critique/2026-08-13-issue-584-planner-read-cost-resolution.md`.
+  GitHub remains OPEN pending its updated tracker carrier and cohort closeout;
+  debug/retro/issue/gather rollout is a deliberate widening follow-up.
 - #595 — `c9d25da4` measured a live latest-only spike and made its advisory
   contract explicit in human and structured output while retaining median-red
   enforcement; tracker closure waits for the final direct-to-default carrier.

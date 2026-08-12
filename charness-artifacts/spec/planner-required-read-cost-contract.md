@@ -12,8 +12,9 @@ that cannot be safely resolved disclose that state rather than inventing a size.
 
 ## Current Slice
 
-Define the shared schema and base-aware measurement seam before modifying
-individual planners.
+Implement the shared schema and base-aware measurement seam in the two
+representative planners: quality (skill base) and handoff (mixed repo and skill
+bases). Debug, retro, issue, and gather remain a widening follow-up.
 
 ## Fixed Decisions
 
@@ -50,14 +51,16 @@ individual planners.
 - Every changed planner emits `size_bytes` for resolvable reads or a typed
   unavailable reason.
 - The envelope validator rejects malformed measurement disclosures.
-- Tests exercise repo-base and skill-base paths in source and plugin layouts.
+- Tests exercise the representative repo-base and skill-base paths in source
+  and plugin layouts.
 
 ## Acceptance Checks
 
 - unit: shared envelope measurement-schema tests pass.
-- integration: representative quality, handoff, debug, and retro planners emit
-  measured or unavailable disclosures under fixture roots.
-- e2e: source and shipped quality planner output exposes the same read-cost shape.
+- integration: representative quality and handoff planners emit measured or
+  unavailable disclosures under fixture roots.
+- e2e: source and shipped quality and handoff planner output exposes the same
+  read-cost shape for the bases each owns.
 
 ## Boundary Ownership
 

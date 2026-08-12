@@ -40,6 +40,33 @@ def test_read_emits_only_supplied_optional_fields() -> None:
     }
 
 
+def test_read_measurement_disclosures_are_strict_and_additive() -> None:
+    item = ENV.read("p", "w")
+    assert ENV.disclose_read_measurement(item, size_bytes=0)["size_bytes"] == 0
+    unavailable = ENV.disclose_read_measurement(item, unavailable_reason="missing")
+    assert unavailable["measurement_state"] == "unavailable"
+    assert unavailable["unavailable_reason"] == "missing"
+    with pytest.raises(ENV.EnvelopeError, match="exactly one"):
+        ENV.disclose_read_measurement(item)
+
+
+@pytest.mark.parametrize(
+    "read",
+    [
+        {"path": "p", "why": "w", "size_bytes": -1},
+        {"path": "p", "why": "w", "size_bytes": True},
+        {"path": "p", "why": "w", "size_bytes": 1, "unavailable_reason": "missing"},
+        {"path": "p", "why": "w", "measurement_state": "available", "unavailable_reason": "missing"},
+        {"path": "p", "why": "w", "measurement_state": "unavailable", "unavailable_reason": "other"},
+    ],
+)
+def test_validate_envelope_rejects_invalid_read_measurement(read: dict) -> None:
+    kwargs = _valid_kwargs()
+    kwargs["required_reads"] = [read]
+    with pytest.raises(ENV.EnvelopeError, match="measurement|size_bytes|unavailable_reason"):
+        ENV.build_envelope(**kwargs)
+
+
 def test_gate_packet_has_core_keys_and_extensions() -> None:
     packet = ENV.gate_packet("g", "trust", cost_tier="network", available=False, run_when="always")
     assert packet["id"] == "g"

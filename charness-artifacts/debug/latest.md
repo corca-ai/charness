@@ -1,1 +1,1 @@
-2026-08-13-readme-proof-evidence-binding-debug.md
+2026-08-13-issue-584-planner-read-cost-implementation-debug.md

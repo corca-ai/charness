@@ -12,7 +12,13 @@ Three keys carry the shared meaning; everything else is a per-skill extension:
 
 - `required_reads` — list of `read()` items to open before broad work. Each item
   is `{path, why}` plus optional `kind` / `base` (debug/handoff/retro),
-  `trigger` (gather/issue), `role` (issue/quality).
+  `trigger` (gather/issue), `role` (issue/quality). A planner that has measured
+  a local read adds a non-negative `size_bytes`; when it cannot resolve that
+  read, it instead adds `measurement_state: unavailable` and one typed
+  `unavailable_reason` (`missing`, `not-a-file`, `outside-declared-base`,
+  `stat-failed`, or `unknown-base`). The envelope validates a supplied
+  disclosure but never guesses a path base; legacy unmeasured planner items
+  remain compatible during representative rollout.
 - `next_action` — a single `next_action()` dict, ALWAYS carrying a string
   `kind`. `command` / `instruction` / `reason` / `why` / `redirect` /
   artifact pointers ride as extensions. It is never a bare string.

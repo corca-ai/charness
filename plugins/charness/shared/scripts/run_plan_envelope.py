@@ -57,6 +57,9 @@ REQUIRED_ENVELOPE_KEYS = (
     "gate_packets",
 )
 GATE_PACKET_CORE_KEYS = ("id", "trust_model", "cost_tier")
+UNAVAILABLE_READ_MEASUREMENT_REASONS = frozenset(
+    {"missing", "not-a-file", "outside-declared-base", "stat-failed", "unknown-base"}
+)
 
 
 class EnvelopeError(ValueError):
@@ -89,6 +92,31 @@ def read(
     if role is not None:
         item["role"] = role
     return item
+
+
+def disclose_read_measurement(
+    item: dict[str, Any],
+    *,
+    size_bytes: int | None = None,
+    unavailable_reason: str | None = None,
+) -> dict[str, Any]:
+    """Return a read item with one planner-measured availability disclosure.
+
+    A planner, rather than this generic envelope, resolves its own declared
+    path base and supplies either the stat result or a typed reason it could not
+    measure. Existing planners may still emit legacy unmeasured reads during the
+    representative rollout; once a disclosure is supplied this helper and the
+    envelope validator make its shape fail closed.
+    """
+    if (size_bytes is None) == (unavailable_reason is None):
+        raise EnvelopeError("read measurement needs exactly one of size_bytes or unavailable_reason")
+    measured = dict(item)
+    if size_bytes is not None:
+        measured["size_bytes"] = size_bytes
+    else:
+        measured["measurement_state"] = "unavailable"
+        measured["unavailable_reason"] = unavailable_reason
+    return measured
 
 
 def gate_packet(
@@ -204,6 +232,23 @@ def _validate_reads(required_reads: Any) -> None:
         for key in ("path", "why"):
             if not isinstance(item.get(key), str) or not item[key]:
                 raise EnvelopeError(f"required_reads[{index}] missing non-empty {key!r}")
+        has_size = "size_bytes" in item
+        has_state = "measurement_state" in item
+        has_reason = "unavailable_reason" in item
+        if not (has_size or has_state or has_reason):
+            continue
+        if has_size:
+            if has_state or has_reason:
+                raise EnvelopeError(f"required_reads[{index}] mixes available and unavailable measurement")
+            size_bytes = item["size_bytes"]
+            if isinstance(size_bytes, bool) or not isinstance(size_bytes, int) or size_bytes < 0:
+                raise EnvelopeError(f"required_reads[{index}] size_bytes must be a non-negative integer")
+            continue
+        if item.get("measurement_state") != "unavailable":
+            raise EnvelopeError(f"required_reads[{index}] measurement_state must be 'unavailable'")
+        reason = item.get("unavailable_reason")
+        if reason not in UNAVAILABLE_READ_MEASUREMENT_REASONS:
+            raise EnvelopeError(f"required_reads[{index}] unavailable_reason is invalid")
 
 
 def _validate_gate_packets(gate_packets: Any) -> None:
