@@ -9,13 +9,13 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: consumer-ergonomics completion — #539, #542, and #602 now
-  have local-proof carriers; #528 remains a separately owned OPEN split.
-- Current slice intent: repair or honestly disposition #588's public-helper
-  consumer boundary without laundering local proof, split disposition, or
-  remaining consumer work into closure.
-- Next action: re-run #588's policy-absent consumer fixture, then choose the
-  smallest typed applicability result and proof surface before #599/#601.
+- Current slice: consumer-ergonomics completion — #539, #542, #588, and #602
+  now have local-proof carriers; #528 remains a separately owned OPEN split.
+- Current slice intent: re-read #599's consumer-discovery premise and decide a
+  bounded command versus removal-proposal discipline without laundering local
+  proof, split disposition, or remaining consumer work into closure.
+- Next action: map #599's current consumers, reader classes, and existing
+  removal-proposal validators before choosing its owning implementation slice.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
