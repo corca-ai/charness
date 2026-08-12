@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import copy
 import json
+import runpy
 import subprocess
 import sys
 from pathlib import Path
@@ -232,3 +233,100 @@ def test_register_refuses_a_committed_nonempty_catch_stream(tmp_path: Path, monk
     monkeypatch.setattr(register, "_committed_state", lambda *_args: committed)
     with pytest.raises(ValueError, match="unsupported non-empty catch"):
         _validate(tmp_path)
+
+
+def test_register_rejects_missing_sources_empty_slugs_and_closed_top_level_shapes(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="normalizes to an empty"):
+        register.heading_slug("---")
+    _contract_sources(tmp_path)
+    (tmp_path / "AGENTS.md").unlink()
+    with pytest.raises(ValueError, match="missing contract source"):
+        register.build_contract_units(tmp_path)
+    path = _prepare(tmp_path)
+    path.unlink()
+    with pytest.raises(FileNotFoundError, match="missing contract register"):
+        _validate(tmp_path)
+    path.write_text("{", encoding="utf-8")
+    with pytest.raises(ValueError, match="invalid JSON"):
+        _validate(tmp_path)
+    payload = json.loads(json.dumps(register.initial_contract_register(tmp_path)))
+    for invalid, message in (([], "expected strict"), ({**payload, "schema_version": 2}, "expected strict"), ({**payload, "unit_budget": True}, "container or budget")):
+        path.write_text(json.dumps(invalid), encoding="utf-8")
+        with pytest.raises(ValueError, match=message):
+            _validate(tmp_path)
+
+
+def test_register_rejects_committed_invalid_shapes(tmp_path: Path, monkeypatch) -> None:
+    path = _prepare(tmp_path)
+    cases = [
+        ("{", "invalid JSON"),
+        ("{}", "unsupported shape"),
+        (json.dumps({"kind": register.KIND, "schema_version": 1}), "invalid append-only"),
+    ]
+    for stdout, message in cases:
+        monkeypatch.setattr(
+            register.subprocess,
+            "run",
+            lambda *_args, _stdout=stdout, **_kwargs: subprocess.CompletedProcess([], 0, _stdout, ""),
+        )
+        with pytest.raises(ValueError, match=message):
+            register._committed_state(tmp_path, path)
+
+
+def test_register_rejects_closed_citation_and_proposal_shapes(tmp_path: Path, monkeypatch) -> None:
+    _prepare(tmp_path)
+    units = register.build_contract_units(tmp_path)
+    ids = {unit["unit_id"] for unit in units}
+    unit = units[0]["unit_id"]
+    source = "charness-artifacts/retro/source.md"
+    valid_citation = {"event_id": "cite", "source_retro": source, "unit_id": unit, "anchor": "Waste"}
+    citation_cases = [
+        ([{}], "unexpected or missing"),
+        ([{**valid_citation, "anchor": ""}], "non-empty string"),
+        ([valid_citation, {**valid_citation, "unit_id": units[1]["unit_id"]}], "duplicate citation event_id"),
+        ([{**valid_citation, "unit_id": "missing"}], "unknown active unit"),
+        ([{**valid_citation, "source_retro": "/outside.md"}], "existing repo retro"),
+        ([valid_citation, {**valid_citation, "event_id": "cite-2"}], "duplicate citation for unit"),
+    ]
+    for events, message in citation_cases:
+        with pytest.raises(ValueError, match=message):
+            register._validate_citations(events, ids, tmp_path)
+
+    base = {
+        "proposal_id": "proposal",
+        "lesson_id": "a",
+        "source_retro": source,
+        "target_path": "AGENTS.md",
+        "target_heading": "Future",
+        "proposed_unit_id": "AGENTS.md#future",
+        "rationale": "because",
+        "displacement_unit_ids": [unit],
+    }
+    ledger_path = tmp_path / "charness-artifacts/retro/lesson-ledger.json"
+    monkeypatch.setattr(register, "validate_lesson_ledger", lambda **_kwargs: None)
+    proposal_cases = [
+        ([{}], "unexpected or missing"),
+        ([{**base, "rationale": ""}], "non-empty string"),
+        ([base, {**base}], "duplicate graduation proposal_id"),
+        ([{**base, "source_retro": "other.md"}], "does not cite"),
+        ([{**base, "target_path": "other.md"}], "non-canonical"),
+        ([{**base, "target_heading": "Alpha", "proposed_unit_id": "AGENTS.md#alpha"}], "already exists"),
+        ([{**base, "displacement_unit_ids": "not-a-list"}], "string list"),
+        ([{**base, "displacement_unit_ids": ["missing"]}], "invalid displacement"),
+    ]
+    assert ledger_path.is_file()
+    for proposals, message in proposal_cases:
+        with pytest.raises(ValueError, match=message):
+            register._validate_proposals(proposals, ids, len(units), tmp_path, ledger_path.parent, ledger_path.parent / "recent-lessons.md")
+
+
+def test_register_checker_cli_reports_validation_failure(tmp_path: Path, monkeypatch, capsys) -> None:
+    def fail_validation(**_kwargs: object) -> dict:
+        raise ValueError("broken register")
+
+    monkeypatch.setattr(register, "validate_contract_register", fail_validation)
+    monkeypatch.setattr(sys, "argv", ["check_contract_register.py", "--repo-root", str(tmp_path)])
+    with pytest.raises(SystemExit) as exit_result:
+        runpy.run_path(str(ROOT / "scripts/check_contract_register.py"), run_name="__main__")
+    assert exit_result.value.code == 1
+    assert capsys.readouterr().err == "broken register\n"

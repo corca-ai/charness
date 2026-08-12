@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import math
 from pathlib import Path
 
@@ -49,3 +50,31 @@ def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
 def test_preview_requires_a_nonempty_seed() -> None:
     with pytest.raises(ValueError, match="seed must be"):
         _build("")
+
+
+def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(tmp_path: Path, monkeypatch) -> None:
+    ledger_path = tmp_path / "lesson-ledger.json"
+    ledger_path.write_text(json.dumps({"lessons": []}), encoding="utf-8")
+    monkeypatch.setattr(preview, "validate_lesson_ledger", lambda **_kwargs: None)
+    monkeypatch.setattr(preview, "lesson_ledger_path", lambda _output_dir: ledger_path)
+    with pytest.raises(ValueError, match="could not be loaded"):
+        preview._load_validated_ledger(tmp_path, tmp_path, tmp_path / "summary.md")
+
+    lessons = {"a": {"score_total": 0, "score_count": 0}}
+    base = {"recurrence_class": "a", "lesson": "text", "latest_source_path": "source.md", "selection_weight": 1}
+    cases = [
+        ({}, lessons, "no candidate list"),
+        ({"candidates": [None]}, lessons, "non-object"),
+        ({"candidates": [base, base]}, lessons, "duplicate recurrence"),
+        ({"candidates": [base]}, {"a": None}, "not an object"),
+        ({"candidates": [{"recurrence_class": "a"}]}, lessons, "lacks"),
+        ({"candidates": [base]}, {"a": {"score_total": True, "score_count": 0}}, "non-integer"),
+        ({"candidates": [{**base, "lesson": 1}]}, lessons, "invalid rendered"),
+        ({"candidates": []}, lessons, "every seeded"),
+    ]
+    for index, candidate_lessons, message in cases:
+        with pytest.raises(ValueError, match=message):
+            preview._candidate_rows(index, candidate_lessons)
+    assert preview._recent_key({**base, "lesson_id": "a", "latest_source_date": "not-a-date"})[-1] == "a"
+    with pytest.raises(ValueError, match="invalid selection_weight"):
+        preview._recent_key({**base, "lesson_id": "a", "latest_source_date": None, "selection_weight": True})
