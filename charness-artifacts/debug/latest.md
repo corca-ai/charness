@@ -1,1 +1,1 @@
-2026-08-12-debug-review.md
+2026-08-12-issue-584-sessionstart-routing-debug.md
