@@ -3,14 +3,15 @@ Date: 2026-08-12
 
 ## Context
 
-This session completed the five-issue quality/closeout goal's release phase and
-published Charness 5.0.1. The next material boundary is tracker closure, which
-remains deliberately separate from publication.
+This session completed the five-issue quality/closeout goal, published Charness
+5.0.1, and then closed the five tracker issues through separately reviewed
+post-publication carriers.
 
 ## Window
 
 From the completed quality-planning and closeout-surface goal through the
-5.0.1 branch/tag push, public release readback, and installed-version readback.
+5.0.1 branch/tag push, public release readback, installed-version readback, and
+individual tracker closeout/readback.
 
 ## Evidence Summary
 
@@ -25,6 +26,10 @@ From the completed quality-planning and closeout-surface goal through the
 - The closeout telemetry miner examined 1,652 retained local records. Its
   recurring runtime findings are historical stream signals, not a measurement
   of this session or a reason to weaken release proof.
+- After an explicit user close instruction, #603, #604, #581, #594, and #593
+  each received an independently reviewed manual carrier and returned `CLOSED`
+  through `issue_tool.py verify-closeout`; the [post-publication critique](../critique/2026-08-12-post-publication-issue-closeout-carriers.md)
+  records the exact boundary and non-claims.
 - Packet Consumed: `charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md`.
 
 ## Waste
@@ -47,9 +52,11 @@ From the completed quality-planning and closeout-surface goal through the
 - Kept 5.0.1 as a patch while disclosing that existing direct/env-prefixed
   quality-runner forms can now receive parity findings. Repositories without
   that runner remain advisory unless they opt into canonical-match refusal.
-- Did not auto-close #581, #593, #594, #603, or #604 from the tag. Public
-  release evidence is necessary but each closure still needs its own carrier,
-  behavioral disposition, and tracker readback.
+- Did not auto-close #581, #593, #594, #603, or #604 from the tag: its commit
+  contained no close keywords or release `--close-issue` requests. After the
+  user explicitly requested closure, used one verified `operator-directed-manual-close`
+  carrier and GitHub readback per issue instead of manufacturing a follow-up
+  commit or retag.
 
 ## Trends vs Last Retro
 
@@ -62,7 +69,8 @@ the final local refusal point.
 
 P4 held at the irreversible boundary: local gates preceded branch/tag mutation,
 GitHub release view and an unauthenticated HTTP fetch were distinct evidence
-channels, and installed readback was separately recorded. P1 was briefly
+channels, installed readback was separately recorded, and carrier validation was
+followed by separate GitHub `CLOSED` readback for each issue. P1 was briefly
 mis-applied when a broad coverage command was used for a narrow loader branch;
 the corrected file-limited check restored proportionate proof. The named failure
 signature avoided was treating a green local implementation or a tag as terminal
@@ -91,8 +99,9 @@ issue closure.
 - capability: evaluate a release-planner preflight that reports those two
   deterministic prerequisites before any version mutation; do not weaken the
   release quality gate.
-- memory: hand off the five post-publication issue closeouts as the next ordered
-  workflow, with the release record as their public-proof input.
+- memory: retain the five verified post-publication closeouts in the handoff;
+  do not re-open consumer-runtime or provider claims that their local-only
+  dispositions deliberately did not make.
 
 ## Persisted
 
