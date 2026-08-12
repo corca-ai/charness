@@ -2,41 +2,42 @@
 
 ## Workflow Trigger
 
-- No active goal governs. Read [recent lessons](../charness-artifacts/retro/recent-lessons.md) before shaping the next user-requested work item.
-- The completed [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) is local-only; no push grant carries forward.
+- Run the `issue` closeout workflow in this order: [#603](https://github.com/corca-ai/charness/issues/603) → [#604](https://github.com/corca-ai/charness/issues/604) → [#581](https://github.com/corca-ai/charness/issues/581) → [#594](https://github.com/corca-ai/charness/issues/594) → [#593](https://github.com/corca-ai/charness/issues/593).
+  Re-read each tracker record first; publication is proven, but closure remains
+  an issue-owned irreversible boundary. Begin with source reads and draft
+  validation only: a PR or direct-commit carrier needs a new phase-scoped push
+  grant; a manual close is allowed only after that issue's closeout floor and
+  behavioral disposition are recorded.
 
 ## Continuation Capability
 
-- [Operating contract](./conventions/operating-contract.md) — proof-surface verdict changes require a second bounded review of repairs.
-- [Implementation discipline](./conventions/implementation-discipline.md#declared-where-derivable) — derive facts before pinning them; form validators remain separate.
-- [Cautilus on demand](../skills/public/quality/references/cautilus-on-demand.md) — plan first and ask before every evaluation run.
+- [Issue closeout discipline](../skills/public/issue/references/closeout-discipline.md) — owns the per-issue carrier, behavioral disposition, and tracker-readback floor.
+- [Release surface record](../charness-artifacts/release/latest.md) — owns public release, distinct-channel, and installed-readback evidence for the current release.
 
 ## Current State
 
-- The [harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) led to completed local ledger/session evidence; [comparative policy](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) remains dormant pending naturally varied sessions.
-- The [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, 5, and 6 locally, including final quality and a distinct claims/disposition review. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only.
-- [Remote CI reconciliation](../charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md) remains locally resolved; hosted readback is not claimed.
-Refresh kept: [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md), its ordered first slice, the Cautilus approval boundary, and the remote-proof non-claim because each changes the next action.
+- [Five-issue repair goal](../charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md) — owns the completed local fixes and their per-slice proof; it deliberately did not close tracker issues before publication.
+- [Published release record](../charness-artifacts/release/latest.md) — holds the verified branch/tag, GitHub release, HTTP observation, release quality, fresh-checkout probes, and installed `version`/`doctor` readback.
+- [Issue #603](https://github.com/corca-ai/charness/issues/603), [#604](https://github.com/corca-ai/charness/issues/604), [#581](https://github.com/corca-ai/charness/issues/581), [#594](https://github.com/corca-ai/charness/issues/594), and [#593](https://github.com/corca-ai/charness/issues/593) — remain open; a post-publication carrier must bind each issue, with an individual behavioral disposition and GitHub `CLOSED` readback.
+Refresh kept: the published-release proof and the five issue-owned closure boundaries because they determine the next workflow.
 
-Refresh non-claims: prior handoff backlog history, issue snapshots, quality numbers, and ownership-gate chronology now live in their owning artifacts.
-
-<!-- charness-publish-state-claim:post-push-operational-proof -->
-```json
-{"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
-```
+Refresh non-claims: hosted CI, consumer-runtime behavior, provider-backed adapter execution, and tracker closure are not implied by the release or local tests.
 
 ## Next Session
 
-1. No execution is pending from the [completed operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md). Shape a new goal only when the user supplies a new scoped outcome.
-2. Preserve the [completed goal's external non-claims](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md#final-verification): its Cautilus run is consumed; push, release, issue closure, and hosted readback still need separate grants.
+1. Re-read [#603](https://github.com/corca-ai/charness/issues/603), [#604](https://github.com/corca-ai/charness/issues/604), [#581](https://github.com/corca-ai/charness/issues/581), [#594](https://github.com/corca-ai/charness/issues/594), and [#593](https://github.com/corca-ai/charness/issues/593) in that order for their current bodies, comments, and state.
+2. For each issue, draft and validate its carrier plus behavioral disposition under the [issue closeout discipline](../skills/public/issue/references/closeout-discipline.md). Do not publish a PR/direct-commit carrier without a new phase-scoped push grant; mutate manually only when that issue's closeout floor is met.
+3. After each permitted mutation, independently read back GitHub `CLOSED` and record that issue's final disposition. [Issue closeout discipline](../skills/public/issue/references/closeout-discipline.md) specifies the required evidence.
+4. [Published release record](../charness-artifacts/release/latest.md) supplies public-release evidence that a closeout carrier may cite without restating.
 
 ## Discuss
 
-- Ruling 5's one approved Cautilus evaluation is consumed. Push, release, issue close, and hosted readback still require new phase-scoped grants.
+- No new product decision is pending. If tracker readback exposes a live residue
+  for any selected issue, leave that issue open and record the exact disposition
+  instead of treating the release as a substitute for closure evidence.
 
 ## References
 
-- [Active operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md)
-- [Six operator rulings](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md)
+- [Session retro](../charness-artifacts/retro/2026-08-12-session-retro.md)
 - [Recent lessons](../charness-artifacts/retro/recent-lessons.md)
-- [Current quality posture](../charness-artifacts/quality/latest.md)
+- [Current quality record](../charness-artifacts/quality/latest.md)

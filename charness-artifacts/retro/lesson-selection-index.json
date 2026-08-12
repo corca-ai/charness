@@ -12,7 +12,7 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 483,
+  "source_artifact_count": 484,
   "candidate_count": 1985,
   "top_candidates": [
     {
@@ -918,10 +918,10 @@
       ]
     },
     {
-      "candidate_id": "current_focus:93ec0ec7b4a0",
+      "candidate_id": "current_focus:2e70c7beb295",
       "kind": "current_focus",
-      "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
-      "normalized_key": "this retrospective reviews the completed handoff ownership gate work that led to the current",
+      "lesson": "This session completed the five-issue quality/closeout goal's release phase and published Charness 5.0.1.",
+      "normalized_key": "this session completed the five issue quality closeout goal s release phase and published",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -939,7 +939,7 @@
           "section": "Context",
           "generator": null,
           "kind": "current_focus",
-          "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice."
+          "lesson": "This session completed the five-issue quality/closeout goal's release phase and published Charness 5.0.1."
         }
       ]
     },
@@ -1204,62 +1204,10 @@
       ]
     },
     {
-      "candidate_id": "class:e13430490ca2",
+      "candidate_id": "next_improvement:71c79ff8c1d5",
       "kind": "next_improvement",
-      "lesson": "establish the graduation proposal's evidence and displacement before any contract-surface mutation.",
-      "normalized_key": "establish the graduation proposal s evidence and displacement before any contract surface mutation",
-      "recurrence_class": "graduation-is-proposal",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "establish the graduation proposal's evidence and displacement before any contract-surface mutation."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:9d8719cab2e0",
-      "kind": "next_improvement",
-      "lesson": "implement the ledger state file, append-only cited transitions, seed migration, and focused gate before selection or scoring reads it.",
-      "normalized_key": "implement the ledger state file append only cited transitions seed migration and focused gate",
-      "recurrence_class": "durable-lesson-ledger-first",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "implement the ledger state file, append-only cited transitions, seed migration, and focused gate before selection or scoring reads it."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:ab6aa7cc1e42",
-      "kind": "next_improvement",
-      "lesson": "keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule.",
-      "normalized_key": "keep the current slice and register probes in the canonical ledger register spec do",
+      "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate.",
+      "normalized_key": "evaluate a release planner preflight that reports those two deterministic prerequisites before any version",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1277,7 +1225,33 @@
           "section": "Next Improvements",
           "generator": null,
           "kind": "next_improvement",
-          "lesson": "keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule."
+          "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:3cc1392af69f",
+      "kind": "next_improvement",
+      "lesson": "hand off the five post-publication issue closeouts as the next ordered workflow, with the release record as their public-proof input.",
+      "normalized_key": "hand off the five post publication issue closeouts as the next ordered workflow with",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "hand off the five post-publication issue closeouts as the next ordered workflow, with the release record as their public-proof input."
         }
       ]
     },
@@ -1386,6 +1360,32 @@
       ]
     },
     {
+      "candidate_id": "class:d325dbb47c07",
+      "kind": "next_improvement",
+      "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique.",
+      "normalized_key": "run rolling artifact validation and exact changed line coverage for the frozen release diff",
+      "recurrence_class": "release-candidate-preflight-order",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:10db573bd7ed",
       "kind": "next_improvement",
       "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item.",
@@ -1490,6 +1490,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:f56bf20a9481",
+      "kind": "repeat_trap",
+      "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was.",
+      "normalized_key": "moderate a manual all repository coverage invocation recursively covered broad integration tests far beyond",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:8166c2e49c46",
       "kind": "repeat_trap",
       "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary.",
@@ -1516,10 +1542,10 @@
       ]
     },
     {
-      "candidate_id": "repeat_trap:3f4a223d623c",
+      "candidate_id": "repeat_trap:370f29232107",
       "kind": "repeat_trap",
-      "lesson": "**strong**: Hand-editing a generated ratchet baseline created three repair cycles; the existing rebuild path was the missing first move, not a missing rule.",
-      "normalized_key": "strong hand editing a generated ratchet baseline created three repair cycles the existing rebuild",
+      "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence.",
+      "normalized_key": "strong the release candidate was critiqued before its rolling quality pointer and changed line",
       "recurrence_class": null,
       "source_count": 1,
       "independent_source_count": 1,
@@ -1537,33 +1563,7 @@
           "section": "Waste",
           "generator": null,
           "kind": "repeat_trap",
-          "lesson": "**strong**: Hand-editing a generated ratchet baseline created three repair cycles; the existing rebuild path was the missing first move, not a missing rule."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:5f2af2f302b3",
-      "kind": "repeat_trap",
-      "lesson": "**strong**: The telemetry stream reports 16 over-budget full-pytest observations (mean 391.07s against 120s) and 64 recurring over-slice runs. These are recurring cost signals, not permission to weaken proof. The runtime work already has a durable owner in closed issue #505 / D51; the over-slice signal needs a later, separately scoped owner rather than being added to this implementation slice.",
-      "normalized_key": "strong the telemetry stream reports 16 over budget full pytest observations mean 391 07s",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**strong**: The telemetry stream reports 16 over-budget full-pytest observations (mean 391.07s against 120s) and 64 recurring over-slice runs. These are recurring cost signals, not permission to weaken proof. The runtime work already has a durable owner in closed issue #505 / D51; the over-slice signal needs a later, separately scoped owner rather than being added to this implementation slice."
+          "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence."
         }
       ]
     },

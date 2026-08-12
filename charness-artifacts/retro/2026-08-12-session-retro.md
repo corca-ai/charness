@@ -3,90 +3,96 @@ Date: 2026-08-12
 
 ## Context
 
-This retrospective reviews the completed handoff/ownership-gate work that led to
-the current ledger-and-graduation contract, before implementing its first slice.
-The durable contract is the strongest source for the next move; commit history,
-the handoff, the recent-lesson digest, and the prepared packet bound the review.
+This session completed the five-issue quality/closeout goal's release phase and
+published Charness 5.0.1. The next material boundary is tracker closure, which
+remains deliberately separate from publication.
 
 ## Window
 
-The reviewed work spans the 2026-08-11 six-rulings and ownership-gate repairs
-through HEAD (`58e48ea5`); the working tree was clean when the retro packet was
-prepared.
+From the completed quality-planning and closeout-surface goal through the
+5.0.1 branch/tag push, public release readback, and installed-version readback.
 
 ## Evidence Summary
 
-- `docs/handoff.md` identifies the ledger/register contract as the first next-session item.
-- `charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md` fixes the
-  ledger state, append-only transition, and graduation constraints for the first slice.
-- `charness-artifacts/retro/recent-lessons.md` records repeated baseline-edit and
-  terminal-green trust traps.
-- `skills/public/retro/scripts/mine_closeout_telemetry.py --repo-root . --detail` read
-  1,643 local records and found four recurring costs; this is local-stream evidence only.
-- Packet Consumed: `charness-artifacts/retro/2026-08-12-001027-packet.md`.
+- The completed [five-issue goal](../goals/2026-08-12-repair-quality-planner-and-closeout-surface.md)
+  owns the local implementation and per-slice proof.
+- The [release record](../release/latest.md) records release quality (114.155s),
+  fresh-checkout probes, remote tag/branch, GitHub release, distinct HTTP
+  observation, and installed `version`/`doctor` readback.
+- The release attempt first refused because the rolling quality record lacked
+  required schema sections and a newly added loader refusal branch was
+  uncovered; the deterministic gates identified both before publication.
+- The closeout telemetry miner examined 1,652 retained local records. Its
+  recurring runtime findings are historical stream signals, not a measurement
+  of this session or a reason to weaken release proof.
+- Packet Consumed: `charness-artifacts/retro/2026-08-12-session-release-closeout-packet.md`.
 
 ## Waste
 
-- **strong**: Hand-editing a generated ratchet baseline created three repair cycles; the
-  existing rebuild path was the missing first move, not a missing rule.
-- **strong**: The telemetry stream reports 16 over-budget full-pytest observations
-  (mean 391.07s against 120s) and 64 recurring over-slice runs. These are recurring
-  cost signals, not permission to weaken proof. The runtime work already has a
-  durable owner in closed issue #505 / D51; the over-slice signal needs a later,
-  separately scoped owner rather than being added to this implementation slice.
+- **strong**: The release candidate was critiqued before its rolling quality
+  pointer and changed-line coverage had been exercised by the release gate.
+  That produced a repair/re-review/retry loop. The release gate correctly
+  stopped publication; the wasted step was discovering ordinary deterministic
+  prerequisites only after preparing release evidence.
+- **moderate**: A manual all-repository coverage invocation recursively covered
+  broad integration tests, far beyond the one loader line under investigation.
+  It was stopped and replaced with the gate's exact file-limited coverage proof.
+  Broad proof was not itself waste; the missing scope lock was.
 
 ## Critical Decisions
 
-- Build durable ledger state and its append-only transition gate before ranking,
-  scoring, or presentation. That preserves a testable state boundary and avoids
-  inventing a ranking over ephemeral data.
-- Treat graduation as a review-bound proposal, not an automated contract edit.
-  The contract's budget/displacement rule remains an acceptance boundary for the
-  later seam, not a license to change `AGENTS.md` in this slice.
+- Used the repo-owned release helper after the installed 5.0.0 helper refused
+  to write through a drifted source tree. This preserved artifact-schema
+  ownership instead of bypassing the guard.
+- Kept 5.0.1 as a patch while disclosing that existing direct/env-prefixed
+  quality-runner forms can now receive parity findings. Repositories without
+  that runner remain advisory unless they opt into canonical-match refusal.
+- Did not auto-close #581, #593, #594, #603, or #604 from the tag. Public
+  release evidence is necessary but each closure still needs its own carrier,
+  behavioral disposition, and tracker readback.
 
 ## Trends vs Last Retro
 
-The current digest repeats the same two operational risks: hand-edited derived
-state and terminal trust in a single green signal. The ledger design responds by
-making state transitions cited and append-only; it does not claim that the new
-mechanism has changed agent behaviour yet.
+The recent digest's evidence-identity trap recurred in a smaller form: candidate
+artifacts matured after the initial release critique. The corrective pattern held
+this time—bind a new review to the actual repair and let the release gate remain
+the final local refusal point.
 
 ## North Star Alignment
 
-P1 holds: the first slice keeps normal ledger work reversible and uses judgment
-for wording rather than adding a content classifier. P4/P5 hold at the
-graduation boundary: a script may compute candidates, but moving a rule into a
-standing contract remains a proposal behind distinct review. The failure
-signature to avoid is treating a passing ledger gate or a proposed graduation as
-terminal completion; neither establishes that the contract change was warranted.
+P4 held at the irreversible boundary: local gates preceded branch/tag mutation,
+GitHub release view and an unauthenticated HTTP fetch were distinct evidence
+channels, and installed readback was separately recorded. P1 was briefly
+mis-applied when a broad coverage command was used for a narrow loader branch;
+the corrected file-limited check restored proportionate proof. The named failure
+signature avoided was treating a green local implementation or a tag as terminal
+issue closure.
 
 ## Expert Counterfactuals
 
-- Engelbart's system-improving-itself lens would require the tool (ledger), the
-  working method (retro scoring/citation), and the language (contract units) to
-  evolve together. Therefore this slice writes only the state seam and keeps the
-  uncertain register counter as an explicit probe.
-- A decision-quality counterfactual would demand a concrete displacement before
-  any graduation, rather than rewarding a plausible new rule merely because it
-  sounds useful.
+- Engelbart's system-improving-itself lens would move release-candidate
+  determinism (rolling-pointer schema and changed-line proof) ahead of the
+  release critique, so the tool, method, and evidence language freeze together.
+- A decision-quality lens would keep the coverage question narrow from the
+  start: prove the specific changed branch before paying for repository-wide
+  instrumentation.
 
 ## Sibling Search
 
-- same layer: `scripts/recent_lessons_lib.py` rebuild gate | decision: same waste, fix now | proof: first-slice contract requires derived candidate extraction to remain rebuild-checked.
-- abstraction up: `docs/conventions/implementation-discipline.md` | decision: intentional boundary | proof: contract changes stay review-bound; no contract text is edited in this slice.
-- specialization down: `charness-artifacts/retro/recent-lessons.md` | decision: diagnostic-only | proof: it remains a generated digest until ledger selection replaces it in a later slice.
-- mental-model siblings: closeout telemetry over-slice advisory | decision: valid follow-up outside the slice | proof: 64 recurring occurrences from the local stream | follow-up: deferred docs/handoff.md#next-session.
-
-## Portable Candidate
-
-Not portable — the ledger key is this repository's author-declared
-`recurrence-class` marker and its consumer surfaces are charness-local.
+- same layer: `skills/public/release/scripts/publish_release_execute.py` | decision: valid follow-up outside the slice | proof: release quality found rolling-artifact and coverage defects only after the helper had begun candidate mutation | follow-up: deferred docs/handoff.md#next-session
+- abstraction up: release workflow contract | decision: diagnostic-only | proof: the existing helper already rolls pre-commit mutations back and correctly blocks publication; this session establishes sequencing debt, not a bypass defect.
+- specialization down: `scripts/check_changed_line_mutation_coverage.py` | decision: intentional boundary | proof: the file-limited/reuse coverage mode already gives exact proof; the user-facing release workflow should select it rather than weaken the gate.
+- mental-model siblings: release critique packet preparation | decision: valid follow-up outside the slice | proof: evidence packets can become stale whenever candidate evidence changes | follow-up: deferred docs/handoff.md#next-session
 
 ## Next Improvements
 
-- workflow: establish the graduation proposal's evidence and displacement before any contract-surface mutation (recurrence-class: graduation-is-proposal).
-- capability: implement the ledger state file, append-only cited transitions, seed migration, and focused gate before selection or scoring reads it (recurrence-class: durable-lesson-ledger-first).
-- memory: keep the current slice and register probes in the canonical ledger/register spec; do not promote this retro's conclusions into a standing rule.
+- workflow: run rolling-artifact validation and exact changed-line coverage for
+  the frozen release diff before release critique (recurrence-class: release-candidate-preflight-order).
+- capability: evaluate a release-planner preflight that reports those two
+  deterministic prerequisites before any version mutation; do not weaken the
+  release quality gate.
+- memory: hand off the five post-publication issue closeouts as the next ordered
+  workflow, with the release record as their public-proof input.
 
 ## Persisted
 
