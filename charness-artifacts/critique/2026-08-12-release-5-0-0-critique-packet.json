@@ -2,7 +2,7 @@
   "kind": "charness.critique_prepare_packet",
   "version": 1,
   "repo": "charness",
-  "generated_at": "2026-08-12T07:09:58Z",
+  "generated_at": "2026-08-12T07:11:21Z",
   "prepared_for": "release 5.0.0 from 4.2.0",
   "changed_ref": "v4.2.0..HEAD",
   "adapter_path": ".agents/critique-adapter.yaml",
@@ -55,10 +55,10 @@
     "mode": "changed-ref",
     "changed_ref": "v4.2.0..HEAD",
     "resolved_changed_ref": [
-      "0f758b2636cdb7e4c8e8e6ce0fc28fefef215e4d",
+      "deeeac6227734446b80d2d71dcdb8f602e4c20cd",
       "^b5f3ad9e48cefa8d86057ebe6851c6040c9c6720"
     ],
-    "base_head": "0f758b2636cdb7e4c8e8e6ce0fc28fefef215e4d",
+    "base_head": "deeeac6227734446b80d2d71dcdb8f602e4c20cd",
     "base_head_role": "target",
     "reviewed_paths": [
       ".agents/closeout-floor-matrix.json",
@@ -466,7 +466,7 @@
       },
       {
         "path": "charness-artifacts/release/2026-08-12-v5.0.0-notes.md",
-        "content_sha256": "7288134d69da35cc1d9586237f456133d2502eed7d232893c0a5e4cbbe1d35ef"
+        "content_sha256": "9870315cb77ee7537b8b5a7f9eeb68d37ee10b47d3e90f5a3e1e5931b78634fb"
       },
       {
         "path": "charness-artifacts/release/latest.md",
@@ -1489,7 +1489,7 @@
         "content_sha256": "b0a2e3c38c4c428f6d5f78810b989b5f905a33b4eac05867f1c5206936c85e49"
       }
     ],
-    "reviewed_patch_sha256": "94f789a52df9bc7c7f6470d0f31642f96312ac8883f05817aa01dc07bc03a09b",
+    "reviewed_patch_sha256": "7f7044189697864020d84793e34472a58711235f407e9dff4352b0c2ce07a591",
     "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "declared_untracked": [],
@@ -1559,6 +1559,6 @@
       "charness-artifacts/critique/operator-rulings-goal-activation-active-packet.json",
       "charness-artifacts/critique/operator-rulings-goal-activation-active-packet.md"
     ],
-    "identity_sha256": "1c9d8b2e4833e5a47eeff74a4a276289f2194c2b9b0c4a5da7b925f89d448b8b"
+    "identity_sha256": "aad6b1061d034b93165a05974e816281795722036868bb6dbe0d12b7a06e2c81"
   }
 }

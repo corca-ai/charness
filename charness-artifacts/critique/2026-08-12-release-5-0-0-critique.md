@@ -110,8 +110,8 @@ counterweight reviews were received through the host reviewer channel.
 
 - Packet consumed: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
 - Packet path: charness-artifacts/critique/2026-08-12-release-5-0-0-critique-packet.json
-- Packet SHA256: 961014d846d5484c5d992108200798fba23b0cf0b836fb8fe256919bd73b0a05
-- Identity SHA256: 1c9d8b2e4833e5a47eeff74a4a276289f2194c2b9b0c4a5da7b925f89d448b8b
+- Packet SHA256: 4e15283f1d72edf6b81dbe79b7dfcb3db0c012f4f995a109bc6777a5724ddd8f
+- Identity SHA256: aad6b1061d034b93165a05974e816281795722036868bb6dbe0d12b7a06e2c81
 
 ## Boundary Ownership
 
@@ -122,6 +122,6 @@ counterweight reviews were received through the host reviewer channel.
 
 ## Next Move
 
-Commit this critique packet and the v5.0.0 release notes, run a publish dry run,
-then execute the repo-owned major-release helper after a distinct claims review
-of the drafted public note.
+The critique packet and v5.0.0 release notes are committed. The publish dry run
+and distinct claims review passed after the provenance wording repair; execute
+the repo-owned major-release helper next.
