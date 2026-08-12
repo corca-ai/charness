@@ -302,6 +302,45 @@ or a materialized-view mismatch. There is no positive-score budget in this
 slice. The shown-set restriction, UCB ranking, archive state, shuffle seed,
 selection output, register state, and graduation proposal remain out of scope.
 
+## Third Implementation Slice
+
+Add a deterministic, read-only selection preview that first validates both the
+schema-v2 ledger and the checked-in lesson-selection index, then uses the same
+in-memory rebuilt index to intersect non-empty `recurrence_class` values with
+seeded ledger lesson IDs. It selects at most ten distinct lessons sequentially:
+three recent slots, three high-value slots, three high-uncertainty slots, and one
+archive-resurrection slot. Each bucket excludes IDs already selected; a bucket
+reports the number it actually fills, and a pool smaller than ten returns every
+eligible lesson without synthetic backfill.
+
+The value statistic is `score_total / (score_count + 2)`, shrinking small samples
+toward zero. The uncertainty statistic is that value plus
+`sqrt(ln(max(total_score_count, 2)) / (score_count + 1))`; `total_score_count` is
+the sum of every eligible lesson's `score_count`, and the coefficient is fixed at
+one for this local preview. Recent ranking is latest-source date descending (a
+missing date sorts last), then the index's stored `selection_weight` descending,
+then recurrence-class slug ascending. Value and uncertainty ties also break by
+slug. With no archive state in schema v2, the resurrection slot selects one more
+uncertainty candidate and the audit counts name it as
+`archive_fallback_uncertainty: 1` while `archive: 0`; archive behavior itself
+remains deferred.
+
+The output is `charness.lesson-selection-preview` schema version 1 with
+`mode: "preview"`, a non-empty caller `seed`, `eligible_count`, audit-only bucket
+counts (`recent`, `value`, `uncertainty`, `archive`, and
+`archive_fallback_uncertainty`), and a flat `items` list of lesson ID, lesson
+text, and latest source path. Item order is the ascending pair of
+`sha256(seed + "\\0" + lesson_id)` and lesson ID. The output never includes a
+per-item bucket, session, shown, archive, or score-event field, and the command
+does not write any file.
+
+This is not a shown-set record and does not authorize score events: no selected
+session is persisted, no score event gains a session field, and no retro may claim
+that this preview was presented to an agent. It gives a later presentation/retro
+slice a reproducible candidate seam without inventing evidence it cannot observe.
+UCB tuning, score budgets, archive writes, shown-set validation, and register or
+graduation state remain out of scope.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the

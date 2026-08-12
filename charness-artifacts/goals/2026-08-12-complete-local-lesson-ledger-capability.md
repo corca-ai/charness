@@ -21,7 +21,7 @@ Complete the local lesson-ledger capability from replayed score state through se
 
 - Push, release, remote CI, contract-surface graduation, or modifying always-loaded operating contracts.
 - Cryptographic history anchoring; the local validator proves replay and the committed-prefix boundary, not immunity to Git history rewriting.
-- Positive-score budgets, selection exposure limits, UCB ranking, shuffle/rendering, archive behavior, counterfactual scoring, or graduation enforcement until a later slice explicitly owns them.
+- Positive-score budgets, selection exposure limits, archive behavior, counterfactual scoring, or graduation enforcement until a later slice explicitly owns them. The current preview slice owns only deterministic ranking and flat rendering, not presentation evidence.
 
 ## Boundaries
 
@@ -121,13 +121,17 @@ Complete the local lesson-ledger capability from replayed score state through se
 - Score budget options: impose a positive-score cap now or leave the distribution inspectable. Chosen: no budget; the user judged a pre-calibrated cap ambiguous and it would be false policy without selection data.
 - Provenance options: opaque session IDs or cited retro paths. Chosen: cited repository-relative retro paths because a score must be attributable to an actual recurrence-class source.
 - History options: attempt tamper-proof history or validate replay/current committed prefix. Chosen: replay plus prefix boundary; Git review/history remains the real external immutability boundary.
+- Selection options: block until archive/shown-set state exists, build all state together, or render a non-persistent candidate preview. Chosen: a seed-deterministic preview with explicit no-archive fallback; it is useful to inspect ranking without manufacturing evidence that a lesson was shown.
+- Ranking options: leave UCB parameters unspecified or fix a small, inspectable prior. Chosen: adjusted mean `score_total / (score_count + 2)` plus a unit UCB bonus with a safe zero-observation denominator; later scored data, not taste, can justify tuning.
+- Archive options: make a fake empty archive slot or fall back when no archive exists. Chosen: fall back to uncertainty and report `archive: 0`; the flat list still holds ten distinct candidates but makes no resurrection claim.
 
 ## Plan Critique Findings
 
 - Fresh-eye reviewers `score_event_state_review`, `score_event_boundary_review`, and `score_event_counterweight` reviewed the v2 schema before implementation; reviewer boundary snapshot `score-schema-critique-20260812` verified clean.
+- Fresh-eye reviewers `selection_preview_policy_review` and `selection_preview_boundary_review` tightened the preview contract before implementation; `selection_preview_proof_review` found no blocker in the implemented code or mirrors, and both reviewer-boundary snapshots verified clean.
 - Floor-Addition Restraint: `scripts/check_lesson_ledger.py` is retained as a blocking local gate because the existing release-quality path already needs a deterministic refusal when the checked-in derived ledger diverges from its cited replay. An advisory would let an invalid state ship to every consuming repository; the unchanged candidate/digest rebuild remains a separate check, so this adds no duplicate replacement floor.
 - Folded blockers: v1-to-v2 prefix migration, strict v2 key sets, all-seed zero initialization, integer-not-boolean scores, materialized replay equality, source-retro recurrence-class citation, and `(source_retro, lesson_id)` uniqueness.
-- Deferred: shown-set proof, selection/session policy, UCB, archive, positive budget, register, and graduation behavior.
+- Deferred: shown-set proof, selection/session policy, archive state, positive budget, register, and graduation behavior. The current slice owns a narrow UCB-style preview only; it neither records a session nor establishes selection exposure.
 - Over-worry rejected: event sequence/timestamp, score-retraction model, anchor DSL, and cryptographic history anchoring.
 
 ## Closeout Binding Plan
