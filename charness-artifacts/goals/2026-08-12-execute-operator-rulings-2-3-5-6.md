@@ -6,9 +6,9 @@ Activation: `/goal @charness-artifacts/goals/2026-08-12-execute-operator-rulings
 
 ## Active Operating Frame
 
-- Current slice: rulings 2 and 3 completed locally; ruling 5 is next.
-- Current slice intent: create the route-undetermined judge-intent scenario and prepare its one Cautilus evaluation request; do not run that evaluation without an explicit grant.
-- Next action: inspect the existing Cautilus scenario/waiver contract and build only the runnable local scenario.
+- Current slice: rulings 2 and 3 completed locally; ruling 5's scenario is ready and its evaluation is pending.
+- Current slice intent: preserve the route-undetermined judge-intent scenario while awaiting an explicit, log-backed Cautilus evaluation request; do not run that evaluation without both the behavior source and a grant.
+- Next action: ask the operator for a qualifying behavior-source path and one scenario-specific Cautilus evaluation grant; the planner currently returns `next_action: none` without that source.
 - Verification cadence: focused deterministic checks at commit boundaries; fresh-eye critique and stronger slice proof at each irreversible proof-surface or exported-contract boundary; final bundle proof only after all four slices.
 - Gate cadence: obtain `quality` recommendations before slow-gate or verdict-surface work; do not run Cautilus without a later explicit approval.
 - Slice review packet: state the ruling, changed and generated surfaces, preserved boundaries, proof, non-claims, and reviewer questions before each fresh-eye review.
@@ -63,7 +63,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 | --- | --- | --- | --- | --- |
 | 1 | Execute ruling 2 / `#596`: stamp D47 and replace equality pins with invariants. | Removes a stale-measurement failure without widening a weak detector. | Dated SHA-256 snapshot, focused provenance/headline/invariant proof, and two bounded review rounds. | completed 2026-08-12 |
 | 2 | Execute ruling 3: add `check-timing-layer-completeness` to Quality Core CI. | Commit hooks do not cover web edits or unhooked contributors. | Exact CI command, static workflow proof, existing commit trigger, unchanged docs-only labels, and two bounded review rounds. | completed 2026-08-12 |
-| 3 | Execute ruling 5: add the route-undetermined judge-intent scenario and request Cautilus approval for its one evaluation. | The planner's least-certain branch lacks a scenario. | Registered scenario, waiver dispositions, deterministic checks, then either approved Cautilus evidence or `scenario ready / evaluation pending` with ruling 5 still not executed. | pending |
+| 3 | Execute ruling 5: add the route-undetermined judge-intent scenario and request Cautilus approval for its one evaluation. | The planner's least-certain branch lacks a scenario. | Registered scenario, waiver dispositions, deterministic checks, then either approved Cautilus evidence or `scenario ready / evaluation pending` with ruling 5 still not executed. | scenario ready / evaluation pending 2026-08-12 |
 | 4 | Execute ruling 6 / `#585`: re-key boundary-bypass identity on normalized call-site content. | Its path-pair key is the largest remaining schema defect and the ruling fixes its known descendant class. | Schema/baseline reader coverage: identical content moved by path preserves identity; changed content or membership changes identity; duplicate member hashes remain multiplicity-sensitive; and algorithm version is stamped and validated. | pending |
 
 ## Backlog Recount
@@ -74,10 +74,10 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Operator Decision Queue
 
-- Decision: approve the single Cautilus evaluation for ruling 5 after the scenario and planner packet are ready.
+- Decision: supply a qualifying behavior-source path and approve the single Cautilus evaluation for ruling 5 after the scenario and planner packet are ready.
 - Owner: operator.
 - Why deferred: scenario construction and deterministic validation are safe local work; the evaluator is ask-before-run.
-- Unblock action: grant one planner-named Cautilus invocation for the completed scenario.
+- Unblock action: name a non-empty failing-prompt, transcript, operator-log, issue-log, or regression-log file and grant one planner-named Cautilus invocation for the completed scenario.
 - Revisit trigger: slice 3 reaches its evaluation boundary.
 
 ## Coordination Cues
@@ -98,6 +98,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 - Slice 1 / ruling 2 (`#596`): replaced D47's mutable live-corpus equality pin with `2026-08-12-inventory-marker-rule-snapshot.json`, bound it by SHA-256, retained four dated headlines, and changed focused proof to provenance/document/invariant checks. `pytest -q tests/test_inventory_marker_rule_measurement.py tests/test_probe_drift_message.py` passed (39); `check_regenerable_facts.py` passed. The document preflight remains blocked only by pre-existing inline-code findings at D47-unrelated lines 1078 and 1082. Two bounded review rounds found and repaired stale live wording, headline-to-payload binding, provenance checks, and new-snapshot instructions; round-2 repairs are accepted-unreviewed under the two-round cap. The initial full gate exposed an accidentally omitted historical handoff publish-state claim; restoring its exact captured block made its 27 focused ledger tests pass, and the rerun of `./scripts/run-quality.sh --read-only` passed 90 checks (0 failed). Critique: [r596 D47 snapshot](../critique/2026-08-12-r596-d47-snapshot-critique.md). Non-claims: no live corpus proof, CI, push, release, consumer, or issue-closeout claim.
 - Slice 2 / ruling 3: added `python3 scripts/check_timing_layer_completeness.py --repo-root .` as a Quality Core step. Focused timing, staged-commit, and CI/local-parity tests passed (99); `check_github_actions.py` and the timing checker passed. Round 1 repaired a substring-only test into an actual YAML-step and exact 14-label docs-only-list proof; round 2 found no further issue. Critique: [r3 timing-layer CI](../critique/2026-08-12-r3-timing-layer-ci-critique.md). Non-claims: static local CI configuration proof only; no push or hosted CI readback.
 - Midpoint claims review: a bounded read-only reviewer compared the completed ruling-2 and ruling-3 claims against their owning records and commits. It found two stale progress statements in this goal (the activation-time `not-executed` count and the final-verification statement); both were repaired. The completed evidence claims otherwise matched their sources, and ruling 5 remains explicitly evaluation-pending. Critique: [operator-rulings midpoint claims](../critique/2026-08-12-operator-rulings-midpoint-claims-critique.md). Non-claim: this review is not final bundle proof.
+- Slice 3 / ruling 5: registered `handoff/judge-intent`, whose prompt explicitly leaves the route undecided and requires `plan_handoff_run.py --intent auto` before any route declaration. Its two engage-always references, `workflow-trigger.md` and `state-selection.md`, now use `requiredOpenedReferences`, so only a `Read` or parsed shell read (not a basename mention, `Edit`, or `Write`) satisfies the verdict. The two matching historical waiver lines remain as stale advisories; the unhealthy-adapter `adapter-contract.md` waiver remains live. Focused pytest passed (36); Node observation tests passed (34); claim-fidelity registry and conditional-read validators passed. Two review rounds repaired auto-route enforcement, name-drop matching, and edit/write bypasses; the final round-2 repair is accepted-unreviewed under the cap. Critique: [r5 judge-intent scenario](../critique/2026-08-12-r5-judge-intent-scenario-critique.md). `plan_cautilus_proof.py --detail` returns `next_action: none`: without a qualifying log-backed behavior source and explicit grant, no evaluator may run and ruling 5 stays not executed.
 
 ## Context Sources
 
@@ -119,6 +120,7 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 - [Activation critique](../critique/2026-08-12-operator-rulings-goal-activation-critique.md) received two independent angle reviews and a counterweight pass; all three reviewer windows verified clean before parent edits.
 - Folded before activation: no unapproved Cautilus run may advance ruling 5 to executed; round 2 is conditional on a round-1 repair; slice 4 covers path, content, membership, multiplicity, and algorithm-version semantics; slices 1 and 2 name their exact proof obligations; and the goal-claims midpoint review follows slice 2.
 - [Midpoint claims critique](../critique/2026-08-12-operator-rulings-midpoint-claims-critique.md) found and repaired two stale progress statements; it confirmed the remaining completed-slice claims and preserved the ruling-5 approval boundary.
+- [R5 judge-intent critique](../critique/2026-08-12-r5-judge-intent-scenario-critique.md) required two review rounds for the changed observation verdict; the round-2 edit/write bypass repair is accepted-unreviewed under the mandatory cap.
 - Over-worry rejected: predeclaring every implementation owner and adding a pre-push timing label would reopen or broaden decisions already fixed by the ruling record.
 
 ## Closeout Binding Plan

@@ -120,7 +120,18 @@ def test_gate_sufficient_without_gate_rejected(tmp_path: Path) -> None:
 def test_required_command_fragment_must_be_engage_always(tmp_path: Path) -> None:
     entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(), "b.md": _od()}, rcf=["b.md"])
     _write_registry(tmp_path, [entry])
-    with pytest.raises(ValidationError, match="requiredCommandFragments must be engage-always"):
+    with pytest.raises(ValidationError, match="required command/opened references must be engage-always"):
+        validate_registry(tmp_path)
+
+
+def test_required_opened_reference_must_be_engage_always(tmp_path: Path) -> None:
+    entry = _scaffold_skill(tmp_path, "alpha", {"a.md": _ea(), "b.md": _od()}, rcf=[])
+    spec_path = tmp_path / entry["spec_path"]
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    spec["requiredOpenedReferences"] = ["b.md"]
+    spec_path.write_text(json.dumps(spec), encoding="utf-8")
+    _write_registry(tmp_path, [entry])
+    with pytest.raises(ValidationError, match="required command/opened references must be engage-always"):
         validate_registry(tmp_path)
 
 

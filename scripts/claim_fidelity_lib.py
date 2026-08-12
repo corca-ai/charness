@@ -138,9 +138,10 @@ def _validate_floor_channel(
     engage_always: set[str],
     class_tags: dict[str, str | None],
 ) -> None:
-    """RCF-or-RSF floor channel: a spec proves its claim via the command log
-    (requiredCommandFragments) OR the final summary (requiredSummaryFragments).
-    Either channel may be empty; BOTH empty is allowed ONLY when a sibling
+    """RCF/RSF/read floor channel: a spec proves its claim via the command log
+    (requiredCommandFragments), an actual opened reference
+    (requiredOpenedReferences), OR the final summary (requiredSummaryFragments).
+    Each channel may be empty; all three may be empty ONLY when a sibling
     outcome-assertions.json substance floor carries the claim instead — the honest
     floor for a script/committing skill whose faithful run opens no doc and emits no
     distinctive token (gather public-URL #411, setup #413). The substance set's own
@@ -149,24 +150,30 @@ def _validate_floor_channel(
     asserts SOMETHING. (The historical rule pinned RCF non-empty, forcing a doc-open
     proxy even when a summary-token or substance assertion was the honest floor.)"""
     required = _validate_optional_string_list(spec_path, "requiredCommandFragments", spec.get("requiredCommandFragments"))
+    required_opened = _validate_optional_string_list(
+        spec_path, "requiredOpenedReferences", spec.get("requiredOpenedReferences")
+    )
     summary_required = _validate_optional_string_list(spec_path, "requiredSummaryFragments", spec.get("requiredSummaryFragments"))
-    if not required and not summary_required:
+    if not required and not required_opened and not summary_required:
         substance_floor = (repo_root / spec_path).parent / "outcome-assertions.json"
         if not substance_floor.is_file():
             raise ValidationError(
-                f"{spec_path}: at least one of `requiredCommandFragments` or `requiredSummaryFragments` "
+                f"{spec_path}: at least one of `requiredCommandFragments`, `requiredOpenedReferences`, or `requiredSummaryFragments` "
                 "must be non-empty (the claim floor channel), OR a sibling outcome-assertions.json "
                 "substance floor must exist"
             )
-    not_engage_always = [ref for ref in required if ref not in engage_always]
+    not_engage_always = [ref for ref in [*required, *required_opened] if ref not in engage_always]
     if not_engage_always:
-        raise ValidationError(f"{spec_path}: requiredCommandFragments must be engage-always declaredReferences: {not_engage_always}")
+        raise ValidationError(
+            f"{spec_path}: required command/opened references must be engage-always declaredReferences: "
+            f"{not_engage_always}"
+        )
     # A re-read floor asserts the ref is load-bearing enough to force opening;
     # tagging it DUP/INLINE contradicts that. Tolerant: DEPTH or untagged pass.
-    downgraded_floor = [ref for ref in required if class_tags.get(ref) in ("DUP", "INLINE")]
+    downgraded_floor = [ref for ref in [*required, *required_opened] if class_tags.get(ref) in ("DUP", "INLINE")]
     if downgraded_floor:
         raise ValidationError(
-            f"{spec_path}: requiredCommandFragments must not be DUP/INLINE-tagged "
+            f"{spec_path}: required command/opened references must not be DUP/INLINE-tagged "
             f"(a re-read floor must be load-bearing/DEPTH): {downgraded_floor}"
         )
 

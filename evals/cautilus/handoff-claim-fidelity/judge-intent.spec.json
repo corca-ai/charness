@@ -1,0 +1,57 @@
+{
+  "_comment": "Claim-fidelity spec for the handoff skill's judge_from_user_request branch. The prompt deliberately says that the route is unspecified and requires the auto safety-net before any route declaration; it does not choose pickup, refresh, or chunked routing. A faithful run must consult workflow-trigger.md and state-selection.md before judging the next plan; requiredOpenedReferences makes actual opens, rather than command-log name mentions, the floor. This scenario discharges their former allowlist coverage gaps. The remaining adapter-contract.md waiver is deliberately retained: it needs a missing/warned/invalid adapter fixture rather than this healthy scenario. Cautilus is ask-before-run, so this checked-in fixture is a runnable gradable claim, not a captured evaluation result.",
+  "skillId": "handoff",
+  "scenarioId": "judge-intent",
+  "skillDisplayName": "handoff",
+  "evaluationId": "execution-handoff-judge-intent-claim-fidelity",
+  "targetKind": "public_skill",
+  "targetId": "handoff",
+  "prompt": "/charness:handoff The correct route is not specified. Before deciding or declaring pickup, refresh, or chunked routing, run the handoff planner with --intent auto and use its safety-net reads to judge the next action.",
+  "requiredCommandFragments": [],
+  "requiredOpenedReferences": [
+    "workflow-trigger.md",
+    "state-selection.md"
+  ],
+  "requiredSummaryFragments": [],
+  "declaredReferences": [
+    "adapter-contract.md",
+    "chunked-routing.md",
+    "continuation-sequence.md",
+    "spill-targets.md",
+    "state-selection.md",
+    "workflow-trigger.md"
+  ],
+  "referenceEngagement": {
+    "adapter-contract.md": {
+      "engagement": "on-demand",
+      "rationale": "The planner reads this only when the adapter is missing, warned, or invalid; this healthy scenario does not manufacture that separate fixture.",
+      "trigger": "adapter is missing, warned, or invalid"
+    },
+    "chunked-routing.md": {
+      "engagement": "on-demand",
+      "rationale": "A chunked_routing-intent planner read; the prompt deliberately leaves route selection undecided.",
+      "trigger": "the agent judges and declares chunked_routing after the safety-net decision"
+    },
+    "continuation-sequence.md": {
+      "engagement": "on-demand",
+      "rationale": "Not a planner-forced read; the agent opens it by judgment only when several plausible pickups need ordering.",
+      "trigger": "several plausible pickups need ordering"
+    },
+    "spill-targets.md": {
+      "engagement": "on-demand",
+      "rationale": "A refresh-intent planner read, not a judge-from-user-request safety-net read.",
+      "trigger": "the agent judges and declares refresh"
+    },
+    "state-selection.md": {
+      "engagement": "engage-always",
+      "rationale": "The undecided-route planner branch always reads this document to avoid carrying stale or non-actionable state before the route is declared."
+    },
+    "workflow-trigger.md": {
+      "engagement": "engage-always",
+      "rationale": "The undecided-route planner branch always reads this document to decide whether the request is a pickup or refresh instead of guessing from prompt wording."
+    }
+  },
+  "thresholds": {
+    "max_duration_ms": 660000
+  }
+}

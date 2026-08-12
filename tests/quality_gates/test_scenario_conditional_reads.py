@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -128,22 +129,48 @@ def test_extractor_registry_and_forceable_set_pin() -> None:
 def test_live_repo_conditional_reads_cross_check_is_clean() -> None:
     report = cross_check_conditional_reads(ROOT)
     assert report["skills"]["handoff"]["flagged"] == []
-    assert "adapter-contract.md" in report["skills"]["handoff"]["waived_allowlist"]
-    # Both reads the judge_from_user_request intent forces, and no scenario exercises
-    # that intent -- the planner resolves it for an UNDECLARED run, before any
-    # --intent exists to fixture from. Recorded here as a known GAP, not as a property
-    # worth preserving: adding a judge-intent scenario is expected to red these two
-    # lines, alongside the stale_allowlist advisory naming the same allowlist entries.
-    # Both used to ride the classTag channel, which said nothing about coverage and
-    # never went stale; that channel is deleted.
-    assert "workflow-trigger.md" in report["skills"]["handoff"]["waived_allowlist"]
-    assert "state-selection.md" in report["skills"]["handoff"]["waived_allowlist"]
-    # Deliberately NOT asserting `report["stale_allowlist"] == []`: staleness is an
-    # ADVISORY signal the validator prints and never raises on, pinned as such by
-    # test_stale_allowlist_entry_is_advisory_not_error above. Blocking on it here
-    # would make pytest and validate_scenario_conditional_reads.py disagree about
-    # the same state — and a consumer repo vendoring the validator would get the
-    # opposite verdict from the one this repo enforces.
+    # The unhealthy-adapter branch still has the one live waiver. The route-neutral
+    # judge-intent fixture owns the two former route-coverage gaps, so retaining
+    # their historical allowlist records deliberately produces stale advisories.
+    assert report["skills"]["handoff"]["waived_allowlist"] == ["adapter-contract.md"]
+    assert report["stale_allowlist"] == [
+        {
+            "skill_id": "handoff",
+            "ref": "state-selection.md",
+            "reason": "DISCHARGED 2026-08-12 by handoff/judge-intent, which engage-always forces this former judge_from_user_request coverage gap. Retained intentionally so the validator reports a stale-advisory record rather than silently deleting waiver history.",
+        },
+        {
+            "skill_id": "handoff",
+            "ref": "workflow-trigger.md",
+            "reason": "DISCHARGED 2026-08-12 by handoff/judge-intent, which engage-always forces this former judge_from_user_request coverage gap. Retained intentionally so the validator reports a stale-advisory record rather than silently deleting waiver history.",
+        },
+    ]
+
+
+def test_judge_intent_scenario_covers_the_route_undetermined_branch() -> None:
+    spec_path = HANDOFF_FIDELITY_DIR / "judge-intent.spec.json"
+    spec = json.loads(spec_path.read_text(encoding="utf-8"))
+    registry = json.loads((ROOT / "evals" / "cautilus" / "claim-fidelity-registry.json").read_text(encoding="utf-8"))
+
+    assert spec["scenarioId"] == "judge-intent"
+    assert spec["prompt"] == "/charness:handoff The correct route is not specified. Before deciding or declaring pickup, refresh, or chunked routing, run the handoff planner with --intent auto and use its safety-net reads to judge the next action."
+    assert spec["requiredCommandFragments"] == []
+    assert spec["requiredOpenedReferences"] == ["workflow-trigger.md", "state-selection.md"]
+    assert {ref for ref, engagement in spec["referenceEngagement"].items() if engagement["engagement"] == "engage-always"} == {
+        "workflow-trigger.md",
+        "state-selection.md",
+    }
+    assert "correct route is not specified" in spec["prompt"].lower()
+    assert "--intent auto" in spec["prompt"]
+    assert "--intent pickup" not in spec["prompt"]
+    assert "--intent refresh" not in spec["prompt"]
+    assert "--intent chunked_routing" not in spec["prompt"]
+    assert {
+        "skill_id": "handoff",
+        "scenario_id": "judge-intent",
+        "spec_path": "evals/cautilus/handoff-claim-fidelity/judge-intent.spec.json",
+        "fan_out_fit": "yes — an undeclared route reaches the planner's judge_from_user_request safety-net branch, which unconditionally reads workflow-trigger.md and state-selection.md before any route is declared; neither the chunked-routing nor refresh scenario covers both reads.",
+    } in registry["specs"]
 
 
 def test_incident_reconstruction_flags_a_scenario_whose_coverage_disappeared(tmp_path: Path) -> None:

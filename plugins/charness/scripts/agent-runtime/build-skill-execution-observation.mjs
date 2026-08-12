@@ -19,8 +19,9 @@
 // the claim assertions (fragment matchers over the command log + final summary)
 // and reports reference coverage, then hands cautilus a packet to score.
 //
-// Outcome is set from the claim matchers only (passed/failed). Budget drift is
-// left to cautilus's threshold degrade so the two signals stay separable.
+// Outcome is set from the claim matchers and any required opened references
+// (passed/failed). Budget drift is left to cautilus's threshold degrade so the
+// two signals stay separable.
 
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { basename, dirname, join, resolve } from "node:path";
@@ -531,34 +532,57 @@ export function expandForLoopReadCommands(command) {
 	return [...expanded];
 }
 
-// Basenames of every file opened anywhere in the tree, via a path-bearing tool
-// call (Read/Edit/Write) OR a shell read command (Bash). Powers the
-// declared-reference coverage report.
-export function collectOpenedBasenames(events) {
+function addPathBasenames(input, names) {
+	for (const key of FILE_PATH_KEYS) {
+		const value = input[key];
+		if (typeof value === "string" && value.trim()) {
+			names.add(basename(value.trim()));
+		}
+	}
+}
+
+function addShellReadBasenames(input, names) {
+	if (typeof input.command !== "string" || !input.command.trim()) {
+		return;
+	}
+	for (const name of parseReadCommandBasenames(input.command)) {
+		names.add(name);
+	}
+	for (const cmd of expandForLoopReadCommands(input.command)) {
+		for (const name of parseReadCommandBasenames(cmd)) {
+			names.add(name);
+		}
+	}
+}
+
+function collectReferenceBasenames(events, { includeMutatedPaths }) {
 	const names = new Set();
 	for (const event of events) {
 		for (const block of toolUseBlocks(event)) {
 			const input = block.input ?? {};
-			for (const key of FILE_PATH_KEYS) {
-				const value = input[key];
-				if (typeof value === "string" && value.trim()) {
-					names.add(basename(value.trim()));
-				}
+			if (includeMutatedPaths || String(block.name ?? "") === "Read") {
+				addPathBasenames(input, names);
 			}
-			if (typeof input.command === "string" && input.command.trim()) {
-				for (const name of parseReadCommandBasenames(input.command)) {
-					names.add(name);
-				}
-				for (const cmd of expandForLoopReadCommands(input.command)) {
-					for (const name of parseReadCommandBasenames(cmd)) {
-						names.add(name);
-					}
-				}
-			}
+			addShellReadBasenames(input, names);
 		}
 	}
 	return names;
 }
+
+// Basenames of every file opened or mutated anywhere in the tree, via a
+// path-bearing tool call (Read/Edit/Write) OR a shell read command (Bash).
+// Powers the advisory declared-reference coverage report; it intentionally
+// includes writes because that report answers broad activity, not a read floor.
+export function collectOpenedBasenames(events, { readOnly = false } = {}) {
+	return collectReferenceBasenames(events, { includeMutatedPaths: !readOnly });
+}
+
+// Basenames genuinely READ anywhere in the tree. Unlike the broad activity
+// report above, this deliberately accepts only the Read tool and read-only shell
+// operands: an Edit/Write path can prove a file was touched but cannot prove its
+// prior contents informed a route decision. `requiredOpenedReferences` uses this
+// set as a verdict-bearing floor.
+export const collectReadBasenames = (events) => collectOpenedBasenames(events, { readOnly: true });
 
 export function sumTokens(events) {
 	const totals = { input: 0, output: 0, cacheCreation: 0, cacheRead: 0 };
@@ -649,6 +673,16 @@ function fragmentFindings(label, text, requiredFragments, forbiddenFragments) {
 	return findings;
 }
 
+function openedReferenceFindings(opened, requiredReferences) {
+	const findings = [];
+	for (const ref of requiredReferences ?? []) {
+		if (!opened.has(String(ref))) {
+			findings.push(`opened references missing required reference: ${ref}`);
+		}
+	}
+	return findings;
+}
+
 // Advisory reference-compaction classes (claim_fidelity_lib.CLASS_TAG_VALUES).
 const CLASS_TAGS = new Set(["DUP", "INLINE", "DEPTH"]);
 
@@ -686,6 +720,7 @@ export function buildExecutionObservation({ spec, events, finalTextEvents } = {}
 	const commandLog = collectCommandLog(events);
 	const summaryText = finalAssistantText(finalTextEvents ?? events);
 	const opened = collectOpenedBasenames(events);
+	const readOpened = collectReadBasenames(events);
 	const tokens = sumTokens(events);
 	const duration = durationMs(events);
 	const startedAt = earliestTimestamp(events);
@@ -710,6 +745,7 @@ export function buildExecutionObservation({ spec, events, finalTextEvents } = {}
 
 	const findings = [
 		...fragmentFindings("command log", commandLog, spec.requiredCommandFragments, spec.forbiddenCommandFragments),
+		...openedReferenceFindings(readOpened, spec.requiredOpenedReferences),
 		...fragmentFindings("summary", summaryText, spec.requiredSummaryFragments, spec.forbiddenSummaryFragments),
 	];
 	const outcome = findings.length > 0 ? "failed" : "passed";
@@ -820,8 +856,9 @@ const USAGE = `Usage:
     [--output <observed.v1.json>] [--trace-digest <trace-digest.jsonl>]
 
 Reads every *.jsonl under the session tree (parent + subagents), applies the
-spec's claim matchers (requiredCommandFragments / requiredSummaryFragments) over
-the full-tree command log + final summary, reports declared-reference coverage,
+spec's claim matchers (requiredCommandFragments / requiredOpenedReferences /
+requiredSummaryFragments) over the full-tree command log + opened-reference set +
+final summary, reports declared-reference coverage,
 and emits a cautilus.skill_evaluation_inputs.v1 observed packet for
 \`cautilus evaluate observation\`. A human-readable claim/coverage line is printed
 to stderr.

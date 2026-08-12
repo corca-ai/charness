@@ -8,6 +8,7 @@ import { SKILL_EVALUATION_INPUTS_SCHEMA } from "../../scripts/agent-runtime/cont
 import {
 	buildExecutionObservation,
 	collectCommandLog,
+	collectReadBasenames,
 	collectOpenedBasenames,
 	collectToolProfile,
 	collectToolResultSizes,
@@ -84,6 +85,16 @@ test("collectOpenedBasenames returns basenames including subagent reads", () => 
 		assistantToolUse([{ name: "Bash", input: { command: "echo hi" } }]),
 	];
 	assert.ok(collectOpenedBasenames(events).has("operability-signals.md"));
+});
+
+test("collectReadBasenames excludes Edit and Write paths", () => {
+	const events = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/a/references/read.md" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/a/references/edit.md" } }]),
+		assistantToolUse([{ name: "Write", input: { file_path: "/a/references/write.md" } }]),
+	];
+	assert.deepEqual([...collectReadBasenames(events)], ["read.md"]);
+	assert.deepEqual([...collectOpenedBasenames(events)].sort(), ["edit.md", "read.md", "write.md"]);
 });
 
 test("parseReadCommandBasenames counts sed/cat/head/tail/less file operands", () => {
@@ -328,6 +339,41 @@ test("buildExecutionObservation passes and counts coverage when a subagent reads
 	assert.equal(packet.evaluations[0].outcome, "passed");
 	assert.equal(report.coverage.covered, 1);
 	assert.deepEqual(report.coverage.coveredRefs, ["quality-lenses.md"]);
+});
+
+test("requiredOpenedReferences refuses a name-drop and requires an actual reference read", () => {
+	const spec = {
+		skillId: "handoff",
+		evaluationId: "execution-handoff-judge-intent-claim-fidelity",
+		targetId: "handoff",
+		prompt: "/charness:handoff route unspecified",
+		requiredCommandFragments: [],
+		requiredOpenedReferences: ["workflow-trigger.md", "state-selection.md"],
+	};
+	const nameDropOnly = [
+		assistantToolUse([{ name: "Bash", input: { command: "echo workflow-trigger.md state-selection.md" } }]),
+	];
+	const failed = buildExecutionObservation({ spec, events: nameDropOnly }).report;
+	assert.equal(failed.outcome, "failed");
+	assert.deepEqual(failed.findings, [
+		"opened references missing required reference: workflow-trigger.md",
+		"opened references missing required reference: state-selection.md",
+	]);
+	const writeOnly = [
+		assistantToolUse([{ name: "Write", input: { file_path: "/x/references/workflow-trigger.md" } }]),
+		assistantToolUse([{ name: "Edit", input: { file_path: "/x/references/state-selection.md" } }]),
+	];
+	const writeFailed = buildExecutionObservation({ spec, events: writeOnly }).report;
+	assert.equal(writeFailed.outcome, "failed");
+	assert.deepEqual(writeFailed.findings, [
+		"opened references missing required reference: workflow-trigger.md",
+		"opened references missing required reference: state-selection.md",
+	]);
+	const genuineReads = [
+		assistantToolUse([{ name: "Read", input: { file_path: "/x/references/workflow-trigger.md" } }]),
+		assistantToolUse([{ name: "Bash", input: { command: "sed -n '1,80p' /x/references/state-selection.md" } }]),
+	];
+	assert.equal(buildExecutionObservation({ spec, events: genuineReads }).report.outcome, "passed");
 });
 
 test("a spawn-prompt name-drop does not satisfy an RCF doc-open floor without a genuine read (#415)", () => {

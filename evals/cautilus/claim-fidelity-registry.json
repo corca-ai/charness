@@ -56,6 +56,12 @@
   },
   {
    "skill_id": "handoff",
+   "scenario_id": "judge-intent",
+   "spec_path": "evals/cautilus/handoff-claim-fidelity/judge-intent.spec.json",
+   "fan_out_fit": "yes — an undeclared route reaches the planner's judge_from_user_request safety-net branch, which unconditionally reads workflow-trigger.md and state-selection.md before any route is declared; neither the chunked-routing nor refresh scenario covers both reads."
+  },
+  {
+   "skill_id": "handoff",
    "scenario_id": "refresh",
    "spec_path": "evals/cautilus/handoff-claim-fidelity/refresh.spec.json",
    "fan_out_fit": "yes — the refresh intent reads state-selection.md + spill-targets.md, mutually exclusive with the chunked_routing read, so its own scenario. (The pickup intent forces no reference read at all since the 2026-08-11 ruling; it is floored by the sibling outcome-assertions.json substance judge, for which this spec is one of the two surviving vehicles.)"
