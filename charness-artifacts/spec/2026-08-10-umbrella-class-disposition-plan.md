@@ -548,6 +548,13 @@ The discriminator for the sweep is NOT "does it use a regex". Form validators
 **does a pattern-match decide what an agent or operator MEANT** — and if so, the declared
 route should replace it, exactly as `--intent` replaced `should_fire_chunker`.
 
+**Operator decision (2026-08-12):** a pattern or heuristic may validate observable
+form, parse structure, or surface candidates and evidence. It must not itself make the
+final meaning-or-intent judgment that selects an agent or operator policy/action. That
+judgment belongs to an agent reading concrete evidence: the relevant request, explicit
+declarations, and current state. This is not a ban on regexes or form validators; the
+candidate list above still needs a consumer and behavior review before any change.
+
 
 ---
 

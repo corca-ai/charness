@@ -103,12 +103,19 @@ the removal in the release notes at a version bump. Delete
 `<authoring-repo>/tests/quality_gates/`, both since deleted at `afaaef4e`) and reserve the note
 line; the removal of a shipped entrypoint is a major bump.
 
+**Operator decision (2026-08-12):** a portable replacement, compatibility promise, or
+migration path is not a precondition for removing a consumer-facing feature. The release
+note must identify what was removed and why. Existing removal-consumer verification and
+version-boundary policy still apply; this decision does not claim that the next release-note
+line has already been published.
+
 **Why no window.** A window substitutes for communication this repo already does. Release
-notes lead with breaking changes and give the remedy — v4.2.0 opens "Read this first:
-three floors can now refuse work that previously passed" and tells the reader what to add
-to their adapter. Semver is used for real, `compute_update_available` tells consumers an
-update exists, and they update deliberately via `charness update`. The script also already
-prints its own `DEPRECATED:` notice when run, so the channel is doubled.
+notes lead with breaking changes, identify the changed surface and its reason, and give a
+remedy when one exists — v4.2.0 opens "Read this first: three floors can now refuse work that
+previously passed" and tells the reader what to add to their adapter. Semver is used for
+real, `compute_update_available` tells consumers an update exists, and they update
+deliberately via `charness update`. The script also already prints its own `DEPRECATED:`
+notice when run, so the channel is doubled.
 
 **The counter-evidence that killed the window.** Release cadence is v3.4.0 8/6, v3.5.0 8/7,
 v4.0.0 8/9, v4.1.0 8/10 01:05, v4.2.0 8/10 07:36. "Two minor releases" is six and a half

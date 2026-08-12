@@ -72,11 +72,12 @@
 
 ## Discuss
 
-- **Does a pattern-match decide what someone MEANT?** `--intent` replaced `should_fire_chunker`;
-  the same shape survives in `setup_skill_routing_lib`'s semantic-completeness regex (ships to
-  consumers), `chunked_routing_parser`, `classify_push_diff_lib`. Form validators are NOT in this class.
-- **Should a consumer-facing capability be deletable without a portable replacement?** Ruling 1
-  removed one that shipped in the quality package. Is a release note the standing answer?
+- Resolved: [meaning boundary](../charness-artifacts/spec/2026-08-10-umbrella-class-disposition-plan.md#the-class-this-points-at--the-larger-prize)
+  — heuristics may validate observable form or surface evidence, never decide intent; an agent judges
+  intent from the request, explicit declarations, and current state. Form validators remain excluded.
+- Resolved: [consumer-removal boundary](../charness-artifacts/spec/2026-08-11-six-operator-rulings.md#4-deprecated-shipped-surfaces--no-window-the-release-notes-carry-it)
+  — no portable replacement is required; release notes identify the removal and its reason, while
+  existing consumer-removal verification and version policy remain in force.
 
 ## References
 
