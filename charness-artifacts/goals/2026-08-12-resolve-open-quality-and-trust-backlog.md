@@ -14,8 +14,8 @@ in this session after the pre-implementation critique passes.
 - Current slice intent: repair the runtime and fixture truth paths without
   laundering the unfinished #582/#583/#584 umbrella, #528/#539/#542, or
   #589/#590/#606 premise work into a completion claim.
-- Next action: publish #589's local-proof carrier after its commit, then re-read
-  and classify #586's wired-proof premise before selecting the next repair.
+- Next action: re-read and classify #590's CI mutation-report premise before
+  selecting a repair or a tracker-visible non-closure disposition.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -181,10 +181,14 @@ premise, owner, evidence channel, and tracker-visible outcome.
   only specified, not implemented.
 - #589: local proof is complete: a validator-accepted local prescription has a
   reachable reconciled state only when every exact adapter command is declared;
-  legacy/sample lineage remains advisory metadata. GitHub remains OPEN pending a
-  post-commit carrier, final direct-to-default action, and hosted readback.
-- Next: publish #589's carrier after commit, then choose #586 or the next
-  low-coupling ledger row.
+  legacy/sample lineage remains advisory metadata. GitHub remains OPEN with a
+  local-proof carrier; final direct-to-default action and hosted readback remain
+  required.
+- #586: inspected candidate is a superseded helper, while both real closeout
+  consumers invoke the equivalent guarded loop. GitHub remains OPEN with an
+  `unproven-defer` carrier until a reproducible operator-path bypass exists.
+- Next: re-read #590's CI mutation-report premise, then choose a repair or
+  explicit tracker-visible non-closure disposition.
 
 ## Context Sources
 

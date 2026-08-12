@@ -1,1 +1,1 @@
-2026-08-13-issue-589-preset-reconciliation-debug.md
+2026-08-13-debug-review.md
