@@ -2,8 +2,8 @@
 
 ## Workflow Trigger
 
-- An active goal governs: read [recent lessons](../charness-artifacts/retro/recent-lessons.md), then resume [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) at its `## Active Operating Frame`.
-- State the unpushed count with `git log --oneline origin/main..HEAD | wc -l` in the first reply. No push grant carries forward.
+- No active goal governs. Read [recent lessons](../charness-artifacts/retro/recent-lessons.md) before shaping the next user-requested work item.
+- The completed [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) is local-only; no push grant carries forward.
 
 ## Continuation Capability
 
@@ -14,7 +14,7 @@
 ## Current State
 
 - The [harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) led to completed local ledger/session evidence; [comparative policy](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) remains dormant pending naturally varied sessions.
-- The active [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, 5, and 6 locally. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only. Ruling 6's v2 content-identity proof is local until final goal verification.
+- The [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, 5, and 6 locally, including final quality and a distinct claims/disposition review. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only.
 - [Remote CI reconciliation](../charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md) remains locally resolved; hosted readback is not claimed.
 Refresh kept: [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md), its ordered first slice, the Cautilus approval boundary, and the remote-proof non-claim because each changes the next action.
 
@@ -27,8 +27,8 @@ Refresh non-claims: prior handoff backlog history, issue snapshots, quality numb
 
 ## Next Session
 
-1. Continue [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) with its final local bundle proof: freeze the four completed slices, validate their claims, and preserve the external non-claims.
-2. Keep all running context in [the goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md); refresh this handoff only for a real interruption or user-requested baton pass.
+1. No execution is pending from the [completed operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md). Shape a new goal only when the user supplies a new scoped outcome.
+2. Preserve the [completed goal's external non-claims](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md#final-verification): its Cautilus run is consumed; push, release, issue closure, and hosted readback still need separate grants.
 
 ## Discuss
 

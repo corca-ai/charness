@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-12",
-  "source_artifact_count": 479,
-  "candidate_count": 1975,
+  "source_artifact_count": 480,
+  "candidate_count": 1979,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -866,6 +866,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:541853194411",
+      "kind": "current_focus",
+      "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout.",
+      "normalized_key": "this retrospective covers the ordered local execution of operator rulings 2 3 5 and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:93ec0ec7b4a0",
       "kind": "current_focus",
       "lesson": "This retrospective reviews the completed handoff/ownership-gate work that led to the current ledger-and-graduation contract, before implementing its first slice.",
@@ -1152,6 +1178,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:49a99fa5e186",
+      "kind": "next_improvement",
+      "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely.",
+      "normalized_key": "none the broad gate reviewer rounds and targeted repairs already form the smallest honest",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:642d37ca9293",
       "kind": "next_improvement",
       "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed.",
@@ -1334,6 +1386,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:8166c2e49c46",
+      "kind": "repeat_trap",
+      "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary.",
+      "normalized_key": "moderate triage the fresh eye r6 review found that unrelated non candidate spawn calls",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3f4a223d623c",
       "kind": "repeat_trap",
       "lesson": "**strong**: Hand-editing a generated ratchet baseline created three repair cycles; the existing rebuild path was the missing first move, not a missing rule.",
@@ -1382,6 +1460,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**strong**: The telemetry stream reports 16 over-budget full-pytest observations (mean 391.07s against 120s) and 64 recurring over-slice runs. These are recurring cost signals, not permission to weaken proof. The runtime work already has a durable owner in closed issue #505 / D51; the over-slice signal needs a later, separately scoped owner rather than being added to this implementation slice."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:25da58d3ba8a",
+      "kind": "repeat_trap",
+      "lesson": "**strong, verification:** the first 90.3-second broad gate found a missing Cautilus finding record, three uncovered R6 defensive lines, and two untriaged duplicate families. The second 91.2-second gate was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute.",
+      "normalized_key": "strong verification the first 90 3 second broad gate found a missing cautilus finding",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**strong, verification:** the first 90.3-second broad gate found a missing Cautilus finding record, three uncovered R6 defensive lines, and two untriaged duplicate families. The second 91.2-second gate was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute."
         }
       ]
     },

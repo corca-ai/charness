@@ -1,6 +1,6 @@
 # Achieve Goal: Execute operator rulings 2, 3, 5, and 6
 
-Status: active
+Status: complete
 Created: 2026-08-12
 Activation: `/goal @charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md`
 
@@ -81,11 +81,18 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Coordination Cues
 
-- Phases: spec, impl, quality, critique.
-- Routing: installed workflow metadata and the ruling-specific boundary choose the owner skill at each slice; `achieve` remains the goal record, not the implementation path.
+- Phases: spec, impl, quality, critique, retro, handoff.
+- Routing: `impl` owned each local code/config/artifact slice; `quality` owned
+  verdict-surface and final-gate selection; `critique` owned fresh-eye review;
+  `retro` owned the closeout learning record; and `handoff` owns the concise
+  next-session state. These selections follow installed skill metadata and the
+  ruling-specific proof boundary; `achieve` remains the goal record.
 - Gather: n/a — the goal starts from checked-in local ruling and probe records.
 - Release: n/a — no release surface is in scope.
 - Issue closeout: n/a — `#596` and `#585` are context identifiers; this goal has no authorized close carrier.
+- Successor goal: n/a — the operator scoped this run to four completed rulings,
+  and the closeout retro found no separately measured structural improvement
+  that warrants manufacturing a new active goal.
 
 ## Discuss Before Activation
 
@@ -94,10 +101,10 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 ## Slice Log
 
 - Shaping: the user selected the four not-executed operator rulings as one ordered goal.
-- Slice 1 / ruling 2 (`#596`): replaced D47's mutable live-corpus equality pin with `2026-08-12-inventory-marker-rule-snapshot.json`, bound it by SHA-256, retained four dated headlines, and changed focused proof to provenance/document/invariant checks. `pytest -q tests/test_inventory_marker_rule_measurement.py tests/test_probe_drift_message.py` passed (39); `check_regenerable_facts.py` passed. The document preflight remains blocked only by pre-existing inline-code findings at D47-unrelated lines 1078 and 1082. Two bounded review rounds found and repaired stale live wording, headline-to-payload binding, provenance checks, and new-snapshot instructions; round-2 repairs are accepted-unreviewed under the two-round cap. The initial full gate exposed an accidentally omitted historical handoff publish-state claim; restoring its exact captured block made its 27 focused ledger tests pass, and the rerun of `./scripts/run-quality.sh --read-only` passed 90 checks (0 failed). Critique: [r596 D47 snapshot](../critique/2026-08-12-r596-d47-snapshot-critique.md). Non-claims: no live corpus proof, CI, push, release, consumer, or issue-closeout claim.
-- Slice 2 / ruling 3: added `python3 scripts/check_timing_layer_completeness.py --repo-root .` as a Quality Core step. Focused timing, staged-commit, and CI/local-parity tests passed (99); `check_github_actions.py` and the timing checker passed. Round 1 repaired a substring-only test into an actual YAML-step and exact 14-label docs-only-list proof; round 2 found no further issue. Critique: [r3 timing-layer CI](../critique/2026-08-12-r3-timing-layer-ci-critique.md). Non-claims: static local CI configuration proof only; no push or hosted CI readback.
+- Slice 1 / ruling 2 (`#596`): replaced D47's mutable live-corpus equality pin with `2026-08-12-inventory-marker-rule-snapshot.json`, bound it by SHA-256, retained four dated headlines, and changed focused proof to provenance/document/invariant checks. Focused provenance and regenerable-facts checks passed. The document preflight remains blocked only by pre-existing inline-code findings at D47-unrelated lines 1078 and 1082. Two bounded review rounds found and repaired stale live wording, headline-to-payload binding, provenance checks, and new-snapshot instructions; round-2 repairs are accepted-unreviewed under the two-round cap. The initial full gate exposed an accidentally omitted historical handoff publish-state claim; restoring its exact captured block repaired the local ledger proof. Critique: [r596 D47 snapshot](../critique/2026-08-12-r596-d47-snapshot-critique.md). Non-claims: no live corpus proof, CI, push, release, consumer, or issue-closeout claim.
+- Slice 2 / ruling 3: added `python3 scripts/check_timing_layer_completeness.py --repo-root .` as a Quality Core step. Focused timing, staged-commit, CI/local-parity, GitHub-actions, and timing checks passed. Round 1 repaired a substring-only test into an actual YAML-step and exact 14-label docs-only-list proof; round 2 found no further issue. Critique: [r3 timing-layer CI](../critique/2026-08-12-r3-timing-layer-ci-critique.md). Non-claims: static local CI configuration proof only; no push or hosted CI readback.
 - Midpoint claims review: a bounded read-only reviewer compared the completed ruling-2 and ruling-3 claims against their owning records and commits. It found two stale progress statements in this goal (the activation-time `not-executed` count and the final-verification statement); both were repaired. At the time, ruling 5 correctly remained evaluation-pending; its later approved evaluation is recorded in slice 3. Critique: [operator-rulings midpoint claims](../critique/2026-08-12-operator-rulings-midpoint-claims-critique.md). Non-claim: this review is not final bundle proof.
-- Slice 3 / ruling 5: registered `handoff/judge-intent`, whose prompt explicitly leaves the route undecided and requires `plan_handoff_run.py --intent auto` before any route declaration. Its two engage-always references, `workflow-trigger.md` and `state-selection.md`, now use `requiredOpenedReferences`, so only a `Read` or parsed shell read (not a basename mention, `Edit`, or `Write`) satisfies the verdict. The two matching historical waiver lines remain as stale advisories; the unhealthy-adapter `adapter-contract.md` waiver remains live. Focused pytest passed (36); Node observation tests passed (34); claim-fidelity registry and conditional-read validators passed. Two review rounds repaired auto-route enforcement, name-drop matching, and edit/write bypasses; the final round-2 repair is accepted-unreviewed under the cap. Critique: [r5 judge-intent scenario](../critique/2026-08-12-r5-judge-intent-scenario-critique.md). With the operator's explicit one-run approval and `operator-log`, an isolated capture then `cautilus evaluate observation` passed 1/1 with 0 failed; [the durable Cautilus bundle](../cautilus/handoff-judge-intent-2026-08-12/) preserves the authorization, packet, summary, and trace. Non-claim: local evaluator evidence only; no hosted, release, or consumer proof.
+- Slice 3 / ruling 5: registered `handoff/judge-intent`, whose prompt explicitly leaves the route undecided and requires `plan_handoff_run.py --intent auto` before any route declaration. Its two engage-always references, `workflow-trigger.md` and `state-selection.md`, now use `requiredOpenedReferences`, so only a `Read` or parsed shell read (not a basename mention, `Edit`, or `Write`) satisfies the verdict. The two matching historical waiver lines remain as stale advisories; the unhealthy-adapter `adapter-contract.md` waiver remains live. Focused Python/Node checks and claim-fidelity/conditional-read validators passed. Two review rounds repaired auto-route enforcement, name-drop matching, and edit/write bypasses; the final round-2 repair is accepted-unreviewed under the cap. Critique: [r5 judge-intent scenario](../critique/2026-08-12-r5-judge-intent-scenario-critique.md). With the operator's explicit one-run approval and `operator-log`, an isolated capture then `cautilus evaluate observation` passed 1/1 with 0 failed; [the durable Cautilus bundle](../cautilus/handoff-judge-intent-2026-08-12/) preserves the authorization, packet, summary, and trace. Non-claim: local evaluator evidence only; no hosted, release, or consumer proof.
 - Slice 4 / ruling 6 (`#585`): re-keyed the boundary-bypass verdict from path/target pairs to normalized offset-free AST call-site content. Payload and ratchet schemas are v2, algorithm version `1` is stamped and validated, member hashes are sorted without deduplication, and the baseline retains path pairs only as advisory lookup metadata. Focused tests prove an identical path move is accepted, content/membership/multiplicity changes rotate identity, unknown algorithm versions fail, and unrelated non-import-safe spawn calls do not perturb the candidate identity. Live payload validation and the ratchet pass with a regenerated 47-key baseline; root/plugin projections match. The first code critique found the non-candidate membership leak, and the mandatory second review of the repair found no further issue. Critique: [r6 boundary-bypass content identity](../critique/2026-08-12-r6-boundary-bypass-content-identity-critique.md). Non-claims: no push, hosted CI, release, issue closure, or Cautilus evaluation.
 
 ## Context Sources
@@ -137,12 +144,48 @@ Execute rulings 2, 3, 5, and 6 from [Six operator rulings](../spec/2026-08-11-si
 
 ## Final Verification
 
-- Not started — slices 1 and 2 have completed locally, but final bundle proof has not started.
+- Frozen local proof commits: `27d1c959` and `a52f83e9` — source:
+  `git log --oneline`; later closeout records are audit-doc-only.
+- Final quality: the local closeout rerun completed without a reported failure —
+  `./scripts/run-quality.sh --read-only`. Its durable receipts do not bind an
+  exact target SHA or elapsed/count figure, so this goal makes no more precise
+  target-bound quality claim.
+- Ruling 2: D47 provenance/invariant proof and its two review rounds are
+  recorded in the Slice Log and [R596 critique](../critique/2026-08-12-r596-d47-snapshot-critique.md).
+- Ruling 3: the exact local Quality Core timing command and static CI proof are
+  recorded in the Slice Log and [R3 critique](../critique/2026-08-12-r3-timing-layer-ci-critique.md);
+  hosted CI is not claimed.
+- Ruling 5: one authorized local Cautilus observation passed 1/1 with 0 failed
+  and recommendation `accept-now` — source:
+  [durable bundle](../cautilus/handoff-judge-intent-2026-08-12/); no second
+  evaluation, hosted proof, or consumer behavior claim is made.
+- Ruling 6: v2 payload validation, ratchet, two bounded review rounds, and
+  focused path/content/membership/multiplicity/algorithm proof are recorded in
+  the Slice Log and [R6 critique](../critique/2026-08-12-r6-boundary-bypass-content-identity-critique.md).
+Retro: charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md
+Host log probe: skipped: host-log-not-exposed: the available probe can expose
+  thread-wide signals but this goal carries no recorded goal-window start marker,
+  so it cannot honestly produce a scoped host-log total for this closeout.
+Disposition review: charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6-disposition-review.md
+- Residual risks: local quality proof does not establish hosted CI, push,
+  release, issue closure, or consumer behavior; existing advisory file-length,
+  test-production, document-duplicate, and nose-version-skew signals remain
+  explicitly non-blocking and outside this goal's four rulings.
+- Complete flip: all four ordered ruling statuses, their slice proof, the
+  closeout retro, and the distinct claims/disposition review are recorded; only
+  the explicit external non-claims remain outside this local goal.
 
 ## User Verification Instructions
 
-- Follow the ruling source's four execution-status lines and the linked per-slice proof records. Before approving Cautilus, inspect the scenario and its planner output; before any publication, grant that boundary separately.
+- Follow the ruling source's four `EXECUTED 2026-08-12` status lines and the
+  linked slice critiques. The final local gate result is recorded above; any
+  push, hosted CI readback, release, or issue-close action needs its own new
+  phase-scoped grant.
 
 ## Auto-Retro
 
-- Deferred until closeout — per-slice findings are captured in their critique records; cross-slice efficiency and structural dispositions wait for the final bundle.
+- Retro dispositions: none — the closeout retro found no independently measured
+  structural improvement beyond the repairs already applied in this bounded goal.
+- Structural follow-up: none — no transferable waste pattern survived the
+  sibling-search check; the two broad quality runs were necessary confirmation
+  after concrete repair, not a new recurrence to route.
