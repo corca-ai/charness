@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import json
 import math
+import sys
 from pathlib import Path
 
 import pytest
 
 from scripts import lesson_selection_preview_lib as preview
+from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
 RETRO_DIR = ROOT / "charness-artifacts/retro"
@@ -38,7 +40,9 @@ def test_preview_is_flat_seeded_and_accounts_for_archive_fallback() -> None:
     }
     assert len(first["items"]) == 10
     assert len({item["lesson_id"] for item in first["items"]}) == 10
-    assert all(set(item) == {"lesson_id", "lesson", "latest_source_path"} for item in first["items"])
+    assert all(
+        set(item) == {"lesson_id", "lesson", "latest_source_path"} for item in first["items"]
+    )
 
 
 def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
@@ -52,7 +56,37 @@ def test_preview_requires_a_nonempty_seed() -> None:
         _build("")
 
 
-def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(tmp_path: Path, monkeypatch) -> None:
+def test_preview_renderer_cli_emits_json_and_flat_text(monkeypatch, capsys) -> None:
+    renderer = load_script_module(
+        "render_lesson_selection_preview_for_test",
+        ROOT / "scripts" / "render_lesson_selection_preview.py",
+    )
+    rendered = {
+        "items": [{"lesson_id": "a", "lesson": "useful lesson"}],
+        "eligible_count": 1,
+    }
+    monkeypatch.setattr(renderer, "build_lesson_selection_preview", lambda **_kwargs: rendered)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["render_lesson_selection_preview.py", "--seed", "stable-preview-seed", "--json"],
+    )
+    assert renderer.main() == 0
+    assert json.loads(capsys.readouterr().out) == rendered
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["render_lesson_selection_preview.py", "--seed", "stable-preview-seed"],
+    )
+    assert renderer.main() == 0
+    assert (
+        capsys.readouterr().out == "Lesson selection preview (1/1 eligible):\n- a — useful lesson\n"
+    )
+
+
+def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(
+    tmp_path: Path, monkeypatch
+) -> None:
     ledger_path = tmp_path / "lesson-ledger.json"
     ledger_path.write_text(json.dumps({"lessons": []}), encoding="utf-8")
     monkeypatch.setattr(preview, "validate_lesson_ledger", lambda **_kwargs: None)
@@ -61,7 +95,12 @@ def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(tmp_path: Pat
         preview._load_validated_ledger(tmp_path, tmp_path, tmp_path / "summary.md")
 
     lessons = {"a": {"score_total": 0, "score_count": 0}}
-    base = {"recurrence_class": "a", "lesson": "text", "latest_source_path": "source.md", "selection_weight": 1}
+    base = {
+        "recurrence_class": "a",
+        "lesson": "text",
+        "latest_source_path": "source.md",
+        "selection_weight": 1,
+    }
     cases = [
         ({}, lessons, "no candidate list"),
         ({"candidates": [None]}, lessons, "non-object"),
@@ -75,6 +114,11 @@ def test_preview_rejects_closed_ledger_candidate_and_recent_shapes(tmp_path: Pat
     for index, candidate_lessons, message in cases:
         with pytest.raises(ValueError, match=message):
             preview._candidate_rows(index, candidate_lessons)
-    assert preview._recent_key({**base, "lesson_id": "a", "latest_source_date": "not-a-date"})[-1] == "a"
+    assert (
+        preview._recent_key({**base, "lesson_id": "a", "latest_source_date": "not-a-date"})[-1]
+        == "a"
+    )
     with pytest.raises(ValueError, match="invalid selection_weight"):
-        preview._recent_key({**base, "lesson_id": "a", "latest_source_date": None, "selection_weight": True})
+        preview._recent_key(
+            {**base, "lesson_id": "a", "latest_source_date": None, "selection_weight": True}
+        )
