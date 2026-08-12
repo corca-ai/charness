@@ -6,6 +6,8 @@ import runpy
 import subprocess
 from pathlib import Path
 
+import yaml
+
 from tests.quality_gates.support import (
     ROOT,
     fake_gh_env,
@@ -24,6 +26,72 @@ SCRIPT = "skills/public/issue/scripts/issue_tool.py"
 # the floor now applies to every classification -- it is fixture scaffolding for these
 # tests, and the floor itself is pinned in test_issue_closeout_rung1_floors.py.
 _CLOSE_BODY = "{text}\n\nAI-provenance: authored by an agent session.\n"
+
+
+def test_shipped_issue_adapter_example_resolves_every_declared_operation_against_production_grammar() -> None:
+    """The worked adapter is consumer input, so it must execute the owner grammar.
+
+    This intentionally resolves the YAML rather than duplicating its placeholder
+    allowlists in the assertion. A copied argument from another operation must
+    therefore fail here exactly as it would for a consumer before any backend
+    command can run.
+    """
+    scripts = ROOT / "skills" / "public" / "issue" / "scripts"
+    backend_owner = runpy.run_path(str(scripts / "issue_backend.py"))
+    create = runpy.run_path(str(scripts / "issue_create.py"))
+    read = runpy.run_path(str(scripts / "issue_read.py"))
+    close = runpy.run_path(str(scripts / "issue_close.py"))
+    runtime = runpy.run_path(str(scripts / "issue_runtime.py"))
+    example = yaml.safe_load(
+        (ROOT / "skills" / "public" / "issue" / "adapter.example.yaml").read_text(encoding="utf-8")
+    )
+    backend = example["issue_backend"]
+    commands = backend["commands"]
+
+    operation_contracts = {
+        "create": (
+            create["GH_CREATE_DEFAULT"],
+            create["CREATE_PLACEHOLDERS"],
+            {},
+            {"repo": "corca-ai/demo", "title": "Demo", "body_file": "/tmp/body.md"},
+        ),
+        "view": (
+            read["GH_READ_DEFAULT"],
+            read["VIEW_PLACEHOLDERS"],
+            {"required": frozenset({"repo", "number", "json_fields"})},
+            {"repo": "corca-ai/demo", "number": "42", "json_fields": "number,state"},
+        ),
+        "close": (
+            close["GH_CLOSE_DEFAULT"],
+            close["CLOSE_PLACEHOLDERS"],
+            {},
+            {"repo": "corca-ai/demo", "number": "42", "reason": "completed"},
+        ),
+        "comment": (
+            close["GH_COMMENT_DEFAULT"],
+            close["COMMENT_PLACEHOLDERS"],
+            {},
+            {
+                "repo": "corca-ai/demo",
+                "number": "42",
+                "body_file": "/tmp/comment.md",
+                "reason": "completed",
+            },
+        ),
+        "search_newest_open": (
+            runtime["GH_NEWEST_OPEN_ARGS"],
+            runtime["NEWEST_OPEN_PLACEHOLDERS"],
+            {"required": frozenset({"repo"})},
+            {"repo": "corca-ai/demo"},
+        ),
+    }
+
+    assert set(commands) == set(operation_contracts)
+    for operation, (default, allowed, kwargs, substitutions) in operation_contracts.items():
+        argv = backend_owner["resolve_op"](
+            backend, operation, default, allowed, **kwargs, **substitutions
+        )
+        assert argv[0] == "acme"
 
 
 def test_issue_target_uses_default_org_for_bare_repo(tmp_path: Path) -> None:

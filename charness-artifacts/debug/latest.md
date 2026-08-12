@@ -1,1 +1,1 @@
-2026-08-12-issue-604-canonical-gate-recognition.md
+2026-08-12-issue-581-adapter-example-placeholder-debug.md

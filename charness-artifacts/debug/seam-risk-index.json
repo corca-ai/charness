@@ -3,19 +3,19 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 123,
-  "indexed_artifact_count": 111,
+  "source_artifact_count": 126,
+  "indexed_artifact_count": 114,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
     "host-disproves-local": 2,
-    "none": 40,
+    "none": 43,
     "operator-visible-recovery": 23,
     "repeated-symptom": 3
   },
   "generalization_pressure_counts": {
     "factor-now": 5,
-    "monitor": 94,
+    "monitor": 97,
     "none": 12
   },
   "entries": [
@@ -1548,6 +1548,48 @@
       "forced": true
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "YAML example to issue-backend placeholder resolver.",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "adapter-to-planner command projection",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
+      "artifact_path": "charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md",
+      "is_current_pointer": false,
+      "interrupt_id": "none",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "default regex selection to CI workflow parity verdict",
+      "generalization_pressure": "monitor",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "this record.",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-12-release-quality-record-contract-drift.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1568,11 +1610,11 @@
       "risk_classes": [
         "none"
       ],
-      "seam": "local quality artifact → release-only validators.",
+      "seam": "YAML example to issue-backend placeholder resolver.",
       "generalization_pressure": "monitor",
-      "critique_required": false,
+      "critique_required": true,
       "next_step": "impl",
-      "handoff_artifact": "none",
+      "handoff_artifact": "this record.",
       "forced": false
     }
   ],
