@@ -340,7 +340,7 @@ def test_two_protected_issues_in_one_carrier_are_refused(tmp_path: Path) -> None
     assert result["refusal"] == "not_singleton"
 
 
-def test_invoked_and_carrier_targets_that_disagree_still_refuse_as_an_aggregate(tmp_path: Path) -> None:
+def test_commit_message_targets_that_disagree_refuse_as_an_aggregate(tmp_path: Path) -> None:
     """Pinned to the EXACT code, because the hedge here hid unreachable code.
 
     This assertion used to read `in {"not_singleton", "target_disagreement"}` and always
@@ -349,14 +349,24 @@ def test_invoked_and_carrier_targets_that_disagree_still_refuse_as_an_aggregate(
 
     `not_singleton` is not a placeholder here. On the commit-hook path the two sets are
     halves of ONE carrier and GitHub auto-closes both numbers on push, so aggregation is
-    the correct reading. A distinct disagreement refusal would have to know the carrier
-    source; that is tracked as #542, and until it exists this is the honest code.
+    the correct reading.
     """
     _crosswalk(tmp_path)
 
     result = _authorize(tmp_path, [514], [518])
 
     assert result["refusal"] == "not_singleton"
+
+
+def test_close_with_comment_singleton_declaration_and_cli_disagreement_is_distinct(tmp_path: Path) -> None:
+    _crosswalk(tmp_path)
+
+    result = _authorize(tmp_path, [514], [518], source="close-with-comment")
+
+    assert result["refusal"] == "target_disagreement"
+    assert "manual-target-declaration" in result["detail"]
+    assert "corca-ai/charness#514" in result["detail"]
+    assert "corca-ai/charness#518" in result["detail"]
 
 
 def test_a_carrier_that_is_a_superset_of_the_invoked_target_also_refuses_as_an_aggregate(
@@ -368,6 +378,7 @@ def test_a_carrier_that_is_a_superset_of_the_invoked_target_also_refuses_as_an_a
     _crosswalk(tmp_path)
 
     assert _authorize(tmp_path, [514], [514, 999])["refusal"] == "not_singleton"
+    assert _authorize(tmp_path, [514], [514, 999], source="close-with-comment")["refusal"] == "not_singleton"
 
 
 def test_carrier_content_alone_cannot_authorize_a_protected_close(tmp_path: Path) -> None:
@@ -400,6 +411,14 @@ def test_the_bootstrap_crosswalk_cannot_authorize_the_issues_it_protects(tmp_pat
     _crosswalk(tmp_path)
 
     result = _authorize(tmp_path, [514], [514])
+
+    assert result["refusal"] == "matrix_incomplete"
+
+
+def test_close_with_comment_matching_singletons_reach_the_existing_next_floor(tmp_path: Path) -> None:
+    _crosswalk(tmp_path)
+
+    result = _authorize(tmp_path, [514], [514], source="close-with-comment")
 
     assert result["refusal"] == "matrix_incomplete"
 

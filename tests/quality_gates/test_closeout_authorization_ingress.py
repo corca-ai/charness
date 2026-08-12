@@ -141,6 +141,7 @@ def test_a_manual_declaration_naming_a_different_issue_is_refused(tmp_path: Path
 
     assert spy.calls == []
     assert "REFUSED" in str(excinfo.value)
+    assert "target_disagreement" in str(excinfo.value)
 
 
 def test_a_manual_declaration_naming_a_foreign_repo_is_refused(tmp_path: Path) -> None:

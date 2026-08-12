@@ -167,13 +167,11 @@ def authorize_closeout(
     declaration); `carrier_target_set` is what the carrier's CONTENT would close
     (body close keywords, staged artifact).
 
-    They are AGGREGATED, and every multi-target case refuses as `not_singleton`. An
-    earlier version of this docstring promised that a disagreement between the two sets
-    was reported as its own distinct refusal; it never was, because the branch that would
-    have said so was unreachable. The promise is withdrawn rather than left standing over
-    code that cannot keep it. Making it real requires knowing the carrier SOURCE — on the
-    commit-hook path the two sets are halves of one carrier and GitHub closes both, so
-    aggregation is correct there — which is a contract change tracked as #542.
+    They are aggregated for every carrier except `close-with-comment`: its invoked
+    manual declaration is an assertion about the separately supplied CLI target,
+    so exactly-one-versus-exactly-one disagreement is a distinct
+    `target_disagreement` refusal. Commit-hook sets remain halves of one carrier
+    because GitHub may close both on push.
     """
     if crosswalk is None:
         try:
@@ -246,22 +244,24 @@ def authorize_closeout(
             "content alone (this is what makes close-with-comment declare its target explicitly)",
             target=None, **base,
         )
-    # There is deliberately NO `target_disagreement` refusal here, and the reason is
-    # recorded because it is not obvious.
-    #
-    # One used to sit AFTER the singleton check, where it could never fire: `distinct`
-    # already held one key and both operand sets were non-empty subsets of it. Moving it
-    # earlier makes it reachable but CHANGES A VERDICT MESSAGE ON THE COMMIT-HOOK PATH,
-    # and wrongly: there, `invoked` and `carrier` are not "a declaration and the body to
-    # check it against" -- they are two halves of ONE carrier, and GitHub auto-closes both
-    # numbers on push. So a commit whose message closes #518 while its staged artifact
-    # closes #9001 IS the aggregate/split case, and `not_singleton` is the right answer.
-    # A `target_disagreement` refusal would have to know the carrier SOURCE to be correct,
-    # which is a contract change, not a reordering. Measured: the naive reorder, and then a
-    # both-sides-singleton refinement, each broke a real ingress test.
-    #
-    # The branch is removed rather than left unreachable so that nothing here reads as a
-    # protection that exists. The open design question is tracked as #542.
+    invoked_distinct = {_key(target) for target in invoked}
+    carrier_distinct = {_key(target) for target in carrier}
+    if (
+        carrier_source == "close-with-comment"
+        and len(invoked_distinct) == 1
+        and len(carrier_distinct) == 1
+        and invoked_distinct != carrier_distinct
+    ):
+        declared_repo, declared_number = next(iter(invoked_distinct))
+        cli_repo, cli_number = next(iter(carrier_distinct))
+        return _refusal(
+            "target_disagreement",
+            "close-with-comment requires --manual-target-declaration to name the same target as "
+            f"the CLI --repo/--number: declaration is {declared_repo}#{declared_number}, "
+            f"CLI target is {cli_repo}#{cli_number}; make them identical before retrying.",
+            target=None,
+            **base,
+        )
     if len(distinct) != 1:
         return _refusal(
             "not_singleton",
