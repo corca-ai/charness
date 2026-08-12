@@ -1,0 +1,379 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-12T12:38:18Z",
+  "prepared_for": "release-5.0.1",
+  "changed_ref": "1c1acd90cb45f4e8fa9f7b1159caca82520c3423..2a1cb537ee13eae83faf6206981078cb7e576cc1",
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for ref `1c1acd90cb45f4e8fa9f7b1159caca82520c3423..2a1cb537ee13eae83faf6206981078cb7e576cc1`:\n- charness-artifacts/critique/2026-08-12-104057-packet.json\n- charness-artifacts/critique/2026-08-12-104057-packet.md\n- charness-artifacts/critique/2026-08-12-105645-packet.json\n- charness-artifacts/critique/2026-08-12-105645-packet.md\n- charness-artifacts/critique/2026-08-12-110534-packet.json\n- charness-artifacts/critique/2026-08-12-110534-packet.md\n- charness-artifacts/critique/2026-08-12-111219-packet.json\n- charness-artifacts/critique/2026-08-12-111219-packet.md\n- charness-artifacts/critique/2026-08-12-111657-packet.json\n- charness-artifacts/critique/2026-08-12-111657-packet.md\n- charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.json\n- charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.md\n- charness-artifacts/critique/2026-08-12-issue-581-adapter-example-resolution.md\n- charness-artifacts/critique/2026-08-12-issue-593-hotl-target-binding-critique.md\n- charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md\n- charness-artifacts/critique/2026-08-12-issue-603-quality-packet-critique.md\n- charness-artifacts/critique/2026-08-12-issue-604-canonical-gate-critique.md\n- charness-artifacts/critique/2026-08-12-issues-585-596-598-closeout-review.md\n- charness-artifacts/critique/2026-08-12-repair-quality-planning-and-closeout-surface-backlog-disposition.md\n- charness-artifacts/debug/2026-08-12-debug-review.md\n- charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md\n- charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md\n- charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md\n- charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md\n- charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md\n- charness-artifacts/debug/latest.md\n- charness-artifacts/debug/seam-risk-index.json\n- charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/probe/2026-08-01-inventory-marker-rule.json\n- charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json\n- charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md\n- charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md\n- charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md\n- charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md\n- charness-artifacts/quality/latest.md\n- charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md\n- charness-artifacts/retro/lesson-selection-index.json\n- charness-artifacts/retro/recent-lessons.md\n- docs/public-skill-dogfood.json\n- plugins/charness/skills/issue/adapter.example.yaml\n- plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py\n- plugins/charness/skills/issue/scripts/issue_close_comment_floor.py\n- plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py\n- plugins/charness/skills/issue/scripts/issue_closeout_rung1_floors.py\n- plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py\n- plugins/charness/skills/issue/scripts/issue_verify_closeout.py\n- plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py\n- plugins/charness/skills/quality/references/maintainer-local-enforcement.md\n- plugins/charness/skills/quality/scripts/ci_local_gate_parity_lib.py\n- plugins/charness/skills/quality/scripts/plan_quality_run.py\n- plugins/charness/skills/quality/scripts/quality_catalog_gate_applicability.py\n- plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py\n- skills/public/issue/adapter.example.yaml\n- skills/public/issue/scripts/describe_closeout_draft_shape.py\n- skills/public/issue/scripts/issue_close_comment_floor.py\n- skills/public/issue/scripts/issue_closeout_classification_ledger.py\n- skills/public/issue/scripts/issue_closeout_rung1_floors.py\n- skills/public/issue/scripts/issue_consolidated_closeout.py\n- skills/public/issue/scripts/issue_verify_closeout.py\n- skills/public/issue/scripts/issue_verify_closeout_body.py\n- skills/public/quality/references/maintainer-local-enforcement.md\n- skills/public/quality/scripts/ci_local_gate_parity_lib.py\n- skills/public/quality/scripts/plan_quality_run.py\n- skills/public/quality/scripts/quality_catalog_gate_applicability.py\n- skills/public/quality/scripts/quality_declaration_lifecycle.py\n- tests/probe_drift_support.py\n- tests/quality_gates/test_check_artifact_surface_preflight.py\n- tests/quality_gates/test_inventory_ci_local_gate_parity.py\n- tests/quality_gates/test_issue_close_comment_floor.py\n- tests/quality_gates/test_issue_closeout_rung1_floors.py\n- tests/quality_gates/test_issue_consolidated_closeout.py\n- tests/quality_gates/test_issue_skill.py\n- tests/quality_gates/test_quality_declaration_path_resolution.py\n- tests/quality_gates/test_quality_run_planner.py\n- tests/test_probe_drift_message.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: skills/public/issue/adapter.example.yaml, skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/maintainer-local-enforcement.md, skills/public/quality/scripts/ci_local_gate_parity_lib.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py\n  derived matches: plugins/charness/skills/issue/adapter.example.yaml, plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py, plugins/charness/skills/issue/scripts/issue_close_comment_floor.py, plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py, plugins/charness/skills/issue/scripts/issue_closeout_rung1_floors.py, plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py, plugins/charness/skills/quality/references/maintainer-local-enforcement.md, plugins/charness/skills/quality/scripts/ci_local_gate_parity_lib.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_catalog_gate_applicability.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-12-104057-packet.md, charness-artifacts/critique/2026-08-12-105645-packet.md, charness-artifacts/critique/2026-08-12-110534-packet.md, charness-artifacts/critique/2026-08-12-111219-packet.md, charness-artifacts/critique/2026-08-12-111657-packet.md, charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.md, charness-artifacts/critique/2026-08-12-issue-581-adapter-example-resolution.md, charness-artifacts/critique/2026-08-12-issue-593-hotl-target-binding-critique.md, charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md, charness-artifacts/critique/2026-08-12-issue-603-quality-packet-critique.md, charness-artifacts/critique/2026-08-12-issue-604-canonical-gate-critique.md, charness-artifacts/critique/2026-08-12-issues-585-596-598-closeout-review.md, charness-artifacts/critique/2026-08-12-repair-quality-planning-and-closeout-surface-backlog-disposition.md, charness-artifacts/debug/2026-08-12-debug-review.md, charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md, charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md, charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md, charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md, charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md, charness-artifacts/debug/latest.md, charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md, charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md, charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md, charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md, charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md, charness-artifacts/quality/latest.md, charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md, charness-artifacts/retro/recent-lessons.md, skills/public/quality/references/maintainer-local-enforcement.md\n  derived matches: plugins/charness/skills/quality/references/maintainer-local-enforcement.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- prompt-behavior-proof: Prompt-affecting instruction surfaces must follow deterministic Cautilus validation and on-demand proof policy.\n  source matches: skills/public/quality/references/maintainer-local-enforcement.md\n  verify: python3 scripts/validate_cautilus_proof.py --repo-root ., python3 scripts/validate_cautilus_diagnostics.py --repo-root .\n- skill-packages: Public and support skill packages plus their helper scripts.\n  source matches: skills/public/issue/adapter.example.yaml, skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/maintainer-local-enforcement.md, skills/public/quality/scripts/ci_local_gate_parity_lib.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py\n  derived matches: plugins/charness/skills/issue/adapter.example.yaml, plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py, plugins/charness/skills/issue/scripts/issue_close_comment_floor.py, plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py, plugins/charness/skills/issue/scripts/issue_closeout_rung1_floors.py, plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout.py, plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py, plugins/charness/skills/quality/references/maintainer-local-enforcement.md, plugins/charness/skills/quality/scripts/ci_local_gate_parity_lib.py, plugins/charness/skills/quality/scripts/plan_quality_run.py, plugins/charness/skills/quality/scripts/quality_catalog_gate_applicability.py, plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py\n  verify: python3 scripts/validate_skills.py --repo-root ., python3 -m py_compile skills/public/*/scripts/*.py skills/support/*/scripts/*.py skills/shared/scripts/*.py, python3 scripts/check_skill_ownership_overlap.py --repo-root ., python3 scripts/validate_skill_ergonomics.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- public-skill-policy: Public skill classification policy and validator that must stay aligned with the current public skill set.\n  source matches: skills/public/issue/adapter.example.yaml, skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/maintainer-local-enforcement.md, skills/public/quality/scripts/ci_local_gate_parity_lib.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py\n  verify: python3 scripts/validate_public_skill_validation.py --repo-root .\n- public-skill-dogfood: Checked-in consumer dogfood cases for public skills and the validator that keeps them aligned with current skill contracts.\n  source matches: docs/public-skill-dogfood.json, skills/public/issue/adapter.example.yaml, skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/references/maintainer-local-enforcement.md, skills/public/quality/scripts/ci_local_gate_parity_lib.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py\n  verify: python3 scripts/validate_public_skill_dogfood.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-12-104057-packet.json, charness-artifacts/critique/2026-08-12-104057-packet.md, charness-artifacts/critique/2026-08-12-105645-packet.json, charness-artifacts/critique/2026-08-12-105645-packet.md, charness-artifacts/critique/2026-08-12-110534-packet.json, charness-artifacts/critique/2026-08-12-110534-packet.md, charness-artifacts/critique/2026-08-12-111219-packet.json, charness-artifacts/critique/2026-08-12-111219-packet.md, charness-artifacts/critique/2026-08-12-111657-packet.json, charness-artifacts/critique/2026-08-12-111657-packet.md, charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.json, charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.md, charness-artifacts/critique/2026-08-12-issue-581-adapter-example-resolution.md, charness-artifacts/critique/2026-08-12-issue-593-hotl-target-binding-critique.md, charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md, charness-artifacts/critique/2026-08-12-issue-603-quality-packet-critique.md, charness-artifacts/critique/2026-08-12-issue-604-canonical-gate-critique.md, charness-artifacts/critique/2026-08-12-issues-585-596-598-closeout-review.md, charness-artifacts/critique/2026-08-12-repair-quality-planning-and-closeout-surface-backlog-disposition.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json, charness-artifacts/probe/2026-08-01-inventory-marker-rule.json, charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- debug-seam-risk-index: Generated source-linked index over debug artifact seam-risk fields.\n  source matches: charness-artifacts/debug/2026-08-12-debug-review.md, charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md, charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md, charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md, charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md, charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md, charness-artifacts/debug/latest.md\n  derived matches: charness-artifacts/debug/seam-risk-index.json\n  sync: python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n  verify: python3 scripts/build_debug_seam_risk_index.py --repo-root . --check\n- retro-lesson-selection-index: Durable retro prepare packets and generated advisory index for source-linked retro lesson digest selection.\n  source matches: charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md, charness-artifacts/retro/recent-lessons.md\n  derived matches: charness-artifacts/retro/lesson-selection-index.json\n  sync: python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n  verify: for retro_packet_json in charness-artifacts/retro/*-packet.json; do if [ -e \"$retro_packet_json\" ]; then python3 -m json.tool \"$retro_packet_json\" >/dev/null || exit $?; fi; done, python3 scripts/build_retro_lesson_selection_index.py --repo-root . --check\n- repo-python: Repo-owned Python code and tests.\n  source matches: tests/probe_drift_support.py, tests/quality_gates/test_check_artifact_surface_preflight.py, tests/quality_gates/test_inventory_ci_local_gate_parity.py, tests/quality_gates/test_issue_close_comment_floor.py, tests/quality_gates/test_issue_closeout_rung1_floors.py, tests/quality_gates/test_issue_consolidated_closeout.py, tests/quality_gates/test_issue_skill.py, tests/quality_gates/test_quality_declaration_path_resolution.py, tests/quality_gates/test_quality_run_planner.py, tests/test_probe_drift_message.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: skills/public/issue/scripts/describe_closeout_draft_shape.py, skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py, skills/public/quality/scripts/ci_local_gate_parity_lib.py, skills/public/quality/scripts/plan_quality_run.py, skills/public/quality/scripts/quality_catalog_gate_applicability.py, skills/public/quality/scripts/quality_declaration_lifecycle.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n- closeout-floor-matrix: Declared floor x classification x carrier matrix for issue closeout, and the behavioral probe that re-derives it from the real carriers.\n  source matches: skills/public/issue/scripts/issue_close_comment_floor.py, skills/public/issue/scripts/issue_closeout_classification_ledger.py, skills/public/issue/scripts/issue_closeout_rung1_floors.py, skills/public/issue/scripts/issue_consolidated_closeout.py, skills/public/issue/scripts/issue_verify_closeout.py, skills/public/issue/scripts/issue_verify_closeout_body.py\n  verify: python3 scripts/check_closeout_floor_matrix.py --repo-root .\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n- python3 scripts/build_debug_seam_risk_index.py --repo-root . --write\n- python3 scripts/build_retro_lesson_selection_index.py --repo-root . --write\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "changed-ref",
+    "changed_ref": "1c1acd90cb45f4e8fa9f7b1159caca82520c3423..2a1cb537ee13eae83faf6206981078cb7e576cc1",
+    "resolved_changed_ref": [
+      "2a1cb537ee13eae83faf6206981078cb7e576cc1",
+      "^1c1acd90cb45f4e8fa9f7b1159caca82520c3423"
+    ],
+    "base_head": "2a1cb537ee13eae83faf6206981078cb7e576cc1",
+    "base_head_role": "target",
+    "reviewed_paths": [
+      "charness-artifacts/debug/2026-08-12-debug-review.md",
+      "charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md",
+      "charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md",
+      "charness-artifacts/debug/latest.md",
+      "charness-artifacts/debug/seam-risk-index.json",
+      "charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md",
+      "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+      "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+      "charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json",
+      "charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md",
+      "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
+      "charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md",
+      "charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "charness-artifacts/retro/lesson-selection-index.json",
+      "charness-artifacts/retro/recent-lessons.md",
+      "docs/public-skill-dogfood.json",
+      "plugins/charness/skills/issue/adapter.example.yaml",
+      "plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py",
+      "plugins/charness/skills/issue/scripts/issue_close_comment_floor.py",
+      "plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py",
+      "plugins/charness/skills/issue/scripts/issue_closeout_rung1_floors.py",
+      "plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+      "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+      "plugins/charness/skills/quality/references/maintainer-local-enforcement.md",
+      "plugins/charness/skills/quality/scripts/ci_local_gate_parity_lib.py",
+      "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+      "plugins/charness/skills/quality/scripts/quality_catalog_gate_applicability.py",
+      "plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py",
+      "skills/public/issue/adapter.example.yaml",
+      "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+      "skills/public/issue/scripts/issue_close_comment_floor.py",
+      "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+      "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
+      "skills/public/issue/scripts/issue_consolidated_closeout.py",
+      "skills/public/issue/scripts/issue_verify_closeout.py",
+      "skills/public/issue/scripts/issue_verify_closeout_body.py",
+      "skills/public/quality/references/maintainer-local-enforcement.md",
+      "skills/public/quality/scripts/ci_local_gate_parity_lib.py",
+      "skills/public/quality/scripts/plan_quality_run.py",
+      "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+      "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+      "tests/probe_drift_support.py",
+      "tests/quality_gates/test_check_artifact_surface_preflight.py",
+      "tests/quality_gates/test_inventory_ci_local_gate_parity.py",
+      "tests/quality_gates/test_issue_close_comment_floor.py",
+      "tests/quality_gates/test_issue_closeout_rung1_floors.py",
+      "tests/quality_gates/test_issue_consolidated_closeout.py",
+      "tests/quality_gates/test_issue_skill.py",
+      "tests/quality_gates/test_quality_declaration_path_resolution.py",
+      "tests/quality_gates/test_quality_run_planner.py",
+      "tests/test_probe_drift_message.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": "charness-artifacts/debug/2026-08-12-debug-review.md",
+        "content_sha256": "8abf6c4dcfd43e7129890fa9ae958662abd5cc5eeab48910129dceba838107e0"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-581-adapter-example-placeholder-debug.md",
+        "content_sha256": "1443704fc648a4d1421673b15cbf4929524fe8c7de8f50f43a605da65ccf790b"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-593-hotl-target-binding-debug.md",
+        "content_sha256": "df363e8761f990d18c89c4477490931ce51ad823799c234292526f3591d38cee"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-594-closeout-draft-scope-debug.md",
+        "content_sha256": "3b7d450bdf7d49bba396f0014c80d0d2f668b9a62c1a14999a8e9f3e9e2135ba"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-603-quality-packet-debug.md",
+        "content_sha256": "3348f1cfa49ff63541387628189eb6584f156c34e53f45398d90a5ecd1f23a1d"
+      },
+      {
+        "path": "charness-artifacts/debug/2026-08-12-issue-604-canonical-gate-recognition.md",
+        "content_sha256": "3ad6665fb53431f64aec7e3afbdc08cf03068091fe3d0c3a1f4469a24b9567a6"
+      },
+      {
+        "path": "charness-artifacts/debug/latest.md",
+        "content_sha256": "9b8f2ddcb7191e23260bd9f0c20584d7f05c6a601f9f368cf306380e927031b2"
+      },
+      {
+        "path": "charness-artifacts/debug/seam-risk-index.json",
+        "content_sha256": "7f66dcfb142413305b09c5d0e185aea9c61c8ece9bd20914c29d710c6e1c31cb"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-repair-quality-planner-and-closeout-surface.md",
+        "content_sha256": "2b7a4d6144edc6f630a6e21d5a8443da441c332ef1a3fcc0db51473b8806d92e"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+        "content_sha256": "0687e1602878ee9e85c6d83b942e55b376c180380f44c8f389a6ac031d941247"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-marker-rule.json",
+        "content_sha256": "b9a402d5aa1533cedca5115619b73b65d9a7c620f4db5091d567f4a7064a1130"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-12-repair-quality-planner-and-closeout-surface-host-log.json",
+        "content_sha256": "01cd583358bc97e074aedcf96796a913fc79380a8ac55301f004fbea04ec37c3"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-12-issue-593-hotl-target-binding.md",
+        "content_sha256": "5de4f01e5fd7b2b16f7b29bf0972ec8e35e158a735a7f9968eaf4795239c0fb9"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-12-issue-594-closeout-draft-scope.md",
+        "content_sha256": "2d660dc4c4cff9fba304143efe1fe915627b851d91c11cdfe5379599de115943"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-12-issue-603-quality-packet-routing.md",
+        "content_sha256": "06f0f13a23ec7639596feed9cd46f42565a64e4ec3baaebac5d3279f46dfb325"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-12-issue-604-canonical-gate-recognition.md",
+        "content_sha256": "c2d55025792aa52d754c228b693e96a46d5f4a2e6821af7900028c03f48682b5"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "e22b7d9dcd71503342ea02879b91d8f23ed610ece71fc3123dc87cc031d3c549"
+      },
+      {
+        "path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+        "content_sha256": "fdc21f9610abd5e1e0c1f0082e9d4220115a5cde46811abbb2dcc0c7155e18f5"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-selection-index.json",
+        "content_sha256": "2602d698a7c023cfb4b38e68a1dfd50403069c4d201e2a587e1a9802bd76835b"
+      },
+      {
+        "path": "charness-artifacts/retro/recent-lessons.md",
+        "content_sha256": "9f395c2465fb8a9bbafd595a6b2f4b53ea2bdcde43fe19101ba2d35adbcfa6e1"
+      },
+      {
+        "path": "docs/public-skill-dogfood.json",
+        "content_sha256": "04187b707e8601cf563d45403b414800cc2fa41d32642638ad6a3971c930edf2"
+      },
+      {
+        "path": "plugins/charness/skills/issue/adapter.example.yaml",
+        "content_sha256": "6dd883275941b08317cfc39af8741d7cc4d5de4387e1791c3c20e7e2bd9a94c7"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/describe_closeout_draft_shape.py",
+        "content_sha256": "ecdd0050c2d05e231ed70f1697d5c71e2fc9d8be75592de098c2a811ae1bf8a2"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_close_comment_floor.py",
+        "content_sha256": "fbffe4f8f2cc01357ced90010ae192a5200d14bf7c74a68f29637f9ec95929d1"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_closeout_classification_ledger.py",
+        "content_sha256": "2b5cf749762b75aa1fcbfdf6d29d2cb42afb9c4641703330734a59865cf8d9a4"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_closeout_rung1_floors.py",
+        "content_sha256": "2d3654640a93f91563d13ea753fde5073f2e8c8fe7c2e23eb31382bf551bd155"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_consolidated_closeout.py",
+        "content_sha256": "5bca010d658862e611c787842120bfcc826d825730c2a58d5c54e84b1b6c729d"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "5104cbc1ac506409ec1f6d54efe8f783717f567a7e425ab89604c2081d74fcba"
+      },
+      {
+        "path": "plugins/charness/skills/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "b22e0c61f696296c452cf6111049b16a291848853fb2eccaaddbf17037d1e7a3"
+      },
+      {
+        "path": "plugins/charness/skills/quality/references/maintainer-local-enforcement.md",
+        "content_sha256": "238f9bdd969790bd4f68cb329eb1d580bcc59275ecaf3063dd23f084cce54997"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/ci_local_gate_parity_lib.py",
+        "content_sha256": "f90b8f53864bfa636e1fa63caf4f7d9eb2b474e5703161cc19d4e0754532ce46"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/plan_quality_run.py",
+        "content_sha256": "2af7560f8aa89591e098e710989d7c1767e10bdb50c4e0039586af612c378791"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_catalog_gate_applicability.py",
+        "content_sha256": "3a8902ba449ee8646b7470e02fe6eb6ebb9b5f5a7a73abf85d9f4714ac34a5be"
+      },
+      {
+        "path": "plugins/charness/skills/quality/scripts/quality_declaration_lifecycle.py",
+        "content_sha256": "3a5078a42d09e1fd9d88a10ba225a7852a973dda13291149c11fb665d785f553"
+      },
+      {
+        "path": "skills/public/issue/adapter.example.yaml",
+        "content_sha256": "6dd883275941b08317cfc39af8741d7cc4d5de4387e1791c3c20e7e2bd9a94c7"
+      },
+      {
+        "path": "skills/public/issue/scripts/describe_closeout_draft_shape.py",
+        "content_sha256": "ecdd0050c2d05e231ed70f1697d5c71e2fc9d8be75592de098c2a811ae1bf8a2"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_close_comment_floor.py",
+        "content_sha256": "fbffe4f8f2cc01357ced90010ae192a5200d14bf7c74a68f29637f9ec95929d1"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_closeout_classification_ledger.py",
+        "content_sha256": "2b5cf749762b75aa1fcbfdf6d29d2cb42afb9c4641703330734a59865cf8d9a4"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_closeout_rung1_floors.py",
+        "content_sha256": "2d3654640a93f91563d13ea753fde5073f2e8c8fe7c2e23eb31382bf551bd155"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_consolidated_closeout.py",
+        "content_sha256": "5bca010d658862e611c787842120bfcc826d825730c2a58d5c54e84b1b6c729d"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout.py",
+        "content_sha256": "5104cbc1ac506409ec1f6d54efe8f783717f567a7e425ab89604c2081d74fcba"
+      },
+      {
+        "path": "skills/public/issue/scripts/issue_verify_closeout_body.py",
+        "content_sha256": "b22e0c61f696296c452cf6111049b16a291848853fb2eccaaddbf17037d1e7a3"
+      },
+      {
+        "path": "skills/public/quality/references/maintainer-local-enforcement.md",
+        "content_sha256": "238f9bdd969790bd4f68cb329eb1d580bcc59275ecaf3063dd23f084cce54997"
+      },
+      {
+        "path": "skills/public/quality/scripts/ci_local_gate_parity_lib.py",
+        "content_sha256": "f90b8f53864bfa636e1fa63caf4f7d9eb2b474e5703161cc19d4e0754532ce46"
+      },
+      {
+        "path": "skills/public/quality/scripts/plan_quality_run.py",
+        "content_sha256": "2af7560f8aa89591e098e710989d7c1767e10bdb50c4e0039586af612c378791"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_catalog_gate_applicability.py",
+        "content_sha256": "3a8902ba449ee8646b7470e02fe6eb6ebb9b5f5a7a73abf85d9f4714ac34a5be"
+      },
+      {
+        "path": "skills/public/quality/scripts/quality_declaration_lifecycle.py",
+        "content_sha256": "3a5078a42d09e1fd9d88a10ba225a7852a973dda13291149c11fb665d785f553"
+      },
+      {
+        "path": "tests/probe_drift_support.py",
+        "content_sha256": "e67a6bb2a63f3a0b9eadbf8cfcc69cf52ce74854bf2c0fc978029221e711e8db"
+      },
+      {
+        "path": "tests/quality_gates/test_check_artifact_surface_preflight.py",
+        "content_sha256": "e2af685fbb1ade39aa2c3b061d9a510d632a740d28c877ea27e29b9891a17f8e"
+      },
+      {
+        "path": "tests/quality_gates/test_inventory_ci_local_gate_parity.py",
+        "content_sha256": "c9336032183348a0c9adbf28e0c82b57d9bfae03fb83ff80ea8adffd92b3476f"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_close_comment_floor.py",
+        "content_sha256": "934164cba5dca669aab64c8ed4059da6dd704a84404c45f91d1d051361d33474"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_closeout_rung1_floors.py",
+        "content_sha256": "d9188aef98c2f893c8707a0ef474a95c829bfb3a736e962f636c100e373dc2da"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_consolidated_closeout.py",
+        "content_sha256": "00dcf3013d658afa49e25e06a4f9b93581de872458f6b218ab20e5f610d41072"
+      },
+      {
+        "path": "tests/quality_gates/test_issue_skill.py",
+        "content_sha256": "74fb933408fd32f67415e1625813799b0fc684ba38e967bdc13be59b75622f44"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_declaration_path_resolution.py",
+        "content_sha256": "f0c5a23be42ae134452889ee59473fa378e20c27ee63c35d5475a82cea27e483"
+      },
+      {
+        "path": "tests/quality_gates/test_quality_run_planner.py",
+        "content_sha256": "b0e8b7a3e2137e69f4b58e91dcdf27831d0ab58633a8de6a8326ff51e3973d59"
+      },
+      {
+        "path": "tests/test_probe_drift_message.py",
+        "content_sha256": "ec8613816e0f58d0d939f5ce12fd35c98ea13772f4adc8c048e8fd4a9492274d"
+      }
+    ],
+    "reviewed_patch_sha256": "89cfa13b1b3da098053e092c69d924ea1cba31325a26cb2bb14938110532ed43",
+    "staged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-12-104057-packet.json",
+      "charness-artifacts/critique/2026-08-12-104057-packet.md",
+      "charness-artifacts/critique/2026-08-12-105645-packet.json",
+      "charness-artifacts/critique/2026-08-12-105645-packet.md",
+      "charness-artifacts/critique/2026-08-12-110534-packet.json",
+      "charness-artifacts/critique/2026-08-12-110534-packet.md",
+      "charness-artifacts/critique/2026-08-12-111219-packet.json",
+      "charness-artifacts/critique/2026-08-12-111219-packet.md",
+      "charness-artifacts/critique/2026-08-12-111657-packet.json",
+      "charness-artifacts/critique/2026-08-12-111657-packet.md",
+      "charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.json",
+      "charness-artifacts/critique/2026-08-12-final-goal-disposition-final3-packet.md",
+      "charness-artifacts/critique/2026-08-12-issue-581-adapter-example-resolution.md",
+      "charness-artifacts/critique/2026-08-12-issue-593-hotl-target-binding-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-594-closeout-draft-scope-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-603-quality-packet-critique.md",
+      "charness-artifacts/critique/2026-08-12-issue-604-canonical-gate-critique.md",
+      "charness-artifacts/critique/2026-08-12-issues-585-596-598-closeout-review.md",
+      "charness-artifacts/critique/2026-08-12-repair-quality-planning-and-closeout-surface-backlog-disposition.md"
+    ],
+    "identity_sha256": "131ad65228a7534f1332af0bd90146743930883c2560bd8da2d82f834066ae10"
+  }
+}
