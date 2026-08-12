@@ -9,7 +9,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v1"
+SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v2"
+CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 SUMMARY_FIELDS = (
     "scanned_test_files",
     "candidate_count",
@@ -51,8 +52,11 @@ def _validate_candidate(row: Any, index: int) -> dict[str, Any]:
     import_safe = _string_list(row.get("import_safe_targets"), f"candidates[{index}].import_safe_targets")
     clean = _string_list(row.get("clean_inprocess_targets"), f"candidates[{index}].clean_inprocess_targets")
     internal = _string_list(row.get("internal_boundary_targets"), f"candidates[{index}].internal_boundary_targets")
+    member_hashes = _string_list(row.get("call_site_member_hashes"), f"candidates[{index}].call_site_member_hashes")
     if not import_safe:
         raise ValidationError(f"`candidates[{index}].import_safe_targets` must not be empty")
+    if not member_hashes:
+        raise ValidationError(f"`candidates[{index}].call_site_member_hashes` must not be empty")
     if not set(clean).issubset(import_safe):
         raise ValidationError(f"`candidates[{index}].clean_inprocess_targets` must be a subset of import_safe_targets")
     if not set(internal).issubset(import_safe):
@@ -64,7 +68,7 @@ def _validate_candidate(row: Any, index: int) -> dict[str, Any]:
         )
     _bool(row.get("behavior_assert"), f"candidates[{index}].behavior_assert")
     return {
-        "keys": [f"{test_file}::{target}" for target in import_safe],
+        "keys": ["\n".join(sorted(member_hashes))],
         "likely_keep_boundary": _bool(row.get("likely_keep_boundary"), f"candidates[{index}].likely_keep_boundary"),
         "clean": clean,
         "internal": internal,
@@ -74,6 +78,8 @@ def _validate_candidate(row: Any, index: int) -> dict[str, Any]:
 def validate_payload(payload: dict[str, Any]) -> dict[str, int]:
     if payload.get("schemaVersion") != SCHEMA_VERSION:
         raise ValidationError(f"`schemaVersion` must be `{SCHEMA_VERSION}`")
+    if payload.get("call_site_fingerprint_algo_version") != CALL_SITE_FINGERPRINT_ALGO_VERSION:
+        raise ValidationError(f"`call_site_fingerprint_algo_version` must be `{CALL_SITE_FINGERPRINT_ALGO_VERSION}`")
     if payload.get("status") not in {"advisory", "ratchet"}:
         raise ValidationError("`status` must be `advisory` or `ratchet`")
     summary = payload.get("summary")

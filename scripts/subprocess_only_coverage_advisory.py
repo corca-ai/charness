@@ -93,17 +93,20 @@ def load_subprocess_boundary_pairs(repo_root: Path, *, baseline_rel: str = BASEL
         payload = json.loads((repo_root / baseline_rel).read_text(encoding="utf-8"))
     except (OSError, ValueError):
         return {}
-    keys = payload.get("candidate_keys") if isinstance(payload, dict) else None
-    if not isinstance(keys, list):
+    rows = payload.get("candidate_pairs") if isinstance(payload, dict) else None
+    if not isinstance(rows, list):
         return {}
     pairs: dict[str, set[str]] = {}
-    for key in keys:
-        if not isinstance(key, str):
+    for row in rows:
+        if not isinstance(row, dict):
             continue
-        test_file, separator, script = key.partition("::")
-        if not separator or not test_file.strip() or not script.strip():
+        test_file = row.get("test_file")
+        targets = row.get("import_safe_targets")
+        if not isinstance(test_file, str) or not test_file or not isinstance(targets, list):
             continue
-        pairs.setdefault(script.strip(), set()).add(test_file.strip())
+        for script in targets:
+            if isinstance(script, str) and script:
+                pairs.setdefault(script, set()).add(test_file)
     return {script: sorted(tests) for script, tests in sorted(pairs.items())}
 
 

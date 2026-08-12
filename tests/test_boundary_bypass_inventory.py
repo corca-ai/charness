@@ -73,7 +73,8 @@ def test_flags_subprocess_test_of_import_safe_script(tmp_path: Path) -> None:
         .build(tmp_path)
     )
     out = LIB.find_boundary_bypass_candidates(repo)
-    assert out["schemaVersion"] == "charness.quality.boundary_bypass_inventory.v1"
+    assert out["schemaVersion"] == "charness.quality.boundary_bypass_inventory.v2"
+    assert out["call_site_fingerprint_algo_version"] == "1"
     assert out["summary"]["candidate_count"] == 1
     cand = out["candidates"][0]
     assert cand["test_file"] == "tests/test_foo.py"
@@ -82,8 +83,70 @@ def test_flags_subprocess_test_of_import_safe_script(tmp_path: Path) -> None:
     assert cand["internal_boundary_targets"] == []
     assert cand["behavior_assert"] is True
     assert cand["likely_keep_boundary"] is False
+    assert len(cand["call_site_member_hashes"]) == 1
     assert out["summary"]["convertible_count"] == 1
     assert out["summary"]["internal_boundary_count"] == 0
+
+
+def test_call_site_fingerprint_ignores_test_path_and_retains_duplicate_members(tmp_path: Path) -> None:
+    """A move is identity-neutral; repeated identical spawn calls remain visible."""
+    body = _subprocess_test(returncode=0, behavior=True)
+    moved = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/renamed/test_foo.py", body)
+        .build(tmp_path / "moved")
+    )
+    duplicated = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("tests/test_foo.py", body.replace(
+            "    assert result.returncode == 0",
+            "    second = run_script(\"scripts/foo.py\", \"--repo-root\", str(tmp_path))\n"
+            "    assert result.returncode == 0\n"
+            "    assert second.returncode == 0",
+        ))
+        .build(tmp_path / "duplicated")
+    )
+
+    moved_members = LIB.find_boundary_bypass_candidates(moved)["candidates"][0]["call_site_member_hashes"]
+    duplicated_members = LIB.find_boundary_bypass_candidates(duplicated)["candidates"][0]["call_site_member_hashes"]
+
+    assert len(moved_members) == 1
+    assert duplicated_members == [moved_members[0], moved_members[0]]
+    assert LIB.call_site_content_fingerprint(moved_members) != LIB.call_site_content_fingerprint(duplicated_members)
+
+
+def test_call_site_fingerprint_excludes_non_candidate_spawn_calls(tmp_path: Path) -> None:
+    """An unrelated non-import-safe spawn must not rotate the candidate key."""
+    clean = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("scripts/not_a_candidate.py", NOT_IMPORT_SAFE)
+        .file("tests/test_foo.py", _subprocess_test(returncode=0, behavior=True))
+        .build(tmp_path / "clean")
+    )
+    mixed = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file("scripts/not_a_candidate.py", NOT_IMPORT_SAFE)
+        .file(
+            "tests/test_foo.py",
+            _subprocess_test(returncode=0, behavior=True).replace(
+                "    assert result.returncode == 0",
+                "    noise = run_script('scripts/not_a_candidate.py')\n"
+                "    assert result.returncode == 0\n"
+                "    assert noise.returncode == 0",
+            ),
+        )
+        .build(tmp_path / "mixed")
+    )
+
+    clean_candidate = LIB.find_boundary_bypass_candidates(clean)["candidates"][0]
+    mixed_candidate = LIB.find_boundary_bypass_candidates(mixed)["candidates"][0]
+
+    assert mixed_candidate["import_safe_targets"] == clean_candidate["import_safe_targets"] == ["scripts/foo.py"]
+    assert mixed_candidate["call_site_member_hashes"] == clean_candidate["call_site_member_hashes"]
 
 
 def test_yaml_stdout_parse_counts_as_behavior_assertion(tmp_path: Path) -> None:

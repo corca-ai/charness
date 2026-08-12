@@ -64,12 +64,66 @@ def test_matching_baseline_passes(tmp_path: Path) -> None:
     assert report["summary"]["candidate_key_count"] == 1
 
 
+def test_real_inventory_path_move_keeps_a_baselined_identity(tmp_path: Path) -> None:
+    original = _repo_with_candidate(tmp_path / "original")
+    moved = (
+        Repo()
+        .file("scripts/foo.py", IMPORT_SAFE)
+        .file(
+            "tests/renamed/test_foo.py",
+            "\n".join(
+                [
+                    "from support import run_script",
+                    "def test_x():",
+                    "    result = run_script('scripts/foo.py')",
+                    "    assert result.returncode == 0",
+                    "    import json; assert json.loads(result.stdout)",
+                    "",
+                ]
+            ),
+        )
+        .build(tmp_path / "moved")
+    )
+    baseline = RATCHET.build_baseline(INVENTORY.find_boundary_bypass_candidates(original))
+
+    assert RATCHET.check_payload(INVENTORY.find_boundary_bypass_candidates(moved), baseline, {})["ok"] is True
+
+
+def test_content_identity_is_path_invariant_and_preserves_membership_and_multiplicity() -> None:
+    """The R6 contract: path moves do not mint a key; call-site changes do."""
+    def payload(test_file: str, members: list[str]) -> dict:
+        return {
+            "schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
+            "call_site_fingerprint_algo_version": "1",
+            "candidates": [{
+                "test_file": test_file,
+                "import_safe_targets": ["scripts/foo.py"],
+                "clean_inprocess_targets": ["scripts/foo.py"],
+                "internal_boundary_targets": [],
+                "behavior_assert": True,
+                "likely_keep_boundary": False,
+                "call_site_member_hashes": members,
+            }],
+        }
+
+    baseline_payload = payload("tests/old_location.py", ["call-A"])
+    baseline = RATCHET.build_baseline(baseline_payload)
+    assert RATCHET.check_payload(payload("tests/moved_location.py", ["call-A"]), baseline, {})["ok"] is True
+    assert RATCHET.check_payload(payload("tests/moved_location.py", ["call-B"]), baseline, {})["new_candidate_keys"]
+    assert RATCHET.check_payload(payload("tests/moved_location.py", ["call-A", "call-B"]), baseline, {})["new_candidate_keys"]
+    assert RATCHET.check_payload(payload("tests/moved_location.py", ["call-A", "call-A"]), baseline, {})["new_candidate_keys"]
+
+
 def test_new_unexempt_candidate_fails_no_increase(tmp_path: Path) -> None:
     payload = INVENTORY.find_boundary_bypass_candidates(_repo_with_candidate(tmp_path))
-    baseline = RATCHET.build_baseline({"schemaVersion": payload["schemaVersion"], "candidates": []})
+    baseline = RATCHET.build_baseline({
+        "schemaVersion": payload["schemaVersion"],
+        "call_site_fingerprint_algo_version": payload["call_site_fingerprint_algo_version"],
+        "candidates": [],
+    })
     report = RATCHET.check_payload(payload, baseline, {})
     assert report["ok"] is False
-    assert report["new_candidate_keys"] == ["tests/test_foo.py::scripts/foo.py"]
+    assert report["new_candidate_keys"] == RATCHET.candidate_keys(payload)
     assert report["count_increases"]["candidate_count"] == {"baseline": 0, "current": 1}
 
 
@@ -80,9 +134,24 @@ def test_inventory_schema_mismatch_fails(tmp_path: Path) -> None:
     report = RATCHET.check_payload(payload, baseline, {})
     assert report["ok"] is False
     assert report["schema_mismatch"] == {
-        "baseline": "charness.quality.boundary_bypass_inventory.v1",
+        "baseline": "charness.quality.boundary_bypass_inventory.v2",
         "current": "different.schema.v2",
     }
+
+
+def test_algorithm_version_mismatch_fails_and_persisted_baseline_is_refused(tmp_path: Path) -> None:
+    payload = INVENTORY.find_boundary_bypass_candidates(_repo_with_candidate(tmp_path))
+    baseline = RATCHET.build_baseline(payload)
+    baseline["call_site_fingerprint_algo_version"] = "2"
+
+    report = RATCHET.check_payload(payload, baseline, {})
+    assert report["ok"] is False
+    assert report["algorithm_mismatch"] is True
+
+    path = tmp_path / "baseline.json"
+    path.write_text(json.dumps(baseline), encoding="utf-8")
+    with pytest.raises(RATCHET.RatchetError, match="call_site_fingerprint_algo_version"):
+        RATCHET.load_baseline(path)
 
 
 def _written_baseline(tmp_path: Path, mutate) -> Path:
@@ -152,7 +221,7 @@ def test_a_row_without_a_usable_test_file_is_refused_rather_than_skipped(bad_tes
     (`validate_boundary_bypass_payload.py:48-49`), so refusing here agrees with it.
     """
     payload = {
-        "schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+        "schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
         "candidates": [{"test_file": bad_test_file, "import_safe_targets": ["scripts/foo.py"]}],
     }
     with pytest.raises(RATCHET.RatchetError, match="must be a non-empty string"):
@@ -171,10 +240,10 @@ def test_candidate_key_count_is_the_size_of_the_key_set_not_a_sum_of_row_targets
     the published contract by luck rather than by construction.
     """
     payload = {
-        "schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+        "schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
         "candidates": [
-            {"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py", "scripts/foo.py"]},
-            {"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py"]},
+            {"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py", "scripts/foo.py"], "call_site_member_hashes": ["same"]},
+            {"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py"], "call_site_member_hashes": ["same"]},
         ],
     }
     summary = RATCHET.filtered_summary(payload, {})
@@ -190,8 +259,12 @@ def test_exemption_requires_why_rationale(tmp_path: Path) -> None:
 
 def test_exemption_allows_new_candidate(tmp_path: Path) -> None:
     payload = INVENTORY.find_boundary_bypass_candidates(_repo_with_candidate(tmp_path))
-    baseline = RATCHET.build_baseline({"schemaVersion": payload["schemaVersion"], "candidates": []})
-    exemptions = {"tests/test_foo.py::scripts/foo.py": "intentional CLI contract"}
+    baseline = RATCHET.build_baseline({
+        "schemaVersion": payload["schemaVersion"],
+        "call_site_fingerprint_algo_version": payload["call_site_fingerprint_algo_version"],
+        "candidates": [],
+    })
+    exemptions = {RATCHET.candidate_keys(payload)[0]: "intentional CLI contract"}
     report = RATCHET.check_payload(payload, baseline, exemptions)
     assert report["ok"] is True
     assert report["summary"]["candidate_count"] == 0

@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
 
-RATCHET_SCHEMA_VERSION = "charness.quality.boundary_bypass_ratchet.v1"
+RATCHET_SCHEMA_VERSION = "charness.quality.boundary_bypass_ratchet.v2"
+CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 DEFAULT_BASELINE_PATH = Path("scripts/boundary-bypass-baseline.json")
 DEFAULT_EXEMPTIONS_PATH = Path("scripts/boundary-bypass-exemptions.txt")
 COUNT_FIELDS = (
@@ -34,22 +36,21 @@ COUNT_FIELDS = (
 # The field stays in `filtered_summary` and in the payload; only enforcement drops. The other four
 # fields are row-shaped -- they flip with an identical key set -- so none of them is subsumed.
 #
-# What now carries the whole verdict is `new_candidate_keys`, and it has a recorded, separately
-# tracked defect: it keys on `<test_file>::<target>`, so renaming a test file mints new keys and
-# hard-blocks with zero new bypasses
-# (`charness-artifacts/audit/2026-08-10-umbrella-class-survival-review.md:116-119`). That is a
-# different arm from the one dropped here, and the re-key that repairs it is not this change.
+# `new_candidate_keys` now carries a call-site-content identity, so a pure test-path move cannot
+# mint a key. The baseline also keeps path pairs as advisory metadata for consumers that need to
+# locate a subprocess boundary; those pairs do not participate in the verdict.
 
 
 class RatchetError(ValueError):
     """Raised when ratchet input files are malformed."""
 
 
-def candidate_key(test_file: str, target: str) -> str:
-    return f"{test_file}::{target}"
+def candidate_key(member_hashes: list[str]) -> str:
+    """Return a path-invariant, duplicate-preserving call-site identity."""
+    return hashlib.sha256("\n".join(sorted(member_hashes)).encode("utf-8")).hexdigest()[:16]
 
 
-def _rows_with_targets(payload: dict[str, Any]) -> Iterator[tuple[dict[str, Any], str, list[str]]]:
+def _rows_with_targets(payload: dict[str, Any]) -> Iterator[tuple[dict[str, Any], str, list[str], list[str]]]:
     """The one walk over candidate rows, so key derivation cannot fork.
 
     `candidate_keys` and `filtered_summary` used to walk `candidates` separately and apply their
@@ -72,15 +73,17 @@ def _rows_with_targets(payload: dict[str, Any]) -> Iterator[tuple[dict[str, Any]
                 f"candidates[{index}].test_file must be a non-empty string, got {test_file!r}"
             )
         targets = [target for target in row.get("import_safe_targets", []) if isinstance(target, str)]
-        yield row, test_file, targets
+        member_hashes = row.get("call_site_member_hashes")
+        if not isinstance(member_hashes, list) or not member_hashes or not all(isinstance(value, str) and value for value in member_hashes):
+            raise RatchetError(f"candidates[{index}].call_site_member_hashes must be a non-empty list of strings")
+        yield row, test_file, targets, member_hashes
 
 
 def candidate_keys(payload: dict[str, Any]) -> list[str]:
     return sorted(
         {
-            candidate_key(test_file, target)
-            for _, test_file, targets in _rows_with_targets(payload)
-            for target in targets
+            candidate_key(member_hashes)
+            for _, _, _, member_hashes in _rows_with_targets(payload)
         }
     )
 
@@ -95,10 +98,10 @@ def load_exemptions(path: Path) -> dict[str, str]:
             continue
         key, marker, why = line.partition("# why:")
         if not marker or not key.strip() or not why.strip():
-            raise RatchetError(f"{path}:{line_number}: exemption must be `<test_file>::<target> # why: <rationale>`")
+            raise RatchetError(f"{path}:{line_number}: exemption must be `<content-fingerprint> # why: <rationale>`")
         rendered_key = key.strip()
-        if "::" not in rendered_key:
-            raise RatchetError(f"{path}:{line_number}: exemption key must use `<test_file>::<target>`")
+        if len(rendered_key) != 16 or any(char not in "0123456789abcdef" for char in rendered_key):
+            raise RatchetError(f"{path}:{line_number}: exemption key must be a 16-hex content fingerprint")
         exemptions[rendered_key] = why.strip()
     return exemptions
 
@@ -112,9 +115,9 @@ def filtered_summary(payload: dict[str, Any], exemptions: dict[str, str]) -> dic
     # equality COUNT_FIELDS relies on true BY CONSTRUCTION rather than by two implementations
     # happening to agree, and leaves one definition of a key to keep correct.
     key_count = len([key for key in candidate_keys(payload) if key not in exemptions])
-    for row, test_file, row_targets in _rows_with_targets(payload):
+    for row, _test_file, row_targets, member_hashes in _rows_with_targets(payload):
         targets = [
-            target for target in row_targets if candidate_key(test_file, target) not in exemptions
+            target for target in row_targets if candidate_key(member_hashes) not in exemptions
         ]
         if not targets:
             continue
@@ -146,8 +149,13 @@ def build_baseline(payload: dict[str, Any], exemptions: dict[str, str] | None = 
         "schemaVersion": RATCHET_SCHEMA_VERSION,
         "policy": "no_increase",
         "inventory_schemaVersion": payload.get("schemaVersion"),
+        "call_site_fingerprint_algo_version": payload.get("call_site_fingerprint_algo_version"),
         "summary": filtered_summary(payload, exemptions),
         "candidate_keys": keys,
+        "candidate_pairs": [
+            {"test_file": test_file, "import_safe_targets": targets}
+            for _, test_file, targets, _ in _rows_with_targets(payload)
+        ],
     }
 
 
@@ -162,8 +170,10 @@ def load_baseline(path: Path) -> dict[str, Any]:
         raise RatchetError(f"{path}: unexpected schemaVersion {baseline.get('schemaVersion')!r}")
     if baseline.get("policy") != "no_increase":
         raise RatchetError(f"{path}: expected policy `no_increase`")
-    if not isinstance(baseline.get("summary"), dict) or not isinstance(baseline.get("candidate_keys"), list):
-        raise RatchetError(f"{path}: expected `summary` object and `candidate_keys` list")
+    if baseline.get("call_site_fingerprint_algo_version") != CALL_SITE_FINGERPRINT_ALGO_VERSION:
+        raise RatchetError(f"{path}: unexpected call_site_fingerprint_algo_version; regenerate the baseline")
+    if not isinstance(baseline.get("summary"), dict) or not isinstance(baseline.get("candidate_keys"), list) or not isinstance(baseline.get("candidate_pairs"), list):
+        raise RatchetError(f"{path}: expected `summary`, `candidate_keys`, and `candidate_pairs`")
     # `candidate_keys` is the list `new_candidate_keys` diffs against, so after `candidate_key_count`
     # left COUNT_FIELDS this list carries the whole verdict. A hand-edit that drops a key from it
     # without decrementing the count makes the gate report a phantom new key; the equivalent
@@ -199,6 +209,7 @@ def check_payload(payload: dict[str, Any], baseline: dict[str, Any], exemptions:
             "baseline": baseline_inventory_schema,
             "current": current_inventory_schema,
         }
+    algorithm_mismatch = baseline.get("call_site_fingerprint_algo_version") != payload.get("call_site_fingerprint_algo_version")
     current_keys = [key for key in candidate_keys(payload) if key not in exemptions]
     baseline_keys = {str(key) for key in baseline.get("candidate_keys", [])}
     current_summary = filtered_summary(payload, exemptions)
@@ -210,9 +221,10 @@ def check_payload(payload: dict[str, Any], baseline: dict[str, Any], exemptions:
     }
     new_keys = sorted(set(current_keys) - baseline_keys)
     return {
-        "ok": not schema_mismatch and not count_increases and not new_keys,
+        "ok": not schema_mismatch and not algorithm_mismatch and not count_increases and not new_keys,
         "policy": "no_increase",
         "schema_mismatch": schema_mismatch,
+        "algorithm_mismatch": algorithm_mismatch,
         "summary": current_summary,
         "baseline_summary": {field: int(baseline_summary.get(field, 0)) for field in COUNT_FIELDS},
         "new_candidate_keys": new_keys,

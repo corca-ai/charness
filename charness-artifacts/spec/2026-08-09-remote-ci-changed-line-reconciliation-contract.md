@@ -212,6 +212,16 @@ policy, CI topology, or the remote non-claim.
   shims, weakening local/CI mirror proof, changing runtime budgets, or claiming
   the still-unpushed hosted CI repair is green.
 
+### 2026-08-12 ruling-6 continuation review
+
+Ruling 6 / `#585` changes the boundary-bypass inventory payload and ratchet
+identity, but not the changed-line selector, its readers, regenerable-facts
+coverage, or the GitHub CI mirror. Its local tests must still prove the new
+path-invariant content identity and preserve member multiplicity; they cannot
+establish a hosted-CI result. The next ordinary local slice may proceed with
+that non-claim intact. A later push and GitHub readback remain separately
+approval-gated.
+
 ## Release-Stabilization Carry-Forward
 
 - Operator direction: finish the release-blocker and P2 backlog selected in the
@@ -267,6 +277,15 @@ policy, CI topology, or the remote non-claim.
 - Impl Status: allowed
 - Impl Status Reason: the current local slice now has mapped changed-line coverage and changes neither selector logic nor CI topology; the only partial scope is the separately recorded preview mapper gap.
 - What Disproving Observation Is Resolved: a local partial result with no blocking mapped files is not hosted-CI readback and must not be represented as such.
+- Interrupt Source: remote-ci-changed-line-reconciliation
+- Seam Summary: local focused test selection and coverage -> local aggregate -> GitHub broad changed-line mirror.
+- Chosen Next Step: impl
+- Impl Status: allowed
+- Impl Status Reason: ruling 6 / `#585` changes boundary-bypass inventory and
+  ratchet identity only; it changes no selector, selector reader,
+  regenerable-facts coverage, or CI mirror topology.
+- What Disproving Observation Is Resolved: path-invariant local identity proof
+  does not claim remote changed-line reconciliation or hosted CI readback.
 
 ## Canonical Artifact
 

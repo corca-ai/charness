@@ -259,7 +259,7 @@ never a finding, only "update the copy."
 | dup ratchet, pre-D30 | `<path>` family ids | the members' own content (`nose_fingerprint_lib.py`) |
 | `domain_language_contract` (deleted; vocabulary terms moved to [#599](https://github.com/corca-ai/charness/issues/599)) | retired CLI names in `deprecated_aliases` | `charness --help` (argparse) |
 | D47's entry | published measurement figures | the probe JSON |
-| boundary-bypass ratchet | `<test_file>::<target>` pairs | the call site's own content |
+| boundary-bypass ratchet | path-pair keys | the call site's normalized content |
 
 Three failure modes, and the third is the one that keeps this alive:
 

@@ -22,7 +22,8 @@ Vitest/Jest subprocess calls; a Go repo may inspect packages, `main()`, and
 
 The stack-specific probe emits JSON with:
 
-- `schemaVersion`: `charness.quality.boundary_bypass_inventory.v1`
+- `schemaVersion`: `charness.quality.boundary_bypass_inventory.v2`
+- `call_site_fingerprint_algo_version`
 - `status`: `advisory` or `ratchet`
 - `summary.scanned_test_files`
 - `summary.candidate_count`
@@ -40,6 +41,8 @@ Each candidate row has:
 - `internal_boundary_targets`
 - `behavior_assert`
 - `likely_keep_boundary`
+- `call_site_member_hashes`: normalized, offset-free hashes of the relevant
+  spawn call sites
 
 `convertible_count` counts candidate test files that have at least one clean
 in-process target and are not likely boundary-contract tests.
@@ -51,11 +54,13 @@ it.
 shape is:
 
 ```text
-<test_file>::<target>
+sha256(sorted, duplicate-preserving `call_site_member_hashes`)
 ```
 
-Ratchet baselines compare these derived keys so a new target inside an existing
-test file cannot hide behind unchanged row counts.
+Ratchet baselines compare these derived content keys, stamp the algorithm
+version, and retain path pairs as advisory metadata. Moving an unchanged test
+therefore does not mint a key, while changing a call, its target membership, or
+the number of matching calls does.
 
 Validate examples and repo-emitted payloads with:
 
@@ -73,7 +78,7 @@ The default enforcement shape is `no_increase`:
 - fail when enforced counts increase above the baseline
 - allow improvements to reduce counts without requiring an immediate baseline
   rewrite
-- require every exemption to include a `# why:` rationale; include an owner or
+- require every fingerprint exemption to include a `# why:` rationale; include an owner or
   revisit condition when the exemption is not self-evidently temporary or local
 
 Exemptions are for intentional real-boundary tests, not for ordinary behavior

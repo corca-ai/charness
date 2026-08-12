@@ -154,7 +154,12 @@ it verified, which is why the ruling includes it.
 
 ## 6. `#585` — content-fingerprint re-key
 
-**Status: not executed.** The largest slice, and the only schema change.
+**Status: EXECUTED 2026-08-12.** The inventory, public validator, ratchet,
+baselines, exemptions, and advisory consumer now use versioned normalized
+call-site content identity. Focused proof covers path moves, changed content
+and membership, duplicate multiplicity, algorithm-version refusal, and the
+non-candidate-spawn membership boundary; the local ratchet passes with the
+migrated v2 baseline. See the [R6 critique](../critique/2026-08-12-r6-boundary-bypass-content-identity-critique.md).
 
 **Ruling:** re-key the boundary-bypass identity arm on normalized call-site content,
 following the [nose fingerprint](../../skills/public/quality/scripts/nose_fingerprint_lib.py)

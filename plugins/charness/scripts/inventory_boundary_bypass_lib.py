@@ -26,6 +26,7 @@ are in-process-convertible. See ``docs/testability-dsl-initiative.md``.
 from __future__ import annotations
 
 import ast
+import hashlib
 import re
 from collections.abc import Iterator
 from pathlib import Path
@@ -33,7 +34,8 @@ from pathlib import Path
 # The payload contract (schema + fields) is conceptually quality-skill-owned — the
 # portable policy/ratchet consumes it; this scripts/ probe is one stack-specific
 # Python+charness-layout emitter. A non-Python repo emits the same shape from its own probe.
-SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v1"
+SCHEMA_VERSION = "charness.quality.boundary_bypass_inventory.v2"
+CALL_SITE_FINGERPRINT_ALGO_VERSION = "1"
 
 # Delivery-boundary spawn tokens, multi-language (mirrors the set already used
 # by standing_test_economics_lib). Presence gates whether a test file is scanned.
@@ -65,20 +67,41 @@ def _iter_test_files(repo_root: Path) -> Iterator[Path]:
         yield path
 
 
-def _spawn_targets(text: str) -> list[str]:
+def _call_site_fingerprint(node: ast.Call) -> str:
+    """Hash a spawn call without path or line-offset attributes."""
+    normalized = ast.dump(node, annotate_fields=True, include_attributes=False)
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()[:16]
+
+
+def call_site_content_fingerprint(member_hashes: list[str]) -> str:
+    """Combine sorted, duplicate-preserving call-site hashes into one identity."""
+    return hashlib.sha256("\n".join(sorted(member_hashes)).encode("utf-8")).hexdigest()[:16]
+
+
+def _spawn_calls(text: str) -> list[tuple[set[str], str]]:
+    """Return each target-bearing spawn call and its normalized identity.
+
+    Target membership stays attached to the call until ``analyze_test_file``
+    knows which targets are import-safe boundary-bypass candidates.  Hashing
+    every spawn in a test would make unrelated, non-candidate subprocess work
+    rotate a grandfathered candidate's identity.
+    """
     if not _SPAWN_RE.search(text):
         return []
     try:
         tree = ast.parse(text)
     except SyntaxError:
-        return sorted(set(_TARGET_RE.findall(text)))
-    targets: set[str] = set()
+        return []
+    calls: list[tuple[set[str], str]] = []
     for node in ast.walk(tree):
         if not isinstance(node, ast.Call) or not _is_spawn_call(node):
             continue
+        node_targets: set[str] = set()
         for value in _iter_spawn_command_strings(node):
-            targets.update(_TARGET_RE.findall(repr(value)))
-    return sorted(targets)
+            node_targets.update(_TARGET_RE.findall(repr(value)))
+        if node_targets:
+            calls.append((node_targets, _call_site_fingerprint(node)))
+    return calls
 
 
 def _is_spawn_call(node: ast.Call) -> bool:
@@ -171,7 +194,8 @@ def analyze_test_file(
     internal_boundary_cache = internal_boundary_cache if internal_boundary_cache is not None else {}
     lib_cache = lib_cache if lib_cache is not None else {}
     text = test_path.read_text(encoding="utf-8")
-    targets = _spawn_targets(text)
+    spawn_calls = _spawn_calls(text)
+    targets = sorted({target for node_targets, _ in spawn_calls for target in node_targets})
     if not targets:
         return None
     import_safe = [
@@ -182,6 +206,12 @@ def analyze_test_file(
     ]
     if not import_safe:
         return None
+    import_safe_set = set(import_safe)
+    call_site_member_hashes = [
+        fingerprint
+        for node_targets, fingerprint in spawn_calls
+        if node_targets & import_safe_set
+    ]
     internal_boundary = [
         t
         for t in import_safe
@@ -198,6 +228,7 @@ def analyze_test_file(
         "has_lib": any(_cached_path_result(lib_cache, repo_root / t, _has_lib) for t in import_safe),
         "behavior_assert": behavior,
         "likely_keep_boundary": exit_contract_only,
+        "call_site_member_hashes": sorted(call_site_member_hashes),
     }
 
 
@@ -222,11 +253,7 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
             candidates.append(row)
     keep_boundary = sum(1 for c in candidates if c["likely_keep_boundary"])
     internal_boundary = sum(1 for c in candidates if c["internal_boundary_targets"])
-    candidate_keys = {
-        f"{c['test_file']}::{target}"
-        for c in candidates
-        for target in c["import_safe_targets"]
-    }
+    candidate_keys = {call_site_content_fingerprint(c["call_site_member_hashes"]) for c in candidates}
     convertible = sum(
         1
         for c in candidates
@@ -234,6 +261,7 @@ def find_boundary_bypass_candidates(repo_root: Path | str) -> dict:
     )
     return {
         "schemaVersion": SCHEMA_VERSION,
+        "call_site_fingerprint_algo_version": CALL_SITE_FINGERPRINT_ALGO_VERSION,
         "status": "advisory",
         "summary": {
             "scanned_test_files": scanned,

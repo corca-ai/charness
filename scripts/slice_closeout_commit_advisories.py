@@ -180,7 +180,7 @@ def _changed_tests_boundary_bypass(repo_root: Path, changed_paths: list[str]) ->
             continue
         convertible = [
             target for target in row["clean_inprocess_targets"]
-            if ratchet.candidate_key(path, target) not in exemptions
+            if ratchet.candidate_key(row["call_site_member_hashes"]) not in exemptions
         ]
         if convertible:
             findings.append((path, convertible))

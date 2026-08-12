@@ -45,3 +45,23 @@ def test_rejects_clean_and_internal_target_overlap() -> None:
         assert "both clean and internal-boundary" in str(exc)
     else:
         raise AssertionError("expected overlapping clean/internal targets to fail validation")
+
+
+def test_rejects_missing_call_site_members_or_unknown_fingerprint_algorithm() -> None:
+    payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    del payload["candidates"][0]["call_site_member_hashes"]
+    try:
+        validator.validate_payload(payload)
+    except validator.ValidationError as exc:
+        assert "call_site_member_hashes" in str(exc)
+    else:
+        raise AssertionError("expected a missing call-site member list to fail validation")
+
+    payload = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    payload["call_site_fingerprint_algo_version"] = "other"
+    try:
+        validator.validate_payload(payload)
+    except validator.ValidationError as exc:
+        assert "call_site_fingerprint_algo_version" in str(exc)
+    else:
+        raise AssertionError("expected an unknown fingerprint algorithm to fail validation")

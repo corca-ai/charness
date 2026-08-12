@@ -14,7 +14,7 @@
 ## Current State
 
 - The [harness-improvement thesis](../charness-artifacts/spec/2026-08-11-harness-improvement-thesis.md) led to completed local ledger/session evidence; [comparative policy](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) remains dormant pending naturally varied sessions.
-- The active [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, and 5 locally. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only. Ruling 6 is next.
+- The active [operator-rulings goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) completed rulings 2, 3, 5, and 6 locally. Ruling 5's approved `handoff/judge-intent` Cautilus observation passed 1/1 with 0 failed; its [durable bundle](../charness-artifacts/cautilus/handoff-judge-intent-2026-08-12/) is local evaluator evidence only. Ruling 6's v2 content-identity proof is local until final goal verification.
 - [Remote CI reconciliation](../charness-artifacts/spec/2026-08-09-remote-ci-changed-line-reconciliation-contract.md) remains locally resolved; hosted readback is not claimed.
 Refresh kept: [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md), its ordered first slice, the Cautilus approval boundary, and the remote-proof non-claim because each changes the next action.
 
@@ -27,7 +27,7 @@ Refresh non-claims: prior handoff backlog history, issue snapshots, quality numb
 
 ## Next Session
 
-1. Continue [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) with ruling 6 / `#585`: normalized call-site content identity must remain path-invariant while preserving content, membership, multiplicity, and an algorithm version.
+1. Continue [the active goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md) with its final local bundle proof: freeze the four completed slices, validate their claims, and preserve the external non-claims.
 2. Keep all running context in [the goal](../charness-artifacts/goals/2026-08-12-execute-operator-rulings-2-3-5-6.md); refresh this handoff only for a real interruption or user-requested baton pass.
 
 ## Discuss

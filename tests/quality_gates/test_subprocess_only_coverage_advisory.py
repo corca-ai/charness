@@ -49,9 +49,17 @@ def _seed_two_changed_pool_files(tmp_path: Path) -> tuple[Path, str, str]:
     return repo, base, _git(repo, "rev-parse", "HEAD")
 
 
-def _write_boundary_baseline(repo: Path, keys: list[str]) -> None:
+def _write_boundary_baseline(repo: Path, keys: list[object]) -> None:
+    pairs: list[object] = []
+    for key in keys:
+        if isinstance(key, str):
+            test_file, marker, target = key.partition("::")
+            if marker and test_file.strip() and target.strip():
+                pairs.append({"test_file": test_file.strip(), "import_safe_targets": [target.strip()]})
+                continue
+        pairs.append(key)
     (repo / "scripts" / "boundary-bypass-baseline.json").write_text(
-        json.dumps({"policy": "no_increase", "candidate_keys": keys}), encoding="utf-8"
+        json.dumps({"policy": "no_increase", "candidate_pairs": pairs}), encoding="utf-8"
     )
 
 
@@ -189,7 +197,7 @@ def test_an_unusable_baseline_never_crashes_and_no_longer_silences_the_advisory(
     (tmp_path / "scripts" / "foo.py").write_text("def a():\n    return 1\n", encoding="utf-8")
     _write_test_file(tmp_path, "tests/test_foo.py", "scripts/foo.py", shape="replaces-env")
 
-    for unusable in ("{not json", json.dumps({"candidate_keys": "not-a-list"})):
+    for unusable in ("{not json", json.dumps({"candidate_pairs": "not-a-list"})):
         (tmp_path / "scripts" / "boundary-bypass-baseline.json").write_text(unusable, encoding="utf-8")
         assert lib.load_subprocess_boundary_pairs(tmp_path) == {}, "loader degrades to no pairs"
         assert lib.advisory_scope(tmp_path, targets)["baseline"] == "absent-empty-or-unreadable"
@@ -205,7 +213,7 @@ def test_an_unusable_baseline_never_crashes_and_no_longer_silences_the_advisory(
     # A well-formed baseline still parses, so the tolerance arms above are not
     # passing because the loader can never return anything.
     (tmp_path / "scripts" / "boundary-bypass-baseline.json").write_text(
-        json.dumps({"candidate_keys": ["tests/test_foo.py::scripts/foo.py", "malformed-no-separator", ""]}),
+        json.dumps({"candidate_pairs": [{"test_file": "tests/test_foo.py", "import_safe_targets": ["scripts/foo.py"]}, "malformed", {}]}),
         encoding="utf-8",
     )
     assert lib.load_subprocess_boundary_pairs(tmp_path) == {"scripts/foo.py": ["tests/test_foo.py"]}

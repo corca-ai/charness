@@ -5,6 +5,7 @@
       "clean_inprocess_targets": [
         "packages/cli/src/main.ts"
       ],
+      "call_site_member_hashes": ["1111111111111111"],
       "import_safe_targets": [
         "packages/cli/src/main.ts"
       ],
@@ -15,6 +16,7 @@
     {
       "behavior_assert": true,
       "clean_inprocess_targets": [],
+      "call_site_member_hashes": ["2222222222222222"],
       "import_safe_targets": [
         "cmd/charness/main.go"
       ],
@@ -29,6 +31,7 @@
       "clean_inprocess_targets": [
         "packages/cli/src/main.ts"
       ],
+      "call_site_member_hashes": ["3333333333333333"],
       "import_safe_targets": [
         "packages/cli/src/main.ts"
       ],
@@ -40,7 +43,8 @@
   "notes": [
     "Example only: paths are TypeScript/Go-shaped to prove the payload is stack-neutral."
   ],
-  "schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
+  "call_site_fingerprint_algo_version": "1",
+  "schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
   "status": "advisory",
   "summary": {
     "candidate_count": 3,

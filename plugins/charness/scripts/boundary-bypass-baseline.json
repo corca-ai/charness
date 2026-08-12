@@ -1,73 +1,451 @@
 {
-  "schemaVersion": "charness.quality.boundary_bypass_ratchet.v1",
-  "policy": "no_increase",
-  "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v1",
-  "summary": {
-    "candidate_count": 46,
-    "convertible_count": 0,
-    "internal_boundary_count": 33,
-    "keep_boundary_count": 25,
-    "candidate_key_count": 59
-  },
+  "call_site_fingerprint_algo_version": "1",
   "candidate_keys": [
-    "tests/control_plane/test_lock_schema_resilience.py::scripts/doctor.py",
-    "tests/quality_gates/test_adapter_key_warn_tier.py::scripts/validate_adapters.py",
-    "tests/quality_gates/test_artifact_naming.py::scripts/resolve_artifact_path.py",
-    "tests/quality_gates/test_check_doc_links.py::scripts/check_doc_links.py",
-    "tests/quality_gates/test_check_spec_evidence_durability.py::scripts/check_spec_evidence_durability.py",
-    "tests/quality_gates/test_check_staged_reversion.py::scripts/check_staged_reversion.py",
-    "tests/quality_gates/test_check_symbol_residue.py::scripts/check_symbol_residue.py",
-    "tests/quality_gates/test_cli_skill_surface.py::scripts/check_cli_skill_surface.py",
-    "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py::scripts/check_python_lengths.py",
-    "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py::scripts/check_staged_mirror_drift.py",
-    "tests/quality_gates/test_command_docs_gate.py::scripts/check_command_docs.py",
-    "tests/quality_gates/test_command_docs_gate.py::scripts/render_cli_reference.py",
-    "tests/quality_gates/test_critique_skill.py::scripts/validate_critique_artifacts.py",
-    "tests/quality_gates/test_current_pointer_freshness.py::scripts/validate_current_pointer_freshness.py",
-    "tests/quality_gates/test_current_pointer_writes.py::scripts/check_current_pointer_writes.py",
-    "tests/quality_gates/test_current_pointer_writes.py::skills/public/hitl/scripts/bootstrap_review.py",
-    "tests/quality_gates/test_docs_and_misc.py::skills/public/narrative/scripts/map_sources.py",
-    "tests/quality_gates/test_docs_and_misc.py::skills/public/release/scripts/bump_version.py",
-    "tests/quality_gates/test_maintainer_hooks.py::scripts/validate_maintainer_setup.py",
-    "tests/quality_gates/test_migrate_backtick_file_refs.py::scripts/migrate_backtick_file_refs.py",
-    "tests/quality_gates/test_packaging_validation.py::scripts/validate_packaging_committed.py",
-    "tests/quality_gates/test_packaging_validation.py::scripts/validate_skills.py",
-    "tests/quality_gates/test_portable_json_artifacts.py::skills/public/hitl/scripts/bootstrap_review.py",
-    "tests/quality_gates/test_profile_and_preset_validation.py::scripts/validate_adapters.py",
-    "tests/quality_gates/test_profile_and_preset_validation.py::scripts/validate_presets.py",
-    "tests/quality_gates/test_profile_and_preset_validation.py::scripts/validate_profiles.py",
-    "tests/quality_gates/test_python_and_security_gates.py::scripts/check_github_actions.py",
-    "tests/quality_gates/test_python_and_security_gates.py::scripts/check_supply_chain.py",
-    "tests/quality_gates/test_python_filename_convention.py::scripts/check_python_filenames.py",
-    "tests/quality_gates/test_quality_mutation_sampling.py::scripts/sample_mutation_files.py",
-    "tests/quality_gates/test_quality_mutation_score_validity.py::scripts/check_mutation_score.py",
-    "tests/quality_gates/test_quality_mutation_testing.py::scripts/run_cosmic_ray_mutation.py",
-    "tests/quality_gates/test_release_publish_real_host_delta.py::skills/public/release/scripts/bump_version.py",
-    "tests/quality_gates/test_repo_copy_invariants.py::scripts/check_test_repo_copy_invariants.py",
-    "tests/quality_gates/test_retro_auto_trigger.py::skills/public/retro/scripts/check_auto_trigger.py",
-    "tests/quality_gates/test_run_slice_closeout_surface_obligations.py::scripts/run_slice_closeout.py",
-    "tests/quality_gates/test_setup_adapter_scaffold_policy.py::skills/public/setup/scripts/init_adapter.py",
-    "tests/quality_gates/test_setup_adapter_scaffold_policy.py::skills/public/setup/scripts/inspect_repo.py",
-    "tests/quality_gates/test_skill_validation.py::scripts/validate_skills.py",
-    "tests/quality_gates/test_slice_closeout_broad_gate.py::scripts/run_slice_closeout.py",
-    "tests/quality_gates/test_slice_closeout_usage_episode.py::scripts/run_slice_closeout.py",
-    "tests/quality_gates/test_staged_commit_gate_plan.py::scripts/run_slice_closeout.py",
-    "tests/quality_gates/test_staged_commit_gate_plan.py::scripts/staged_commit_gate_plan.py",
-    "tests/quality_gates/test_surface_obligations.py::scripts/check_changed_surfaces.py",
-    "tests/quality_gates/test_surface_obligations.py::scripts/select_verifiers.py",
-    "tests/quality_gates/test_test_production_ratio.py::scripts/check_test_production_ratio.py",
-    "tests/test_cautilus_chatbot_compare.py::scripts/eval_cautilus_chatbot_compare.py",
-    "tests/test_cautilus_eval_commands.py::scripts/eval_cautilus_chatbot_proposals.py",
-    "tests/test_cautilus_eval_commands.py::scripts/eval_cautilus_scenarios.py",
-    "tests/test_cautilus_proof_artifact.py::scripts/plan_cautilus_proof.py",
-    "tests/test_cautilus_proof_artifact.py::scripts/validate_cautilus_proof.py",
-    "tests/test_debug_artifact.py::scripts/validate_debug_artifact.py",
-    "tests/test_handoff_artifact.py::scripts/validate_handoff_artifact.py",
-    "tests/test_handoff_bullet_ownership.py::scripts/validate_handoff_artifact.py",
-    "tests/test_ideation_artifact.py::scripts/validate_ideation_artifact.py",
-    "tests/test_list_external_links.py::scripts/list_external_links.py",
-    "tests/test_quality_artifact.py::scripts/validate_quality_artifact.py",
-    "tests/test_retro_artifact.py::scripts/validate_retro_artifact.py",
-    "tests/test_supply_chain_online.py::scripts/check_supply_chain_online.py"
-  ]
+    "06661433f0e37fc3",
+    "069f6590273114c5",
+    "06c92f0b1714374a",
+    "0d66625d03fdff62",
+    "135a554f836f6a4a",
+    "166f19bc4d890176",
+    "16dae8afa91ebfea",
+    "2ab340eddc888fbc",
+    "2afa2f7e74cef060",
+    "311f0583cede02c5",
+    "3282537862e9c0e4",
+    "38fc57992cef5718",
+    "3972fc454265f2e9",
+    "3cc232c8a52f27ee",
+    "4981fd99c871ddc1",
+    "49d95eaeb09e056f",
+    "5493ebee5a359cb9",
+    "58d8f43ecea03063",
+    "5e4d972e5574129b",
+    "5e513ba08483e3dc",
+    "5e810e663bf20edd",
+    "6556e4ab766df89a",
+    "6b9aa0ba40ec0667",
+    "7b04a2c12c24907c",
+    "80326e41ecaed3a6",
+    "8dabe177e3532495",
+    "8f4dcccce3e774b4",
+    "8fef6017d0b758fc",
+    "9337a774dfde198e",
+    "9e3fa6223ce5f0c8",
+    "a1f129a58a967aef",
+    "a2e58703680dd423",
+    "b01f54994c12d25d",
+    "b300d515f1f0ee1a",
+    "b38232c4c4d88452",
+    "b6f9c0cc608a652b",
+    "b9256854b81cb7b7",
+    "bf01aab36e7fb624",
+    "c210abf239e03765",
+    "c7373cd57b8a60c7",
+    "caa0c3208cf01abc",
+    "d11a41b4d1b636a0",
+    "ebd1be4c5afc46f4",
+    "ed9d50431430820f",
+    "f06293daee84ea6c",
+    "f1a5942e7f9a9813",
+    "f3d4a016078db6ea"
+  ],
+  "candidate_pairs": [
+    {
+      "import_safe_targets": [
+        "scripts/doctor.py"
+      ],
+      "test_file": "tests/control_plane/test_lock_schema_resilience.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_adapters.py"
+      ],
+      "test_file": "tests/quality_gates/test_adapter_key_warn_tier.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/resolve_artifact_path.py"
+      ],
+      "test_file": "tests/quality_gates/test_artifact_naming.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_doc_links.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_doc_links.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_git_identity.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_git_identity.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_plugin_doc_links.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_plugin_doc_links.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_spec_evidence_durability.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_spec_evidence_durability.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_staged_reversion.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_staged_reversion.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_symbol_residue.py"
+      ],
+      "test_file": "tests/quality_gates/test_check_symbol_residue.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_cli_skill_surface.py"
+      ],
+      "test_file": "tests/quality_gates/test_cli_skill_surface.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/closeout_bundle.py"
+      ],
+      "test_file": "tests/quality_gates/test_closeout_bundle.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_python_lengths.py",
+        "scripts/check_staged_mirror_drift.py"
+      ],
+      "test_file": "tests/quality_gates/test_closeout_headroom_and_mirror_gate.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_command_docs.py",
+        "scripts/render_cli_reference.py"
+      ],
+      "test_file": "tests/quality_gates/test_command_docs_gate.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_critique_artifacts.py"
+      ],
+      "test_file": "tests/quality_gates/test_critique_boundary_ownership_presence.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_critique_artifacts.py"
+      ],
+      "test_file": "tests/quality_gates/test_critique_fresh_eye_presence.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_critique_artifacts.py"
+      ],
+      "test_file": "tests/quality_gates/test_critique_skill.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_current_pointer_freshness.py"
+      ],
+      "test_file": "tests/quality_gates/test_current_pointer_freshness.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_current_pointer_writes.py",
+        "skills/public/hitl/scripts/bootstrap_review.py"
+      ],
+      "test_file": "tests/quality_gates/test_current_pointer_writes.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/narrative/scripts/map_sources.py",
+        "skills/public/release/scripts/bump_version.py"
+      ],
+      "test_file": "tests/quality_gates/test_docs_and_misc.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/final_bundle_preflight.py"
+      ],
+      "test_file": "tests/quality_gates/test_final_bundle_preflight.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_maintainer_setup.py"
+      ],
+      "test_file": "tests/quality_gates/test_maintainer_hooks.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/migrate_backtick_file_refs.py"
+      ],
+      "test_file": "tests/quality_gates/test_migrate_backtick_file_refs.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_packaging_committed.py",
+        "scripts/validate_skills.py"
+      ],
+      "test_file": "tests/quality_gates/test_packaging_validation.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/parity_harness.py",
+        "skills/shared/scripts/reviewer_boundary_fingerprint.py"
+      ],
+      "test_file": "tests/quality_gates/test_parity_harness.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_plugin_dir_references.py"
+      ],
+      "test_file": "tests/quality_gates/test_plugin_dir_references.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/hitl/scripts/bootstrap_review.py"
+      ],
+      "test_file": "tests/quality_gates/test_portable_json_artifacts.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_adapters.py",
+        "scripts/validate_presets.py",
+        "scripts/validate_profiles.py"
+      ],
+      "test_file": "tests/quality_gates/test_profile_and_preset_validation.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/publish_state_ledger.py"
+      ],
+      "test_file": "tests/quality_gates/test_publish_state_ledger.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_github_actions.py",
+        "scripts/check_supply_chain.py"
+      ],
+      "test_file": "tests/quality_gates/test_python_and_security_gates.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_python_filenames.py"
+      ],
+      "test_file": "tests/quality_gates/test_python_filename_convention.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_python_lengths.py",
+        "scripts/check_python_runtime_inheritance.py"
+      ],
+      "test_file": "tests/quality_gates/test_python_length_gates.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/sample_mutation_files.py"
+      ],
+      "test_file": "tests/quality_gates/test_quality_mutation_sampling.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_mutation_score.py"
+      ],
+      "test_file": "tests/quality_gates/test_quality_mutation_score_validity.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_cosmic_ray_mutation.py"
+      ],
+      "test_file": "tests/quality_gates/test_quality_mutation_testing.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/release/scripts/bump_version.py"
+      ],
+      "test_file": "tests/quality_gates/test_release_publish_real_host_delta.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/release/scripts/check_real_host_proof.py"
+      ],
+      "test_file": "tests/quality_gates/test_release_real_host.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/removed_name_consumers.py"
+      ],
+      "test_file": "tests/quality_gates/test_removed_name_consumers.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_test_repo_copy_invariants.py"
+      ],
+      "test_file": "tests/quality_gates/test_repo_copy_invariants.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/retro/scripts/check_auto_trigger.py"
+      ],
+      "test_file": "tests/quality_gates/test_retro_auto_trigger.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_slice_closeout.py"
+      ],
+      "test_file": "tests/quality_gates/test_run_slice_closeout_review_obligations.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_slice_closeout.py"
+      ],
+      "test_file": "tests/quality_gates/test_run_slice_closeout_surface_obligations.py"
+    },
+    {
+      "import_safe_targets": [
+        "skills/public/setup/scripts/init_adapter.py",
+        "skills/public/setup/scripts/inspect_repo.py"
+      ],
+      "test_file": "tests/quality_gates/test_setup_adapter_scaffold_policy.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_skill_contracts.py"
+      ],
+      "test_file": "tests/quality_gates/test_skill_contracts_validation.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_skills.py"
+      ],
+      "test_file": "tests/quality_gates/test_skill_validation.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_slice_closeout.py"
+      ],
+      "test_file": "tests/quality_gates/test_slice_closeout_broad_gate.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_slice_closeout.py"
+      ],
+      "test_file": "tests/quality_gates/test_slice_closeout_usage_episode.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_slice_manifest.py"
+      ],
+      "test_file": "tests/quality_gates/test_slice_manifest.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/run_slice_closeout.py",
+        "scripts/staged_commit_gate_plan.py"
+      ],
+      "test_file": "tests/quality_gates/test_staged_commit_gate_plan.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_changed_surfaces.py",
+        "scripts/select_verifiers.py"
+      ],
+      "test_file": "tests/quality_gates/test_surface_obligations.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_test_production_ratio.py"
+      ],
+      "test_file": "tests/quality_gates/test_test_production_ratio.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/eval_cautilus_chatbot_compare.py"
+      ],
+      "test_file": "tests/test_cautilus_chatbot_compare.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/eval_cautilus_chatbot_proposals.py",
+        "scripts/eval_cautilus_scenarios.py"
+      ],
+      "test_file": "tests/test_cautilus_eval_commands.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/plan_cautilus_proof.py",
+        "scripts/validate_cautilus_proof.py"
+      ],
+      "test_file": "tests/test_cautilus_proof_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_debug_artifact.py"
+      ],
+      "test_file": "tests/test_debug_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_handoff_artifact.py"
+      ],
+      "test_file": "tests/test_handoff_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_handoff_artifact.py"
+      ],
+      "test_file": "tests/test_handoff_bullet_ownership.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_ideation_artifact.py"
+      ],
+      "test_file": "tests/test_ideation_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/list_external_links.py"
+      ],
+      "test_file": "tests/test_list_external_links.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_quality_artifact.py"
+      ],
+      "test_file": "tests/test_quality_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_quality_artifact.py"
+      ],
+      "test_file": "tests/test_quality_artifact_report_all.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/validate_retro_artifact.py"
+      ],
+      "test_file": "tests/test_retro_artifact.py"
+    },
+    {
+      "import_safe_targets": [
+        "scripts/check_supply_chain_online.py"
+      ],
+      "test_file": "tests/test_supply_chain_online.py"
+    }
+  ],
+  "inventory_schemaVersion": "charness.quality.boundary_bypass_inventory.v2",
+  "policy": "no_increase",
+  "schemaVersion": "charness.quality.boundary_bypass_ratchet.v2",
+  "summary": {
+    "candidate_count": 47,
+    "candidate_key_count": 47,
+    "convertible_count": 0,
+    "internal_boundary_count": 34,
+    "keep_boundary_count": 25
+  }
 }
