@@ -1,1 +1,1 @@
-2026-08-12-issue-584-sessionstart-routing-debug.md
+2026-08-12-issue-584-planner-read-cost-debug.md
