@@ -201,6 +201,10 @@ def test_claims_review_refuses_invalid_paths_tree_and_bindings(tmp_path: Path) -
         invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (1, "")})
     with pytest.raises(SystemExit, match="not valid JSON"):
         invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "{")})
+    # Not a JSON object at all, and a bound-looking object with a wrong field: two
+    # different refusal sites that carry the same message.
+    with pytest.raises(SystemExit, match="does not bind"):
+        invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "[]")})
     with pytest.raises(SystemExit, match="does not bind"):
         invoke(path, {parents: (0, "prepared\n"), diff: (0, path + "\n"), ("git", "show", f"evidence:{path}"): (0, "{}")})
     bound = {
@@ -334,6 +338,10 @@ def test_a_pass_must_carry_the_product_of_the_review_it_asserts(tmp_path: Path) 
     # added-not-edited check, which is the accurate description of that input.
     with pytest.raises(SystemExit, match="must be ADDED by the evidence commit"):
         invoke(record(), narrative=None, changed=["charness-artifacts/release-review/review.json"])
+    # Recorded as added but unreadable at that commit: a distinct refusal, because the
+    # name-status and the blob are two different reads and either can be the liar.
+    with pytest.raises(SystemExit, match="not committed at the evidence commit"):
+        invoke(record(), narrative=None, narrative_status="A")
     with pytest.raises(SystemExit, match="under 500 bytes"):
         invoke(record(), narrative="# Claims review\n\nlooks fine to me\n")
     # Bound to THIS release: an earlier release's narrative cannot be re-pointed.
@@ -442,23 +450,71 @@ def test_a_second_prepare_over_an_outstanding_marker_cannot_publish_unreviewed(t
 
 @pytest.mark.release_only
 def test_a_claims_artifact_supplied_outside_the_claims_lane_is_refused(tmp_path: Path) -> None:
-    """Accepted-and-ignored was the worse half of that fall-through: the operator supplies
-    a real record, the planner told them to, and nothing ever opened it."""
+    """Accepted-and-ignored was the worse half of the fall-through: the operator supplies
+    a real record, the planner told them to, and nothing ever opened it. The marker is
+    removed here so the resume resolves to the legacy lane, which is the state in which
+    the flag is meaningless."""
     repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
     env = _release_env(tmp_path, bin_dir)
-    for _ in range(2):
-        prepared = _run_publish(repo, env, "--part", "patch", "--execute",
-                                "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
-        assert prepared.returncode == 0, prepared.stderr
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    record = repo / "charness-artifacts" / "release" / "latest.md"
+    record.write_text(
+        "\n".join(
+            line for line in record.read_text(encoding="utf-8").splitlines()
+            if "prepared-awaiting-claims-review" not in line
+        ) + "\n",
+        encoding="utf-8",
+    )
+    _run(["git", "add", "-A"], cwd=repo)
+    _run(["git", "commit", "--amend", "--no-edit"], cwd=repo)
+    gh_log, git_log = tmp_path / "gh-log.json", tmp_path / "git-log.json"
+    prior_gh = json.loads(gh_log.read_text(encoding="utf-8"))
+    prior_git = json.loads(git_log.read_text(encoding="utf-8"))
 
     refused = _run_publish(repo, env, "--resume", "--publish-current", "--execute",
                            "--claims-review-artifact", "charness-artifacts/release-review/absent.json",
                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
 
     assert refused.returncode != 0
-    # It refuses at the marker check (which comes first) rather than publishing; either
-    # refusal is acceptable, silence is not.
-    assert "prepared-awaiting-claims-review" in refused.stderr or "does not read it" in refused.stderr
+    assert "does not read it" in refused.stderr
+    new_gh = json.loads(gh_log.read_text(encoding="utf-8"))[len(prior_gh):]
+    new_git = json.loads(git_log.read_text(encoding="utf-8"))[len(prior_git):]
+    assert ["auth", "status"] not in new_gh
+    assert not any(entry and entry[0] == "push" for entry in new_git)
+
+
+@pytest.mark.release_only
+def test_an_unproven_verdict_publishes_but_says_so_on_stderr(tmp_path: Path) -> None:
+    """`unproven` is a first-class state: publication proceeds, and the operator is told
+    at the boundary that the distinct-observer property was never established. The
+    published release record does not yet mirror it, which is why stderr has to."""
+    repo, _remote, bin_dir = _seed_publish_release_repo(tmp_path)
+    env = _release_env(tmp_path, bin_dir)
+    prepared = _run_publish(repo, env, "--part", "patch", "--execute",
+                            "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+    assert prepared.returncode == 0, prepared.stderr
+    payload = json.loads(prepared.stdout)
+    commit = payload["prepared_release_commit"]
+    record = _run(["git", "show", f"{commit}:charness-artifacts/release/latest.md"], cwd=repo).stdout
+    review_path = commit_claims_review(
+        repo, prepared_commit=commit, prepared_record=record,
+        target_version=payload["target_version"], tag_name=payload["tag_name"],
+        stem="unproven-claims", verdict="unproven", kind="unproven",
+    )
+
+    resumed = _run_publish(repo, env, "--resume", "--publish-current", "--execute",
+                           "--claims-review-artifact", review_path,
+                           "--critique-blocked", "synthetic-test-harness does not spawn real critique subagents")
+
+    assert resumed.returncode == 0, resumed.stderr
+    assert "verdict is `unproven`" in resumed.stderr
+    assert "was NOT established" in resumed.stderr
+    final = json.loads(resumed.stdout)
+    assert final["claims_review"]["verdict"] == "unproven"
+    assert final["claims_review"]["observer_distinctness"]["review_artifact"] is None
+
 
 
 @pytest.mark.release_only
@@ -497,3 +553,49 @@ def test_a_non_default_output_dir_is_refused_rather_than_silently_unreviewed(tmp
     new_git = json.loads(git_log.read_text(encoding="utf-8"))[len(prior_git):]
     assert not any(entry[:2] == ["release", "create"] for entry in new_gh)
     assert not any(entry and entry[0] == "push" for entry in new_git)
+
+
+def test_claims_review_helper_refusals_are_exercised_in_process(tmp_path: Path) -> None:
+    """The topology tests drive the publish helper through `subprocess`, so these refusal
+    branches are invisible to in-process coverage and the changed-line mutation gate reads
+    them as untested. Each one is a refusal, so leaving them unexercised is leaving a
+    floor unproven."""
+    def absent(command: list[str], *, cwd: Path, check: bool = True):
+        return subprocess.CompletedProcess(command, 1, stdout="")
+
+    # A commit whose record cannot be read carries no marker.
+    assert CLAIMS_REVIEW.marker_at_commit(tmp_path, commit="deadbeef", run=absent) is False
+
+    # A non-default adapter output_dir is refused rather than silently unread.
+    CLAIMS_REVIEW.assert_record_path_matches_adapter(None)
+    CLAIMS_REVIEW.assert_record_path_matches_adapter("charness-artifacts/release/")
+    with pytest.raises(SystemExit, match="claims-review floor reads the release record at"):
+        CLAIMS_REVIEW.assert_record_path_matches_adapter("artifacts/release")
+
+    # Path shape refusals.
+    for value, message in (
+        (None, "must be a repo-relative path"),
+        ("", "must be a repo-relative path"),
+        ("   ", "must be a repo-relative path"),
+        ("/abs/review.json", "must be a normalized repo-relative path"),
+        ("charness-artifacts/release-review/../x.json", "must be a normalized repo-relative path"),
+        ("charness-artifacts/other/review.json", ".json file under"),
+    ):
+        with pytest.raises(SystemExit, match=message):
+            CLAIMS_REVIEW._review_relative_path(value, "--claims-review-artifact", ".json")
+
+    # A narrative git cannot describe is not "added by the evidence commit".
+    assert CLAIMS_REVIEW._narrative_is_new(
+        tmp_path, prepared_commit="p", evidence_commit="e",
+        narrative="charness-artifacts/release-review/r.md", run=absent,
+    ) is False
+
+    # The change-set shape classifier's rejections.
+    assert CLAIMS_REVIEW.claims_record_in_change_set([]) is None
+    assert CLAIMS_REVIEW.claims_record_in_change_set(["README.md"]) is None
+    assert CLAIMS_REVIEW.claims_record_in_change_set(
+        ["charness-artifacts/release-review/a.json", "charness-artifacts/release-review/b.json"]
+    ) is None
+    assert CLAIMS_REVIEW.claims_record_in_change_set(
+        ["charness-artifacts/release-review/a.json", "charness-artifacts/release-review/a.md"]
+    ) == "charness-artifacts/release-review/a.json"

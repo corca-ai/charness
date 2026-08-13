@@ -12,6 +12,15 @@ from .support import ROOT
 
 SCRIPT = ROOT / "skills" / "public" / "quality" / "scripts" / "inventory_standing_test_economics.py"
 SURFACE_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "surface_marker_lib.py"
+JS_SCAN_LIB = ROOT / "skills" / "public" / "quality" / "scripts" / "js_settlement_scan_lib.py"
+
+
+def _load_js_scan_lib() -> ModuleType:
+    spec = importlib.util.spec_from_file_location("js_settlement_scan_lib_for_test", JS_SCAN_LIB)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _load_surface_marker_lib() -> ModuleType:
@@ -454,3 +463,64 @@ def test_a_stray_quote_cannot_desync_the_walk_past_its_own_line(tmp_path: Path) 
         "const script = `line one\nexecSync('x', { timeout: 5 })\nline three`;\n"
         "spawnSync('real', { timeout: 90 });\n",
     ) == [("spawnSync", 4, "present", "finite")]
+
+
+def test_js_walker_edge_branches_degrade_rather_than_fabricate(tmp_path: Path) -> None:
+    """The branches a normal source file never reaches, driven directly.
+
+    Each one exists to make the scanner say `unknown` instead of guessing, so leaving
+    them unexercised is exactly the "backstop nobody proved" shape this surface keeps
+    reproducing. Every assertion below is that the answer degrades, never that it is
+    confidently wrong.
+    """
+    lib = _load_surface_marker_lib()
+    repo = tmp_path / "repo"
+    (repo / "tests").mkdir(parents=True)
+
+    # A literal that never terminates before EOF: the walk stops at the end rather than
+    # looping, and the call's region cannot balance, so the seam is `unknown`.
+    assert _js_states(lib, repo, "execSync(`unterminated template") == [
+        ("execSync", 1, "unknown", "unknown")
+    ]
+
+    # A `/` in VALUE position with no closing `/` before the newline is not a regex after
+    # all; the bail returns to just past it and the real call below is still found. A
+    # regex literal cannot span lines, so guessing otherwise would swallow the next one.
+    assert _js_states(
+        lib, repo, "const r = / unterminated\nexecSync('probe', { timeout: 30 });\n"
+    ) == [("execSync", 2, "present", "finite")]
+    # Division after an identifier never reaches that bail at all.
+    assert _js_states(
+        lib, repo, "const ratio = a / b;\nexecSync('probe', { timeout: 30 });\n"
+    ) == [("execSync", 2, "present", "finite")]
+
+    # Depth going negative is unreachable through `js_settlement_seams` (the region scan
+    # always starts on the call's own `(`), so it is driven directly rather than left as
+    # an unexercised defensive branch.
+    js = _load_js_scan_lib()
+    assert js._js_argument_region(")stray", 0) is None
+    assert js._js_argument_region("(unbalanced", 0) is None
+
+    # A value expression carrying brackets and parens is sliced whole, so it cannot be
+    # mistaken for the numeric literal at its front.
+    assert _js_states(lib, repo, "execSync(cmd, { timeout: 5 * limits[0](x) });\n") == [
+        ("execSync", 1, "unknown", "unknown")
+    ]
+
+    # An option list with a bracketed argument before the options object still binds the
+    # options object, not the array.
+    assert _js_states(lib, repo, "spawnSync(cmd, ['a', 'b'], { timeout: 60 });\n") == [
+        ("spawnSync", 1, "present", "finite")
+    ]
+
+    path = repo / "tests" / "probe.js"
+    # `stdio` forms the scanner does not recognize stay `unknown` rather than guessing.
+    for source in (
+        "execSync(cmd, { stdio: 'inherit' });\n",
+        "execSync(cmd, { stdio: ['ignore', 'pipe', 'pipe'] });\n",
+        "execSync(cmd, { stdio: mode });\n",
+    ):
+        path.write_text(source, encoding="utf-8")
+        assert [s["output_bounding"] for s in lib.subprocess_settlement_seams(repo, [path])] == [
+            "unknown"
+        ], source

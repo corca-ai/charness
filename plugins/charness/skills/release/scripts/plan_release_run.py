@@ -163,6 +163,20 @@ def _critique_acceptor(repo_root: Path, target_version: str | None):
     return accepts
 
 
+def resume_summary_lines(payload: dict[str, Any]) -> list[str]:
+    """Resume commands for the one-line summary output.
+
+    The summary is where an operator at a prepared stop actually looks; without the
+    command here the resume invocation still has to be reconstructed by hand from
+    `--detail`, which is the whole gap this reads the marker for.
+    """
+    return [
+        f"{packet['id']}: {packet['command']}"
+        for packet in payload.get("publish_packets") or []
+        if str(packet.get("id", "")).startswith("publish-resume")
+    ]
+
+
 def _target_selector(args: argparse.Namespace) -> str | None:
     if args.publish_current:
         return "publish-current"
@@ -344,12 +358,8 @@ def main() -> int:
             yaml_output.emit_yaml(payload)
         else:
             print(f"next_action={payload['next_action']['kind']}: {payload['next_action']['reason']}")
-            for packet in payload.get("publish_packets") or []:
-                # The summary line is where an operator at a prepared stop actually
-                # looks; without the command here the resume invocation still has to be
-                # reconstructed by hand from --detail.
-                if str(packet.get("id", "")).startswith("publish-resume"):
-                    print(f"{packet['id']}: {packet['command']}")
+            for line in resume_summary_lines(payload):
+                print(line)
             real_host = payload.get("evidence_packets", {}).get("real_host")
             if isinstance(real_host, dict) and real_host.get("required"):
                 scope = real_host.get("evidence_scope") or "unknown"

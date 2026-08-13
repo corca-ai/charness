@@ -689,3 +689,109 @@ def test_the_planner_reads_the_marker_from_the_commit_not_the_worktree(tmp_path:
     plan2 = yaml.safe_load(_run_plan(repo2, env2).stdout)
     assert plan2["next_action"]["kind"] != "resume_prepared_claims_review"
     assert plan2["prepared_claims_review"] is None
+
+
+def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) -> None:
+    """The planner tests drive `plan_release_run.py` through `subprocess`, which is the
+    honest way to test a CLI but leaves these helpers invisible to in-process coverage --
+    so the changed-line mutation gate reads them as untested. This calls them directly.
+    """
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "critique").mkdir(parents=True)
+    subprocess.run(["git", "init", "-q", str(repo)], check=True, capture_output=True)
+    _git(repo, "config", "user.email", "t@example.test")
+    _git(repo, "config", "user.name", "T")
+
+    # No release record at HEAD (no commits yet) -> no marker, so no prepared stop.
+    assert _PLANNER._head_release_record(repo) is None
+    assert _PLANNER._committed_claims_record(repo) is None
+
+    bound = repo / "charness-artifacts" / "critique" / "release-1-2-3.md"
+    bound.write_text("# Release critique\n\nScope and risks for the 1.2.3 candidate.\n", encoding="utf-8")
+    stub = repo / "charness-artifacts" / "critique" / "stub-1-2-3.md"
+    stub.write_text("# 1.2.3\n", encoding="utf-8")
+    untracked = repo / "charness-artifacts" / "critique" / "untracked-1-2-3.md"
+    untracked.write_text("# Untracked\n\nRelease: 1.2.3 and some substance here.\n", encoding="utf-8")
+    _git(repo, "add", str(bound), str(stub))
+    _git(repo, "commit", "-m", "critique candidates")
+
+    accepts = _PLANNER._critique_acceptor(repo, "1.2.3")
+    assert accepts("charness-artifacts/critique/release-1-2-3.md") is True
+    # Untracked: the gate's dirty-worktree refusal never says "commit this first".
+    assert accepts("charness-artifacts/critique/untracked-1-2-3.md") is False
+    # Stub: the gate's refusal is the exact message the resume packet exists to prevent.
+    assert accepts("charness-artifacts/critique/stub-1-2-3.md") is False
+    # No resolvable version -> presence-only tokens; the acceptor still requires tracked.
+    assert _PLANNER._critique_acceptor(repo, None)("charness-artifacts/critique/untracked-1-2-3.md") is False
+
+
+def test_prepared_claims_packets_are_exercised_in_process(tmp_path: Path) -> None:
+    """Same reason: `prepared_claims_state`, `resume_claims_packets`, and the
+    `resume_prepared_claims_review` branch of `next_action` are only ever reached through
+    a subprocess planner run."""
+    marker = "<!-- charness-release-state:prepared-awaiting-claims-review -->"
+    repo = tmp_path / "repo"
+    (repo / "charness-artifacts" / "critique").mkdir(parents=True)
+
+    assert _PACKETS.prepared_claims_state(
+        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
+        accepts=lambda _rel: True, marker_text="no marker here",
+    ) is None
+    assert _PACKETS.prepared_claims_state(
+        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
+        accepts=lambda _rel: True, marker_text=None,
+    ) is None
+
+    (repo / "charness-artifacts" / "critique" / "a.md").write_text("a\n", encoding="utf-8")
+    (repo / "charness-artifacts" / "critique" / "b.md").write_text("b\n", encoding="utf-8")
+
+    one = _PACKETS.prepared_claims_state(
+        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
+        accepts=lambda rel: rel.endswith("a.md"), marker_text=marker,
+    )
+    assert one["critique_artifact_candidates"] == ["charness-artifacts/critique/a.md"]
+    assert one["tag_name"] == "v1.2.3"
+    packets = {p["id"]: p for p in _PACKETS.resume_claims_packets(one)}
+    assert "--critique-artifact charness-artifacts/critique/a.md" in packets["publish-resume-execute"]["command"]
+    assert "<claims-review-record>" in packets["publish-resume-execute"]["command"]
+    assert "--notes-file" in packets["publish-resume-execute"]["repeat_original_arguments"]
+    assert _PACKETS.resume_claims_packets(None) == []
+
+    both = _PACKETS.prepared_claims_state(
+        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
+        accepts=lambda _rel: True, marker_text=marker,
+        committed_record="charness-artifacts/release-review/r.json",
+    )
+    assert len(both["critique_artifact_candidates"]) == 2
+    execute = next(p for p in _PACKETS.resume_claims_packets(both) if p["id"] == "publish-resume-execute")
+    assert "<release-critique-artifact>" in execute["command"]
+    assert "--claims-review-artifact charness-artifacts/release-review/r.json" in execute["command"]
+
+    none_bound = _PACKETS.prepared_claims_state(
+        repo, current_version="1.2.3", binding_tokens=["1.2.3"],
+        accepts=lambda _rel: False, marker_text=marker,
+    )
+    base = {"found": True, "valid": True}
+    payload = {"drift": [], "git_status": ""}
+    for prepared, expected in ((one, "--critique-artifact charness-artifacts/critique/a.md"),
+                               (both, "one of"),
+                               (none_bound, "no artifact under")):
+        action = _PACKETS.next_action(
+            args=_args(), adapter=base, release_payload=payload,
+            target_version=None, update_blocker=None, prepared_claims=prepared,
+        )
+        assert action["kind"] == "resume_prepared_claims_review"
+        assert expected in action["reason"]
+
+
+def test_resume_summary_lines_selects_only_resume_packets() -> None:
+    """The summary line is the operator-facing half of the prepared-stop repair, and it
+    is only ever reached through a subprocess planner run."""
+    assert _PLANNER.resume_summary_lines({}) == []
+    assert _PLANNER.resume_summary_lines({"publish_packets": None}) == []
+    assert _PLANNER.resume_summary_lines({"publish_packets": [
+        {"id": "publish-dry-run", "command": "not this one"},
+        {"id": "publish-resume-dry-run", "command": "dry"},
+        {"id": "publish-resume-execute", "command": "exec"},
+        {"command": "no id at all"},
+    ]}) == ["publish-resume-dry-run: dry", "publish-resume-execute: exec"]

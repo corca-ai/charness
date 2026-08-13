@@ -26,6 +26,7 @@ ISSUE_CLOSEOUT = _load("release_issue_closeout")
 ISSUE_CLOSEOUT_ARTIFACT = _load("release_issue_closeout_artifact")
 MESSAGE = _load("release_issue_closeout_message")
 RESUME_PUBLISH = _load("publish_release_resume_publish")
+RESUME = _load("publish_release_resume")
 
 
 class _ClaimsResumeCli:
@@ -385,3 +386,28 @@ def test_a_claims_phase_without_a_validated_review_cannot_publish() -> None:
             commit_artifact_before_push=lambda *_a, **_k: None,
         )
     assert commands == [], "refused before any git or gh command"
+
+
+def test_the_marker_refusal_names_a_safe_recovery_after_publication() -> None:
+    """The refusal's recovery text is read at a boundary where the wrong advice is
+    destructive. Before publication "reset to one prepared record" is right; AFTER the tag
+    is pushed and the release exists it would rewrite history behind a published tag and
+    discard the committed claims record, so that state gets its own sentence."""
+    for published, expected, forbidden in (
+        (False, "reset to one prepared record", "already pushed"),
+        (True, "do NOT reset past the claims record", "reset to one prepared record"),
+    ):
+        state = {
+            "marker_at_head": True, "phase": "release-content",
+            "head_is_release_commit": True, "tag_local": published,
+            "tag_remote": published, "release_exists": published,
+            "tag_points_at_head": published, "prepared": None,
+            "remote_tag_sha": "tag", "tag_sha": "tag", "head_sha": "head",
+            "remote_branch_sha": "", "claims_evidence_commit": "",
+        }
+        with pytest.raises(SystemExit) as excinfo:
+            RESUME.assert_resumable(state, tag_name="v1.2.3")
+        message = str(excinfo.value)
+        assert "no single-parent prepared boundary" in message
+        assert expected in message
+        assert forbidden not in message
