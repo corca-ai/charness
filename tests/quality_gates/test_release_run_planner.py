@@ -797,7 +797,11 @@ def test_resume_summary_lines_selects_only_resume_packets() -> None:
     ]}) == ["publish-resume-dry-run: dry", "publish-resume-execute: exec"]
 
 
-@pytest.mark.release_only
+# Deliberately NOT `release_only`. Its siblings are excluded from the standing set for
+# cost, but this one is the only in-process reader of `main()`'s summary emission, and a
+# release_only test contributes no standing coverage — so excluding it left the
+# operator-facing half of the prepared-stop repair as an uncovered changed line that the
+# local pre-push lane skipped and CI blocked on.
 def test_the_planner_summary_prints_the_resume_command_in_process(tmp_path: Path) -> None:
     """`main()`'s summary emission is only reached through a CLI subprocess, which
     in-process coverage cannot see. The summary line is the operator-facing half of the
