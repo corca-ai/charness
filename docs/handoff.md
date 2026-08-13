@@ -6,9 +6,9 @@
   back** — each took two bounded review rounds, closed through the `issue` floor
   with a behavioral verdict via the exported plugin copy, and `verify-closeout`
   returned `verified` for all three, reconciled against an independent
-  `gh issue list` (15 open). `bfbc8f4d` is pushed with remote CI green on BOTH
-  jobs. #584 is unchanged on the Umbrella Closure Contract; #614 and #615 are
-  newly filed and unresolved.
+  `gh issue list` (16 open, none of the three). `e7d87764` is pushed with remote
+  CI green on BOTH jobs. #584 is unchanged on the Umbrella Closure Contract;
+  #614 and #615 are newly filed and unresolved.
 
 ## Continuation Capability
 
@@ -22,7 +22,7 @@
 - [#614](https://github.com/corca-ai/charness/issues/614) — holds the unbounded-cache class: the seed cache is fixed and pruned, `pytest-tmp` and `reports/mutation` are recorded and unfixed.
 - [#615](https://github.com/corca-ai/charness/issues/615) — holds the focused changed-line lane reporting `clean` where CI blocked, breaking its own documented never-a-false-pass property; cause not established, reproduction is deterministic.
 - [Proof-surface repair retro](../charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md) — holds the `skipped-is-not-passed` lesson, now in the [operating contract](./conventions/operating-contract.md#external-side-effect-discipline) because the rolling digest ranked it out of its slots.
-- Verification on `bfbc8f4d`: pre-push gate `91 passed, 0 failed` and remote CI green on both jobs; re-run with `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --include-release-only` (8959 passed).
+- Verification on `e7d87764`: pre-push gate `91 passed, 0 failed` and remote CI green on both jobs; re-run with `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --include-release-only` (8959 passed). The current open set is `gh issue list --repo corca-ai/charness --state open`.
 - [Release `5.1.0` observables probe](../charness-artifacts/probe/2026-08-13-v5.1.0-post-publication-observables.md) — holds the credential-free REST readback behind the published-release claim; it closed no issues.
 
 Historical immutable publish-state claim — this captures the completed
