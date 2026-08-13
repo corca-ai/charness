@@ -274,11 +274,19 @@ def test_handoff_plan_carries_authoring_rules_as_a_read_before_writing(tmp_path:
     # The live repo root, which is where `scripts/` is actually vendored.
     refresh = run_plan("--repo-root", ".", "--intent", "refresh")
 
-    rules = [r for r in refresh["required_reads"] if r.get("kind") == "preflight"]
-    assert len(rules) == 1
-    assert rules[0]["path"] == "scripts/check_doc_authoring_preflight.py"
-    assert "--as-surface handoff" in rules[0]["command"]
-    assert "--path" not in rules[0]["command"]
+    preflights = [r for r in refresh["required_reads"] if r.get("kind") == "preflight"]
+    assert len(preflights) == 2
+    assert [item["path"] for item in preflights] == [
+        "scripts/check_doc_authoring_preflight.py",
+        "scripts/check_doc_authoring_preflight.py",
+    ]
+    assert "--as-surface handoff" in preflights[0]["command"]
+    assert "--path" not in preflights[0]["command"]
+    assert preflights[1]["command"].endswith("--path docs/handoff.md")
+    artifact_index = next(i for i, item in enumerate(refresh["required_reads"]) if item["path"] == "docs/handoff.md")
+    rules_index = refresh["required_reads"].index(preflights[0])
+    target_index = refresh["required_reads"].index(preflights[1])
+    assert artifact_index < rules_index < target_index
 
 
 def test_the_authoring_read_is_keyed_on_the_ACTION_not_the_intent(tmp_path: Path) -> None:

@@ -39,8 +39,9 @@ chunked routing.
 The planner resolves the adapter, summarizes the artifact, lists
 `required_reads`, and names cheap `gate_packets`.
 Open the listed reads using each entry's `base` before broader exploration; a
-read carrying a `command` is answered by running it, and the authoring-rules
-preflight is the one to run BEFORE writing, not after.
+read carrying a `command` is answered by running it BEFORE writing. For an
+existing target, run the rules preflight before the target preflight, then apply the semantic
+receipt audit in `references/spill-targets.md`.
 Treat deterministic gates as evidence for shape and freshness, then use
 judgment for the actual baton pass. The repo-owned size budget counts CONTENT
 lines — blank lines, the required `##` headings, and the whole `## References`
@@ -100,6 +101,7 @@ owning artifact does that.
    - if the repo already has a checked-in handoff surface, point the adapter
      there instead of hardcoding the host choice into the skill
 4. Rewrite the handoff around continuation, not history.
+   - run the receipt/owner classification in `references/spill-targets.md`
    - exact workflow trigger
    - continuation capability the next operator must have after reading
    - current state facts that change the next action
@@ -108,6 +110,9 @@ owning artifact does that.
    - tight reference list
    - one reference to the owning artifact for metrics, history, or proof detail
      instead of replaying that detail inline
+   - put any prerequisite before the next slice it governs; a `Discuss` item
+     about automating that prerequisite later does not replace the ordered
+     `Next Session` action needed now
    - if the handoff carries a standing invariant, recurring workflow rule, or
      future-regression guard, promote it to the owning contract, reference, or
      validator surface and leave only a short pickup pointer

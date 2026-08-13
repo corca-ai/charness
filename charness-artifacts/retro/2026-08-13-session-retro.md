@@ -147,6 +147,16 @@ reconciliation method; none — #503 already owns the telemetry remeasurement.
 - **memory**: Keep the goal, execution ledger, handoff, this retro, and #527's
   decision brief as the release-boundary record; #503 remains the owner of the
   historical runtime-cost question. (recurrence-class: premises-not-debt)
+- **workflow**: freeze source, export, evidence receipt, and review inputs before
+  minting one final packet; regenerate only when that reviewed identity truly
+  changes. (recurrence-class: proof-surface-review-binding)
+- **capability**: operate the local lesson ledger as a real loop by declaring a
+  preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro;
+  do not infer continuity from the existence of the scripts.
+  (recurrence-class: durable-lesson-ledger-first)
+- **memory**: keep handoff state behind links to its goal, issue, debug, retro,
+  and ledger owners; a green ownership-shape gate does not justify inline SHA,
+  version, or test-count receipts. (recurrence-class: guard-adjacent-to-action)
 
 ## Packet Consumed
 
@@ -224,6 +234,138 @@ intentional immutable identity boundary. The improvement is sequencing and a
 stale-binding validator around that boundary; no new tracker item is filed in
 this slice because the existing recent lesson already names the recurrence and
 the current repair demonstrates the required sequence.
+
+## Continuation: Lesson Evaluation and Handoff Audit
+
+### Evidence and Verdict
+
+The lesson-evaluation mechanism is valid but was not continuously operated.
+Before this audit, `check_lesson_ledger.py` validated 16 seeded lessons, two
+declared sessions, and three score events; all three scores were `+2` records
+from 2026-08-12. The #615 slice added no declared session or score, so the
+evidence stream had paused rather than silently continuing.
+
+The reason was structural: `docs/development.md` documented the local session
+and score commands, but the installed `retro` workflow neither surfaced its
+adapter evidence nor reminded the operator about them. The generated
+`recent-lessons.md` digest also still names
+its old advisory recency/recurrence policy; ledger scores feed the deterministic
+preview, not the currently injected digest. Therefore the repo has a working
+evaluation tool and a first cohort, but not yet an end-to-end feedback loop.
+
+This audit recorded the third deterministic preview session,
+`2026-08-13-issue-615-retro-handoff-audit`, before adding any new score. Its
+snapshot lists 10 of 16 eligible lessons and is locally replayable. That proves
+declared containment only, not human exposure, causal usefulness, or policy
+calibration.
+
+After the same deterministic list was actually read during this audit and
+changed its actions, three sparse scores were
+recorded: `+1` for ledger-first sequencing, `+3` for freezing review inputs
+before packet creation, and `+2` for replacing handoff receipts with owner
+links. The ledger now holds three sessions and six scores. The signs remain
+positive-only, so the comparative score-policy goal correctly stays dormant.
+
+The handoff shape gate was already green: 46 content lines, no unowned
+`Current State`/`Next Session` entries, and no dated diary sections. Semantic
+inspection still found avoidable inline receipts — a pushed SHA, version-like
+release facts, and test counts — while the current #615 retro and lesson ledger
+were not linked. The refreshed handoff keeps the required machine claim but
+moves human continuation state back to owner links.
+
+### Waste, Decisions, and Trend
+
+- The ledger capability existed for roughly one day without a workflow trigger.
+  That is not a data-loss bug: no session was fabricated. It is a method/tool
+  gap that made “evaluation continues” false unless an operator remembered the
+  development command. (recurrence-class: durable-lesson-ledger-first)
+- #615 repeated the packet-binding churn already named by the selected lesson.
+  In this follow-up the evidence facts and lesson session were frozen before
+  minting one retro packet, so the lesson changed the sequence rather than only
+  describing the prior miss. (recurrence-class: proof-surface-review-binding)
+- The handoff validator proved ownership form, not semantic compression. The
+  link audit removed regenerable receipts and made the current retro/ledger the
+  owners of the claims that matter next. (recurrence-class: guard-adjacent-to-action)
+
+The trend is mixed: yesterday's reform successfully prevents scores outside a
+declared preview snapshot and rejects hand-edited projections, but today demonstrates
+that containment teeth alone do not create observation cadence. The first
+cohort was real and conservative; it was not a self-sustaining loop.
+
+### North Star and Expert Counterfactual
+
+The audit keeps the evidence boundary honest: three sessions and the recorded
+scores are local declarations, while the digest, human usefulness, and score
+policy remain unproven. The handoff follows the same rule by linking to owners
+instead of transcribing a green receipt as terminal trust.
+
+Douglas Engelbart's system-improving lens exposed the missing unit: the Tool was
+the ledger, the Language was declared-session/score containment, but the Method
+lacked a session-start and retro-close trigger. This slice repaired that unit:
+repo-local adapter evidence exposes the ledger and authoring procedure, while
+the public retro contract requires contemporaneous presentation, sparse scores,
+and an explicit no-score disposition when presentation is unproven. The digest
+remains unchanged until comparative evidence warrants reviewed policy change.
+
+### Sibling Search and Next Improvements
+
+- same layer: the local RCA ledger is prompt-wired through shared debug/issue/
+  retro closeout instructions | decision: valid follow-up | proof: RCA events
+  continued during #615 while lesson scores did not.
+- abstraction up: usage episodes are emitted by slice closeout | decision:
+  intentional boundary | proof: automatic objective events are appropriate
+  there, while lesson scores still require agent judgment and anchors.
+- specialization down: the contract register has zero live citations/catches |
+  decision: valid but defer | proof: its specification already treats citation
+  signal as an unproven probe rather than a required cadence.
+- mental model: `recent-lessons.md` selection and lesson-ledger scoring |
+  decision: intentional boundary | proof: the former remains advisory derived
+  memory; the latter is measured local preview evidence and must not be
+  described as controlling the digest yet.
+
+- **workflow**: declare and actually present a deterministic lesson session at
+  the start of the next meaningful repo slice, then record only sparse anchored
+  effects during retro.
+- **capability**: applied — the Charness adapter now surfaces ledger state and
+  local authoring procedure, while the public planner exposes adapter evidence
+  without hardcoding this repo's score schema or commands.
+- **memory**: link the current retro, ledger contract, and dormant comparative
+  score-policy goal from the handoff so the next operator sees both the evidence
+  and the activation threshold.
+
+Portable Candidate: not portable in its current form — identity, citations,
+and session containment depend on this repository's checked-in retro corpus.
+
+### Skill Improvement Closeout
+
+The follow-up converted both misses into public-skill behavior without changing
+score policy or validator verdicts:
+
+- `handoff` now runs rules and current-target preflights before editing, then
+  performs a semantic receipt/owner audit because deterministic literal checks
+  cannot recognize every copied proof receipt. Immediate prerequisites must
+  precede the governed slice in `Next Session`; future automation in `Discuss`
+  is not a substitute.
+- `retro` now promotes ordered adapter evidence into required reads with
+  file/directory/missing disclosures. Its lesson-evaluation reference requires
+  a contemporaneous session-start presentation, forbids retro backfill, and
+  records `not evaluated` in the retro rather than inventing a ledger receipt.
+- `.agents/retro-adapter.yaml` declares the local ledger and authoring procedure;
+  `docs/development.md` now separates session-start presentation from retro-time
+  sparse scoring.
+
+The capability brief and pre-implementation review are durable at
+`charness-artifacts/create-skill/2026-08-13-handoff-retro-feedback-loop-brief.md`
+and
+`charness-artifacts/critique/2026-08-13-handoff-retro-skill-feedback-loop.md`.
+Focused planner/skill/dogfood tests passed 65 cases; skill, ergonomics,
+packaging, handoff, ledger, Ruff, and canonical/export parity checks passed.
+Cautilus mappings were inspected but not executed because evaluation remains
+ask-before-run.
+
+### Packet Consumed
+
+`charness-artifacts/retro/2026-08-13-issue-615-memory-audit-packet.md`
 
 ## Persisted
 

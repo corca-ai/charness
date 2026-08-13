@@ -54,3 +54,16 @@ def test_retro_consumes_prepare_packets_when_adapter_declares_sections() -> None
     assert "packet_sections" in adapter_text
     assert "charness.retro_prepare_packet" in packet_text
     assert "CHARNESS_RETRO_CHANGED_REF" in packet_text
+
+
+def test_retro_lesson_evaluation_requires_contemporaneous_presentation() -> None:
+    reference = (
+        ROOT / "skills" / "public" / "retro" / "references" / "lesson-evaluation.md"
+    ).read_text(encoding="utf-8")
+    normalized = " ".join((RETRO_SKILL + "\n" + reference).split())
+    assert "contemporaneous agent-authored session-start" in normalized
+    assert "A stored snapshot proves neither display nor use" in normalized
+    assert "not evaluated — presentation not established" in normalized
+    assert "no score events appended" in normalized
+    assert "Never backfill scores" in normalized
+    assert "no lesson-scoring duty" in normalized

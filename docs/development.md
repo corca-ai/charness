@@ -85,13 +85,21 @@ fresh-eye, provider, installed-consumer, remote-CI, push, or release proof.
 
 ## Local Lesson-Ledger Authoring
 
-The lesson ledger has a deliberately local eligibility path. Record a frozen
-preview declaration before adding a cited score, then validate the replayed
-state:
+The lesson ledger has a deliberately local eligibility path. At session start,
+render the deterministic preview, present that selected list in the active
+conversation, and then record its frozen declaration before affected work:
 
 ```bash
+python3 scripts/render_lesson_selection_preview.py --repo-root . \
+  --seed <deterministic-seed>
 python3 scripts/record_lesson_session.py --repo-root . \
-  --session-id <unique-session-id> --seed <deterministic-seed>
+  --session-id <unique-session-id> --seed <same-deterministic-seed>
+```
+
+At retro, add only sparse cited scores for effects observed after that
+presentation, then validate the replayed state:
+
+```bash
 python3 scripts/record_lesson_score.py --repo-root . \
   --event-id <unique-event-id> --session-id <unique-session-id> \
   --lesson-id <listed-lesson-id> --source-retro <cited-retro-path> --score <integer>
@@ -101,7 +109,12 @@ python3 scripts/check_lesson_ledger.py --repo-root .
 The session is a local declaration of the deterministic snapshot at record
 time. A valid cited score proves only that its lesson occurred in that declared
 list; it does not prove that a person saw, read, used, or benefited from it, and
-does not authorize contract graduation.
+does not authorize contract graduation. The contemporaneous presentation is an
+agent-authored conversation action, not a ledger receipt. If it is absent or
+uncertain, append no score; record
+`not evaluated — presentation not established` in the retro and schedule
+declaration plus presentation before the next work slice in the handoff. Never
+backfill from retro-time inspection.
 
 ## Proof-Only Non-Managed Checkout
 

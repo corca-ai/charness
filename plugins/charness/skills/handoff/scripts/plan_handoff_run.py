@@ -81,6 +81,7 @@ REQUIRED_SECTIONS, OPTIONAL_SECTIONS = _budget.REQUIRED_SECTIONS, _budget.OPTION
 # Same single-sourcing reason as the budget: the author should see unowned
 # entries while drafting, not learn about them from the gate afterwards.
 _ownership = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_bullet_ownership")
+_authoring = SKILL_RUNTIME.load_local_skill_module(__file__, "handoff_authoring_preflight")
 unowned_entries = _ownership.unowned_entries
 has_unclosed_fence = _ownership.has_unclosed_fence
 try:
@@ -225,37 +226,6 @@ def _resolve_intent(*, requested: str, invoked_directly: bool) -> dict[str, Any]
     }
 
 
-# The next actions that AUTHOR the handoff by hand. Generator-backed actions are
-# deliberately absent: `scaffold_missing_artifact` writes through a scaffold,
-# and `run_chunked_routing` reads the handoff but generates a goal skeleton. The
-# latter is explicitly forbidden from rewriting the pickup handoff.
-HANDOFF_AUTHORING_ACTIONS = frozenset({"refresh_handoff", "repair_or_prune_handoff"})
-
-
-def _authoring_rules_read(repo_root: Path, artifact_path: str) -> dict[str, str] | None:
-    """The deterministic constraints on the artifact, as a READ before authoring.
-
-    The forecast rode only as a `gate_packets` entry — evidence to run against
-    something already written — so an author met the rules by breaking one. This
-    is the rules mode, which answers with no target. The content check stays a
-    gate packet: different question, same surface.
-    """
-    rel = "scripts/check_doc_authoring_preflight.py"
-    # Probe BOTH files the emitted command needs. The rules mode (no `--path`)
-    # imports `scripts/doc_authoring_rules.py` at runtime, so probing only the
-    # entrypoint emits a command that dies on import in a partially vendored
-    # repo -- and the read would still be reported as available.
-    for required in (rel, "scripts/doc_authoring_rules.py"):
-        if not (repo_root / required).is_file():
-            return None
-    surface = "handoff" if artifact_path.endswith("handoff.md") else None
-    command = f"python3 {rel} --repo-root ." + (f" --as-surface {surface}" if surface else "")
-    return {
-        **_read(rel, "preflight", "deterministic rules for this surface BEFORE writing into it", base="repo"),
-        "command": command,
-    }
-
-
 def _required_reads(
     *,
     repo_root: Path,
@@ -298,10 +268,8 @@ def _required_reads(
     # action is what says whether it authors — not the intent. A PICKUP against a
     # bloated or mis-shaped handoff is sent to prune it; keying this on the intent
     # left that one case briefed by nothing.
-    if action_kind in HANDOFF_AUTHORING_ACTIONS:
-        rules_read = _authoring_rules_read(repo_root, str(artifact["path"]))
-        if rules_read is not None:
-            reads.append(rules_read)
+    if action_kind in _authoring.HANDOFF_AUTHORING_ACTIONS:
+        reads.extend(_authoring.required_reads(repo_root, str(artifact["path"])))
 
     for path, why in INTENT_REFERENCE_READS.get(
         intent["resolved"],
@@ -421,6 +389,7 @@ def build_plan(
         },
         phase_barriers=[
             "Read required_reads before opening broader docs or editing the artifact.",
+            "Before editing, classify each Current State / Next Session entry as an owning link, a regenerating command, or a copied receipt; spill copied receipts even when the deterministic preflight cannot recognize their semantics.",
             "Treat gate_packets as evidence packets: cheap deterministic gates can be trusted for shape, not for judgment.",
             "For chunked routing, write only at the end; for refresh, keep only facts that change the next action.",
         ],

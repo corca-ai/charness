@@ -38,3 +38,7 @@ def test_handoff_skill_names_diary_antipattern_and_size_gate() -> None:
     assert "git log" in spill_targets
     assert "release notes" in spill_targets
     assert "quality/latest.md" in spill_targets
+    assert "classify each `Current State` and `Next Session` entry" in spill_targets
+    assert "copied receipt" in spill_targets
+    assert "prerequisite before the next slice it governs" in skill_text
+    assert "does not replace the ordered" in skill_text

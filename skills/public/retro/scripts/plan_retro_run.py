@@ -68,6 +68,28 @@ def _read(path: str, kind: str, why: str, *, base: str) -> dict[str, str]:
     return ENVELOPE.read(path, why, kind=kind, base=base)
 
 
+def _repo_evidence_read(repo_root: Path, path: str) -> dict[str, Any]:
+    """Describe optional adapter evidence without pretending directories are files."""
+    item: dict[str, Any] = _read(
+        path,
+        "evidence",
+        "adapter-declared local evidence; inspect when available, then apply its repo-owned contract",
+        base="repo",
+    )
+    candidate = repo_root / path
+    if candidate.is_file():
+        item["available"] = True
+        item["path_kind"] = "file"
+        return ENVELOPE.disclose_read_measurement(item, size_bytes=candidate.stat().st_size)
+    if candidate.is_dir():
+        item["available"] = True
+        item["path_kind"] = "directory"
+        return item
+    item["available"] = False
+    item["path_kind"] = "missing"
+    return ENVELOPE.disclose_read_measurement(item, unavailable_reason="missing")
+
+
 _packet = ENVELOPE.gate_packet
 
 
@@ -195,6 +217,12 @@ def _required_reads(
     # previously reachable only from `weekly`, a mode invoked once in three months,
     # so the stream accumulated 985 records that nothing read. Routed for every retro.
     reads.append(_read("references/closeout-telemetry.md", "reference", "recurring gate-runtime and artifact-only-commit waste the closeout stream already recorded", base="skill"))
+    already_named = {str(item["path"]) for item in reads}
+    for evidence_path in adapter["data"].get("evidence_paths", []):
+        path = str(evidence_path)
+        if path and path not in already_named:
+            reads.append(_repo_evidence_read(repo_root, path))
+            already_named.add(path)
     summary_path = str(adapter["data"].get("summary_path") or "")
     if summary_path and (repo_root / summary_path).is_file():
         reads.append(_read(summary_path, "artifact", "recent-lessons digest to compare this retro's window against", base="repo"))
@@ -282,6 +310,7 @@ def build_plan(
         on_demand_reads=_on_demand_reads(),
         phase_barriers=[
             "Open required_reads (esp. expert-lens.md for the briefed lens) before writing the retro.",
+            "If repo-owned evidence defines lesson evaluation, score only a list presented contemporaneously before the work; a stored snapshot alone is not presentation, and uncertainty is recorded in the retro as not evaluated with no score append.",
             "Treat gate_packets as cheap deterministic evidence: trust them for shape, not for judgment.",
             "Never close without a Persisted: yes/no line.",
         ],

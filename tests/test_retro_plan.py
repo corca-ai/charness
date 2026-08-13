@@ -196,6 +196,47 @@ def test_retro_plan_reads_summary_when_present(tmp_path: Path) -> None:
     assert "charness-artifacts/retro/recent-lessons.md" in required_paths(payload)
 
 
+def test_retro_plan_promotes_adapter_evidence_with_path_status(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+    adapter_path = repo / ".agents" / "retro-adapter.yaml"
+    adapter_path.write_text(
+        adapter_path.read_text(encoding="utf-8")
+        + "evidence_paths:\n"
+        + "  - evidence/file.md\n"
+        + "  - evidence/directory\n"
+        + "  - evidence/missing.md\n",
+        encoding="utf-8",
+    )
+    (repo / "evidence" / "directory").mkdir(parents=True)
+    (repo / "evidence" / "file.md").write_text("# Evidence\n", encoding="utf-8")
+
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+    evidence = [read for read in payload["required_reads"] if read.get("kind") == "evidence"]  # type: ignore[index]
+
+    assert [item["path"] for item in evidence] == [
+        "evidence/file.md",
+        "evidence/directory",
+        "evidence/missing.md",
+    ]
+    assert [(item["available"], item["path_kind"]) for item in evidence] == [
+        (True, "file"),
+        (True, "directory"),
+        (False, "missing"),
+    ]
+    assert evidence[0]["size_bytes"] > 0
+    assert evidence[2]["unavailable_reason"] == "missing"
+
+
+def test_retro_plan_preserves_empty_adapter_evidence(tmp_path: Path) -> None:
+    repo = tmp_path / "repo"
+    write_adapter(repo)
+
+    payload = run_plan(repo, changed_paths=["src/app.py"])
+
+    assert [read for read in payload["required_reads"] if read.get("kind") == "evidence"] == []  # type: ignore[index]
+
+
 def test_retro_plan_infers_work_paths_from_recent_commits(tmp_path: Path) -> None:
     repo = tmp_path / "repo"
     write_adapter(repo)

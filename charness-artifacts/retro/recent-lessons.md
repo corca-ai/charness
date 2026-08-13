@@ -14,10 +14,10 @@
 
 ## Next-Time Checklist
 
-- **workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 4)
+- **memory**: keep handoff state behind links to its goal, issue, debug, retro, and ledger owners; a green ownership-shape gate does not justify inline SHA, version, or test-count receipts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 5)
 - **capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
-- state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score. (source: `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`; sources: 2)
-- issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
+- **capability**: operate the local lesson ledger as a real loop by declaring a preview session and actually presenting its list before work, then recording only sparse, anchored effects at retro; do not infer continuity from the existence of the scripts. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
+- **workflow**: freeze source, export, evidence receipt, and review inputs before minting one final packet; regenerate only when that reviewed identity truly changes. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
 
 ## Selection Policy
 
@@ -33,11 +33,8 @@
 - `charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md`
 - `charness-artifacts/retro/2026-08-06-session-retro.md`
 - `charness-artifacts/retro/2026-08-07-session-retro.md`
-- `charness-artifacts/retro/2026-08-08-one-rule-one-owner-retro.md`
-- `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
-- `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
-- `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
+- `charness-artifacts/retro/2026-08-12-session-retro.md`
 - `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`
 - `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
 - `charness-artifacts/retro/2026-08-13-session-retro.md`

@@ -65,7 +65,11 @@ auto_session_trigger_path_globs: []
 
 - `summary_path` is optional and points at a compact human-readable digest of
   recent retro lessons for future session pickup.
-- `evidence_paths` are additional local sources worth reading for retros.
+- `evidence_paths` are additional repo-relative file or directory locators worth
+  reading for retros. The planner preserves their declared order and reports
+  missing optional locators without turning them into a blocking prerequisite.
+  A path may expose a repo-owned evaluator contract, but the path string alone
+  never implies one.
 - `metrics_commands` are optional. If absent, the retro may still run narratively.
 - `packet_sections` are optional prepare-packet sections. When present, run
   `scripts/prepare_packet.py` before writing lessons and record the consumed

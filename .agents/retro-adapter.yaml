@@ -9,6 +9,8 @@ evidence_paths:
   - docs/handoff.md
   - charness-artifacts/debug
   - charness-artifacts/quality/latest.md
+  - charness-artifacts/retro/lesson-ledger.json
+  - docs/development.md
 metrics_commands: []
 packet_sections:
   - id: changed-files-and-owning-surfaces

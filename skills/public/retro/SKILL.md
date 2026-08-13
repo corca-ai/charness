@@ -101,6 +101,9 @@ Adapter policy:
    - when an improvement is headed for an issue, classify it on two axes — a
      generalized `Structural pattern:`+`Triggering instance(s):` and a
      `Destination:`, owned by `../../shared/references/retro-issue-destination-split.md`
+   - when repo-owned evidence defines a lesson evaluator, apply the
+     presentation, no-backfill, and handoff-repair boundary in
+     `references/lesson-evaluation.md`; otherwise there is no scoring duty
 5. Persist when there is a durable home.
    - if `output_dir` exists or the adapter defines one, persist the retro artifact with `$SKILL_DIR/scripts/persist_retro_artifact.py` instead of ad hoc file writes; for an achieve closeout also pass `--goal-path <canonical goal artifact>` and include exactly one matching top-level `Goal:` field; the helper stamps the `## Persisted` line with the real durable path it writes, so do not hand-edit that line afterward
    - if the adapter defines `summary_path`, `$SKILL_DIR/scripts/persist_retro_artifact.py` should refresh the compact recent-lessons digest automatically from the written durable artifact
@@ -186,6 +189,7 @@ sub-agents, otherwise write the counterfactuals inline.
 - `references/closeout-telemetry.md`
 - `references/waste-sibling-scan.md`
 - `references/prepare-packet.md`
+- `references/lesson-evaluation.md`
 - `../../shared/references/retro-issue-destination-split.md`
 - `../debug/references/sibling-search.md`
 - `../../shared/references/rca-ledger-append.md`

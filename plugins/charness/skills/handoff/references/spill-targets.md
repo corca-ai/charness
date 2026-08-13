@@ -3,6 +3,20 @@
 When a handoff starts acting like a diary, move durable detail to the artifact
 that already owns that truth instead of keeping it in the handoff artifact.
 
+## Pre-Edit Receipt Audit
+
+For an existing handoff, run the planner's surface-rules preflight and then its
+current-target preflight before editing. Target mode deterministically catches
+only its declared markdown/link/length and regenerable-literal classes (for a
+handoff, version/SHA/count literals); it does not recognize every semantic
+proof receipt.
+
+After those checks, classify each `Current State` and `Next Session` entry as an
+owning link, a command that regenerates the fact, or a copied receipt. Spill
+copied proof, test, release, review, and history claims to their owner even when
+the target preflight reports clean. The audit is agent judgment, not a new hard
+validator verdict.
+
 - Use `git log` or commit history for per-slice chronology.
 - Use spec files, design docs, or repo-owned contracts for decision evolution.
 - Use release notes or changelog surfaces for audience-visible milestones.
