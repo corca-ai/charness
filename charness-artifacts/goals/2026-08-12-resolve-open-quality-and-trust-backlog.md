@@ -9,18 +9,18 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: the four rows a bounded closeout review pulled back from the
-  cohort carrier (#597, #607, #590, #584) have been worked. Three are repaired
-  with two review rounds each and carry local proof; #584 remains held on this
-  ledger's Umbrella Closure Contract, unchanged. Seven cohort issues are CLOSED
-  and independently read back; the rest are OPEN.
-- Current slice intent: complete. #597, #607, and #590 closed through the `issue`
-  floor, each with a per-issue behavioral verdict through a channel distinct from
-  the fix and from `CLOSED`; the late-arrival #609 closed the same way. Ten cohort
-  issues are now CLOSED and read back.
-- Next action: the twelve remaining cohort rows. #584 is held on the Umbrella
-  Closure Contract; the other eleven hold tracker-visible non-closures with owners
-  and revisit triggers recorded in the ledger.
+- Current slice: the three release residues (#613, #610, #611) are repaired with
+  two bounded review rounds each, carry `draft_verified` closeout carriers with
+  per-issue behavioral verdicts through the exported plugin copies, and are
+  committed locally. Ten cohort issues are CLOSED and read back; the rest are OPEN.
+- Current slice intent: complete locally, UNVERIFIED on GitHub. The three carriers
+  carry `Closes #N`, which takes effect only on a push, and no push grant exists.
+  Their GitHub state is unchanged, so no closure is claimed for them.
+- Next action: obtain a phase-scoped push grant so the three carriers land and
+  `verify-closeout --expect-state CLOSED` can read the provider state back. Then
+  the twelve remaining cohort rows: #584 is held on the Umbrella Closure Contract;
+  the other eleven hold tracker-visible non-closures with owners and revisit
+  triggers recorded in the ledger.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -323,14 +323,43 @@ premise, owner, evidence channel, and tracker-visible outcome.
   residues are tracked as #610, #611, and #613 rather than carried as prose.
 - Retro: `../retro/2026-08-13-proof-surface-repair-retro.md`.
 
+### Three Release Residues Resolved With Two Review Rounds (2026-08-13)
+
+- Objective: resolve the three residues the previous session filed rather than
+  implemented (#613, #610, #611), and act on the retro's `skipped-is-not-passed`
+  lesson. All three change verdict logic on a proof surface, so each owed two
+  bounded review rounds.
+- Commits: `29751f0d` (the repairs), `abf207fc` (coverage for the moved classifier
+  arms and the planner's tolerant listing), `503545d7`/`2eaa887b`/`e455c338`
+  (per-issue closeout carriers).
+- Evidence: two-round critique
+  `../critique/2026-08-13-release-claims-path-record-and-notes-two-round-critique.md`;
+  six bounded reviewers across two windows, both `reviewer_boundary_fingerprint.py`
+  verifies `clean` at exit 0 with empty `parent_declared`, each run before the first
+  fold. 8959 standing tests, the 773-test release sweep, and a `clean`
+  changed-line mutation verdict on the committed tree.
+- What round 2 found, which is why the rule exists: a defect inside a round-1
+  repair on every surface — the notes gate creating the state it then refused, the
+  signal floor still satisfiable by three closeout sentinels, a one-sided strip
+  reintroducing the two-derivations class, and a test assertion that passed with
+  its repair reverted.
+- The `skipped-is-not-passed` lesson is promoted to the operating contract because
+  the rolling digest ranked it 11th and it never reached recent-lessons' four
+  slots. It paid for itself twice this session: a broad pytest run that died on an
+  unrecognized flag and still reported exit 0, and the changed-line gate reporting
+  `unestablished` rather than a pass over uncommitted files.
+- Boundary: nothing pushed and no release. The three carriers carry `Closes #N`
+  but GitHub state is UNCHANGED until a granted push; no closure is claimed.
+
 ## Off-Goal Findings
 
 - [#609](https://github.com/corca-ai/charness/issues/609),
   [#610](https://github.com/corca-ai/charness/issues/610),
   [#611](https://github.com/corca-ai/charness/issues/611), and
   [#613](https://github.com/corca-ai/charness/issues/613) — late arrivals from the
-  post-publication closeout review and this session's two review rounds. #609 is
-  locally resolved; the other three are filed and deliberately not implemented.
+  post-publication closeout review and the two-round repair session. #609 is
+  closed; #613, #610, and #611 are now repaired with two review rounds each and
+  carry verified closeout drafts, with GitHub closure pending a granted push.
   The execution ledger's Late Arrivals section owns their state.
 - [#608](https://github.com/corca-ai/charness/issues/608) — its local repair now
   supplies the supported marked-record and bound-claims-review stage; it remains
