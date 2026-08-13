@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 491,
-  "candidate_count": 2000,
+  "source_artifact_count": 492,
+  "candidate_count": 2004,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -362,6 +362,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:71018f931d5f",
+      "kind": "current_focus",
+      "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro.",
+      "normalized_key": "the 5 1 0 release auto retro charness artifacts retro 2026 08 12 v5",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d1cbbb340863",
       "kind": "current_focus",
       "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout.",
@@ -410,32 +436,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0f3003b19e76",
-      "kind": "current_focus",
-      "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim.",
-      "normalized_key": "this session reconciled the fixed 22 issue cohort without converting an open tracker state",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim."
         }
       ]
     }
@@ -788,6 +788,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:71018f931d5f",
+      "kind": "current_focus",
+      "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro.",
+      "normalized_key": "the 5 1 0 release auto retro charness artifacts retro 2026 08 12 v5",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:d1cbbb340863",
       "kind": "current_focus",
       "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout.",
@@ -944,6 +970,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:58edaec4dead",
+      "kind": "next_improvement",
+      "lesson": "give the claims-review validator an honest `unproven` state and a checkable distinctness observable, per #609.",
+      "normalized_key": "give the claims review validator an honest unproven state and a checkable distinctness observable",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "give the claims-review validator an honest `unproven` state and a checkable distinctness observable, per #609."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:979421ac09ff",
       "kind": "next_improvement",
       "lesson": "**memory**: Keep the goal, execution ledger, handoff, this retro, and #527's decision brief as the release-boundary record; #503 remains the owner of the historical runtime-cost question.",
@@ -1022,6 +1074,32 @@
       ]
     },
     {
+      "candidate_id": "next_improvement:864f2c2798ee",
+      "kind": "next_improvement",
+      "lesson": "retain that `direct-to-default` names a carrier plus `verify-closeout --expect-state CLOSED`, not a hosted CI lane; the cohort's eleven local-proven rows are still waiting on that carrier.",
+      "normalized_key": "retain that direct to default names a carrier plus verify closeout expect state closed",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain that `direct-to-default` names a carrier plus `verify-closeout --expect-state CLOSED`, not a hosted CI lane; the cohort's eleven local-proven rows are still waiting on that carrier."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:238c57404981",
       "kind": "next_improvement",
       "lesson": "retain this retro, the refreshed critique, and the handoff's exact prepare → claims-review → resume route; all 22 issues remain OPEN.",
@@ -1044,6 +1122,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "retain this retro, the refreshed critique, and the handoff's exact prepare → claims-review → resume route; all 22 issues remain OPEN."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:2d600f44405b",
+      "kind": "next_improvement",
+      "lesson": "run the repo's own guard against your own evidence before handing it to a reviewer, especially when the evidence claims to discharge a P4 floor.",
+      "normalized_key": "run the repo s own guard against your own evidence before handing it to",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-post-publication-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run the repo's own guard against your own evidence before handing it to a reviewer, especially when the evidence claims to discharge a P4 floor."
         }
       ]
     },

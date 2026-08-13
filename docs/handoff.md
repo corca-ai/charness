@@ -14,12 +14,24 @@
 
 ## Current State
 
-- **Release `5.1.0` published** — tag `v5.1.0` at `1024e500`, branch `main` at
-  `6bf2d545`, [release](https://github.com/corca-ai/charness/releases/tag/v5.1.0)
-  verified through a credential-free API readback (`draft: false`). The release
-  gate ran green (91 passed, 0 failed, `check-changed-line-mutation-coverage`
-  UNPROVEN/partial), fresh-checkout probes passed, and `charness update`
-  refreshed the installed plugin. It closed no issues.
+- **Release `5.1.0` published** — tag `v5.1.0` at `1024e500`; the reconcile
+  commit `4aa76a19` is the current `main` head.
+  [Release](https://github.com/corca-ai/charness/releases/tag/v5.1.0) existence
+  and `draft: false` are established by a **credential-free REST readback**
+  (`.../releases/tags/v5.1.0`), not by the unauthenticated HTML fetch in the
+  release observer record — that channel states it cannot establish a release
+  exists for a tag. The release gate ran green (91 passed, 0 failed,
+  `check-changed-line-mutation-coverage` UNPROVEN/partial; this figure survives
+  only as terminal output and has no in-repo receipt), fresh-checkout probes
+  passed, and `charness update` refreshed the installed plugin. It closed no
+  issues.
+- **Post-publication closeout review is done** —
+  [review](../charness-artifacts/critique/2026-08-13-v5.1.0-post-publication-closeout-review.md),
+  two bounded reviewers, both boundary windows verified clean. It discharged the
+  public-release distinct-channel floor and left two residues: the
+  pre-publication claims review's distinct-observer property is **unproven**
+  (escalated to [#609](https://github.com/corca-ai/charness/issues/609)), and the
+  post-publication session retro is still owed.
 - [Goal progress critique](../charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md) — binds the current ledger/frame to a fresh-eye review; local proof is not GitHub closure.
 - [Issue #589 local proof](../charness-artifacts/critique/2026-08-13-issue-589-preset-reconciliation-resolution.md) — validator-accepted prescriptions now have reconciled, missing, unavailable, and advisory-metadata states; tracker carrier is [open](https://github.com/corca-ai/charness/issues/589#issuecomment-5268917088).
 - [Issue #586 disposition](../charness-artifacts/debug/2026-08-13-debug-review.md) — no current inert production path was reproduced; its [OPEN tracker carrier](https://github.com/corca-ai/charness/issues/586#issuecomment-5268965258) names the concrete revisit trigger.
@@ -51,17 +63,22 @@ issue closure, push, or release.
 
 Refresh kept: the active-goal ledger and its complete disposition map because they still own the 22-issue cohort reconciliation that `5.1.0` deliberately did not close.
 
-Refresh non-claims: the `v5.1.0` push, release, public-release readback, and
-local installed-tool refresh have occurred. No issue closure, no
-direct-to-default hosted CI result, and no post-publication fresh-eye closeout
-review have occurred for this backlog goal; the session that published `5.1.0`
-was barred from spawning subagents, so that review is unproven, not waived.
+Refresh non-claims: the `v5.1.0` push, release, credential-free public-release
+readback, local installed-tool refresh, and the post-publication fresh-eye
+closeout review have all occurred. Hosted Quality Core succeeded on the default
+branch head `4aa76a19` (run `31650565315`, both jobs) — note this is hosted CI on
+the default branch, **not** the `direct-to-default` carrier readback the ledger
+rows are waiting on; that means a closing carrier commit plus
+`verify-closeout --expect-state CLOSED`
+(`skills/public/issue/references/closeout-discipline.md:91-104`), and no such
+carrier has been authored. **No issue closure has occurred.** The pre-publication
+claims review's distinct-observer property remains unproven (#609).
 
 ## Next Session
 
-1. Run the post-publication fresh-eye closeout review for `v5.1.0` on a host that permits subagent spawning — scope and reviewer rules in [fresh-eye-subagent-review.md](../skills/shared/references/fresh-eye-subagent-review.md); it is the one release-floor step this publication could not prove.
-2. Work the 22-issue cohort disposition against the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md). Publication cleared the release boundary but authorized no issue closure.
-3. Close the release-resume ergonomics gap named by the [claims-review contract](../skills/public/release/references/critique-boundary.md): at a `prepared-awaiting-claims-review` stop, `python3 skills/public/release/scripts/plan_release_run.py --repo-root . --detail` reports `inspect_only` and emits no resume command, so the five-flag invocation (including the version-bound `--critique-artifact`) must be reconstructed by hand. A wrong critique path fails as "standalone critique not satisfied" without naming the artifact that would bind.
+1. Work the 22-issue cohort disposition against the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md). Eleven rows (#539, #542, #584, #588, #589, #590, #595, #597, #602, #606, #607) hold complete local proof and are waiting only on their `direct-to-default` closeout carrier plus `verify-closeout --expect-state CLOSED`; #590 is the one with no critique/debug artifact to bind. Nine rows hold deliberate non-closures whose carriers and revisit triggers need re-verification, and #528/#582 stay split with external owners.
+2. Resolve [#609](https://github.com/corca-ai/charness/issues/609) — the claims-review distinctness floor reduces to string inequality, so it cannot distinguish an observer from a string and gives a spawn-blocked session no honest `unproven` state. Raised by the [post-publication closeout review](../charness-artifacts/critique/2026-08-13-v5.1.0-post-publication-closeout-review.md) and the [post-publication session retro](../charness-artifacts/retro/2026-08-13-post-publication-session-retro.md).
+3. Close the release-resume ergonomics gap named by the [claims-review contract](../skills/public/release/references/critique-boundary.md): at a `prepared-awaiting-claims-review` stop, `python3 skills/public/release/scripts/plan_release_run.py --repo-root . --detail` reports `inspect_only` and emits no resume command, so the five-flag invocation (including the version-bound `--critique-artifact`) must be reconstructed by hand. Confirmed structural — neither `plan_release_run.py` nor `plan_release_run_packets.py` reads the `prepared-awaiting-claims-review` marker that `publish_release_execute.py` writes. A wrong critique path fails as "standalone critique not satisfied" without naming the artifact that would bind.
 4. Revisit [#528](https://github.com/corca-ai/charness/issues/528) only with its two owners: cmanki consumer declaration migration and the Charness quality-policy hook-discovery decision.
 5. Use the [release contract](../docs/conventions/operating-contract.md) — the next push/release remains conditional on cohort disposition, retro, frozen verification, release critique, and independent readbacks.
 

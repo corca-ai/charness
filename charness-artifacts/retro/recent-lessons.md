@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro. (source: `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`)
 - The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout. (source: `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`)
-- This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired. (source: `charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md`)
 
 ## Repeat Traps
 
@@ -40,5 +40,5 @@
 - `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
-- `charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md`
+- `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`
 - `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`

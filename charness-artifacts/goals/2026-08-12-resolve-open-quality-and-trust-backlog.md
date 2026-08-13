@@ -9,16 +9,18 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: the locked `origin/main..0ac9260d` closeout and changed-line
-  mutation proof passed; all 22 ledger rows still reconcile to one live OPEN
-  tracker issue and one carrier; #527 is an operator-owned OPEN defer and #528
-  remains a separately owned OPEN split.
-- Current slice intent: complete the versioned release protocol without
-  weakening it: commit the fresh release critique, prepare the marked 5.1.0
-  record, obtain its distinct bound claims-review record, then resume publish.
-- Next action: commit the final release critique, invoke the release helper to
-  bump and prepare 5.1.0, and stop at its claims-review boundary.  Push and
-  release remain conditional on that later distinct review and helper evidence.
+- Current slice: `5.1.0` is published and the publication boundary is cleared.
+  All 22 ledger rows still reconcile to one live OPEN tracker issue and one
+  carrier; the release closed no issues. #527 is an operator-owned OPEN defer and
+  #528 remains a separately owned OPEN split.
+- Current slice intent: complete the 22-issue cohort disposition. Each row is
+  either closed through the `issue` closeout floor or holds a tracker-visible
+  non-closure with an owner and revisit trigger.
+- Next action: author the direct-to-default closeout carriers for the rows whose
+  local proof is complete, then run `verify-closeout --expect-state CLOSED` per
+  row. `direct-to-default` means the carrier commit plus that readback
+  (`skills/public/issue/references/closeout-discipline.md:91-104`); the green
+  hosted CI on the default branch does not discharge it.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -133,7 +135,7 @@ premise, owner, evidence channel, and tracker-visible outcome.
 | 4 | Repair consumer and operator ergonomics: #528, #588, #599, #601, #550; prepare #527 decision | Build on truthful quality and issue surfaces | consumer-facing probes; #527 operator decision or tracker-visible deferral | completed — #527 has an operator-owned tracker-visible defer; #528 remains separately owned OPEN split |
 | 5 | Decide and, only if justified, add #607 subprocess-settlement capability | It is an enhancement dependent on the quality inventory model | fixture classification and quality-route evidence; otherwise tracker-visible deferral | completed (`1570ba32`; local proof carrier OPEN) |
 | 6 | Reconcile every ledger row and close eligible trackers | Each closure or non-closure needs a visible owner and reason | issue closeout ledger, behavioral verdicts, and non-closure tracker comments | completed — all 22 rows reconcile to OPEN tracker/carrier evidence; no row earned a closure claim before final bundle proof |
-| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, public/install evidence | in progress — retro and the locked `origin/main..0ac9260d` closeout now pass; final release critique is being bound before the helper prepares the separate claims-review stage. No push, release, or readback has occurred. |
+| 7 | Run retro, final proof, push, release, and independent readbacks | Publication occurs only once over the frozen bundle | retro, release critique, release record, public/install evidence | published, closeout partially proven — `5.1.0` was pushed, tagged at `1024e500`, released, and read back; the post-publication fresh-eye closeout review has now run (`../critique/2026-08-13-v5.1.0-post-publication-closeout-review.md`) and left two residues: the pre-publication claims review's distinct-observer property is unproven (escalated to [#609](https://github.com/corca-ai/charness/issues/609)), and the post-publication session retro is still owed. The release closed no issues. |
 
 ## Backlog Recount
 
@@ -291,10 +293,21 @@ premise, owner, evidence channel, and tracker-visible outcome.
 
 ## Final Verification
 
-- The locked changed-line verification and pre-publication retro are complete;
-  the final release critique, marked prepared record, and distinct claims-review
-  record remain required before publication. No release, push, issue closure,
-  hosted CI, or installed behavior is claimed by this draft.
+- Publication is complete and independently observed. `5.1.0` is tagged at
+  `1024e500` on `origin`, the default branch head is `4aa76a19`, and a
+  credential-free REST readback returns `draft: false` /
+  `target_commitish: main` (`../probe/2026-08-13-v5.1.0-post-publication-observables.md`).
+  Hosted Quality Core succeeded on the default branch head (run `31650565315`,
+  both jobs). The locked changed-line verification, pre-publication retro, final
+  release critique, marked prepared record, and a claims-review record all exist.
+- Two release-closeout residues remain, both recorded rather than waived: the
+  pre-publication claims review's distinct-observer property is **unproven**
+  ([#609](https://github.com/corca-ai/charness/issues/609)), and the
+  post-publication session retro is still owed, which is why the
+  `RECONCILE REQUIRED` disposition in `../release/latest.md` has no recorded
+  reviewer judgment.
+- No issue closure is claimed. The release closed no issues, and the 22-issue
+  cohort disposition is unfinished work owned by the execution ledger.
 
 ## User Verification Instructions
 
