@@ -80,6 +80,8 @@ def _payload(
         "transitions": [
             {"sequence": 1, "transition_id": "seed-a", "lesson_id": "a", "source_retro": source}
         ],
+        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+        "lifecycle_events": [],
         "legacy_score_event_count": 0
         if legacy_score_event_count is None
         else legacy_score_event_count,
@@ -91,6 +93,8 @@ def _payload(
                 "transition_id": "seed-a",
                 "score_total": 0,
                 "score_count": 0,
+                "state": "active",
+                "last_lifecycle_event_id": None,
             }
         },
     }
@@ -100,6 +104,13 @@ def _materialize(payload: dict) -> dict:
     for lesson in payload["lessons"].values():
         lesson["score_total"] = 0
         lesson["score_count"] = 0
+        lesson["state"] = "active"
+        lesson["last_lifecycle_event_id"] = None
+    for event in payload["lifecycle_events"]:
+        lesson = payload["lessons"].get(event["lesson_id"])
+        if lesson is not None:
+            lesson["state"] = "archived" if event["action"] == "archive" else "active"
+            lesson["last_lifecycle_event_id"] = event["event_id"]
     for event in payload["score_events"]:
         lesson = payload["lessons"].get(event["lesson_id"])
         if lesson is not None:
@@ -140,6 +151,8 @@ def test_ledger_replays_legacy_cited_scores_and_checker_cli(
         "lesson_count": 1,
         "transition_count": 1,
         "score_event_count": 1,
+        "lifecycle_event_count": 0,
+        "active_lesson_count": 1,
         "path": "charness-artifacts/retro/lesson-ledger.json",
     }
     checker = load_script_module(
@@ -147,7 +160,10 @@ def test_ledger_replays_legacy_cited_scores_and_checker_cli(
     )
     monkeypatch.setattr(sys, "argv", ["check_lesson_ledger.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
-    assert capsys.readouterr().out == "Validated lesson ledger: 1 lessons, 1 transitions.\n"
+    assert capsys.readouterr().out == (
+        "Validated lesson ledger: 1 lessons, 1 active, 1 seed transitions, "
+        "0 lifecycle events.\n"
+    )
     assert json.loads(path.read_text(encoding="utf-8"))["lessons"]["a"]["score_total"] == 2
 
 
@@ -324,6 +340,8 @@ def test_score_authoring_refuses_a_lesson_absent_from_an_existing_session(tmp_pa
         "transition_id": "seed-b",
         "score_total": 0,
         "score_count": 0,
+        "state": "active",
+        "last_lifecycle_event_id": None,
     }
     path = tmp_path / "charness-artifacts/retro/lesson-ledger.json"
     path.write_text(json.dumps(payload), encoding="utf-8")

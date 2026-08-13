@@ -472,6 +472,84 @@ Do not add timestamps, actor/device identity, presentation acknowledgement,
 cryptographic receipts, score budgets, archive state, or a new quality gate: the
 existing ledger checker owns this local eligibility predicate.
 
+## Eighth Implementation Slice: Applied Lifecycle (#616)
+
+Issue #616 opens the separately reviewed lifecycle slice that the sixth slice
+deliberately deferred. It does not change the evidence policy: the current
+positive-only score cohort still cannot justify a numeric archive, promotion,
+or retirement threshold. This slice builds the reversible mechanics and keeps
+every judgment explicit.
+
+Ledger schema v4 preserves the complete v3 transition, session, score, and
+legacy-prefix streams byte-for-byte. It adds a fixed `active_lesson_budget` of
+50 and an append-only `lifecycle_events` stream. Each event has a contiguous
+sequence, unique event ID, seeded lesson ID, action (`archive` or `resurrect`),
+an existing repository-relative Markdown `decision_ref`, and a non-empty
+rationale. Replay initializes every v3 lesson as active, then permits archive
+only from active and resurrection only from archived. The derived lesson view
+adds `state` and `last_lifecycle_event_id`; scores and source identity never
+reset. More than 50 active lessons refuses. No score value creates an event.
+
+Selection policy version 2 keeps recent, value, and uncertainty ranking over
+active lessons only. Its tenth slot draws one archived lesson by the existing
+deterministic uncertainty order. When no archived lesson exists, the archive
+slot stays empty; it is no longer filled by an uncertainty item under a false
+archive label. The preview JSON remains schema version 1, reports `archive: 1`
+only when an archived item was actually selected, and reports
+`archive_fallback_uncertainty: 0` for policy version 2. Historical frozen
+policy-v1 session snapshots remain valid and are never rerendered.
+
+`recent-lessons.md` and the lesson-selection index remain the independently
+rebuilt source corpus. They do not gain score, lifecycle, archive, or graduation
+state and are not rebuilt as a lifecycle-write side effect. The preview is the
+sole score- and lifecycle-backed session projection.
+
+Contract-register schema v2 migrates v1 by freezing its exact `units` as
+`seed_units`, retaining its fixed `unit_budget`, and preserving citation, catch,
+and proposal prefixes. It adds append-only `applied_transitions` and derives
+current `units` plus `retired_units` solely by replaying those events from the
+seed. The replayed active units must separately equal the live H2 inventory.
+Changing docs without a transition, changing a transition without the matching
+docs, directly editing a materialized projection, rewriting seed units, or
+rewriting any committed event prefix all refuse.
+
+A schema-v2 graduation proposal keeps the existing provenance and conservation
+fields and adds at least two distinct `evidence_session_ids`. Every named
+session must contain the lesson and have a score event for it; no score total,
+mean, sign, or threshold is required. Quality may author this proposal, but it
+remains inert until a reviewed apply event links it.
+
+An applied graduation transition names one existing proposal, a durable
+approval reference, rationale, and the proposal's exact displacement set. It
+adds the proposed unit and retires the displacements atomically in replay. A
+standalone retirement names active units, a durable approval reference,
+rationale, successor unit IDs, and either those successors or the literal
+`no-remaining-binding-behavior` disposition. Retirement history remains in
+`retired_units` and in the append-only event after the unit leaves membership.
+Every replay enforces the fixed budget.
+
+Repo-owned operator commands append lesson lifecycle events, graduation
+proposals, citations, and applied register transitions under the existing
+cooperative lock and atomic-replace discipline. Candidate state validates
+before replacement and every refusal leaves bytes unchanged. Applying a
+contract transition never edits an operating document: the reviewed document
+edit and event are prepared together, and validation proves their agreement.
+
+A read-only retention report renders each active and retired unit's declared
+citations, mapped catches when that mapping later exists, and membership
+history. With the current empty catch mapping it says so explicitly and emits a
+non-verdict; it never applies lesson scores, invents retirement eligibility, or
+authorizes a transition.
+
+Acceptance is focused replay/refusal and CLI roundtrip proof: v3/v1 migration,
+score/history preservation across archive and resurrection, the active budget,
+real archived selection, empty-archive no-backfill, multi-session proposal
+eligibility, proposal-linked apply, displacement/retirement audit, live-doc
+agreement, committed-prefix refusal, deterministic materialization, and
+unchanged bytes on rejected operator commands. Threshold calibration, catch
+mapping, retention-based retirement criteria, and a portable public schema stay
+deferred.
+
 ## References
 
 - [Harness-improvement thesis](./2026-08-11-harness-improvement-thesis.md) — the

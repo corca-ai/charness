@@ -3313,6 +3313,139 @@
       "note": "Two untouched goal-artifact grammar helpers share a short normalized-heading scan but return different evidence shapes. This branch-wide family did not arise from the lesson slice; a common iterator would add a proof-reader dependency while leaving each caller's distinct filtering and refusal contract in place.",
       "reviewed_at": "2026-08-13",
       "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "0363443bac0d5b80",
+      "note": "The lesson and contract migration entrypoints have parallel argparse/error exits because both are directly executable operator commands. Their error domains and candidate validators differ; a shared main wrapper would hide each command's accepted source schema for a small fixed boundary.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1a35087b318ae0f5",
+      "note": "Both migrations lock, read, build a domain-specific candidate, validate it, and atomically replace only on execute. Locking/replacement are already shared by lesson_ledger_writer_lib; callback extraction of the remaining transaction would obscure which validator owns each migration and its preservation contract.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "1aa1432e75549dbf",
+      "note": "Direct-execution scripts bind runtime_bootstrap helpers locally so source and exported-plugin copies start without an installed package. This is the established standalone-script preamble; extracting it would require the import path it establishes.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2741014d80cbb8d1",
+      "note": "Lesson and contract committed-state readers deliberately keep schema migration at their separate durable-state owners. A generic git-show/schema adapter would couple two append-only formats while still requiring domain callbacks for every meaningful branch.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2bbfba9a896d597d",
+      "note": "Small nonblank-argument guards stay beside independently executable mutation commands so their operator-facing error prefixes name the command that refused. A shared two-line helper would erase that local ownership or require passing the same label back in.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "2f28dbd7894a1aa9",
+      "note": "The contract transition and retention-report commands share only direct-execution bootstrap imports. Each owns a different payload and mutation boundary, so a common entrypoint module would add coupling without centralizing domain behavior.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "51b0e19cfcb37ca9",
+      "note": "Contract citation, migration, and transition commands repeat pathlib/json/typing bootstrap and repository-local module loading. This is portability scaffolding across standalone scripts, not a shared contract algorithm.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "5dd8e91d6747af1d",
+      "note": "Lesson and contract writers use the repo's explicit runtime_bootstrap block so each file remains directly runnable in source and plugin layouts. A shared import wrapper cannot be loaded until this boundary is already established.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "788dd6b32574af6a",
+      "note": "Lesson lifecycle events and contract graduation proposals both validate evidence arrays, but one owns state transitions and the other owns multi-session proposal evidence. Their field sets, refusals, and downstream authorization differ; merging validators would create a misleading generic evidence schema.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "79ba72c5ceb24784",
+      "note": "A single dictionary-comprehension idiom appears in independent register validation and lesson preview ranking. It is below an extractable behavioral unit and has different key/value semantics at each owner.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8ccdd836fc988bd5",
+      "note": "Standalone CLIs consistently print a domain error to stderr and exit 1 from __main__. The shared shape is the operator process contract; exception types and recovery text remain command-owned, and wrapping every entrypoint would hide those boundaries.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "8e7a5c3ad0c28272",
+      "note": "The lesson-ledger and contract-register top-level validators are deliberately parallel closed-schema replay owners. Sharing their orchestration would couple distinct migrations, committed prefixes, projection types, and live-source checks while leaving nearly every step callback-specific.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "96d10bf816ea4d7c",
+      "note": "Several domain libraries use the idiomatic two-line nonblank predicate. A helper for isinstance(str) plus strip would be longer at call sites and would couple unrelated validation error domains.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "cc538b48f712d450",
+      "note": "The two public validator wrappers read one JSON artifact, delegate to their domain replay validator, and return domain counts. Separate wrappers preserve independent checker APIs and failure prefixes; a generic loader would add indirection around three straightforward lines.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "d84cff6f03c4f686",
+      "note": "check_lesson_ledger and check_contract_register remain distinct operator commands with parallel argparse and receipt rendering. Their counts and explicit-vs-broad gate roles differ; a shared CLI would collapse two independently documented surfaces.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "da0269eaabd82d86",
+      "note": "Contract mutation commands intentionally spell lock-read-validate-copy-mutate-validate-replace transactions at each event owner. Atomic replacement is shared already; a generic callback transaction would hide the exact pre/post validation order that prevents unauthorized projection writes.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "f94b53fa331464df",
+      "note": "Lesson lifecycle and contract transition writers have similar candidate assembly because both cross reviewed mutation boundaries, but they use different ledgers, event grammars, dry-run semantics, and projection checks. A combined writer would falsely imply one lifecycle schema.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "fac53898f7fbd3ed",
+      "note": "Lesson and contract committed-state migration branches are intentionally located beside their respective schema validators. Centralizing old-version recognition would make two independent append-only formats share a release cadence and refusal vocabulary.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
+      "id": "ff43506a5871365c",
+      "note": "Lesson lifecycle migration and event recording both validate a candidate ledger under the same lock, but one transforms schema and the other appends a reviewed event. The shared writer already owns locking/atomic replacement; callback extraction of the rest would obscure their different authorization semantics.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
     }
   ],
   "fixable_ceiling": 0,

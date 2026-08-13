@@ -69,6 +69,8 @@ def _payload() -> dict:
                 "source_retro": "charness-artifacts/retro/source.md",
             }
         ],
+        "active_lesson_budget": ledger.ACTIVE_LESSON_BUDGET,
+        "lifecycle_events": [],
         "legacy_score_event_count": 0,
         "session_events": [],
         "score_events": [],
@@ -78,6 +80,8 @@ def _payload() -> dict:
                 "transition_id": "seed-a",
                 "score_total": 0,
                 "score_count": 0,
+                "state": "active",
+                "last_lifecycle_event_id": None,
             }
         },
     }
@@ -235,7 +239,14 @@ def test_ledger_validator_exercises_replay_refusal_paths(tmp_path: Path, monkeyp
             [], 0, json.dumps({"kind": ledger.KIND, "transitions": [], "schema_version": 1}), ""
         ),
     )
-    assert ledger._committed_state(tmp_path, path) == ([], [], 0, [])
+    assert ledger._committed_state(tmp_path, path) == (
+        [],
+        [],
+        0,
+        [],
+        ledger.ACTIVE_LESSON_BUDGET,
+        [],
+    )
     monkeypatch.setattr(
         ledger.subprocess,
         "run",

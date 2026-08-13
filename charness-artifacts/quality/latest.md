@@ -1,1 +1,1 @@
-2026-08-12-issue-593-hotl-target-binding.md
+2026-08-13-issue-616-applied-lifecycle.md

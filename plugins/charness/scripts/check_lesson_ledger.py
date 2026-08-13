@@ -22,7 +22,13 @@ def main() -> int:
         output_dir=root / "charness-artifacts/retro",
         summary_path=root / "charness-artifacts/retro/recent-lessons.md",
     )
-    print(f"Validated lesson ledger: {result['lesson_count']} lessons, {result['transition_count']} transitions.")
+    print(
+        "Validated lesson ledger: "
+        f"{result['lesson_count']} lessons, "
+        f"{result['active_lesson_count']} active, "
+        f"{result['transition_count']} seed transitions, "
+        f"{result['lifecycle_event_count']} lifecycle events."
+    )
     return 0
 
 

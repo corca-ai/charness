@@ -88,6 +88,16 @@ requirement for this goal.
   five reported lines. Two-round critique; round 2 found and forced plugin
   export synchronization. Carrier: this commit; GitHub remains OPEN until an
   authorized push and distinct tracker readback.
+- [#614](https://github.com/corca-ai/charness/issues/614) — unbounded failed
+  standing-pytest roots and mutation reports are RESOLVED locally by marker-aware
+  retention and explicit confirmed cleanup. Carrier `81e88367`; no live report
+  deletion, push, or GitHub closure occurred.
+- [#616](https://github.com/corca-ai/charness/issues/616) — lesson and contract
+  lifecycle completion is an independent feature late arrival pulled forward by
+  explicit user direction. RESOLVED locally through replayed archive/resurrection,
+  proposal/application, retirement, and retention surfaces with 85 focused tests
+  and two review rounds. No live lifecycle decision, push, GitHub closure, or
+  publication occurred; it does not alter the fixed cohort.
 
 New tracker issues after the opening recount are late arrivals. They stay outside
 this cohort unless the goal is explicitly amended; they are recorded as an

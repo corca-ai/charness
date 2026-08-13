@@ -2,7 +2,7 @@
 
 ## Workflow Trigger
 
-- Continue the active [open-backlog `achieve` goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md). #615 has a verified local carrier but remains OPEN; without a new push grant, continue with #614.
+- Continue the active [open-backlog `achieve` goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md). #614, #615, and #616 have local direct-commit carriers but remain OPEN until an authorized push and tracker readback.
 
 ## Continuation Capability
 
@@ -18,7 +18,8 @@
 - [Lesson-ledger contract](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md) — owns score rules and the boundary between ledger-backed preview selection and the generated digest.
 - [Lesson-ledger state](../charness-artifacts/retro/lesson-ledger.json) — records declared preview-session snapshots and sparse score events; a snapshot proves containment, not exposure.
 - [Lesson-evaluation continuity contract](../charness-artifacts/spec/2026-08-13-lesson-evaluation-observability-contract.md) — owns the eligible-retro denominator, exact disposition grammar, bounded receipt claim, and reconciliation violations.
-- [#614](https://github.com/corca-ai/charness/issues/614) — holds the remaining unbounded `pytest-tmp` and `reports/mutation` cache class.
+- [#614 critique](../charness-artifacts/critique/2026-08-13-issue-614-local-artifact-retention-resolution.md) — owns the completed local retention repair; carrier `81e88367` is not publication.
+- [#616 lifecycle contract](../charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md) and [quality review](../charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md) — own explicit lesson archive/resurrection and reviewed contract graduation/retirement.
 
 Historical immutable publish-state claim — this captures the completed
 2026-08-06 snapshot only; it does not describe this active backlog or authorize
@@ -29,18 +30,18 @@ issue closure, push, or release.
 {"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
 ```
 
-Refresh kept: the goal and execution ledger remain the cohort owners; #615 stays visible until publication/readback, #614 remains the next locally decidable issue, and the lesson-ledger start/retro boundary is now workflow-wired but still needs honest operation next session.
+Refresh kept: the goal and execution ledger remain the cohort owners; #614/#615 stay visible until publication/readback, and #616 is independent of their defect classes and of the fixed cohort.
 
-Refresh non-claims: no #615 push, hosted CI, GitHub closure, or installed-consumer readback occurred. Lesson scores do not yet control the [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md), prove human usefulness, or justify score-policy changes.
+Refresh non-claims: no push, hosted CI, GitHub closure, or installed-consumer readback occurred. #616 applies no live archive or contract-membership transition; scores do not control the [recent-lessons digest](../charness-artifacts/retro/recent-lessons.md), authorize graduation, prove usefulness, or justify thresholds.
 
 ## Next Session
 
 1. Do not report [#615](https://github.com/corca-ai/charness/issues/615) closed from its local carrier. Under a new phase-scoped grant, push it, observe hosted CI through a distinct channel, and run `verify-closeout --expect-state CLOSED`; without that grant, leave it OPEN.
-2. Before #614, run the start command in [Local Lesson-Ledger Authoring](./development.md#local-lesson-ledger-authoring), actually present its deterministic list, and retain the same session ID through the retro disposition. At retro, record only sparse anchored effects, persist exactly one [Lesson Evaluation Disposition](./development.md#lesson-evaluation-disposition) line, then run the continuity report. The declaration and receipt do not prove presentation.
-3. Resolve [#614](https://github.com/corca-ai/charness/issues/614)'s remaining members: `pytest-tmp` keeps the most recent N failed basetemps rather than cleaning up on failure (the retention is deliberate), and `reports/mutation` has no policy at all.
+2. Do not report [#614](https://github.com/corca-ai/charness/issues/614) or [#616](https://github.com/corca-ai/charness/issues/616) closed from their local carriers. Under a new phase-scoped grant, publish and read back each tracker state; otherwise select the next locally decidable row from the execution ledger.
+3. Before later issue work, run the start command in [Local Lesson-Ledger Authoring](./development.md#local-lesson-ledger-authoring), actually present its deterministic list, and retain the same session ID through the retro disposition. The declaration and receipt do not prove presentation.
 4. Keep the [score-policy evidence goal](../charness-artifacts/goals/2026-08-12-compare-score-policy-evidence.md) dormant until multiple declared sessions contain naturally varied scores; do not tune from the current positive-only cohort.
-5. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the ledger's Umbrella Closure Contract.
-6. The other cohort rows retain their tracker-visible non-closures and revisit triggers in the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md).
+5. Keep the PLR2004/no-magic-numbers follow-up owned by the [#616 quality review](../charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md): prefer its production-only baseline/no-increase move over global enablement.
+6. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the ledger's Umbrella Closure Contract; other cohort rows retain their dispositions in the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md).
 7. The next release remains conditional on the [operating contract](./conventions/operating-contract.md)'s frozen verification, critique, and independent readbacks.
 
 ## Discuss

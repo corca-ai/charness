@@ -143,6 +143,89 @@ python3 scripts/check_lesson_evaluation_continuity.py --repo-root .
 This report measures disposition continuity, not all host sessions or lesson
 usefulness.
 
+### Lesson Lifecycle
+
+The ledger keeps at most 50 active lessons. Archive and resurrection are explicit
+reviewed events; scores never change lifecycle state automatically. Existing
+schema-v3 state migrates deterministically, with a dry run by default:
+
+```bash
+python3 scripts/migrate_lesson_lifecycle.py --repo-root .
+python3 scripts/migrate_lesson_lifecycle.py --repo-root . --execute
+python3 scripts/record_lesson_lifecycle.py --repo-root . \
+  --event-id <unique-event-id> --lesson-id <lesson-id> --action archive \
+  --decision-ref <reviewed-markdown-path> --rationale '<why this state changed>'
+python3 scripts/check_lesson_ledger.py --repo-root .
+```
+
+Use `--action resurrect` to return an archived lesson to the active cohort. The
+selection preview draws its recent, value, and uncertainty slots only from active
+lessons and its archive slot only from archived lessons. If no archived lesson
+exists, that slot stays empty; it is not filled with a second active lesson.
+[recent-lessons.md](../charness-artifacts/retro/recent-lessons.md) remains the generated rolling digest and is not rewritten by
+preview selection or lifecycle events.
+
+### Contract Graduation and Retirement
+
+The contract register freezes its original H2 inventory and unit budget, then
+replays reviewed membership transitions. Migrate schema v1 before recording new
+work:
+
+```bash
+python3 scripts/migrate_contract_register.py --repo-root .
+python3 scripts/migrate_contract_register.py --repo-root . --execute
+```
+
+A graduation proposal must cite one seeded lesson and at least two distinct
+declared sessions in which that lesson received a score. This is an evidence
+floor, not a score threshold or automatic authorization:
+
+```bash
+python3 scripts/record_contract_graduation_proposal.py --repo-root . \
+  --proposal-id <unique-proposal-id> --lesson-id <lesson-id> \
+  --source-retro <seed-retro-path> \
+  --evidence-session-id <session-1> --evidence-session-id <session-2> \
+  --target-path AGENTS.md --target-heading '<new H2 heading>' \
+  --rationale '<why review is warranted>' \
+  --displacement-unit-id '<path#heading-slug>'
+```
+
+After a reviewer approves the exact membership change, edit the contract docs to
+the proposed H2 inventory. Then preview the matching transition and repeat with
+`--execute` only after inspecting the receipt:
+
+```bash
+python3 scripts/apply_contract_transition.py --repo-root . \
+  --action apply-graduation --event-id <unique-event-id> \
+  --approval-ref <reviewed-markdown-path> --proposal-id <proposal-id> \
+  --rationale '<reviewed decision>'
+python3 scripts/apply_contract_transition.py --repo-root . \
+  --action apply-graduation --event-id <unique-event-id> \
+  --approval-ref <reviewed-markdown-path> --proposal-id <proposal-id> \
+  --rationale '<reviewed decision>' --execute
+```
+
+For standalone retirement, use `--action retire`, repeat
+`--retired-unit-id`, and either name active `--successor-unit-id` values with
+`--disposition successor-units` or explicitly use
+`--disposition no-remaining-binding-behavior`. The command refuses unless the
+replayed active units exactly match the current contract H2 inventory.
+
+Record a retro citation without changing membership, and render the bounded
+retention evidence separately:
+
+```bash
+python3 scripts/record_contract_citation.py --repo-root . \
+  --event-id <unique-event-id> --source-retro <retro-path> \
+  --unit-id '<path#heading-slug>' --anchor '<where it mattered>'
+python3 scripts/render_contract_retention_review.py --repo-root .
+python3 scripts/check_contract_register.py --repo-root .
+```
+
+The retention report is non-authorizing. It reports observed citations, preserves
+retired-unit history, and labels catch mapping and staleness calibration honestly;
+it cannot approve graduation or retirement.
+
 ## Proof-Only Non-Managed Checkout
 
 If you deliberately want to prove install behavior from a non-managed checkout,

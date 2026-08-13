@@ -1,0 +1,319 @@
+{
+  "kind": "charness.critique_prepare_packet",
+  "version": 1,
+  "repo": "charness",
+  "generated_at": "2026-08-13T13:06:31Z",
+  "prepared_for": "issue-616 final repaired lifecycle binding",
+  "changed_ref": null,
+  "adapter_path": ".agents/critique-adapter.yaml",
+  "sections": [
+    {
+      "id": "changed-files-and-owning-surfaces",
+      "title": "Changed Files And Owning Surfaces",
+      "content_kind": "script",
+      "producer": "python3 scripts/render_critique_section_changed_surfaces.py",
+      "content": "Changed paths for working tree:\n- .agents/surfaces.json\n- charness-artifacts/critique/2026-08-13-issue-616-applied-lifecycle-resolution.md\n- charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.json\n- charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.md\n- charness-artifacts/critique/2026-08-13-issue-616-round1-packet.json\n- charness-artifacts/critique/2026-08-13-issue-616-round1-packet.md\n- charness-artifacts/critique/2026-08-13-issue-616-round2-packet.json\n- charness-artifacts/critique/2026-08-13-issue-616-round2-packet.md\n- charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md\n- charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md\n- charness-artifacts/issue/2026-08-13-issue-616-closeout-commit-message.md\n- charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n- charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md\n- charness-artifacts/quality/dup-review.json\n- charness-artifacts/quality/latest.md\n- charness-artifacts/retro/contract-register.json\n- charness-artifacts/retro/lesson-ledger.json\n- charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md\n- docs/development.md\n- docs/handoff.md\n- plugins/charness/scripts/apply_contract_transition.py\n- plugins/charness/scripts/boundary-bypass-exemptions.txt\n- plugins/charness/scripts/check_contract_register.py\n- plugins/charness/scripts/check_lesson_ledger.py\n- plugins/charness/scripts/contract_register_lib.py\n- plugins/charness/scripts/contract_unit_inventory_lib.py\n- plugins/charness/scripts/lesson_ledger_lib.py\n- plugins/charness/scripts/lesson_selection_preview_lib.py\n- plugins/charness/scripts/migrate_contract_register.py\n- plugins/charness/scripts/migrate_lesson_lifecycle.py\n- plugins/charness/scripts/record_contract_citation.py\n- plugins/charness/scripts/record_contract_graduation_proposal.py\n- plugins/charness/scripts/record_lesson_lifecycle.py\n- plugins/charness/scripts/render_contract_retention_review.py\n- plugins/charness/scripts/validate_inventory_consumption.py\n- scripts/apply_contract_transition.py\n- scripts/boundary-bypass-exemptions.txt\n- scripts/check_contract_register.py\n- scripts/check_lesson_ledger.py\n- scripts/contract_register_lib.py\n- scripts/contract_unit_inventory_lib.py\n- scripts/lesson_ledger_lib.py\n- scripts/lesson_selection_preview_lib.py\n- scripts/migrate_contract_register.py\n- scripts/migrate_lesson_lifecycle.py\n- scripts/record_contract_citation.py\n- scripts/record_contract_graduation_proposal.py\n- scripts/record_lesson_lifecycle.py\n- scripts/render_contract_retention_review.py\n- scripts/validate_inventory_consumption.py\n- tests/test_contract_register.py\n- tests/test_lesson_ledger.py\n- tests/test_lesson_ledger_refusals.py\n- tests/test_lesson_lifecycle.py\n- tests/test_lesson_selection_preview.py\n\nOwning surfaces:\n- checked-in-plugin-export: Checked-in plugin install surface and root marketplace artifacts derived from repo-owned source paths.\n  source matches: scripts/apply_contract_transition.py, scripts/boundary-bypass-exemptions.txt, scripts/check_contract_register.py, scripts/check_lesson_ledger.py, scripts/contract_register_lib.py, scripts/contract_unit_inventory_lib.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/migrate_contract_register.py, scripts/migrate_lesson_lifecycle.py, scripts/record_contract_citation.py, scripts/record_contract_graduation_proposal.py, scripts/record_lesson_lifecycle.py, scripts/render_contract_retention_review.py, scripts/validate_inventory_consumption.py\n  derived matches: plugins/charness/scripts/apply_contract_transition.py, plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/check_contract_register.py, plugins/charness/scripts/check_lesson_ledger.py, plugins/charness/scripts/contract_register_lib.py, plugins/charness/scripts/contract_unit_inventory_lib.py, plugins/charness/scripts/lesson_ledger_lib.py, plugins/charness/scripts/lesson_selection_preview_lib.py, plugins/charness/scripts/migrate_contract_register.py, plugins/charness/scripts/migrate_lesson_lifecycle.py, plugins/charness/scripts/record_contract_citation.py, plugins/charness/scripts/record_contract_graduation_proposal.py, plugins/charness/scripts/record_lesson_lifecycle.py, plugins/charness/scripts/render_contract_retention_review.py, plugins/charness/scripts/validate_inventory_consumption.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/validate_packaging.py --repo-root ., python3 scripts/validate_packaging_committed.py --repo-root .\n- repo-markdown: Repo-owned markdown docs and generated markdown copies that need link, lint, and secret checks.\n  source matches: charness-artifacts/critique/2026-08-13-issue-616-applied-lifecycle-resolution.md, charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.md, charness-artifacts/critique/2026-08-13-issue-616-round1-packet.md, charness-artifacts/critique/2026-08-13-issue-616-round2-packet.md, charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md, charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md, charness-artifacts/issue/2026-08-13-issue-616-closeout-commit-message.md, charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md, charness-artifacts/quality/latest.md, charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md, docs/development.md, docs/handoff.md\n  verify: python3 scripts/check_doc_links.py --repo-root ., python3 scripts/check_command_docs.py --repo-root ., python3 scripts/check_spec_evidence_durability.py --repo-root . --require-git-file-listing, ./scripts/check-markdown.sh, ./scripts/check-secrets.sh\n- handoff-machine-readers: docs/handoff.md is a rotating human document that is ALSO a machine-read source: the publish-state ledger declares it as a source locator, and the retro-memory gate requires its recent-lessons reference.\n  source matches: docs/handoff.md\n  verify: python3 scripts/publish_state_ledger.py --repo-root ., python3 -m pytest -q tests/quality_gates/test_publish_state_ledger.py tests/quality_gates/test_retro_memory.py\n- quality-baseline-artifacts: Committed quality advisory and ratchet baselines must parse and match their owning inventories.\n  source matches: charness-artifacts/quality/dup-review.json\n  verify: for quality_json in charness-artifacts/quality/nose-baseline.json charness-artifacts/quality/doc-nose-baseline.json charness-artifacts/quality/dup-ratchet-baseline.json charness-artifacts/quality/dup-review.json; do python3 -m json.tool \"$quality_json\" >/dev/null || exit $?; done, python3 skills/public/quality/scripts/inventory_nose_clones.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/inventory_doc_duplicates.py --repo-root . --json >/dev/null, python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary\n- surface-obligations: Repo-owned changed-surface manifest that drives slice closeout obligations.\n  source matches: .agents/surfaces.json\n  verify: python3 scripts/validate_surfaces.py --repo-root .\n- critique-artifacts: Checked-in critique records and prepare packets for task-completing repo work.\n  source matches: charness-artifacts/critique/2026-08-13-issue-616-applied-lifecycle-resolution.md, charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.json, charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.md, charness-artifacts/critique/2026-08-13-issue-616-round1-packet.json, charness-artifacts/critique/2026-08-13-issue-616-round1-packet.md, charness-artifacts/critique/2026-08-13-issue-616-round2-packet.json, charness-artifacts/critique/2026-08-13-issue-616-round2-packet.md\n  verify: python3 scripts/validate_critique_artifacts.py --repo-root . --all\n- probe-artifacts: Checked-in host/runtime probe JSON artifacts used as closeout evidence.\n  source matches: charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json\n  verify: for path in charness-artifacts/probe/*.json; do python3 -m json.tool \"$path\" >/dev/null || exit $?; done\n- lesson-ledger-and-contract-register: Local cited lesson state and the explicit pre-contract-mutation register probe.\n  source matches: charness-artifacts/retro/contract-register.json, charness-artifacts/retro/lesson-ledger.json, scripts/apply_contract_transition.py, scripts/check_contract_register.py, scripts/check_lesson_ledger.py, scripts/contract_register_lib.py, scripts/contract_unit_inventory_lib.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/migrate_contract_register.py, scripts/migrate_lesson_lifecycle.py, scripts/record_contract_citation.py, scripts/record_contract_graduation_proposal.py, scripts/record_lesson_lifecycle.py, scripts/render_contract_retention_review.py\n  derived matches: plugins/charness/scripts/apply_contract_transition.py, plugins/charness/scripts/check_contract_register.py, plugins/charness/scripts/check_lesson_ledger.py, plugins/charness/scripts/contract_register_lib.py, plugins/charness/scripts/contract_unit_inventory_lib.py, plugins/charness/scripts/lesson_ledger_lib.py, plugins/charness/scripts/lesson_selection_preview_lib.py, plugins/charness/scripts/migrate_contract_register.py, plugins/charness/scripts/migrate_lesson_lifecycle.py, plugins/charness/scripts/record_contract_citation.py, plugins/charness/scripts/record_contract_graduation_proposal.py, plugins/charness/scripts/record_lesson_lifecycle.py, plugins/charness/scripts/render_contract_retention_review.py\n  sync: python3 scripts/sync_root_plugin_manifests.py --repo-root .\n  verify: python3 scripts/check_lesson_ledger.py --repo-root ., python3 scripts/check_contract_register.py --repo-root ., python3 -m pytest -q tests/test_lesson_ledger.py tests/test_lesson_lifecycle.py tests/test_contract_register.py\n- integrations-and-control-plane: Integration manifests and control-plane helper scripts.\n  derived matches: plugins/charness/scripts/apply_contract_transition.py, plugins/charness/scripts/boundary-bypass-exemptions.txt, plugins/charness/scripts/check_contract_register.py, plugins/charness/scripts/check_lesson_ledger.py, plugins/charness/scripts/contract_register_lib.py, plugins/charness/scripts/contract_unit_inventory_lib.py, plugins/charness/scripts/lesson_ledger_lib.py, plugins/charness/scripts/lesson_selection_preview_lib.py, plugins/charness/scripts/migrate_contract_register.py, plugins/charness/scripts/migrate_lesson_lifecycle.py, plugins/charness/scripts/record_contract_citation.py, plugins/charness/scripts/record_contract_graduation_proposal.py, plugins/charness/scripts/record_lesson_lifecycle.py, plugins/charness/scripts/render_contract_retention_review.py, plugins/charness/scripts/validate_inventory_consumption.py\n  verify: python3 scripts/validate_integrations.py --repo-root ., python3 scripts/sync_support.py --repo-root . --json, python3 scripts/update_tools.py --repo-root . --json\n- repo-python: Repo-owned Python code and tests.\n  source matches: scripts/apply_contract_transition.py, scripts/check_contract_register.py, scripts/check_lesson_ledger.py, scripts/contract_register_lib.py, scripts/contract_unit_inventory_lib.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/migrate_contract_register.py, scripts/migrate_lesson_lifecycle.py, scripts/record_contract_citation.py, scripts/record_contract_graduation_proposal.py, scripts/record_lesson_lifecycle.py, scripts/render_contract_retention_review.py, scripts/validate_inventory_consumption.py, tests/test_contract_register.py, tests/test_lesson_ledger.py, tests/test_lesson_ledger_refusals.py, tests/test_lesson_lifecycle.py, tests/test_lesson_selection_preview.py\n  derived matches: plugins/charness/scripts/apply_contract_transition.py, plugins/charness/scripts/check_contract_register.py, plugins/charness/scripts/check_lesson_ledger.py, plugins/charness/scripts/contract_register_lib.py, plugins/charness/scripts/contract_unit_inventory_lib.py, plugins/charness/scripts/lesson_ledger_lib.py, plugins/charness/scripts/lesson_selection_preview_lib.py, plugins/charness/scripts/migrate_contract_register.py, plugins/charness/scripts/migrate_lesson_lifecycle.py, plugins/charness/scripts/record_contract_citation.py, plugins/charness/scripts/record_contract_graduation_proposal.py, plugins/charness/scripts/record_lesson_lifecycle.py, plugins/charness/scripts/render_contract_retention_review.py, plugins/charness/scripts/validate_inventory_consumption.py\n  verify: ./scripts/check-python-lint.sh, python3 scripts/check_python_lengths.py --repo-root . --require-git-file-listing, python3 scripts/validate_attention_state_visibility.py --repo-root . --scan-root scripts --scan-root skills --scan-root-map ../charness-support=skills/support, python3 scripts/check_test_repo_copy_invariants.py --repo-root ., python3 scripts/check_boundary_bypass_ratchet.py --repo-root ., python3 skills/public/quality/scripts/check_dup_ratchet.py --repo-root . --summary, ./scripts/check-shell.sh, python3 scripts/run_standing_pytest.py --repo-root . --mode read-only\n- python-scan-hygiene: Repo and skill Python that traverses the filesystem must stay gitignore-aware, so a committed non-gitignore-aware scanner does not ship latent until the next push.\n  source matches: scripts/apply_contract_transition.py, scripts/check_contract_register.py, scripts/check_lesson_ledger.py, scripts/contract_register_lib.py, scripts/contract_unit_inventory_lib.py, scripts/lesson_ledger_lib.py, scripts/lesson_selection_preview_lib.py, scripts/migrate_contract_register.py, scripts/migrate_lesson_lifecycle.py, scripts/record_contract_citation.py, scripts/record_contract_graduation_proposal.py, scripts/record_lesson_lifecycle.py, scripts/render_contract_retention_review.py, scripts/validate_inventory_consumption.py\n  verify: python3 skills/public/quality/scripts/inventory_gitignore_scan_hygiene.py --repo-root . --require-empty --require-git-file-listing\n\nPlanned sync commands before validators:\n- python3 scripts/sync_root_plugin_manifests.py --repo-root .\n",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "critique-prepare-non-goals",
+      "title": "Non-Goals For This Contract",
+      "content_kind": "static",
+      "producer": "static-config (inline)",
+      "content": "- Charness does not classify section roles (source/derived/audit-only/rewrite). Roles stay consumer-defined.\n- Charness does not enforce packet content correctness — the validator owns shape only.\n- Retro owns its own prepare-packet slot through retro-adapter.yaml packet_sections; critique packets do not substitute for retro lesson judgment.",
+      "ok": true,
+      "errors": []
+    },
+    {
+      "id": "reviewer-packet-semantic-question",
+      "title": "Semantic Reviewer Question",
+      "content_kind": "static",
+      "producer": "static-config (content_path: skills/shared/references/reviewer-packet-semantic-question.md)",
+      "content": "# Reviewer-Packet Semantic Question\n\nUse this question when a slice changes a guard, reference, claim, or verdict\nsurface. It keeps a reviewer packet anchored to what a reader or control must\nknow, rather than to the observable form that happened to expose the problem.\n\n## Ask Before Broad Sampling\n\nThe packet author and reviewer should use all four parts when they apply. If a\npart is not applicable or cannot be established, record `not applicable` or\n`insufficient evidence` with the reason; do not silently claim the control is\nproven.\n\n1. **Semantic fact or invariant:** what must be true, independently of the\n   current representation or failure spelling?\n2. **Owning boundary:** which source, helper, renderer, reference, or workflow\n   boundary carries or derives that fact, and who reads it?\n3. **Recorded instance:** which concrete observed instance must this slice catch,\n   explain, or preserve?\n4. **Axis-varying counterexample:** what changes the semantic axis while keeping\n   the observed form similar enough to expose a proxy-based control?\n\nThe question is a review aid, not a packet-readiness predicate. A clean tree is\nnot evidence that the selected control catches a recorded instance.\n\n## Compare the Proposed Control\n\nAfter naming the four parts, state the proposed predicate, claim, or surface\nchange and compare it with the counterexample:\n\n- If the observed form changes while the semantic fact does not, reject or\n  repair a control that changes its verdict with that form.\n- If the semantic fact changes while the observed form stays similar, reject or\n  repair a control that cannot distinguish the changed outcome.\n- If the comparison cannot be made, record `unproven — defer`; do not approve it\n  as though a clean-tree result were proof.\n- For a behavior-changing helper or command, first record the bounded candidate\n  search and scope. When that change has a reader-facing or copy-paste reference\n  in scope, identify the first reader and verify that its demonstrated invocation\n  preserves the claimed behavior. Disposition each discovered reference as\n  updated, not applicable, or insufficient evidence with a reason. If no such\n  reference is in scope, record `not applicable` with the search scope; if the\n  reader cannot be checked, record `insufficient evidence` or `unproven — defer`\n  rather than treating the helper's own tests as proof of reference safety.\n\nThese are reviewer dispositions, not an automated semantic gate.\n\n## Decision Boundary\n\n- Prefer a surface fix when the owning surface can carry or derive the semantic\n  fact and prove the recorded instance.\n- Keep the control as a reviewer question when the fact is judgment-bound or\n  cannot be mechanically observed without guessing.\n- Add a gate only when the predicate is mechanically observable, its false-fire\n  cost is understood, and a recorded escape supports the addition.\n\nThis is a reviewer question, not a semantic meta-gate. It does not claim that a\nhost renders the packet, that a reviewer reaches the right judgment, or that a\nclean-tree run proves the control.\n",
+      "ok": true,
+      "errors": []
+    }
+  ],
+  "section_count": 3,
+  "ok": true,
+  "reviewer_tier_evidence": {
+    "requested_tier": "high-leverage",
+    "requested_spawn_fields": {
+      "model": "gpt-5.6-terra",
+      "reasoning_effort": "medium",
+      "service_tier": "priority",
+      "fork_turns": "none"
+    },
+    "host_exposure_state": "pending-parent-spawn",
+    "application_state": "unverified-by-packet",
+    "instruction": "Review artifacts must record requested_fields_sent, metadata-hidden, host-defaulted, unsupported, or applied only when host-confirmed."
+  },
+  "reviewed_input_identity": {
+    "algorithm": "sha256-v2",
+    "status": "captured",
+    "mode": "working-tree",
+    "changed_ref": null,
+    "resolved_changed_ref": [],
+    "base_head": "81e8836743270686a3159ed7ee11ede64eec12a0",
+    "base_head_role": "provenance-only",
+    "reviewed_paths": [
+      ".agents/surfaces.json",
+      "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+      "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+      "charness-artifacts/issue/2026-08-13-issue-616-closeout-commit-message.md",
+      "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+      "charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md",
+      "charness-artifacts/quality/dup-review.json",
+      "charness-artifacts/quality/latest.md",
+      "charness-artifacts/retro/contract-register.json",
+      "charness-artifacts/retro/lesson-ledger.json",
+      "charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md",
+      "docs/development.md",
+      "docs/handoff.md",
+      "plugins/charness/scripts/apply_contract_transition.py",
+      "plugins/charness/scripts/boundary-bypass-exemptions.txt",
+      "plugins/charness/scripts/check_contract_register.py",
+      "plugins/charness/scripts/check_lesson_ledger.py",
+      "plugins/charness/scripts/contract_register_lib.py",
+      "plugins/charness/scripts/contract_unit_inventory_lib.py",
+      "plugins/charness/scripts/lesson_ledger_lib.py",
+      "plugins/charness/scripts/lesson_selection_preview_lib.py",
+      "plugins/charness/scripts/migrate_contract_register.py",
+      "plugins/charness/scripts/migrate_lesson_lifecycle.py",
+      "plugins/charness/scripts/record_contract_citation.py",
+      "plugins/charness/scripts/record_contract_graduation_proposal.py",
+      "plugins/charness/scripts/record_lesson_lifecycle.py",
+      "plugins/charness/scripts/render_contract_retention_review.py",
+      "plugins/charness/scripts/validate_inventory_consumption.py",
+      "scripts/apply_contract_transition.py",
+      "scripts/boundary-bypass-exemptions.txt",
+      "scripts/check_contract_register.py",
+      "scripts/check_lesson_ledger.py",
+      "scripts/contract_register_lib.py",
+      "scripts/contract_unit_inventory_lib.py",
+      "scripts/lesson_ledger_lib.py",
+      "scripts/lesson_selection_preview_lib.py",
+      "scripts/migrate_contract_register.py",
+      "scripts/migrate_lesson_lifecycle.py",
+      "scripts/record_contract_citation.py",
+      "scripts/record_contract_graduation_proposal.py",
+      "scripts/record_lesson_lifecycle.py",
+      "scripts/render_contract_retention_review.py",
+      "scripts/validate_inventory_consumption.py",
+      "tests/test_contract_register.py",
+      "tests/test_lesson_ledger.py",
+      "tests/test_lesson_ledger_refusals.py",
+      "tests/test_lesson_lifecycle.py",
+      "tests/test_lesson_selection_preview.py"
+    ],
+    "reviewed_content": [
+      {
+        "path": ".agents/surfaces.json",
+        "content_sha256": "a43f42e823956a8e326ba0b22e19135caf9601305ab71e36ef73f04c4a4acc56"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md",
+        "content_sha256": "d60c03c05a13071529c041524535fd0708d748156f63e6c21a4239b260d693d7"
+      },
+      {
+        "path": "charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md",
+        "content_sha256": "62097db9f719cc755ec66885323b6dd7cadc3ef7a044fe3494a2eab2949f8c2d"
+      },
+      {
+        "path": "charness-artifacts/issue/2026-08-13-issue-616-closeout-commit-message.md",
+        "content_sha256": "4ed719ef6f4e67a5f0ad2aedb97b4a1c812c74d607f433b226e0694de4178f9f"
+      },
+      {
+        "path": "charness-artifacts/probe/2026-08-01-inventory-consumption-floor.json",
+        "content_sha256": "ca8012d3d476cb991f2020fce52aa37872b4aafe55919dda4b2a9ad083ff1491"
+      },
+      {
+        "path": "charness-artifacts/quality/2026-08-13-issue-616-applied-lifecycle.md",
+        "content_sha256": "2a7746ea427b4a6f607d5d1c88aa5d13e54d0433d7b7c6848a50894d58368002"
+      },
+      {
+        "path": "charness-artifacts/quality/dup-review.json",
+        "content_sha256": "a524e1bb248640324688a61c46bcc99fc56f9b94041a3c35155721ffb51fbad5"
+      },
+      {
+        "path": "charness-artifacts/quality/latest.md",
+        "content_sha256": "5632ea2a8bd359a2cb3f818c5a8cccc491aa63eeb5fd5044ea7171d6370d4a6b"
+      },
+      {
+        "path": "charness-artifacts/retro/contract-register.json",
+        "content_sha256": "ece3d52feaeedd21e4ff1c909cb3179ca41c353cd47a418942207a7803b530c8"
+      },
+      {
+        "path": "charness-artifacts/retro/lesson-ledger.json",
+        "content_sha256": "85dedf390dca34dc865697ab8922babb4190fa1539c351a68fe896d28f8ad1a0"
+      },
+      {
+        "path": "charness-artifacts/spec/2026-08-12-lesson-ledger-and-contract-register.md",
+        "content_sha256": "e6f67b51072bddb54506b7b560ef98979cd9c7d2ceb21df4aa7c9b1d63ab2df1"
+      },
+      {
+        "path": "docs/development.md",
+        "content_sha256": "05492cfb28e64ee5550fa57cd1c6feb9c3ddc3adcd5f871282b03d6688a27746"
+      },
+      {
+        "path": "docs/handoff.md",
+        "content_sha256": "763e61a1c821907d6475509d6d68607ab53b7267e65efb402b503b56b33b6e26"
+      },
+      {
+        "path": "plugins/charness/scripts/apply_contract_transition.py",
+        "content_sha256": "ee12d478791d308358f7da67a3634ebb93888d73d99730d742aae9d001791233"
+      },
+      {
+        "path": "plugins/charness/scripts/boundary-bypass-exemptions.txt",
+        "content_sha256": "10d894d5b61205637374795df077eef5a90a61f9ad48cffd0a7a4346bd9ad771"
+      },
+      {
+        "path": "plugins/charness/scripts/check_contract_register.py",
+        "content_sha256": "a81c611c5aeed266a7fe600f1088ce5f381ff69616047d3ffb50d38a2dfc98d5"
+      },
+      {
+        "path": "plugins/charness/scripts/check_lesson_ledger.py",
+        "content_sha256": "0f145a6e4a6a5937c4074738695868a961a701e06349ec35322f887f5b61aab7"
+      },
+      {
+        "path": "plugins/charness/scripts/contract_register_lib.py",
+        "content_sha256": "868dee57ccad19f7656d72f869781dc3240694637f6e365a35eacaa862ae5ce0"
+      },
+      {
+        "path": "plugins/charness/scripts/contract_unit_inventory_lib.py",
+        "content_sha256": "f14bd3195c71b1e8ceaedbeebe871d711ff2bd35e8474a659cda9149f0b27729"
+      },
+      {
+        "path": "plugins/charness/scripts/lesson_ledger_lib.py",
+        "content_sha256": "c34cd8e7fe31a978237d98aa948c985648644e1e54928fc9453b6d3ada2b8fa4"
+      },
+      {
+        "path": "plugins/charness/scripts/lesson_selection_preview_lib.py",
+        "content_sha256": "7918a2c1ce32d1000dec70dc482549a89872489e0e4fc71e419e4e8373339c59"
+      },
+      {
+        "path": "plugins/charness/scripts/migrate_contract_register.py",
+        "content_sha256": "9fef137bf1286951291604e8604c15df5f9516a08f1e186337f62816d62ff28a"
+      },
+      {
+        "path": "plugins/charness/scripts/migrate_lesson_lifecycle.py",
+        "content_sha256": "4f7f71ae28a8838fe1e387ef3e55fe855be147f621c79089a07cd6c02188084d"
+      },
+      {
+        "path": "plugins/charness/scripts/record_contract_citation.py",
+        "content_sha256": "e3b2d8d09205bdd21114a8ba8094fff2c3ce817f626b8803e19b355f4df80c96"
+      },
+      {
+        "path": "plugins/charness/scripts/record_contract_graduation_proposal.py",
+        "content_sha256": "5d1d792e09175f49ffee91cd52162ee3485946b4ff03ae852b6b3859781f6dd0"
+      },
+      {
+        "path": "plugins/charness/scripts/record_lesson_lifecycle.py",
+        "content_sha256": "b17150a68b96b24bcc8bbf816ac43c3febe57d546ae028ebfb8a8a2844ef2267"
+      },
+      {
+        "path": "plugins/charness/scripts/render_contract_retention_review.py",
+        "content_sha256": "3be7c31ab3cc67018c94b7bf75188d6023eb585b7874e1831deeed6126e05039"
+      },
+      {
+        "path": "plugins/charness/scripts/validate_inventory_consumption.py",
+        "content_sha256": "664c2ffab18ff0f1b5a6ea2530cce424101d6c12dccc428913df497635b279fa"
+      },
+      {
+        "path": "scripts/apply_contract_transition.py",
+        "content_sha256": "ee12d478791d308358f7da67a3634ebb93888d73d99730d742aae9d001791233"
+      },
+      {
+        "path": "scripts/boundary-bypass-exemptions.txt",
+        "content_sha256": "10d894d5b61205637374795df077eef5a90a61f9ad48cffd0a7a4346bd9ad771"
+      },
+      {
+        "path": "scripts/check_contract_register.py",
+        "content_sha256": "a81c611c5aeed266a7fe600f1088ce5f381ff69616047d3ffb50d38a2dfc98d5"
+      },
+      {
+        "path": "scripts/check_lesson_ledger.py",
+        "content_sha256": "0f145a6e4a6a5937c4074738695868a961a701e06349ec35322f887f5b61aab7"
+      },
+      {
+        "path": "scripts/contract_register_lib.py",
+        "content_sha256": "868dee57ccad19f7656d72f869781dc3240694637f6e365a35eacaa862ae5ce0"
+      },
+      {
+        "path": "scripts/contract_unit_inventory_lib.py",
+        "content_sha256": "f14bd3195c71b1e8ceaedbeebe871d711ff2bd35e8474a659cda9149f0b27729"
+      },
+      {
+        "path": "scripts/lesson_ledger_lib.py",
+        "content_sha256": "c34cd8e7fe31a978237d98aa948c985648644e1e54928fc9453b6d3ada2b8fa4"
+      },
+      {
+        "path": "scripts/lesson_selection_preview_lib.py",
+        "content_sha256": "7918a2c1ce32d1000dec70dc482549a89872489e0e4fc71e419e4e8373339c59"
+      },
+      {
+        "path": "scripts/migrate_contract_register.py",
+        "content_sha256": "9fef137bf1286951291604e8604c15df5f9516a08f1e186337f62816d62ff28a"
+      },
+      {
+        "path": "scripts/migrate_lesson_lifecycle.py",
+        "content_sha256": "4f7f71ae28a8838fe1e387ef3e55fe855be147f621c79089a07cd6c02188084d"
+      },
+      {
+        "path": "scripts/record_contract_citation.py",
+        "content_sha256": "e3b2d8d09205bdd21114a8ba8094fff2c3ce817f626b8803e19b355f4df80c96"
+      },
+      {
+        "path": "scripts/record_contract_graduation_proposal.py",
+        "content_sha256": "5d1d792e09175f49ffee91cd52162ee3485946b4ff03ae852b6b3859781f6dd0"
+      },
+      {
+        "path": "scripts/record_lesson_lifecycle.py",
+        "content_sha256": "b17150a68b96b24bcc8bbf816ac43c3febe57d546ae028ebfb8a8a2844ef2267"
+      },
+      {
+        "path": "scripts/render_contract_retention_review.py",
+        "content_sha256": "3be7c31ab3cc67018c94b7bf75188d6023eb585b7874e1831deeed6126e05039"
+      },
+      {
+        "path": "scripts/validate_inventory_consumption.py",
+        "content_sha256": "664c2ffab18ff0f1b5a6ea2530cce424101d6c12dccc428913df497635b279fa"
+      },
+      {
+        "path": "tests/test_contract_register.py",
+        "content_sha256": "e97a5ed591bbe0e78aa3eb268acc2c4c5b3d9a97a5747a206cec1ecd7ff85983"
+      },
+      {
+        "path": "tests/test_lesson_ledger.py",
+        "content_sha256": "cfc3675de25b36e088205dc52e8346c9d118781c13aac3b85b771708f2957ae6"
+      },
+      {
+        "path": "tests/test_lesson_ledger_refusals.py",
+        "content_sha256": "63022a9b4c1658a54b04887fe5e52d3d33d1f14ea1e204f71d8614d01dd2094c"
+      },
+      {
+        "path": "tests/test_lesson_lifecycle.py",
+        "content_sha256": "f597b2e77aa521e7b5c5baa97d67adecc9dd4a7327497ad7b9a7431f92afd604"
+      },
+      {
+        "path": "tests/test_lesson_selection_preview.py",
+        "content_sha256": "2256187af70eea3e17b599af5d062aa50214bd891d360bc5ae51e77300d6487d"
+      }
+    ],
+    "reviewed_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "staged_patch_sha256": "9fe0eb2457074c80ca38a71087425ac76d0091f37e7975c76885ebd3ee0c8f2c",
+    "unstaged_patch_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "declared_untracked": [],
+    "auto_excluded_paths": [
+      "charness-artifacts/critique/2026-08-13-issue-616-applied-lifecycle-resolution.md",
+      "charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.json",
+      "charness-artifacts/critique/2026-08-13-issue-616-final-binding-packet.md",
+      "charness-artifacts/critique/2026-08-13-issue-616-round1-packet.json",
+      "charness-artifacts/critique/2026-08-13-issue-616-round1-packet.md",
+      "charness-artifacts/critique/2026-08-13-issue-616-round2-packet.json",
+      "charness-artifacts/critique/2026-08-13-issue-616-round2-packet.md"
+    ],
+    "identity_sha256": "d2e5df80f8e955453e5b42ee3f8d0f84d62f018af9962fc2b3132a7262197649"
+  }
+}

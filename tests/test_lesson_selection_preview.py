@@ -24,7 +24,7 @@ def _build(seed: str = "stable-preview-seed") -> dict:
     )
 
 
-def test_preview_is_flat_seeded_and_accounts_for_archive_fallback() -> None:
+def test_preview_is_flat_seeded_and_leaves_empty_archive_slot_unfilled() -> None:
     first = _build()
     second = _build()
     assert first == second
@@ -37,10 +37,10 @@ def test_preview_is_flat_seeded_and_accounts_for_archive_fallback() -> None:
         "value": 3,
         "uncertainty": 3,
         "archive": 0,
-        "archive_fallback_uncertainty": 1,
+        "archive_fallback_uncertainty": 0,
     }
-    assert len(first["items"]) == 10
-    assert len({item["lesson_id"] for item in first["items"]}) == 10
+    assert len(first["items"]) == 9
+    assert len({item["lesson_id"] for item in first["items"]}) == 9
     assert all(
         set(item) == {"lesson_id", "lesson", "latest_source_path"} for item in first["items"]
     )
@@ -50,6 +50,46 @@ def test_preview_uses_the_pinned_shrunk_mean_and_ucb_formula() -> None:
     row = {"score_total": 3, "score_count": 1}
     assert preview._value(row) == 1
     assert preview._uncertainty(row, 2) == pytest.approx(1 + math.sqrt(math.log(2) / 2))
+
+
+def test_preview_uses_only_active_first_nine_and_real_archive_slot(monkeypatch) -> None:
+    lessons = {
+        f"lesson-{index}": {
+            "score_total": index,
+            "score_count": 1,
+            "state": "archived" if index == 9 else "active",
+        }
+        for index in range(10)
+    }
+    candidates = [
+        {
+            "recurrence_class": lesson_id,
+            "lesson": lesson_id,
+            "latest_source_path": f"{lesson_id}.md",
+            "latest_source_date": "2026-08-13",
+            "selection_weight": 1,
+        }
+        for lesson_id in lessons
+    ]
+    monkeypatch.setattr(preview, "check_lesson_selection_index", lambda *_args: None)
+    monkeypatch.setattr(preview, "_load_validated_ledger", lambda *_args: {"lessons": lessons})
+    monkeypatch.setattr(
+        preview,
+        "build_lesson_selection_index",
+        lambda **_kwargs: {"candidates": candidates},
+    )
+
+    result = preview.build_lesson_selection_preview(
+        repo_root=ROOT,
+        output_dir=RETRO_DIR,
+        summary_path=RETRO_DIR / "recent-lessons.md",
+        seed="archive-proof",
+    )
+
+    assert result["bucket_counts"]["archive"] == 1
+    assert result["bucket_counts"]["archive_fallback_uncertainty"] == 0
+    ids = {item["lesson_id"] for item in result["items"]}
+    assert ids == set(lessons)
 
 
 def test_preview_requires_a_nonempty_seed() -> None:

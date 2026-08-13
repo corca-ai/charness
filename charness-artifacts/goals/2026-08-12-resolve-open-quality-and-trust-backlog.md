@@ -9,17 +9,14 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: late-arrival #615 is repaired and locally proven; its direct
-  commit carrier remains GitHub-OPEN until a separately authorized push and
-  tracker readback. #613, #610, and #611 are CLOSED and read back; #584 remains
-  held and #614 remains OPEN.
-- Current slice intent: freeze #615's marker-policy repair, exact historical
-  block, generated mirror, and two-round critique in one local carrier without
-  treating that carrier as publication.
-- Next action: freeze #615 in its local `Closes #615` carrier. After that
-  carrier exists, #614 is the next locally decidable slice unless a separate
-  push grant is supplied; publication and GitHub closure remain distinct
-  phase-scoped boundaries.
+- Current slice: #614 is frozen in local carrier `81e88367`; independent
+  late-arrival #616 is locally implemented and proven in this slice's HEAD.
+  Both remain GitHub-OPEN without publication and tracker readback.
+- Current slice intent: preserve the completed replayed lesson/contract lifecycle
+  and its non-authorizing score/retention boundaries as one local carrier.
+- Next action: without a new push grant, select the next locally decidable row
+  from the execution ledger. Do not push, close #615/#614/#616, or publish
+  without the separately required external-boundary grants and readbacks.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -383,6 +380,13 @@ premise, owner, evidence channel, and tracker-visible outcome.
   a late arrival outside the fixed 22-row cohort. The locked changed-line proof
   now covers its repaired topology, while later publication still retains
   rollback, quality, synchronization, and no-issue-close boundaries.
+- [#616](https://github.com/corca-ai/charness/issues/616) — lesson graduation,
+  archive/resurrection, and operating-contract retirement are a separate
+  lifecycle feature, not required for the fixed 22-row cohort. The user pulled it
+  forward after #614's local carrier because the foundation is current. RESOLVED
+  locally with v4/v2 replay, operator commands, 85 focused tests, locked broad
+  proof, and two review rounds; no live transition, push, or tracker closure is
+  claimed. It remains an independent fix unit and does not expand the cohort.
 
 ## Final Verification
 

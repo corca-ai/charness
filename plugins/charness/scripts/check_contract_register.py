@@ -17,8 +17,19 @@ def main() -> int:
     parser.add_argument("--repo-root", type=Path, default=ROOT)
     args = parser.parse_args()
     root = args.repo_root.resolve()
-    result = validate_contract_register(repo_root=root, output_dir=root / "charness-artifacts/retro", summary_path=root / "charness-artifacts/retro/recent-lessons.md")
-    print(f"Validated contract register: {result['unit_count']} units, {result['citation_event_count']} citations, {result['graduation_proposal_count']} proposals.")
+    result = validate_contract_register(
+        repo_root=root,
+        output_dir=root / "charness-artifacts/retro",
+        summary_path=root / "charness-artifacts/retro/recent-lessons.md",
+    )
+    print(
+        "Validated contract register: "
+        f"{result['unit_count']} active units, "
+        f"{result['retired_unit_count']} retired, "
+        f"{result['citation_event_count']} citations, "
+        f"{result['graduation_proposal_count']} proposals, "
+        f"{result['applied_transition_count']} applied transitions."
+    )
     return 0
 
 

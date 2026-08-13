@@ -9,7 +9,13 @@ from pathlib import Path
 
 import pytest
 
+from scripts import apply_contract_transition as transition_writer
 from scripts import contract_register_lib as register
+from scripts import lesson_ledger_lib as lesson_ledger
+from scripts import migrate_contract_register as register_migration
+from scripts import record_contract_citation as citation_writer
+from scripts import record_contract_graduation_proposal as proposal_writer
+from scripts import render_contract_retention_review as retention_review
 from tests.script_loader import load_script_module
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -39,11 +45,34 @@ def _retro(repo: Path, name: str = "source.md") -> None:
     )
 
 
+def _session(session_id: str) -> dict:
+    snapshot = {
+        "kind": "charness.lesson-selection-preview",
+        "schema_version": 1,
+        "selection_policy_version": 2,
+        "seed": session_id,
+        "eligible_count": 1,
+        "bucket_counts": {
+            "recent": 1,
+            "value": 0,
+            "uncertainty": 0,
+            "archive": 0,
+            "archive_fallback_uncertainty": 0,
+        },
+        "lesson_ids": ["a"],
+    }
+    return {
+        "session_id": session_id,
+        "snapshot": snapshot,
+        "snapshot_sha256": lesson_ledger.snapshot_sha256(snapshot),
+    }
+
+
 def _ledger(repo: Path) -> None:
     path = repo / "charness-artifacts/retro/lesson-ledger.json"
     payload = {
         "kind": "charness.lesson-ledger",
-        "schema_version": 3,
+        "schema_version": 4,
         "transitions": [
             {
                 "sequence": 1,
@@ -52,15 +81,34 @@ def _ledger(repo: Path) -> None:
                 "source_retro": "charness-artifacts/retro/source.md",
             }
         ],
-        "score_events": [],
+        "active_lesson_budget": 50,
+        "lifecycle_events": [],
+        "score_events": [
+            {
+                "event_id": "score-1",
+                "session_id": "session-1",
+                "source_retro": "charness-artifacts/retro/source.md",
+                "lesson_id": "a",
+                "score": 1,
+            },
+            {
+                "event_id": "score-2",
+                "session_id": "session-2",
+                "source_retro": "charness-artifacts/retro/second.md",
+                "lesson_id": "a",
+                "score": 0,
+            },
+        ],
         "legacy_score_event_count": 0,
-        "session_events": [],
+        "session_events": [_session("session-1"), _session("session-2")],
         "lessons": {
             "a": {
                 "source_retro": "charness-artifacts/retro/source.md",
                 "transition_id": "seed-a",
-                "score_total": 0,
-                "score_count": 0,
+                "score_total": 1,
+                "score_count": 2,
+                "state": "active",
+                "last_lifecycle_event_id": None,
             }
         },
     }
@@ -77,6 +125,7 @@ def _register(repo: Path) -> Path:
 def _prepare(repo: Path) -> Path:
     _contract_sources(repo)
     _retro(repo)
+    _retro(repo, "second.md")
     _ledger(repo)
     return _register(repo)
 
@@ -109,7 +158,10 @@ def test_register_rebuilds_unfenced_h2_units_and_checker_cli(tmp_path: Path, mon
     checker = load_script_module("check_contract_register_for_test", ROOT / "scripts/check_contract_register.py")
     monkeypatch.setattr(sys, "argv", ["check_contract_register.py", "--repo-root", str(tmp_path)])
     assert checker.main() == 0
-    assert capsys.readouterr().out == "Validated contract register: 4 units, 0 citations, 0 proposals.\n"
+    assert capsys.readouterr().out == (
+        "Validated contract register: 4 active units, 0 retired, 0 citations, "
+        "0 proposals, 0 applied transitions.\n"
+    )
 
 
 def test_register_rejects_noncanonical_citation_and_nonempty_catches(tmp_path: Path) -> None:
@@ -137,8 +189,10 @@ def test_empty_register_is_inspectable_without_a_lesson_ledger(tmp_path: Path) -
     _register(tmp_path)
     assert _validate(tmp_path) == {
         "unit_count": 3,
+        "retired_unit_count": 0,
         "citation_event_count": 0,
         "graduation_proposal_count": 0,
+        "applied_transition_count": 0,
         "path": "charness-artifacts/retro/contract-register.json",
     }
 
@@ -150,6 +204,7 @@ def test_register_requires_displacement_for_a_budgeted_graduation_proposal(tmp_p
         "proposal_id": "proposal-1",
         "lesson_id": "a",
         "source_retro": "charness-artifacts/retro/source.md",
+        "evidence_session_ids": ["session-1", "session-2"],
         "target_path": "AGENTS.md",
         "target_heading": "A New Unit",
         "proposed_unit_id": "AGENTS.md#a-new-unit",
@@ -168,7 +223,230 @@ def test_register_requires_displacement_for_a_budgeted_graduation_proposal(tmp_p
     duplicate["displacement_unit_ids"] = [payload["units"][1]["unit_id"]]
     payload["graduation_proposals"].append(duplicate)
     path.write_text(json.dumps(payload), encoding="utf-8")
-    with pytest.raises(ValueError, match="duplicate proposed unit ID"):
+    with pytest.raises(ValueError, match="reuses a contract unit identity"):
+        _validate(tmp_path)
+
+
+def test_v1_migration_freezes_seed_units_and_refuses_unmigratable_proposals(
+    tmp_path: Path,
+) -> None:
+    _contract_sources(tmp_path)
+    v2 = register.initial_contract_register(tmp_path)
+    v1 = {
+        "kind": register.KIND,
+        "schema_version": 1,
+        "unit_budget": v2["unit_budget"],
+        "units": v2["units"],
+        "citation_events": [],
+        "catch_events": [],
+        "graduation_proposals": [],
+    }
+
+    migrated = register_migration.migration_candidate(v1)
+
+    assert migrated["seed_units"] == v1["units"]
+    assert migrated["unit_budget"] == v1["unit_budget"]
+    assert migrated["retired_units"] == []
+    assert migrated["applied_transitions"] == []
+    v1["graduation_proposals"] = [{"proposal_id": "legacy"}]
+    with pytest.raises(ValueError, match="explicit evidence sessions"):
+        register_migration.migration_candidate(v1)
+
+
+def test_contract_migration_cli_is_dry_run_then_execute(tmp_path: Path) -> None:
+    _contract_sources(tmp_path)
+    v2 = register.initial_contract_register(tmp_path)
+    path = tmp_path / "charness-artifacts/retro/contract-register.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    v1 = {
+        "kind": register.KIND,
+        "schema_version": 1,
+        "unit_budget": v2["unit_budget"],
+        "units": v2["units"],
+        "citation_events": [],
+        "catch_events": [],
+        "graduation_proposals": [],
+    }
+    path.write_text(json.dumps(v1), encoding="utf-8")
+    before = path.read_bytes()
+    command = [
+        sys.executable,
+        str(ROOT / "scripts/migrate_contract_register.py"),
+        "--repo-root",
+        str(tmp_path),
+    ]
+
+    preview = subprocess.run(command, check=False, capture_output=True, text=True)
+    assert preview.returncode == 0, preview.stderr
+    assert json.loads(preview.stdout)["executed"] is False
+    assert path.read_bytes() == before
+
+    executed = subprocess.run(
+        [*command, "--execute"], check=False, capture_output=True, text=True
+    )
+    assert executed.returncode == 0, executed.stderr
+    assert json.loads(executed.stdout)["executed"] is True
+    assert json.loads(path.read_text(encoding="utf-8"))["schema_version"] == 2
+
+
+def test_proposal_apply_and_retention_review_preserve_retired_history(tmp_path: Path) -> None:
+    path = _prepare(tmp_path)
+    approval = tmp_path / "approval.md"
+    approval.write_text("# Reviewed Approval\n", encoding="utf-8")
+    alpha = "AGENTS.md#alpha"
+    proposal_command = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/record_contract_graduation_proposal.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--proposal-id",
+            "proposal-a",
+            "--lesson-id",
+            "a",
+            "--source-retro",
+            "charness-artifacts/retro/source.md",
+            "--evidence-session-id",
+            "session-1",
+            "--evidence-session-id",
+            "session-2",
+            "--target-path",
+            "AGENTS.md",
+            "--target-heading",
+            "A New Unit",
+            "--rationale",
+            "Two declared sessions justify review, not automatic graduation.",
+            "--displacement-unit-id",
+            alpha,
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert proposal_command.returncode == 0, proposal_command.stderr
+    assert json.loads(proposal_command.stdout)["proposal_id"] == "proposal-a"
+    citation_writer.append_citation(
+        repo_root=tmp_path,
+        event_id="cite-alpha",
+        source_retro="charness-artifacts/retro/source.md",
+        unit_id=alpha,
+        anchor="The session used the original rule.",
+    )
+    before_invalid = path.read_bytes()
+    with pytest.raises(ValueError, match="two scored evidence sessions"):
+        proposal_writer.append_proposal(
+            repo_root=tmp_path,
+            proposal_id="proposal-too-early",
+            lesson_id="a",
+            source_retro="charness-artifacts/retro/source.md",
+            evidence_session_ids=["session-1"],
+            target_path="AGENTS.md",
+            target_heading="Too Early",
+            rationale="Insufficient evidence.",
+            displacement_unit_ids=[alpha],
+        )
+    assert path.read_bytes() == before_invalid
+
+    (tmp_path / "AGENTS.md").write_text("# Contract\n\n## A New Unit\n", encoding="utf-8")
+    before_dry_run = path.read_bytes()
+    preview_command = subprocess.run(
+        [
+            sys.executable,
+            str(ROOT / "scripts/apply_contract_transition.py"),
+            "--repo-root",
+            str(tmp_path),
+            "--action",
+            "apply-graduation",
+            "--event-id",
+            "apply-a",
+            "--approval-ref",
+            "approval.md",
+            "--rationale",
+            "Reviewed graduation with exact displacement.",
+            "--proposal-id",
+            "proposal-a",
+        ],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    assert preview_command.returncode == 0, preview_command.stderr
+    preview = json.loads(preview_command.stdout)
+    assert preview["executed"] is False
+    assert path.read_bytes() == before_dry_run
+    transition_writer.apply_transition(
+        repo_root=tmp_path,
+        action="apply-graduation",
+        event_id="apply-a",
+        approval_ref="approval.md",
+        rationale="Reviewed graduation with exact displacement.",
+        proposal_id="proposal-a",
+        retired_unit_ids=[],
+        successor_unit_ids=[],
+        disposition=None,
+        execute=True,
+    )
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert {unit["unit_id"] for unit in payload["units"]} == {
+        "AGENTS.md#a-new-unit",
+        "docs/conventions/implementation-discipline.md#beta",
+        "docs/conventions/operating-contract.md#gamma",
+    }
+    assert payload["retired_units"][0]["unit_id"] == alpha
+    assert payload["retired_units"][0]["successor_unit_ids"] == ["AGENTS.md#a-new-unit"]
+    assert _validate(tmp_path)["applied_transition_count"] == 1
+    review = retention_review.build_retention_review(tmp_path)
+    alpha_row = next(row for row in review["rows"] if row["unit_id"] == alpha)
+    assert alpha_row["membership"] == "retired"
+    assert alpha_row["citation_count"] == 1
+    assert review["verdict"] == "non-authorizing-evidence-only"
+
+
+def test_retirement_requires_matching_docs_and_preserves_append_only_audit(
+    tmp_path: Path,
+) -> None:
+    path = _prepare(tmp_path)
+    approval = tmp_path / "approval.md"
+    approval.write_text("# Approval\n", encoding="utf-8")
+    before = path.read_bytes()
+    with pytest.raises(ValueError, match="live contract H2 inventory"):
+        transition_writer.apply_transition(
+            repo_root=tmp_path,
+            action="retire",
+            event_id="retire-alpha",
+            approval_ref="approval.md",
+            rationale="The behavior is obsolete.",
+            proposal_id=None,
+            retired_unit_ids=["AGENTS.md#alpha"],
+            successor_unit_ids=[],
+            disposition=register.NO_BINDING_BEHAVIOR,
+            execute=True,
+        )
+    assert path.read_bytes() == before
+
+    (tmp_path / "AGENTS.md").write_text("# Contract\n", encoding="utf-8")
+    transition_writer.apply_transition(
+        repo_root=tmp_path,
+        action="retire",
+        event_id="retire-alpha",
+        approval_ref="approval.md",
+        rationale="The behavior is obsolete.",
+        proposal_id=None,
+        retired_unit_ids=["AGENTS.md#alpha"],
+        successor_unit_ids=[],
+        disposition=register.NO_BINDING_BEHAVIOR,
+        execute=True,
+    )
+    assert _validate(tmp_path)["retired_unit_count"] == 1
+    _git(tmp_path, "init")
+    _git(tmp_path, "config", "user.email", "test@example.com")
+    _git(tmp_path, "config", "user.name", "Test User")
+    _git(tmp_path, "add", ".")
+    _git(tmp_path, "commit", "-m", "apply retirement")
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    payload["applied_transitions"][0]["rationale"] = "rewritten"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    with pytest.raises(ValueError, match="committed applied transitions"):
         _validate(tmp_path)
 
 
@@ -210,7 +488,7 @@ def test_committed_register_state_and_event_prefixes_are_append_only(tmp_path: P
     rewritten_units = copy.deepcopy(appended)
     rewritten_units["unit_budget"] = 4
     path.write_text(json.dumps(rewritten_units), encoding="utf-8")
-    with pytest.raises(ValueError, match="fixed initial budget"):
+    with pytest.raises(ValueError, match="fixed budget"):
         _validate(tmp_path)
 
 
@@ -224,7 +502,7 @@ def test_schema_v1_refuses_a_post_commit_contract_membership_change(tmp_path: Pa
     (tmp_path / "AGENTS.md").write_text("# Contract\n\n## Alpha\n\n## New Contract Unit\n", encoding="utf-8")
     changed = register.initial_contract_register(tmp_path)
     path.write_text(json.dumps(changed), encoding="utf-8")
-    with pytest.raises(ValueError, match="committed active units"):
+    with pytest.raises(ValueError, match="committed seed units"):
         _validate(tmp_path)
 
 
@@ -233,7 +511,7 @@ def test_register_refuses_a_committed_nonempty_catch_stream(tmp_path: Path, monk
     committed = json.loads(path.read_text(encoding="utf-8"))
     committed["catch_events"] = [{"event_id": "handwritten-catch"}]
     monkeypatch.setattr(register, "_committed_state", lambda *_args: committed)
-    with pytest.raises(ValueError, match="unsupported non-empty catch"):
+    with pytest.raises(ValueError, match="committed catch events"):
         _validate(tmp_path)
 
 
@@ -252,7 +530,7 @@ def test_register_rejects_missing_sources_empty_slugs_and_closed_top_level_shape
     with pytest.raises(ValueError, match="invalid JSON"):
         _validate(tmp_path)
     payload = json.loads(json.dumps(register.initial_contract_register(tmp_path)))
-    for invalid, message in (([], "expected strict"), ({**payload, "schema_version": 2}, "expected strict"), ({**payload, "unit_budget": True}, "container or budget")):
+    for invalid, message in (([], "expected strict"), ({**payload, "schema_version": 1}, "expected strict"), ({**payload, "unit_budget": True}, "container or fixed budget")):
         path.write_text(json.dumps(invalid), encoding="utf-8")
         with pytest.raises(ValueError, match=message):
             _validate(tmp_path)
@@ -285,8 +563,8 @@ def test_register_rejects_closed_citation_and_proposal_shapes(tmp_path: Path, mo
     citation_cases = [
         ([{}], "unexpected or missing"),
         ([{**valid_citation, "anchor": ""}], "non-empty string"),
-        ([valid_citation, {**valid_citation, "unit_id": units[1]["unit_id"]}], "duplicate citation event_id"),
-        ([{**valid_citation, "unit_id": "missing"}], "unknown active unit"),
+        ([valid_citation, {**valid_citation, "unit_id": units[1]["unit_id"]}], "duplicate identity"),
+        ([{**valid_citation, "unit_id": "missing"}], "unknown unit"),
         ([{**valid_citation, "source_retro": "/outside.md"}], "existing repo retro"),
         ([valid_citation, {**valid_citation, "event_id": "cite-2"}], "duplicate citation for unit"),
     ]
@@ -298,6 +576,7 @@ def test_register_rejects_closed_citation_and_proposal_shapes(tmp_path: Path, mo
         "proposal_id": "proposal",
         "lesson_id": "a",
         "source_retro": source,
+        "evidence_session_ids": ["session-1", "session-2"],
         "target_path": "AGENTS.md",
         "target_heading": "Future",
         "proposed_unit_id": "AGENTS.md#future",
@@ -312,14 +591,37 @@ def test_register_rejects_closed_citation_and_proposal_shapes(tmp_path: Path, mo
         ([base, {**base}], "duplicate graduation proposal_id"),
         ([{**base, "source_retro": "other.md"}], "does not cite"),
         ([{**base, "target_path": "other.md"}], "non-canonical"),
-        ([{**base, "target_heading": "Alpha", "proposed_unit_id": "AGENTS.md#alpha"}], "already exists"),
-        ([{**base, "displacement_unit_ids": "not-a-list"}], "string list"),
+        ([{**base, "target_heading": "Alpha", "proposed_unit_id": "AGENTS.md#alpha"}], "reuses a contract unit"),
+        ([{**base, "displacement_unit_ids": "not-a-list"}], "invalid displacement"),
         ([{**base, "displacement_unit_ids": ["missing"]}], "invalid displacement"),
     ]
     assert ledger_path.is_file()
     for proposals, message in proposal_cases:
         with pytest.raises(ValueError, match=message):
-            register._validate_proposals(proposals, ids, len(units), tmp_path, ledger_path.parent, ledger_path.parent / "recent-lessons.md")
+            register._validate_proposals(
+                proposals,
+                ids,
+                tmp_path,
+                ledger_path.parent,
+                ledger_path.parent / "recent-lessons.md",
+            )
+
+    successor = {
+        **base,
+        "proposal_id": "proposal-successor",
+        "target_heading": "Later",
+        "proposed_unit_id": "AGENTS.md#later",
+        "displacement_unit_ids": [base["proposed_unit_id"]],
+    }
+    assert set(
+        register._validate_proposals(
+            [base, successor],
+            ids,
+            tmp_path,
+            ledger_path.parent,
+            ledger_path.parent / "recent-lessons.md",
+        )
+    ) == {"proposal", "proposal-successor"}
 
 
 def test_register_checker_cli_reports_validation_failure(tmp_path: Path, monkeypatch, capsys) -> None:

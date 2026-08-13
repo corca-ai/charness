@@ -1,4 +1,4 @@
-"""Validate append-only lesson seeds, declared sessions, and cited scores."""
+"""Validate append-only lesson seeds, sessions, scores, and lifecycle events."""
 
 from __future__ import annotations
 
@@ -12,17 +12,28 @@ from scripts.recent_lessons_lib import build_lesson_selection_index
 
 LEDGER_FILENAME = "lesson-ledger.json"
 KIND = "charness.lesson-ledger"
-SCHEMA_VERSION = 3
+SCHEMA_VERSION = 4
+ACTIVE_LESSON_BUDGET = 50
 TOP_LEVEL_KEYS = {
     "kind",
     "schema_version",
     "transitions",
+    "active_lesson_budget",
+    "lifecycle_events",
     "legacy_score_event_count",
     "session_events",
     "score_events",
     "lessons",
 }
 TRANSITION_KEYS = {"sequence", "transition_id", "lesson_id", "source_retro"}
+LIFECYCLE_EVENT_KEYS = {
+    "sequence",
+    "event_id",
+    "lesson_id",
+    "action",
+    "decision_ref",
+    "rationale",
+}
 LEGACY_EVENT_KEYS = {"event_id", "source_retro", "lesson_id", "score"}
 EVENT_OPTIONAL_KEYS = {"anchor"}
 SCORE_EVENT_KEYS = LEGACY_EVENT_KEYS | {"session_id"}
@@ -36,7 +47,14 @@ SNAPSHOT_KEYS = {
     "bucket_counts",
     "lesson_ids",
 }
-LESSON_KEYS = {"source_retro", "transition_id", "score_total", "score_count"}
+LESSON_KEYS = {
+    "source_retro",
+    "transition_id",
+    "score_total",
+    "score_count",
+    "state",
+    "last_lifecycle_event_id",
+}
 PREVIEW_KIND = "charness.lesson-selection-preview"
 PREVIEW_SCHEMA_VERSION = 1
 SNAPSHOT_BUCKET_KEYS = {"recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty"}
@@ -79,7 +97,7 @@ def _candidate_sources(
 
 def _committed_state(
     repo_root: Path, path: Path
-) -> tuple[list[Any], list[Any], int, list[Any]] | None:
+) -> tuple[list[Any], list[Any], int, list[Any], int, list[Any]] | None:
     result = subprocess.run(
         ["git", "show", f"HEAD:{path.relative_to(repo_root)}"],
         cwd=repo_root,
@@ -101,11 +119,18 @@ def _committed_state(
         _fail("committed ledger has an unrecognized shape")
     version = previous.get("schema_version")
     if version == 1:
-        return previous["transitions"], [], 0, []
+        return previous["transitions"], [], 0, [], ACTIVE_LESSON_BUDGET, []
     if version == 2 and isinstance(previous.get("score_events"), list):
-        return previous["transitions"], previous["score_events"], len(previous["score_events"]), []
+        return (
+            previous["transitions"],
+            previous["score_events"],
+            len(previous["score_events"]),
+            [],
+            ACTIVE_LESSON_BUDGET,
+            [],
+        )
     if (
-        version == SCHEMA_VERSION
+        version == 3
         and isinstance(previous.get("score_events"), list)
         and isinstance(previous.get("session_events"), list)
         and type(previous.get("legacy_score_event_count")) is int
@@ -115,6 +140,24 @@ def _committed_state(
             previous["score_events"],
             previous["legacy_score_event_count"],
             previous["session_events"],
+            ACTIVE_LESSON_BUDGET,
+            [],
+        )
+    if (
+        version == SCHEMA_VERSION
+        and isinstance(previous.get("score_events"), list)
+        and isinstance(previous.get("session_events"), list)
+        and isinstance(previous.get("lifecycle_events"), list)
+        and type(previous.get("legacy_score_event_count")) is int
+        and type(previous.get("active_lesson_budget")) is int
+    ):
+        return (
+            previous["transitions"],
+            previous["score_events"],
+            previous["legacy_score_event_count"],
+            previous["session_events"],
+            previous["active_lesson_budget"],
+            previous["lifecycle_events"],
         )
     _fail("committed ledger has an unsupported session shape")
 
@@ -150,8 +193,64 @@ def _replay_transitions(
             "transition_id": transition_id,
             "score_total": 0,
             "score_count": 0,
+            "state": "active",
+            "last_lifecycle_event_id": None,
         }
     return replayed
+
+
+def _canonical_markdown_ref(repo_root: Path, value: Any) -> bool:
+    if not _nonblank(value):
+        return False
+    path = repo_root / value
+    try:
+        canonical = path.resolve().relative_to(repo_root.resolve()).as_posix()
+    except ValueError:
+        return False
+    return value == canonical and path.suffix == ".md" and path.is_file()
+
+
+def _replay_lifecycle(
+    events: list[Any],
+    replayed: dict[str, dict[str, Any]],
+    *,
+    budget: int,
+    repo_root: Path,
+) -> None:
+    if type(budget) is not int or budget != ACTIVE_LESSON_BUDGET:
+        _fail(f"active_lesson_budget must remain fixed at {ACTIVE_LESSON_BUDGET}")
+    event_ids: set[str] = set()
+    for sequence, event in enumerate(events, start=1):
+        if not isinstance(event, dict) or set(event) != LIFECYCLE_EVENT_KEYS:
+            _fail(f"lifecycle event {sequence} has unexpected or missing fields")
+        if type(event.get("sequence")) is not int or event["sequence"] != sequence:
+            _fail("lifecycle event sequences must start at 1 and be contiguous")
+        event_id, lesson_id, action = (
+            event.get("event_id"),
+            event.get("lesson_id"),
+            event.get("action"),
+        )
+        if not all(_nonblank(value) for value in (event_id, lesson_id, event.get("rationale"))):
+            _fail(f"lifecycle event {sequence} needs non-empty identity and rationale")
+        if event_id in event_ids:
+            _fail(f"duplicate lifecycle event_id `{event_id}`")
+        if lesson_id not in replayed:
+            _fail(f"lifecycle event `{event_id}` names unseeded lesson")
+        if not _canonical_markdown_ref(repo_root, event.get("decision_ref")):
+            _fail(f"lifecycle event `{event_id}` decision_ref is not existing canonical Markdown")
+        current = replayed[lesson_id]["state"]
+        if action == "archive" and current == "active":
+            next_state = "archived"
+        elif action == "resurrect" and current == "archived":
+            next_state = "active"
+        else:
+            _fail(f"lifecycle event `{event_id}` cannot {action} lesson in state `{current}`")
+        replayed[lesson_id]["state"] = next_state
+        replayed[lesson_id]["last_lifecycle_event_id"] = event_id
+        event_ids.add(event_id)
+    active_count = sum(lesson["state"] == "active" for lesson in replayed.values())
+    if active_count > budget:
+        _fail(f"active lesson count {active_count} exceeds fixed budget {budget}")
 
 
 def _replay_sessions(events: list[Any], replayed: dict[str, dict[str, Any]]) -> dict[str, set[str]]:
@@ -267,7 +366,7 @@ def replay_validated_ledger_payload(
         or set(payload) != TOP_LEVEL_KEYS
     ):
         _fail(f"expected kind `{KIND}` at schema version {SCHEMA_VERSION}")
-    transitions, events, sessions, lessons, legacy_count = (
+    transitions, events, sessions, lessons, legacy_count, lifecycle_events, budget = (
         payload.get(key)
         for key in (
             "transitions",
@@ -275,6 +374,8 @@ def replay_validated_ledger_payload(
             "session_events",
             "lessons",
             "legacy_score_event_count",
+            "lifecycle_events",
+            "active_lesson_budget",
         )
     )
     if (
@@ -285,6 +386,7 @@ def replay_validated_ledger_payload(
                 (events, list),
                 (sessions, list),
                 (lessons, dict),
+                (lifecycle_events, list),
             )
         )
         or type(legacy_count) is not int
@@ -293,13 +395,14 @@ def replay_validated_ledger_payload(
         _fail("ledger has invalid containers or legacy_score_event_count")
     available = _candidate_sources(repo_root, output_dir, summary_path)
     replayed = _replay_transitions(transitions, available)
+    _replay_lifecycle(lifecycle_events, replayed, budget=budget, repo_root=repo_root)
     declared = _replay_sessions(sessions, replayed)
     committed = _committed_state(repo_root, path)
     if committed is None:
         if legacy_count != 0:
             _fail("legacy_score_event_count is only allowed when migrating a committed v2 ledger")
     else:
-        old_transitions, old_events, old_legacy, old_sessions = committed
+        old_transitions, old_events, old_legacy, old_sessions, old_budget, old_lifecycle = committed
         if transitions[: len(old_transitions)] != old_transitions:
             _fail("committed transitions were rewritten or removed; append new transitions instead")
         if events[: len(old_events)] != old_events:
@@ -308,6 +411,10 @@ def replay_validated_ledger_payload(
             _fail("committed session events were rewritten or removed; append new events instead")
         if legacy_count != old_legacy:
             _fail("committed legacy_score_event_count was rewritten")
+        if budget != old_budget:
+            _fail("committed active_lesson_budget was rewritten")
+        if lifecycle_events[: len(old_lifecycle)] != old_lifecycle:
+            _fail("committed lifecycle events were rewritten or removed; append new events instead")
     _replay_scores(events, legacy_count, replayed, available, declared)
     if any(
         not isinstance(entry, dict)
@@ -343,5 +450,9 @@ def validate_lesson_ledger(
         "lesson_count": len(replayed),
         "transition_count": len(payload["transitions"]),
         "score_event_count": len(payload["score_events"]),
+        "lifecycle_event_count": len(payload["lifecycle_events"]),
+        "active_lesson_count": sum(
+            lesson["state"] == "active" for lesson in replayed.values()
+        ),
         "path": str(path.relative_to(repo_root)),
     }

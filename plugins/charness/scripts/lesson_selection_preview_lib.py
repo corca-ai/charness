@@ -14,7 +14,7 @@ from scripts.recent_lessons_lib import build_lesson_selection_index, check_lesso
 
 KIND = "charness.lesson-selection-preview"
 SCHEMA_VERSION = 1
-SELECTION_POLICY_VERSION = 1
+SELECTION_POLICY_VERSION = 2
 BUCKETS = ("recent", "value", "uncertainty", "archive", "archive_fallback_uncertainty")
 
 
@@ -68,6 +68,7 @@ def _candidate_rows(index: dict[str, Any], lessons: dict[str, Any]) -> list[dict
                 "selection_weight": candidate.get("selection_weight"),
                 "score_total": score_total,
                 "score_count": score_count,
+                "state": lesson.get("state"),
             }
         )
     if seen != set(lessons):
@@ -123,13 +124,28 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
         ledger["lessons"],
     )
     selected_ids: set[str] = set()
+    if any(row["state"] not in {"active", "archived"} for row in rows):
+        _fail("validated ledger lesson has invalid lifecycle state")
+    active_rows = [row for row in rows if row["state"] == "active"]
+    archived_rows = [row for row in rows if row["state"] == "archived"]
     total_score_count = sum(row["score_count"] for row in rows)
-    recent = _take(sorted(rows, key=_recent_key), selected_ids, 3)
-    value = _take(sorted(rows, key=lambda row: (-_value(row), row["lesson_id"])), selected_ids, 3)
-    uncertainty_rows = sorted(rows, key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]))
+    recent = _take(sorted(active_rows, key=_recent_key), selected_ids, 3)
+    value = _take(
+        sorted(active_rows, key=lambda row: (-_value(row), row["lesson_id"])),
+        selected_ids,
+        3,
+    )
+    uncertainty_rows = sorted(
+        active_rows,
+        key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
+    )
     uncertainty = _take(uncertainty_rows, selected_ids, 3)
-    archive_fallback = _take(uncertainty_rows, selected_ids, 1)
-    selected = recent + value + uncertainty + archive_fallback
+    archive_rows = sorted(
+        archived_rows,
+        key=lambda row: (-_uncertainty(row, total_score_count), row["lesson_id"]),
+    )
+    archive = _take(archive_rows, selected_ids, 1)
+    selected = recent + value + uncertainty + archive
     return {
         "kind": KIND,
         "schema_version": SCHEMA_VERSION,
@@ -140,8 +156,8 @@ def build_lesson_selection_preview(*, repo_root: Path, output_dir: Path, summary
             "recent": len(recent),
             "value": len(value),
             "uncertainty": len(uncertainty),
-            "archive": 0,
-            "archive_fallback_uncertainty": len(archive_fallback),
+            "archive": len(archive),
+            "archive_fallback_uncertainty": 0,
         },
         "items": _shuffled_items(seed, selected),
     }
