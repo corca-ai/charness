@@ -18,10 +18,10 @@ operator error that presented as flaky tests.
 ## Window
 
 Start: the `docs/handoff.md` pickup naming #613/#610/#611.
-End: `d0c33e6b..d315d989` pushed, three issues verified `CLOSED` through
-`verify-closeout` and reconciled against an independent `gh issue list` (15 open).
-Commits: `29751f0d`, `abf207fc`, `503545d7`, `2eaa887b`, `e455c338`, `ceae9e48`,
-`d315d989`.
+End: `bfbc8f4d` pushed with remote CI green on both jobs, three issues verified
+`CLOSED` through `verify-closeout` and reconciled against an independent
+`gh issue list` (15 open). Commits: `29751f0d`, `abf207fc`, `503545d7`, `2eaa887b`,
+`e455c338`, `ceae9e48`, `d315d989`, `9278c333`, `bfbc8f4d`.
 
 ## Evidence Summary
 
@@ -61,6 +61,17 @@ Commits: `29751f0d`, `abf207fc`, `503545d7`, `2eaa887b`, `e455c338`, `ceae9e48`,
   line-anchored ledger-field trap the LAST retro recorded as a memory lesson:
   `Decision:` at the start of a wrapped line terminated the `Siblings:` field. I
   had read that lesson this session and still hit it.
+- **`main` went red after the push, on the same job as last session.** The local
+  focused changed-line lane reported `clean`; CI's broad mirror blocked on five lines
+  in the classifier module. An independent `coverage json` read agreed with CI, so the
+  LOCAL verdict was the wrong one — and that lane's own docstring says it "can never
+  report an uncovered line as covered". Filed as #615; the five lines are covered and
+  `bfbc8f4d` is green.
+- **My first fix for those lines passed its assertions while testing the wrong arm.**
+  An older `rev-list` branch in the test stub shadowed the new parent listing, so
+  `claims_evidence_child` returned `""` and the scenario fell through to a later arm
+  that produces an identical observable result. `24 passed` did not catch it;
+  line-level coverage showing 131 executed and 132-134 not is what did.
 - Not waste: the six reviewer spawns. Round 2 found a defect inside a round-1
   repair on all three surfaces — including a gate that committed the file it was
   about to refuse.
@@ -99,9 +110,12 @@ gate reporting `unestablished` over uncommitted files. Both would have been read
 green. The lesson was in the index but ranked 11th and never reached
 recent-lessons' four slots, which is why it moved to the operating contract.
 
-The new trend is different in kind: the last two sessions' waste was inside the
-diff, this one's was almost entirely in the ENVIRONMENT — an unbounded cache and a
-leaked git flag. Neither is visible to any gate the repo owns.
+The new trend is different in kind: most of this session's waste was in the
+ENVIRONMENT — an unbounded cache and a leaked git flag — which no gate the repo owns
+can see. But the tail repeated last session's exact shape: local green, CI red, same
+job. Last session the local lane had SKIPPED the check; this time it RAN it and
+answered `clean` when the answer was `blocked`. That is worse, and it is why #615
+exists rather than another entry in the skipped-is-not-passed class.
 
 ## North Star Alignment
 
@@ -157,6 +171,11 @@ discriminating observation before naming a cause out loud.
 - **memory**: state a cause only after a second observation that discriminates it.
   I named disk pressure for run 2 from one data point; run 3 refuted it at 34% disk.
   (recurrence-class: cause-named-from-one-observation)
+- **workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the
+  named lines, not by the test passing. Both attempts here passed; only the coverage
+  read distinguished the one that exercised the intended branch from the one that
+  silently matched a different arm with an identical result.
+  (recurrence-class: green-test-is-not-covered-line)
 
 ## Sibling Search
 
@@ -181,9 +200,17 @@ discriminating observation before naming a cause out loud.
   repo. A pre-push hook could scrub it before running tests. Not filed; raised for
   the user's decision.
 
+- mental-model siblings: the focused changed-line lane's `clean` verdict | decision:
+  same class as the caches — a surface asserting a property it does not hold —
+  escalated rather than repaired | proof: its docstring promises it can never report
+  an uncovered line as covered, and an independent `coverage json` read showed it did;
+  filed as #615 with the deterministic reproduction, because the cause (stale reuse vs
+  `include_paths` narrowing vs xdist worker coverage) is not established.
+
 Structural-follow-up destination: applied: the seed cache is bounded with seven
-tests and the live cache pruned 1848 entries; tracked issue: #614 for
-`pytest-tmp`, `reports/mutation`, and the retention rule as a class.
+tests and the live cache pruned 1848 entries; tracked issues: #614 for `pytest-tmp`,
+`reports/mutation`, and the retention rule as a class; #615 for the focused
+changed-line lane's false `clean`.
 
 ## Portable Candidate
 
