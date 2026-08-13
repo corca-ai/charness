@@ -9,18 +9,17 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: the three release residues (#613, #610, #611) are repaired with
-  two bounded review rounds each, carry `draft_verified` closeout carriers with
-  per-issue behavioral verdicts through the exported plugin copies, and are
-  committed locally. Ten cohort issues are CLOSED and read back; the rest are OPEN.
-- Current slice intent: complete locally, UNVERIFIED on GitHub. The three carriers
-  carry `Closes #N`, which takes effect only on a push, and no push grant exists.
-  Their GitHub state is unchanged, so no closure is claimed for them.
-- Next action: obtain a phase-scoped push grant so the three carriers land and
-  `verify-closeout --expect-state CLOSED` can read the provider state back. Then
-  the twelve remaining cohort rows: #584 is held on the Umbrella Closure Contract;
-  the other eleven hold tracker-visible non-closures with owners and revisit
-  triggers recorded in the ledger.
+- Current slice: late-arrival #615 is repaired and locally proven; its direct
+  commit carrier remains GitHub-OPEN until a separately authorized push and
+  tracker readback. #613, #610, and #611 are CLOSED and read back; #584 remains
+  held and #614 remains OPEN.
+- Current slice intent: freeze #615's marker-policy repair, exact historical
+  block, generated mirror, and two-round critique in one local carrier without
+  treating that carrier as publication.
+- Next action: freeze #615 in its local `Closes #615` carrier. After that
+  carrier exists, #614 is the next locally decidable slice unless a separate
+  push grant is supplied; publication and GitHub closure remain distinct
+  phase-scoped boundaries.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -352,6 +351,24 @@ premise, owner, evidence channel, and tracker-visible outcome.
   but GitHub state is UNCHANGED until a granted push; no closure is claimed.
 
 ## Off-Goal Findings
+
+### Focused Changed-Line Marker Parity (2026-08-13)
+
+- Premise: #615 reproduced from a fresh isolated historical tree; the focused
+  wrapper admitted release-only tests excluded by broad policy and therefore
+  printed `clean` over five lines the broad producer marked missing.
+- Implementation: remove the widening flag, pin the broad/focused marker
+  relationship, execute a real release-only sentinel, and synchronize the
+  checked-in plugin export.
+- Evidence: 97 focused producer/transport/consumer tests passed; the repaired
+  historical wrapper returned 1/`blocked` on lines 116, 117, 132, 133, and 134;
+  debug, spec, historical reproduction evidence, and two-round critique are checked in.
+- Review: causal readback accepted the diagnosis; round 1 used two angles plus
+  a counterweight; round 2 read the repaired surface and caught the stale plugin
+  mirror before closeout. All reviewer-boundary verifies were clean.
+- Boundary: the direct `Closes #615` carrier is local only. No push, hosted CI,
+  GitHub closure, or installed-consumer claim exists without a new grant and
+  distinct readback.
 
 - [#609](https://github.com/corca-ai/charness/issues/609),
   [#610](https://github.com/corca-ai/charness/issues/610),

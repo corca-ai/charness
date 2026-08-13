@@ -150,7 +150,80 @@ reconciliation method; none — #503 already owns the telemetry remeasurement.
 
 ## Packet Consumed
 
-`charness-artifacts/retro/2026-08-12-180732-packet.md`
+- `charness-artifacts/retro/2026-08-12-180732-packet.md`
+- `charness-artifacts/retro/2026-08-13-090345-packet.md`
+
+## Continuation: Issue #615 Focused Verdict Repair
+
+### Context and Evidence
+
+The late-arrival #615 slice repaired a focused changed-line coverage wrapper
+that widened the standing test population with `--include-release-only`, even
+though the broad mutation campaign deliberately excludes that marker. The
+authoritative wrapper now executes the nonempty command owned by the command
+suggester, the checked-in plugin export is byte-identical, and a real
+release-only child sentinel proves that focused execution cannot silently add
+the marker again.
+
+The strongest behavioral evidence is the isolated historical-range replay in
+`charness-artifacts/debug/2026-08-13-issue-615-focused-changed-line-false-clean.md`:
+the repaired wrapper exits 1 and reports exactly lines 116, 117, 132, 133, and
+134 as missing for base `d0c33e6b4a653bd758f5e5910c115819dd0333b4`.
+Focused verification passed 132 tests. Two bounded critique rounds read the
+repair; round 2 caught the stale plugin export before closeout. These are local
+facts only: no push, hosted CI, GitHub closure, or installed-consumer readback
+occurred.
+
+### Waste and Critical Decisions
+
+The packet/critique binding was regenerated several times because exact
+historical evidence and its declared digest continued changing after a packet
+identity had been minted. This repeats the recent lesson that evidence identity
+must be frozen after all source, export, and receipt synchronization, not while
+review findings can still mutate the bundle. The independent review itself was
+not waste: it found the installed-plugin false-clean path that same-agent source
+inspection had missed.
+
+The decisions that constrained the outcome were: keep broad marker policy as
+the population owner; consume the suggester-owned command rather than build a
+second command in the wrapper; preserve the exact historical command and
+dirty-worktree nonclaim; and stop at a local direct-commit carrier without
+turning `Closes #615` into a publication claim.
+
+### North Star and Expert Counterfactual
+
+The irreversible proof-surface boundary used a different observer and evidence
+channel: round 2 inspected the exported plugin, while the historical-range
+runtime replay falsified the old clean verdict. This is the north-star behavior
+the slice needed; source parity tests alone would not have exposed the stale
+export at the moment it existed.
+
+Douglas Engelbart's system-improving lens would treat packet generation,
+derived-surface sync, and critique binding as one Tool/Language/Method unit.
+The changed next move is a declared freeze stage — mutate, sync every export and
+receipt, validate, then mint the packet once — with a binder that rejects a
+critique record whose declared packet digest is no longer current. That makes
+the workflow enforce the lesson instead of relying on reviewers to remember it.
+
+### Trends and Next Improvements
+
+The 1,689-record local telemetry read still shows the same recurring broad-gate
+and over-slice classes already owned by #503; occurrence is a cost signal, not
+permission to weaken this slice's proof, and it says nothing about other repos.
+
+- **workflow**: freeze source, generated export, exact runtime receipt, and
+  critique text before minting the final review packet.
+- **capability**: make critique binding validation reject a stale declared
+  packet SHA/identity before review closeout, rather than discovering it during
+  repeated readbacks.
+- **memory**: retain the exact historical command, coverage fingerprint, five
+  missing lines, and hosted/public nonclaims in the debug record.
+
+The sibling at the abstraction layer remains `scripts/prepare_packet.py`'s
+intentional immutable identity boundary. The improvement is sequencing and a
+stale-binding validator around that boundary; no new tracker item is filed in
+this slice because the existing recent lesson already names the recurrence and
+the current repair demonstrates the required sequence.
 
 ## Persisted
 

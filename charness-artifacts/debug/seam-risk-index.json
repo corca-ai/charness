@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 142,
-  "indexed_artifact_count": 129,
+  "source_artifact_count": 143,
+  "indexed_artifact_count": 130,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
-    "host-disproves-local": 2,
-    "none": 56,
+    "host-disproves-local": 4,
+    "none": 55,
     "operator-visible-recovery": 23,
     "repeated-symptom": 5
   },
   "generalization_pressure_counts": {
-    "factor-now": 6,
+    "factor-now": 8,
     "monitor": 107,
-    "none": 16
+    "none": 15
   },
   "entries": [
     {
@@ -1800,6 +1800,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-615-focused-changed-line-false-clean.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-615-local-ci-verdict-divergence",
+      "risk_classes": [
+        "host-disproves-local"
+      ],
+      "seam": "local focused coverage producer versus CI broad coverage producer.",
+      "generalization_pressure": "factor-now",
+      "critique_required": true,
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md",
+      "forced": true
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-13-readme-proof-evidence-binding-debug.md",
       "is_current_pointer": false,
       "interrupt_id": "none",
@@ -1816,16 +1830,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-602-create-verification-grammar",
+      "interrupt_id": "issue-615-local-ci-verdict-divergence",
       "risk_classes": [
-        "none"
+        "host-disproves-local"
       ],
-      "seam": "create payload to deferred operator readback through selected backend.",
-      "generalization_pressure": "none",
+      "seam": "local focused coverage producer versus CI broad coverage producer.",
+      "generalization_pressure": "factor-now",
       "critique_required": true,
-      "next_step": "impl",
-      "handoff_artifact": "charness-artifacts/critique/2026-08-13-issue-602-create-verification-grammar-resolution.md",
-      "forced": false
+      "next_step": "spec",
+      "handoff_artifact": "charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md",
+      "forced": true
     }
   ],
   "skipped_artifacts": [

@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 494,
-  "candidate_count": 2021,
+  "source_artifact_count": 495,
+  "candidate_count": 2024,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1428,6 +1428,32 @@
       ]
     },
     {
+      "candidate_id": "class:f018693d78d2",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result.",
+      "normalized_key": "workflow when adding tests to satisfy a coverage gate verify by measuring the named",
+      "recurrence_class": "green-test-is-not-covered-line",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when adding tests to satisfy a coverage gate, verify by MEASURING the named lines, not by the test passing. Both attempts here passed; only the coverage read distinguished the one that exercised the intended branch from the one that silently matched a different arm with an identical result."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:fa6dee0edced",
       "kind": "repeat_trap",
       "lesson": "**Four failed pushes, ~45 minutes of gate time, from two causes that both masquerade as flaky tests.** Run 1 was the seed cache filling the disk; runs 2–4 were my own `git -c core.hooksPath=.githooks` leaking `GIT_CONFIG_PARAMETERS` into every descendant, so each fixture's temp repo inherited a relative `.githooks` that does not exist there. Both produce a DIFFERENT failing set each run, and both pass when the named files are re-run in isolation — the exact signature that sends you hunting a flaky test.",
@@ -1476,6 +1502,58 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**I misattributed run 2 to disk pressure and told the user so.** Run 3 refuted it (34% disk, same file failing). The disk finding was real but it was not the cause of runs 2–4, and I stated the attribution before I had a second observation to separate them."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:52babfb878d9",
+      "kind": "repeat_trap",
+      "lesson": "**`main` went red after the push, on the same job as last session.** The local focused changed-line lane reported `clean`; CI's broad mirror blocked on five lines in the classifier module. An independent `coverage json` read agreed with CI, so the LOCAL verdict was the wrong one — and that lane's own docstring says it \"can never report an uncovered line as covered\". Filed as #615; the five lines are covered and `bfbc8f4d` is green.",
+      "normalized_key": "main went red after the push on the same job as last session the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**`main` went red after the push, on the same job as last session.** The local focused changed-line lane reported `clean`; CI's broad mirror blocked on five lines in the classifier module. An independent `coverage json` read agreed with CI, so the LOCAL verdict was the wrong one — and that lane's own docstring says it \"can never report an uncovered line as covered\". Filed as #615; the five lines are covered and `bfbc8f4d` is green."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:ed46e1b97057",
+      "kind": "repeat_trap",
+      "lesson": "**My first fix for those lines passed its assertions while testing the wrong arm.** An older `rev-list` branch in the test stub shadowed the new parent listing, so `claims_evidence_child` returned `\"\"` and the scenario fell through to a later arm that produces an identical observable result. `24 passed` did not catch it; line-level coverage showing 131 executed and 132-134 not is what did.",
+      "normalized_key": "my first fix for those lines passed its assertions while testing the wrong arm",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**My first fix for those lines passed its assertions while testing the wrong arm.** An older `rev-list` branch in the test stub shadowed the new parent listing, so `claims_evidence_child` returned `\"\"` and the scenario fell through to a later arm that produces an identical observable result. `24 passed` did not catch it; line-level coverage showing 131 executed and 132-134 not is what did."
         }
       ]
     },

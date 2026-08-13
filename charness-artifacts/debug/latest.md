@@ -1,1 +1,1 @@
-2026-08-13-issue-602-create-verification-grammar.md
+2026-08-13-issue-615-focused-changed-line-false-clean.md

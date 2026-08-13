@@ -57,7 +57,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import shlex
 import subprocess
 import sys
 from pathlib import Path
@@ -163,38 +162,23 @@ def _emit(payload: dict, *, as_json: bool) -> None:
 
 
 def _focused_pytest_command(recommendation: dict) -> str | None:
-    """The suggester's command, normalized to something coverage can instrument.
+    """The suggester-owned command when coverage can instrument it.
 
     The suggester emits a `run_standing_pytest.py` invocation for operator use, and
     the producer can instrument that runner as a child process. Keeping the runner
     here makes the focused lane inherit its host-safe xdist, worker-cap, scheduler-
     compatibility, and external-temp policy instead of maintaining a second copy.
-    Rebuilding the target flags from the recommendation keeps ONE source of truth
-    for WHICH tests run — the mapping — while changing only HOW they are launched.
+    Consuming the emitted command directly keeps the suggester as the one owner of
+    both target selection and command assembly.
 
-    `--include-release-only` preserves the old bare-pytest command's scope. The
-    canonical runner otherwise defaults to `-m not release_only`, which would make
-    this runtime optimization silently narrow the proof set.
+    The canonical runner's default `-m not release_only` is load-bearing here. The
+    broad coverage producer uses the same marker policy, so the focused file list
+    may narrow its test population but must not widen it with release-only cases.
     """
-    targets = sorted({
-        target
-        for targets in (recommendation.get("mapped_tests_by_file") or {}).values()
-        for target in targets
-    })
-    if not targets:
+    command = recommendation.get("command")
+    if not isinstance(command, str) or not command.strip():
         return None
-    return shlex.join(
-        [
-            "python3",
-            "scripts/run_standing_pytest.py",
-            "--repo-root",
-            ".",
-            "--mode",
-            "read-only",
-            "--include-release-only",
-            *(token for target in targets for token in ("--pytest-target", target)),
-        ]
-    )
+    return command
 
 
 

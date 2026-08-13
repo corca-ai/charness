@@ -11,7 +11,9 @@ clean run, on the exit code and in the payload.
 from __future__ import annotations
 
 import json
+import os
 import shlex
+import subprocess
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -38,6 +40,22 @@ def _recommendation(**overrides) -> dict:
         "unmapped_changed_pool_files": ["scripts/unmapped.py"],
     }
     payload.update(overrides)
+    targets = sorted({
+        target
+        for paths in payload["mapped_tests_by_file"].values()
+        for target in paths
+    })
+    if targets:
+        payload.setdefault(
+            "command",
+            shlex.join([
+                "python3", "scripts/run_standing_pytest.py", "--repo-root", ".",
+                "--mode", "read-only",
+                *(token for target in targets for token in ("--pytest-target", target)),
+            ]),
+        )
+    else:
+        payload.pop("command", None)
     return payload
 
 
@@ -120,8 +138,10 @@ def test_warning_lines_use_the_head_run_quality_actually_surfaces(gate, capsys) 
     assert capsys.readouterr().err.startswith("WARNING (incremental changed-line coverage):")
 
 
-def test_focused_command_is_instrumentable_pytest(gate) -> None:
-    """The focused lane reuses the canonical runner's scheduling and temp policy."""
+def test_focused_command_is_instrumentable_and_keeps_broad_marker_policy(gate) -> None:
+    """Target narrowing may not admit tests the broad coverage producer excludes."""
+    from scripts.mutation_sampling_lib import read_test_command
+
     command = gate._focused_pytest_command(
         _recommendation(mapped_tests_by_file={"a.py": ["tests/test_b.py"], "c.py": ["tests/test_a.py", "tests/test_b.py"]})
     )
@@ -135,11 +155,49 @@ def test_focused_command_is_instrumentable_pytest(gate) -> None:
         "--mode",
         "read-only",
     ]
-    assert "--include-release-only" in tokens
+    broad_tokens = shlex.split(read_test_command(ROOT / "cosmic-ray.toml"))
+    marker_index = broad_tokens.index("-m", broad_tokens.index("pytest") + 1)
+    assert broad_tokens[marker_index + 1] == "not release_only"
+    assert "--include-release-only" not in tokens
     assert tokens.count("--pytest-target") == 2
     assert tokens[tokens.index("--pytest-target") + 1] == "tests/test_a.py"
     assert tokens[tokens.index("--pytest-target", tokens.index("--pytest-target") + 1) + 1] == "tests/test_b.py"
     assert gate._producer.is_instrumentable_pytest_command(command)
+
+
+def test_focused_command_excludes_a_release_only_execution_path(gate, tmp_path) -> None:
+    """Execute the real child command, not only its token shape.
+
+    The release-only case is the sole writer of the sentinel. If the focused lane
+    widens the broad population again, this control observes the execution that can
+    turn a broad-missing changed line into a focused-executed false clean.
+    """
+    sentinel = tmp_path / "release-only-ran"
+    test_file = tmp_path / "test_marker_population.py"
+    test_file.write_text(
+        "import pathlib\n"
+        "import pytest\n\n"
+        "@pytest.mark.release_only\n"
+        "def test_release_only_path():\n"
+        f"    pathlib.Path({str(sentinel)!r}).write_text('ran', encoding='utf-8')\n\n"
+        "def test_standing_control():\n"
+        "    assert True\n",
+        encoding="utf-8",
+    )
+    command = gate._focused_pytest_command(
+        _recommendation(mapped_tests_by_file={"scripts/a.py": [str(test_file)]})
+    )
+    env = os.environ.copy()
+    env["PYTEST_ADDOPTS"] = "-p no:xdist"
+
+    result = subprocess.run(
+        shlex.split(command), cwd=ROOT, env=env, capture_output=True, text=True, check=False
+    )
+
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert not sentinel.exists()
+    assert "1 passed" in result.stdout
+    assert "1 deselected" in result.stdout
 
 
 def test_focused_command_is_none_when_no_test_is_mapped(gate) -> None:

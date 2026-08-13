@@ -79,6 +79,15 @@ requirement for this goal.
   is not readable at the derived path. Two rounds; round 2 found the strip on one
   side reintroducing the two-derivations class, and `git add` aborting on a
   pathspec matching nothing. Carrier: this commit.
+- [#615](https://github.com/corca-ai/charness/issues/615) — the focused
+  changed-line producer admitted `release_only` tests that the broad producer
+  excludes, so local-only execution could turn broad-missing lines into a false
+  `clean`. RESOLVED locally: the focused command retains the broad
+  `not release_only` marker policy, the parity and real-command sentinel tests
+  pin that boundary, and an isolated historical replay now blocks on the exact
+  five reported lines. Two-round critique; round 2 found and forced plugin
+  export synchronization. Carrier: this commit; GitHub remains OPEN until an
+  authorized push and distinct tracker readback.
 
 New tracker issues after the opening recount are late arrivals. They stay outside
 this cohort unless the goal is explicitly amended; they are recorded as an
