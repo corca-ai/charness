@@ -495,12 +495,147 @@ extra section or command.
 
 `charness-artifacts/retro/2026-08-13-104307-packet.md`
 
+## Continuation: Issues #614 and #616 Pre-Release Closeout
+
+### Context, Window, and Evidence Summary
+
+This continuation reviews the local completion of #614's bounded artifact
+retention and #616's additive lesson/contract lifecycle before the authorized
+push and release boundary. The window is `9b2c20d77..4892f689f`. Strong evidence
+is the issue-owned critique and quality artifacts, two-round bounded reviews,
+the full standing suite, the focused post-commit changed-line producer, and the
+verified direct-commit carriers. GitHub still reported #614, #615, and #616 OPEN
+at the end of this local window; publication and hosted readback belong to the
+release continuation, not this retro claim.
+
+#616 stayed independent of #614's defect class. It adds explicit archive and
+resurrection events, a real archived selection slot, multi-session graduation
+proposals, reviewed contract membership transitions, and preserved retirement
+history. No live lesson or contract membership transition was applied. The
+separate PLR2004 inventory was recorded as a production-only baseline/no-
+increase candidate rather than silently widening this slice.
+
+### Waste and Critical Decisions
+
+The changed-line mutation consumer ran too late, after the first #616 closeout
+commit. Its first invocation also used the pre-#614 base, so #614's already
+separate files appeared as #616 blockers. Rebinding the proof to the #614 carrier
+isolated 14 #616 mutation-pool files and exposed real unexecuted CLI/refusal
+branches. Nineteen in-process refusal tests closed those gaps, and the final
+focused producer reported `blocking: []`. The evidence was valuable; the late
+placement and wrong slice base were avoidable rework.
+(recurrence-class: guard-adjacent-to-action)
+
+The verification-lock broad run passed but took about 145.5 seconds, above the
+120-second budget. The local telemetry stream now has 13 observations of the
+same read-only standing runner above budget, with a 143.11-second median and
+208.32-second peak. This is recurring gate-baseline debt, not permission to
+weaken proof; #503 remains the existing remeasurement owner, so no duplicate
+issue is filed. The telemetry is machine-local and says nothing about other
+repos. (recurrence-class: gate-baseline-runtime)
+
+The decisions that constrained the result were:
+
+- keep #614 and #616 as separate causal slices even though one release will
+  publish both;
+- use the #614 carrier as #616's exact changed-line base rather than
+  `origin/main`, which answers a different cumulative question;
+- cover operator/refusal paths in-process so coverage ownership is observable,
+  while retaining subprocess tests for reader-facing receipts;
+- leave PLR2004/no-magic-numbers adoption to an independent production-only
+  ratchet slice because the diagnostic population is dominated by tests;
+- preserve score, lifecycle, and contract evidence as non-authorizing; no score
+  threshold, automatic graduation, or live transition was inferred.
+
+### Trends vs Last Retro
+
+The earlier continuation identified the same guard-adjacent-to-action pattern
+when changed-line proof arrived after implementation. This slice confirms the
+lesson at a narrower boundary: broad pytest success did not establish changed-
+line coverage, and a correct consumer with the wrong base answered the wrong
+scope. The positive trend is that the final proof was rebound to an immutable
+slice base and the missing branches were fixed before push.
+
+### North Star Alignment
+
+The north star held at the irreversible proof surfaces: #614 and #616 used
+different observers, two review rounds where verdict logic changed, direct
+operator-command evidence, and exact post-commit changed-line coverage. Those
+channels caught defects that broad green and same-agent implementation review
+did not.
+
+The method was initially mis-applied by treating a cumulative branch range as
+the issue-local proof range and by delaying the mutation consumer until after
+the carrier commit. That walked toward the named failure signature “local green
+becomes terminal trust”: the broad suite was green while changed refusal lines
+were still unmeasured. The repair kept the teeth and corrected the evidence
+identity rather than downgrading the gate.
+
+### Expert Counterfactuals
+
+Douglas Engelbart's system-improving lens treats the method, scope language, and
+coverage tool as one unit. The changed next move is to carry an immutable slice
+base in the closeout ledger before the first proof-producing run; the tool should
+consume that owner instead of making the operator reconstruct it after commit.
+
+A falsification-first quality lens would ask before broad verification: “which
+new refusal lines can still escape every in-process test?” That question would
+have selected the focused coverage producer before the expensive broad run and
+kept subprocess receipt proof separate from coverage attribution.
+
+### Sibling Search
+
+- same layer: `check_changed_line_mutation_coverage.py` base selection |
+  decision: intentional boundary | proof: `origin/main` correctly answers the
+  cumulative unpublished-branch question, while #616 proof used the immutable
+  #614 carrier as its issue-local base.
+- abstraction up: `run_slice_closeout.py` on a clean post-commit worktree |
+  decision: valid follow-up outside the slice | proof: it returned `noop` and
+  could not refresh committed-range coverage; follow-up: deferred
+  docs/handoff.md#discuss.
+- specialization down: release real-host and publication range probes |
+  decision: intentional boundary | proof: the release helper requires full
+  immutable OIDs and evaluates the complete publish delta.
+- mental-model siblings: issue-local carrier proof versus cumulative release
+  proof | decision: intentional boundary | proof: both are required and answer
+  different scope questions; one base must not silently stand in for the other.
+
+Structural-follow-up destination: repo-local guard:
+`docs/handoff.md#discuss` for a committed-range coverage producer that consumes
+the slice ledger's immutable base; #503 continues to own recurring broad-gate
+remeasurement.
+
+### Next Improvements
+
+- **workflow**: run focused changed-line proof with the declared issue-local
+  base before the first closeout commit, then rerun on the immutable commit
+  range before publication. (recurrence-class: guard-adjacent-to-action)
+- **capability**: let closeout consume an explicit committed slice base even
+  when the worktree is clean, without overloading the cumulative `origin/main`
+  release range.
+- **memory**: retain #614/#616 issue artifacts as the local behavior owners and
+  let the release record own only publication, installed refresh, hosted state,
+  and public readback.
+
+### Portable Candidate
+
+The general pattern—separate issue-local proof range from cumulative release
+range—is portable, but the current producer and ledger contracts are repo-
+specific. Destination: `create-skill` only if a second consuming repo needs a
+committed-range closeout seam; first-prompt acceptance is that the proof receipt
+names immutable base/head identities and refuses an ambiguous range.
+
+### Packet Consumed
+
+`charness-artifacts/retro/2026-08-13-132203-packet.md`
+
 ## Lesson Evaluation
 
-Lesson evaluation: {"reason":"missing-start","score_event_count":0,"session_id":"none","status":"not-evaluated"}
+Lesson evaluation: {"reason":"presentation-unproven","score_event_count":0,"session_id":"2026-08-13-issue-614","status":"not-evaluated"}
 
-This work began before the session opener and continuity contract existed. No
-score was appended retroactively.
+The session declaration and emission receipt exist, but this continuation cannot
+prove that its exact selected list was presented before the affected work. No
+score was appended or backfilled.
 
 ## Persisted
 
