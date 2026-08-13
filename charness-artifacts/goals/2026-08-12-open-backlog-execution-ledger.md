@@ -64,7 +64,12 @@ requirement for this goal.
   resume packet as guidance, which is not enforcement.
 - [#613](https://github.com/corca-ai/charness/issues/613) — the claims floor reads
   a hardcoded record path, so a non-default adapter `output_dir` made it blind.
-  Mitigated by a loud refusal; the threading itself is not implemented.
+  RESOLVED: the path is derived once from `output_dir` and consumed by the floor,
+  the planner, the resume publish tail, and the closeout recovery; the loud refusal
+  is replaced by `assert_record_readable`, which refuses positively when the record
+  is not readable at the derived path. Two rounds; round 2 found the strip on one
+  side reintroducing the two-derivations class, and `git add` aborting on a
+  pathspec matching nothing. Carrier: this commit.
 
 New tracker issues after the opening recount are late arrivals. They stay outside
 this cohort unless the goal is explicitly amended; they are recorded as an
