@@ -2,15 +2,19 @@
 
 ## Workflow Trigger
 
-- Continue the `quality`-led current-contract cleanup from the
-  [current quality record](../charness-artifacts/quality/latest.md): select one owner cohort, prove
-  equal current capability, then delete or simplify it as a complete slice.
+- Resolve the publication branch before starting another implementation slice.
+  Ask an authorized party for a fresh phase-scoped push/release grant for the
+  current cleanup. If granted, invoke `release` and continue #617 closeout. If
+  explicitly denied or deferred, invoke `quality` for the release-runner
+  visibility owner in the
+  [current quality record](../charness-artifacts/quality/latest.md). If the
+  request is absent, ambiguous, or invalidated, stop and resolve it first.
 
 ## Continuation Capability
 
 - [Current quality record](../charness-artifacts/quality/latest.md) — owns the
-  compatibility residue, runner-visibility inventory, PLR2004 posture, proof
-  status, and ordered next moves.
+  completed local proof, compatibility residue, runner-visibility inventory,
+  PLR2004 posture, and ordered next moves.
 - [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — owns
   the durable lessons, sibling search, and `atomic_capture` versus
   `monitored_phase` distinction.
@@ -24,10 +28,8 @@
 ## Current State
 
 - [Current quality record](../charness-artifacts/quality/latest.md) — holds the
-  implemented current-only cleanup, #617 behavior, runner lifecycle evidence,
-  and active weaknesses rather than replaying receipts here.
-- [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — holds
-  why capture sites require owner classification rather than a global lint.
+  committed current-only cleanup, final local proof, #617 behavior, runner
+  lifecycle evidence, and active weaknesses rather than replaying receipts here.
 - [#617](https://github.com/corca-ai/charness/issues/617) — remains the tracker
   owner until the implementation reaches hosted history and its issue closeout
   floor is satisfied.
@@ -39,8 +41,8 @@
   the current slice's tracker/publication disposition is known.
 
 Refresh kept: current-only owner cleanup, durable lesson bundles, long-runner
-lifecycle visibility, and the still-open publication/tracker boundary change
-the next action.
+lifecycle visibility, and the unresolved publication grant that now precedes
+new implementation.
 
 Refresh non-claims: no new push, release, installed-host readback, hosted CI, or
 issue closure is claimed; exact test counts, commit IDs, and version receipts
@@ -48,26 +50,24 @@ stay in their owning artifacts or regenerating commands.
 
 ## Next Session
 
-1. [Current quality record](../charness-artifacts/quality/latest.md) — take the
-   release execution owner first: preserve atomic query capture but stop
-   long-running release phases from swallowing child lifecycle output.
-2. [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — use
-   one shared monitored primitive, then cover skill A/B, mutation, eval fan-out,
-   worktree prepare, and skill-surface preflight in owner-sized slices.
-3. [Current quality record](../charness-artifacts/quality/latest.md) — continue
-   compatibility deletion only after a current-state premise scan; keep strict
-   old-form rejection and historical evidence that still serve live capability.
-4. [#617](https://github.com/corca-ai/charness/issues/617) — run the issue
-   closeout floor only after its carrier reaches hosted history through a fresh
-   phase-scoped publication grant.
+1. [Latest release record](../charness-artifacts/release/latest.md) — use its last
+   published state to scope the fresh push/release grant request; an authorized
+   party must grant it before any remote mutation.
+2. [#617](https://github.com/corca-ai/charness/issues/617) — on the granted branch,
+   run `release`, obtain hosted/public readback, then run the issue closeout floor.
+3. [Current quality record](../charness-artifacts/quality/latest.md) — on the
+   ungranted branch, take the release-runner visibility owner first: preserve
+   atomic queries while long-running phases use the shared monitored primitive.
+4. [Session retro](../charness-artifacts/retro/2026-08-14-session-retro.md) — after
+   that owner, return to step 1 before starting another implementation slice;
+   later owner-sized candidates are skill A/B, mutation, eval fan-out, worktree
+   prepare, and skill-surface preflight.
 5. [Open-backlog goal](../charness-artifacts/goals/2026-08-12-resolve-open-quality-and-trust-backlog.md)
    — reconcile goal, execution ledger, tracker, and latest release after #617's
-   final disposition.
+   final disposition; continue compatibility deletion only after a premise scan.
 
 ## Discuss
 
-- Whether to grant a fresh push/release phase for the materially expanded
-  current-contract cleanup.
 - Whether the production-only PLR2004 classification should follow the release
   runner slice or wait until the remaining compatibility owner cohort shrinks.
 

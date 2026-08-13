@@ -43,9 +43,9 @@ PLR2004 inventory are classified here but do not widen this reviewed slice silen
   `local-linux-x86_64-36cpu`.
 - runtime hot spots: `run-quality-read-only` 229.9s latest / 102.4s median;
   changed-line mutation 219.1s / 71.9s; `run-quality-full` 142.7s / 142.6s.
-- coverage gate: focused current-slice suites pass; the targeted changed-line gate
-  covers every mapped changed file and explicitly leaves three unmapped pool files
-  unproven; final broad gate follows the final commit.
+- coverage gate: the final `./scripts/run-quality.sh --full` completed with 92
+  passed, 0 failed, and 1 UNPROVEN; the changed-line gate covered all 60 mapped
+  changed pool files and explicitly left three unmapped files unproven.
 - evaluator depth: deterministic-gates-only; Cautilus is ask-before-run and no live
   semantic evaluator claim is needed for these executable contracts.
 
@@ -106,6 +106,8 @@ PLR2004 inventory are classified here but do not widen this reviewed slice silen
 - focused runner, continuity, ledger, contract, identity, and closeout suites — pass.
 - five owner test modules — 80 pass; targeted changed-line coverage exits 0 with
   mapped coverage complete and three unmapped pool files explicitly unproven.
+- final `./scripts/run-quality.sh --full` on the committed slice — 92 passed,
+  0 failed, 1 UNPROVEN; the only non-claim is the three unmapped changed pool files.
 - `bash -n scripts/run-quality.sh`, `git diff --check`, plugin sync/parity — pass.
 - standing-gate verbosity detail, timeout/fan-out capture inventory, PLR2004 JSON
   scan, runtime summary, and ratio advisory.
