@@ -3,20 +3,20 @@
   "kind": "debug-seam-risk-index",
   "source": "charness-artifacts/debug/*.md ## Seam Risk",
   "score_policy": "none: source-linked index only; do not collapse incidents into a single score",
-  "source_artifact_count": 143,
-  "indexed_artifact_count": 130,
+  "source_artifact_count": 144,
+  "indexed_artifact_count": 131,
   "risk_class_counts": {
     "contract-freeze-risk": 30,
     "external-seam": 15,
-    "host-disproves-local": 4,
-    "none": 55,
+    "host-disproves-local": 3,
+    "none": 57,
     "operator-visible-recovery": 23,
     "repeated-symptom": 5
   },
   "generalization_pressure_counts": {
-    "factor-now": 8,
+    "factor-now": 7,
     "monitor": 107,
-    "none": 15
+    "none": 17
   },
   "entries": [
     {
@@ -1800,6 +1800,20 @@
       "forced": false
     },
     {
+      "artifact_path": "charness-artifacts/debug/2026-08-13-issue-614-unbounded-local-artifact-retention.md",
+      "is_current_pointer": false,
+      "interrupt_id": "issue-614-local-retention",
+      "risk_classes": [
+        "none"
+      ],
+      "seam": "none",
+      "generalization_pressure": "none",
+      "critique_required": true,
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
+    },
+    {
       "artifact_path": "charness-artifacts/debug/2026-08-13-issue-615-focused-changed-line-false-clean.md",
       "is_current_pointer": false,
       "interrupt_id": "issue-615-local-ci-verdict-divergence",
@@ -1830,16 +1844,16 @@
     {
       "artifact_path": "charness-artifacts/debug/latest.md",
       "is_current_pointer": true,
-      "interrupt_id": "issue-615-local-ci-verdict-divergence",
+      "interrupt_id": "issue-614-local-retention",
       "risk_classes": [
-        "host-disproves-local"
+        "none"
       ],
-      "seam": "local focused coverage producer versus CI broad coverage producer.",
-      "generalization_pressure": "factor-now",
+      "seam": "none",
+      "generalization_pressure": "none",
       "critique_required": true,
-      "next_step": "spec",
-      "handoff_artifact": "charness-artifacts/spec/2026-08-13-issue-615-focused-changed-line-verdict-contract.md",
-      "forced": true
+      "next_step": "impl",
+      "handoff_artifact": "none",
+      "forced": false
     }
   ],
   "skipped_artifacts": [
