@@ -2,13 +2,13 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal. `v5.1.0` is published and its closeout
-  review has run. **Seven cohort issues are CLOSED and independently read back**
-  (#539, #542, #588, #589, #595, #602, #606); fifteen rows remain OPEN.
-  Three of the four rows bounded closeout reviews pulled back (#597, #607, #590)
-  are now repaired with two review rounds each; #584 is unchanged. #609 is
-  likewise repaired. **No issue was closed this session** — every repaired row
-  still owes the `issue` closeout floor.
+- Continue the active `achieve` goal. **Ten cohort issues are now CLOSED and
+  independently read back** — the earlier seven plus #597, #607, and #590, each
+  repaired under two bounded review rounds and closed through the `issue` floor
+  with a per-issue behavioral verdict. #609 is closed the same way. Twelve cohort
+  rows remain OPEN; #584 is unchanged, still held on the ledger's Umbrella
+  Closure Contract. `gh issue list --state open` returns 17 including the
+  late arrivals.
 
 ## Continuation Capability
 
@@ -23,10 +23,9 @@
   not the unauthenticated HTML fetch. It closed no issues.
 - **Post-publication closeout review is done** —
   [review](../charness-artifacts/critique/2026-08-13-v5.1.0-post-publication-closeout-review.md).
-  It left two residues: the pre-publication claims review's distinct-observer
-  property was unproven (escalated to
-  [#609](https://github.com/corca-ai/charness/issues/609), since repaired locally
-  in `dd473642`), and the post-publication session retro is **still owed**.
+  Both of its residues are now discharged: #609 is repaired and CLOSED, and the
+  owed retro is
+  [written](../charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md).
 - **Four proof surfaces repaired this session**, two bounded review rounds each —
   [two-round critique](../charness-artifacts/critique/2026-08-13-four-proof-surface-repairs-two-round-critique.md).
   Commits `dd473642` (repairs) and `dfb29e0e` (coverage for the refusal branches
@@ -53,27 +52,18 @@ issue closure, push, or release.
 Refresh kept: the execution ledger and its per-row disposition map, because they
 still own the 22-issue cohort reconciliation `5.1.0` deliberately did not close.
 
-Refresh non-claims. **No issue closure has occurred**, this session included: the
-four repaired rows hold local proof and tracker carriers only. Closure needs a
-direct-to-default carrier commit plus
-`verify-closeout --expect-state CLOSED`
-(`skills/public/issue/references/closeout-discipline.md:91-104`); the earlier
-hosted Quality Core green on the default branch does not discharge it, and no such
-carrier has been authored. **Neither `dd473642` nor `dfb29e0e` has been pushed**,
-so no hosted CI has seen either. The JS settlement repairs are fixture-proven and
-consumer-facing — this repo's test tree contains no JS/TS seams — and no CI run
-has exercised the repaired mutation-report step, because none can until the
-pipeline is red.
+Refresh non-claims. #597, #607, #590, and #609 are CLOSED and read back; nothing
+else was closed. **CI on `b0eb51d5` FAILED** its changed-line mutation-coverage
+job on three lines, repaired in `ae118905`/`23f0735f` and re-verified locally
+against CI's own base — the run on the current head was still in flight when this
+was written, so confirm it before the next push. The JS settlement repairs are
+fixture-proven and consumer-facing (this repo's test tree contains no JS/TS
+seams), and #590's log-tail and clamp branches remain unconfirmed because the
+reporting step only runs when the pipeline is already red.
 
 ## Next Session
 
-1. Run the `issue` closeout floor for
-   [#597](https://github.com/corca-ai/charness/issues/597),
-   [#607](https://github.com/corca-ai/charness/issues/607),
-   [#590](https://github.com/corca-ai/charness/issues/590), and
-   [#609](https://github.com/corca-ai/charness/issues/609). Read each carrier's
-   Non-claims first: they name what the local proof does NOT cover.
-2. Decide [#613](https://github.com/corca-ai/charness/issues/613) first among the
+1. Decide [#613](https://github.com/corca-ai/charness/issues/613) first among the
    three filed residues — its mitigation is a loud refusal, so any consumer with a
    non-default adapter `output_dir` cannot publish at all until the record path is
    threaded through. Then
@@ -81,14 +71,15 @@ pipeline is red.
    never reaches the published release record) and
    [#611](https://github.com/corca-ai/charness/issues/611) (the claims resume lane
    never runs the notes-file preflight).
-3. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the
+2. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the
    ledger's Umbrella Closure Contract, untouched this session. The nine deliberate
    non-closures (#527, #546, #550, #583, #586, #587, #599, #601, #605) were
    re-verified on 2026-08-13; #528 and #582 stay split.
-4. Write the owed session retro against the
-   [two-round critique](../charness-artifacts/critique/2026-08-13-four-proof-surface-repairs-two-round-critique.md) —
-   its Round 2 section is the material.
-5. The next push/release stays conditional on cohort disposition, retro, frozen
+3. Act on the retro's
+   [skipped-is-not-passed](../charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md)
+   lesson: this session pushed on a local green that had SKIPPED the
+   changed-line mutation gate CI then blocked on.
+4. The next push/release stays conditional on cohort disposition, retro, frozen
    verification, release critique, and independent readbacks per the
    [operating contract](./conventions/operating-contract.md). Nothing is pushed.
 

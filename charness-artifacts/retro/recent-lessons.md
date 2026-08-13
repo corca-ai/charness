@@ -2,8 +2,8 @@
 
 ## Current Focus
 
+- Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back. (source: `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`)
 - The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro. (source: `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`)
-- The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout. (source: `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`)
 
 ## Repeat Traps
 
@@ -15,9 +15,9 @@
 ## Next-Time Checklist
 
 - **workflow** — before writing any claim about what a gate's green proves, name the other readers of the artifact it certified. Two of this session's three wrong claims die to that one question. (source: `charness-artifacts/retro/2026-08-11-ruling-1-and-the-fix-that-carried-its-class.md`; sources: 4)
+- **capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them. (source: `charness-artifacts/retro/2026-08-13-session-retro.md`; sources: 2)
 - state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score. (source: `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`; sources: 2)
 - issue #562 — Structural pattern: an owner-inspection locator pin cannot distinguish "the file I reasoned about changed meaningfully" from "someone edited it elsewhere", so its remediation is one mechanical command that records no basis — training the exact reflex that will fire on the day the semantics genuinely change. Triggering instance(s): 6 of 20 locators changed in a day; five re-stamps, 0/5 true positives. Destination: issue #562 (recurs: five measured instances). (source: `charness-artifacts/retro/2026-08-08-retire-the-second-live-goal-retro.md`; sources: 2)
-- **memory** — This retro plus the recent-lessons digest. (source: `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`; sources: 2)
 
 ## Selection Policy
 
@@ -29,8 +29,6 @@
 
 - `charness-artifacts/retro/2026-07-27-handoff-backlog-minus-aarch64-goal-run.md`
 - `charness-artifacts/retro/2026-07-27-session-retro.md`
-- `charness-artifacts/retro/2026-08-02-push-the-armed-gate-and-close-477-through-its-carrier.md`
-- `charness-artifacts/retro/2026-08-02-repair-the-commands-the-skills-tell-agents-to-run.md`
 - `charness-artifacts/retro/2026-08-06-closeout-bundle-evidence-identity-and-release-retro.md`
 - `charness-artifacts/retro/2026-08-06-runtime-evidence-and-final-boundary.md`
 - `charness-artifacts/retro/2026-08-06-session-retro.md`
@@ -41,4 +39,5 @@
 - `charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md`
 - `charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md`
 - `charness-artifacts/retro/2026-08-13-post-publication-session-retro.md`
-- `charness-artifacts/retro/2026-08-13-release-preflight-retro.md`
+- `charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md`
+- `charness-artifacts/retro/2026-08-13-session-retro.md`

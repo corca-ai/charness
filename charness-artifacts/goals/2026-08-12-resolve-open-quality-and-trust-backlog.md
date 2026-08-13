@@ -14,15 +14,13 @@ in this session after the pre-implementation critique passes.
   with two review rounds each and carry local proof; #584 remains held on this
   ledger's Umbrella Closure Contract, unchanged. Seven cohort issues are CLOSED
   and independently read back; the rest are OPEN.
-- Current slice intent: the repaired rows now need their tracker-visible carriers
-  and, where eligible, the `issue` closeout floor. No row is claimed closed by the
-  repair work itself.
-- Next action: post the tracker carriers for #597, #607, #590, and #609, then
-  author direct-to-default closeout carriers for the rows whose local proof is
-  complete and run `verify-closeout --expect-state CLOSED` per row.
-  `direct-to-default` means the carrier commit plus that readback
-  (`skills/public/issue/references/closeout-discipline.md:91-104`); the green
-  hosted CI on the default branch does not discharge it.
+- Current slice intent: complete. #597, #607, and #590 closed through the `issue`
+  floor, each with a per-issue behavioral verdict through a channel distinct from
+  the fix and from `CLOSED`; the late-arrival #609 closed the same way. Ten cohort
+  issues are now CLOSED and read back.
+- Next action: the twelve remaining cohort rows. #584 is held on the Umbrella
+  Closure Contract; the other eleven hold tracker-visible non-closures with owners
+  and revisit triggers recorded in the ledger.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
   use fresh-eye critique and focused behavioral proof at every meaningful slice;
   reserve release quality, tracker readback, and installed readback for closeout.
@@ -313,9 +311,16 @@ premise, owner, evidence channel, and tracker-visible outcome.
   surface — including one repair that silently disabled a sibling repair, and one
   that reopened the exact class the sibling fold had closed. All were reproduced
   executably by the parent before repair.
-- Boundary: this is local proof and a fresh-eye record. No issue is closed, no
-  push or release occurred, and the three deferred residues are tracked as #610,
-  #611, and #613 rather than carried as prose.
+- Closure: all four closed through the `issue` floor —
+  `verify-closeout --carrier direct-commit --expect-state CLOSED` returned
+  `verified` for each, and an independent `gh issue list --state open` inventory
+  reconciles. Carriers `022dded4` (#597), `ff6eff4c` (#590), `9be0e946` (#609),
+  `32f9a637` (#607).
+- Boundary: pushed under an explicit phase-scoped grant; no release occurred. CI
+  on `b0eb51d5` FAILED its changed-line mutation-coverage job on three
+  subprocess-only lines, repaired in `ae118905`/`23f0735f`. The three deferred
+  residues are tracked as #610, #611, and #613 rather than carried as prose.
+- Retro: `../retro/2026-08-13-proof-surface-repair-retro.md`.
 
 ## Off-Goal Findings
 

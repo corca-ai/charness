@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 492,
-  "candidate_count": 2004,
+  "source_artifact_count": 493,
+  "candidate_count": 2011,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -154,6 +154,40 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "Evidence identity was frozen after a reviewed ledger change, causing packet regeneration and an extra bookkeeping cycle. The repair preserved safety, but the dependency should have invalidated the packet immediately."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d277d984eaae",
+      "kind": "next_improvement",
+      "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them.",
+      "normalized_key": "capability a hand written text scanner needs a blast radius bound before it needs",
+      "recurrence_class": "conservative-static-verdicts",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: A hand-written text scanner needs a blast-radius bound before it needs more cases. The newline bail on `'`/`\"` literals turns any future mis-parse from a file-wide desync into one corrupted line; prefer that shape over enumerating more syntax."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them."
         }
       ]
     },
@@ -362,6 +396,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:763350a0b132",
+      "kind": "current_focus",
+      "lesson": "Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back.",
+      "normalized_key": "four rows a bounded closeout review had pulled back from the cohort carrier 597",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:71018f931d5f",
       "kind": "current_focus",
       "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro.",
@@ -384,58 +444,6 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d1cbbb340863",
-      "kind": "current_focus",
-      "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout.",
-      "normalized_key": "the final release attempt repaired 608 s missing pre publication claims review stage reconciled",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-release-preflight-retro.md",
-          "date": "2026-08-13",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The final release attempt repaired #608's missing pre-publication claims-review stage, reconciled the duplicate-ratchet backlog, and then ran a locked release closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:aa40d8da6222",
-      "kind": "current_focus",
-      "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired.",
-      "normalized_key": "this final pre publication review covers the frozen origin main 0ac9260d candidate after the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-final-release-boundary-retro.md",
-          "date": "2026-08-13",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired."
         }
       ]
     }
@@ -584,6 +592,40 @@
       ]
     },
     {
+      "candidate_id": "class:d277d984eaae",
+      "kind": "next_improvement",
+      "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them.",
+      "normalized_key": "capability a hand written text scanner needs a blast radius bound before it needs",
+      "recurrence_class": "conservative-static-verdicts",
+      "source_count": 2,
+      "independent_source_count": 2,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.24,
+      "selection_weight": 1.24,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: A hand-written text scanner needs a blast-radius bound before it needs more cases. The newline bail on `'`/`\"` literals turns any future mis-parse from a file-wide desync into one corrupted line; prefer that shape over enumerating more syntax."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them."
+        }
+      ]
+    },
+    {
       "candidate_id": "class:2e1ea6641487",
       "kind": "next_improvement",
       "lesson": "state that the agent authors operational lesson scores from cited observed actions before asking whether to record any score.",
@@ -788,6 +830,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:763350a0b132",
+      "kind": "current_focus",
+      "lesson": "Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back.",
+      "normalized_key": "four rows a bounded closeout review had pulled back from the cohort carrier 597",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "Four rows a bounded closeout review had pulled back from the cohort carrier (#597, #607, #590, #609) were repaired, reviewed in two bounded rounds each, closed through the `issue` floor, and read back."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:71018f931d5f",
       "kind": "current_focus",
       "lesson": "The `5.1.0` release auto-retro (`charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md:10-13`) disclaims session coverage in its own second paragraph and asks for a session retro.",
@@ -918,32 +986,6 @@
       ]
     },
     {
-      "candidate_id": "class:d277d984eaae",
-      "kind": "next_improvement",
-      "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them.",
-      "normalized_key": "capability for conservative static inventories write the known unknown signal matrix before implementation and",
-      "recurrence_class": "conservative-static-verdicts",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-      "latest_source_date": "2026-08-13",
-      "age_days": 0,
-      "recency_weight": 1.0,
-      "alpha": 0.12,
-      "selection_weight": 1.0,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-13-session-retro.md",
-          "date": "2026-08-13",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "**capability**: For conservative static inventories, write the known/unknown signal matrix before implementation and keep dynamic values unknown unless a direct parser proves them."
-        }
-      ]
-    },
-    {
       "candidate_id": "next_improvement:6b1004059d07",
       "kind": "next_improvement",
       "lesson": "defer a packet freshness preflight that names uncommitted reviewed paths before a release critique is declared complete.",
@@ -1044,6 +1086,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: Keep this retro and `docs/handoff.md` explicit that the next action is coverage restoration, not push/release."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:47a342f2f4cd",
+      "kind": "next_improvement",
+      "lesson": "**memory**: When authoring a closeout carrier by hand, keep ledger field names off the start of a wrapped line — the parser anchors on line starts, so a wrapped `Proof:` silently leaves the field it belonged to. Three round-trips this session came from exactly that.",
+      "normalized_key": "memory when authoring a closeout carrier by hand keep ledger field names off the",
+      "recurrence_class": "line-anchored-ledger-fields",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: When authoring a closeout carrier by hand, keep ledger field names off the start of a wrapped line — the parser anchors on line starts, so a wrapped `Proof:` silently leaves the field it belonged to. Three round-trips this session came from exactly that."
         }
       ]
     },
@@ -1178,6 +1246,32 @@
       ]
     },
     {
+      "candidate_id": "class:7fe2e3c23a0e",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: Before treating a local green as push evidence, read which checks the local run SKIPPED — `run-quality.sh` and the closeout both print their skip policy, and a skipped gate is not a passed gate. This session pushed on a green that had skipped the check CI blocked on.",
+      "normalized_key": "workflow before treating a local green as push evidence read which checks the local",
+      "recurrence_class": "skipped-is-not-passed",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: Before treating a local green as push evidence, read which checks the local run SKIPPED — `run-quality.sh` and the closeout both print their skip policy, and a skipped gate is not a passed gate. This session pushed on a green that had skipped the check CI blocked on."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:672ed802a983",
       "kind": "next_improvement",
       "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation.",
@@ -1200,6 +1294,110 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d347683edab9",
+      "kind": "repeat_trap",
+      "lesson": "Not waste, and worth separating: the six reviewer spawns and their wall-clock. Round 2 alone caught two fail-opens and one reopened class. That is the rule paying for itself, not overhead.",
+      "normalized_key": "not waste and worth separating the six reviewer spawns and their wall clock round",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Not waste, and worth separating: the six reviewer spawns and their wall-clock. Round 2 alone caught two fail-opens and one reopened class. That is the rule paying for itself, not overhead."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:3808f57d8144",
+      "kind": "repeat_trap",
+      "lesson": "**One carrier commit was refused and its staged edit silently rode into the next commit.** The `#607` commit failed the commit-msg hook (classification inferred as `bug`), and because the loop's `git add` was file-scoped, the orphaned edit was swept into the `#590` carrier. Recovered, but the mechanism is a real hazard: a refused closeout commit leaves its staging behind.",
+      "normalized_key": "one carrier commit was refused and its staged edit silently rode into the next",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**One carrier commit was refused and its staged edit silently rode into the next commit.** The `#607` commit failed the commit-msg hook (classification inferred as `bug`), and because the loop's `git add` was file-scoped, the orphaned edit was swept into the `#590` carrier. Recovered, but the mechanism is a real hazard: a refused closeout commit leaves its staging behind."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1590aff86799",
+      "kind": "repeat_trap",
+      "lesson": "**Three validator round-trips on hand-authored carrier bodies**, all from line WRAPPING: a `Proof:` or `population:` that landed at the start of a wrapped line was parsed as a new ledger field and silently removed from the field it belonged to. The rendered shape (`describe_closeout_draft_shape.py`) documents the fields; it does not warn that they are line-anchored.",
+      "normalized_key": "three validator round trips on hand authored carrier bodies all from line wrapping a",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three validator round-trips on hand-authored carrier bodies**, all from line WRAPPING: a `Proof:` or `population:` that landed at the start of a wrapped line was parsed as a new ledger field and silently removed from the field it belonged to. The rendered shape (`describe_closeout_draft_shape.py`) documents the fields; it does not warn that they are line-anchored."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:1de4eca99b16",
+      "kind": "repeat_trap",
+      "lesson": "**Two full producer/consumer cycles were spent discovering a local/CI gate disagreement.** The local pre-push lane SKIPPED `check-changed-line-mutation-coverage` non-blocking (no fresh producer marker), while CI ran it and blocked. The push went out green and CI came back red on three lines. Cost: one red CI run plus two locked closeout reruns.",
+      "normalized_key": "two full producer consumer cycles were spent discovering a local ci gate disagreement the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Two full producer/consumer cycles were spent discovering a local/CI gate disagreement.** The local pre-push lane SKIPPED `check-changed-line-mutation-coverage` non-blocking (no fresh producer marker), while CI ran it and blocked. The push went out green and CI came back red on three lines. Cost: one red CI run plus two locked closeout reruns."
         }
       ]
     },
