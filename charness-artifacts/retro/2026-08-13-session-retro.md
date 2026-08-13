@@ -526,6 +526,13 @@ focused producer reported `blocking: []`. The evidence was valuable; the late
 placement and wrong slice base were avoidable rework.
 (recurrence-class: guard-adjacent-to-action)
 
+The later cumulative pre-push producer then found the complementary scope fact:
+#616 was clean on its own range, but #614 still had un-attributed exception and
+explicit-keep branches in two production files. Ten in-process retention
+tests closed them; the repaired cumulative producer analyzed all 28 changed
+mutation-pool files with no blocker. This validates the decision to keep both
+issue-local and cumulative proof instead of treating either as a substitute.
+
 The verification-lock broad run passed but took about 145.5 seconds, above the
 120-second budget. The local telemetry stream now has 13 observations of the
 same read-only standing runner above budget, with a 143.11-second median and
