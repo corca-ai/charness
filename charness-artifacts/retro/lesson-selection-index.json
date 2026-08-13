@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 498,
-  "candidate_count": 2024,
+  "source_artifact_count": 499,
+  "candidate_count": 2025,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -1840,904 +1840,20 @@
       ]
     },
     {
-      "candidate_id": "current_focus:a1a3a4f4b7e1",
-      "kind": "current_focus",
-      "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support.",
-      "normalized_key": "the user grouped issues 603 604 581 594 and 593 into one ordered active",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d0123fdae8c4",
-      "kind": "current_focus",
-      "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
-      "normalized_key": "this goal completed the local lesson ledger capability without claiming contract mutation selection presentation",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:d6e17108f677",
-      "kind": "current_focus",
-      "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson.",
-      "normalized_key": "this goal made cited lesson scoring locally eligible only after an operator has recorded",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:0ae516f50149",
-      "kind": "current_focus",
-      "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy.",
-      "normalized_key": "this goal recorded the first three cited session contained agent score records and decided",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:541853194411",
-      "kind": "current_focus",
-      "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout.",
-      "normalized_key": "this retrospective covers the ordered local execution of operator rulings 2 3 5 and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:6c84de6c9ccd",
-      "kind": "current_focus",
-      "lesson": "This session completed the five-issue quality/closeout goal, published Charness 5.0.1, and then closed the five tracker issues through separately reviewed post-publication carriers.",
-      "normalized_key": "this session completed the five issue quality closeout goal published charness 5 0 1",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This session completed the five-issue quality/closeout goal, published Charness 5.0.1, and then closed the five tracker issues through separately reviewed post-publication carriers."
-        }
-      ]
-    },
-    {
-      "candidate_id": "current_focus:e871839575fa",
-      "kind": "current_focus",
-      "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort.",
-      "normalized_key": "this session completed the local cited lesson ledger through deterministic shown set declarations and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Context",
-          "generator": null,
-          "kind": "current_focus",
-          "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:25e7603a30c9",
-      "kind": "next_improvement",
-      "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases.",
-      "normalized_key": "applied final goal claims now distinguish a frozen local verification lock from the separately",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:5932f16ef0f8",
-      "kind": "next_improvement",
-      "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity.",
-      "normalized_key": "applied proof surface repairs now include direct consumer regressions when the shared helper depends",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b99e1c8dd20d",
-      "kind": "next_improvement",
-      "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection.",
-      "normalized_key": "applied the slice logs and this retro preserve the direct loader command position and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:9398c6f5069b",
-      "kind": "next_improvement",
-      "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy.",
-      "normalized_key": "collect naturally varied cross session observations and compare preview effects before proposing score policy",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:49e1dc9a75db",
-      "kind": "next_improvement",
-      "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula.",
-      "normalized_key": "compare naturally varied scores across sessions before proposing a budget or score formula",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:b47739beda79",
-      "kind": "next_improvement",
-      "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations.",
-      "normalized_key": "defer any presentation receipt or score budget design until a separately authorized workflow supplies",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:469d32314585",
-      "kind": "next_improvement",
-      "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index.",
-      "normalized_key": "disposition accepted risk prepare packets remain visible to the retro corpus when markdown output",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:39ac79664170",
-      "kind": "next_improvement",
-      "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence.",
-      "normalized_key": "disposition applied record the score budget decision as deferred until a scored cohort provides",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:38443acb7e30",
-      "kind": "next_improvement",
-      "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist.",
-      "normalized_key": "disposition out of scope design applied contract membership transitions only after an explicit contract",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:71c79ff8c1d5",
-      "kind": "next_improvement",
-      "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate.",
-      "normalized_key": "evaluate a release planner preflight that reports those two deterministic prerequisites before any version",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:e13430490ca2",
-      "kind": "next_improvement",
-      "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation.",
-      "normalized_key": "governance treat graduation as a proposal only establish its evidence and displacement before any",
-      "recurrence_class": "graduation-is-proposal",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:49a99fa5e186",
-      "kind": "next_improvement",
-      "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely.",
-      "normalized_key": "none the broad gate reviewer rounds and targeted repairs already form the smallest honest",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:eb43bcfe15f0",
-      "kind": "next_improvement",
-      "lesson": "retain the five verified post-publication closeouts in the handoff; do not re-open consumer-runtime or provider claims that their local-only dispositions deliberately did not make.",
-      "normalized_key": "retain the five verified post publication closeouts in the handoff do not re open",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "retain the five verified post-publication closeouts in the handoff; do not re-open consumer-runtime or provider claims that their local-only dispositions deliberately did not make."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:642d37ca9293",
-      "kind": "next_improvement",
-      "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed.",
-      "normalized_key": "retain the local declaration non claim in the ledger specification goal and this retro",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:913a03dc700a",
-      "kind": "next_improvement",
-      "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact.",
-      "normalized_key": "retain the no policy rationale and required comparative inputs in the successor goal and",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:c62a2a11117a",
-      "kind": "next_improvement",
-      "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local.",
-      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
-      "recurrence_class": "changed-line-proof-before-broad-quality",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
-        }
-      ]
-    },
-    {
-      "candidate_id": "class:d325dbb47c07",
-      "kind": "next_improvement",
-      "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique.",
-      "normalized_key": "run rolling artifact validation and exact changed line coverage for the frozen release diff",
-      "recurrence_class": "release-candidate-preflight-order",
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique."
-        }
-      ]
-    },
-    {
-      "candidate_id": "next_improvement:10db573bd7ed",
-      "kind": "next_improvement",
-      "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item.",
-      "normalized_key": "start the next session from the harness improvement thesis retaining comparative score policy as",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Next Improvements",
-          "generator": null,
-          "kind": "next_improvement",
-          "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:4d5654a4b237",
-      "kind": "repeat_trap",
-      "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary.",
-      "normalized_key": "closeout mechanics remain substantial but the independent claims review caught two overstatements before the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:0b9222db0c48",
-      "kind": "repeat_trap",
-      "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption.",
-      "normalized_key": "closeout preparation temporarily placed a retro packet in the retro corpus making the checked",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:d4500aeb858f",
-      "kind": "repeat_trap",
-      "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey.",
-      "normalized_key": "i initially asked the user to supply scores for what are agent operational judgments",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:f56bf20a9481",
-      "kind": "repeat_trap",
-      "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was.",
-      "normalized_key": "moderate a manual all repository coverage invocation recursively covered broad integration tests far beyond",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:8166c2e49c46",
-      "kind": "repeat_trap",
-      "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary.",
-      "normalized_key": "moderate triage the fresh eye r6 review found that unrelated non candidate spawn calls",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:370f29232107",
-      "kind": "repeat_trap",
-      "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence.",
-      "normalized_key": "strong the release candidate was critiqued before its rolling quality pointer and changed line",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:c2e96cca6dc4",
-      "kind": "repeat_trap",
-      "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute.",
-      "normalized_key": "strong verification the first broad gate found a missing cautilus finding record uncovered r6",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:568a58870a49",
-      "kind": "repeat_trap",
-      "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file.",
-      "normalized_key": "the final changed line proof initially left the renderer entrypoint unmapped adding a real",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file."
-        }
-      ]
-    },
-    {
-      "candidate_id": "repeat_trap:580346862077",
-      "kind": "repeat_trap",
-      "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded.",
-      "normalized_key": "the run initially asked the user to score agent operational lessons that confused the",
-      "recurrence_class": null,
-      "source_count": 1,
-      "independent_source_count": 1,
-      "generator_authored": 0,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
-      "alpha": 0.12,
-      "selection_weight": 0.9847,
-      "sources": [
-        {
-          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
-          "date": "2026-08-12",
-          "section": "Waste",
-          "generator": null,
-          "kind": "repeat_trap",
-          "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded."
-        }
-      ]
-    },
-    {
       "candidate_id": "repeat_trap:40312d195e4d",
       "kind": "repeat_trap",
       "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact.",
       "normalized_key": "without the release helper persistence step a successful publish can leave a clean tree",
       "recurrence_class": null,
-      "source_count": 138,
+      "source_count": 139,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-06-03-v0-17-0-release-auto-retro.md",
@@ -3842,6 +2958,14 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "Without the release-helper persistence step, a successful publish can leave a clean tree and make the retro trigger appear unneeded after the fact."
         }
       ]
     },
@@ -3851,15 +2975,15 @@
       "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing.",
       "normalized_key": "the release trigger closeout is persisted but it covers the release delta only decide",
       "recurrence_class": null,
-      "source_count": 18,
+      "source_count": 19,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4000,6 +3124,14 @@
         {
           "artifact_path": "charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md",
           "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": "release-trigger",
+          "kind": "next_improvement",
+          "lesson": "the release trigger closeout is persisted, but it covers the release delta only. Decide whether this session also owes a session retro; if it did substantive work, run `retro` before closing."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+          "date": "2026-08-13",
           "section": "Next Improvements",
           "generator": "release-trigger",
           "kind": "next_improvement",
@@ -4013,15 +3145,15 @@
       "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can.",
       "normalized_key": "not measured here this session s own rework a release delta detector cannot see",
       "recurrence_class": null,
-      "source_count": 18,
+      "source_count": 19,
       "independent_source_count": 1,
       "generator_authored": 1,
-      "latest_source_path": "charness-artifacts/retro/2026-08-12-v5-1-0-release-auto-retro.md",
-      "latest_source_date": "2026-08-12",
-      "age_days": 1,
-      "recency_weight": 0.9847,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
       "alpha": 0.12,
-      "selection_weight": 0.9847,
+      "selection_weight": 1.0,
       "sources": [
         {
           "artifact_path": "charness-artifacts/retro/2026-07-26-v2-11-1-release-auto-retro.md",
@@ -4166,6 +3298,924 @@
           "generator": "release-trigger",
           "kind": "repeat_trap",
           "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        },
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": "release-trigger",
+          "kind": "repeat_trap",
+          "lesson": "NOT MEASURED HERE: this session's own rework. A release-delta detector cannot see it; only a session retro can."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:ee8a58888e3e",
+      "kind": "current_focus",
+      "lesson": "Release publish triggered a configured automatic session retro for `v5.2.0`.",
+      "normalized_key": "release publish triggered a configured automatic session retro for v5 2 0",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 1,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-v5-2-0-release-auto-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": "release-trigger",
+          "kind": "current_focus",
+          "lesson": "Release publish triggered a configured automatic session retro for `v5.2.0`."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:a1a3a4f4b7e1",
+      "kind": "current_focus",
+      "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support.",
+      "normalized_key": "the user grouped issues 603 604 581 594 and 593 into one ordered active",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The user grouped issues #603, #604, #581, #594, and #593 into one ordered active goal: repair local quality-planning and issue-closeout truth surfaces, then close only what the separate tracker protocol can honestly support."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d0123fdae8c4",
+      "kind": "current_focus",
+      "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior.",
+      "normalized_key": "this goal completed the local lesson ledger capability without claiming contract mutation selection presentation",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal completed the local lesson-ledger capability without claiming contract mutation, selection presentation, release, or hosted behavior."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:d6e17108f677",
+      "kind": "current_focus",
+      "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson.",
+      "normalized_key": "this goal made cited lesson scoring locally eligible only after an operator has recorded",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal made cited lesson scoring locally eligible only after an operator has recorded a deterministic session snapshot that contains the lesson."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:0ae516f50149",
+      "kind": "current_focus",
+      "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy.",
+      "normalized_key": "this goal recorded the first three cited session contained agent score records and decided",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This goal recorded the first three cited, session-contained agent score records and decided not to turn one correlated positive cohort into score policy."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:541853194411",
+      "kind": "current_focus",
+      "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout.",
+      "normalized_key": "this retrospective covers the ordered local execution of operator rulings 2 3 5 and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This retrospective covers the ordered local execution of operator rulings 2, 3, 5, and 6, including the approved one-run Cautilus observation and the final quality closeout."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:6c84de6c9ccd",
+      "kind": "current_focus",
+      "lesson": "This session completed the five-issue quality/closeout goal, published Charness 5.0.1, and then closed the five tracker issues through separately reviewed post-publication carriers.",
+      "normalized_key": "this session completed the five issue quality closeout goal published charness 5 0 1",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session completed the five-issue quality/closeout goal, published Charness 5.0.1, and then closed the five tracker issues through separately reviewed post-publication carriers."
+        }
+      ]
+    },
+    {
+      "candidate_id": "current_focus:e871839575fa",
+      "kind": "current_focus",
+      "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort.",
+      "normalized_key": "this session completed the local cited lesson ledger through deterministic shown set declarations and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "This session completed the local cited lesson ledger through deterministic shown-set declarations and the first session-bound agent score cohort."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:25e7603a30c9",
+      "kind": "next_improvement",
+      "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases.",
+      "normalized_key": "applied final goal claims now distinguish a frozen local verification lock from the separately",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: Final goal claims now distinguish a frozen local verification lock from the separately authorized publish and tracker-close phases."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:5932f16ef0f8",
+      "kind": "next_improvement",
+      "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity.",
+      "normalized_key": "applied proof surface repairs now include direct consumer regressions when the shared helper depends",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: Proof-surface repairs now include direct-consumer regressions when the shared helper depends on caller-owned identity."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b99e1c8dd20d",
+      "kind": "next_improvement",
+      "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection.",
+      "normalized_key": "applied the slice logs and this retro preserve the direct loader command position and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-repair-quality-planner-and-closeout-surface-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "applied: The slice logs and this retro preserve the direct-loader, command-position, and target-binding lessons for later issue selection."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:9398c6f5069b",
+      "kind": "next_improvement",
+      "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy.",
+      "normalized_key": "collect naturally varied cross session observations and compare preview effects before proposing score policy",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "collect naturally varied cross-session observations and compare preview effects before proposing score policy."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:49e1dc9a75db",
+      "kind": "next_improvement",
+      "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula.",
+      "normalized_key": "compare naturally varied scores across sessions before proposing a budget or score formula",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "compare naturally varied scores across sessions before proposing a budget or score formula."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:b47739beda79",
+      "kind": "next_improvement",
+      "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations.",
+      "normalized_key": "defer any presentation receipt or score budget design until a separately authorized workflow supplies",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "defer any presentation receipt or score-budget design until a separately authorized workflow supplies real observations."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:469d32314585",
+      "kind": "next_improvement",
+      "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index.",
+      "normalized_key": "disposition accepted risk prepare packets remain visible to the retro corpus when markdown output",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: accepted-risk: Prepare packets remain visible to the retro corpus when Markdown output is requested; use disposable JSON preparation and persist the final retro before checking the derived index."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:39ac79664170",
+      "kind": "next_improvement",
+      "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence.",
+      "normalized_key": "disposition applied record the score budget decision as deferred until a scored cohort provides",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: applied: Record the score-budget decision as deferred until a scored cohort provides calibration evidence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:38443acb7e30",
+      "kind": "next_improvement",
+      "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist.",
+      "normalized_key": "disposition out of scope design applied contract membership transitions only after an explicit contract",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "Disposition: out-of-scope: Design applied contract membership transitions only after an explicit contract-change grant and observed citation/score evidence exist."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:71c79ff8c1d5",
+      "kind": "next_improvement",
+      "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate.",
+      "normalized_key": "evaluate a release planner preflight that reports those two deterministic prerequisites before any version",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "evaluate a release-planner preflight that reports those two deterministic prerequisites before any version mutation; do not weaken the release quality gate."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:e13430490ca2",
+      "kind": "next_improvement",
+      "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation.",
+      "normalized_key": "governance treat graduation as a proposal only establish its evidence and displacement before any",
+      "recurrence_class": "graduation-is-proposal",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "governance: treat graduation as a proposal only; establish its evidence and displacement before any contract-surface mutation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:49a99fa5e186",
+      "kind": "next_improvement",
+      "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely.",
+      "normalized_key": "none the broad gate reviewer rounds and targeted repairs already form the smallest honest",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "none — the broad gate, reviewer rounds, and targeted repairs already form the smallest honest sequence for this bounded goal; adding a duplicate preflight without a measured recurrent escape would widen the harness prematurely."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:eb43bcfe15f0",
+      "kind": "next_improvement",
+      "lesson": "retain the five verified post-publication closeouts in the handoff; do not re-open consumer-runtime or provider claims that their local-only dispositions deliberately did not make.",
+      "normalized_key": "retain the five verified post publication closeouts in the handoff do not re open",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain the five verified post-publication closeouts in the handoff; do not re-open consumer-runtime or provider claims that their local-only dispositions deliberately did not make."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:642d37ca9293",
+      "kind": "next_improvement",
+      "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed.",
+      "normalized_key": "retain the local declaration non claim in the ledger specification goal and this retro",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain the local-declaration non-claim in the ledger specification, goal, and this retro rather than inferring user exposure from a stored seed."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:913a03dc700a",
+      "kind": "next_improvement",
+      "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact.",
+      "normalized_key": "retain the no policy rationale and required comparative inputs in the successor goal and",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "retain the no-policy rationale and required comparative inputs in the successor goal and critique artifact."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:c62a2a11117a",
+      "kind": "next_improvement",
+      "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local.",
+      "normalized_key": "run changed line coverage before the final broad quality lane so a missing script",
+      "recurrence_class": "changed-line-proof-before-broad-quality",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run changed-line coverage before the final broad quality lane so a missing script entrypoint proof is found while the relevant test context is still local."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:d325dbb47c07",
+      "kind": "next_improvement",
+      "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique.",
+      "normalized_key": "run rolling artifact validation and exact changed line coverage for the frozen release diff",
+      "recurrence_class": "release-candidate-preflight-order",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "run rolling-artifact validation and exact changed-line coverage for the frozen release diff before release critique."
+        }
+      ]
+    },
+    {
+      "candidate_id": "next_improvement:10db573bd7ed",
+      "kind": "next_improvement",
+      "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item.",
+      "normalized_key": "start the next session from the harness improvement thesis retaining comparative score policy as",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "start the next session from the harness-improvement thesis, retaining comparative score policy as dormant evidence work rather than a queue item."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:4d5654a4b237",
+      "kind": "repeat_trap",
+      "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary.",
+      "normalized_key": "closeout mechanics remain substantial but the independent claims review caught two overstatements before the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout mechanics remain substantial, but the independent claims review caught two overstatements before the first goal closed. That review cost was necessary proof work, not a reason to weaken the boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:0b9222db0c48",
+      "kind": "repeat_trap",
+      "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption.",
+      "normalized_key": "closeout preparation temporarily placed a retro packet in the retro corpus making the checked",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-complete-local-lesson-ledger-capability-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Closeout preparation temporarily placed a retro packet in the retro corpus, making the checked-in selection index stale before the packet was removed. The mismatch was caught by the independent final integration test rather than by assumption."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:d4500aeb858f",
+      "kind": "repeat_trap",
+      "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey.",
+      "normalized_key": "i initially asked the user to supply scores for what are agent operational judgments",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-ledger-score-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "I initially asked the user to supply scores for what are agent operational judgments. That was a role-boundary error: the durable score must be authored by the agent from observed work and cited evidence, not fabricated or outsourced as a preference survey."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:f56bf20a9481",
+      "kind": "repeat_trap",
+      "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was.",
+      "normalized_key": "moderate a manual all repository coverage invocation recursively covered broad integration tests far beyond",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**moderate**: A manual all-repository coverage invocation recursively covered broad integration tests, far beyond the one loader line under investigation. It was stopped and replaced with the gate's exact file-limited coverage proof. Broad proof was not itself waste; the missing scope lock was."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:8166c2e49c46",
+      "kind": "repeat_trap",
+      "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary.",
+      "normalized_key": "moderate triage the fresh eye r6 review found that unrelated non candidate spawn calls",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**moderate, triage:** the fresh-eye R6 review found that unrelated non-candidate spawn calls rotated candidate identity. The review cost was necessary: focused synthetic tests had covered the intended identity shape but not the producer's import-safe-membership boundary."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:370f29232107",
+      "kind": "repeat_trap",
+      "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence.",
+      "normalized_key": "strong the release candidate was critiqued before its rolling quality pointer and changed line",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-session-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**strong**: The release candidate was critiqued before its rolling quality pointer and changed-line coverage had been exercised by the release gate. That produced a repair/re-review/retry loop. The release gate correctly stopped publication; the wasted step was discovering ordinary deterministic prerequisites only after preparing release evidence."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:c2e96cca6dc4",
+      "kind": "repeat_trap",
+      "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute.",
+      "normalized_key": "strong verification the first broad gate found a missing cautilus finding record uncovered r6",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-operator-rulings-2-3-5-6-closeout-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**strong, verification:** the first broad gate found a missing Cautilus finding record, uncovered R6 defensive lines, and untriaged duplicate families. The rerun was necessary safety cost: it proved all repairs together rather than treating focused green checks as a substitute."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:568a58870a49",
+      "kind": "repeat_trap",
+      "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file.",
+      "normalized_key": "the final changed line proof initially left the renderer entrypoint unmapped adding a real",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-shown-set-session-records-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The final changed-line proof initially left the renderer entrypoint unmapped. Adding a real `__main__` test exposed one uncovered exit line; the exact mutation failed the new test and was restored before closeout. The resulting test module exceeded the repository length cap, so refusal-path coverage was split into a cohesive dedicated test module rather than mechanically spilling it into a helper file."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:580346862077",
+      "kind": "repeat_trap",
+      "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded.",
+      "normalized_key": "the run initially asked the user to score agent operational lessons that confused the",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+      "latest_source_date": "2026-08-12",
+      "age_days": 1,
+      "recency_weight": 0.9847,
+      "alpha": 0.12,
+      "selection_weight": 0.9847,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-12-first-score-cohort-retro.md",
+          "date": "2026-08-12",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "The run initially asked the user to score agent operational lessons. That confused the scorer role and delayed the first observation; the user corrected it, after which only observed agent decisions were recorded."
         }
       ]
     },
