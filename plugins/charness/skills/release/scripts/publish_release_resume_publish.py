@@ -1,15 +1,19 @@
 """Publication tail for an already-classified release-resume state."""
+
 from __future__ import annotations
 
 import json
 from pathlib import Path
 from typing import Any
 
-CLAIMS_PHASES = {
+# Mirrors the claims-lane phase set owned by `publish_release_claims_review`; this
+# module is loaded by `runpy` from the resume helper and does not import it.
+_CLAIMS_PHASES = frozenset({
     "prepared-claims-review",
     "post-publication-claims-carrier",
     "post-publication-claims-final",
-}
+})
+
 POST_PUBLICATION = {
     "post-publication-carrier", "post-publication-final",
     "post-publication-claims-carrier", "post-publication-claims-final",
@@ -29,7 +33,7 @@ def resume_publish(repo_root: Path, *, args: Any, plan: dict[str, Any], adapter_
     # create -- the exact "publishing path that never calls validate_claims_review" shape
     # this lane was repaired for, preserved one caller away. No production caller does
     # this today; the assertion is what keeps that true.
-    if state["phase"] in CLAIMS_PHASES and not state.get("claims_review"):
+    if state["phase"] in _CLAIMS_PHASES and not state.get("claims_review"):
         raise SystemExit(
             f"--resume: phase `{state['phase']}` requires a validated claims review and this "
             "state carries none; refusing to publish through an unvalidated path."

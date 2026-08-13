@@ -795,3 +795,22 @@ def test_resume_summary_lines_selects_only_resume_packets() -> None:
         {"id": "publish-resume-execute", "command": "exec"},
         {"command": "no id at all"},
     ]}) == ["publish-resume-dry-run: dry", "publish-resume-execute: exec"]
+
+
+@pytest.mark.release_only
+def test_the_planner_summary_prints_the_resume_command_in_process(tmp_path: Path) -> None:
+    """`main()`'s summary emission is only reached through a CLI subprocess, which
+    in-process coverage cannot see. The summary line is the operator-facing half of the
+    prepared-stop repair, so it is driven here through `main()` directly."""
+    from tests.script_main import run_loaded_script_main
+
+    repo, env, _payload = _prepare_release_stop(tmp_path)
+    result = run_loaded_script_main(
+        "plan_release_run.py", _PLANNER, "--repo-root", str(repo), env=env
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert "next_action=resume_prepared_claims_review" in result.stdout
+    assert "publish-resume-dry-run: " in result.stdout
+    assert "publish-resume-execute: " in result.stdout
+    assert "--claims-review-artifact" in result.stdout

@@ -1257,6 +1257,13 @@
     },
     {
       "class": "intentional",
+      "id": "5e83d247011389f1",
+      "note": "idiom-sized two-line early-return guard (`if <mapping>.get(<key>) != <literal>: return`) shared by scripts/validate_integrations.py's cautilus-trigger applicability check and the release resume's unproven-claims warning. Different mappings, different keys, different subsystems, and no shared behaviour to extract — only a Python spelling. Same class already accepted as 003780cc89f2ccfd and 349f5d577fe2588b. Surfaced as new because the release helper gained the second member when a CI-blocked guard was extracted into its own testable function; the validate_integrations member is untouched.",
+      "reviewed_at": "2026-08-13",
+      "surface": "code"
+    },
+    {
+      "class": "intentional",
       "id": "5e86a2028e5c7283",
       "note": "Domain-local refusal helpers keep a user-facing prefix tied to the validator, writer, preview, or command that owns the verdict. A generic two-line exception factory would remove no policy while making refusal ownership less visible.",
       "reviewed_at": "2026-08-12",

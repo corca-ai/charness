@@ -369,34 +369,13 @@ def preflight_resume_state(
         cli=cli,
     )
     assert_resumable(state, tag_name=tag_name)
-    claims_phases = {
-        "prepared-claims-review",
-        "post-publication-claims-carrier",
-        "post-publication-claims-final",
-    }
-    if args.claims_review_artifact and state["phase"] not in claims_phases:
-        # Accepted and silently ignored was the worse half of the fall-through above: the
-        # operator supplies a real record, believes they are in the claims lane, and the
-        # argument is never opened.
-        raise SystemExit(
-            f"--resume: --claims-review-artifact was supplied but the resolved phase is "
-            f"`{state['phase']}`, which does not read it; refusing rather than publishing "
-            "with the record unread."
-        )
-    if state["phase"] in claims_phases:
+    _claims_review["assert_claims_artifact_is_read"](state["phase"], args.claims_review_artifact)
+    if state["phase"] in _claims_review["CLAIMS_PHASES"]:
         state["claims_review"] = _claims_review["validate_claims_review"](
             repo_root, prepared=state["prepared"], evidence_commit=state.get("claims_evidence_commit") or state["head_sha"],
             artifact_path=args.claims_review_artifact, target_version=current_version, tag_name=tag_name, run=cli.run,
         )
-        if state["claims_review"]["verdict"] == "unproven":
-            # LOUD. Publication may proceed on `unproven` -- that is the point of the
-            # state -- but the release record does not yet mirror it, so stderr is the
-            # only channel that puts it in front of the operator at the boundary.
-            sys.stderr.write(
-                "WARNING (release claims review): verdict is `unproven` -- the distinct-observer "
-                "property was NOT established for this release. Recorded signal: "
-                f"{state['claims_review']['observer_distinctness']['signal']}\n"
-            )
+        _claims_review["unproven_claims_warning"](state["claims_review"], write=sys.stderr.write)
     return state
 
 

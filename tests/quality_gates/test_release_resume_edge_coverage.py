@@ -27,6 +27,7 @@ ISSUE_CLOSEOUT_ARTIFACT = _load("release_issue_closeout_artifact")
 MESSAGE = _load("release_issue_closeout_message")
 RESUME_PUBLISH = _load("publish_release_resume_publish")
 RESUME = _load("publish_release_resume")
+CLAIMS = _load("publish_release_claims_review")
 
 
 class _ClaimsResumeCli:
@@ -411,3 +412,32 @@ def test_the_marker_refusal_names_a_safe_recovery_after_publication() -> None:
         assert "no single-parent prepared boundary" in message
         assert expected in message
         assert forbidden not in message
+
+
+def test_a_claims_artifact_the_phase_will_not_read_is_refused_in_process() -> None:
+    """Only reachable through a CLI subprocess otherwise, which in-process coverage
+    cannot see — and a refusal nobody exercised is a floor nobody proved."""
+    CLAIMS.assert_claims_artifact_is_read("prepared-claims-review", "a/b.json")
+    CLAIMS.assert_claims_artifact_is_read("release-content", None)
+    for phase in ("release-content", "post-publication-carrier", "post-publication-final"):
+        with pytest.raises(SystemExit, match="does not read it"):
+            CLAIMS.assert_claims_artifact_is_read(phase, "charness-artifacts/release-review/r.json")
+
+
+def test_the_unproven_warning_fires_only_for_an_unproven_verdict() -> None:
+    """Publication proceeds on `unproven`, and the published release record does not yet
+    mirror the verdict, so stderr is the only channel that puts it in front of the
+    operator at the boundary."""
+    written: list[str] = []
+    CLAIMS.unproven_claims_warning(
+        {"verdict": "unproven", "observer_distinctness": {"signal": "host refused the spawn"}},
+        write=written.append,
+    )
+    assert len(written) == 1
+    assert "verdict is `unproven`" in written[0]
+    assert "host refused the spawn" in written[0]
+
+    for quiet in ({"verdict": "pass", "observer_distinctness": {"signal": "s"}}, {}):
+        written.clear()
+        CLAIMS.unproven_claims_warning(quiet, write=written.append)
+        assert written == []

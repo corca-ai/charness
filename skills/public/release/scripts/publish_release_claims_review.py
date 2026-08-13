@@ -48,6 +48,47 @@ def blob_sha256(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
+CLAIMS_PHASES = {
+    "prepared-claims-review",
+    "post-publication-claims-carrier",
+    "post-publication-claims-final",
+}
+
+
+def assert_claims_artifact_is_read(phase: str, claims_review_artifact: str | None) -> None:
+    """Refuse a claims artifact the resolved phase will never open.
+
+    Accepted-and-silently-ignored is the worse half of the marker fall-through: the
+    operator supplies a real record, the planner told them to, and nothing reads it.
+
+    Its own function because it is only reachable through a CLI subprocess otherwise,
+    which is invisible to in-process coverage — a refusal nobody exercised is a floor
+    nobody proved.
+    """
+    if claims_review_artifact and phase not in CLAIMS_PHASES:
+        raise SystemExit(
+            f"--resume: --claims-review-artifact was supplied but the resolved phase is "
+            f"`{phase}`, which does not read it; refusing rather than publishing "
+            "with the record unread."
+        )
+
+
+def unproven_claims_warning(claims_review: dict[str, Any], *, write: Any) -> None:
+    """Announce an `unproven` verdict at the boundary.
+
+    LOUD, because publication may proceed on `unproven` — that is the point of the
+    state — but the published release record does not yet mirror it, so stderr is the
+    only channel that puts it in front of the operator.
+    """
+    if claims_review.get("verdict") != "unproven":
+        return
+    write(
+        "WARNING (release claims review): verdict is `unproven` -- the distinct-observer "
+        "property was NOT established for this release. Recorded signal: "
+        f"{claims_review['observer_distinctness']['signal']}\n"
+    )
+
+
 def assert_record_path_matches_adapter(output_dir: str | None) -> None:
     """Refuse when the adapter writes the release record somewhere this module cannot read.
 
