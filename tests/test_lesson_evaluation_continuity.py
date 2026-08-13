@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import io
 import json
+import runpy
 from datetime import date
 from pathlib import Path
 
@@ -573,6 +574,59 @@ def test_reporter_on_disk_cohort_preserves_denominator_and_human_json_fields(
     assert "presentation-unproven=0" in summary_lines[0]
 
 
+def test_reporter_skips_generated_digest_and_prepare_packet(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "charness-artifacts/retro"
+    output.mkdir(parents=True)
+    (output / "recent-lessons.md").write_text("# Digest\n", encoding="utf-8")
+    packet = output / "2026-08-14-packet.md"
+    packet.write_text("# Retro Prepare Packet\n", encoding="utf-8")
+    (output / "lesson-ledger.json").write_text(
+        json.dumps(
+            {
+                "legacy_score_event_count": 0,
+                "session_events": [],
+                "score_events": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+    monkeypatch.setattr(
+        checker._packet,
+        "file_is_prepare_packet_markdown_kind",
+        lambda path, **_kwargs: path == packet,
+    )
+    assert checker.build_report(tmp_path, as_of=date(2026, 8, 15))["eligible_retro_count"] == 0
+
+
+def test_reporter_rejects_receipt_filename_session_mismatch(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    output = tmp_path / "charness-artifacts/retro"
+    output.mkdir(parents=True)
+    (output / "lesson-ledger.json").write_text(
+        json.dumps(
+            {
+                "legacy_score_event_count": 0,
+                "session_events": [{"session_id": "s-1", "snapshot_sha256": "a" * 64}],
+                "score_events": [],
+            }
+        ),
+        encoding="utf-8",
+    )
+    receipt_path = continuity.receipt_directory(output) / "wrong-name.json"
+    receipt_path.parent.mkdir(parents=True)
+    receipt_path.write_text(json.dumps(_receipt()), encoding="utf-8")
+    monkeypatch.setattr(checker._ledger, "validate_lesson_ledger", lambda **_kwargs: {})
+
+    report = checker.build_report(tmp_path, as_of=date(2026, 8, 15))
+
+    assert report["violations"][0]["id"] == "invalid-receipt"
+    assert "filename does not match" in report["violations"][0]["detail"]
+
+
 def test_reporter_names_missing_disposition_and_invalid_receipt(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -729,3 +783,98 @@ def test_cli_json_snapshot_and_exit_status(
         "effect-recorded-without-score",
         "score-count-mismatch",
     }
+
+
+def test_reporter_cli_human_output_and_error_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    clean = continuity.reconcile_records(
+        retros=[],
+        sessions={},
+        score_events=[],
+        receipts={},
+        receipt_violations=[],
+        as_of=date(2026, 8, 14),
+    )
+    monkeypatch.setattr(checker, "build_report", lambda *_args, **_kwargs: clean)
+    monkeypatch.setattr(
+        checker.sys,
+        "argv",
+        ["check_lesson_evaluation_continuity.py", "--repo-root", str(tmp_path)],
+    )
+    assert checker.main() == 0
+    assert capsys.readouterr().out.startswith("Lesson evaluation continuity:")
+
+    monkeypatch.setattr(
+        checker,
+        "build_report",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(ValueError("bad ledger")),
+    )
+    assert checker.main() == 1
+    assert "bad ledger" in capsys.readouterr().err
+
+
+def test_reporter_script_entrypoint_returns_nonzero_for_missing_repo(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(
+        checker.sys,
+        "argv",
+        ["check_lesson_evaluation_continuity.py", "--repo-root", str(tmp_path)],
+    )
+    with pytest.raises(SystemExit) as caught:
+        runpy.run_path(str(Path(checker.__file__)), run_name="__main__")
+    assert caught.value.code == 1
+
+
+def test_open_session_cli_main_delegates_arguments(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    seen: dict[str, object] = {}
+
+    def fake_open_session(**kwargs: object) -> dict[str, object]:
+        seen.update(kwargs)
+        return {}
+
+    monkeypatch.setattr(open_lesson_session, "open_session", fake_open_session)
+    monkeypatch.setattr(
+        open_lesson_session.sys,
+        "argv",
+        [
+            "open_lesson_session.py",
+            "--repo-root",
+            str(tmp_path),
+            "--session-id",
+            "s-1",
+            "--seed",
+            "seed",
+        ],
+    )
+    assert open_lesson_session.main() == 0
+    assert seen["repo_root"] == tmp_path.resolve()
+    assert seen["session_id"] == "s-1"
+    assert seen["seed"] == "seed"
+
+
+def test_open_session_script_entrypoint_reports_operational_error(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(
+        open_lesson_session.sys,
+        "argv",
+        [
+            "open_lesson_session.py",
+            "--repo-root",
+            str(tmp_path),
+            "--session-id",
+            "s-1",
+            "--seed",
+            "seed",
+        ],
+    )
+    with pytest.raises(SystemExit) as caught:
+        runpy.run_path(str(Path(open_lesson_session.__file__)), run_name="__main__")
+    assert caught.value.code == 1
+    assert capsys.readouterr().err

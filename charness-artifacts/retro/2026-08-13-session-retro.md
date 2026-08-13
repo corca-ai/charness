@@ -396,6 +396,16 @@ scaffold. Round 2 caught that ownership inversion; the capped repair moved the
 exact section and command back to the Charness adapter and development guide.
 (recurrence-class: rule-exists-but-does-not-bind)
 
+The first committed-range changed-line run also found that broad behavior tests
+did not execute several malformed-input, receipt, and CLI branches in the three
+new lifecycle scripts. The missing paths were covered, one listed invalid-write
+line was manually mutated to prove the new test fails, and the terminal
+changed-line consumer then passed. This was useful late evidence, but it was
+avoidable: the early changed-line self-check should have run before the first
+closeout commit. The full standing suite took about 145 seconds, above the
+configured 120-second runtime budget; that is gate-baseline debt, not a reason
+to weaken this slice's proof. (recurrence-class: guard-adjacent-to-action)
+
 The decisions that constrained the result were:
 
 - count only dated durable retro artifacts from 2026-08-14, not every host chat;

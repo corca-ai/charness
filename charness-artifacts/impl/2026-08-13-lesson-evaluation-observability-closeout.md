@@ -33,16 +33,19 @@ opened before the affected work.
 
 ## Verification
 
-- `python3 -m pytest -q tests/test_lesson_evaluation_continuity.py tests/test_retro_plan.py tests/test_retro_scaffold.py tests/quality_gates/test_quality_runner.py`
-  — 106 passed after the claims-review repairs.
+- `python3 -m pytest -q tests/test_lesson_evaluation_continuity.py tests/test_lesson_evaluation_contract_boundaries.py tests/test_retro_plan.py tests/test_retro_scaffold.py tests/quality_gates/test_quality_runner.py`
+  — 146 passed after the claims-review and changed-line repairs.
 - `python3 scripts/validate_retro_artifact.py --repo-root . --paths charness-artifacts/retro/2026-08-13-session-retro.md`
   — passed with the honest pre-activation `missing-start` disposition.
 - `python3 scripts/check_lesson_evaluation_continuity.py --repo-root . --as-of 2026-08-13 --json`
   — activation-eve baseline: 0 eligible durable retros, 0 dispositions, 6
   historical score events, 0 violations. This is not future-operation proof.
-- Terminal slice-closeout and mutation verification run only after this artifact
-  and the critique bindings are frozen; this artifact does not pre-claim their
-  outcome.
+- `python3 scripts/run_slice_closeout.py --repo-root . --base origin/main
+  --verification-lock --produce-mutation-coverage
+  --ack-cautilus-skill-review` — completed; its committed-range changed-line
+  consumer passed after boundary and CLI coverage was added. A manual mutation
+  of the listed `scripts/open_lesson_session.py:37` error type made the bound
+  invalid-write test fail and was reverted before the passing run.
 - Cautilus was not run because evaluator execution is ask-before-run and no
   phase-scoped grant was given.
 
@@ -85,6 +88,13 @@ session reference, and unclaimed emission. This is a claims-review repair, not
 a claimed third code-review round. The final claims readback independently
 reran 106 focused tests, matched canonical/exported reporters, and accepted the
 repaired closeout assertions with no remaining blocker.
+
+The first post-commit changed-line run then rejected uncovered validation and
+CLI branches in the three new repo-local scripts. Boundary, receipt, reporter,
+and entrypoint tests were added and split into a cohesive contract-boundary
+module to stay below the test-file length ceiling. The terminal producer then
+passed the committed-range changed-line consumer. These test-only repairs are
+accepted-unreviewed under the two-round code-review cap.
 
 Fresh-eye pass: scripts/check_lesson_evaluation_continuity.py — proof surface;
 rounds 1 and 2 inspected its verdict boundary, and the capped claims repairs
