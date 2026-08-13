@@ -28,6 +28,7 @@ MESSAGE = _load("release_issue_closeout_message")
 RESUME_PUBLISH = _load("publish_release_resume_publish")
 RESUME = _load("publish_release_resume")
 CLAIMS = _load("publish_release_claims_review")
+RESUME_STATE = _load("publish_release_resume_state")
 
 
 class _ClaimsResumeCli:
@@ -285,6 +286,80 @@ def test_claims_resume_repairs_exactly_the_missing_publication_leg(
     assert pushes == [expected_push]
     assert not any(command[:2] == ["git", "tag"] for command in commands)
     assert committed == ["artifact"]
+
+
+class _ClassifierCli:
+    """Enough git for `resumable_state`, and nothing that can reach a real repo.
+
+    The end-to-end resume tests drive this classifier through `subprocess`, which is the
+    honest way to test a CLI and leaves its phase arms invisible to in-process coverage --
+    so the changed-line mutation gate reads them as untested, which is what it did.
+    """
+
+    def __init__(self, *, revs: dict[str, str], subject: str, messages: dict[str, str],
+                 tag_local: bool = True, close_refs: list[str] | None = None):
+        self.revs = revs
+        self.subject = subject
+        self.messages = messages
+        self.tag_local = tag_local
+        self.close_refs = close_refs or []
+        self._helpers = SimpleNamespace(
+            tag_exists=lambda *_a, **_k: {"local": tag_local, "remote": True, "remote_tag_sha": revs.get("tag", "")},
+            release_exists=lambda *_a, **_k: True,
+        )
+
+    def run(self, command, *, cwd, check=True):
+        args = command[1:]
+        if args[:2] == ["log", "-1"]:
+            return SimpleNamespace(returncode=0, stdout=self.subject)
+        if args[:1] == ["rev-parse"]:
+            return SimpleNamespace(returncode=0, stdout=self.revs.get(args[1], ""))
+        if args[:1] == ["rev-list"]:
+            return SimpleNamespace(returncode=0, stdout=self.revs.get("tag", ""))
+        if args[:2] == ["show", "-s"]:
+            return SimpleNamespace(returncode=0, stdout=self.messages.get(args[-1], ""))
+        if args[:1] == ["show"]:
+            # No release record anywhere: every prepared-record lookup declines, which is
+            # what the post-publication arms under test require.
+            return SimpleNamespace(returncode=1, stdout="")
+        if args[:1] == ["merge-base"]:
+            return SimpleNamespace(returncode=0, stdout="")
+        if args[:1] == ["ls-remote"]:
+            return SimpleNamespace(returncode=0, stdout="remote-sha\trefs/heads/main\n")
+        raise AssertionError(f"unexpected command: {command}")
+
+    def release_content_close_keyword_refs(self, text):
+        return list(self.close_refs) if "Close #" in text else []
+
+
+def test_the_post_publication_phase_arms_classify_in_process() -> None:
+    """The two closeout arms the subprocess tests reach only through a full publish."""
+    carrier = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "carrier-sha", "HEAD^": "tag-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout carrier for v1.2.3",
+            messages={"HEAD": "carrier\n\nClose #44.", "HEAD^": "Release demo 1.2.3"},
+            close_refs=["#44"],
+        ),
+    )
+    assert carrier["phase"] == "post-publication-carrier"
+    assert carrier["head_parent_is_tag"] is True
+    assert carrier["record_path"] == _RECORD_PATH
+
+    final = RESUME_STATE.resumable_state(
+        Path("."), tag_name="v1.2.3", commit_message="Release demo 1.2.3", remote="origin",
+        branch="main", backend={}, record_path=_RECORD_PATH,
+        cli=_ClassifierCli(
+            revs={"HEAD": "final-sha", "HEAD^": "carrier-sha", "HEAD^^": "tag-sha", "tag": "tag-sha"},
+            subject="Record release issue closeout for v1.2.3",
+            messages={"HEAD": "final artifact", "HEAD^": "carrier\n\nClose #44."},
+            close_refs=["#44"],
+        ),
+    )
+    assert final["phase"] == "post-publication-final"
+    assert final["head_grandparent_is_tag"] is True
 
 
 def test_the_artifact_commit_pathspec_covers_the_adapter_record_without_a_phantom() -> None:

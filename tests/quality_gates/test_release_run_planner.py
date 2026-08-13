@@ -717,6 +717,26 @@ def test_planner_prepared_stop_helpers_are_exercised_in_process(tmp_path: Path) 
     assert _PREPARED_STOP.release_record_path({"output_dir": "  "}) is None
     assert _PREPARED_STOP.head_release_record(repo, None) is None
 
+    # Tolerant where the publish helper refuses, including when the listing itself fails:
+    # the planner is read-only, so its worst honest outcome is "no candidate to place",
+    # never a crash. The publish helper owns the refusal.
+    def _raises(*_args, **_kwargs):
+        raise OSError("notes directory is unreadable")
+
+    assert _PREPARED_STOP.drafted_notes_candidates(
+        repo, {"output_dir": "charness-artifacts/release"}, "v1.2.3", find_drafted_notes=_raises
+    ) == []
+    assert _PREPARED_STOP.drafted_notes_candidates(
+        repo, {}, "v1.2.3", find_drafted_notes=_raises
+    ) == []
+    assert _PREPARED_STOP.drafted_notes_candidates(
+        repo, {"output_dir": "charness-artifacts/release"}, None, find_drafted_notes=_raises
+    ) == []
+    assert _PREPARED_STOP.drafted_notes_candidates(
+        repo, {"output_dir": "charness-artifacts/release"}, "v1.2.3",
+        find_drafted_notes=lambda root, _dir, *, target_tag: [root / "charness-artifacts" / "release" / "notes-v1.2.3.md"],
+    ) == ["charness-artifacts/release/notes-v1.2.3.md"]
+
     # No release record at HEAD (no commits yet) -> no marker, so no prepared stop.
     assert _PREPARED_STOP.head_release_record(repo, "charness-artifacts/release/latest.md") is None
     assert _PREPARED_STOP.committed_claims_record(
