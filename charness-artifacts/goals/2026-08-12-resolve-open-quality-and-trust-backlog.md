@@ -9,16 +9,18 @@ in this session after the pre-implementation critique passes.
 
 ## Active Operating Frame
 
-- Current slice: `5.1.0` is published and the publication boundary is cleared.
-  All 22 ledger rows still reconcile to one live OPEN tracker issue and one
-  carrier; the release closed no issues. #527 is an operator-owned OPEN defer and
-  #528 remains a separately owned OPEN split.
-- Current slice intent: complete the 22-issue cohort disposition. Each row is
-  either closed through the `issue` closeout floor or holds a tracker-visible
-  non-closure with an owner and revisit trigger.
-- Next action: author the direct-to-default closeout carriers for the rows whose
-  local proof is complete, then run `verify-closeout --expect-state CLOSED` per
-  row. `direct-to-default` means the carrier commit plus that readback
+- Current slice: the four rows a bounded closeout review pulled back from the
+  cohort carrier (#597, #607, #590, #584) have been worked. Three are repaired
+  with two review rounds each and carry local proof; #584 remains held on this
+  ledger's Umbrella Closure Contract, unchanged. Seven cohort issues are CLOSED
+  and independently read back; the rest are OPEN.
+- Current slice intent: the repaired rows now need their tracker-visible carriers
+  and, where eligible, the `issue` closeout floor. No row is claimed closed by the
+  repair work itself.
+- Next action: post the tracker carriers for #597, #607, #590, and #609, then
+  author direct-to-default closeout carriers for the rows whose local proof is
+  complete and run `verify-closeout --expect-state CLOSED` per row.
+  `direct-to-default` means the carrier commit plus that readback
   (`skills/public/issue/references/closeout-discipline.md:91-104`); the green
   hosted CI on the default branch does not discharge it.
 - Verification cadence: run cheap deterministic checks at commit boundaries;
@@ -292,8 +294,38 @@ premise, owner, evidence channel, and tracker-visible outcome.
 - Complete flip: only after retro, final quality, review, publication/readbacks,
   issue closeout dispositions, and terminal records are bound and verified.
 
+### Four Held-Back Rows Repaired With Two Review Rounds (2026-08-13)
+
+- Objective: repair the four rows the bounded closeout review pulled from the
+  cohort carrier, and close the release-resume ergonomics gap the claims-review
+  contract named. Every one changes verdict logic on a proof surface, so each owed
+  two bounded review rounds.
+- Commits: `dd473642` (the repairs), `dfb29e0e` (coverage for the refusal branches
+  the subprocess tests cannot reach).
+- Evidence: two-round critique
+  `../critique/2026-08-13-four-proof-surface-repairs-two-round-critique.md`; six
+  bounded reviewers across two windows, both `reviewer_boundary_fingerprint.py`
+  verifies `clean` with empty `parent_declared` and run before the first fold; the
+  locked closeout completed and the changed-line mutation-coverage consumer is
+  green over `origin/main`.
+- What the rounds found, which is why the rule exists: round 1 found a live defect
+  on every surface, and round 2 found a defect INSIDE a round-1 repair on every
+  surface — including one repair that silently disabled a sibling repair, and one
+  that reopened the exact class the sibling fold had closed. All were reproduced
+  executably by the parent before repair.
+- Boundary: this is local proof and a fresh-eye record. No issue is closed, no
+  push or release occurred, and the three deferred residues are tracked as #610,
+  #611, and #613 rather than carried as prose.
+
 ## Off-Goal Findings
 
+- [#609](https://github.com/corca-ai/charness/issues/609),
+  [#610](https://github.com/corca-ai/charness/issues/610),
+  [#611](https://github.com/corca-ai/charness/issues/611), and
+  [#613](https://github.com/corca-ai/charness/issues/613) — late arrivals from the
+  post-publication closeout review and this session's two review rounds. #609 is
+  locally resolved; the other three are filed and deliberately not implemented.
+  The execution ledger's Late Arrivals section owns their state.
 - [#608](https://github.com/corca-ai/charness/issues/608) — its local repair now
   supplies the supported marked-record and bound-claims-review stage; it remains
   a late arrival outside the fixed 22-row cohort. The locked changed-line proof
@@ -303,7 +335,8 @@ premise, owner, evidence channel, and tracker-visible outcome.
 ## Final Verification
 
 - Publication is complete and independently observed. `5.1.0` is tagged at
-  `1024e500` on `origin`, the default branch head is `4aa76a19`, and a
+  `1024e500` on `origin`, the default branch head at publication time was the
+  historical `4aa76a19` (local `HEAD` has advanced since), and a
   credential-free REST readback returns `draft: false` /
   `target_commitish: main` (`../probe/2026-08-13-v5.1.0-post-publication-observables.md`).
   Hosted Quality Core succeeded on the default branch head (run `31650565315`,
