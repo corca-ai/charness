@@ -2,13 +2,12 @@
 
 ## Workflow Trigger
 
-- Continue the active `achieve` goal. **Three release residues are repaired and
-  committed locally but NOT closed**: #613, #610, and #611 each took two bounded
-  review rounds, carry `draft_verified` carriers with per-issue behavioral
-  verdicts, and are committed as `503545d7`, `2eaa887b`, `e455c338`. Their
-  `Closes #N` keywords take effect only on a push, and no push grant exists, so
-  GitHub state is unchanged. Ten cohort issues remain CLOSED and read back; #584
-  is unchanged on the Umbrella Closure Contract.
+- Continue the active `achieve` goal. **#613, #610, and #611 are CLOSED and read
+  back** — each took two bounded review rounds, closed through the `issue` floor
+  with a behavioral verdict via the exported plugin copy, and `verify-closeout`
+  returned `verified` for all three, reconciled against an independent
+  `gh issue list` (15 open). `d315d989` is pushed. #584 is unchanged on the
+  Umbrella Closure Contract; #614 is newly filed and unresolved.
 
 ## Continuation Capability
 
@@ -18,10 +17,11 @@
 ## Current State
 
 - [Two-round critique](../charness-artifacts/critique/2026-08-13-release-claims-path-record-and-notes-two-round-critique.md) — holds what both rounds found on #613/#610/#611, the three counterweight declines, and the reviewer/boundary evidence.
-- [Proof-surface repair retro](../charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md) — holds the `skipped-is-not-passed` lesson, now promoted to the [operating contract](./conventions/operating-contract.md#external-side-effect-discipline) because the rolling digest ranked it out of its slots.
-- Local verification on `e455c338`: `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --include-release-only` (8959 passed) and `python3 scripts/prepush_focused_changed_line_coverage.py --repo-root .` (clean).
+- [Session retro](../charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md) — holds why the push took five attempts, and the environment-not-test lesson behind it.
+- [#614](https://github.com/corca-ai/charness/issues/614) — holds the unbounded-cache class: the seed cache is fixed and pruned, `pytest-tmp` and `reports/mutation` are recorded and unfixed.
+- [Proof-surface repair retro](../charness-artifacts/retro/2026-08-13-proof-surface-repair-retro.md) — holds the `skipped-is-not-passed` lesson, now in the [operating contract](./conventions/operating-contract.md#external-side-effect-discipline) because the rolling digest ranked it out of its slots.
+- Verification on `d315d989`: pre-push gate `91 passed, 0 failed`; re-run with `python3 scripts/run_standing_pytest.py --repo-root . --mode read-only --include-release-only` (8959 passed).
 - [Release `5.1.0` observables probe](../charness-artifacts/probe/2026-08-13-v5.1.0-post-publication-observables.md) — holds the credential-free REST readback behind the published-release claim; it closed no issues.
-- [Goal progress critique](../charness-artifacts/critique/2026-08-12-goal-progress-frame-and-ledger-critique.md) — holds why local proof is not GitHub closure.
 
 Historical immutable publish-state claim — this captures the completed
 2026-08-06 snapshot only; it does not describe this active backlog or authorize
@@ -32,23 +32,23 @@ issue closure, push, or release.
 {"kind":"charness.publish-state-claim","schema_version":1,"block_id":"post-push-operational-proof","manifest_path":"charness-artifacts/goals/2026-08-06-post-push-baseline.slice-manifest.json","manifest_sha256":"a31aab7aecfb00c9ef84b9c26c93dbe15d630e83416a6d5cf38c04b6367fea34","published_sha":"e7c3e1b3fd7ab64bd07e19a2adc8bf7cedf2bde5","claim_state":"reconciled_captured_snapshot","issue_scope":"repository_open_issues_empty","pending_publish":false,"captured_at":"2026-08-06T02:14:03Z"}
 ```
 
-Refresh kept: the unpushed-carrier state, because it is the only thing standing
-between three finished repairs and their tracker closure, and the execution
-ledger, because it still owns the 22-issue cohort reconciliation.
+Refresh kept: the execution ledger, because it still owns the 22-issue cohort
+reconciliation, and #614, because two of its three named caches are still
+unbounded.
 
-Refresh non-claims. Nothing is pushed and no issue changed state on GitHub, so all
-three of #613, #610, and #611 are repaired and committed, not closed. No release
-was cut. No
-consumer repo with a non-default adapter `output_dir` was exercised — the claims
-path behaviour is proven against the exported plugin copy and repo fixtures only.
-The `--close-issue` half of #611 stays unenforced on the prepared-claims-review
-lane, and the notes preflight keys on a filename convention its helper cannot see
-through; both are recorded in the critique's Counterweight Pass.
+Refresh non-claims. No release was cut and no tag moved. No consumer repo with a
+non-default adapter `output_dir` was exercised — the claims-path behaviour is
+proven against the exported plugin copy and repo fixtures only. The
+`--close-issue` half of #611 stays unenforced on the prepared-claims-review lane,
+and the notes preflight keys on a filename convention its helper cannot see
+through; both are in the critique's Counterweight Pass. #614 is filed and
+unresolved: only the seed cache is bounded, while `pytest-tmp` (5.5 GB, leaks a
+basetemp per failing run by design) and `reports/mutation` (2.2 GB) are recorded
+and untouched.
 
 ## Next Session
 
-1. Ask the maintainer for a phase-scoped push grant, then push and run
-   `python3 "$SKILL_DIR/scripts/issue_tool.py" verify-closeout --repo corca-ai/charness --number 613 --carrier direct-commit --expect-state CLOSED` for each of [#613](https://github.com/corca-ai/charness/issues/613), [#610](https://github.com/corca-ai/charness/issues/610), and [#611](https://github.com/corca-ai/charness/issues/611); confirm remote CI through a channel distinct from the push.
+1. Resolve [#614](https://github.com/corca-ai/charness/issues/614)'s remaining members: `pytest-tmp` keeps the most recent N failed basetemps rather than cleaning up on failure (the retention is deliberate), and `reports/mutation` has no policy at all.
 2. [#584](https://github.com/corca-ai/charness/issues/584) stays held on the ledger's Umbrella Closure Contract, untouched this session.
 3. The eleven other open cohort rows hold tracker-visible non-closures with owners and revisit triggers in the [execution ledger](../charness-artifacts/goals/2026-08-12-open-backlog-execution-ledger.md).
 4. The next release stays conditional on cohort disposition, retro, frozen verification, release critique, and independent readbacks per the [operating contract](./conventions/operating-contract.md).

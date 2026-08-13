@@ -12,8 +12,8 @@
     "independent_source_count": "human-authored sources count individually; all emissions sharing one generator count once"
   },
   "as_of_source_date": "2026-08-13",
-  "source_artifact_count": 493,
-  "candidate_count": 2011,
+  "source_artifact_count": 494,
+  "candidate_count": 2021,
   "top_candidates": [
     {
       "candidate_id": "class:da0e4841a6b9",
@@ -908,6 +908,32 @@
       ]
     },
     {
+      "candidate_id": "current_focus:aaeeaa3be4be",
+      "kind": "current_focus",
+      "lesson": "The handoff's Next Session named four items: resolve #613, then #610 and #611, leave #584 held, and act on the `skipped-is-not-passed` lesson.",
+      "normalized_key": "the handoff s next session named four items resolve 613 then 610 and 611",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Context",
+          "generator": null,
+          "kind": "current_focus",
+          "lesson": "The handoff's Next Session named four items: resolve #613, then #610 and #611, leave #584 held, and act on the `skipped-is-not-passed` lesson."
+        }
+      ]
+    },
+    {
       "candidate_id": "current_focus:aa40d8da6222",
       "kind": "current_focus",
       "lesson": "This final pre-publication review covers the frozen `origin/main..0ac9260d` candidate after the all-range changed-line closeout passed and #608's prepared claims-review topology was repaired.",
@@ -956,6 +982,32 @@
           "generator": null,
           "kind": "current_focus",
           "lesson": "This session reconciled the fixed 22-issue cohort without converting an OPEN tracker state into a completion claim."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:2d0d702d6d98",
+      "kind": "next_improvement",
+      "lesson": "**capability**: anything that writes under a cache root states its retention. Two of the repo's caches had none and one reached 1.1 TB; a third (`slice_closeout_broad_gate`) shows the rule is already understood here. Tracked as #614.",
+      "normalized_key": "capability anything that writes under a cache root states its retention two of the",
+      "recurrence_class": "unbounded-cache",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**capability**: anything that writes under a cache root states its retention. Two of the repo's caches had none and one reached 1.1 TB; a third (`slice_closeout_broad_gate`) shows the rule is already understood here. Tracked as #614."
         }
       ]
     },
@@ -1086,6 +1138,32 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**memory**: Keep this retro and `docs/handoff.md` explicit that the next action is coverage restoration, not push/release."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:6a2b65e0d51b",
+      "kind": "next_improvement",
+      "lesson": "**memory**: state a cause only after a second observation that discriminates it. I named disk pressure for run 2 from one data point; run 3 refuted it at 34% disk.",
+      "normalized_key": "memory state a cause only after a second observation that discriminates it i named",
+      "recurrence_class": "cause-named-from-one-observation",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**memory**: state a cause only after a second observation that discriminates it. I named disk pressure for run 2 from one data point; run 3 refuted it at 34% disk."
         }
       ]
     },
@@ -1272,6 +1350,32 @@
       ]
     },
     {
+      "candidate_id": "class:a78b8e6d8f99",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: do not carry a flag you have not confirmed is needed. `git -c core.hooksPath=.githooks` was redundant against the local config from the first commit and was the thing breaking the gate for three runs.",
+      "normalized_key": "workflow do not carry a flag you have not confirmed is needed git c",
+      "recurrence_class": "unchecked-redundant-flag",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: do not carry a flag you have not confirmed is needed. `git -c core.hooksPath=.githooks` was redundant against the local config from the first commit and was the thing breaking the gate for three runs."
+        }
+      ]
+    },
+    {
       "candidate_id": "next_improvement:672ed802a983",
       "kind": "next_improvement",
       "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation.",
@@ -1294,6 +1398,84 @@
           "generator": null,
           "kind": "next_improvement",
           "lesson": "**workflow**: Run the changed-line self-check immediately after the first mutation-coverage producer for an accumulated release candidate, before final release critique or deployment preparation."
+        }
+      ]
+    },
+    {
+      "candidate_id": "class:e7fc1697fb54",
+      "kind": "next_improvement",
+      "lesson": "**workflow**: when a failure passes in isolation but fails under the full gate, diff the ENVIRONMENT first — inherited git config (`GIT_CONFIG_PARAMETERS` from any `git -c`), HOME, cwd, disk — before reading the test. Both of this session's push blockers were environment, and both read as flaky tests.",
+      "normalized_key": "workflow when a failure passes in isolation but fails under the full gate diff",
+      "recurrence_class": "harness-differential-not-test",
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Next Improvements",
+          "generator": null,
+          "kind": "next_improvement",
+          "lesson": "**workflow**: when a failure passes in isolation but fails under the full gate, diff the ENVIRONMENT first — inherited git config (`GIT_CONFIG_PARAMETERS` from any `git -c`), HOME, cwd, disk — before reading the test. Both of this session's push blockers were environment, and both read as flaky tests."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:fa6dee0edced",
+      "kind": "repeat_trap",
+      "lesson": "**Four failed pushes, ~45 minutes of gate time, from two causes that both masquerade as flaky tests.** Run 1 was the seed cache filling the disk; runs 2–4 were my own `git -c core.hooksPath=.githooks` leaking `GIT_CONFIG_PARAMETERS` into every descendant, so each fixture's temp repo inherited a relative `.githooks` that does not exist there. Both produce a DIFFERENT failing set each run, and both pass when the named files are re-run in isolation — the exact signature that sends you hunting a flaky test.",
+      "normalized_key": "four failed pushes 45 minutes of gate time from two causes that both masquerade",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Four failed pushes, ~45 minutes of gate time, from two causes that both masquerade as flaky tests.** Run 1 was the seed cache filling the disk; runs 2–4 were my own `git -c core.hooksPath=.githooks` leaking `GIT_CONFIG_PARAMETERS` into every descendant, so each fixture's temp repo inherited a relative `.githooks` that does not exist there. Both produce a DIFFERENT failing set each run, and both pass when the named files are re-run in isolation — the exact signature that sends you hunting a flaky test."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:98b450266ec7",
+      "kind": "repeat_trap",
+      "lesson": "**I misattributed run 2 to disk pressure and told the user so.** Run 3 refuted it (34% disk, same file failing). The disk finding was real but it was not the cause of runs 2–4, and I stated the attribution before I had a second observation to separate them.",
+      "normalized_key": "i misattributed run 2 to disk pressure and told the user so run 3",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**I misattributed run 2 to disk pressure and told the user so.** Run 3 refuted it (34% disk, same file failing). The disk finding was real but it was not the cause of runs 2–4, and I stated the attribution before I had a second observation to separate them."
         }
       ]
     },
@@ -1324,6 +1506,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:65256b87a332",
+      "kind": "repeat_trap",
+      "lesson": "Not waste: the six reviewer spawns. Round 2 found a defect inside a round-1 repair on all three surfaces — including a gate that committed the file it was about to refuse.",
+      "normalized_key": "not waste the six reviewer spawns round 2 found a defect inside a round",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "Not waste: the six reviewer spawns. Round 2 found a defect inside a round-1 repair on all three surfaces — including a gate that committed the file it was about to refuse."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:3808f57d8144",
       "kind": "repeat_trap",
       "lesson": "**One carrier commit was refused and its staged edit silently rode into the next commit.** The `#607` commit failed the commit-msg hook (classification inferred as `bug`), and because the loop's `git add` was file-scoped, the orphaned edit was swept into the `#590` carrier. Recovered, but the mechanism is a real hazard: a refused closeout commit leaves its staging behind.",
@@ -1350,6 +1558,32 @@
       ]
     },
     {
+      "candidate_id": "repeat_trap:e9e8a4c6151e",
+      "kind": "repeat_trap",
+      "lesson": "**The `-c core.hooksPath=.githooks` flag was redundant from the first commit.** `git config --local core.hooksPath` already returns `.githooks`. I carried a flag I never checked was needed, and it was the thing breaking the gate.",
+      "normalized_key": "the c core hookspath githooks flag was redundant from the first commit git config",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**The `-c core.hooksPath=.githooks` flag was redundant from the first commit.** `git config --local core.hooksPath` already returns `.githooks`. I carried a flag I never checked was needed, and it was the thing breaking the gate."
+        }
+      ]
+    },
+    {
       "candidate_id": "repeat_trap:1590aff86799",
       "kind": "repeat_trap",
       "lesson": "**Three validator round-trips on hand-authored carrier bodies**, all from line WRAPPING: a `Proof:` or `population:` that landed at the start of a wrapped line was parsed as a new ledger field and silently removed from the field it belonged to. The rendered shape (`describe_closeout_draft_shape.py`) documents the fields; it does not warn that they are line-anchored.",
@@ -1372,6 +1606,32 @@
           "generator": null,
           "kind": "repeat_trap",
           "lesson": "**Three validator round-trips on hand-authored carrier bodies**, all from line WRAPPING: a `Proof:` or `population:` that landed at the start of a wrapped line was parsed as a new ledger field and silently removed from the field it belonged to. The rendered shape (`describe_closeout_draft_shape.py`) documents the fields; it does not warn that they are line-anchored."
+        }
+      ]
+    },
+    {
+      "candidate_id": "repeat_trap:a67bbf126502",
+      "kind": "repeat_trap",
+      "lesson": "**Three validator round-trips on the carrier bodies**, one of them the exact line-anchored ledger-field trap the LAST retro recorded as a memory lesson: `Decision:` at the start of a wrapped line terminated the `Siblings:` field. I had read that lesson this session and still hit it.",
+      "normalized_key": "three validator round trips on the carrier bodies one of them the exact line",
+      "recurrence_class": null,
+      "source_count": 1,
+      "independent_source_count": 1,
+      "generator_authored": 0,
+      "latest_source_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+      "latest_source_date": "2026-08-13",
+      "age_days": 0,
+      "recency_weight": 1.0,
+      "alpha": 0.12,
+      "selection_weight": 1.0,
+      "sources": [
+        {
+          "artifact_path": "charness-artifacts/retro/2026-08-13-release-residues-and-unbounded-caches-retro.md",
+          "date": "2026-08-13",
+          "section": "Waste",
+          "generator": null,
+          "kind": "repeat_trap",
+          "lesson": "**Three validator round-trips on the carrier bodies**, one of them the exact line-anchored ledger-field trap the LAST retro recorded as a memory lesson: `Decision:` at the start of a wrapped line terminated the `Siblings:` field. I had read that lesson this session and still hit it."
         }
       ]
     },
