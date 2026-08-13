@@ -177,8 +177,17 @@ premise, owner, evidence channel, and tracker-visible outcome.
   contract), `08b01ddc` (fixture evidence), `c9d25da4` (runtime advisories).
 - Evidence: #595 focused runtime tests (50 passed), selected runtime-budget
   quality lane, debug/critique artifacts, and a fresh-eye repair review; #597
-  focused fixture tests (27 passed), selected fixture lane, and its required
-  two review rounds; #546 current membership check and selected lane passed.
+  focused fixture tests (27 passed) and its selected fixture lane; #546 current
+  membership check and selected lane passed.
+- **Correction (2026-08-13).** This entry previously claimed #597 took "its
+  required two review rounds". No artifact supports that. Its only durable review
+  record is `../critique/2026-08-12-issue-597-quality-fixture-gate-repair-critique.md`,
+  which records `Requested tier: standard`, no round-2 section, and two
+  `action: fix` findings on the verdict surface — so the second-round obligation
+  was triggered and never discharged. Caught by the bug-carrier closeout review;
+  the owed round is being run before #597 may close. #595's single round is
+  defensible under the discharge clause (all four findings are `document` or
+  `defer`, no `fix`), but the blanket phrasing was unproven for it too.
 - Boundary: no issue is represented as closed locally. #546 has a GitHub
   `unproven-defer` carrier; #595 and #597 await final direct-to-default closeout
   and independent GitHub readback. #584 remains OPEN: SessionStart and the
